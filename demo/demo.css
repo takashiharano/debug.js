@@ -1,8 +1,26 @@
-.log {
-  background-color: #000;
-  color: #fff;
-  display:inline-block;
-  font-family: "Consolas";
-  font-size: 9pt;
-  padding: .3em;
+body {
+  font-family: "Meiryo";
+  font-size: 12pt;
+}
+
+.title {
+  font-size: 18pt;
+  font-weight: bold;
+}
+
+.caption {
+  font-weight: bold;
+}
+
+.description {
+  color: #888;
+}
+
+.annotation {
+  color: #70ad47;
+  font-size: 0.6em;
+}
+
+.code {
+  color: #0070c0;
 }

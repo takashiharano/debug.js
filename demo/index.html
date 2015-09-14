@@ -4,12 +4,38 @@
 	<meta charset="UTF-8">
 	<title>debug/js demo</title>
 	<link rel="stylesheet" href="demo.css" type="text/css" />
-	<script src="../lib/jquery-1.11.3.min.js"></script>
+	<link rel="stylesheet" href="../dist/debug.css" type="text/css" />
 	<script src="../dist/debug.js"></script>
 	<script src="demo.js"></script>
 </head>
 <body>
-	log message demo<br>
+	<div class="title">Log Message Demo</div>
+	<br/>
+	<div class="caption">HTML:</div>
+	<div class="description">
+		include the files.
+	</div>
+	<div class="code">
+		&lt;link rel="stylesheet" href="debug.css" type="text/css" /&gt; <span class="annotation">(non-mandatory)</span><br/>
+		&lt;script src="debug.js"&gt;&lt;/script&gt;<br/>
+	</div><br/>
+	<div class="description">
+		set a messag area.
+	</div>
+	<div class="code">
+		&lt;div id="log" class="log"&gt;&lt;/div&gt;<br/>
+	</div><br/>
+	<div class="caption">JavaScript:</div>
+	<div class="code">
+	<div class="description">
+		initialize. (arguments: id of the message area, buffer size, show line numbers)
+	</div>
+		var debug = new Debug("log", 10, true);<br/><br/>
+	<div class="description">
+		output the log.
+	</div>
+		log(&lt;message&gt;);<br/>
+	</div><br/>
 	<div id="log" class="log"></div>
 </body>
 </html>

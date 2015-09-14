@@ -3,24 +3,31 @@
  *
  * Copyright 2015 Takashi Harano
  * Released under the MIT license
+ * https://github.com/takashiharano/debug.js
  *
- * Date: 2015-09-06T22:22+09:00
+ * Date: 2015-09-14T23:23+09:00
  */
 var LogBuffer;
 var LogArea;
-var Debug = function(logAreaId, logBufferSize) {
+var isShowLineNums = false;
+var Debug = function(logAreaId, logBufferSize, showLineNums) {
 	LogBuffer = new RingBuffer(logBufferSize);
-	LogArea = $("#" + logAreaId);
+	LogArea = document.getElementById(logAreaId);
+	isShowLineNums = showLineNums;
 };
 
 function log(msg) {
 	LogBuffer.add(msg);
+	printLog();
+}
+
+function printLog() {
 	var buf = LogBuffer.getAll();
-	var msg = "";
+	var msg = "<a href=\"#\" onclick=\"clearLog();\">[clear]</a><br/>";
 	for (var i = 0; i < buf.length; i++) {
 		msg = msg + buf[i] + "<br/>";
 	}
-	LogArea.html(msg);
+	LogArea.innerHTML = msg;
 }
 
 var RingBuffer = function(bufferSize) {
@@ -49,25 +56,71 @@ RingBuffer.prototype = {
 
 	getAll: function() {
 		var allBuff = [];
-		var loopMax;
-		var pos;
+		var bufCnt = this.count;
+		var bufLen = this.buffer.length;
+		var padding = "";
+		var line = "";
+		var msg = "";
+		var pos = 0;
+		var cnt;
 
-		if (this.count < this.buffer.length) {
-			loopMax = this.count;
-			pos = 0;
-		} else {
-			loopMax = this.buffer.length;
-			pos = (this.count % this.buffer.length);
+		var maxCnt = bufLen;
+		if (bufCnt > this.buffer.length) {
+			pos = (bufCnt % this.buffer.length);
+			maxCnt = bufCnt;
 		}
 
-		for (var i = 0; i < loopMax; i++) {
-			if (pos >= this.buffer.length) {
+		for (var i = 0; i < bufLen; i++) {
+			if (pos >= bufLen) {
 				pos = 0;
 			}
-			allBuff[i] = this.buffer[pos];
+
+			if (bufCnt < bufLen) {
+				cnt = i;
+			} else {
+				cnt = bufCnt - bufLen + i;
+			}
+			cnt++; //start at 1
+
+			if (isShowLineNums) {
+				var diffDigits = digits(maxCnt) - digits(cnt);
+				padding = "";
+				for (var j = 0; j < diffDigits; j++) {
+					padding = padding + "0";
+				}
+				line = padding + cnt + ": ";
+			}
+
+			if (this.buffer[pos] == undefined) {
+				msg = "";
+			} else {
+				msg = this.buffer[pos];
+			}
+
+			allBuff[i] = line + msg;
 			pos++;
 		}
 
 		return allBuff;
+	},
+
+	clear: function() {
+		this.buffer = new Array(this.buffer.length);
+		this.count = 0;
+		return;
 	}
+};
+
+function clearLog() {
+	LogBuffer.clear();
+	printLog();
+}
+
+function digits(x) {
+	var digit = 0;
+	while (x != 0) {
+		x = (x / 10) << 0;
+		digit++;
+	}
+	return digit;
 };

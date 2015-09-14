@@ -1,0 +1,13 @@
+.log {
+  background-color: #000;
+  color: #fff;
+  display:inline-block;
+  font-family: "Consolas";
+  font-size: 9pt;
+  padding: .3em;
+  width: 640px;
+}
+
+.log a {
+  color: #00bfff;
+}
