@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
+	<meta charset="utf-8">
 	<title>debug.js demo</title>
-	<link rel="stylesheet" href="demo.css" type="text/css" />
-	<link rel="stylesheet" href="debug.css" type="text/css" />
+	<link rel="stylesheet" href="debug.css" />
 	<script src="debug.js"></script>
+	<link rel="stylesheet" href="demo.css" />
 	<script src="demo.js"></script>
 </head>
 <body>
@@ -15,7 +15,7 @@
 		include the files.
 	</div>
 	<div class="code">
-		&lt;link rel="stylesheet" href="debug.css" type="text/css" /&gt; <span class="annotation">(non-mandatory)</span><br/>
+		&lt;link rel="stylesheet" href="debug.css" /&gt;<br/>
 		&lt;script src="debug.js"&gt;&lt;/script&gt;<br/>
 	</div><br/>
 	<div class="description">
@@ -25,16 +25,21 @@
 		&lt;div id="log" class="log"&gt;&lt;/div&gt;<br/>
 	</div><br/>
 	<div class="caption">JavaScript:</div>
-	<div class="code">
-	<div class="description">
-		initialize. (arguments: id of the message area, buffer size, show line numbers)
-	</div>
-		var debug = new Debug("log", 10, true);<br/><br/>
 	<div class="description">
 		output the log.
 	</div>
+	<div class="code">
 		log(&lt;message&gt;);<br/>
 	</div><br/>
+	<div class="annotation">(optional)</div>
+	<div class="description">
+		If you want to change the log settings, explicitly call initialization function in advance.<br/>
+		arguments: (&lt;id of the message area&gt;, &lt;buffer size&gt;, &lt;show line numbers&gt;)
+	</div>
+	<div class="code">
+		Debug.init("log", 5, true);
+	</div>
+	<br/>
 	<div id="log" class="log"></div>
 </body>
 </html>

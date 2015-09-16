@@ -5,30 +5,37 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2015-09-14T23:23+09:00
+ * Date: 2015-09-17T00:07+09:00
  */
-var LogBuffer;
-var LogArea;
-var isShowLineNums = false;
-var Debug = function(logAreaId, logBufferSize, showLineNums) {
-	LogBuffer = new RingBuffer(logBufferSize);
-	LogArea = document.getElementById(logAreaId);
-	isShowLineNums = showLineNums;
-};
+var Debug = null;
 
-function log(msg) {
-	LogBuffer.add(msg);
-	printLog();
+function DebugJS() {
+	this.DEFAULT_LOG_ARIA_ID = "log";
+	this.DEFAULT_BUFFER_SIZE = 5;
+	this.DEFAULT_SHOW_LINE_NUMS = true;
 }
 
-function printLog() {
-	var buf = LogBuffer.getAll();
-	var msg = "<a href=\"#\" onclick=\"clearLog();\">[clear]</a><br/>";
-	for (var i = 0; i < buf.length; i++) {
-		msg = msg + buf[i] + "<br/>";
+DebugJS.prototype = {
+	init:  function(logAreaId, logBufferSize, showLineNums) {
+		this.DebugLogBuffer = new RingBuffer(logBufferSize);
+		this.DebugLogArea = document.getElementById(logAreaId);
+		this.DebugIsShowLineNums = showLineNums;
+	},
+
+	printLog: function() {
+		var buf = this.DebugLogBuffer.getAll();
+		var msg = "<a href=\"#\" onclick=\"Debug.clearLog();\">[clear]</a><br/>";
+		for (var i = 0; i < buf.length; i++) {
+			msg = msg + buf[i] + "<br/>";
+		}
+		this.DebugLogArea.innerHTML = msg;
+	},
+
+	clearLog: function() {
+		this.DebugLogBuffer.clear();
+		this.printLog();
 	}
-	LogArea.innerHTML = msg;
-}
+};
 
 var RingBuffer = function(bufferSize) {
 	if (bufferSize == undefined) {
@@ -82,7 +89,7 @@ RingBuffer.prototype = {
 			}
 			cnt++; //start at 1
 
-			if (isShowLineNums) {
+			if (Debug.DebugIsShowLineNums) {
 				var diffDigits = digits(maxCnt) - digits(cnt);
 				padding = "";
 				for (var j = 0; j < diffDigits; j++) {
@@ -111,11 +118,6 @@ RingBuffer.prototype = {
 	}
 };
 
-function clearLog() {
-	LogBuffer.clear();
-	printLog();
-}
-
 function digits(x) {
 	var digit = 0;
 	while (x != 0) {
@@ -124,3 +126,28 @@ function digits(x) {
 	}
 	return digit;
 };
+
+function log(msg) {
+	if (Debug) {
+		Debug.DebugLogBuffer.add(msg);
+		Debug.printLog();
+	} else {
+		Debug = new DebugJS();
+		Debug.init(Debug.DEFAULT_LOG_ARIA_ID, Debug.DEFAULT_BUFFER_SIZE, Debug.DEFAULT_SHOW_LINE_NUMS);
+	}
+}
+
+function DebugAddEventListener(func) { 
+	try { 
+		window.addEventListener("load", func, false);
+	} catch (e) { 
+		window.attachEvent("onload", func);  // for IE
+	}
+}
+
+function DebugInit() {
+	Debug = new DebugJS();
+	Debug.init(Debug.DEFAULT_LOG_ARIA_ID, Debug.DEFAULT_BUFFER_SIZE, Debug.DEFAULT_SHOW_LINE_NUMS);
+}
+
+DebugAddEventListener(DebugInit);
