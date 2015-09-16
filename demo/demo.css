@@ -1,0 +1,25 @@
+body {
+  font-family: "Meiryo";
+  font-size: 12pt;
+}
+
+.title {
+  font-size: 18pt;
+  font-weight: bold;
+}
+
+.caption {
+  font-weight: bold;
+}
+
+.description {
+  color: #888;
+}
+
+.annotation {
+  color: #70ad47;
+}
+
+.code {
+  color: #0070c0;
+}
