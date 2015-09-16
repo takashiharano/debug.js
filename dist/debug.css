@@ -5,7 +5,8 @@
   font-family: "Consolas";
   font-size: 9pt;
   padding: .3em;
-  width: 640px;
+  line-height: 1em;
+  width: 100%;
 }
 
 .log a {
