@@ -1,39 +1,56 @@
 /*!
  * debug.js
  *
- * Copyright 2015 Takashi Harano
+ * Copyright 2016 Takashi Harano
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2015-09-17T00:07+09:00
+ * Date: 2016-01-26T21:50+09:00
  */
 var Debug = null;
 
 function DebugJS() {
-	this.DEFAULT_LOG_ARIA_ID = "log";
-	this.DEFAULT_BUFFER_SIZE = 5;
+	this.DEFAULT_DEBUG_ARIA_ID = 'debug';
+	this.DEFAULT_BUFFER_SIZE = 10;
 	this.DEFAULT_SHOW_LINE_NUMS = true;
 }
 
 DebugJS.prototype = {
-	init:  function(logAreaId, logBufferSize, showLineNums) {
-		this.DebugLogBuffer = new RingBuffer(logBufferSize);
-		this.DebugLogArea = document.getElementById(logAreaId);
+	init:  function(messageAreaId, messageBufferSize, showLineNums) {
+		this.DebugMessageBuffer = new RingBuffer(messageBufferSize);
+		this.DebugMessageArea = document.getElementById(messageAreaId);
 		this.DebugIsShowLineNums = showLineNums;
+
+		var selector = '#' + messageAreaId;
+		var styles = {};
+		styles[selector] = {
+			'width': '99%',
+			'padding': '.3em',
+			'line-height': '1em',
+			'border': 'solid 1px #888',
+			'font-family': 'Consolas',
+			'font-size': '9pt',
+			'color': '#fff',
+			'background': '#000'
+		};
+
+		selector = '#' + messageAreaId + ' a';
+		styles[selector] = {'color': '#00bfff'};
+		applyStyles(styles);
 	},
 
-	printLog: function() {
-		var buf = this.DebugLogBuffer.getAll();
-		var msg = "<a href=\"#\" onclick=\"Debug.clearLog();\">[clear]</a><br/>";
+	printMessage: function() {
+		var buf = this.DebugMessageBuffer.getAll();
+		var msg = '<a href="#" onclick="Debug.clearMessage();">[clear]</a><br/>';
 		for (var i = 0; i < buf.length; i++) {
-			msg = msg + buf[i] + "<br/>";
+			msg = msg + buf[i] + '<br/>';
 		}
-		this.DebugLogArea.innerHTML = msg;
+		this.DebugMessageArea.innerHTML = msg;
 	},
 
-	clearLog: function() {
-		this.DebugLogBuffer.clear();
-		this.printLog();
+	clearMessage: function() {
+		this.DebugMessageBuffer.clear();
+		this.printMessage();
 	}
 };
 
@@ -65,9 +82,9 @@ RingBuffer.prototype = {
 		var allBuff = [];
 		var bufCnt = this.count;
 		var bufLen = this.buffer.length;
-		var padding = "";
-		var line = "";
-		var msg = "";
+		var padding = '';
+		var line = '';
+		var msg = '';
 		var pos = 0;
 		var cnt;
 
@@ -91,15 +108,15 @@ RingBuffer.prototype = {
 
 			if (Debug.DebugIsShowLineNums) {
 				var diffDigits = digits(maxCnt) - digits(cnt);
-				padding = "";
+				padding = '';
 				for (var j = 0; j < diffDigits; j++) {
-					padding = padding + "0";
+					padding = padding + '0';
 				}
-				line = padding + cnt + ": ";
+				line = padding + cnt + ': ';
 			}
 
 			if (this.buffer[pos] == undefined) {
-				msg = "";
+				msg = '';
 			} else {
 				msg = this.buffer[pos];
 			}
@@ -127,27 +144,48 @@ function digits(x) {
 	return digit;
 };
 
-function log(msg) {
+function debug(msg) {
 	if (Debug) {
-		Debug.DebugLogBuffer.add(msg);
-		Debug.printLog();
+		Debug.DebugMessageBuffer.add(msg);
+		Debug.printMessage();
 	} else {
 		Debug = new DebugJS();
-		Debug.init(Debug.DEFAULT_LOG_ARIA_ID, Debug.DEFAULT_BUFFER_SIZE, Debug.DEFAULT_SHOW_LINE_NUMS);
+		Debug.init(Debug.DEFAULT_DEBUG_ARIA_ID, Debug.DEFAULT_BUFFER_SIZE, Debug.DEFAULT_SHOW_LINE_NUMS);
 	}
 }
 
 function DebugAddEventListener(func) { 
 	try { 
-		window.addEventListener("load", func, false);
+		window.addEventListener('load', func, false);
 	} catch (e) { 
-		window.attachEvent("onload", func);  // for IE
+		window.attachEvent('onload', func);  // for IE
 	}
 }
 
 function DebugInit() {
 	Debug = new DebugJS();
-	Debug.init(Debug.DEFAULT_LOG_ARIA_ID, Debug.DEFAULT_BUFFER_SIZE, Debug.DEFAULT_SHOW_LINE_NUMS);
+	Debug.init(Debug.DEFAULT_DEBUG_ARIA_ID, Debug.DEFAULT_BUFFER_SIZE, Debug.DEFAULT_SHOW_LINE_NUMS);
+}
+
+function applyStyles(styles) {
+	var styleEl = document.createElement('style');
+	document.head.appendChild(styleEl);
+	styleEl.appendChild(document.createTextNode(''));
+	var s = styleEl.sheet;
+	for (var selector in styles) {
+		var props = styles[selector];
+		var propStr = '';
+		for (var propName in props) {
+			var propVal = props[propName];
+			var propImportant = '';
+			if (propVal[1] === true) {
+				propVal = propVal[0];
+				propImportant = ' !important'
+			}
+			propStr += propName + ':' + propVal + propImportant + ';\n';
+		}
+		s.insertRule(selector + '{' + propStr + '}', s.cssRules.length);
+	}
 }
 
 DebugAddEventListener(DebugInit);

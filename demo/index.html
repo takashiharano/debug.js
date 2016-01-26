@@ -3,33 +3,31 @@
 <head>
 	<meta charset="utf-8">
 	<title>debug.js demo</title>
-	<link rel="stylesheet" href="../dist/debug.css" />
 	<script src="../dist/debug.js"></script>
 	<link rel="stylesheet" href="demo.css" />
 	<script src="demo.js"></script>
 </head>
 <body>
-	<div class="title">debug.js - Log Message Demo</div><br/>
+	<div class="title">debug.js - Debug Message Demo</div><br/>
 	<div class="caption">HTML:</div>
 	<div class="description">
 		include the files.
 	</div>
 	<div class="code">
-		&lt;link rel="stylesheet" href="debug.css" /&gt;<br/>
 		&lt;script src="debug.js"&gt;&lt;/script&gt;<br/>
 	</div><br/>
 	<div class="description">
-		set a messag area.
+		set a debug messag area.
 	</div>
 	<div class="code">
-		&lt;div id="log" class="log"&gt;&lt;/div&gt;<br/>
+		&lt;div id="debug"&gt;&lt;/div&gt;<br/>
 	</div><br/>
 	<div class="caption">JavaScript:</div>
 	<div class="description">
-		output the log.
+		output the debug message.
 	</div>
 	<div class="code">
-		log(&lt;message&gt;);<br/>
+		debug(&lt;message&gt;);<br/>
 	</div><br/>
 	<div class="annotation">(optional)</div>
 	<div class="description">
@@ -37,9 +35,9 @@
 		arguments: (&lt;id of the message area&gt;, &lt;buffer size&gt;, &lt;show line numbers&gt;)
 	</div>
 	<div class="code">
-		Debug.init("log", 5, true);
+		Debug.init("debug", 20, true);
 	</div>
 	<br/>
-	<div id="log" class="log"></div>
+	<div id="debug"></div>
 </body>
 </html>

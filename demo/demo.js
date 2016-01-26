@@ -1,12 +1,12 @@
 window.onload = function() {
 	// set the init param if you want to change the log settings.
-	//Debug.init("log", 20, false);
-	log("window.onload");
+	//Debug.init("debug", 20, false);
+	debug("window.onload");
 	window.setInterval(printDateTime, 1000);
 }
 
 document.onkeydown = function(e) {
-	log("KeyDown: keyCode = " + e.keyCode);
+	debug("KeyDown: keyCode = " + e.keyCode);
 }
 
 document.onmousemove = function(e){
@@ -17,13 +17,13 @@ document.onmousemove = function(e){
 	var mouse_x = e.clientX;
 	var mouse_y = e.clientY;
 
-	log("mouseMoved: x=" + mouse_x + ", y=" + mouse_y);
+	debug("mouseMoved: x=" + mouse_x + ", y=" + mouse_y);
 };
 
 document.onclick = function(e) {
-	log("click count: " + event.detail);
+	debug("click count: " + event.detail);
 }
 
 function printDateTime() {
-	log(new Date());
+	debug(new Date());
 }
