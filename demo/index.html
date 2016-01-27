@@ -1,43 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<title>debug.js demo</title>
-	<script src="../dist/debug.js"></script>
-	<link rel="stylesheet" href="demo.css" />
-	<script src="demo.js"></script>
+<meta charset="utf-8">
+<title>debug.js demo</title>
+<script src="../dist/debug.js"></script>
+<link rel="stylesheet" href="demo.css" />
+<script src="demo.js"></script>
 </head>
 <body>
-	<div class="title">debug.js - Debug Message Demo</div><br/>
-	<div class="caption">HTML:</div>
-	<div class="description">
-		include the files.
-	</div>
-	<div class="code">
-		&lt;script src="debug.js"&gt;&lt;/script&gt;<br/>
-	</div><br/>
-	<div class="description">
-		set a debug messag area.
-	</div>
-	<div class="code">
-		&lt;div id="debug"&gt;&lt;/div&gt;<br/>
-	</div><br/>
-	<div class="caption">JavaScript:</div>
-	<div class="description">
-		output the debug message.
-	</div>
-	<div class="code">
-		debug(&lt;message&gt;);<br/>
-	</div><br/>
-	<div class="annotation">(optional)</div>
-	<div class="description">
-		If you want to change the log settings, explicitly call initialization function in advance.<br/>
-		arguments: (&lt;id of the message area&gt;, &lt;buffer size&gt;, &lt;show line numbers&gt;)
-	</div>
-	<div class="code">
-		Debug.init("debug", 20, true);
-	</div>
-	<br/>
-	<div id="debug"></div>
+<div class="title">debug.js - debug message demo</div>
+<br>
+<div class="caption">HTML:</div>
+<div class="description">include the script file.</div>
+<div class="code1">&lt;script src="debug.js"&gt;&lt;/script&gt;</div>
+<br>
+<div class="description">set a debug messag area.</div>
+<div class="code1">&lt;div id="debug"&gt;&lt;/div&gt;</div><br>
+<div class="caption">JavaScript:</div>
+<div class="description">output the debug message.</div>
+<div class="code1">debug(&lt;message&gt;);</div><br>
+<div class="annotation">(optional)</div>
+<div class="description">
+If you want to change the log settings, explicitly call initialization function in advance.<br>
+arguments: (&lt;id of the message area&gt;, &lt;buffer size&gt;, &lt;show line numbers&gt;)
+</div>
+<div class="code1">Debug.init("debug", 20, true);</div>
+<br>
+<div class="caption">e.g.,)</div>
+<pre class="code">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  <span class="emphasis">&lt;script src="debug.js"&gt;&lt;/script&gt;</span>
+  &lt;script&gt;
+    window.onload = function() {
+      <span class="emphasis">Debug.init('debug', 20, true);</span> //in the absence of this statement, debug.js works in default configuration.
+      <span class="emphasis">debug('The window\'s load event fired.');</span>
+    }
+
+    document.onkeydown = function(e) {
+      <span class="emphasis">debug('KeyDown: keyCode = ' + e.keyCode);</span>
+    }
+
+    document.onmousemove = function(e) {
+      <span class="emphasis">debug('mouseMoved: x=' + e.clientX + ', y=' + e.clientY);</span>
+    };
+    ...
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  Hello, World!&lt;br&gt;
+  ...
+  <span class="emphasis">&lt;div id="debug"&gt;&lt;/div&gt;</span>
+  ...
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+<div class="caption">Output example:</div>
+<div id="debug"></div>
 </body>
 </html>
