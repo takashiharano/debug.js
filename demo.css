@@ -21,5 +21,18 @@ body {
 }
 
 .code {
+  width: 800px;
+  padding: .5em;
+  font-family: Consolas;
+  font-size: 9pt;
+  color: #aaa;
+  background: #111;
+}
+
+.code1 {
   color: #0070c0;
+}
+
+.emphasis {
+  color: #fff;
 }

@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-01-26T21:50+09:00
+ * Date: 2016-01-27T21:34+09:00
  */
 var Debug = null;
 
@@ -37,6 +37,8 @@ DebugJS.prototype = {
 		selector = '#' + messageAreaId + ' a';
 		styles[selector] = {'color': '#00bfff'};
 		applyStyles(styles);
+
+		this.clearMessage();
 	},
 
 	printMessage: function() {
