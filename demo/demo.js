@@ -1,5 +1,5 @@
 window.onload = function() {
-	Debug.init('debug', 20, true);
+	Debug.init('debug', 20, true, true); //in the absence of this statement, debug.js works in default configuration.
 	debug('The window\'s load event fired.');
 }
 

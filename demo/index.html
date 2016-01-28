@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>debug.js demo</title>
-<script src="../dist/debug.js"></script>
+<script src="../debug.js"></script>
 <link rel="stylesheet" href="demo.css" />
 <script src="demo.js"></script>
 </head>
@@ -22,9 +22,9 @@
 <div class="annotation">(optional)</div>
 <div class="description">
 If you want to change the log settings, explicitly call initialization function in advance.<br>
-arguments: (&lt;id of the message area&gt;, &lt;buffer size&gt;, &lt;show line numbers&gt;)
+arguments: (&lt;id of the message area&gt;, &lt;buffer size&gt;, &lt;show line numbers&gt;, &lt;show clear button&gt;)
 </div>
-<div class="code1">Debug.init("debug", 20, true);</div>
+<div class="code1">Debug.init("debug", 20, true, true);</div>
 <br>
 <div class="caption">e.g.,)</div>
 <pre class="code">
@@ -35,7 +35,7 @@ arguments: (&lt;id of the message area&gt;, &lt;buffer size&gt;, &lt;show line n
   <span class="emphasis">&lt;script src="debug.js"&gt;&lt;/script&gt;</span>
   &lt;script&gt;
     window.onload = function() {
-      <span class="emphasis">Debug.init('debug', 20, true);</span> //in the absence of this statement, debug.js works in default configuration.
+      <span class="emphasis">Debug.init('debug', 20, true, true);</span> //in the absence of this statement, debug.js works in default configuration.
       <span class="emphasis">debug('The window\'s load event fired.');</span>
     }
 
