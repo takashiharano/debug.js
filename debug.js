@@ -5,22 +5,25 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-03-13T20:15+09:00
+ * Date: 2016-03-14T23:13+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
 
-  this.defaultOptions = {
-    'buffSize': 15,
+  this.DEFAULT_OPTIONS = {
+    'buffSize': 20,
     'width': 450,
+    'top': 25,
+    'right': 30,
     'showLineNums': true,
     'showClearButton': true,
+    'showCloseButton': true,
     'defaultShow': true,
   };
 
-  this.defaultStyle = {
+  this.DEFAULT_STYLE = {
     'position': 'absolute',
-    'width': this.defaultOptions.width + 'px',
+    'width': this.DEFAULT_OPTIONS.width + 'px',
     'padding': '.3em',
     'line-height': '1em',
     'border': 'solid 1px #888',
@@ -28,7 +31,9 @@ function DebugJS() {
     'font-size': '9pt',
     'color': '#fff',
     'background': '#111',
-    'display': 'block'
+    'display': 'block',
+    'z-index': '0x7fffffff',
+    'box-shadow': '10px 10px 10px rgba(0,0,0,.3)'
   };
 
   this.id = null;
@@ -41,6 +46,7 @@ function DebugJS() {
     'width': null,
     'showLineNums': true,
     'showClearButton': true,
+    'showCloseButton': true,
     'defaultShow': false,
   };
 
@@ -60,7 +66,7 @@ DebugJS.prototype = {
     }
 
     if (options == null) {
-      this.options = this.defaultOptions;
+      this.options = this.DEFAULT_OPTIONS;
     } else {
       this.options = options;
     }
@@ -78,15 +84,15 @@ DebugJS.prototype = {
 
     var selector = '#' + this.id;
     var styles = {};
-    styles[selector] = this.defaultStyle;
+    styles[selector] = this.DEFAULT_STYLE;
 
     if (this.automode) {
       var wkStyle = styles[selector];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
-      wkStyle.top = '50px';
-      wkStyle.left = (window.innerWidth - this.options.width - 50) + 'px';
-      wkStyle.background = 'rgba(0,0,0,0.8)';
+      wkStyle.top = this.options.top  + 'px';
+      wkStyle.left = (window.innerWidth - this.options.width - this.options.right) + 'px';
+      wkStyle.background = 'rgba(0,0,0,0.7)';
       if (!this.show) {
         wkStyle.display = 'none';
       }
@@ -115,11 +121,19 @@ DebugJS.prototype = {
   printMessage: function() {
     var buf = this.msgBuff.getAll();
     var msg = '';
+    msg += '<div>';
     if (this.options.showClearButton) {
-      msg += '<a href="#" onclick="Debug.clearMessage();">[clear]</a><br/>';
+      msg += '<a href="#" onclick="Debug.clearMessage();">[clear]</a>';
     }
+
+    if (this.options.showCloseButton) {
+      msg += '<span style="float:right;margin-right:5px;font-size:22px;"><a href="#" onclick="Debug.hideDebugWindow();" style="color:#888;text-decoration:none;">×</a></span>';
+    }
+    msg += '</div>';
+
     for (var i = 0; i < buf.length; i++) {
-      msg += buf[i] + '<br/>';
+      var text = buf[i].replace(/ /g , '&nbsp;') ;
+      msg += text + '<br/>';
     }
     this.msgArea.innerHTML = msg;
   },
@@ -194,19 +208,30 @@ DebugJS.prototype = {
     if (e.keyCode == 113) {
       // F2
       if (Debug.show) {
-        var selector = '#' + Debug.id;
-        var styles = {};
-        styles[selector] = {'display': 'none'};
-        Debug.applyStyles(styles);
-        Debug.show = false;
+        Debug.hideDebugWindow();
       } else {
-        var selector = '#' + Debug.id;
-        var styles = {};
-        styles[selector] = {'display': 'block'};
-        Debug.applyStyles(styles);
-        Debug.show = true;
+        Debug.showDebugWindow();
       }
+    } else if (e.keyCode == 27) {
+      // ESC
+      Debug.hideDebugWindow();
     }
+  },
+
+  hideDebugWindow: function() {
+    var selector = '#' + Debug.id;
+    var styles = {};
+    styles[selector] = {'display': 'none'};
+    Debug.applyStyles(styles);
+    Debug.show = false;
+  },
+
+  showDebugWindow: function() {
+    var selector = '#' + Debug.id;
+    var styles = {};
+    styles[selector] = {'display': 'block'};
+    Debug.applyStyles(styles);
+    Debug.show = true;
   }
 };
 
