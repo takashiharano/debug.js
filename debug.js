@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-03-14T23:13+09:00
+ * Date: 2016-03-15T23:42+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -19,6 +19,10 @@ function DebugJS() {
     'showClearButton': true,
     'showCloseButton': true,
     'defaultShow': true,
+    'errorColor': '#d44',
+    'warnColor': '#ed0',
+    'infoColor': '#fff',
+    'debugColor': '#ccc'
   };
 
   this.DEFAULT_STYLE = {
@@ -28,11 +32,11 @@ function DebugJS() {
     'line-height': '1em',
     'border': 'solid 1px #888',
     'font-family': 'Consolas',
-    'font-size': '9pt',
+    'font-size': '12px',
     'color': '#fff',
     'background': '#111',
     'display': 'block',
-    'z-index': '0x7fffffff',
+    'z-index': 0x7fffffff,
     'box-shadow': '10px 10px 10px rgba(0,0,0,.3)'
   };
 
@@ -127,13 +131,12 @@ DebugJS.prototype = {
     }
 
     if (this.options.showCloseButton) {
-      msg += '<span style="float:right;margin-right:5px;font-size:22px;"><a href="#" onclick="Debug.hideDebugWindow();" style="color:#888;text-decoration:none;">×</a></span>';
+      msg += '<span style="float:right;margin-right:2px;font-size:22px;"><a href="#" onclick="Debug.hideDebugWindow();" style="color:#888;text-decoration:none;">×</a></span>';
     }
     msg += '</div>';
 
     for (var i = 0; i < buf.length; i++) {
-      var text = buf[i].replace(/ /g , '&nbsp;') ;
-      msg += text + '<br/>';
+      msg += buf[i] + '<br/>';
     }
     this.msgArea.innerHTML = msg;
   },
@@ -327,7 +330,7 @@ RingBuffer.prototype = {
 
 var Debug = new DebugJS();
 
-function log(msg) {
+var log = function(msg) {
   if(!Debug.ENABLE){return;}
 
   if (!Debug.isInitialized()) {
@@ -335,4 +338,28 @@ function log(msg) {
   }
   Debug.msgBuff.add(msg);
   Debug.printMessage();
+}
+
+log.e = function(msg) {
+  msg = msg.replace(/ /g , '&nbsp;');
+  var m = '<span style="color:' + Debug.options.errorColor + ';">' + msg + '</span>';
+  log(m);
+}
+
+log.w = function(msg) {
+  msg = msg.replace(/ /g , '&nbsp;');
+  var m = '<span style="color:' + Debug.options.warnColor + ';">' + msg + '</span>';
+  log(m);
+}
+
+log.i = function(msg) {
+  msg = msg.replace(/ /g , '&nbsp;');
+  var m = '<span style="color:' + Debug.options.infoColor + ';">' + msg + '</span>';
+  log(m);
+}
+
+log.d = function(msg) {
+  msg = msg.replace(/ /g , '&nbsp;');
+  var m = '<span style="color:' + Debug.options.debugColor + ';">' + msg + '</span>';
+  log(m);
 }

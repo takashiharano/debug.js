@@ -17,10 +17,14 @@ window.onload = function() {
 document.onkeydown = function(e) {
 //  Debug.setStyle("color", "#0f0");
   log('KeyDown: keyCode = ' + e.keyCode);
+  log.e('error');
+  log.w('warn');
+  log.i('info');
+  log.d('debug');
 }
 
 document.onmousemove = function(e) {
-  log('mouseMoved: x=' + e.clientX + ', y=' + e.clientY);
+//  log('mouseMoved: x=' + e.clientX + ', y=' + e.clientY);
 };
 
 document.onclick = function(e) {
