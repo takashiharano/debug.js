@@ -10,17 +10,19 @@ window.onload = function() {
 //  };
 //  Debug.init(null, options); 
 
-  log('<span style="color:#0f0;">Here is the output example!</span>');
+  log.s('Here is the output example!');
   log('The window\'s load event fired.');
 }
 
 document.onkeydown = function(e) {
 //  Debug.setStyle("color", "#0f0");
   log('KeyDown: keyCode = ' + e.keyCode);
-  log.e('error');
-  log.w('warn');
-  log.i('info');
-  log.d('debug');
+  log.e('error log');
+  log.w('warn log');
+  log.i('info log');
+  log.d('debug log');
+  log.v('verbose log');
+  log.s('special log');
 }
 
 document.onmousemove = function(e) {

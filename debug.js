@@ -5,30 +5,32 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-03-15T23:42+09:00
+ * Date: 2016-03-16T23:11+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
+  this.DEFAULT_SHOW = true;
 
   this.DEFAULT_OPTIONS = {
     'buffSize': 20,
     'width': 450,
     'top': 25,
     'right': 30,
-    'showLineNums': true,
-    'showClearButton': true,
-    'showCloseButton': true,
-    'defaultShow': true,
     'errorColor': '#d44',
     'warnColor': '#ed0',
     'infoColor': '#fff',
-    'debugColor': '#ccc'
+    'debugColor': '#8cf',
+    'verboseColor': '#ccc',
+    'specialColor': '#0f0',
+    'showLineNums': true,
+    'showClearButton': true,
+    'showCloseButton': true
   };
 
   this.DEFAULT_STYLE = {
     'position': 'absolute',
     'width': this.DEFAULT_OPTIONS.width + 'px',
-    'padding': '.3em',
+    'padding': '0',
     'line-height': '1em',
     'border': 'solid 1px #888',
     'font-family': 'Consolas',
@@ -44,16 +46,7 @@ function DebugJS() {
   this.msgArea = null;
   this.automode = false;
   this.show = false;
-
-  this.options = {
-    'buffSize': null,
-    'width': null,
-    'showLineNums': true,
-    'showClearButton': true,
-    'showCloseButton': true,
-    'defaultShow': false,
-  };
-
+  this.options = null;
   this.DEFAULT_ELM_ID = '_debug_';
 }
 
@@ -74,7 +67,7 @@ DebugJS.prototype = {
     } else {
       this.options = options;
     }
-    this.show = this.options.defaultShow;
+    this.show = this.DEFAULT_SHOW;
 
     if (this.msgArea == null) {
       var div = document.createElement('div');
@@ -125,7 +118,7 @@ DebugJS.prototype = {
   printMessage: function() {
     var buf = this.msgBuff.getAll();
     var msg = '';
-    msg += '<div>';
+    msg += '<div style="padding:2px 2px 5px 2px;background:rgba(0,0,0,0);">';
     if (this.options.showClearButton) {
       msg += '<a href="#" onclick="Debug.clearMessage();">[clear]</a>';
     }
@@ -135,9 +128,11 @@ DebugJS.prototype = {
     }
     msg += '</div>';
 
+    msg += '<div style="position:relative;padding:0 .3em .3em .3em;word-break:break-all;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i] + '<br/>';
     }
+    msg += '</div>';
     this.msgArea.innerHTML = msg;
   },
 
@@ -332,34 +327,53 @@ var Debug = new DebugJS();
 
 var log = function(msg) {
   if(!Debug.ENABLE){return;}
-
-  if (!Debug.isInitialized()) {
-    Debug.init(null, null);
-  }
+  log.init();
   Debug.msgBuff.add(msg);
   Debug.printMessage();
 }
 
+log.init = function(msg) {
+  if (!Debug.isInitialized()) {
+    Debug.init(null, null);
+  }
+  if (msg) {
+    msg = msg.replace(/ /g , '&nbsp;');
+  }
+  return msg;
+}
+
 log.e = function(msg) {
-  msg = msg.replace(/ /g , '&nbsp;');
+  log.init(null);
   var m = '<span style="color:' + Debug.options.errorColor + ';">' + msg + '</span>';
   log(m);
 }
 
 log.w = function(msg) {
-  msg = msg.replace(/ /g , '&nbsp;');
+  msg = log.init(msg);
   var m = '<span style="color:' + Debug.options.warnColor + ';">' + msg + '</span>';
   log(m);
 }
 
 log.i = function(msg) {
-  msg = msg.replace(/ /g , '&nbsp;');
+  msg = log.init(msg);
   var m = '<span style="color:' + Debug.options.infoColor + ';">' + msg + '</span>';
   log(m);
 }
 
 log.d = function(msg) {
-  msg = msg.replace(/ /g , '&nbsp;');
+  msg = log.init(msg);
   var m = '<span style="color:' + Debug.options.debugColor + ';">' + msg + '</span>';
+  log(m);
+}
+
+log.v = function(msg) {
+  msg = log.init(msg);
+  var m = '<span style="color:' + Debug.options.verboseColor + ';">' + msg + '</span>';
+  log(m);
+}
+
+log.s = function(msg) {
+  msg = log.init(msg);
+  var m = '<span style="color:' + Debug.options.specialColor + ';text-shadow:0 0 3px ' + Debug.options.specialColor + ';">' + msg + '</span>';
   log(m);
 }
