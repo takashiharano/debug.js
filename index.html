@@ -19,7 +19,7 @@
 <div class="code1">log(&lt;message&gt;);</div><br>
 
 <div class="description">
-That's it!<br>
+That's it!<br><br>
 The log area is draggable and you can switch hide/show by F2 key.<br>
 
 </div>
@@ -54,7 +54,6 @@ The log area is draggable and you can switch hide/show by F2 key.<br>
 &lt;/html&gt;
 </pre>
 
-
 <div class="annotation">(optional)</div>
 <div class="description">If you want to change the log settings, explicitly call initialization function in advance.</div>
 <pre class="code emphasis">
@@ -67,6 +66,16 @@ var options = {
 };
 
 Debug.init(null, options);
+</pre>
+
+<div class="description">You can also use the function with log type.</div>
+<pre class="code emphasis">
+log.e('error log');
+log.w('warn log');
+log.i('info log');
+log.d('debug log');
+log.v('verbose log');
+log.s('special log');
 </pre>
 
 </body>
