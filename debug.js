@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-03-16T23:11+09:00
+ * Date: 2016-03-18T00:30+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -13,7 +13,7 @@ function DebugJS() {
 
   this.DEFAULT_OPTIONS = {
     'buffSize': 20,
-    'width': 450,
+    'width': 480,
     'top': 25,
     'right': 30,
     'errorColor': '#d44',
@@ -48,6 +48,40 @@ function DebugJS() {
   this.show = false;
   this.options = null;
   this.DEFAULT_ELM_ID = '_debug_';
+}
+
+
+DebugJS.getTime = function() {
+  var nowDate = new Date();
+  var mon = nowDate.getMonth() + 1;
+  var day = nowDate.getDate();
+  var hour = nowDate.getHours();
+  var min = nowDate.getMinutes();
+  var sec = nowDate.getSeconds();
+  
+  if (mon < 10) mon = '0' + mon;
+  if (day < 10) day = '0' + day;
+  if (hour < 10) hour = '0' + hour;
+  if (min < 10) min = '0' + min;
+  if (sec < 10) sec = '0' + sec;
+  
+  var dateTime = {
+    'year': nowDate.getFullYear(),
+    'mon': mon,
+    'day': day,
+    'hour': hour,
+    'min': min,
+    'sec': sec,
+    'wday': nowDate.getDay()
+  }
+
+  return dateTime;
+}
+
+DebugJS.time = function() {
+  var dt = DebugJS.getTime();
+  var tm = dt.hour + ':' + dt.min + ':' + dt.sec;
+  return tm;
 }
 
 DebugJS.prototype = {
@@ -118,7 +152,7 @@ DebugJS.prototype = {
   printMessage: function() {
     var buf = this.msgBuff.getAll();
     var msg = '';
-    msg += '<div style="padding:2px 2px 5px 2px;background:rgba(0,0,0,0);">';
+    msg += '<div style="padding:2px 2px 5px 2px;background:rgba(0,68,118,0);">';
     if (this.options.showClearButton) {
       msg += '<a href="#" onclick="Debug.clearMessage();">[clear]</a>';
     }
@@ -328,6 +362,8 @@ var Debug = new DebugJS();
 var log = function(msg) {
   if(!Debug.ENABLE){return;}
   log.init();
+  var t = DebugJS.time();
+  msg = t + ' ' + msg;
   Debug.msgBuff.add(msg);
   Debug.printMessage();
 }
@@ -337,6 +373,7 @@ log.init = function(msg) {
     Debug.init(null, null);
   }
   if (msg) {
+
     msg = msg.replace(/ /g , '&nbsp;');
   }
   return msg;
