@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-03-18T00:30+09:00
+ * Date: 2016-04-11T121:31+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -13,7 +13,7 @@ function DebugJS() {
 
   this.DEFAULT_OPTIONS = {
     'buffSize': 20,
-    'width': 480,
+    'width': 500,
     'top': 25,
     'right': 30,
     'errorColor': '#d44',
@@ -53,25 +53,29 @@ function DebugJS() {
 
 DebugJS.getTime = function() {
   var nowDate = new Date();
-  var mon = nowDate.getMonth() + 1;
-  var day = nowDate.getDate();
-  var hour = nowDate.getHours();
-  var min = nowDate.getMinutes();
-  var sec = nowDate.getSeconds();
+  var mm = nowDate.getMonth() + 1;
+  var dd = nowDate.getDate();
+  var hh = nowDate.getHours();
+  var mi = nowDate.getMinutes();
+  var ss = nowDate.getSeconds();
+  var ms = nowDate.getMilliseconds();
   
-  if (mon < 10) mon = '0' + mon;
-  if (day < 10) day = '0' + day;
-  if (hour < 10) hour = '0' + hour;
-  if (min < 10) min = '0' + min;
-  if (sec < 10) sec = '0' + sec;
-  
+  if (mm < 10) mm = '0' + mm;
+  if (dd < 10) dd = '0' + dd;
+  if (hh < 10) hh = '0' + hh;
+  if (mi < 10) mi = '0' + mi;
+  if (ss < 10) ss = '0' + ss;
+  if (ms < 10) {ms = '00' + ms;}
+  else if (ms < 100) {ms = '0' + ms;}
+
   var dateTime = {
-    'year': nowDate.getFullYear(),
-    'mon': mon,
-    'day': day,
-    'hour': hour,
-    'min': min,
-    'sec': sec,
+    'yyyy': nowDate.getFullYear(),
+    'mm': mm,
+    'dd': dd,
+    'hh': hh,
+    'mi': mi,
+    'ss': ss,
+    'ms': ms,
     'wday': nowDate.getDay()
   }
 
@@ -80,7 +84,7 @@ DebugJS.getTime = function() {
 
 DebugJS.time = function() {
   var dt = DebugJS.getTime();
-  var tm = dt.hour + ':' + dt.min + ':' + dt.sec;
+  var tm = dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.ms;
   return tm;
 }
 
@@ -163,9 +167,11 @@ DebugJS.prototype = {
     msg += '</div>';
 
     msg += '<div style="position:relative;padding:0 .3em .3em .3em;word-break:break-all;">';
+    msg += '<table style="line-height:.7em;">';
     for (var i = 0; i < buf.length; i++) {
-      msg += buf[i] + '<br/>';
+      msg += buf[i];
     }
+    msg += '</table>';
     msg += '</div>';
     this.msgArea.innerHTML = msg;
   },
@@ -295,8 +301,9 @@ RingBuffer.prototype = {
     var allBuff = [];
     var bufCnt = this.count;
     var bufLen = this.buffer.length;
-    var padding = '';
     var line = '';
+    var lineNum = '';
+    var lineNumPadding = '';
     var msg = '';
     var pos = 0;
     var cnt;
@@ -308,6 +315,8 @@ RingBuffer.prototype = {
     }
 
     for (var i = 0; i < bufLen; i++) {
+      line = '<tr style="vertical-align:top;">';
+
       if (pos >= bufLen) {
         pos = 0;
       }
@@ -321,11 +330,12 @@ RingBuffer.prototype = {
 
       if (Debug.options.showLineNums) {
         var diffDigits = this.digits(maxCnt) - this.digits(cnt);
-        padding = '';
+        lineNumPadding = '';
         for (var j = 0; j < diffDigits; j++) {
-          padding = padding + '0';
+          lineNumPadding = lineNumPadding + '0';
         }
-        line = padding + cnt + ': ';
+        lineNum = lineNumPadding + cnt + ':';
+        line += '<td style="padding-right:3px; word-break:normal;">' + lineNum + '</td>';
       }
 
       if (this.buffer[pos] == undefined) {
@@ -334,7 +344,10 @@ RingBuffer.prototype = {
         msg = this.buffer[pos];
       }
 
-      allBuff[i] = line + msg;
+      line += '<td>' + msg + '</td>';
+      line += '</tr>';
+
+      allBuff[i] = line;
       pos++;
     }
 
@@ -361,11 +374,58 @@ var Debug = new DebugJS();
 
 var log = function(msg) {
   if(!Debug.ENABLE){return;}
-  log.init();
-  var t = DebugJS.time();
-  msg = t + ' ' + msg;
-  Debug.msgBuff.add(msg);
-  Debug.printMessage();
+  var m = log.init(msg);
+  var styleS = '';
+  var styleE = '';
+  log.out(m, styleS, styleE);
+}
+
+log.e = function(msg) {
+  if(!Debug.ENABLE){return;}
+  var m = log.init(msg);
+  var styleS = '<span style="color:' + Debug.options.errorColor + ';">';
+  var styleE = '</span>';
+  log.out(m, styleS, styleE);
+}
+
+log.w = function(msg) {
+  if(!Debug.ENABLE){return;}
+  var m = log.init(msg);
+  var styleS = '<span style="color:' + Debug.options.warnColor + ';">';
+  var styleE = '</span>';
+  log.out(m, styleS, styleE);
+}
+
+log.i = function(msg) {
+  if(!Debug.ENABLE){return;}
+  var m = log.init(msg);
+  var styleS = '<span style="color:' + Debug.options.infoColor + ';">';
+  var styleE = '</span>';
+  log.out(m, styleS, styleE);
+}
+
+log.d = function(msg) {
+  if(!Debug.ENABLE){return;}
+  var m = log.init(msg);
+  var styleS = '<span style="color:' + Debug.options.debugColor + ';">';
+  var styleE = '</span>';
+  log.out(m, styleS, styleE);
+}
+
+log.v = function(msg) {
+  if(!Debug.ENABLE){return;}
+  var m = log.init(msg);
+  var styleS = '<span style="color:' + Debug.options.verboseColor + ';">';
+  var styleE = '</span>';
+  log.out(m, styleS, styleE);
+}
+
+log.s = function(msg) {
+  if(!Debug.ENABLE){return;}
+  var m = log.init(msg);
+  var styleS = '<span style="color:' + Debug.options.specialColor + ';text-shadow:0 0 3px ' + Debug.options.specialColor + ';">';
+  var styleE = '</span>';
+  log.out(m, styleS, styleE);
 }
 
 log.init = function(msg) {
@@ -373,44 +433,14 @@ log.init = function(msg) {
     Debug.init(null, null);
   }
   if (msg) {
-
     msg = msg.replace(/ /g , '&nbsp;');
   }
   return msg;
 }
 
-log.e = function(msg) {
-  log.init(null);
-  var m = '<span style="color:' + Debug.options.errorColor + ';">' + msg + '</span>';
-  log(m);
-}
-
-log.w = function(msg) {
-  msg = log.init(msg);
-  var m = '<span style="color:' + Debug.options.warnColor + ';">' + msg + '</span>';
-  log(m);
-}
-
-log.i = function(msg) {
-  msg = log.init(msg);
-  var m = '<span style="color:' + Debug.options.infoColor + ';">' + msg + '</span>';
-  log(m);
-}
-
-log.d = function(msg) {
-  msg = log.init(msg);
-  var m = '<span style="color:' + Debug.options.debugColor + ';">' + msg + '</span>';
-  log(m);
-}
-
-log.v = function(msg) {
-  msg = log.init(msg);
-  var m = '<span style="color:' + Debug.options.verboseColor + ';">' + msg + '</span>';
-  log(m);
-}
-
-log.s = function(msg) {
-  msg = log.init(msg);
-  var m = '<span style="color:' + Debug.options.specialColor + ';text-shadow:0 0 3px ' + Debug.options.specialColor + ';">' + msg + '</span>';
-  log(m);
+log.out = function(msg, styleStart, styleEnd) {
+  var t = DebugJS.time();
+  var m = styleStart + t + ' ' + msg + styleEnd;
+  Debug.msgBuff.add(m);
+  Debug.printMessage();
 }
