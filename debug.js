@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-04-11T121:31+09:00
+ * Date: 2016-04-13T20:46+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -24,6 +24,7 @@ function DebugJS() {
     'specialColor': '#0f0',
     'showLineNums': true,
     'showClearButton': true,
+    'showDateTime': true,
     'showCloseButton': true
   };
 
@@ -48,8 +49,8 @@ function DebugJS() {
   this.show = false;
   this.options = null;
   this.DEFAULT_ELM_ID = '_debug_';
+  this.intervalId = null;
 }
-
 
 DebugJS.getTime = function() {
   var nowDate = new Date();
@@ -59,7 +60,7 @@ DebugJS.getTime = function() {
   var mi = nowDate.getMinutes();
   var ss = nowDate.getSeconds();
   var ms = nowDate.getMilliseconds();
-  
+
   if (mm < 10) mm = '0' + mm;
   if (dd < 10) dd = '0' + dd;
   if (hh < 10) hh = '0' + hh;
@@ -81,6 +82,8 @@ DebugJS.getTime = function() {
 
   return dateTime;
 }
+
+DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 
 DebugJS.time = function() {
   var dt = DebugJS.getTime();
@@ -161,6 +164,12 @@ DebugJS.prototype = {
       msg += '<a href="#" onclick="Debug.clearMessage();">[clear]</a>';
     }
 
+    if (this.options.showDateTime) {
+      var dt = DebugJS.getTime();
+      var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
+      msg += '<span style="margin-left:10px;font-size:13px;color:#ddd;">' + tm + '</span>';
+    }
+
     if (this.options.showCloseButton) {
       msg += '<span style="float:right;margin-right:2px;font-size:22px;"><a href="#" onclick="Debug.hideDebugWindow();" style="color:#888;text-decoration:none;">×</a></span>';
     }
@@ -174,6 +183,10 @@ DebugJS.prototype = {
     msg += '</table>';
     msg += '</div>';
     this.msgArea.innerHTML = msg;
+
+    if ((this.options.showDateTime) && (this.intervalId == null)) {
+      this.intervalId = setInterval('Debug.printMessage()', 1000);
+    }
   },
 
   clearMessage: function() {
@@ -243,15 +256,13 @@ DebugJS.prototype = {
   },
 
   keyhandler: function(e) {
-    if (e.keyCode == 113) {
-      // F2
+    if (e.keyCode == 113) { // F2
       if (Debug.show) {
         Debug.hideDebugWindow();
       } else {
         Debug.showDebugWindow();
       }
-    } else if (e.keyCode == 27) {
-      // ESC
+    } else if (e.keyCode == 27) { // ESC
       Debug.hideDebugWindow();
     }
   },
@@ -439,8 +450,10 @@ log.init = function(msg) {
 }
 
 log.out = function(msg, styleStart, styleEnd) {
-  var t = DebugJS.time();
-  var m = styleStart + t + ' ' + msg + styleEnd;
-  Debug.msgBuff.add(m);
+  if (msg != null) {
+    var t = DebugJS.time();
+    var m = styleStart + t + ' ' + msg + styleEnd;
+    Debug.msgBuff.add(m);
+  }
   Debug.printMessage();
 }
