@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-04-13T20:46+09:00
+ * Date: 2016-05-12T01:14+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -21,7 +21,8 @@ function DebugJS() {
     'infoColor': '#fff',
     'debugColor': '#8cf',
     'verboseColor': '#ccc',
-    'specialColor': '#0f0',
+    'specialColor': '#fff',
+    'timeColor': '#0f0',
     'showLineNums': true,
     'showClearButton': true,
     'showDateTime': true,
@@ -29,8 +30,7 @@ function DebugJS() {
   };
 
   this.DEFAULT_STYLE = {
-    'position': 'absolute',
-    'width': this.DEFAULT_OPTIONS.width + 'px',
+    'position': 'relative',
     'padding': '0',
     'line-height': '1em',
     'border': 'solid 1px #888',
@@ -40,7 +40,7 @@ function DebugJS() {
     'background': '#111',
     'display': 'block',
     'z-index': 0x7fffffff,
-    'box-shadow': '10px 10px 10px rgba(0,0,0,.3)'
+    'box-shadow': ''
   };
 
   this.id = null;
@@ -131,6 +131,7 @@ DebugJS.prototype = {
       wkStyle.top = this.options.top  + 'px';
       wkStyle.left = (window.innerWidth - this.options.width - this.options.right) + 'px';
       wkStyle.background = 'rgba(0,0,0,0.7)';
+      wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
       if (!this.show) {
         wkStyle.display = 'none';
       }
@@ -167,10 +168,10 @@ DebugJS.prototype = {
     if (this.options.showDateTime) {
       var dt = DebugJS.getTime();
       var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-      msg += '<span style="margin-left:10px;font-size:13px;color:#ddd;">' + tm + '</span>';
+      msg += '<span style="margin-left:10px;font-size:13px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
     }
 
-    if (this.options.showCloseButton) {
+    if (this.automode && this.options.showCloseButton) {
       msg += '<span style="float:right;margin-right:2px;font-size:22px;"><a href="#" onclick="Debug.hideDebugWindow();" style="color:#888;text-decoration:none;">×</a></span>';
     }
     msg += '</div>';

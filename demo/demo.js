@@ -8,7 +8,10 @@ window.onload = function() {
 //    'showClearButton': true,
 //    'defaultShow': true,
 //  };
-//  Debug.init(null, options); 
+//  Debug.init(null, options);
+
+// If you want to output the logs to a designated area, pass the element id to 1st argument.
+// Debug.init('test1', null); 
 
   log.s('Here is the output example!');
   log('The window\'s load event fired.');
