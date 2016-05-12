@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-12T01:14+09:00
+ * Date: 2016-05-13T01:16+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -24,8 +24,9 @@ function DebugJS() {
     'specialColor': '#fff',
     'timeColor': '#0f0',
     'showLineNums': true,
+    'showTimeStamp': true,
+    'showClock': true,
     'showClearButton': true,
-    'showDateTime': true,
     'showCloseButton': true
   };
 
@@ -38,9 +39,7 @@ function DebugJS() {
     'font-size': '12px',
     'color': '#fff',
     'background': '#111',
-    'display': 'block',
-    'z-index': 0x7fffffff,
-    'box-shadow': ''
+    'display': 'block'
   };
 
   this.id = null;
@@ -120,25 +119,34 @@ DebugJS.prototype = {
 
     this.msgBuff = new RingBuffer(this.options.buffSize);
 
-    var selector = '#' + this.id;
     var styles = {};
-    styles[selector] = this.DEFAULT_STYLE;
+    styles['#' + this.id] = this.DEFAULT_STYLE;
+
+    styles['#' + this.id + ' td'] = {
+      'font-size': this.DEFAULT_STYLE['font-size'],
+      'font-family': this.DEFAULT_STYLE['font-family'],
+      'color': this.DEFAULT_STYLE['color'],
+      'background': 'initial',
+      'width': 'initial',
+      'border': 'initial'
+    };
+
+    styles['#' + this.id + ' a'] = {'color': '#00bfff'};
 
     if (this.automode) {
-      var wkStyle = styles[selector];
+      var wkStyle = styles['#' + this.id];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
       wkStyle.top = this.options.top  + 'px';
       wkStyle.left = (window.innerWidth - this.options.width - this.options.right) + 'px';
       wkStyle.background = 'rgba(0,0,0,0.7)';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
+      wkStyle['z-index'] = 0x7fffffff;
       if (!this.show) {
         wkStyle.display = 'none';
       }
     }
 
-    selector = '#' + this.id + ' a';
-    styles[selector] = {'color': '#00bfff'};
     this.applyStyles(styles);
 
     this.clearMessage();
@@ -165,7 +173,7 @@ DebugJS.prototype = {
       msg += '<a href="#" onclick="Debug.clearMessage();">[clear]</a>';
     }
 
-    if (this.options.showDateTime) {
+    if (this.options.showClock) {
       var dt = DebugJS.getTime();
       var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
       msg += '<span style="margin-left:10px;font-size:13px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
@@ -185,7 +193,7 @@ DebugJS.prototype = {
     msg += '</div>';
     this.msgArea.innerHTML = msg;
 
-    if ((this.options.showDateTime) && (this.intervalId == null)) {
+    if ((this.options.showClock) && (this.intervalId == null)) {
       this.intervalId = setInterval('Debug.printMessage()', 1000);
     }
   },
@@ -452,8 +460,11 @@ log.init = function(msg) {
 
 log.out = function(msg, styleStart, styleEnd) {
   if (msg != null) {
-    var t = DebugJS.time();
-    var m = styleStart + t + ' ' + msg + styleEnd;
+    var t = '';
+    if (Debug.options.showTimeStamp) {
+      t = DebugJS.time() + ' ';
+    }
+    var m = styleStart + t + msg + styleEnd;
     Debug.msgBuff.add(m);
   }
   Debug.printMessage();
