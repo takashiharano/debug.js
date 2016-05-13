@@ -5,6 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
+ * Date: 2016-05-13T22:45+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
