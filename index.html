@@ -61,11 +61,22 @@ The log area is draggable and you can switch hide/show by F2 key.<br>
 <div class="description">If you want to change the log settings, explicitly call initialization function in advance.</div>
 <pre class="code emphasis">
 var options = {
-  'buffSize': 25,
+  'buffSize': 10,
   'width': 500,
+  'top': 25,
+  'right': 30,
+  'errorColor': '#d44',
+  'warnColor': '#ed0',
+  'infoColor': '#fff',
+  'debugColor': '#8cf',
+  'verboseColor': '#ccc',
+  'specialColor': '#fff',
+  'timeColor': '#0f0',
   'showLineNums': true,
+  'showTimeStamp': false,
+  'showClock': false,
   'showClearButton': true,
-  'defaultShow': true,
+  'showCloseButton': false
 };
 
 Debug.init(null, options);
@@ -82,6 +93,39 @@ log.s('special log');
 </pre>
 
 <div id="test1"></div>
+
+<br>
+<div class="caption">DEMO:</div>
+
+log('normal log');
+<a href="" class="button" onclick="log('normal log');return false;">log()</a>
+
+log.e('error log');
+<a href="" class="button" onclick="log.e('error log');return false;">log.e()</a>
+
+log.w('warn log');
+<a href="" class="button" onclick="log.w('warn log');return false;">log.w()</a>
+
+log.i('info log');
+<a href="" class="button" onclick="log.i('info log');return false;">log.i()</a>
+
+log.d('debug log');
+<a href="" class="button" onclick="log.d('debug log');return false;">log.d()</a>
+
+log.v('verbose log');
+<a href="" class="button" onclick="log.v('verbose log');return false;">log.v()</a>
+
+log.s('special log');
+<a href="" class="button" onclick="log.s('special log');return false;">log.s()</a>
+
+log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');
+<a href="" class="button" onclick="log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');return false;">long text</a>
+
+log('&nbsp;&nbsp;&nbsp;&nbsp;leading spaces');
+<a href="" class="button" onclick="log('    leading spaces');return false;">spaces</a>
+
+log('&lt;img src=img.jpg&gt;');
+<a href="" class="button" onclick="log('<img src=img.jpg>');return false;">image</a>
 
 <!--
 <table>
