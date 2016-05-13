@@ -5,7 +5,6 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-13T01:16+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -128,7 +127,17 @@ DebugJS.prototype = {
       'color': this.DEFAULT_STYLE['color'],
       'background': 'initial',
       'width': 'initial',
-      'border': 'initial'
+      'border': 'initial',
+      'padding': '0 3px'
+    };
+
+    styles['#' + this.id + ' pre'] = {
+      'white-space': 'pre-wrap',
+      'word-break': 'break-all', 
+      'font-size': this.DEFAULT_STYLE['font-size'],
+      'font-family': this.DEFAULT_STYLE['font-family'],
+      'color': this.DEFAULT_STYLE['color'],
+      'margin': '0'
     };
 
     styles['#' + this.id + ' a'] = {'color': '#00bfff'};
@@ -170,7 +179,7 @@ DebugJS.prototype = {
     var msg = '';
     msg += '<div style="padding:2px 2px 5px 2px;background:rgba(0,68,118,0);">';
     if (this.options.showClearButton) {
-      msg += '<a href="#" onclick="Debug.clearMessage();">[clear]</a>';
+      msg += '<a href="" onclick="Debug.clearMessage();return false;">[clear]</a>';
     }
 
     if (this.options.showClock) {
@@ -180,12 +189,12 @@ DebugJS.prototype = {
     }
 
     if (this.automode && this.options.showCloseButton) {
-      msg += '<span style="float:right;margin-right:2px;font-size:22px;"><a href="#" onclick="Debug.hideDebugWindow();" style="color:#888;text-decoration:none;">×</a></span>';
+      msg += '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;text-decoration:none;">×</a></span>';
     }
     msg += '</div>';
 
-    msg += '<div style="position:relative;padding:0 .3em .3em .3em;word-break:break-all;">';
-    msg += '<table style="line-height:.7em;">';
+    msg += '<div style="position:relative;padding:0 .3em .3em .3em;">';
+    msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
     }
@@ -364,7 +373,7 @@ RingBuffer.prototype = {
         msg = this.buffer[pos];
       }
 
-      line += '<td>' + msg + '</td>';
+      line += '<td><pre>' + msg + '</pre></td>';
       line += '</tr>';
 
       allBuff[i] = line;
@@ -451,9 +460,6 @@ log.s = function(msg) {
 log.init = function(msg) {
   if (!Debug.isInitialized()) {
     Debug.init(null, null);
-  }
-  if (msg) {
-    msg = msg.replace(/ /g , '&nbsp;');
   }
   return msg;
 }
