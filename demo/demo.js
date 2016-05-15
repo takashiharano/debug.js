@@ -14,15 +14,16 @@ window.onload = function() {
 //    'specialColor': '#fff',
 //    'timeColor': '#0f0',
 //    'showLineNums': true,
-//    'showTimeStamp': false,
+//    'showTimeStamp': true,
 //    'showClock': false,
-//    'showClearButton': true,
-//    'showCloseButton': false
+//    'showClearButton': false,
+//    'showCloseButton': false,
+//    'enableStopWatch': false
 //  };
 //  Debug.init(null, options);
 
 // If you want to output the logs to a designated area, pass the element id to 1st argument.
-// Debug.init('test1', options); 
+//  Debug.init('test1', options); 
 
   log.s('Here is the output example!');
   log('The window\'s load event fired.');
