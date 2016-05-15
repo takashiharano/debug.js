@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-13T22:45+09:00
+ * Date: 2016-05-15T14:20+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -27,7 +27,8 @@ function DebugJS() {
     'showTimeStamp': true,
     'showClock': true,
     'showClearButton': true,
-    'showCloseButton': true
+    'showCloseButton': true,
+    'enableStopWatch': true
   };
 
   this.DEFAULT_STYLE = {
@@ -44,11 +45,8 @@ function DebugJS() {
 
   this.id = null;
   this.msgArea = null;
-  this.automode = false;
-  this.show = false;
   this.options = null;
   this.DEFAULT_ELM_ID = '_debug_';
-  this.intervalId = null;
 }
 
 DebugJS.getTime = function() {
@@ -82,6 +80,14 @@ DebugJS.getTime = function() {
   return dateTime;
 }
 
+DebugJS.STATE_SHOW = 0x1;
+DebugJS.STATE_AUTO = 0x2;
+DebugJS.STATE_SHOW_CLOCK = 0x4;
+DebugJS.STATE_STOP_WATCH_RUNNING = 0x8;
+DebugJS.STATE_AUTO_REFRESH = 0x40000000;
+DebugJS.STATE_PRINT_LOG = 0x80000000;
+DebugJS.status = 0;
+
 DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 
 DebugJS.time = function() {
@@ -90,16 +96,107 @@ DebugJS.time = function() {
   return tm;
 }
 
+DebugJS.UPDATE_INTERVAL_NORMAL = 1000;
+DebugJS.UPDATE_INTERVAL_STOPWATCH = 500;
+DebugJS.updateInterval = DebugJS.UPDATE_INTERVAL_NORMAL;
+
+DebugJS.swStartTime = 0;
+DebugJS.swElapsedTime = 0;
+DebugJS.elapsedTime = '00:00:00 ';
+DebugJS.dot = '&nbsp;';
+
+DebugJS.startStopStopWatch = function() {
+  if (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING) {
+    // stop
+    DebugJS.status &= ~DebugJS.STATE_STOP_WATCH_RUNNING;
+    DebugJS.updateInterval = DebugJS.UPDATE_INTERVAL_NORMAL;
+  } else {
+    // start
+    DebugJS.status |= DebugJS.STATE_STOP_WATCH_RUNNING;
+    DebugJS.updateInterval = DebugJS.UPDATE_INTERVAL_STOPWATCH;
+    DebugJS.swStartTime = (new Date()).getTime() - DebugJS.swElapsedTime;
+    DebugJS.updateStopWatch();
+  }
+}
+
+DebugJS.updateStopWatch = function() {
+  if (!(DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING)) return;
+  var swCurrentTime = (new Date()).getTime();
+  DebugJS.swElapsedTime = swCurrentTime - DebugJS.swStartTime;
+  DebugJS.elapsedTime = DebugJS.getPassedTimeStr(DebugJS.swElapsedTime);
+  if (DebugJS.dot == '&nbsp;') {
+    DebugJS.dot = '.';
+  } else {
+    DebugJS.dot = '&nbsp;';
+  }
+  DebugJS.elapsedTime += DebugJS.dot;
+}
+
+DebugJS.resetStopwatch = function() {
+  DebugJS.swStartTime = (new Date()).getTime();
+
+  DebugJS.elapsedTime = DebugJS.getPassedTimeStr(0) + '&nbsp;';
+  DebugJS.swElapsedTime = 0;
+}
+
+DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
+  var passedHour;
+  var passedMin;
+  var passedSec;
+  var passedMsec;
+
+  var passedTimeSec = Math.floor((swPassedTimeMsec) / 1000);
+  var wkPassedTimeSec = passedTimeSec;
+
+  passedSec = wkPassedTimeSec;
+
+  if (wkPassedTimeSec >= 3600) {
+    passedHour = Math.floor((wkPassedTimeSec / 3600));
+    wkPassedTimeSec = (wkPassedTimeSec - (passedHour * 3600));
+  } else {
+    passedHour = 0;
+  }
+
+  if (wkPassedTimeSec >= 60) {
+    passedMin  = Math.floor((wkPassedTimeSec / 60));
+    wkPassedTimeSec = (wkPassedTimeSec - (passedMin * 60));
+  } else {
+    passedMin = 0;
+  }
+
+  passedSec = wkPassedTimeSec;
+  passedMsec = Math.floor(swPassedTimeMsec & 999);
+
+  if (passedHour < 10) passedHour = '0' + passedHour;
+  if (passedMin < 10) passedMin = '0' + passedMin;
+  if (passedSec< 10) passedSec = '0' + passedSec;
+  if (passedMsec< 10) {passedMsec = '00' + passedMsec;}
+  else if (passedMsec< 100) passedMsec = '0' + passedMsec;
+
+  var retStr = passedHour;
+  retStr += ':' + passedMin;
+  retStr += ':' + passedSec;
+//  retStr += '.' + passedMsec;
+
+  return retStr;
+}
+
 DebugJS.prototype = {
   init:  function(elmId, options) {
     if(!this.ENABLE){return;}
 
     if (elmId == null) {
       this.id = this.DEFAULT_ELM_ID;
-      this.automode = true;
+      DebugJS.status |= DebugJS.STATE_AUTO;
     } else {
       this.id = elmId;
       this.msgArea = document.getElementById(this.id);
+    }
+
+    if (this.DEFAULT_SHOW) {
+      DebugJS.status |= DebugJS.STATE_SHOW;
+    } else {
+      DebugJS.status &= ~DebugJS.STATE_SHOW;
     }
 
     if (options == null) {
@@ -107,7 +204,10 @@ DebugJS.prototype = {
     } else {
       this.options = options;
     }
-    this.show = this.DEFAULT_SHOW;
+
+    if (this.options.showClock) {
+      DebugJS.status |= DebugJS.STATE_SHOW_CLOCK;
+    }
 
     if (this.msgArea == null) {
       var div = document.createElement('div');
@@ -141,9 +241,17 @@ DebugJS.prototype = {
       'margin': '0'
     };
 
-    styles['#' + this.id + ' a'] = {'color': '#00bfff'};
+    styles['#' + this.id + ' a'] = {
+      'color': '#00bfff',
+      'text-decoration': 'none'
+    };
 
-    if (this.automode) {
+    styles['#' + this.id + ' a:hover'] = {
+      'color': '#fff',
+      'text-decoration': 'none'
+    };
+
+    if (DebugJS.status & DebugJS.STATE_AUTO) {
       var wkStyle = styles['#' + this.id];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
@@ -152,7 +260,7 @@ DebugJS.prototype = {
       wkStyle.background = 'rgba(0,0,0,0.7)';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
       wkStyle['z-index'] = 0x7fffffff;
-      if (!this.show) {
+      if (!(DebugJS.status & DebugJS.STATE_SHOW)) {
         wkStyle.display = 'none';
       }
     }
@@ -161,7 +269,7 @@ DebugJS.prototype = {
 
     this.clearMessage();
 
-    if (this.automode) {
+    if (DebugJS.status & DebugJS.STATE_AUTO) {
       this.setupMove();
       this.setupKeyHandler();
     }
@@ -176,6 +284,12 @@ DebugJS.prototype = {
   },
 
   printMessage: function() {
+    DebugJS.status |= DebugJS.STATE_PRINT_LOG;
+    this._printMessage();
+    DebugJS.status &= ~DebugJS.STATE_PRINT_LOG;
+  },
+
+  _printMessage: function() {
     var buf = this.msgBuff.getAll();
     var msg = '';
     msg += '<div style="padding:2px 2px 5px 2px;background:rgba(0,68,118,0);">';
@@ -183,13 +297,24 @@ DebugJS.prototype = {
       msg += '<a href="" onclick="Debug.clearMessage();return false;">[clear]</a>';
     }
 
-    if (this.options.showClock) {
+    if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
       var dt = DebugJS.getTime();
       var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-      msg += '<span style="margin-left:10px;font-size:13px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
+      msg += '<span style="margin-left:10px;font-size:14px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
     }
 
-    if (this.automode && this.options.showCloseButton) {
+    if (this.options.enableStopWatch) {
+      DebugJS.updateStopWatch();
+      msg += '<span style="margin-left:15px;"><a href="" onclick="DebugJS.startStopStopWatch();return false;">';
+      if (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING) {
+        msg += '■';
+      } else {
+        msg += '▶';
+      }
+      msg += '</a> ' + DebugJS.elapsedTime + ' <a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a></span>';
+    }
+
+    if ((DebugJS.status & DebugJS.STATE_AUTO) && this.options.showCloseButton) {
       msg += '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;text-decoration:none;">×</a></span>';
     }
     msg += '</div>';
@@ -203,8 +328,15 @@ DebugJS.prototype = {
     msg += '</div>';
     this.msgArea.innerHTML = msg;
 
-    if ((this.options.showClock) && (this.intervalId == null)) {
-      this.intervalId = setInterval('Debug.printMessage()', 1000);
+    if (!(DebugJS.status & DebugJS.STATE_AUTO_REFRESH)) {
+      if ((DebugJS.status & DebugJS.STATE_SHOW_CLOCK) || (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING)) {
+        setTimeout('Debug._printMessage()', DebugJS.updateInterval);
+        DebugJS.status |= DebugJS.STATE_AUTO_REFRESH;
+      }
+    } else {
+      if (!(DebugJS.status & DebugJS.STATE_PRINT_LOG)) {
+        setTimeout('Debug._printMessage()', DebugJS.updateInterval);
+      }
     }
   },
 
@@ -276,7 +408,7 @@ DebugJS.prototype = {
 
   keyhandler: function(e) {
     if (e.keyCode == 113) { // F2
-      if (Debug.show) {
+      if (DebugJS.status & DebugJS.STATE_SHOW) {
         Debug.hideDebugWindow();
       } else {
         Debug.showDebugWindow();
@@ -291,7 +423,7 @@ DebugJS.prototype = {
     var styles = {};
     styles[selector] = {'display': 'none'};
     Debug.applyStyles(styles);
-    Debug.show = false;
+    DebugJS.status &= ~DebugJS.STATE_SHOW;
   },
 
   showDebugWindow: function() {
@@ -299,7 +431,7 @@ DebugJS.prototype = {
     var styles = {};
     styles[selector] = {'display': 'block'};
     Debug.applyStyles(styles);
-    Debug.show = true;
+    DebugJS.status |= DebugJS.STATE_SHOW;
   }
 };
 
