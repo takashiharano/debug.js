@@ -17,6 +17,7 @@ window.onload = function() {
 //    'showTimeStamp': true,
 //    'showClock': false,
 //    'showClearButton': false,
+//    'showWinSize': false,
 //    'showCloseButton': false,
 //    'enableStopWatch': false
 //  };

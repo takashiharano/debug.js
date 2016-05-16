@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-15T14:20+09:00
+ * Date: 2016-05-17T00:03+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -28,6 +28,7 @@ function DebugJS() {
     'showClock': true,
     'showClearButton': true,
     'showCloseButton': true,
+    'showWinSize': true,
     'enableStopWatch': true
   };
 
@@ -181,6 +182,18 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
   return retStr;
 }
 
+DebugJS.winSize = '';
+DebugJS.getWindowSize = function() {
+  var sW = document.documentElement.clientWidth;
+  var sH = document.documentElement.clientHeight;
+  DebugJS.winSize = "W=" + sW + " / H=" + sH;
+}
+
+DebugJS.resizeHandler = function() {
+  DebugJS.getWindowSize();
+  Debug.printMessage();
+}
+
 DebugJS.prototype = {
   init:  function(elmId, options) {
     if(!this.ENABLE){return;}
@@ -271,7 +284,11 @@ DebugJS.prototype = {
 
     if (DebugJS.status & DebugJS.STATE_AUTO) {
       this.setupMove();
+
       this.setupKeyHandler();
+
+      DebugJS.getWindowSize();
+      window.addEventListener('resize', DebugJS.resizeHandler, true)
     }
   },
 
@@ -301,6 +318,10 @@ DebugJS.prototype = {
       var dt = DebugJS.getTime();
       var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
       msg += '<span style="margin-left:10px;font-size:14px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
+    }
+
+    if (this.options.showWinSize) {
+      msg += '<span style="margin-left:15px;">' + DebugJS.winSize + '</span>';
     }
 
     if (this.options.enableStopWatch) {
@@ -403,7 +424,7 @@ DebugJS.prototype = {
   },
 
   setupKeyHandler: function() {
-    window.addEventListener('keydown', this.keyhandler, false);
+    window.addEventListener('keydown', this.keyhandler, true);
   },
 
   keyhandler: function(e) {
