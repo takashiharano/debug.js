@@ -1,11 +1,11 @@
 body {
-  font-family: "Meiryo";
+  font-family: "Arial";
   font-size: 12pt;
 }
 
 .title {
   position: absolute;
-  font-size: 18pt;
+  font-size: 32px;
   font-weight: bold;
   top: 0;
   bottom: 0;
@@ -14,11 +14,12 @@ body {
 }
 
 .caption {
+  font-size: 24px;
   font-weight: bold;
 }
 
 .description {
-  color: #888;
+  color: #111;
 }
 
 .annotation {
@@ -35,6 +36,8 @@ body {
 }
 
 .code1 {
+  font-family: Arial;
+  font-size: 18px;
   color: #0070c0;
 }
 
