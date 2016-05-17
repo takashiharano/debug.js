@@ -5,16 +5,16 @@ body {
 
 .title {
   position: absolute;
-  font-size: 32px;
+  font-size: 42px;
   font-weight: bold;
   top: 0;
   bottom: 0;
   margin: auto;
-  height: 38px;
+  height: 50px;
 }
 
 .caption {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
 }
 
@@ -50,7 +50,7 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 50px;
+  height: 75px;
   background: #00a8ff;
   color: #fff;
   z-index: 1;
@@ -58,7 +58,7 @@ body {
 
 .content {
   position: relative;
-  top: 50px;
+  top: 80px;
 }
 
 .button {

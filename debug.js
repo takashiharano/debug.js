@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-17T00:03+09:00
+ * Date: 2016-05-17T23:30+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -14,8 +14,6 @@ function DebugJS() {
   this.DEFAULT_OPTIONS = {
     'buffSize': 20,
     'width': 500,
-    'top': 25,
-    'right': 30,
     'errorColor': '#d44',
     'warnColor': '#ed0',
     'infoColor': '#fff',
@@ -23,12 +21,14 @@ function DebugJS() {
     'verboseColor': '#ccc',
     'specialColor': '#fff',
     'timeColor': '#0f0',
+    'systemInfoColor': '#ddd',
     'showLineNums': true,
     'showTimeStamp': true,
     'showClock': true,
     'showClearButton': true,
     'showCloseButton': true,
     'showWinSize': true,
+    'showMousePosition': false,
     'enableStopWatch': true
   };
 
@@ -103,7 +103,7 @@ DebugJS.updateInterval = DebugJS.UPDATE_INTERVAL_NORMAL;
 
 DebugJS.swStartTime = 0;
 DebugJS.swElapsedTime = 0;
-DebugJS.elapsedTime = '00:00:00 ';
+DebugJS.elapsedTime = '00:00:00&nbsp;';
 DebugJS.dot = '&nbsp;';
 
 DebugJS.startStopStopWatch = function() {
@@ -186,11 +186,21 @@ DebugJS.winSize = '';
 DebugJS.getWindowSize = function() {
   var sW = document.documentElement.clientWidth;
   var sH = document.documentElement.clientHeight;
-  DebugJS.winSize = "W=" + sW + " / H=" + sH;
+  DebugJS.winSize = "w=" + sW + "/h=" + sH;
 }
-
 DebugJS.resizeHandler = function() {
   DebugJS.getWindowSize();
+  Debug.printMessage();
+}
+
+DebugJS.mousePos = 'x=-/y=-';
+DebugJS.getMousePosition = function(e) {
+  var posX = e.clientX;
+  var posY = e.clientY;
+  DebugJS.mousePos = "x=" + posX + "/y=" + posY;
+}
+DebugJS.mousemoveHandler = function(e) {
+  DebugJS.getMousePosition(e);
   Debug.printMessage();
 }
 
@@ -268,8 +278,8 @@ DebugJS.prototype = {
       var wkStyle = styles['#' + this.id];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
-      wkStyle.top = this.options.top  + 'px';
-      wkStyle.left = (window.innerWidth - this.options.width - this.options.right) + 'px';
+      wkStyle.top = (document.documentElement.clientHeight - 300) + 'px';
+      wkStyle.left = (document.documentElement.clientWidth - this.options.width - 30) + 'px';
       wkStyle.background = 'rgba(0,0,0,0.7)';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
       wkStyle['z-index'] = 0x7fffffff;
@@ -287,8 +297,14 @@ DebugJS.prototype = {
 
       this.setupKeyHandler();
 
-      DebugJS.getWindowSize();
-      window.addEventListener('resize', DebugJS.resizeHandler, true)
+      if (this.options.showWinSize) {
+        DebugJS.getWindowSize();
+        window.addEventListener('resize', DebugJS.resizeHandler, true);
+      }
+
+      if (this.options.showMousePosition) {
+        window.addEventListener('mousemove', DebugJS.mousemoveHandler, true);
+      }
     }
   },
 
@@ -309,37 +325,49 @@ DebugJS.prototype = {
   _printMessage: function() {
     var buf = this.msgBuff.getAll();
     var msg = '';
-    msg += '<div style="padding:2px 2px 5px 2px;background:rgba(0,68,118,0);">';
+    msg += '<div style="padding:2px 2px 2px 2px;background:rgba(0,68,118,0);">';
+
+    // Clear Button
     if (this.options.showClearButton) {
-      msg += '<a href="" onclick="Debug.clearMessage();return false;">[clear]</a>';
+      msg += '<span style="margin-right:2px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
     }
 
+    // Clock
     if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
       var dt = DebugJS.getTime();
       var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-      msg += '<span style="margin-left:10px;font-size:14px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
+      msg += '<span style=";font-size:12px;margin-right:6px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
     }
 
+    // Position
+    if (this.options.showMousePosition) {
+      msg += '<span style="margin-right:6px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.mousePos + '</span>';
+    }
+
+    // Window Size
     if (this.options.showWinSize) {
-      msg += '<span style="margin-left:15px;">' + DebugJS.winSize + '</span>';
+      msg += '<span style="margin-right:6px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.winSize + '</span>';
     }
 
+    // StopWatch
     if (this.options.enableStopWatch) {
       DebugJS.updateStopWatch();
-      msg += '<span style="margin-left:15px;"><a href="" onclick="DebugJS.startStopStopWatch();return false;">';
+      msg += '<span><a href="" onclick="DebugJS.startStopStopWatch();return false;">';
       if (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING) {
         msg += '■';
       } else {
         msg += '▶';
       }
-      msg += '</a> ' + DebugJS.elapsedTime + ' <a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a></span>';
+      msg += '</a> ' + DebugJS.elapsedTime + '<a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a></span>';
     }
 
+    // Close Button
     if ((DebugJS.status & DebugJS.STATE_AUTO) && this.options.showCloseButton) {
       msg += '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;text-decoration:none;">×</a></span>';
     }
     msg += '</div>';
 
+    // Log Area
     msg += '<div style="position:relative;padding:0 .3em .3em .3em;">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
@@ -347,6 +375,7 @@ DebugJS.prototype = {
     }
     msg += '</table>';
     msg += '</div>';
+
     this.msgArea.innerHTML = msg;
 
     if (!(DebugJS.status & DebugJS.STATE_AUTO_REFRESH)) {
