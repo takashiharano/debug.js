@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-18T01:40+09:00
+ * Date: 2016-05-18T07:35+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -229,10 +229,6 @@ DebugJS.prototype = {
       this.options = options;
     }
 
-    if (this.options.showClock) {
-      DebugJS.status |= DebugJS.STATE_SHOW_CLOCK;
-    }
-
     if (this.debugWindow == null) {
       var div = document.createElement('div');
       div.id = this.id;
@@ -245,26 +241,38 @@ DebugJS.prototype = {
     this.debugWindow.appendChild(this.infoArea);
     this.initInfoArea();
 
-    this.clrBtnArea = document.createElement('span');
-    this.infoArea.appendChild(this.clrBtnArea);
+    if (this.options.showClearButton) {
+      this.clrBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.clrBtnArea);
+    }
 
-    this.clockArea = document.createElement('span');
-    this.infoArea.appendChild(this.clockArea);
+    if (this.options.showClock) {
+      this.clockArea = document.createElement('span');
+      this.infoArea.appendChild(this.clockArea);
+    }
 
-    this.mousePositionArea = document.createElement('span');
-    this.infoArea.appendChild(this.mousePositionArea);
+    if (this.options.showMousePosition) {
+      this.mousePositionArea = document.createElement('span');
+      this.infoArea.appendChild(this.mousePositionArea);
+    }
 
-    this.windowSizeArea = document.createElement('span');
-    this.infoArea.appendChild(this.windowSizeArea);
+    if (this.options.showWinSize) {
+      this.windowSizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.windowSizeArea);
+    }
 
-    this.swBtnArea = document.createElement('span');
-    this.infoArea.appendChild(this.swBtnArea);
+    if (this.options.enableStopWatch) {
+      this.swBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.swBtnArea);
 
-    this.swArea = document.createElement('span');
-    this.infoArea.appendChild(this.swArea);
+      this.swArea = document.createElement('span');
+      this.infoArea.appendChild(this.swArea);
+    }
 
-    this.closeBtnArea = document.createElement('span');
-    this.infoArea.appendChild(this.closeBtnArea);
+    if (this.options.showCloseButton) {
+      this.closeBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.closeBtnArea);
+    }
 
     this.blankArea = document.createElement('div');
     this.debugWindow.appendChild(this.blankArea);
@@ -349,14 +357,33 @@ DebugJS.prototype = {
     }
   },
 
-  updateDebugWindow: function() {
-    this.updateClrBtnArea();
-    this.updateClockArea();
-    this.updateMousePositionArea();
-    this.updateWindowSizeArea();
-    this.updateSwBtnArea();
-    this.updateSwArea();
-    this.updateCloseBtnArea();
+  initDebugWindow: function() {
+    if (this.options.showClearButton) {
+      this.updateClrBtnArea();
+    }
+
+    if (this.options.showClock) {
+      DebugJS.status |= DebugJS.STATE_SHOW_CLOCK;
+      this.updateClockArea();
+    }
+
+    if (this.options.showMousePosition) {
+      this.updateMousePositionArea();
+    }
+
+    if (this.options.showWinSize) {
+      this.updateWindowSizeArea();
+    }
+
+    if (this.options.enableStopWatch) {
+      this.updateSwBtnArea();
+      this.updateSwArea();
+    }
+
+    if (this.options.showCloseButton) {
+      this.updateCloseBtnArea();
+    }
+
     this.printMessage();
   },
 
@@ -374,7 +401,7 @@ DebugJS.prototype = {
   updateClockArea: function() {
     var dt = DebugJS.getTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;margin-right:6px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
+    var msg = '<span style=";font-size:12px;margin-right:4px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
     if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -384,23 +411,24 @@ DebugJS.prototype = {
 
   // Update Mouse Position
   updateMousePositionArea: function() {
-    this.mousePositionArea.innerHTML = '<span style="margin-right:6px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.mousePos + '</span>';
+    this.mousePositionArea.innerHTML = '<span style="margin-right:4px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.mousePos + '</span>';
   },
 
   // Update Window Size
   updateWindowSizeArea: function() {
-    this.windowSizeArea.innerHTML = '<span style="margin-right:6px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.winSize + '</span>';
+    this.windowSizeArea.innerHTML = '<span style="margin-right:4px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.winSize + '</span>';
   },
 
   // Update Stop Watch Button
   updateSwBtnArea: function() {
-    var msg = '<span><a href="" onclick="DebugJS.startStopStopWatch();return false;">';
+    var msg = '<span><a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a>';
+    msg += '<a href="" onclick="DebugJS.startStopStopWatch();return false;">';
     if (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING) {
-      msg += '■';
+      msg += '||';
     } else {
-      msg += '▶';
+      msg += '>>';
     }
-    msg += '</a><a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a></span>';
+    msg += '</a></span>';
     this.swBtnArea.innerHTML = msg;
   },
 
@@ -417,7 +445,7 @@ DebugJS.prototype = {
 
   // Update Close Button
   updateCloseBtnArea: function() {
-    this.closeBtnArea.innerHTML = '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;text-decoration:none;">×</a></span>'
+    this.closeBtnArea.innerHTML = '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;">×</a></span>'
   },
 
   // Init Blank Area
@@ -694,7 +722,7 @@ log.s = function(msg) {
 log.init = function(msg) {
   if (!Debug.isInitialized()) {
     Debug.init(null, null);
-    Debug.updateDebugWindow();
+    Debug.initDebugWindow();
   }
   return msg;
 }
