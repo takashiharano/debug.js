@@ -3,14 +3,24 @@ body {
   font-size: 20px;
 }
 
+a {
+  color: #00f;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 .title {
   position: absolute;
-  font-size: 42px;
+  font-size: 54px;
   font-weight: bold;
   top: 0;
   bottom: 0;
   margin: auto;
-  height: 50px;
+  height: 70px;
+  margin-left: 5px;
 }
 
 .caption {
@@ -69,7 +79,7 @@ body {
   display:block;
   text-align:center;
   padding:8px 0 10px;
-  margin: 10px;
+  margin: 4px 4px 12px 4px;
   color:#fff;
   background: #0068cc;
   border-radius: 5px;
