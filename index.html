@@ -23,7 +23,7 @@
 
 <div class="description">
 That's it!<br><br>
-The log area is draggable and you can switch hide/show by F2 key.<br>
+The debug window is draggable and you can switch hide/show by F2 key.<br>
 
 </div>
 
@@ -84,7 +84,7 @@ var options = {
 Debug.init(null, options);
 </pre>
 
-<div class="description">You can also use the function with log type.</div>
+<div class="description">You can also use the log function with log type.</div>
 <pre class="code emphasis">
 log.e('error log');
 log.w('warn log');
@@ -126,8 +126,10 @@ log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstu
 log('&nbsp;&nbsp;&nbsp;&nbsp;leading spaces');
 <a href="" class="button" onclick="log('    leading spaces');return false;">spaces</a>
 
+<!--
 log('&lt;img src=img.jpg&gt;');
 <a href="" class="button" onclick="log('<img src=img.jpg>');return false;">image</a>
+-->
 
 <!--
 <table>
