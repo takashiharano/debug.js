@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>debug.js demo</title>
-<script src="debug.js"></script>
+<script src="../debug.js"></script>
 <link rel="stylesheet" href="demo.css" />
 <script src="demo.js"></script>
 </head>
@@ -13,10 +13,18 @@
 </div>
 
 <div class="content">
+
+<div class="caption">Download:</div>
+<div class="description"><a href="https://github.com/takashiharano/debug.js">https://github.com/takashiharano/debug.js</a></div>
+
+<br>
+
 <div class="caption">HTML:</div>
 <div class="description">include the script file.</div>
 <div class="code1">&lt;script src="debug.js"&gt;&lt;/script&gt;</div>
+
 <br>
+
 <div class="caption">JavaScript:</div>
 <div class="description">put the log messages anywhere you want.</div>
 <div class="code1">log(&lt;message&gt;);</div><br>
@@ -63,8 +71,6 @@ The debug window is draggable and you can switch hide/show by F2 key.<br>
 var options = {
   'buffSize': 10,
   'width': 500,
-  'top': 25,
-  'right': 30,
   'errorColor': '#d44',
   'warnColor': '#ed0',
   'infoColor': '#fff',
@@ -72,13 +78,15 @@ var options = {
   'verboseColor': '#ccc',
   'specialColor': '#fff',
   'timeColor': '#0f0',
+  'systemInfoColor': '#ddd',
   'showLineNums': true,
-  'showTimeStamp': false,
-  'showClock': false,
+  'showTimeStamp': true,
+  'showClock': true,
   'showClearButton': true,
-  'showCloseButton': false,
-  'showWinSize': false,
-  'enableStopWatch': false
+  'showCloseButton': true,
+  'showWinSize': true,
+  'showMousePosition': true,
+  'enableStopWatch': true
 };
 
 Debug.init(null, options);
@@ -125,6 +133,8 @@ log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstu
 
 log('&nbsp;&nbsp;&nbsp;&nbsp;leading spaces');
 <a href="" class="button" onclick="log('    leading spaces');return false;">spaces</a>
+
+<br>
 
 <!--
 log('&lt;img src=img.jpg&gt;');
