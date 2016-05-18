@@ -87,6 +87,7 @@ a:hover {
 
 .button:hover {
   background: #00a8ff;
+  text-decoration: none;
 }
 
 /*td {*/
