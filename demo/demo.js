@@ -4,8 +4,6 @@ window.onload = function() {
 //  var options = {
 //    'buffSize': 10,
 //    'width': 500,
-//    'top': 25,
-//    'right': 30,
 //    'errorColor': '#d44',
 //    'warnColor': '#ed0',
 //    'infoColor': '#fff',
@@ -13,21 +11,25 @@ window.onload = function() {
 //    'verboseColor': '#ccc',
 //    'specialColor': '#fff',
 //    'timeColor': '#0f0',
+//    'systemInfoColor': '#ddd',
 //    'showLineNums': true,
 //    'showTimeStamp': true,
-//    'showClock': false,
-//    'showClearButton': false,
-//    'showWinSize': false,
-//    'showCloseButton': false,
-//    'enableStopWatch': false
+//    'showClock': true,
+//    'showClearButton': true,
+//    'showCloseButton': true,
+//    'showWinSize': true,
+//    'showMousePosition': true,
+//    'enableStopWatch': true
 //  };
 //  Debug.init(null, options);
 
 // If you want to output the logs to a designated area, pass the element id to 1st argument.
 //  Debug.init('test1', options); 
 
-  log.s('Here is the output example!');
+  log('Here is the output example!');
   log('The window\'s load event fired.');
+
+  setInterval('printTime()', 30000);
 }
 
 document.onkeydown = function(e) {
@@ -40,4 +42,10 @@ document.onmousemove = function(e) {
 
 document.onclick = function(e) {
   //log('click count: ' + event.detail);
+}
+
+function printTime() {
+  var dt = DebugJS.getTime();
+  var tm = dt.hh + ':' + dt.mi + ':' + dt.ss;
+  log.d('The time is ' + tm);
 }

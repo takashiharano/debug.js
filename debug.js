@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-18T07:35+09:00
+ * Date: 2016-05-18T21:18+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -92,10 +92,10 @@ DebugJS.getTime = function() {
 }
 
 DebugJS.STATE_SHOW = 0x1;
-DebugJS.STATE_AUTO = 0x2;
+DebugJS.STATE_DYNAMIC = 0x2;
 DebugJS.STATE_SHOW_CLOCK = 0x4;
-DebugJS.STATE_STOP_WATCH_RUNNING = 0x8;
-DebugJS.STATE_AUTO_REFRESH = 0x80000000;
+DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
+DebugJS.STATE_INITIALIZED = 0x80000000;
 DebugJS.status = 0;
 
 DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
@@ -111,13 +111,13 @@ DebugJS.swElapsedTime = 0;
 DebugJS.elapsedTime = '00:00:00.000';
 
 DebugJS.startStopStopWatch = function() {
-  if (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING) {
+  if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
     // stop
-    DebugJS.status &= ~DebugJS.STATE_STOP_WATCH_RUNNING;
+    DebugJS.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
     Debug.updateSwBtnArea();
   } else {
     // start
-    DebugJS.status |= DebugJS.STATE_STOP_WATCH_RUNNING;
+    DebugJS.status |= DebugJS.STATE_STOPWATCH_RUNNING;
     DebugJS.swStartTime = (new Date()).getTime() - DebugJS.swElapsedTime;
     DebugJS.updateStopWatch();
     Debug.updateSwArea();
@@ -126,7 +126,7 @@ DebugJS.startStopStopWatch = function() {
 }
 
 DebugJS.updateStopWatch = function() {
-  if (!(DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING)) return;
+  if (!(DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
   var swCurrentTime = (new Date()).getTime();
   DebugJS.swElapsedTime = swCurrentTime - DebugJS.swStartTime;
   DebugJS.elapsedTime = DebugJS.getPassedTimeStr(DebugJS.swElapsedTime);
@@ -211,7 +211,7 @@ DebugJS.prototype = {
 
     if (elmId == null) {
       this.id = this.DEFAULT_ELM_ID;
-      DebugJS.status |= DebugJS.STATE_AUTO;
+      DebugJS.status |= DebugJS.STATE_DYNAMIC;
     } else {
       this.id = elmId;
       this.debugWindow = document.getElementById(this.id);
@@ -315,12 +315,14 @@ DebugJS.prototype = {
       'text-decoration': 'none'
     };
 
-    if (DebugJS.status & DebugJS.STATE_AUTO) {
+    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+      this.setupMove();
+
       var wkStyle = styles['#' + this.id];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
-      wkStyle.top = (document.documentElement.clientHeight - 300) + 'px';
-      wkStyle.left = (document.documentElement.clientWidth - this.options.width - 30) + 'px';
+      wkStyle.top = (document.documentElement.clientHeight - 280) + 'px';
+      wkStyle.left = (document.documentElement.clientWidth - this.options.width - 20) + 'px';
       wkStyle.background = 'rgba(0,0,0,0.7)';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
       wkStyle['z-index'] = 0x7fffffff;
@@ -333,19 +335,17 @@ DebugJS.prototype = {
 
     this.clearMessage();
 
-    if (DebugJS.status & DebugJS.STATE_AUTO) {
-      this.setupMove();
-
+    if (this.options.showCloseButton) {
       this.setupKeyHandler();
+    }
 
-      if (this.options.showWinSize) {
-        DebugJS.getWindowSize();
-        window.addEventListener('resize', DebugJS.resizeHandler, true);
-      }
+    if (this.options.showWinSize) {
+      DebugJS.getWindowSize();
+      window.addEventListener('resize', DebugJS.resizeHandler, true);
+    }
 
-      if (this.options.showMousePosition) {
-        window.addEventListener('mousemove', DebugJS.mousemoveHandler, true);
-      }
+    if (this.options.showMousePosition) {
+      window.addEventListener('mousemove', DebugJS.mousemoveHandler, true);
     }
   },
 
@@ -357,9 +357,17 @@ DebugJS.prototype = {
     }
   },
 
+  isWindowInitialized: function() {
+    if (DebugJS.status & DebugJS.STATE_INITIALIZED) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
   initDebugWindow: function() {
     if (this.options.showClearButton) {
-      this.updateClrBtnArea();
+      this.initClrBtnArea();
     }
 
     if (this.options.showClock) {
@@ -381,10 +389,12 @@ DebugJS.prototype = {
     }
 
     if (this.options.showCloseButton) {
-      this.updateCloseBtnArea();
+      this.initCloseBtnArea();
     }
 
     this.printMessage();
+
+    DebugJS.status |= DebugJS.STATE_INITIALIZED;
   },
 
   // Init Info Area
@@ -393,7 +403,7 @@ DebugJS.prototype = {
   },
 
   // Update Clear Button
-  updateClrBtnArea: function() {
+  initClrBtnArea: function() {
     this.clrBtnArea.innerHTML = '<span style="margin-right:2px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
   },
 
@@ -423,7 +433,7 @@ DebugJS.prototype = {
   updateSwBtnArea: function() {
     var msg = '<span><a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a>';
     msg += '<a href="" onclick="DebugJS.startStopStopWatch();return false;">';
-    if (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING) {
+    if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
     } else {
       msg += '>>';
@@ -438,17 +448,17 @@ DebugJS.prototype = {
     var msg = DebugJS.elapsedTime;
     this.swArea.innerHTML = msg;
 
-    if (DebugJS.status & DebugJS.STATE_STOP_WATCH_RUNNING) {
+    if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       setTimeout('Debug.updateSwArea()', 50);
     }
   },
 
-  // Update Close Button
-  updateCloseBtnArea: function() {
+  // Close Button
+  initCloseBtnArea: function() {
     this.closeBtnArea.innerHTML = '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;">×</a></span>'
   },
 
-  // Init Blank Area
+  // Blank Area
  initBlankArea: function() {
     this.blankArea.innerHTML = '<div style="height:4px;"></div>';
   },
@@ -722,8 +732,13 @@ log.s = function(msg) {
 log.init = function(msg) {
   if (!Debug.isInitialized()) {
     Debug.init(null, null);
+
+  }
+
+  if (!Debug.isWindowInitialized()) {
     Debug.initDebugWindow();
   }
+
   return msg;
 }
 
