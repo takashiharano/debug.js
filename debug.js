@@ -5,7 +5,7 @@
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
  *
- * Date: 2016-05-18T21:18+09:00
+ * Date: 2016-05-19T22:30+09:00
  */
 function DebugJS() {
   this.ENABLE = true;
@@ -187,18 +187,18 @@ DebugJS.winSize = '';
 DebugJS.getWindowSize = function() {
   var sW = document.documentElement.clientWidth;
   var sH = document.documentElement.clientHeight;
-  DebugJS.winSize = "w=" + sW + "/h=" + sH;
+  DebugJS.winSize = "w=" + sW + ",h=" + sH;
 }
 DebugJS.resizeHandler = function() {
   DebugJS.getWindowSize();
   Debug.updateWindowSizeArea();
 }
 
-DebugJS.mousePos = 'x=-/y=-';
+DebugJS.mousePos = 'x=-,y=-';
 DebugJS.getMousePosition = function(e) {
   var posX = e.clientX;
   var posY = e.clientY;
-  DebugJS.mousePos = "x=" + posX + "/y=" + posY;
+  DebugJS.mousePos = "x=" + posX + ",y=" + posY;
 }
 DebugJS.mousemoveHandler = function(e) {
   DebugJS.getMousePosition(e);
