@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '2016-05-21T14:07+09:00';
+  this.v = '2016-05-21T14:21+09:00';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -723,13 +723,13 @@ DebugJS.prototype = {
         Debug.hideDebugWindow();
         break;
       case 38: // ↑
-        if (document.activeElement == cmdLine) {
-          cmdLine.value = DebugJS.cmdHistory;
+        if (document.activeElement == Debug.cmdLine) {
+          Debug.cmdLine.value = DebugJS.cmdHistory;
         }
         break;
       case 40: // ↓
-        if (document.activeElement == cmdLine) {
-          cmdLine.value = '';
+        if (document.activeElement == Debug.cmdLine) {
+          Debug.cmdLine.value = '';
         }
         break;
       case 113: // F2
