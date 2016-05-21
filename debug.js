@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '2016-05-21T14:34+09:00';
+  this.v = '2016-05-21T15:25+09:00';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -195,10 +195,10 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
 DebugJS.windowSize = '';
 DebugJS.clientSize = '';
 DebugJS.resizeHandler = function() {
-  DebugJS.windowSize = 'wW=' + window.outerHeight + ',wH=' + window.outerHeight;
+  DebugJS.windowSize = 'w=' + window.outerWidth + ',h=' + window.outerHeight;
   Debug.updateWindowSizeArea();
 
-  DebugJS.clientSize = 'cW=' + document.documentElement.clientWidth + ',cH=' + document.documentElement.clientHeight;
+  DebugJS.clientSize = 'w=' + document.documentElement.clientWidth + ',h=' + document.documentElement.clientHeight;
   Debug.updateClientSizeArea();
 }
 
@@ -575,23 +575,23 @@ DebugJS.prototype = {
 
   // Update Mouse Position
   updateMousePositionArea: function() {
-    this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:95px;">' + DebugJS.mousePos + '</span>';
+    this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">POS:' + DebugJS.mousePos + '</span>';
   },
 
   // Update Client Size
   updateClientSizeArea: function() {
-    this.clientSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:108px;">' + DebugJS.clientSize + '</span>';
+    this.clientSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">CLI:' + DebugJS.clientSize + '</span>';
   },
 
 
   // Update Window Size
   updateWindowSizeArea: function() {
-    this.windowSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:108px;">' + DebugJS.windowSize + '</span>';
+    this.windowSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">WIN:' + DebugJS.windowSize + '</span>';
   },
 
   // Init Screen Size
   initScreenSizeArea: function() {
-    this.screenSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:108px;">' + 'sW=' + screen.width + ',sH=' + screen.height + '</span>';
+    this.screenSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">SCR:' + 'w=' + screen.width + ',h=' + screen.height + '</span>';
   },
 
   // Update key Down
