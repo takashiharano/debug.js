@@ -1,5 +1,16 @@
+var a = {
+  'key1': 'val1',
+  'key2': 'val2',
+  'key3': '123'
+};
+var b = ['1', '2', '3'];
+var c = 1;
+var d = "string";
+var e = false;
+var f = undefined;
+var g = null;
+
 window.onload = function() {
- 
 //in the absence of this initialization, debug.js works in default configuration.
 //  var options = {
 //    'buffSize': 10,
@@ -13,13 +24,16 @@ window.onload = function() {
 //    'timeColor': '#0f0',
 //    'systemInfoColor': '#ddd',
 //    'showLineNums': true,
-//    'showTimeStamp': true,
-//    'showClock': true,
+//    'showTimeStamp': false,
+//    'showClock': false,
 //    'showClearButton': true,
-//    'showCloseButton': true,
-//    'showWinSize': true,
-//    'showMousePosition': true,
-//    'enableStopWatch': true
+//    'showCloseButton': false,
+//    'showMousePosition': false,
+//    'showWindowSize': false,
+//    'showScreenSize': false,
+//    'showKeyCode': false,
+//    'enableStopWatch': false,
+//    'enableCommandLine': false
 //  };
 //  Debug.init(null, options);
 
@@ -33,7 +47,7 @@ window.onload = function() {
 }
 
 document.onkeydown = function(e) {
-  log('KeyDown: keyCode = ' + e.keyCode);
+  //log('KeyDown: keyCode = ' + e.keyCode);
 }
 
 document.onmousemove = function(e) {

@@ -1,18 +1,17 @@
 /*!
  * debug.js
- *
  * Copyright 2016 Takashi Harano
  * Released under the MIT license
  * https://github.com/takashiharano/debug.js
- *
- * Date: 2016-05-19T22:30+09:00
  */
 function DebugJS() {
+  this.v = '2016-05-21T14:07+09:00';
   this.ENABLE = true;
+
   this.DEFAULT_SHOW = true;
 
   this.DEFAULT_OPTIONS = {
-    'buffSize': 20,
+    'buffSize': 18,
     'width': 500,
     'errorColor': '#d44',
     'warnColor': '#ed0',
@@ -27,9 +26,12 @@ function DebugJS() {
     'showClock': true,
     'showClearButton': true,
     'showCloseButton': true,
-    'showWinSize': true,
     'showMousePosition': true,
-    'enableStopWatch': true
+    'showWindowSize': true,
+    'showScreenSize': true,
+    'showKeyCode': true,
+    'enableStopWatch': true,
+    'enableCommandLine': true
   };
 
   this.DEFAULT_STYLE = {
@@ -45,6 +47,8 @@ function DebugJS() {
   };
 
   this.id = null;
+  this.msgAreaId = null;
+  this.cmdLineId = null;
   this.debugWindow = null;
   this.infoArea = null;
   this.clrBtnArea = null;
@@ -52,10 +56,15 @@ function DebugJS() {
   this.swBtnArea = null;
   this.swArea = null;
   this.mousePositionArea = null;
-  this.windowSizeArea = null;
+  this.screenSizeArea = null;
+  this.clientSizeArea = null;
+  this.keyDownArea = null;
+  this.keyPressArea = null;
+  this.keyUpArea = null;
   this.closeBtnArea = null;
-  this.blankArea = null;
   this.msgArea = null;
+  this.cmdArea = null;
+  this.cmdLine = null;
   this.options = null;
   this.DEFAULT_ELM_ID = '_debug_';
 }
@@ -183,26 +192,94 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
   return retStr;
 }
 
-DebugJS.winSize = '';
-DebugJS.getWindowSize = function() {
-  var sW = document.documentElement.clientWidth;
-  var sH = document.documentElement.clientHeight;
-  DebugJS.winSize = "w=" + sW + ",h=" + sH;
-}
+DebugJS.windowSize = '';
+DebugJS.clientSize = '';
 DebugJS.resizeHandler = function() {
-  DebugJS.getWindowSize();
+  DebugJS.windowSize = 'wW=' + window.outerHeight + ',wH=' + window.outerHeight;
   Debug.updateWindowSizeArea();
+
+  DebugJS.clientSize = 'cW=' + document.documentElement.clientWidth + ',cH=' + document.documentElement.clientHeight;
+  Debug.updateClientSizeArea();
 }
 
 DebugJS.mousePos = 'x=-,y=-';
-DebugJS.getMousePosition = function(e) {
+DebugJS.mousemoveHandler = function(e) {
   var posX = e.clientX;
   var posY = e.clientY;
-  DebugJS.mousePos = "x=" + posX + ",y=" + posY;
-}
-DebugJS.mousemoveHandler = function(e) {
-  DebugJS.getMousePosition(e);
+  DebugJS.mousePos = 'x=' + posX + ',y=' + posY;
   Debug.updateMousePositionArea();
+}
+
+DebugJS.keyDownCode = '-';
+DebugJS.keyDownHandler = function(e) {
+  DebugJS.keyDownCode = e.keyCode;
+  Debug.updateKeyDownArea();
+
+  DebugJS.keyPressCode = '-';
+  Debug.updateKeyPressArea();
+
+  DebugJS.keyUpCode = '-';
+  Debug.updateKeyUpArea();
+}
+
+DebugJS.keyPressCode = '-';
+DebugJS.keyPressHandler = function(e) {
+  DebugJS.keyPressCode = e.keyCode;
+  Debug.updateKeyPressArea();
+}
+
+DebugJS.keyUpCode = '-';
+DebugJS.keyUpHandler = function(e) {
+  DebugJS.keyUpCode = e.keyCode;
+  Debug.updateKeyUpArea();
+}
+
+DebugJS.cmdHistory = '';
+DebugJS.execCmd = function(e) {
+  if (document.activeElement != Debug.cmdLine) {
+    return;
+  }
+
+  var cmd = Debug.cmdLine.value;
+  DebugJS.cmdHistory = cmd;
+  Debug.cmdLine.value = '';
+  log(cmd);
+
+  if (cmd.indexOf("p ") == 0) {
+    DebugJS.execCmdP(cmd);
+    return;
+  }
+
+  switch (cmd) {
+    case 'v':
+      log('Version: ' + Debug.v);
+      break;
+    case 'cls':
+      Debug.clearMessage();
+      break;
+    case 'exit':
+    case '\\q':
+      Debug.hideDebugWindow();
+      break;
+    default:
+      try {
+        eval(cmd);
+      } catch (e) {
+        log.e(e);
+      }
+      break;
+  }
+}
+
+DebugJS.execCmdP = function(cmd) {
+  var v = cmd.replace('p ', '');
+  try {
+    log(eval(v));
+  } catch (e) {
+    log.e(e);
+  }
+  var command = 'if(' + v + ' === null){log("null");}else if(' + v + ' === undefined){log("undefined");}else if(' + v + ' instanceof Array){var arr = "<br>";for(var i in ' + v + '){arr += "[" + i + "] " + ' + v + '[i] + "<br>";}}else if(' + v + ' instanceof Object){var properties = "<br>";for(var prop in ' + v + '){properties += prop + ": " + ' + v + '[prop] + "<br>";}}log(properties);';
+  eval(command);
 }
 
 DebugJS.prototype = {
@@ -216,6 +293,8 @@ DebugJS.prototype = {
       this.id = elmId;
       this.debugWindow = document.getElementById(this.id);
     }
+    this.msgAreaId = this.id + '-msg';
+    this.cmdLineId = this.id + '-cmd';
 
     if (this.DEFAULT_SHOW) {
       DebugJS.status |= DebugJS.STATE_SHOW;
@@ -229,6 +308,7 @@ DebugJS.prototype = {
       this.options = options;
     }
 
+    // create a window
     if (this.debugWindow == null) {
       var div = document.createElement('div');
       div.id = this.id;
@@ -237,30 +317,24 @@ DebugJS.prototype = {
       this.debugWindow = div;
     }
 
+    // info area
     this.infoArea = document.createElement('div');
     this.debugWindow.appendChild(this.infoArea);
     this.initInfoArea();
 
+    // CLR button
     if (this.options.showClearButton) {
       this.clrBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.clrBtnArea);
     }
 
+    // clock
     if (this.options.showClock) {
       this.clockArea = document.createElement('span');
       this.infoArea.appendChild(this.clockArea);
     }
 
-    if (this.options.showMousePosition) {
-      this.mousePositionArea = document.createElement('span');
-      this.infoArea.appendChild(this.mousePositionArea);
-    }
-
-    if (this.options.showWinSize) {
-      this.windowSizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.windowSizeArea);
-    }
-
+    // stop watch
     if (this.options.enableStopWatch) {
       this.swBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.swBtnArea);
@@ -269,17 +343,59 @@ DebugJS.prototype = {
       this.infoArea.appendChild(this.swArea);
     }
 
+    // x button
     if (this.options.showCloseButton) {
       this.closeBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.closeBtnArea);
     }
 
-    this.blankArea = document.createElement('div');
-    this.debugWindow.appendChild(this.blankArea);
-    this.initBlankArea();
+    this.infoArea.appendChild(document.createElement('br'));
 
+    // mouse position
+    if (this.options.showMousePosition) {
+      this.mousePositionArea = document.createElement('span');
+      this.infoArea.appendChild(this.mousePositionArea);
+    }
+
+    // window size
+    if (this.options.showWindowSize) {
+      this.clientSizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.clientSizeArea);
+
+      this.windowSizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.windowSizeArea);
+    }
+
+    // screen size
+    if (this.options.showScreenSize) {
+      this.screenSizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.screenSizeArea);
+    }
+
+    // key code
+    if (this.options.showKeyCode) {
+      this.infoArea.appendChild(document.createElement('br'));
+
+      this.keyDownArea = document.createElement('span');
+      this.infoArea.appendChild(this.keyDownArea);
+
+      this.keyPressArea = document.createElement('span');
+      this.infoArea.appendChild(this.keyPressArea);
+
+      this.keyUpArea = document.createElement('span');
+      this.infoArea.appendChild(this.keyUpArea);
+    }
+
+    // log
     this.msgArea = document.createElement('div');
     this.debugWindow.appendChild(this.msgArea);
+
+    // command line
+    if (this.options.enableCommandLine) {
+      this.cmdArea = document.createElement('div');
+      this.debugWindow.appendChild(this.cmdArea);
+      this.initCmdArea();
+    }
 
     this.msgBuff = new RingBuffer(this.options.buffSize);
 
@@ -306,7 +422,7 @@ DebugJS.prototype = {
     };
 
     styles['#' + this.id + ' a'] = {
-      'color': '#00bfff',
+      'color': '#0cf',
       'text-decoration': 'none'
     };
 
@@ -315,13 +431,24 @@ DebugJS.prototype = {
       'text-decoration': 'none'
     };
 
+    styles['.' + this.id + '-sys-info'] = {
+      'margin-left': '1px',
+      'color': Debug.options.systemInfoColor,
+      'display': 'inline-block'
+    };
+
     if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
       this.setupMove();
+
+      var winTop = 275;
+      if (this.options.enableCommandLine) {
+        winTop = 300;
+      }
 
       var wkStyle = styles['#' + this.id];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
-      wkStyle.top = (document.documentElement.clientHeight - 280) + 'px';
+      wkStyle.top = (document.documentElement.clientHeight - winTop) + 'px';
       wkStyle.left = (document.documentElement.clientWidth - this.options.width - 20) + 'px';
       wkStyle.background = 'rgba(0,0,0,0.7)';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
@@ -332,20 +459,27 @@ DebugJS.prototype = {
     }
 
     this.applyStyles(styles);
-
     this.clearMessage();
+    this.setupKeyHandler();
 
-    if (this.options.showCloseButton) {
-      this.setupKeyHandler();
-    }
-
-    if (this.options.showWinSize) {
-      DebugJS.getWindowSize();
+    if (this.options.showWindowSize) {
       window.addEventListener('resize', DebugJS.resizeHandler, true);
+      DebugJS.resizeHandler();
     }
 
     if (this.options.showMousePosition) {
       window.addEventListener('mousemove', DebugJS.mousemoveHandler, true);
+    }
+
+    if (this.options.showKeyCode) {
+      window.addEventListener('keydown', DebugJS.keyDownHandler, true);
+      Debug.updateKeyDownArea();
+
+      window.addEventListener('keypress', DebugJS.keyPressHandler, true);
+      Debug.updateKeyPressArea();
+
+      window.addEventListener('keyup', DebugJS.keyUpHandler, true);
+      Debug.updateKeyUpArea();
     }
   },
 
@@ -379,8 +513,13 @@ DebugJS.prototype = {
       this.updateMousePositionArea();
     }
 
-    if (this.options.showWinSize) {
+    if (this.options.showScreenSize) {
+      this.initScreenSizeArea();
+    }
+
+    if (this.options.showWindowSize) {
       this.updateWindowSizeArea();
+      this.updateClientSizeArea();
     }
 
     if (this.options.enableStopWatch) {
@@ -404,14 +543,14 @@ DebugJS.prototype = {
 
   // Update Clear Button
   initClrBtnArea: function() {
-    this.clrBtnArea.innerHTML = '<span style="margin-right:2px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
+    this.clrBtnArea.innerHTML = '<span style="margin-right:8px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
   },
 
   // Update Clock
   updateClockArea: function() {
     var dt = DebugJS.getTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;margin-right:4px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';">' + tm + '</span>';
+    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';margin-right:160px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
     if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -421,12 +560,38 @@ DebugJS.prototype = {
 
   // Update Mouse Position
   updateMousePositionArea: function() {
-    this.mousePositionArea.innerHTML = '<span style="margin-right:4px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.mousePos + '</span>';
+    this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:95px;">' + DebugJS.mousePos + '</span>';
   },
+
+  // Update Client Size
+  updateClientSizeArea: function() {
+    this.clientSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:108px;">' + DebugJS.clientSize + '</span>';
+  },
+
 
   // Update Window Size
   updateWindowSizeArea: function() {
-    this.windowSizeArea.innerHTML = '<span style="margin-right:4px;color:' + Debug.options.systemInfoColor + ';">' + DebugJS.winSize + '</span>';
+    this.windowSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:108px;">' + DebugJS.windowSize + '</span>';
+  },
+
+  // Init Screen Size
+  initScreenSizeArea: function() {
+    this.screenSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:108px;">' + 'sW=' + screen.width + ',sH=' + screen.height + '</span>';
+  },
+
+  // Update key Down
+  updateKeyDownArea: function() {
+    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:125px;">KeyCode: Down=' + DebugJS.keyDownCode + '</span>';
+  },
+
+  // Update key Press
+  updateKeyPressArea: function() {
+    this.keyPressArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:64px;">Press=' + DebugJS.keyPressCode + '</span>';
+  },
+
+  // Update key Up
+  updateKeyUpArea: function() {
+    this.keyUpArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:64px;margin-right:10px;">Up=' + DebugJS.keyUpCode + '</span>';
   },
 
   // Update Stop Watch Button
@@ -458,9 +623,10 @@ DebugJS.prototype = {
     this.closeBtnArea.innerHTML = '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;">×</a></span>'
   },
 
-  // Blank Area
- initBlankArea: function() {
-    this.blankArea.innerHTML = '<div style="height:4px;"></div>';
+  // Command-line Area
+ initCmdArea: function() {
+    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97%;font-family:Consolas;font-size:12px;color:#fff;background:transparent;border:0;border-bottom:solid 1px #888;" id="' + Debug.cmdLineId + '"></input></div>';
+    this.cmdLine = document.getElementById(Debug.cmdLineId);
   },
 
   printMessage: function() {
@@ -468,7 +634,7 @@ DebugJS.prototype = {
     var msg = '';
 
     // Log Area
-    msg += '<div style="position:relative;padding:0 .3em .3em .3em;">';
+    msg += '<div style="position:relative;padding:.3em .3em .3em .3em;" id="' + Debug.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -521,6 +687,9 @@ DebugJS.prototype = {
     var clickOffsetLeft;
 
     el.onmousedown = function(evt) {
+      if (document.activeElement == Debug.cmdLine) {
+        return;
+      }
       dragging = true;
       evt = (evt) || window.event;
       clickOffsetTop = evt.clientY - el.offsetTop;
@@ -546,14 +715,32 @@ DebugJS.prototype = {
   },
 
   keyhandler: function(e) {
-    if (e.keyCode == 113) { // F2
-      if (DebugJS.status & DebugJS.STATE_SHOW) {
+    switch (e.keyCode) {
+      case 13: // Enter
+        DebugJS.execCmd(e);
+        break;
+      case 27: // ESC
         Debug.hideDebugWindow();
-      } else {
-        Debug.showDebugWindow();
-      }
-    } else if (e.keyCode == 27) { // ESC
-      Debug.hideDebugWindow();
+        break;
+      case 38: // ↑
+        if (document.activeElement == cmdLine) {
+          cmdLine.value = DebugJS.cmdHistory;
+        }
+        break;
+      case 40: // ↓
+        if (document.activeElement == cmdLine) {
+          cmdLine.value = '';
+        }
+        break;
+      case 113: // F2
+        if (DebugJS.status & DebugJS.STATE_SHOW) {
+          Debug.hideDebugWindow();
+        } else {
+          Debug.showDebugWindow();
+        }
+        break;
+      default:
+        break;
     }
   },
 
