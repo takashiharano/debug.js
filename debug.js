@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '2016-05-21T14:21+09:00';
+  this.v = '2016-05-21T14:34+09:00';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -245,6 +245,11 @@ DebugJS.execCmd = function(e) {
   Debug.cmdLine.value = '';
   log(cmd);
 
+  if (cmd.indexOf("echo ") == 0) {
+    DebugJS.execCmdEcho(cmd);
+    return;
+  }
+
   if (cmd.indexOf("p ") == 0) {
     DebugJS.execCmdP(cmd);
     return;
@@ -259,6 +264,7 @@ DebugJS.execCmd = function(e) {
       break;
     case 'exit':
     case '\\q':
+      Debug.clearMessage();
       Debug.hideDebugWindow();
       break;
     default:
@@ -268,6 +274,15 @@ DebugJS.execCmd = function(e) {
         log.e(e);
       }
       break;
+  }
+}
+
+DebugJS.execCmdEcho = function(cmd) {
+  var v = cmd.replace('echo ', '');
+  try {
+    log(eval(v));
+  } catch (e) {
+    log.e(e);
   }
 }
 
@@ -629,6 +644,7 @@ DebugJS.prototype = {
     this.cmdLine = document.getElementById(Debug.cmdLineId);
   },
 
+  // Log Output
   printMessage: function() {
     var buf = this.msgBuff.getAll();
     var msg = '';
@@ -919,13 +935,10 @@ log.s = function(msg) {
 log.init = function(msg) {
   if (!Debug.isInitialized()) {
     Debug.init(null, null);
-
   }
-
   if (!Debug.isWindowInitialized()) {
     Debug.initDebugWindow();
   }
-
   return msg;
 }
 
