@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '2016-05-22T18:57+09:00';
+  this.v = '2016-05-23T01:10+09:00';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -26,9 +26,8 @@ function DebugJS() {
     'showClock': true,
     'showClearButton': true,
     'showCloseButton': true,
-    'showMousePosition': true,
     'showWindowSize': true,
-    'showScreenSize': true,
+    'showMousePosition': true,
     'showKeyStatus': true,
     'enableStopWatch': true,
     'enableCommandLine': true
@@ -58,6 +57,8 @@ function DebugJS() {
   this.mousePositionArea = null;
   this.screenSizeArea = null;
   this.clientSizeArea = null;
+  this.bodySizeArea = null;
+  this.scrollPosArea = null;
   this.keyDownArea = null;
   this.keyPressArea = null;
   this.keyUpArea = null;
@@ -194,12 +195,22 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
 
 DebugJS.windowSize = '';
 DebugJS.clientSize = '';
+DebugJS.bodySize = '';
 DebugJS.resizeHandler = function() {
   DebugJS.windowSize = 'w=' + window.outerWidth + ',h=' + window.outerHeight;
   Debug.updateWindowSizeArea();
 
   DebugJS.clientSize = 'w=' + document.documentElement.clientWidth + ',h=' + document.documentElement.clientHeight;
   Debug.updateClientSizeArea();
+
+  DebugJS.bodySize = 'w=' + document.body.clientWidth + ',h=' + document.body.clientHeight;
+  Debug.updateBodySizeArea();
+}
+
+DebugJS.scrollPos = '';
+DebugJS.scrollHandler = function() {
+  DebugJS.scrollPos = 'x=' + window.scrollX + ',y=' + window.scrollY;
+  Debug.updateScrollPosArea();
 }
 
 DebugJS.mousePos = 'x=-,y=-';
@@ -255,7 +266,7 @@ DebugJS.execCmd = function(e) {
   var cmd = Debug.cmdLine.value;
   DebugJS.cmdHistory = cmd;
   Debug.cmdLine.value = '';
-  log(cmd);
+  log.s(cmd);
 
   if (cmd.indexOf("echo ") == 0) {
     DebugJS.execCmdEcho(cmd);
@@ -269,12 +280,13 @@ DebugJS.execCmd = function(e) {
 
   switch (cmd) {
     case 'v':
-      log('Version: ' + Debug.v);
+      log('ver: ' + Debug.v);
       break;
     case 'cls':
       Debug.clearMessage();
       break;
     case 'exit':
+    case 'quit':
     case '\\q':
       Debug.clearMessage();
       Debug.hideDebugWindow();
@@ -378,19 +390,22 @@ DebugJS.prototype = {
 
     this.infoArea.appendChild(document.createElement('br'));
 
-    // screen size
-    if (this.options.showScreenSize) {
-      this.screenSizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.screenSizeArea);
-    }
-
     // window size
     if (this.options.showWindowSize) {
+      this.screenSizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.screenSizeArea);
+
       this.windowSizeArea = document.createElement('span');
       this.infoArea.appendChild(this.windowSizeArea);
 
       this.clientSizeArea = document.createElement('span');
       this.infoArea.appendChild(this.clientSizeArea);
+
+      this.bodySizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.bodySizeArea);
+
+      this.scrollPosArea = document.createElement('span');
+      this.infoArea.appendChild(this.scrollPosArea);
     }
 
     // mouse position
@@ -492,6 +507,9 @@ DebugJS.prototype = {
     if (this.options.showWindowSize) {
       window.addEventListener('resize', DebugJS.resizeHandler, true);
       DebugJS.resizeHandler();
+
+      window.addEventListener('scroll', DebugJS.scrollHandler, true);
+      DebugJS.scrollHandler();
     }
 
     if (this.options.showMousePosition) {
@@ -540,13 +558,12 @@ DebugJS.prototype = {
       this.updateMousePositionArea();
     }
 
-    if (this.options.showScreenSize) {
-      this.initScreenSizeArea();
-    }
-
     if (this.options.showWindowSize) {
+      this.initScreenSizeArea();
       this.updateWindowSizeArea();
       this.updateClientSizeArea();
+      this.updateBodySizeArea();
+      this.updateScrollPosArea();
     }
 
     if (this.options.enableStopWatch) {
@@ -585,35 +602,44 @@ DebugJS.prototype = {
     }
   },
 
-  // Update Mouse Position
-  updateMousePositionArea: function() {
-    this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">POS:' + DebugJS.mousePos + '</span>';
+  // Init Screen Size
+  initScreenSizeArea: function() {
+    this.screenSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">SCR:' + 'w=' + screen.width + ',h=' + screen.height + '</span>';
+  },
+
+  // Update Window Size
+  updateWindowSizeArea: function() {
+    this.windowSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">WIN:' + DebugJS.windowSize + '</span>';
   },
 
   // Update Client Size
   updateClientSizeArea: function() {
-    this.clientSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">CLI:' + DebugJS.clientSize + '</span>';
+    this.clientSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLI:' + DebugJS.clientSize + '</span>';
   },
 
-
-  // Update Window Size
-  updateWindowSizeArea: function() {
-    this.windowSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">WIN:' + DebugJS.windowSize + '</span>';
+  // Update Body Size
+  updateBodySizeArea: function() {
+    this.bodySizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">BODY:' + DebugJS.bodySize + '</span>';
   },
 
-  // Init Screen Size
-  initScreenSizeArea: function() {
-    this.screenSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:118px;">SCR:' + 'w=' + screen.width + ',h=' + screen.height + '</span>';
+  // Update Scroll Position
+  updateScrollPosArea: function() {
+    this.scrollPosArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">SCROLL:' + DebugJS.scrollPos + '</span>';
+  },
+
+  // Update Mouse Position
+  updateMousePositionArea: function() {
+    this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">POS:' + DebugJS.mousePos + '</span>';
   },
 
   // Update key Down
   updateKeyDownArea: function() {
-    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info" style="">KeyStatus Down:' + DebugJS.keyDownCode + '&nbsp;</span>';
+    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info">KeyStatus Down:' + DebugJS.keyDownCode + '&nbsp;</span>';
   },
 
   // Update key Press
   updateKeyPressArea: function() {
-    this.keyPressArea.innerHTML = '<span class="' + this.id + '-sys-info" style="">Press:' + DebugJS.keyPressCode + '&nbsp;</span>';
+    this.keyPressArea.innerHTML = '<span class="' + this.id + '-sys-info">Press:' + DebugJS.keyPressCode + '&nbsp;</span>';
   },
 
   // Update key Up
