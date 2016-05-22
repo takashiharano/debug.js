@@ -43,7 +43,7 @@ window.onload = function() {
   log('Here is the output example!');
   log('The window\'s load event fired.');
 
-  setInterval('printTime()', 30000);
+  //setInterval('printTime()', 30000);
 }
 
 document.onkeydown = function(e) {

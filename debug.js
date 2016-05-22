@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '2016-05-21T15:25+09:00';
+  this.v = '2016-05-22T18:57+09:00';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -29,7 +29,7 @@ function DebugJS() {
     'showMousePosition': true,
     'showWindowSize': true,
     'showScreenSize': true,
-    'showKeyCode': true,
+    'showKeyStatus': true,
     'enableStopWatch': true,
     'enableCommandLine': true
   };
@@ -210,28 +210,40 @@ DebugJS.mousemoveHandler = function(e) {
   Debug.updateMousePositionArea();
 }
 
-DebugJS.keyDownCode = '-';
+DebugJS.keyStatusDefault =  '- (---)';
+DebugJS.keyDownCode = DebugJS.keyStatusDefault;
 DebugJS.keyDownHandler = function(e) {
-  DebugJS.keyDownCode = e.keyCode;
+  var metaKey = DebugJS.checkMetaKey(e);
+  DebugJS.keyDownCode = e.keyCode + metaKey;
   Debug.updateKeyDownArea();
 
-  DebugJS.keyPressCode = '-';
+  DebugJS.keyPressCode = DebugJS.keyStatusDefault;
   Debug.updateKeyPressArea();
 
-  DebugJS.keyUpCode = '-';
+  DebugJS.keyUpCode = DebugJS.keyStatusDefault;
   Debug.updateKeyUpArea();
 }
 
-DebugJS.keyPressCode = '-';
+DebugJS.keyPressCode = DebugJS.keyStatusDefault;
 DebugJS.keyPressHandler = function(e) {
-  DebugJS.keyPressCode = e.keyCode;
+  var metaKey = DebugJS.checkMetaKey(e);
+  DebugJS.keyPressCode = e.keyCode + metaKey;
   Debug.updateKeyPressArea();
 }
 
-DebugJS.keyUpCode = '-';
+DebugJS.keyUpCode = DebugJS.keyStatusDefault;
 DebugJS.keyUpHandler = function(e) {
-  DebugJS.keyUpCode = e.keyCode;
+  var metaKey = DebugJS.checkMetaKey(e);
+  DebugJS.keyUpCode = e.keyCode + metaKey;
   Debug.updateKeyUpArea();
+}
+
+DebugJS.checkMetaKey = function(e) {
+  var shift = e.shiftKey ? 'S' : '-';
+  var ctrl = e.ctrlKey ? 'C' : '-';
+  var alt = e.altKey ? 'A' : '-';
+  var metaKey = ' (' + shift + ctrl + alt + ')';
+  return metaKey;
 }
 
 DebugJS.cmdHistory = '';
@@ -293,7 +305,7 @@ DebugJS.execCmdP = function(cmd) {
   } catch (e) {
     log.e(e);
   }
-  var command = 'if(' + v + ' === null){log("null");}else if(' + v + ' === undefined){log("undefined");}else if(' + v + ' instanceof Array){var arr = "<br>";for(var i in ' + v + '){arr += "[" + i + "] " + ' + v + '[i] + "<br>";}}else if(' + v + ' instanceof Object){var properties = "<br>";for(var prop in ' + v + '){properties += prop + ": " + ' + v + '[prop] + "<br>";}}log(properties);';
+  var command = 'if(' + v + '===null){log("null");}else if(' + v + ' === undefined){log("undefined");}else if(' + v + ' instanceof Array){var arr = "<br>";for(var i in ' + v + '){arr += "[" + i + "] " + ' + v + '[i] + "<br>";}}else if(' + v + ' instanceof Object){var properties = "<br>";for(var prop in ' + v + '){properties += prop + ": " + ' + v + '[prop] + "<br>";}}log(properties);';
   eval(command);
 }
 
@@ -366,29 +378,29 @@ DebugJS.prototype = {
 
     this.infoArea.appendChild(document.createElement('br'));
 
-    // mouse position
-    if (this.options.showMousePosition) {
-      this.mousePositionArea = document.createElement('span');
-      this.infoArea.appendChild(this.mousePositionArea);
-    }
-
-    // window size
-    if (this.options.showWindowSize) {
-      this.clientSizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.clientSizeArea);
-
-      this.windowSizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.windowSizeArea);
-    }
-
     // screen size
     if (this.options.showScreenSize) {
       this.screenSizeArea = document.createElement('span');
       this.infoArea.appendChild(this.screenSizeArea);
     }
 
-    // key code
-    if (this.options.showKeyCode) {
+    // window size
+    if (this.options.showWindowSize) {
+      this.windowSizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.windowSizeArea);
+
+      this.clientSizeArea = document.createElement('span');
+      this.infoArea.appendChild(this.clientSizeArea);
+    }
+
+    // mouse position
+    if (this.options.showMousePosition) {
+      this.mousePositionArea = document.createElement('span');
+      this.infoArea.appendChild(this.mousePositionArea);
+    }
+
+    // key status
+    if (this.options.showKeyStatus) {
       this.infoArea.appendChild(document.createElement('br'));
 
       this.keyDownArea = document.createElement('span');
@@ -486,7 +498,7 @@ DebugJS.prototype = {
       window.addEventListener('mousemove', DebugJS.mousemoveHandler, true);
     }
 
-    if (this.options.showKeyCode) {
+    if (this.options.showKeyStatus) {
       window.addEventListener('keydown', DebugJS.keyDownHandler, true);
       Debug.updateKeyDownArea();
 
@@ -596,17 +608,17 @@ DebugJS.prototype = {
 
   // Update key Down
   updateKeyDownArea: function() {
-    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:125px;">KeyCode: Down=' + DebugJS.keyDownCode + '</span>';
+    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info" style="">KeyStatus Down:' + DebugJS.keyDownCode + '&nbsp;</span>';
   },
 
   // Update key Press
   updateKeyPressArea: function() {
-    this.keyPressArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:64px;">Press=' + DebugJS.keyPressCode + '</span>';
+    this.keyPressArea.innerHTML = '<span class="' + this.id + '-sys-info" style="">Press:' + DebugJS.keyPressCode + '&nbsp;</span>';
   },
 
   // Update key Up
   updateKeyUpArea: function() {
-    this.keyUpArea.innerHTML = '<span class="' + this.id + '-sys-info" style="width:64px;margin-right:10px;">Up=' + DebugJS.keyUpCode + '</span>';
+    this.keyUpArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">Up:' + DebugJS.keyUpCode + '&nbsp;</span>';
   },
 
   // Update Stop Watch Button
