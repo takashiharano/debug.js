@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '2016-05-23T01:10+09:00';
+  this.v = '2016-05-23T07:30+09:00';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -209,7 +209,16 @@ DebugJS.resizeHandler = function() {
 
 DebugJS.scrollPos = '';
 DebugJS.scrollHandler = function() {
-  DebugJS.scrollPos = 'x=' + window.scrollX + ',y=' + window.scrollY;
+  var x = 0;
+  var y = 0;
+  if (window.scrollX === undefined) {
+    x = document.documentElement.scrollLeft;
+    y = document.documentElement.scrollTop;
+  } else {
+    x = window.scrollX;
+    y = window.scrollY;
+  }
+  DebugJS.scrollPos = 'x=' + x + ',y=' + y;
   Debug.updateScrollPosArea();
 }
 
@@ -482,9 +491,10 @@ DebugJS.prototype = {
     if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
       this.setupMove();
 
-      var winTop = 275;
+      // adjust the window position
+      var winTop = 290;
       if (this.options.enableCommandLine) {
-        winTop = 300;
+        winTop = 312;
       }
 
       var wkStyle = styles['#' + this.id];
