@@ -1,7 +1,14 @@
 var a = {
   'key1': 'val1',
-  'key2': 'val2',
-  'key3': '123'
+  'key2': '123',
+  'key3': {
+    'keyA': 'A',
+    'keyB': {
+      'keyB1': 'b1',
+      'keyB2': 'b2'
+    },
+    'keyC': 'C'
+   }
 };
 var b = ['1', '2', '3'];
 var c = 1;
@@ -25,20 +32,20 @@ window.onload = function() {
 //    'systemInfoColor': '#ddd',
 //    'showLineNums': true,
 //    'showTimeStamp': false,
-//    'showClock': false,
+//    'showClock': true,
 //    'showClearButton': true,
 //    'showCloseButton': false,
-//    'showMousePosition': false,
 //    'showWindowSize': false,
-//    'showScreenSize': false,
-//    'showKeyCode': false,
+//    'showMousePosition': false,
+//    'showKeyStatus': true,
 //    'enableStopWatch': false,
 //    'enableCommandLine': false
 //  };
 //  Debug.init(null, options);
 
 // If you want to output the logs to a designated area, pass the element id to 1st argument.
-//  Debug.init('test1', options); 
+//  Debug.init('test1', options);
+//  Debug.init('test1', null);
 
   log('Here is the output example!');
   log('The window\'s load event fired.');
