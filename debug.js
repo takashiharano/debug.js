@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '2016-05-23T07:30+09:00';
+  this.v = '201605240011';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -289,7 +289,7 @@ DebugJS.execCmd = function(e) {
 
   switch (cmd) {
     case 'v':
-      log('ver: ' + Debug.v);
+      log('ver.' + Debug.v);
       break;
     case 'cls':
       Debug.clearMessage();
@@ -326,7 +326,7 @@ DebugJS.execCmdP = function(cmd) {
   } catch (e) {
     log.e(e);
   }
-  var command = 'if(' + v + '===null){log("null");}else if(' + v + ' === undefined){log("undefined");}else if(' + v + ' instanceof Array){var arr = "<br>";for(var i in ' + v + '){arr += "[" + i + "] " + ' + v + '[i] + "<br>";}}else if(' + v + ' instanceof Object){var properties = "<br>";for(var prop in ' + v + '){properties += prop + ": " + ' + v + '[prop] + "<br>";}}log(properties);';
+  var command = 'DebugJS.printObj=function(v){for(var prop in v){var indent="";for(var i=0;i<lv;i++){indent+=" ";};if(v[prop] instanceof Object){properties+=indent+prop+": [object]<br>";lv++;DebugJS.printObj(v[prop]);lv--;}else{properties += indent+prop + ": " + v[prop] + "<br>";}}};if(' + v + '===null){log("null");}else if(' + v + ' === undefined){log("undefined");}else if(' + v + ' instanceof Array){var arr = "Array:<br>";for(var i in ' + v + '){arr += "[" + i + "] " + ' + v + '[i] + "<br>";}log(arr);}else if(' + v + ' instanceof Object){var lv=0;var properties="Object:<br>";DebugJS.printObj(' + v + ');log(properties);}';
   eval(command);
 }
 
@@ -688,7 +688,7 @@ DebugJS.prototype = {
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97%;font-family:Consolas;font-size:12px;color:#fff;background:transparent;border:0;border-bottom:solid 1px #888;" id="' + Debug.cmdLineId + '"></input></div>';
+    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;" id="' + Debug.cmdLineId + '"></input></div>';
     this.cmdLine = document.getElementById(Debug.cmdLineId);
   },
 
