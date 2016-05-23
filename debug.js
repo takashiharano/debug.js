@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605240011';
+  this.v = '201605240203';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -688,7 +688,7 @@ DebugJS.prototype = {
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;" id="' + Debug.cmdLineId + '"></input></div>';
+    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
     this.cmdLine = document.getElementById(Debug.cmdLineId);
   },
 
