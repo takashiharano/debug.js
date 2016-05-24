@@ -1,21 +1,52 @@
 var a = {
   'key1': 'val1',
   'key2': '123',
-  'key3': {
+  'key3': 123,
+  'key4': {
     'keyA': 'A',
     'keyB': {
       'keyB1': 'b1',
       'keyB2': 'b2'
     },
     'keyC': 'C'
-   }
+   },
+   'key5': null,
+   'key6': undefined,
+   'key7': true,
+   'key8': [
+     {
+       'aaa': 111,
+       'bbb': 'test1'
+     },
+     {
+       'aaa': 222,
+       'bbb': 'test2'
+     }
+   ]
 };
+
 var b = ['1', '2', '3'];
 var c = 1;
 var d = "string";
 var e = false;
 var f = undefined;
 var g = null;
+
+var h = [
+  {
+    'key1': 'AAA',
+    'key2': 'BBB'
+  },
+  {
+    'key1': 'CCC',
+    'key2': 'DDD'
+  },
+  {
+    'key1': 'EEE',
+    'key2': 'FFF'
+  }
+];
+
 
 window.onload = function() {
 //in the absence of this initialization, debug.js works in default configuration.

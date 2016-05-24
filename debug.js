@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605240203';
+  this.v = '201605250158';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -27,7 +27,7 @@ function DebugJS() {
     'showClearButton': true,
     'showCloseButton': true,
     'showWindowSize': true,
-    'showMousePosition': true,
+    'showMouseStatus': true,
     'showKeyStatus': true,
     'enableStopWatch': true,
     'enableCommandLine': true
@@ -55,6 +55,7 @@ function DebugJS() {
   this.swBtnArea = null;
   this.swArea = null;
   this.mousePositionArea = null;
+  this.mouseClickArea = null;
   this.screenSizeArea = null;
   this.clientSizeArea = null;
   this.bodySizeArea = null;
@@ -230,6 +231,37 @@ DebugJS.mousemoveHandler = function(e) {
   Debug.updateMousePositionArea();
 }
 
+DebugJS.mouseClickL = '-';
+DebugJS.mouseClickR = '-';
+DebugJS.mouseClick;
+DebugJS.mousedownHandler = function(e) {
+  switch (e.button) {
+    case 0:
+      DebugJS.mouseClickL = 'L';
+      break;
+    case 2:
+      DebugJS.mouseClickR = 'R';
+      break;
+    default:
+      break;
+  }
+  Debug.updateMouseClickArea();
+}
+
+DebugJS.mouseupHandler = function(e) {
+  switch (e.button) {
+    case 0:
+      DebugJS.mouseClickL = '-';
+      break;
+    case 2:
+      DebugJS.mouseClickR = '-';
+      break;
+    default:
+      break;
+  }
+  Debug.updateMouseClickArea();
+}
+
 DebugJS.keyStatusDefault =  '- (---)';
 DebugJS.keyDownCode = DebugJS.keyStatusDefault;
 DebugJS.keyDownHandler = function(e) {
@@ -321,14 +353,70 @@ DebugJS.execCmdEcho = function(cmd) {
 
 DebugJS.execCmdP = function(cmd) {
   var v = cmd.replace('p ', '');
-  try {
-    log(eval(v));
-  } catch (e) {
-    log.e(e);
-  }
-  var command = 'DebugJS.printObj=function(v){for(var prop in v){var indent="";for(var i=0;i<lv;i++){indent+=" ";};if(v[prop] instanceof Object){properties+=indent+prop+": [object]<br>";lv++;DebugJS.printObj(v[prop]);lv--;}else{properties += indent+prop + ": " + v[prop] + "<br>";}}};if(' + v + '===null){log("null");}else if(' + v + ' === undefined){log("undefined");}else if(' + v + ' instanceof Array){var arr = "Array:<br>";for(var i in ' + v + '){arr += "[" + i + "] " + ' + v + '[i] + "<br>";}log(arr);}else if(' + v + ' instanceof Object){var lv=0;var properties="Object:<br>";DebugJS.printObj(' + v + ');log(properties);}';
+  var command = 'DebugJS.buf="<br>' + v + ' = ";DebugJS.buf+=DebugJS.printObj(' + v + ');log(DebugJS.buf);';
   eval(command);
 }
+
+DebugJS.printObj = function(obj) {
+  var lv = 0;
+  var buff = DebugJS.objDump(obj, lv);
+  return buff;
+}
+
+DebugJS.objDump = function(obj, lv) {
+  var buff = '';
+  var indent = '';
+  for (var i=0; i<lv; i++) {
+    indent += ' ';
+  }
+
+  if (obj instanceof Array) {
+    buff += '<span style="color:#d08;">[Array]</span><br>';
+    for (var i in obj) {
+      lv++;
+      buff += indent + '[' + i + '] ' +  DebugJS.objDump(obj[i], lv);
+      lv--;
+    }
+  } else if (obj instanceof Object) {
+    buff += '<span style="color:#88f;">[Object]</span> {<br>';
+    indent += ' ';
+    for (var key in obj) {
+      buff += indent + key + ': ';
+      lv++;
+      buff += DebugJS.objDump(obj[key], lv);
+      lv--;
+    }
+    indent = indent.replace(' ', '');
+    buff += indent + '}<br>';
+  } else if (obj === null) {
+    buff += '<span style="color:#ccc;">null</span>' + '<br>';
+  } else if (obj === undefined) {
+    buff += '<span style="color:#ccc;">undefined</span>' + '<br>';
+  } else if (typeof obj ==='string') {
+    buff += '"' + obj + '"<br>';
+  } else {
+    buff += obj + '<br>';
+  }
+  return buff;
+}
+
+if (' + v + '===null) {
+  log("null");
+} else if (' + v + ' === undefined) {
+  log("undefined");
+} else if (' + v + ' instanceof Array) {
+  var arr = "Array:<br>";
+  for (var i in ' + v + ') {
+    arr += "[" + i + "] " + ' + v + '[i] + "<br>";
+  }
+  log(arr);
+} else if (' + v + ' instanceof Object) {
+  var lv=0;
+  var properties="Object:<br>";
+  DebugJS.printObj(' + v + ');
+  log(properties);
+}
+
 
 DebugJS.prototype = {
   init:  function(elmId, options) {
@@ -418,9 +506,12 @@ DebugJS.prototype = {
     }
 
     // mouse position
-    if (this.options.showMousePosition) {
+    if (this.options.showMouseStatus) {
       this.mousePositionArea = document.createElement('span');
       this.infoArea.appendChild(this.mousePositionArea);
+
+      this.mouseClickArea = document.createElement('span');
+      this.infoArea.appendChild(this.mouseClickArea);
     }
 
     // key status
@@ -522,8 +613,10 @@ DebugJS.prototype = {
       DebugJS.scrollHandler();
     }
 
-    if (this.options.showMousePosition) {
+    if (this.options.showMouseStatus) {
       window.addEventListener('mousemove', DebugJS.mousemoveHandler, true);
+      window.addEventListener('mousedown', DebugJS.mousedownHandler, true);
+      window.addEventListener('mouseup', DebugJS.mouseupHandler, true);
     }
 
     if (this.options.showKeyStatus) {
@@ -564,8 +657,9 @@ DebugJS.prototype = {
       this.updateClockArea();
     }
 
-    if (this.options.showMousePosition) {
+    if (this.options.showMouseStatus) {
       this.updateMousePositionArea();
+      this.updateMouseClickArea();
     }
 
     if (this.options.showWindowSize) {
@@ -641,6 +735,13 @@ DebugJS.prototype = {
   updateMousePositionArea: function() {
     this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">POS:' + DebugJS.mousePos + '</span>';
   },
+
+  // Update Mouse Click
+  updateMouseClickArea: function() {
+    DebugJS.mouseClick = DebugJS.mouseClickL + DebugJS.mouseClickR;
+    this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + DebugJS.mouseClick + '</span>';
+  },
+
 
   // Update key Down
   updateKeyDownArea: function() {
