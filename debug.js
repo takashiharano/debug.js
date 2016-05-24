@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605250158';
+  this.v = '201605250725';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -232,12 +232,16 @@ DebugJS.mousemoveHandler = function(e) {
 }
 
 DebugJS.mouseClickL = '-';
+DebugJS.mouseClickC = '-';
 DebugJS.mouseClickR = '-';
 DebugJS.mouseClick;
 DebugJS.mousedownHandler = function(e) {
   switch (e.button) {
     case 0:
       DebugJS.mouseClickL = 'L';
+      break;
+    case 1:
+      DebugJS.mouseClickC = 'C';
       break;
     case 2:
       DebugJS.mouseClickR = 'R';
@@ -252,6 +256,9 @@ DebugJS.mouseupHandler = function(e) {
   switch (e.button) {
     case 0:
       DebugJS.mouseClickL = '-';
+      break;
+    case 1:
+      DebugJS.mouseClickC = '-';
       break;
     case 2:
       DebugJS.mouseClickR = '-';
@@ -371,7 +378,7 @@ DebugJS.objDump = function(obj, lv) {
   }
 
   if (obj instanceof Array) {
-    buff += '<span style="color:#d08;">[Array]</span><br>';
+    buff += '<span style="color:#c08;">[Array]</span><br>';
     for (var i in obj) {
       lv++;
       buff += indent + '[' + i + '] ' +  DebugJS.objDump(obj[i], lv);
@@ -399,24 +406,6 @@ DebugJS.objDump = function(obj, lv) {
   }
   return buff;
 }
-
-if (' + v + '===null) {
-  log("null");
-} else if (' + v + ' === undefined) {
-  log("undefined");
-} else if (' + v + ' instanceof Array) {
-  var arr = "Array:<br>";
-  for (var i in ' + v + ') {
-    arr += "[" + i + "] " + ' + v + '[i] + "<br>";
-  }
-  log(arr);
-} else if (' + v + ' instanceof Object) {
-  var lv=0;
-  var properties="Object:<br>";
-  DebugJS.printObj(' + v + ');
-  log(properties);
-}
-
 
 DebugJS.prototype = {
   init:  function(elmId, options) {
@@ -738,7 +727,7 @@ DebugJS.prototype = {
 
   // Update Mouse Click
   updateMouseClickArea: function() {
-    DebugJS.mouseClick = DebugJS.mouseClickL + DebugJS.mouseClickR;
+    DebugJS.mouseClick = DebugJS.mouseClickL + DebugJS.mouseClickC + DebugJS.mouseClickR;
     this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + DebugJS.mouseClick + '</span>';
   },
 
@@ -789,7 +778,7 @@ DebugJS.prototype = {
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
+    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
     this.cmdLine = document.getElementById(Debug.cmdLineId);
   },
 
@@ -851,27 +840,26 @@ DebugJS.prototype = {
     var clickOffsetTop;
     var clickOffsetLeft;
 
-    el.onmousedown = function(evt) {
+    el.onmousedown = function(e) {
       if (document.activeElement == Debug.cmdLine) {
         return;
       }
       dragging = true;
-      evt = (evt) || window.event;
-      clickOffsetTop = evt.clientY - el.offsetTop;
-      clickOffsetLeft = evt.clientX - el.offsetLeft;
+      e = (e) || window.event;
+      clickOffsetTop = e.clientY - el.offsetTop;
+      clickOffsetLeft = e.clientX - el.offsetLeft;
       if (!document.all) {
          window.getSelection().removeAllRanges();
       }
     }
-    el.onmouseup = function() {
+    el.onmouseup = function(e) {
       dragging = false;
     }
-    el.onmousemove = function(evt) {
-      evt = (evt) || window.event;
-      if (dragging){
-        el.style.top = evt.clientY - clickOffsetTop + 'px';
-        el.style.left = evt.clientX - clickOffsetLeft + 'px';
-      }
+    el.onmousemove = function(e) {
+      if (!dragging) return;
+      e = (e) || window.event;
+      el.style.top = e.clientY - clickOffsetTop + 'px';
+      el.style.left = e.clientX - clickOffsetLeft + 'px';
     }
   },
 
