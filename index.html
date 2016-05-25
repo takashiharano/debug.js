@@ -61,8 +61,11 @@ The debug window is draggable and you can switch hide/show by F2 key.<br>
 <div class="description">If you want to change the log settings, explicitly call initialization function in advance.</div>
 <pre class="code emphasis">
 var options = {
-  'buffSize': 10,
+  'buffSize': 18,
   'width': 500,
+  'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
+  'posAdjX': 20,
+  'posAdjY': 20,
   'errorColor': '#d44',
   'warnColor': '#ed0',
   'infoColor': '#fff',
@@ -77,7 +80,7 @@ var options = {
   'showClearButton': true,
   'showCloseButton': true,
   'showWindowSize': true,
-  'showMousePosition': true,
+  'showMouseStatus': true,
   'showKeyStatus': true,
   'enableStopWatch': true,
   'enableCommandLine': true
