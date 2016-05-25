@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605250725';
+  this.v = '201605252310';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -13,6 +13,9 @@ function DebugJS() {
   this.DEFAULT_OPTIONS = {
     'buffSize': 18,
     'width': 500,
+    'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
+    'posAdjX': 20,
+    'posAdjY': 20,
     'errorColor': '#d44',
     'warnColor': '#ed0',
     'infoColor': '#fff',
@@ -106,6 +109,8 @@ DebugJS.STATE_SHOW = 0x1;
 DebugJS.STATE_DYNAMIC = 0x2;
 DebugJS.STATE_SHOW_CLOCK = 0x4;
 DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
+DebugJS.STATE_DRAGGABLE = 0x10;
+DebugJS.STATE_DRAGGING = 0x20;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 DebugJS.status = 0;
 
@@ -192,6 +197,14 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
   retStr += '.' + passedMsec;
 
   return retStr;
+}
+
+DebugJS.enableDrag = function() {
+  DebugJS.status |= DebugJS.STATE_DRAGGABLE;
+}
+
+DebugJS.disableDrag = function() {
+  DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
 }
 
 DebugJS.windowSize = '';
@@ -364,47 +377,59 @@ DebugJS.execCmdP = function(cmd) {
   eval(command);
 }
 
+DebugJS.OBJDUMP_MAX = 50;
 DebugJS.printObj = function(obj) {
-  var lv = 0;
-  var buff = DebugJS.objDump(obj, lv);
-  return buff;
+  var arg = {
+    'lv': 0,
+    'cnt': 0,
+    'dump': ''
+  };
+  var ret = DebugJS.objDump(obj, arg);
+  if (ret.cnt >= DebugJS.OBJDUMP_MAX) {
+    log.w('The object is too large. (' + ret.cnt + ')');
+  }
+  return ret.dump;
 }
 
-DebugJS.objDump = function(obj, lv) {
-  var buff = '';
+DebugJS.objDump = function(obj, arg) {
+  if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
+    arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
+    return arg;
+  }
   var indent = '';
-  for (var i=0; i<lv; i++) {
+  for (var i=0; i<arg.lv; i++) {
     indent += ' ';
   }
 
   if (obj instanceof Array) {
-    buff += '<span style="color:#c08;">[Array]</span><br>';
+    arg.dump += '<span style="color:#c08;">[Array]</span><br>'; arg.cnt++;
     for (var i in obj) {
-      lv++;
-      buff += indent + '[' + i + '] ' +  DebugJS.objDump(obj[i], lv);
-      lv--;
+      arg.lv++;
+      arg.dump += indent + '[' + i + '] ';
+      arg = DebugJS.objDump(obj[i], arg);
+      arg.lv--;
     }
   } else if (obj instanceof Object) {
-    buff += '<span style="color:#88f;">[Object]</span> {<br>';
+    arg.dump += '<span style="color:#88f;">[Object]</span> {<br>'; arg.cnt++;
     indent += ' ';
     for (var key in obj) {
-      buff += indent + key + ': ';
-      lv++;
-      buff += DebugJS.objDump(obj[key], lv);
-      lv--;
+      arg.dump += indent + key + ': ';
+      arg.lv++;
+      arg = DebugJS.objDump(obj[key], arg);
+      arg.lv--;
     }
     indent = indent.replace(' ', '');
-    buff += indent + '}<br>';
+    arg.dump += indent + '}<br>';
   } else if (obj === null) {
-    buff += '<span style="color:#ccc;">null</span>' + '<br>';
+    arg.dump += '<span style="color:#ccc;">null</span>' + '<br>'; arg.cnt++;
   } else if (obj === undefined) {
-    buff += '<span style="color:#ccc;">undefined</span>' + '<br>';
+    arg.dump += '<span style="color:#ccc;">undefined</span>' + '<br>'; arg.cnt++;
   } else if (typeof obj ==='string') {
-    buff += '"' + obj + '"<br>';
+    arg.dump += '"' + obj + '"<br>'; arg.cnt++;
   } else {
-    buff += obj + '<br>';
+    arg.dump += obj + '<br>'; arg.cnt++;
   }
-  return buff;
+  return arg;
 }
 
 DebugJS.prototype = {
@@ -414,6 +439,7 @@ DebugJS.prototype = {
     if (elmId == null) {
       this.id = this.DEFAULT_ELM_ID;
       DebugJS.status |= DebugJS.STATE_DYNAMIC;
+      DebugJS.status |= DebugJS.STATE_DRAGGABLE;
     } else {
       this.id = elmId;
       this.debugWindow = document.getElementById(this.id);
@@ -571,20 +597,41 @@ DebugJS.prototype = {
     if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
       this.setupMove();
 
-      // adjust the window position
-      var winTop = 290;
-      if (this.options.enableCommandLine) {
-        winTop = 312;
-      }
-
       var wkStyle = styles['#' + this.id];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
-      wkStyle.top = (document.documentElement.clientHeight - winTop) + 'px';
-      wkStyle.left = (document.documentElement.clientWidth - this.options.width - 20) + 'px';
       wkStyle.background = 'rgba(0,0,0,0.7)';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
       wkStyle['z-index'] = 0x7fffffff;
+
+      // adjust the window position
+      var dbgWinHeight = 273;
+      if (this.options.enableCommandLine) {
+        dbgWinHeight = 294;
+      }
+      switch (this.options.position) {
+        case 'left-top':
+          wkStyle.top = this.options.posAdjY + 'px';
+          wkStyle.left = this.options.posAdjX + 'px';
+          break;
+        case 'left-bottom':
+          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - this.options.posAdjY) + 'px';
+          wkStyle.left = this.options.posAdjX + 'px';
+          break;
+        case 'center':
+          wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + this.options.posAdjY + 'px';
+          wkStyle.left = ((document.documentElement.clientWidth / 2) - (this.options.width / 2)) + this.options.posAdjX + 'px';
+          break;
+        case 'right-top':
+          wkStyle.top = this.options.posAdjY + 'px';
+          wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
+          break;
+        default:
+          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - this.options.posAdjY) + 'px';
+          wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
+          break;
+      }
+
       if (!(DebugJS.status & DebugJS.STATE_SHOW)) {
         wkStyle.display = 'none';
       }
@@ -778,7 +825,7 @@ DebugJS.prototype = {
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
+    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '" onfocus="DebugJS.disableDrag();" onblur="DebugJS.enableDrag();"></input></div>';
     this.cmdLine = document.getElementById(Debug.cmdLineId);
   },
 
@@ -836,15 +883,12 @@ DebugJS.prototype = {
 
   setupMove: function() {
     var el = this.debugWindow;
-    var dragging;
     var clickOffsetTop;
     var clickOffsetLeft;
 
     el.onmousedown = function(e) {
-      if (document.activeElement == Debug.cmdLine) {
-        return;
-      }
-      dragging = true;
+      if (!(DebugJS.status & DebugJS.STATE_DRAGGABLE)) return;
+      DebugJS.status |= DebugJS.STATE_DRAGGING;
       e = (e) || window.event;
       clickOffsetTop = e.clientY - el.offsetTop;
       clickOffsetLeft = e.clientX - el.offsetLeft;
@@ -853,10 +897,10 @@ DebugJS.prototype = {
       }
     }
     el.onmouseup = function(e) {
-      dragging = false;
+      DebugJS.status &= ~DebugJS.STATE_DRAGGING;
     }
     el.onmousemove = function(e) {
-      if (!dragging) return;
+      if (!(DebugJS.status & DebugJS.STATE_DRAGGING)) return;
       e = (e) || window.event;
       el.style.top = e.clientY - clickOffsetTop + 'px';
       el.style.left = e.clientX - clickOffsetLeft + 'px';
