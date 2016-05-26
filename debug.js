@@ -5,7 +5,6 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605252310';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -36,7 +35,6 @@ function DebugJS() {
     'enableCommandLine': true
   };
 
-  this.DEFAULT_STYLE = {
     'position': 'relative',
     'padding': '0',
     'line-height': '1em',
@@ -73,6 +71,9 @@ function DebugJS() {
   this.options = null;
   this.DEFAULT_ELM_ID = '_debug_';
 }
+
+DebugJS.COLOR_ACTIVE = '#fff';
+DebugJS.COLOR_INACTIVE = '#888';
 
 DebugJS.getTime = function() {
   var nowDate = new Date();
@@ -158,16 +159,11 @@ DebugJS.resetStopwatch = function() {
 }
 
 DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
-  var passedHour;
-  var passedMin;
-  var passedSec;
-  var passedMsec;
-
   var passedTimeSec = Math.floor((swPassedTimeMsec) / 1000);
   var wkPassedTimeSec = passedTimeSec;
 
-  passedSec = wkPassedTimeSec;
-
+  var passedHour;
+  var passedMin;
   if (wkPassedTimeSec >= 3600) {
     passedHour = Math.floor((wkPassedTimeSec / 3600));
     wkPassedTimeSec = (wkPassedTimeSec - (passedHour * 3600));
@@ -182,8 +178,8 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
     passedMin = 0;
   }
 
-  passedSec = wkPassedTimeSec;
-  passedMsec = Math.floor(swPassedTimeMsec & 999);
+  var passedSec = wkPassedTimeSec;
+  var passedMsec = Math.floor(swPassedTimeMsec & 999);
 
   if (passedHour < 10) passedHour = '0' + passedHour;
   if (passedMin < 10) passedMin = '0' + passedMin;
@@ -197,14 +193,6 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
   retStr += '.' + passedMsec;
 
   return retStr;
-}
-
-DebugJS.enableDrag = function() {
-  DebugJS.status |= DebugJS.STATE_DRAGGABLE;
-}
-
-DebugJS.disableDrag = function() {
-  DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
 }
 
 DebugJS.windowSize = '';
@@ -244,20 +232,20 @@ DebugJS.mousemoveHandler = function(e) {
   Debug.updateMousePositionArea();
 }
 
-DebugJS.mouseClickL = '-';
-DebugJS.mouseClickC = '-';
-DebugJS.mouseClickR = '-';
+DebugJS.mouseClickL = DebugJS.COLOR_INACTIVE;
+DebugJS.mouseClickC = DebugJS.COLOR_INACTIVE;
+DebugJS.mouseClickR = DebugJS.COLOR_INACTIVE;
 DebugJS.mouseClick;
 DebugJS.mousedownHandler = function(e) {
   switch (e.button) {
     case 0:
-      DebugJS.mouseClickL = 'L';
+      DebugJS.mouseClickL = DebugJS.COLOR_ACTIVE;
       break;
     case 1:
-      DebugJS.mouseClickC = 'C';
+      DebugJS.mouseClickC = DebugJS.COLOR_ACTIVE;
       break;
     case 2:
-      DebugJS.mouseClickR = 'R';
+      DebugJS.mouseClickR = DebugJS.COLOR_ACTIVE;
       break;
     default:
       break;
@@ -268,13 +256,13 @@ DebugJS.mousedownHandler = function(e) {
 DebugJS.mouseupHandler = function(e) {
   switch (e.button) {
     case 0:
-      DebugJS.mouseClickL = '-';
+      DebugJS.mouseClickL = DebugJS.COLOR_INACTIVE;
       break;
     case 1:
-      DebugJS.mouseClickC = '-';
+      DebugJS.mouseClickC = DebugJS.COLOR_INACTIVE;
       break;
     case 2:
-      DebugJS.mouseClickR = '-';
+      DebugJS.mouseClickR = DebugJS.COLOR_INACTIVE;
       break;
     default:
       break;
@@ -282,7 +270,7 @@ DebugJS.mouseupHandler = function(e) {
   Debug.updateMouseClickArea();
 }
 
-DebugJS.keyStatusDefault =  '- (---)';
+DebugJS.keyStatusDefault =  '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.keyDownCode = DebugJS.keyStatusDefault;
 DebugJS.keyDownHandler = function(e) {
   var metaKey = DebugJS.checkMetaKey(e);
@@ -311,10 +299,10 @@ DebugJS.keyUpHandler = function(e) {
 }
 
 DebugJS.checkMetaKey = function(e) {
-  var shift = e.shiftKey ? 'S' : '-';
-  var ctrl = e.ctrlKey ? 'C' : '-';
-  var alt = e.altKey ? 'A' : '-';
-  var metaKey = ' (' + shift + ctrl + alt + ')';
+  var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
+  var ctrl = e.ctrlKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
+  var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
+  var metaKey = ' <span style="color:' + shift + ';">S</span><span style="color:' + ctrl + ';">C</span><span style="color:' + alt + ';">A</span>';
   return metaKey;
 }
 
@@ -351,6 +339,12 @@ DebugJS.execCmd = function(e) {
     case '\\q':
       Debug.clearMessage();
       Debug.hideDebugWindow();
+      break;
+    case 'stop move':
+      DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
+      break;
+    case 'start move':
+      if (DebugJS.status & DebugJS.STATE_DYNAMIC) DebugJS.status |= DebugJS.STATE_DRAGGABLE;
       break;
     default:
       try {
@@ -557,12 +551,8 @@ DebugJS.prototype = {
     this.msgBuff = new RingBuffer(this.options.buffSize);
 
     var styles = {};
-    styles['#' + this.id] = this.DEFAULT_STYLE;
 
     styles['#' + this.id + ' td'] = {
-      'font-size': this.DEFAULT_STYLE['font-size'],
-      'font-family': this.DEFAULT_STYLE['font-family'],
-      'color': this.DEFAULT_STYLE['color'],
       'background': 'initial',
       'width': 'initial',
       'border': 'initial',
@@ -572,9 +562,6 @@ DebugJS.prototype = {
     styles['#' + this.id + ' pre'] = {
       'white-space': 'pre-wrap',
       'word-break': 'break-all', 
-      'font-size': this.DEFAULT_STYLE['font-size'],
-      'font-family': this.DEFAULT_STYLE['font-family'],
-      'color': this.DEFAULT_STYLE['color'],
       'margin': '0'
     };
 
@@ -610,25 +597,25 @@ DebugJS.prototype = {
         dbgWinHeight = 294;
       }
       switch (this.options.position) {
-        case 'left-top':
-          wkStyle.top = this.options.posAdjY + 'px';
-          wkStyle.left = this.options.posAdjX + 'px';
-          break;
-        case 'left-bottom':
+        case 'right-bottom':
           wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - this.options.posAdjY) + 'px';
-          wkStyle.left = this.options.posAdjX + 'px';
-          break;
-        case 'center':
-          wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + this.options.posAdjY + 'px';
-          wkStyle.left = ((document.documentElement.clientWidth / 2) - (this.options.width / 2)) + this.options.posAdjX + 'px';
+          wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
           break;
         case 'right-top':
           wkStyle.top = this.options.posAdjY + 'px';
           wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
           break;
-        default:
+        case 'center':
+          wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + this.options.posAdjY + 'px';
+          wkStyle.left = ((document.documentElement.clientWidth / 2) - (this.options.width / 2)) + this.options.posAdjX + 'px';
+          break;
+        case 'left-bottom':
           wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - this.options.posAdjY) + 'px';
-          wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
+          wkStyle.left = this.options.posAdjX + 'px';
+          break;
+        default:
+          wkStyle.top = this.options.posAdjY + 'px';
+          wkStyle.left = this.options.posAdjX + 'px';
           break;
       }
 
@@ -734,7 +721,7 @@ DebugJS.prototype = {
   updateClockArea: function() {
     var dt = DebugJS.getTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px ' + Debug.options.timeColor + ';margin-right:160px;">' + tm + '</span>';
+    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px;margin-right:160px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
     if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -774,14 +761,14 @@ DebugJS.prototype = {
 
   // Update Mouse Click
   updateMouseClickArea: function() {
-    DebugJS.mouseClick = DebugJS.mouseClickL + DebugJS.mouseClickC + DebugJS.mouseClickR;
+    DebugJS.mouseClick = '<span style="color:' + DebugJS.mouseClickL + ';">L</span><span style="color:' + DebugJS.mouseClickC + ';">C</span><span style="color:' + DebugJS.mouseClickR + ';">R</span>';
     this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + DebugJS.mouseClick + '</span>';
   },
 
 
   // Update key Down
   updateKeyDownArea: function() {
-    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info">KeyStatus Down:' + DebugJS.keyDownCode + '&nbsp;</span>';
+    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info">Key Down:' + DebugJS.keyDownCode + '&nbsp;</span>';
   },
 
   // Update key Press
@@ -825,7 +812,7 @@ DebugJS.prototype = {
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '" onfocus="DebugJS.disableDrag();" onblur="DebugJS.enableDrag();"></input></div>';
+    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
     this.cmdLine = document.getElementById(Debug.cmdLineId);
   },
 
@@ -887,7 +874,7 @@ DebugJS.prototype = {
     var clickOffsetLeft;
 
     el.onmousedown = function(e) {
-      if (!(DebugJS.status & DebugJS.STATE_DRAGGABLE)) return;
+      if ((!(DebugJS.status & DebugJS.STATE_DRAGGABLE)) || (document.activeElement == Debug.cmdLine)) return;
       DebugJS.status |= DebugJS.STATE_DRAGGING;
       e = (e) || window.event;
       clickOffsetTop = e.clientY - el.offsetTop;
@@ -942,6 +929,7 @@ DebugJS.prototype = {
   },
 
   hideDebugWindow: function() {
+    if (!this.options.showCloseButton) return;
     var selector = '#' + Debug.id;
     var styles = {};
     styles[selector] = {'display': 'none'};
@@ -1108,7 +1096,7 @@ log.v = function(msg) {
 log.s = function(msg) {
   if(!Debug.ENABLE){return;}
   var m = log.init(msg);
-  var styleS = '<span style="color:' + Debug.options.specialColor + ';text-shadow:0 0 3px ' + Debug.options.specialColor + ';">';
+  var styleS = '<span style="color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;">';
   var styleE = '</span>';
   log.out(m, styleS, styleE);
 }
