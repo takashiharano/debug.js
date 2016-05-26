@@ -5,6 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
+  this.v = '201605270037';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -35,6 +36,7 @@ function DebugJS() {
     'enableCommandLine': true
   };
 
+  this.STYLE = {
     'position': 'relative',
     'padding': '0',
     'line-height': '1em',
@@ -551,8 +553,12 @@ DebugJS.prototype = {
     this.msgBuff = new RingBuffer(this.options.buffSize);
 
     var styles = {};
+    styles['#' + this.id] = this.STYLE;
 
     styles['#' + this.id + ' td'] = {
+      'font-size': this.STYLE['font-size'],
+      'font-family': this.STYLE['font-family'],
+      'color': this.STYLE['color'],
       'background': 'initial',
       'width': 'initial',
       'border': 'initial',
@@ -562,6 +568,9 @@ DebugJS.prototype = {
     styles['#' + this.id + ' pre'] = {
       'white-space': 'pre-wrap',
       'word-break': 'break-all', 
+      'font-size': this.STYLE['font-size'],
+      'font-family': this.STYLE['font-family'],
+      'color': this.STYLE['color'],
       'margin': '0'
     };
 
