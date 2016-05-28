@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605270037';
+  this.v = '201605282217';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -72,6 +72,10 @@ function DebugJS() {
   this.cmdLine = null;
   this.options = null;
   this.DEFAULT_ELM_ID = '_debug_';
+  this.cmdHistory = null;
+  this.cmdHistoryMax = 10;
+  this.cmdHistoryIdx = this.cmdHistoryMax;
+  this.cmdTmp = '';
 }
 
 DebugJS.COLOR_ACTIVE = '#fff';
@@ -308,56 +312,6 @@ DebugJS.checkMetaKey = function(e) {
   return metaKey;
 }
 
-DebugJS.cmdHistory = '';
-DebugJS.execCmd = function(e) {
-  if (document.activeElement != Debug.cmdLine) {
-    return;
-  }
-
-  var cmd = Debug.cmdLine.value;
-  DebugJS.cmdHistory = cmd;
-  Debug.cmdLine.value = '';
-  log.s(cmd);
-
-  if (cmd.indexOf("echo ") == 0) {
-    DebugJS.execCmdEcho(cmd);
-    return;
-  }
-
-  if (cmd.indexOf("p ") == 0) {
-    DebugJS.execCmdP(cmd);
-    return;
-  }
-
-  switch (cmd) {
-    case 'v':
-      log('ver.' + Debug.v);
-      break;
-    case 'cls':
-      Debug.clearMessage();
-      break;
-    case 'exit':
-    case 'quit':
-    case '\\q':
-      Debug.clearMessage();
-      Debug.hideDebugWindow();
-      break;
-    case 'stop move':
-      DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
-      break;
-    case 'start move':
-      if (DebugJS.status & DebugJS.STATE_DYNAMIC) DebugJS.status |= DebugJS.STATE_DRAGGABLE;
-      break;
-    default:
-      try {
-        eval(cmd);
-      } catch (e) {
-        log.e(e);
-      }
-      break;
-  }
-}
-
 DebugJS.execCmdEcho = function(cmd) {
   var v = cmd.replace('echo ', '');
   try {
@@ -430,8 +384,7 @@ DebugJS.objDump = function(obj, arg) {
 
 DebugJS.prototype = {
   init:  function(elmId, options) {
-    if(!this.ENABLE){return;}
-
+    if(!Debug.ENABLE){return;}
     if (elmId == null) {
       this.id = this.DEFAULT_ELM_ID;
       DebugJS.status |= DebugJS.STATE_DYNAMIC;
@@ -455,7 +408,7 @@ DebugJS.prototype = {
       this.options = options;
     }
 
-    // create a window
+    // Create a window
     if (this.debugWindow == null) {
       var div = document.createElement('div');
       div.id = this.id;
@@ -464,41 +417,43 @@ DebugJS.prototype = {
       this.debugWindow = div;
     }
 
-    // info area
+    // Info Area
     this.infoArea = document.createElement('div');
     this.debugWindow.appendChild(this.infoArea);
     this.initInfoArea();
 
-    // CLR button
-    if (this.options.showClearButton) {
-      this.clrBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.clrBtnArea);
-    }
-
-    // clock
+    // Clock
     if (this.options.showClock) {
       this.clockArea = document.createElement('span');
       this.infoArea.appendChild(this.clockArea);
     }
 
-    // stop watch
-    if (this.options.enableStopWatch) {
-      this.swBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.swBtnArea);
-
-      this.swArea = document.createElement('span');
-      this.infoArea.appendChild(this.swArea);
-    }
-
-    // x button
+    // X Button
     if (this.options.showCloseButton) {
       this.closeBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.closeBtnArea);
     }
 
-    this.infoArea.appendChild(document.createElement('br'));
+    // CLR Button
+    if (this.options.showClearButton) {
+      this.clrBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.clrBtnArea);
+    }
 
-    // window size
+    // Stopwatch
+    if (this.options.enableStopWatch) {
+      this.swArea = document.createElement('span');
+      this.infoArea.appendChild(this.swArea);
+
+      this.swBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.swBtnArea);
+    }
+
+    if ((this.options.showClock) || (this.options.showCloseButton) || (this.options.showClearButton) || (this.options.enableStopWatch)) {
+      this.infoArea.appendChild(document.createElement('br'));
+    }
+
+    // Window Size
     if (this.options.showWindowSize) {
       this.screenSizeArea = document.createElement('span');
       this.infoArea.appendChild(this.screenSizeArea);
@@ -516,7 +471,7 @@ DebugJS.prototype = {
       this.infoArea.appendChild(this.scrollPosArea);
     }
 
-    // mouse position
+    // Mouse Status
     if (this.options.showMouseStatus) {
       this.mousePositionArea = document.createElement('span');
       this.infoArea.appendChild(this.mousePositionArea);
@@ -525,10 +480,12 @@ DebugJS.prototype = {
       this.infoArea.appendChild(this.mouseClickArea);
     }
 
-    // key status
-    if (this.options.showKeyStatus) {
+    if ((this.options.showWindowSize) || (this.options.showMouseStatus)) {
       this.infoArea.appendChild(document.createElement('br'));
+    }
 
+    // Key Status
+    if (this.options.showKeyStatus) {
       this.keyDownArea = document.createElement('span');
       this.infoArea.appendChild(this.keyDownArea);
 
@@ -539,18 +496,18 @@ DebugJS.prototype = {
       this.infoArea.appendChild(this.keyUpArea);
     }
 
-    // log
+    // Log
     this.msgArea = document.createElement('div');
     this.debugWindow.appendChild(this.msgArea);
 
-    // command line
+    // Command Line
     if (this.options.enableCommandLine) {
       this.cmdArea = document.createElement('div');
       this.debugWindow.appendChild(this.cmdArea);
       this.initCmdArea();
     }
 
-    this.msgBuff = new RingBuffer(this.options.buffSize);
+    this.msgBuff = new DebugJS.RingBuffer(this.options.buffSize);
 
     var styles = {};
     styles['#' + this.id] = this.STYLE;
@@ -721,16 +678,11 @@ DebugJS.prototype = {
     this.infoArea.innerHTML = '<div style="padding:1px 2px 0px 2px;background:rgba(0,68,118,0);"></div>';
   },
 
-  // Update Clear Button
-  initClrBtnArea: function() {
-    this.clrBtnArea.innerHTML = '<span style="margin-right:8px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
-  },
-
   // Update Clock
   updateClockArea: function() {
     var dt = DebugJS.getTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';text-shadow:0 0 3px;margin-right:160px;">' + tm + '</span>';
+    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';margin-right:160px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
     if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -774,7 +726,6 @@ DebugJS.prototype = {
     this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + DebugJS.mouseClick + '</span>';
   },
 
-
   // Update key Down
   updateKeyDownArea: function() {
     this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info">Key Down:' + DebugJS.keyDownCode + '&nbsp;</span>';
@@ -792,7 +743,7 @@ DebugJS.prototype = {
 
   // Update Stop Watch Button
   updateSwBtnArea: function() {
-    var msg = '<span><a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a>';
+    var msg = '<span span style="float:right;margin-right:4px;"><a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a>';
     msg += '<a href="" onclick="DebugJS.startStopStopWatch();return false;">';
     if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
@@ -806,12 +757,17 @@ DebugJS.prototype = {
   // Update Stop Watch
   updateSwArea: function() {
     DebugJS.updateStopWatch();
-    var msg = DebugJS.elapsedTime;
+    var msg = '<span style="float:right;margin-right:10px;">' + DebugJS.elapsedTime + '</span>';
     this.swArea.innerHTML = msg;
 
     if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       setTimeout('Debug.updateSwArea()', 50);
     }
+  },
+
+  // Update Clear Button
+  initClrBtnArea: function() {
+    this.clrBtnArea.innerHTML = '<span style="float:right;margin-right:4px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
   },
 
   // Close Button
@@ -823,11 +779,12 @@ DebugJS.prototype = {
  initCmdArea: function() {
     this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
     this.cmdLine = document.getElementById(Debug.cmdLineId);
+    this.cmdHistory = new DebugJS.RingBuffer(10);
   },
 
   // Log Output
   printMessage: function() {
-    var buf = this.msgBuff.getAll();
+    var buf = this.msgBuff.getLog();
     var msg = '';
 
     // Log Area
@@ -910,21 +867,53 @@ DebugJS.prototype = {
   keyhandler: function(e) {
     switch (e.keyCode) {
       case 13: // Enter
-        DebugJS.execCmd(e);
+        Debug.execCmd();
         break;
+
       case 27: // ESC
         Debug.hideDebugWindow();
         break;
+
       case 38: // ↑
         if (document.activeElement == Debug.cmdLine) {
-          Debug.cmdLine.value = DebugJS.cmdHistory;
+          var cmds = Debug.cmdHistory.getAll();
+          if (cmds.length == 0) return;
+          if (cmds.length < Debug.cmdHistoryIdx) {
+            Debug.cmdHistoryIdx = cmds.length;
+          }
+          if (Debug.cmdHistoryIdx == cmds.length) {
+            Debug.cmdTmp = Debug.cmdLine.value;
+          }
+          if (Debug.cmdHistoryIdx > 0) {
+            Debug.cmdHistoryIdx--;
+          }
+          Debug.cmdLine.value = cmds[Debug.cmdHistoryIdx];
         }
         break;
+
       case 40: // ↓
         if (document.activeElement == Debug.cmdLine) {
-          Debug.cmdLine.value = '';
+          var cmds = Debug.cmdHistory.getAll();
+          if (cmds.length == 0) return;
+          if (Debug.cmdHistoryIdx < cmds.length) {
+            Debug.cmdHistoryIdx++;
+          }
+          if (Debug.cmdHistoryIdx == cmds.length) {
+            Debug.cmdLine.value =  Debug.cmdTmp;
+          } else {
+            Debug.cmdLine.value = cmds[Debug.cmdHistoryIdx];
+          }
         }
         break;
+
+      case 112: // F1
+        if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+          Debug.debugWindow.style.top = 0;
+          Debug.debugWindow.style.left = 0;
+          DebugJS.status &= ~DebugJS.STATE_DRAGGING;
+        }
+        break;
+
       case 113: // F2
         if (DebugJS.status & DebugJS.STATE_SHOW) {
           Debug.hideDebugWindow();
@@ -932,6 +921,7 @@ DebugJS.prototype = {
           Debug.showDebugWindow();
         }
         break;
+
       default:
         break;
     }
@@ -952,28 +942,83 @@ DebugJS.prototype = {
     styles[selector] = {'display': 'block'};
     Debug.applyStyles(styles);
     DebugJS.status |= DebugJS.STATE_SHOW;
+  },
+
+  execCmd: function() {
+    if (document.activeElement != Debug.cmdLine) {
+      return;
+    }
+
+    var cmd = Debug.cmdLine.value;
+    Debug.cmdHistory.add(cmd);
+    Debug.cmdHistoryIdx = (Debug.cmdHistory.count() < Debug.cmdHistoryMax) ? Debug.cmdHistory.count() : Debug.cmdHistoryMax;
+    Debug.cmdLine.value = '';
+    log.s(cmd);
+
+    if (cmd.indexOf("echo ") == 0) {
+      DebugJS.execCmdEcho(cmd);
+      return;
+    }
+
+    if (cmd.indexOf("p ") == 0) {
+      DebugJS.execCmdP(cmd);
+      return;
+    }
+
+    switch (cmd) {
+      case 'v':
+        log('ver.' + Debug.v);
+        break;
+      case 'cls':
+        Debug.clearMessage();
+        break;
+      case 'exit':
+      case 'quit':
+      case '\\q':
+        Debug.clearMessage();
+        Debug.hideDebugWindow();
+        break;
+      case 'stop move':
+        DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
+        break;
+      case 'start move':
+        if (DebugJS.status & DebugJS.STATE_DYNAMIC) DebugJS.status |= DebugJS.STATE_DRAGGABLE;
+        break;
+      default:
+        try {
+          eval(cmd);
+        } catch (e) {
+          log.e(e);
+        }
+        break;
+    }
   }
 };
 
-var RingBuffer = function(bufferSize) {
-  if (bufferSize == undefined) {
-    bufferSize = 0;
+DebugJS.RingBuffer = function(len) {
+  if (len == undefined) {
+    len = 0;
   }
-  this.buffer = new Array(bufferSize);
-  this.count = 0;
+  this.buffer = new Array(len);
+  this.cnt = 0;
 };
 
-RingBuffer.prototype = {
+DebugJS.RingBuffer.prototype = {
   add: function(data) {
-    var lastIndex = (this.count % this.buffer.length);
-    this.buffer[lastIndex] = data;
-    this.count++;
+    var newIdx = (this.cnt % this.buffer.length);
+    this.buffer[newIdx] = data;
+    this.cnt++;
+    return;
+  },
+
+  set: function(index, data) {
+    this.buffer[index] = data;
     return;
   },
 
   get: function(index) {
-    if (this.buffer.length < this.count) {
-      index += this.count;
+    if (this.buffer.length < this.cnt) {
+      index += this.cnt;
     }
     index %= this.buffer.length;
     return this.buffer[index];
@@ -981,7 +1026,31 @@ RingBuffer.prototype = {
 
   getAll: function() {
     var allBuff = [];
-    var bufCnt = this.count;
+    var bufLen = this.buffer.length;
+    var pos = 0;
+
+    if (this.cnt > bufLen) {
+      pos = (this.cnt % bufLen);
+    }
+
+    for (var i = 0; i < bufLen; i++) {
+      if (pos >= bufLen) {
+        pos = 0;
+      }
+      if (this.buffer[pos] == undefined) {
+        break;
+      } else {
+        allBuff[i] = this.buffer[pos];
+        pos++;
+      }
+    }
+
+    return allBuff;
+  },
+
+  getLog: function() {
+    var allBuff = [];
+    var bufCnt = this.cnt;
     var bufLen = this.buffer.length;
     var line = '';
     var lineNum = '';
@@ -1038,8 +1107,17 @@ RingBuffer.prototype = {
 
   clear: function() {
     this.buffer = new Array(this.buffer.length);
-    this.count = 0;
+    this.cnt = 0;
     return;
+  },
+
+  count: function() {
+    return this.cnt;
+  },
+
+  lastIndex: function() {
+    var lastIdx = (this.cnt - 1) % this.buffer.length;
+    return lastIdx;
   },
 
   digits: function(x) {
@@ -1055,15 +1133,11 @@ RingBuffer.prototype = {
 var Debug = new DebugJS();
 
 var log = function(msg) {
-  if(!Debug.ENABLE){return;}
   var m = log.init(msg);
-  var styleS = '';
-  var styleE = '';
-  log.out(m, styleS, styleE);
+  log.out(m, '', '');
 }
 
 log.e = function(msg) {
-  if(!Debug.ENABLE){return;}
   var m = log.init(msg);
   var styleS = '<span style="color:' + Debug.options.errorColor + ';">';
   var styleE = '</span>';
@@ -1071,7 +1145,6 @@ log.e = function(msg) {
 }
 
 log.w = function(msg) {
-  if(!Debug.ENABLE){return;}
   var m = log.init(msg);
   var styleS = '<span style="color:' + Debug.options.warnColor + ';">';
   var styleE = '</span>';
@@ -1079,7 +1152,6 @@ log.w = function(msg) {
 }
 
 log.i = function(msg) {
-  if(!Debug.ENABLE){return;}
   var m = log.init(msg);
   var styleS = '<span style="color:' + Debug.options.infoColor + ';">';
   var styleE = '</span>';
@@ -1087,7 +1159,6 @@ log.i = function(msg) {
 }
 
 log.d = function(msg) {
-  if(!Debug.ENABLE){return;}
   var m = log.init(msg);
   var styleS = '<span style="color:' + Debug.options.debugColor + ';">';
   var styleE = '</span>';
@@ -1095,7 +1166,6 @@ log.d = function(msg) {
 }
 
 log.v = function(msg) {
-  if(!Debug.ENABLE){return;}
   var m = log.init(msg);
   var styleS = '<span style="color:' + Debug.options.verboseColor + ';">';
   var styleE = '</span>';
@@ -1103,11 +1173,17 @@ log.v = function(msg) {
 }
 
 log.s = function(msg) {
-  if(!Debug.ENABLE){return;}
   var m = log.init(msg);
   var styleS = '<span style="color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;">';
   var styleE = '</span>';
   log.out(m, styleS, styleE);
+}
+
+// for object dump
+log.p = function(o) {
+  var m = log.init(o);
+  var m = '<br>' + DebugJS.printObj(m);
+  log.out(m, '', '');
 }
 
 log.init = function(msg) {
@@ -1130,4 +1206,17 @@ log.out = function(msg, styleStart, styleEnd) {
     Debug.msgBuff.add(m);
   }
   Debug.printMessage();
+}
+
+if(!Debug.ENABLE){
+log=function(x){};
+log.e=function(x){};
+log.w=function(x){};
+log.i=function(x){};
+log.d=function(x){};
+log.v=function(x){};
+log.s=function(x){};
+log.p=function(x){};
+log.init=function(x){};
+log.out=function(x){};
 }
