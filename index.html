@@ -4,8 +4,232 @@
 <meta charset="utf-8">
 <title>debug.js demo</title>
 <script src="debug.js"></script>
-<link rel="stylesheet" href="demo.css" />
-<script src="demo.js"></script>
+<style>
+body {
+  font-family: "Arial";
+  font-size: 20px;
+}
+
+a {
+  color: #00f;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.title {
+  position: absolute;
+  font-size: 54px;
+  font-weight: bold;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  height: 70px;
+  margin-left: 5px;
+}
+
+.caption {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.description {
+  color: #111;
+}
+
+.annotation {
+  color: #70ad47;
+}
+
+.code {
+  width: 800px;
+  padding: .5em;
+  font-family: Consolas;
+  font-size: 9pt;
+  color: #aaa;
+  background: #111;
+}
+
+.code1 {
+  font-family: Arial;
+  font-size: 18px;
+  color: #0070c0;
+}
+
+.emphasis {
+  color: #fff;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 75px;
+  background: #00a8ff;
+  color: #fff;
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  top: 80px;
+}
+
+.button {
+  width:180px;
+  font-size:20px;
+  font-weight:bold;
+  text-decoration:none;
+  display:block;
+  text-align:center;
+  padding:8px 0 10px;
+  margin: 4px 4px 12px 4px;
+  color:#fff;
+  background: #0068cc;
+  border-radius: 5px;
+}
+
+.button:hover {
+  background: #00a8ff;
+  text-decoration: none;
+}
+
+/*td {*/
+/*  width: 100px;*/
+/*  font-size: 20px;*/
+/*  border: solid 1px #ccc;*/
+/*}*/
+</style>
+
+<script>
+var a = {
+  'key1': 'val1',
+  'key2': '123',
+  'key3': 123,
+  'key4': {
+    'keyA': 'A',
+    'keyB': {
+      'keyB1': 'b1',
+      'keyB2': 'b2'
+    },
+    'keyC': 'C'
+   },
+   'key5': null,
+   'key6': undefined,
+   'key7': true,
+   'key8': [
+     {
+       'aaa': 111,
+       'bbb': 'test1'
+     },
+     {
+       'aaa': 222,
+       'bbb': 'test2'
+     }
+   ]
+};
+
+var b = ['1', '2', '3'];
+var c = 1;
+var d = "string";
+var e = false;
+var f = undefined;
+var g = null;
+
+var h = [
+  {
+    'key1': 'AAA',
+    'key2': 'BBB'
+  },
+  {
+    'key1': 'CCC',
+    'key2': 'DDD'
+  },
+  {
+    'key1': 'EEE',
+    'key2': 'FFF'
+  }
+];
+
+
+window.onload = function() {
+//in the absence of this initialization, debug.js works in default configuration.
+  var options = {
+    'buffSize': 18,
+    'width': 500,
+    'position': 'center', // left-top, left-bottom, center, right-top, right-bottom
+    'posAdjX': 0,
+    'posAdjY': 0,
+    'errorColor': '#d44',
+    'warnColor': '#ed0',
+    'infoColor': '#fff',
+    'debugColor': '#8cf',
+    'verboseColor': '#ccc',
+    'specialColor': '#fff',
+    'timeColor': '#0f0',
+    'systemInfoColor': '#ddd',
+    'showLineNums': true,
+    'showTimeStamp': true,
+    'showClock': true,
+    'showClearButton': true,
+    'showCloseButton': true,
+    'showWindowSize': true,
+    'showMouseStatus': true,
+    'showKeyStatus': true,
+    'enableStopWatch': true,
+    'enableCommandLine': true
+  };
+  Debug.init(null, options);
+
+// If you want to output the logs to a designated area, pass the element id to 1st argument.
+  var options2 = {
+    'buffSize': 10,
+    'width': 500,
+    'position': 'center', // left-top, left-bottom, center, right-top, right-bottom
+    'posAdjX': 0,
+    'posAdjY': 0,
+    'errorColor': '#d44',
+    'warnColor': '#ed0',
+    'infoColor': '#fff',
+    'debugColor': '#8cf',
+    'verboseColor': '#ccc',
+    'specialColor': '#fff',
+    'timeColor': '#0f0',
+    'systemInfoColor': '#ddd',
+    'showLineNums': true,
+    'showTimeStamp': false,
+    'showClock': false,
+    'showClearButton': true,
+    'showCloseButton': false,
+    'showWindowSize': false,
+    'showMouseStatus': false,
+    'showKeyStatus': false,
+    'enableStopWatch': false,
+    'enableCommandLine': false
+  };
+//  Debug.init('test1', options2);
+//  Debug.init('test1', null);
+
+  log('Here is the output example!');
+  log('The window\'s load event fired.');
+}
+
+document.onkeydown = function(e) {
+  //log('KeyDown: keyCode = ' + e.keyCode);
+}
+
+document.onmousemove = function(e) {
+  //log('mouseMoved: x=' + e.clientX + ', y=' + e.clientY);
+};
+
+document.onclick = function(e) {
+  //log('click count: ' + event.detail);
+}
+</script>
+
 </head>
 <body>
 <div class="header">
