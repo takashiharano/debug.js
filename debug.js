@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605282217';
+  this.v = '201605290055';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -53,10 +53,12 @@ function DebugJS() {
   this.cmdLineId = null;
   this.debugWindow = null;
   this.infoArea = null;
-  this.clrBtnArea = null;
   this.clockArea = null;
   this.swBtnArea = null;
   this.swArea = null;
+  this.clrBtnArea = null;
+  this.pinBtnArea = null;
+  this.closeBtnArea = null;
   this.mousePositionArea = null;
   this.mouseClickArea = null;
   this.screenSizeArea = null;
@@ -66,7 +68,6 @@ function DebugJS() {
   this.keyDownArea = null;
   this.keyPressArea = null;
   this.keyUpArea = null;
-  this.closeBtnArea = null;
   this.msgArea = null;
   this.cmdArea = null;
   this.cmdLine = null;
@@ -428,10 +429,17 @@ DebugJS.prototype = {
       this.infoArea.appendChild(this.clockArea);
     }
 
+    // -- R to L
     // X Button
     if (this.options.showCloseButton) {
       this.closeBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.closeBtnArea);
+    }
+
+    // Pin Button
+    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+      this.pinBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.pinBtnArea);
     }
 
     // CLR Button
@@ -448,6 +456,7 @@ DebugJS.prototype = {
       this.swBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.swBtnArea);
     }
+    // -- R to L
 
     if ((this.options.showClock) || (this.options.showCloseButton) || (this.options.showClearButton) || (this.options.enableStopWatch)) {
       this.infoArea.appendChild(document.createElement('br'));
@@ -637,13 +646,26 @@ DebugJS.prototype = {
   },
 
   initDebugWindow: function() {
+    if (this.options.showClock) {
+      DebugJS.status |= DebugJS.STATE_SHOW_CLOCK;
+      this.updateClockArea();
+    }
+
+    if (this.options.enableStopWatch) {
+      this.updateSwBtnArea();
+      this.updateSwArea();
+    }
+
     if (this.options.showClearButton) {
       this.initClrBtnArea();
     }
 
-    if (this.options.showClock) {
-      DebugJS.status |= DebugJS.STATE_SHOW_CLOCK;
-      this.updateClockArea();
+    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+      this.updatePinBtnArea();
+    }
+
+    if (this.options.showCloseButton) {
+      this.initCloseBtnArea();
     }
 
     if (this.options.showMouseStatus) {
@@ -657,15 +679,6 @@ DebugJS.prototype = {
       this.updateClientSizeArea();
       this.updateBodySizeArea();
       this.updateScrollPosArea();
-    }
-
-    if (this.options.enableStopWatch) {
-      this.updateSwBtnArea();
-      this.updateSwArea();
-    }
-
-    if (this.options.showCloseButton) {
-      this.initCloseBtnArea();
     }
 
     this.printMessage();
@@ -682,7 +695,7 @@ DebugJS.prototype = {
   updateClockArea: function() {
     var dt = DebugJS.getTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';margin-right:160px;">' + tm + '</span>';
+    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';margin-right:10px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
     if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -770,9 +783,18 @@ DebugJS.prototype = {
     this.clrBtnArea.innerHTML = '<span style="float:right;margin-right:4px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
   },
 
+  // Update Pin Button
+  updatePinBtnArea: function() {
+    var c = '#dd0';
+    if (DebugJS.status & DebugJS.STATE_DRAGGABLE) {
+       c = '#888';
+    }
+    this.pinBtnArea.innerHTML = '<span style="float:right;margin-right:4px;"><a href="" onclick="Debug.toggleDraggable();return false;" style="color:' + c + '">📌</a></span>';
+  },
+
   // Close Button
   initCloseBtnArea: function() {
-    this.closeBtnArea.innerHTML = '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" onclick="Debug.hideDebugWindow();return false;" style="color:#888;">×</a></span>'
+    this.closeBtnArea.innerHTML = '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" style="color:#888;" onclick="Debug.hideDebugWindow();return false;" onmouseover="this.style.color=\'#d88\'" onmouseout="this.style.color=\'#888\'">×</a></span>'
   },
 
   // Command-line Area
@@ -858,6 +880,15 @@ DebugJS.prototype = {
       el.style.top = e.clientY - clickOffsetTop + 'px';
       el.style.left = e.clientX - clickOffsetLeft + 'px';
     }
+  },
+
+  toggleDraggable: function() {
+    if (DebugJS.status & DebugJS.STATE_DRAGGABLE) {
+      DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
+    } else {
+      DebugJS.status |= DebugJS.STATE_DRAGGABLE;
+    }
+    Debug.updatePinBtnArea();
   },
 
   setupKeyHandler: function() {
@@ -977,12 +1008,6 @@ DebugJS.prototype = {
       case '\\q':
         Debug.clearMessage();
         Debug.hideDebugWindow();
-        break;
-      case 'stop move':
-        DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
-        break;
-      case 'start move':
-        if (DebugJS.status & DebugJS.STATE_DYNAMIC) DebugJS.status |= DebugJS.STATE_DRAGGABLE;
         break;
       default:
         try {
@@ -1123,8 +1148,7 @@ DebugJS.RingBuffer.prototype = {
   digits: function(x) {
     var digit = 0;
     while (x != 0) {
-      x = (x / 10) << 0;
-      digit++;
+      x = (x / 10) << 0; digit++;
     }
     return digit;
   }
