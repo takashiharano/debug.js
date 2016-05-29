@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605300023';
+  this.v = '201605300050';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -997,6 +997,9 @@ DebugJS.prototype = {
       case 'p':
         log('Usage: p &lt;object&gt;');
         break;
+      case 'rgb':
+        log('Usage: rgb &lt;color value (#RGB or R G B)&gt;');
+        break;
       case 'v':
         log('ver.' + Debug.v);
         break;
@@ -1160,7 +1163,7 @@ DebugJS.RingBuffer.prototype = {
 DebugJS.printHelp = function() {
   var h = '<br>';
   h += 'p     Print object.<br>';
-  h += 'rgb   Convert RGB color values. (HEX <-> DEC)<br>';
+  h += 'rgb   Convert RGB color values between HEX and DEC.<br>';
   h += 'cls   Clear log message.<br>';
   h += 'v     Displays version info.<br>';
   h += 'exit  Close the debug window.<br>';
