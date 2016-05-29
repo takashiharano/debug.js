@@ -7,7 +7,7 @@
 <style>
 body {
   font-family: "Arial";
-  font-size: 20px;
+  font-size: 24px;
 }
 
 a {
@@ -20,27 +20,27 @@ a:hover {
 }
 
 .title {
-  position: absolute;
-  font-size: 54px;
+  font-size: 3.5rem;
   font-weight: bold;
   top: 0;
   bottom: 0;
   margin: auto;
-  height: 70px;
+  height:  3.5rem;
   margin-left: 5px;
+  white-space: nowrap;
 }
 
 .caption {
-  font-size: 28px;
+  font-size: 1.8rem;
   font-weight: bold;
 }
 
 .description {
-  color: #111;
+  color: #333;
 }
 
 .annotation {
-  color: #70ad47;
+  color: #5b7;
 }
 
 .code {
@@ -53,9 +53,8 @@ a:hover {
 }
 
 .code1 {
-  font-family: Arial;
-  font-size: 18px;
-  color: #0070c0;
+  font-size: 1.5rem;
+  color: #07c;
 }
 
 .emphasis {
@@ -67,7 +66,7 @@ a:hover {
   top: 0;
   left: 0;
   width: 100%;
-  height: 75px;
+  height: 5rem;
   background: #00a8ff;
   color: #fff;
   z-index: 1;
@@ -75,7 +74,7 @@ a:hover {
 
 .content {
   position: relative;
-  top: 80px;
+  top: 5.2rem;
 }
 
 .button {
@@ -238,13 +237,12 @@ document.onclick = function(e) {
 </div>
 
 <div class="content">
-<div class="caption">HTML:</div>
-<div class="description">include the script file.</div>
+<div class="caption">Usage:</div><br>
+<div class="description"><b>HTML</b><br>include the script file.</div>
 <div class="code1">&lt;script src="debug.js"&gt;&lt;/script&gt;</div>
 <br>
 
-<div class="caption">JavaScript:</div>
-<div class="description">put the log messages anywhere you want.</div>
+<div class="description"><b>JavaScript</b><br>put the log messages anywhere you want.</div>
 <div class="code1">log(&lt;message&gt;);</div><br>
 
 <div class="description">

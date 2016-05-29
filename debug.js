@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605291406';
+  this.v = '201605292227';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -314,36 +314,27 @@ DebugJS.checkMetaKey = function(e) {
   return metaKey;
 }
 
-DebugJS.execCmdEcho = function(cmd) {
-  var v = cmd.replace('echo ', '');
-  try {
-    log(eval(v));
-  } catch (e) {
-    log.e(e);
-  }
-}
-
 DebugJS.execCmdP = function(cmd) {
   var v = cmd.replace('p ', '');
-  var command = 'DebugJS.buf="<br>' + v + ' = ";DebugJS.buf+=DebugJS.printObj(' + v + ');log(DebugJS.buf);';
+  var command = 'DebugJS.buf="<br>' + v + ' = ";DebugJS.buf+=DebugJS.objDump(' + v + ');log(DebugJS.buf);';
   eval(command);
 }
 
-DebugJS.OBJDUMP_MAX = 50;
-DebugJS.printObj = function(obj) {
+DebugJS.OBJDUMP_MAX = 100;
+DebugJS.objDump = function(obj) {
   var arg = {
     'lv': 0,
     'cnt': 0,
     'dump': ''
   };
-  var ret = DebugJS.objDump(obj, arg);
+  var ret = DebugJS._objDump(obj, arg);
   if (ret.cnt >= DebugJS.OBJDUMP_MAX) {
     log.w('The object is too large. (' + ret.cnt + ')');
   }
   return ret.dump;
 }
 
-DebugJS.objDump = function(obj, arg) {
+DebugJS._objDump = function(obj, arg) {
   if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
     arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
     return arg;
@@ -358,7 +349,7 @@ DebugJS.objDump = function(obj, arg) {
     for (var i in obj) {
       arg.lv++;
       arg.dump += indent + '[' + i + '] ';
-      arg = DebugJS.objDump(obj[i], arg);
+      arg = DebugJS._objDump(obj[i], arg);
       arg.lv--;
     }
   } else if (obj instanceof Object) {
@@ -367,7 +358,7 @@ DebugJS.objDump = function(obj, arg) {
     for (var key in obj) {
       arg.dump += indent + key + ': ';
       arg.lv++;
-      arg = DebugJS.objDump(obj[key], arg);
+      arg = DebugJS._objDump(obj[key], arg);
       arg.lv--;
     }
     indent = indent.replace(' ', '');
@@ -824,9 +815,7 @@ DebugJS.prototype = {
     msg += '</div>';
 
     this.msgArea.innerHTML = msg;
-    if (this.msgBuff.count() > this.options.buffSize) {
-      this.msgArea.children[this.msgAreaId].scrollTop = this.msgArea.children[this.msgAreaId].scrollHeight;
-    }
+    this.msgArea.children[this.msgAreaId].scrollTop = this.msgArea.children[this.msgAreaId].scrollHeight;
   },
 
   clearMessage: function() {
@@ -994,17 +983,15 @@ DebugJS.prototype = {
     Debug.cmdLine.value = '';
     log.s(cmd);
 
-    if (cmd.indexOf("echo ") == 0) {
-      DebugJS.execCmdEcho(cmd);
-      return;
-    }
-
     if (cmd.indexOf("p ") == 0) {
       DebugJS.execCmdP(cmd);
       return;
     }
 
     switch (cmd) {
+      case 'p':
+        log('Usage: p &lt;object&gt;');
+        break;
       case 'v':
         log('ver.' + Debug.v);
         break;
@@ -1017,9 +1004,12 @@ DebugJS.prototype = {
         Debug.clearMessage();
         Debug.hideDebugWindow();
         break;
+      case 'help':
+        DebugJS.printHelp();
+        break;
       default:
         try {
-          eval(cmd);
+          log(eval(cmd));
         } catch (e) {
           log.e(e);
         }
@@ -1112,6 +1102,12 @@ DebugJS.RingBuffer.prototype = {
       }
       cnt++; //start at 1
 
+      if (this.buffer[pos] == undefined) {
+        break;
+      } else {
+        msg = this.buffer[pos];
+      }
+
       if (Debug.options.showLineNums) {
         var diffDigits = this.digits(maxCnt) - this.digits(cnt);
         lineNumPadding = '';
@@ -1120,12 +1116,6 @@ DebugJS.RingBuffer.prototype = {
         }
         lineNum = lineNumPadding + cnt + ':';
         line += '<td style="padding-right:3px; word-break:normal;">' + lineNum + '</td>';
-      }
-
-      if (this.buffer[pos] == undefined) {
-        msg = '';
-      } else {
-        msg = this.buffer[pos];
       }
 
       line += '<td><pre>' + msg + '</pre></td>';
@@ -1161,6 +1151,15 @@ DebugJS.RingBuffer.prototype = {
     return digit;
   }
 };
+
+DebugJS.printHelp = function() {
+  var h = '<br>';
+  h += 'p     print object<br>';
+  h += 'cls   clear log message<br>';
+  h += 'v     displays version info<br>';
+  h += 'exit  close the debug window<br>';
+  log(h);
+}
 
 var Debug = new DebugJS();
 
@@ -1214,7 +1213,7 @@ log.s = function(msg) {
 // for object dump
 log.p = function(o) {
   var m = log.init(o);
-  var m = '<br>' + DebugJS.printObj(m);
+  var m = '<br>' + DebugJS.objDump(m);
   log.out(m, '', '');
 }
 
