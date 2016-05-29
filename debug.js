@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605291406';
+  this.v = '201605300010';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -314,36 +314,27 @@ DebugJS.checkMetaKey = function(e) {
   return metaKey;
 }
 
-DebugJS.execCmdEcho = function(cmd) {
-  var v = cmd.replace('echo ', '');
-  try {
-    log(eval(v));
-  } catch (e) {
-    log.e(e);
-  }
-}
-
 DebugJS.execCmdP = function(cmd) {
   var v = cmd.replace('p ', '');
-  var command = 'DebugJS.buf="<br>' + v + ' = ";DebugJS.buf+=DebugJS.printObj(' + v + ');log(DebugJS.buf);';
+  var command = 'DebugJS.buf="<br>' + v + ' = ";DebugJS.buf+=DebugJS.objDump(' + v + ');log(DebugJS.buf);';
   eval(command);
 }
 
-DebugJS.OBJDUMP_MAX = 50;
-DebugJS.printObj = function(obj) {
+DebugJS.OBJDUMP_MAX = 100;
+DebugJS.objDump = function(obj) {
   var arg = {
     'lv': 0,
     'cnt': 0,
     'dump': ''
   };
-  var ret = DebugJS.objDump(obj, arg);
+  var ret = DebugJS._objDump(obj, arg);
   if (ret.cnt >= DebugJS.OBJDUMP_MAX) {
     log.w('The object is too large. (' + ret.cnt + ')');
   }
   return ret.dump;
 }
 
-DebugJS.objDump = function(obj, arg) {
+DebugJS._objDump = function(obj, arg) {
   if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
     arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
     return arg;
@@ -358,7 +349,7 @@ DebugJS.objDump = function(obj, arg) {
     for (var i in obj) {
       arg.lv++;
       arg.dump += indent + '[' + i + '] ';
-      arg = DebugJS.objDump(obj[i], arg);
+      arg = DebugJS._objDump(obj[i], arg);
       arg.lv--;
     }
   } else if (obj instanceof Object) {
@@ -367,7 +358,7 @@ DebugJS.objDump = function(obj, arg) {
     for (var key in obj) {
       arg.dump += indent + key + ': ';
       arg.lv++;
-      arg = DebugJS.objDump(obj[key], arg);
+      arg = DebugJS._objDump(obj[key], arg);
       arg.lv--;
     }
     indent = indent.replace(' ', '');
@@ -824,9 +815,7 @@ DebugJS.prototype = {
     msg += '</div>';
 
     this.msgArea.innerHTML = msg;
-    if (this.msgBuff.count() > this.options.buffSize) {
-      this.msgArea.children[this.msgAreaId].scrollTop = this.msgArea.children[this.msgAreaId].scrollHeight;
-    }
+    this.msgArea.children[this.msgAreaId].scrollTop = this.msgArea.children[this.msgAreaId].scrollHeight;
   },
 
   clearMessage: function() {
@@ -994,17 +983,20 @@ DebugJS.prototype = {
     Debug.cmdLine.value = '';
     log.s(cmd);
 
-    if (cmd.indexOf("echo ") == 0) {
-      DebugJS.execCmdEcho(cmd);
-      return;
-    }
-
     if (cmd.indexOf("p ") == 0) {
       DebugJS.execCmdP(cmd);
       return;
     }
 
+    if (cmd.indexOf("rgb ") == 0) {
+      DebugJS.convRGB(cmd);
+      return;
+    }
+
     switch (cmd) {
+      case 'p':
+        log('Usage: p &lt;object&gt;');
+        break;
       case 'v':
         log('ver.' + Debug.v);
         break;
@@ -1017,9 +1009,12 @@ DebugJS.prototype = {
         Debug.clearMessage();
         Debug.hideDebugWindow();
         break;
+      case 'help':
+        DebugJS.printHelp();
+        break;
       default:
         try {
-          eval(cmd);
+          log(eval(cmd));
         } catch (e) {
           log.e(e);
         }
@@ -1112,6 +1107,12 @@ DebugJS.RingBuffer.prototype = {
       }
       cnt++; //start at 1
 
+      if (this.buffer[pos] == undefined) {
+        break;
+      } else {
+        msg = this.buffer[pos];
+      }
+
       if (Debug.options.showLineNums) {
         var diffDigits = this.digits(maxCnt) - this.digits(cnt);
         lineNumPadding = '';
@@ -1120,12 +1121,6 @@ DebugJS.RingBuffer.prototype = {
         }
         lineNum = lineNumPadding + cnt + ':';
         line += '<td style="padding-right:3px; word-break:normal;">' + lineNum + '</td>';
-      }
-
-      if (this.buffer[pos] == undefined) {
-        msg = '';
-      } else {
-        msg = this.buffer[pos];
       }
 
       line += '<td><pre>' + msg + '</pre></td>';
@@ -1161,6 +1156,72 @@ DebugJS.RingBuffer.prototype = {
     return digit;
   }
 };
+
+DebugJS.printHelp = function() {
+  var h = '<br>';
+  h += 'p     Print object.<br>';
+  h += 'rgb   Convert RGB color values. (HEX <-> DEC)<br>';
+  h += 'cls   Clear log message.<br>';
+  h += 'v     Displays version info.<br>';
+  h += 'exit  Close the debug window.<br>';
+  log(h);
+}
+
+DebugJS.COLOR_R = '#f66';
+DebugJS.COLOR_G = '#6f6';
+DebugJS.COLOR_B = '#6bf';
+DebugJS.convRGB = function(cmd) {
+  var v = cmd.replace('rgb ', '');
+  var rgb = '<br>';
+  v = v.replace(/^\s+/g, '');
+  if (v.indexOf("#") == 0) {
+    rgb += DebugJS.convRGB16to10(v);
+  } else {
+    rgb += DebugJS.convRGB10to16(v);
+  }
+  log(rgb);
+}
+
+DebugJS.convRGB16to10 = function(rgb16) {
+  var r16, g16, b16, r10, g10, b10;
+  if (rgb16.length == 7) {
+    r16 = rgb16.substr(1, 2);
+    g16 = rgb16.substr(3, 2);
+    b16 = rgb16.substr(5, 2);
+  } else if (rgb16.length == 4) {
+    r16 = rgb16.substr(1, 1);
+    g16 = rgb16.substr(2, 1);
+    b16 = rgb16.substr(3, 1);
+    r16 += r16;
+    g16 += g16;
+    b16 += b16;
+  } else {
+    return '<span style="color:' + Debug.options.errorColor + '">invalid value.</span>';
+  }
+  r10 = parseInt(r16, 16);
+  g10 = parseInt(g16, 16);
+  b10 = parseInt(b16, 16);
+  var rgb10 = 'RGB = <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
+  return rgb10;
+}
+
+DebugJS.convRGB10to16 = function(rgb10) {
+  rgb10 = rgb10.replace(/\s{2,}/g, ' ');
+  var rgb10s = rgb10.split(' ', 3);
+  if ((rgb10s.length != 3) || ((rgb10s[0] < 0) || (rgb10s[0] > 255)) || ((rgb10s[1] < 0) || (rgb10s[1] > 255)) || ((rgb10s[2] < 0) || (rgb10s[2] > 255))) {
+    return '<span style="color:' + Debug.options.errorColor + '">invalid value.</span>';
+  }
+  var r16 = ('0' + parseInt(rgb10s[0]).toString(16)).slice(-2);
+  var g16 = ('0' + parseInt(rgb10s[1]).toString(16)).slice(-2);
+  var b16 = ('0' + parseInt(rgb10s[2]).toString(16)).slice(-2);
+  if ((r16.charAt(0) == r16.charAt(1)) && (g16.charAt(0) == g16.charAt(1)) && (b16.charAt(0) == b16.charAt(1))) {
+    r16 = r16.substring(0, 1);
+    g16 = g16.substring(0, 1);
+    b16 = b16.substring(0, 1);
+  }
+  var rgb16 = 'RGB = #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
+  return rgb16;
+}
 
 var Debug = new DebugJS();
 
@@ -1214,7 +1275,7 @@ log.s = function(msg) {
 // for object dump
 log.p = function(o) {
   var m = log.init(o);
-  var m = '<br>' + DebugJS.printObj(m);
+  var m = '<br>' + DebugJS.objDump(m);
   log.out(m, '', '');
 }
 
