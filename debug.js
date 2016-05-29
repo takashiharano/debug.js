@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605291356';
+  this.v = '201605291406';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -13,7 +13,7 @@ function DebugJS() {
   this.DEFAULT_OPTIONS = {
     'buffSize': 18,
     'width': 500,
-    'height': 215,
+    'height': 216,
     'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
     'posAdjX': 20,
     'posAdjY': 20,
@@ -83,6 +83,17 @@ function DebugJS() {
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
 
+DebugJS.STATE_SHOW = 0x1;
+DebugJS.STATE_DYNAMIC = 0x2;
+DebugJS.STATE_SHOW_CLOCK = 0x4;
+DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
+DebugJS.STATE_DRAGGABLE = 0x10;
+DebugJS.STATE_DRAGGING = 0x20;
+DebugJS.STATE_INITIALIZED = 0x80000000;
+DebugJS.status = 0;
+
+DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
+
 DebugJS.getTime = function() {
   var nowDate = new Date();
   var mm = nowDate.getMonth() + 1;
@@ -113,17 +124,6 @@ DebugJS.getTime = function() {
 
   return dateTime;
 }
-
-DebugJS.STATE_SHOW = 0x1;
-DebugJS.STATE_DYNAMIC = 0x2;
-DebugJS.STATE_SHOW_CLOCK = 0x4;
-DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
-DebugJS.STATE_DRAGGABLE = 0x10;
-DebugJS.STATE_DRAGGING = 0x20;
-DebugJS.STATE_INITIALIZED = 0x80000000;
-DebugJS.status = 0;
-
-DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 
 DebugJS.time = function() {
   var dt = DebugJS.getTime();
