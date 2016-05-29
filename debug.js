@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605292227';
+  this.v = '201605300010';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -988,6 +988,11 @@ DebugJS.prototype = {
       return;
     }
 
+    if (cmd.indexOf("rgb ") == 0) {
+      DebugJS.convRGB(cmd);
+      return;
+    }
+
     switch (cmd) {
       case 'p':
         log('Usage: p &lt;object&gt;');
@@ -1154,11 +1159,68 @@ DebugJS.RingBuffer.prototype = {
 
 DebugJS.printHelp = function() {
   var h = '<br>';
-  h += 'p     print object<br>';
-  h += 'cls   clear log message<br>';
-  h += 'v     displays version info<br>';
-  h += 'exit  close the debug window<br>';
+  h += 'p     Print object.<br>';
+  h += 'rgb   Convert RGB color values. (HEX <-> DEC)<br>';
+  h += 'cls   Clear log message.<br>';
+  h += 'v     Displays version info.<br>';
+  h += 'exit  Close the debug window.<br>';
   log(h);
+}
+
+DebugJS.COLOR_R = '#f66';
+DebugJS.COLOR_G = '#6f6';
+DebugJS.COLOR_B = '#6bf';
+DebugJS.convRGB = function(cmd) {
+  var v = cmd.replace('rgb ', '');
+  var rgb = '<br>';
+  v = v.replace(/^\s+/g, '');
+  if (v.indexOf("#") == 0) {
+    rgb += DebugJS.convRGB16to10(v);
+  } else {
+    rgb += DebugJS.convRGB10to16(v);
+  }
+  log(rgb);
+}
+
+DebugJS.convRGB16to10 = function(rgb16) {
+  var r16, g16, b16, r10, g10, b10;
+  if (rgb16.length == 7) {
+    r16 = rgb16.substr(1, 2);
+    g16 = rgb16.substr(3, 2);
+    b16 = rgb16.substr(5, 2);
+  } else if (rgb16.length == 4) {
+    r16 = rgb16.substr(1, 1);
+    g16 = rgb16.substr(2, 1);
+    b16 = rgb16.substr(3, 1);
+    r16 += r16;
+    g16 += g16;
+    b16 += b16;
+  } else {
+    return '<span style="color:' + Debug.options.errorColor + '">invalid value.</span>';
+  }
+  r10 = parseInt(r16, 16);
+  g10 = parseInt(g16, 16);
+  b10 = parseInt(b16, 16);
+  var rgb10 = 'RGB = <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
+  return rgb10;
+}
+
+DebugJS.convRGB10to16 = function(rgb10) {
+  rgb10 = rgb10.replace(/\s{2,}/g, ' ');
+  var rgb10s = rgb10.split(' ', 3);
+  if ((rgb10s.length != 3) || ((rgb10s[0] < 0) || (rgb10s[0] > 255)) || ((rgb10s[1] < 0) || (rgb10s[1] > 255)) || ((rgb10s[2] < 0) || (rgb10s[2] > 255))) {
+    return '<span style="color:' + Debug.options.errorColor + '">invalid value.</span>';
+  }
+  var r16 = ('0' + parseInt(rgb10s[0]).toString(16)).slice(-2);
+  var g16 = ('0' + parseInt(rgb10s[1]).toString(16)).slice(-2);
+  var b16 = ('0' + parseInt(rgb10s[2]).toString(16)).slice(-2);
+  if ((r16.charAt(0) == r16.charAt(1)) && (g16.charAt(0) == g16.charAt(1)) && (b16.charAt(0) == b16.charAt(1))) {
+    r16 = r16.substring(0, 1);
+    g16 = g16.substring(0, 1);
+    b16 = b16.substring(0, 1);
+  }
+  var rgb16 = 'RGB = #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
+  return rgb16;
 }
 
 var Debug = new DebugJS();
