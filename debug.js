@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605300010';
+  this.v = '201605300023';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -1172,12 +1172,12 @@ DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
 DebugJS.convRGB = function(cmd) {
   var v = cmd.replace('rgb ', '');
-  var rgb = '<br>';
+  var rgb;
   v = v.replace(/^\s+/g, '');
   if (v.indexOf("#") == 0) {
-    rgb += DebugJS.convRGB16to10(v);
+    rgb = DebugJS.convRGB16to10(v);
   } else {
-    rgb += DebugJS.convRGB10to16(v);
+    rgb = DebugJS.convRGB10to16(v);
   }
   log(rgb);
 }
