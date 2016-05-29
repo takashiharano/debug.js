@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605290055';
+  this.v = '201605291356';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -13,6 +13,7 @@ function DebugJS() {
   this.DEFAULT_OPTIONS = {
     'buffSize': 18,
     'width': 500,
+    'height': 215,
     'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
     'posAdjX': 20,
     'posAdjY': 20,
@@ -810,7 +811,11 @@ DebugJS.prototype = {
     var msg = '';
 
     // Log Area
-    msg += '<div style="position:relative;padding:.3em .3em .3em .3em;" id="' + Debug.msgAreaId + '">';
+    var height = '';
+    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+      height = 'height:' + this.options.height + 'px;';
+    }
+    msg += '<div style="position:relative;padding:.3em .3em .3em .3em;' + height + 'overflow:auto;" id="' + this.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -819,6 +824,9 @@ DebugJS.prototype = {
     msg += '</div>';
 
     this.msgArea.innerHTML = msg;
+    if (this.msgBuff.count() > this.options.buffSize) {
+      this.msgArea.children[this.msgAreaId].scrollTop = this.msgArea.children[this.msgAreaId].scrollHeight;
+    }
   },
 
   clearMessage: function() {
