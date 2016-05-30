@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605310000';
+  this.v = '201605310017';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -525,16 +525,6 @@ DebugJS.prototype = {
       'overflow': 'visible'
     };
 
-    styles['#' + this.id + ' a'] = {
-      'color': '#0cf',
-      'text-decoration': 'none'
-    };
-
-    styles['#' + this.id + ' a:hover'] = {
-      'color': '#fff',
-      'text-decoration': 'none'
-    };
-
     styles['#' + this.id + ' .btn'] = {
       'color': '#0cf',
       'text-decoration': 'none'
@@ -543,6 +533,7 @@ DebugJS.prototype = {
     styles['#' + this.id + ' .btn:hover'] = {
       'color': '#fff',
       'text-decoration': 'none',
+      'text-shadow': '0 0 3px',
       'cursor': 'pointer'
     };
 
@@ -978,7 +969,9 @@ DebugJS.prototype = {
     }
 
     var cmd = Debug.cmdLine.value;
-    Debug.cmdHistory.add(cmd);
+    if (cmd != '') {
+      Debug.cmdHistory.add(cmd);
+    }
     Debug.cmdHistoryIdx = (Debug.cmdHistory.count() < Debug.cmdHistoryMax) ? Debug.cmdHistory.count() : Debug.cmdHistoryMax;
     Debug.cmdLine.value = '';
     log.s(cmd);
