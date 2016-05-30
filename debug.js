@@ -5,7 +5,7 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605300050';
+  this.v = '201605310000';
   this.ENABLE = true;
 
   this.DEFAULT_SHOW = true;
@@ -13,7 +13,6 @@ function DebugJS() {
   this.DEFAULT_OPTIONS = {
     'buffSize': 18,
     'width': 500,
-    'height': 216,
     'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
     'posAdjX': 20,
     'posAdjY': 20,
@@ -39,14 +38,15 @@ function DebugJS() {
 
   this.STYLE = {
     'position': 'relative',
-    'padding': '0',
+    'padding': '1px',
     'line-height': '1em',
     'border': 'solid 1px #888',
     'font-family': 'Consolas',
     'font-size': '12px',
     'color': '#fff',
     'background': '#111',
-    'display': 'block'
+    'display': 'block',
+    'box-sizing': 'content-box'
   };
 
   this.id = null;
@@ -203,17 +203,9 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
   return retStr;
 }
 
-DebugJS.windowSize = '';
-DebugJS.clientSize = '';
-DebugJS.bodySize = '';
 DebugJS.resizeHandler = function() {
-  DebugJS.windowSize = 'w=' + window.outerWidth + ',h=' + window.outerHeight;
   Debug.updateWindowSizeArea();
-
-  DebugJS.clientSize = 'w=' + document.documentElement.clientWidth + ',h=' + document.documentElement.clientHeight;
   Debug.updateClientSizeArea();
-
-  DebugJS.bodySize = 'w=' + document.body.clientWidth + ',h=' + document.body.clientHeight;
   Debug.updateBodySizeArea();
 }
 
@@ -529,7 +521,8 @@ DebugJS.prototype = {
       'font-size': this.STYLE['font-size'],
       'font-family': this.STYLE['font-family'],
       'color': this.STYLE['color'],
-      'margin': '0'
+      'margin': '0',
+      'overflow': 'visible'
     };
 
     styles['#' + this.id + ' a'] = {
@@ -540,6 +533,17 @@ DebugJS.prototype = {
     styles['#' + this.id + ' a:hover'] = {
       'color': '#fff',
       'text-decoration': 'none'
+    };
+
+    styles['#' + this.id + ' .btn'] = {
+      'color': '#0cf',
+      'text-decoration': 'none'
+    };
+
+    styles['#' + this.id + ' .btn:hover'] = {
+      'color': '#fff',
+      'text-decoration': 'none',
+      'cursor': 'pointer'
     };
 
     styles['.' + this.id + '-sys-info'] = {
@@ -702,17 +706,17 @@ DebugJS.prototype = {
 
   // Update Window Size
   updateWindowSizeArea: function() {
-    this.windowSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">WIN:' + DebugJS.windowSize + '</span>';
+    this.windowSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">WIN:w=' + window.outerWidth + ',h=' + window.outerHeight + '</span>';
   },
 
   // Update Client Size
   updateClientSizeArea: function() {
-    this.clientSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLI:' + DebugJS.clientSize + '</span>';
+    this.clientSizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLI:w=' + document.documentElement.clientWidth + ',h=' + document.documentElement.clientHeight + '</span>';
   },
 
   // Update Body Size
   updateBodySizeArea: function() {
-    this.bodySizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">BODY:' + DebugJS.bodySize + '</span>';
+    this.bodySizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">BODY:w=' + document.body.clientWidth + ',h=' + document.body.clientHeight + '</span>';
   },
 
   // Update Scroll Position
@@ -748,14 +752,14 @@ DebugJS.prototype = {
 
   // Update Stop Watch Button
   updateSwBtnArea: function() {
-    var msg = '<span span style="float:right;margin-right:4px;"><a href="" onclick="DebugJS.resetStopwatch();return false;">🔃</a>';
-    msg += '<a href="" onclick="DebugJS.startStopStopWatch();return false;">';
+    var msg = '<span style="float:right;margin-right:4px;"><span class="btn" onclick="DebugJS.resetStopwatch();">🔃</span>';
+    msg += '<span class="btn" onclick="DebugJS.startStopStopWatch();">';
     if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
     } else {
       msg += '>>';
     }
-    msg += '</a></span>';
+    msg += '</span></span>';
     this.swBtnArea.innerHTML = msg;
   },
 
@@ -772,7 +776,7 @@ DebugJS.prototype = {
 
   // Update Clear Button
   initClrBtnArea: function() {
-    this.clrBtnArea.innerHTML = '<span style="float:right;margin-right:4px;"><a href="" onclick="Debug.clearMessage();return false;">[CLR]</a></span>';
+    this.clrBtnArea.innerHTML = '<span class="btn" style="float:right;margin-right:4px;" onclick="Debug.clearMessage();">[CLR]</span>';
   },
 
   // Update Pin Button
@@ -781,17 +785,17 @@ DebugJS.prototype = {
     if (DebugJS.status & DebugJS.STATE_DRAGGABLE) {
        c = '#888';
     }
-    this.pinBtnArea.innerHTML = '<span style="float:right;margin-right:4px;"><a href="" onclick="Debug.toggleDraggable();return false;" style="color:' + c + '">📌</a></span>';
+    this.pinBtnArea.innerHTML = '<span class="btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
   },
 
   // Close Button
   initCloseBtnArea: function() {
-    this.closeBtnArea.innerHTML = '<span style="float:right;margin-right:2px;font-size:22px;"><a href="" style="color:#888;" onclick="Debug.hideDebugWindow();return false;" onmouseover="this.style.color=\'#d88\'" onmouseout="this.style.color=\'#888\'">×</a></span>'
+    this.closeBtnArea.innerHTML = '<span class="btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\'" onmouseout="this.style.color=\'#888\'">×</span>'
   },
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 .3em .3em .5em;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
+    this.cmdArea.innerHTML = '<div style="padding:0 3px 3px 3px;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
     this.cmdLine = document.getElementById(Debug.cmdLineId);
     this.cmdHistory = new DebugJS.RingBuffer(10);
   },
@@ -802,11 +806,7 @@ DebugJS.prototype = {
     var msg = '';
 
     // Log Area
-    var height = '';
-    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
-      height = 'height:' + this.options.height + 'px;';
-    }
-    msg += '<div style="position:relative;padding:.3em .3em .3em .3em;' + height + 'overflow:auto;" id="' + this.msgAreaId + '">';
+    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.buffSize + 'em;overflow:auto;" id="' + this.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -998,7 +998,7 @@ DebugJS.prototype = {
         log('Usage: p &lt;object&gt;');
         break;
       case 'rgb':
-        log('Usage: rgb &lt;color value (#RGB or R G B)&gt;');
+        log('Usage: rgb &lt;color value(#RGB or R G B)&gt;');
         break;
       case 'v':
         log('ver.' + Debug.v);
