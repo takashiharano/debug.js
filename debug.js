@@ -5,10 +5,10 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605310017';
+  this.v = '201605312222';
   this.ENABLE = true;
 
-  this.DEFAULT_SHOW = true;
+  this.DEFAULT_VISIBLE = true;
 
   this.DEFAULT_OPTIONS = {
     'buffSize': 18,
@@ -83,7 +83,7 @@ function DebugJS() {
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
 
-DebugJS.STATE_SHOW = 0x1;
+DebugJS.STATE_VISIBLE = 0x1;
 DebugJS.STATE_DYNAMIC = 0x2;
 DebugJS.STATE_SHOW_CLOCK = 0x4;
 DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
@@ -381,10 +381,10 @@ DebugJS.prototype = {
     this.msgAreaId = this.id + '-msg';
     this.cmdLineId = this.id + '-cmd';
 
-    if (this.DEFAULT_SHOW) {
-      DebugJS.status |= DebugJS.STATE_SHOW;
+    if (this.DEFAULT_VISIBLE) {
+      DebugJS.status |= DebugJS.STATE_VISIBLE;
     } else {
-      DebugJS.status &= ~DebugJS.STATE_SHOW;
+      DebugJS.status &= ~DebugJS.STATE_VISIBLE;
     }
 
     if (options == null) {
@@ -405,6 +405,7 @@ DebugJS.prototype = {
     // Info Area
     this.infoArea = document.createElement('div');
     this.debugWindow.appendChild(this.infoArea);
+    this.infoArea.style.cursor = 'default';
     this.initInfoArea();
 
     // Clock
@@ -492,6 +493,7 @@ DebugJS.prototype = {
     // Log
     this.msgArea = document.createElement('div');
     this.debugWindow.appendChild(this.msgArea);
+    this.msgArea.style.cursor = 'default';
 
     // Command Line
     if (this.options.enableCommandLine) {
@@ -525,12 +527,12 @@ DebugJS.prototype = {
       'overflow': 'visible'
     };
 
-    styles['#' + this.id + ' .btn'] = {
+    styles['.' + this.id + '-btn'] = {
       'color': '#0cf',
       'text-decoration': 'none'
     };
 
-    styles['#' + this.id + ' .btn:hover'] = {
+    styles['.' + this.id + '-btn:hover'] = {
       'color': '#fff',
       'text-decoration': 'none',
       'text-shadow': '0 0 3px',
@@ -581,7 +583,7 @@ DebugJS.prototype = {
           break;
       }
 
-      if (!(DebugJS.status & DebugJS.STATE_SHOW)) {
+      if (!(DebugJS.status & DebugJS.STATE_VISIBLE)) {
         wkStyle.display = 'none';
       }
     }
@@ -743,8 +745,8 @@ DebugJS.prototype = {
 
   // Update Stop Watch Button
   updateSwBtnArea: function() {
-    var msg = '<span style="float:right;margin-right:4px;"><span class="btn" onclick="DebugJS.resetStopwatch();">🔃</span>';
-    msg += '<span class="btn" onclick="DebugJS.startStopStopWatch();">';
+    var msg = '<span style="float:right;margin-right:4px;"><span class="' + this.id + '-btn" onclick="DebugJS.resetStopwatch();">🔃</span>';
+    msg += '<span class="' + this.id + '-btn" onclick="DebugJS.startStopStopWatch();">';
     if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
     } else {
@@ -767,7 +769,7 @@ DebugJS.prototype = {
 
   // Update Clear Button
   initClrBtnArea: function() {
-    this.clrBtnArea.innerHTML = '<span class="btn" style="float:right;margin-right:4px;" onclick="Debug.clearMessage();">[CLR]</span>';
+    this.clrBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;" onclick="Debug.clearMessage();">[CLR]</span>';
   },
 
   // Update Pin Button
@@ -776,12 +778,12 @@ DebugJS.prototype = {
     if (DebugJS.status & DebugJS.STATE_DRAGGABLE) {
        c = '#888';
     }
-    this.pinBtnArea.innerHTML = '<span class="btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
+    this.pinBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
   },
 
   // Close Button
   initCloseBtnArea: function() {
-    this.closeBtnArea.innerHTML = '<span class="btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\'" onmouseout="this.style.color=\'#888\'">×</span>'
+    this.closeBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\'" onmouseout="this.style.color=\'#888\'">×</span>'
   },
 
   // Command-line Area
@@ -797,7 +799,7 @@ DebugJS.prototype = {
     var msg = '';
 
     // Log Area
-    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.buffSize + 'em;overflow:auto;" id="' + this.msgAreaId + '">';
+    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.buffSize + '.1em;overflow:auto;" id="' + this.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -815,11 +817,10 @@ DebugJS.prototype = {
   },
 
   setStyle: function(prop, val) {
-    var selector = '#' + this.id;
     var styles = {};
     var style = {};
     style[prop] = val;
-    styles[selector] = style;
+    styles['#' + this.id] = style;
     this.applyStyles(styles);
   },
 
@@ -873,8 +874,12 @@ DebugJS.prototype = {
   toggleDraggable: function() {
     if (DebugJS.status & DebugJS.STATE_DRAGGABLE) {
       DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
+      this.infoArea.style.cursor = 'auto';
+      this.msgArea.style.cursor = 'auto';
     } else {
       DebugJS.status |= DebugJS.STATE_DRAGGABLE;
+      this.infoArea.style.cursor = 'default';
+      this.msgArea.style.cursor = 'default';
     }
     Debug.updatePinBtnArea();
   },
@@ -934,7 +939,7 @@ DebugJS.prototype = {
         break;
 
       case 113: // F2
-        if (DebugJS.status & DebugJS.STATE_SHOW) {
+        if (DebugJS.status & DebugJS.STATE_VISIBLE) {
           Debug.hideDebugWindow();
         } else {
           Debug.showDebugWindow();
@@ -948,19 +953,18 @@ DebugJS.prototype = {
 
   hideDebugWindow: function() {
     if (!this.options.showCloseButton) return;
-    var selector = '#' + Debug.id;
+    DebugJS.status &= ~DebugJS.STATE_DRAGGING;
     var styles = {};
-    styles[selector] = {'display': 'none'};
+    styles['#' + Debug.id] = {'display': 'none'};
     Debug.applyStyles(styles);
-    DebugJS.status &= ~DebugJS.STATE_SHOW;
+    DebugJS.status &= ~DebugJS.STATE_VISIBLE;
   },
 
   showDebugWindow: function() {
-    var selector = '#' + Debug.id;
     var styles = {};
-    styles[selector] = {'display': 'block'};
+    styles['#' + Debug.id] = {'display': 'block'};
     Debug.applyStyles(styles);
-    DebugJS.status |= DebugJS.STATE_SHOW;
+    DebugJS.status |= DebugJS.STATE_VISIBLE;
   },
 
   execCmd: function() {
@@ -1154,12 +1158,12 @@ DebugJS.RingBuffer.prototype = {
 };
 
 DebugJS.printHelp = function() {
-  var h = '<br>';
+  var h = '<br>Available Commands:<br>';
+  h += 'cls   Clear log message.<br>';
+  h += 'exit  Close the debug window.<br>';
   h += 'p     Print object.<br>';
   h += 'rgb   Convert RGB color values between HEX and DEC.<br>';
-  h += 'cls   Clear log message.<br>';
   h += 'v     Displays version info.<br>';
-  h += 'exit  Close the debug window.<br>';
   log(h);
 }
 
