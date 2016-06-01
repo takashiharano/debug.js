@@ -5,9 +5,8 @@
  * https://github.com/takashiharano/debug.js
  */
 function DebugJS() {
-  this.v = '201605312222';
+  this.v = '201606020021';
   this.ENABLE = true;
-
   this.DEFAULT_VISIBLE = true;
 
   this.DEFAULT_OPTIONS = {
@@ -49,9 +48,9 @@ function DebugJS() {
     'box-sizing': 'content-box'
   };
 
+  this.DEFAULT_ELM_ID = '_debug_';
+  this.options = null;
   this.id = null;
-  this.msgAreaId = null;
-  this.cmdLineId = null;
   this.debugWindow = null;
   this.infoArea = null;
   this.clockArea = null;
@@ -69,19 +68,17 @@ function DebugJS() {
   this.keyDownArea = null;
   this.keyPressArea = null;
   this.keyUpArea = null;
+  this.msgAreaId = null;
   this.msgArea = null;
   this.cmdArea = null;
+  this.cmdLineId = null;
   this.cmdLine = null;
-  this.options = null;
-  this.DEFAULT_ELM_ID = '_debug_';
   this.cmdHistory = null;
   this.cmdHistoryMax = 10;
   this.cmdHistoryIdx = this.cmdHistoryMax;
   this.cmdTmp = '';
+  this.status = 0;
 }
-
-DebugJS.COLOR_ACTIVE = '#fff';
-DebugJS.COLOR_INACTIVE = '#888';
 
 DebugJS.STATE_VISIBLE = 0x1;
 DebugJS.STATE_DYNAMIC = 0x2;
@@ -90,7 +87,9 @@ DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
 DebugJS.STATE_DRAGGABLE = 0x10;
 DebugJS.STATE_DRAGGING = 0x20;
 DebugJS.STATE_INITIALIZED = 0x80000000;
-DebugJS.status = 0;
+
+DebugJS.COLOR_ACTIVE = '#fff';
+DebugJS.COLOR_INACTIVE = '#888';
 
 DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 
@@ -136,13 +135,13 @@ DebugJS.swElapsedTime = 0;
 DebugJS.elapsedTime = '00:00:00.000';
 
 DebugJS.startStopStopWatch = function() {
-  if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+  if (Debug.status & DebugJS.STATE_STOPWATCH_RUNNING) {
     // stop
-    DebugJS.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
+    Debug.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
     Debug.updateSwBtnArea();
   } else {
     // start
-    DebugJS.status |= DebugJS.STATE_STOPWATCH_RUNNING;
+    Debug.status |= DebugJS.STATE_STOPWATCH_RUNNING;
     DebugJS.swStartTime = (new Date()).getTime() - DebugJS.swElapsedTime;
     DebugJS.updateStopWatch();
     Debug.updateSwArea();
@@ -151,7 +150,7 @@ DebugJS.startStopStopWatch = function() {
 }
 
 DebugJS.updateStopWatch = function() {
-  if (!(DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
+  if (!(Debug.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
   var swCurrentTime = (new Date()).getTime();
   DebugJS.swElapsedTime = swCurrentTime - DebugJS.swStartTime;
   DebugJS.elapsedTime = DebugJS.getPassedTimeStr(DebugJS.swElapsedTime);
@@ -159,10 +158,8 @@ DebugJS.updateStopWatch = function() {
 
 DebugJS.resetStopwatch = function() {
   DebugJS.swStartTime = (new Date()).getTime();
-
   DebugJS.elapsedTime = DebugJS.getPassedTimeStr(0);
   DebugJS.swElapsedTime = 0;
-
   Debug.updateSwArea();
 }
 
@@ -372,8 +369,8 @@ DebugJS.prototype = {
     if(!Debug.ENABLE){return;}
     if (elmId == null) {
       this.id = this.DEFAULT_ELM_ID;
-      DebugJS.status |= DebugJS.STATE_DYNAMIC;
-      DebugJS.status |= DebugJS.STATE_DRAGGABLE;
+      this.status |= DebugJS.STATE_DYNAMIC;
+      this.status |= DebugJS.STATE_DRAGGABLE;
     } else {
       this.id = elmId;
       this.debugWindow = document.getElementById(this.id);
@@ -382,9 +379,9 @@ DebugJS.prototype = {
     this.cmdLineId = this.id + '-cmd';
 
     if (this.DEFAULT_VISIBLE) {
-      DebugJS.status |= DebugJS.STATE_VISIBLE;
+      this.status |= DebugJS.STATE_VISIBLE;
     } else {
-      DebugJS.status &= ~DebugJS.STATE_VISIBLE;
+      this.status &= ~DebugJS.STATE_VISIBLE;
     }
 
     if (options == null) {
@@ -395,11 +392,10 @@ DebugJS.prototype = {
 
     // Create a window
     if (this.debugWindow == null) {
-      var div = document.createElement('div');
-      div.id = this.id;
+      this.debugWindow = document.createElement('div');
+      this.debugWindow.id = this.id;
       var body = document.getElementsByTagName('body')[0];
-      body.appendChild(div);
-      this.debugWindow = div;
+      body.appendChild(this.debugWindow);
     }
 
     // Info Area
@@ -422,7 +418,7 @@ DebugJS.prototype = {
     }
 
     // Pin Button
-    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+    if (this.status & DebugJS.STATE_DYNAMIC) {
       this.pinBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.pinBtnArea);
     }
@@ -545,7 +541,7 @@ DebugJS.prototype = {
       'display': 'inline-block'
     };
 
-    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+    if (this.status & DebugJS.STATE_DYNAMIC) {
       this.setupMove();
 
       var wkStyle = styles['#' + this.id];
@@ -583,14 +579,18 @@ DebugJS.prototype = {
           break;
       }
 
-      if (!(DebugJS.status & DebugJS.STATE_VISIBLE)) {
+      if (!(this.status & DebugJS.STATE_VISIBLE)) {
         wkStyle.display = 'none';
       }
     }
 
     this.applyStyles(styles);
     this.clearMessage();
-    this.setupKeyHandler();
+    this.setupEventHandler();
+  },
+
+  setupEventHandler: function() {
+    window.addEventListener('keydown', this.keyhandler, true);
 
     if (this.options.showWindowSize) {
       window.addEventListener('resize', DebugJS.resizeHandler, true);
@@ -627,7 +627,7 @@ DebugJS.prototype = {
   },
 
   isWindowInitialized: function() {
-    if (DebugJS.status & DebugJS.STATE_INITIALIZED) {
+    if (this.status & DebugJS.STATE_INITIALIZED) {
       return true;
     } else {
       return false;
@@ -636,7 +636,7 @@ DebugJS.prototype = {
 
   initDebugWindow: function() {
     if (this.options.showClock) {
-      DebugJS.status |= DebugJS.STATE_SHOW_CLOCK;
+      this.status |= DebugJS.STATE_SHOW_CLOCK;
       this.updateClockArea();
     }
 
@@ -649,7 +649,7 @@ DebugJS.prototype = {
       this.initClrBtnArea();
     }
 
-    if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+    if (this.status & DebugJS.STATE_DYNAMIC) {
       this.updatePinBtnArea();
     }
 
@@ -672,7 +672,7 @@ DebugJS.prototype = {
 
     this.printMessage();
 
-    DebugJS.status |= DebugJS.STATE_INITIALIZED;
+    this.status |= DebugJS.STATE_INITIALIZED;
   },
 
   // Init Info Area
@@ -687,7 +687,7 @@ DebugJS.prototype = {
     var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';margin-right:10px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
-    if (DebugJS.status & DebugJS.STATE_SHOW_CLOCK) {
+    if (this.status & DebugJS.STATE_SHOW_CLOCK) {
       setTimeout('Debug.updateClockArea()', 500);
     }
   },
@@ -747,7 +747,7 @@ DebugJS.prototype = {
   updateSwBtnArea: function() {
     var msg = '<span style="float:right;margin-right:4px;"><span class="' + this.id + '-btn" onclick="DebugJS.resetStopwatch();">🔃</span>';
     msg += '<span class="' + this.id + '-btn" onclick="DebugJS.startStopStopWatch();">';
-    if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
     } else {
       msg += '>>';
@@ -762,7 +762,7 @@ DebugJS.prototype = {
     var msg = '<span style="float:right;margin-right:10px;">' + DebugJS.elapsedTime + '</span>';
     this.swArea.innerHTML = msg;
 
-    if (DebugJS.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       setTimeout('Debug.updateSwArea()', 50);
     }
   },
@@ -775,7 +775,7 @@ DebugJS.prototype = {
   // Update Pin Button
   updatePinBtnArea: function() {
     var c = '#dd0';
-    if (DebugJS.status & DebugJS.STATE_DRAGGABLE) {
+    if (this.status & DebugJS.STATE_DRAGGABLE) {
        c = '#888';
     }
     this.pinBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
@@ -799,7 +799,7 @@ DebugJS.prototype = {
     var msg = '';
 
     // Log Area
-    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.buffSize + '.1em;overflow:auto;" id="' + this.msgAreaId + '">';
+    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.buffSize + '.2em;overflow:auto;" id="' + this.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -851,8 +851,8 @@ DebugJS.prototype = {
     var clickOffsetLeft;
 
     el.onmousedown = function(e) {
-      if ((!(DebugJS.status & DebugJS.STATE_DRAGGABLE)) || (document.activeElement == Debug.cmdLine)) return;
-      DebugJS.status |= DebugJS.STATE_DRAGGING;
+      if ((!(Debug.status & DebugJS.STATE_DRAGGABLE)) || (document.activeElement == Debug.cmdLine)) return;
+      Debug.status |= DebugJS.STATE_DRAGGING;
       e = (e) || window.event;
       clickOffsetTop = e.clientY - el.offsetTop;
       clickOffsetLeft = e.clientX - el.offsetLeft;
@@ -861,10 +861,10 @@ DebugJS.prototype = {
       }
     }
     el.onmouseup = function(e) {
-      DebugJS.status &= ~DebugJS.STATE_DRAGGING;
+      Debug.status &= ~DebugJS.STATE_DRAGGING;
     }
     el.onmousemove = function(e) {
-      if (!(DebugJS.status & DebugJS.STATE_DRAGGING)) return;
+      if (!(Debug.status & DebugJS.STATE_DRAGGING)) return;
       e = (e) || window.event;
       el.style.top = e.clientY - clickOffsetTop + 'px';
       el.style.left = e.clientX - clickOffsetLeft + 'px';
@@ -872,20 +872,16 @@ DebugJS.prototype = {
   },
 
   toggleDraggable: function() {
-    if (DebugJS.status & DebugJS.STATE_DRAGGABLE) {
-      DebugJS.status &= ~DebugJS.STATE_DRAGGABLE;
+    if (Debug.status & DebugJS.STATE_DRAGGABLE) {
+      Debug.status &= ~DebugJS.STATE_DRAGGABLE;
       this.infoArea.style.cursor = 'auto';
       this.msgArea.style.cursor = 'auto';
     } else {
-      DebugJS.status |= DebugJS.STATE_DRAGGABLE;
+      Debug.status |= DebugJS.STATE_DRAGGABLE;
       this.infoArea.style.cursor = 'default';
       this.msgArea.style.cursor = 'default';
     }
     Debug.updatePinBtnArea();
-  },
-
-  setupKeyHandler: function() {
-    window.addEventListener('keydown', this.keyhandler, true);
   },
 
   keyhandler: function(e) {
@@ -895,7 +891,11 @@ DebugJS.prototype = {
         break;
 
       case 27: // ESC
-        Debug.hideDebugWindow();
+        if (Debug.status & DebugJS.STATE_DRAGGING) {
+          Debug.status &= ~DebugJS.STATE_DRAGGING;
+        } else {
+          Debug.hideDebugWindow();
+        }
         break;
 
       case 38: // ↑
@@ -931,15 +931,15 @@ DebugJS.prototype = {
         break;
 
       case 112: // F1
-        if (DebugJS.status & DebugJS.STATE_DYNAMIC) {
+        if (Debug.status & DebugJS.STATE_DYNAMIC) {
           Debug.debugWindow.style.top = 0;
           Debug.debugWindow.style.left = 0;
-          DebugJS.status &= ~DebugJS.STATE_DRAGGING;
+          Debug.status &= ~DebugJS.STATE_DRAGGING;
         }
         break;
 
       case 113: // F2
-        if (DebugJS.status & DebugJS.STATE_VISIBLE) {
+        if (Debug.status & DebugJS.STATE_VISIBLE) {
           Debug.hideDebugWindow();
         } else {
           Debug.showDebugWindow();
@@ -953,18 +953,18 @@ DebugJS.prototype = {
 
   hideDebugWindow: function() {
     if (!this.options.showCloseButton) return;
-    DebugJS.status &= ~DebugJS.STATE_DRAGGING;
+    this.status &= ~DebugJS.STATE_DRAGGING;
     var styles = {};
     styles['#' + Debug.id] = {'display': 'none'};
-    Debug.applyStyles(styles);
-    DebugJS.status &= ~DebugJS.STATE_VISIBLE;
+    this.applyStyles(styles);
+    this.status &= ~DebugJS.STATE_VISIBLE;
   },
 
   showDebugWindow: function() {
     var styles = {};
     styles['#' + Debug.id] = {'display': 'block'};
     Debug.applyStyles(styles);
-    DebugJS.status |= DebugJS.STATE_VISIBLE;
+    this.status |= DebugJS.STATE_VISIBLE;
   },
 
   execCmd: function() {
@@ -1158,7 +1158,7 @@ DebugJS.RingBuffer.prototype = {
 };
 
 DebugJS.printHelp = function() {
-  var h = '<br>Available Commands:<br>';
+  var h = 'Available Commands:<br>';
   h += 'cls   Clear log message.<br>';
   h += 'exit  Close the debug window.<br>';
   h += 'p     Print object.<br>';
@@ -1227,56 +1227,50 @@ var Debug = new DebugJS();
 
 var log = function(msg) {
   var m = log.init(msg);
-  log.out(m, '', '');
+  log.out(m, null);
 }
 
 log.e = function(msg) {
   var m = log.init(msg);
-  var styleS = '<span style="color:' + Debug.options.errorColor + ';">';
-  var styleE = '</span>';
-  log.out(m, styleS, styleE);
+  var style = 'color:' + Debug.options.errorColor + ';';
+  log.out(m, style);
 }
 
 log.w = function(msg) {
   var m = log.init(msg);
-  var styleS = '<span style="color:' + Debug.options.warnColor + ';">';
-  var styleE = '</span>';
-  log.out(m, styleS, styleE);
+  var style = 'color:' + Debug.options.warnColor + ';';
+  log.out(m, style);
 }
 
 log.i = function(msg) {
   var m = log.init(msg);
-  var styleS = '<span style="color:' + Debug.options.infoColor + ';">';
-  var styleE = '</span>';
-  log.out(m, styleS, styleE);
+  var style = 'color:' + Debug.options.infoColor + ';';
+  log.out(m, style);
 }
 
 log.d = function(msg) {
   var m = log.init(msg);
-  var styleS = '<span style="color:' + Debug.options.debugColor + ';">';
-  var styleE = '</span>';
-  log.out(m, styleS, styleE);
+  var style = 'color:' + Debug.options.debugColor + ';';
+  log.out(m, style);
 }
 
 log.v = function(msg) {
   var m = log.init(msg);
-  var styleS = '<span style="color:' + Debug.options.verboseColor + ';">';
-  var styleE = '</span>';
-  log.out(m, styleS, styleE);
+  var style = 'color:' + Debug.options.verboseColor + ';';
+  log.out(m, style);
 }
 
 log.s = function(msg) {
   var m = log.init(msg);
-  var styleS = '<span style="color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;">';
-  var styleE = '</span>';
-  log.out(m, styleS, styleE);
+  var style = 'color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;';
+  log.out(m, style);
 }
 
 // for object dump
 log.p = function(o) {
   var m = log.init(o);
   var m = '<br>' + DebugJS.objDump(m);
-  log.out(m, '', '');
+  log.out(m, null);
 }
 
 log.init = function(msg) {
@@ -1289,13 +1283,16 @@ log.init = function(msg) {
   return msg;
 }
 
-log.out = function(msg, styleStart, styleEnd) {
+log.out = function(msg, style) {
   if (msg != null) {
     var t = '';
     if (Debug.options.showTimeStamp) {
       t = DebugJS.time() + ' ';
     }
-    var m = styleStart + t + msg + styleEnd;
+    if (style != null) {
+      style = ' style="' + style + '"';
+    }
+    var m = '<span' + style + '>' + t + msg + '</span>';
     Debug.msgBuff.add(m);
   }
   Debug.printMessage();
