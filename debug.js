@@ -2,12 +2,10 @@
  * debug.js
  * Copyright 2016 Takashi Harano
  * Released under the MIT license
- * https://github.com/takashiharano/debug.js
+ * http://debugjs.net/
  */
-function DebugJS() {
-  this.v = '201606020021';
-  this.ENABLE = true;
-  this.DEFAULT_VISIBLE = true;
+var DebugJS = function() {
+  this.v = '201606050135';
 
   this.DEFAULT_OPTIONS = {
     'buffSize': 18,
@@ -32,7 +30,9 @@ function DebugJS() {
     'showMouseStatus': true,
     'showKeyStatus': true,
     'enableStopWatch': true,
-    'enableCommandLine': true
+    'enableCommandLine': true,
+    'elmId': null,
+    'visible': true
   };
 
   this.STYLE = {
@@ -56,29 +56,54 @@ function DebugJS() {
   this.clockArea = null;
   this.swBtnArea = null;
   this.swArea = null;
+  this.swStartTime = 0;
+  this.swElapsedTime = 0;
+  this.elapsedTime = '00:00:00.000';
   this.clrBtnArea = null;
   this.pinBtnArea = null;
   this.closeBtnArea = null;
   this.mousePositionArea = null;
+  this.mousePos = 'x=-,y=-';
   this.mouseClickArea = null;
+  this.mouseClickL = DebugJS.COLOR_INACTIVE;
+  this.mouseClickC = DebugJS.COLOR_INACTIVE;
+  this.mouseClickR = DebugJS.COLOR_INACTIVE;
   this.screenSizeArea = null;
   this.clientSizeArea = null;
   this.bodySizeArea = null;
   this.scrollPosArea = null;
+  this.scrollPos = '';
   this.keyDownArea = null;
   this.keyPressArea = null;
   this.keyUpArea = null;
+  this.keyDownCode = DebugJS.KEY_STATUS_DEFAULT;
+  this.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
+  this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
   this.msgAreaId = null;
   this.msgArea = null;
+  this.msgBuf = null;
   this.cmdArea = null;
   this.cmdLineId = null;
   this.cmdLine = null;
-  this.cmdHistory = null;
+  this.cmdHistoryBuf = null;
   this.cmdHistoryMax = 10;
   this.cmdHistoryIdx = this.cmdHistoryMax;
   this.cmdTmp = '';
   this.status = 0;
+
+  this.CMD_TBL = [
+    {'cmd': 'cls', 'fnc': this.cmdCls},
+    {'cmd': 'exit', 'fnc': this.cmdExit},
+    {'cmd': 'help', 'fnc': this.cmdHelp},
+    {'cmd': 'history', 'fnc': this.cmdHistory},
+    {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;'},
+    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
+    {'cmd': 'start', 'fnc': this.cmdStart},
+    {'cmd': 'stop', 'fnc': this.cmdStop},
+    {'cmd': 'v', 'fnc': this.cmdV}
+  ];
 }
+DebugJS.ENABLE = true;
 
 DebugJS.STATE_VISIBLE = 0x1;
 DebugJS.STATE_DYNAMIC = 0x2;
@@ -86,308 +111,44 @@ DebugJS.STATE_SHOW_CLOCK = 0x4;
 DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
 DebugJS.STATE_DRAGGABLE = 0x10;
 DebugJS.STATE_DRAGGING = 0x20;
+DebugJS.STATE_LOG_SUSPEND = 0x40;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
-
+DebugJS.KEY_STATUS_DEFAULT =  '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 
-DebugJS.getTime = function() {
-  var nowDate = new Date();
-  var mm = nowDate.getMonth() + 1;
-  var dd = nowDate.getDate();
-  var hh = nowDate.getHours();
-  var mi = nowDate.getMinutes();
-  var ss = nowDate.getSeconds();
-  var ms = nowDate.getMilliseconds();
-
-  if (mm < 10) mm = '0' + mm;
-  if (dd < 10) dd = '0' + dd;
-  if (hh < 10) hh = '0' + hh;
-  if (mi < 10) mi = '0' + mi;
-  if (ss < 10) ss = '0' + ss;
-  if (ms < 10) {ms = '00' + ms;}
-  else if (ms < 100) {ms = '0' + ms;}
-
-  var dateTime = {
-    'yyyy': nowDate.getFullYear(),
-    'mm': mm,
-    'dd': dd,
-    'hh': hh,
-    'mi': mi,
-    'ss': ss,
-    'ms': ms,
-    'wday': nowDate.getDay()
-  }
-
-  return dateTime;
-}
-
-DebugJS.time = function() {
-  var dt = DebugJS.getTime();
-  var tm = dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.ms;
-  return tm;
-}
-
-DebugJS.swStartTime = 0;
-DebugJS.swElapsedTime = 0;
-DebugJS.elapsedTime = '00:00:00.000';
-
-DebugJS.startStopStopWatch = function() {
-  if (Debug.status & DebugJS.STATE_STOPWATCH_RUNNING) {
-    // stop
-    Debug.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
-    Debug.updateSwBtnArea();
-  } else {
-    // start
-    Debug.status |= DebugJS.STATE_STOPWATCH_RUNNING;
-    DebugJS.swStartTime = (new Date()).getTime() - DebugJS.swElapsedTime;
-    DebugJS.updateStopWatch();
-    Debug.updateSwArea();
-    Debug.updateSwBtnArea();
-  }
-}
-
-DebugJS.updateStopWatch = function() {
-  if (!(Debug.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
-  var swCurrentTime = (new Date()).getTime();
-  DebugJS.swElapsedTime = swCurrentTime - DebugJS.swStartTime;
-  DebugJS.elapsedTime = DebugJS.getPassedTimeStr(DebugJS.swElapsedTime);
-}
-
-DebugJS.resetStopwatch = function() {
-  DebugJS.swStartTime = (new Date()).getTime();
-  DebugJS.elapsedTime = DebugJS.getPassedTimeStr(0);
-  DebugJS.swElapsedTime = 0;
-  Debug.updateSwArea();
-}
-
-DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
-  var passedTimeSec = Math.floor((swPassedTimeMsec) / 1000);
-  var wkPassedTimeSec = passedTimeSec;
-
-  var passedHour;
-  var passedMin;
-  if (wkPassedTimeSec >= 3600) {
-    passedHour = Math.floor((wkPassedTimeSec / 3600));
-    wkPassedTimeSec = (wkPassedTimeSec - (passedHour * 3600));
-  } else {
-    passedHour = 0;
-  }
-
-  if (wkPassedTimeSec >= 60) {
-    passedMin  = Math.floor((wkPassedTimeSec / 60));
-    wkPassedTimeSec = (wkPassedTimeSec - (passedMin * 60));
-  } else {
-    passedMin = 0;
-  }
-
-  var passedSec = wkPassedTimeSec;
-  var passedMsec = Math.floor(swPassedTimeMsec & 999);
-
-  if (passedHour < 10) passedHour = '0' + passedHour;
-  if (passedMin < 10) passedMin = '0' + passedMin;
-  if (passedSec< 10) passedSec = '0' + passedSec;
-  if (passedMsec< 10) {passedMsec = '00' + passedMsec;}
-  else if (passedMsec< 100) passedMsec = '0' + passedMsec;
-
-  var retStr = passedHour;
-  retStr += ':' + passedMin;
-  retStr += ':' + passedSec;
-  retStr += '.' + passedMsec;
-
-  return retStr;
-}
-
-DebugJS.resizeHandler = function() {
-  Debug.updateWindowSizeArea();
-  Debug.updateClientSizeArea();
-  Debug.updateBodySizeArea();
-}
-
-DebugJS.scrollPos = '';
-DebugJS.scrollHandler = function() {
-  var x = 0;
-  var y = 0;
-  if (window.scrollX === undefined) {
-    x = document.documentElement.scrollLeft;
-    y = document.documentElement.scrollTop;
-  } else {
-    x = window.scrollX;
-    y = window.scrollY;
-  }
-  DebugJS.scrollPos = 'x=' + x + ',y=' + y;
-  Debug.updateScrollPosArea();
-}
-
-DebugJS.mousePos = 'x=-,y=-';
-DebugJS.mousemoveHandler = function(e) {
-  var posX = e.clientX;
-  var posY = e.clientY;
-  DebugJS.mousePos = 'x=' + posX + ',y=' + posY;
-  Debug.updateMousePositionArea();
-}
-
-DebugJS.mouseClickL = DebugJS.COLOR_INACTIVE;
-DebugJS.mouseClickC = DebugJS.COLOR_INACTIVE;
-DebugJS.mouseClickR = DebugJS.COLOR_INACTIVE;
-DebugJS.mouseClick;
-DebugJS.mousedownHandler = function(e) {
-  switch (e.button) {
-    case 0:
-      DebugJS.mouseClickL = DebugJS.COLOR_ACTIVE;
-      break;
-    case 1:
-      DebugJS.mouseClickC = DebugJS.COLOR_ACTIVE;
-      break;
-    case 2:
-      DebugJS.mouseClickR = DebugJS.COLOR_ACTIVE;
-      break;
-    default:
-      break;
-  }
-  Debug.updateMouseClickArea();
-}
-
-DebugJS.mouseupHandler = function(e) {
-  switch (e.button) {
-    case 0:
-      DebugJS.mouseClickL = DebugJS.COLOR_INACTIVE;
-      break;
-    case 1:
-      DebugJS.mouseClickC = DebugJS.COLOR_INACTIVE;
-      break;
-    case 2:
-      DebugJS.mouseClickR = DebugJS.COLOR_INACTIVE;
-      break;
-    default:
-      break;
-  }
-  Debug.updateMouseClickArea();
-}
-
-DebugJS.keyStatusDefault =  '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
-DebugJS.keyDownCode = DebugJS.keyStatusDefault;
-DebugJS.keyDownHandler = function(e) {
-  var metaKey = DebugJS.checkMetaKey(e);
-  DebugJS.keyDownCode = e.keyCode + metaKey;
-  Debug.updateKeyDownArea();
-
-  DebugJS.keyPressCode = DebugJS.keyStatusDefault;
-  Debug.updateKeyPressArea();
-
-  DebugJS.keyUpCode = DebugJS.keyStatusDefault;
-  Debug.updateKeyUpArea();
-}
-
-DebugJS.keyPressCode = DebugJS.keyStatusDefault;
-DebugJS.keyPressHandler = function(e) {
-  var metaKey = DebugJS.checkMetaKey(e);
-  DebugJS.keyPressCode = e.keyCode + metaKey;
-  Debug.updateKeyPressArea();
-}
-
-DebugJS.keyUpCode = DebugJS.keyStatusDefault;
-DebugJS.keyUpHandler = function(e) {
-  var metaKey = DebugJS.checkMetaKey(e);
-  DebugJS.keyUpCode = e.keyCode + metaKey;
-  Debug.updateKeyUpArea();
-}
-
-DebugJS.checkMetaKey = function(e) {
-  var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
-  var ctrl = e.ctrlKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
-  var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
-  var metaKey = ' <span style="color:' + shift + ';">S</span><span style="color:' + ctrl + ';">C</span><span style="color:' + alt + ';">A</span>';
-  return metaKey;
-}
-
-DebugJS.execCmdP = function(cmd) {
-  var v = cmd.replace('p ', '');
-  var command = 'DebugJS.buf="<br>' + v + ' = ";DebugJS.buf+=DebugJS.objDump(' + v + ');log(DebugJS.buf);';
-  eval(command);
-}
-
-DebugJS.OBJDUMP_MAX = 100;
-DebugJS.objDump = function(obj) {
-  var arg = {
-    'lv': 0,
-    'cnt': 0,
-    'dump': ''
-  };
-  var ret = DebugJS._objDump(obj, arg);
-  if (ret.cnt >= DebugJS.OBJDUMP_MAX) {
-    log.w('The object is too large. (' + ret.cnt + ')');
-  }
-  return ret.dump;
-}
-
-DebugJS._objDump = function(obj, arg) {
-  if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
-    arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
-    return arg;
-  }
-  var indent = '';
-  for (var i=0; i<arg.lv; i++) {
-    indent += ' ';
-  }
-
-  if (obj instanceof Array) {
-    arg.dump += '<span style="color:#c08;">[Array]</span><br>'; arg.cnt++;
-    for (var i in obj) {
-      arg.lv++;
-      arg.dump += indent + '[' + i + '] ';
-      arg = DebugJS._objDump(obj[i], arg);
-      arg.lv--;
-    }
-  } else if (obj instanceof Object) {
-    arg.dump += '<span style="color:#88f;">[Object]</span> {<br>'; arg.cnt++;
-    indent += ' ';
-    for (var key in obj) {
-      arg.dump += indent + key + ': ';
-      arg.lv++;
-      arg = DebugJS._objDump(obj[key], arg);
-      arg.lv--;
-    }
-    indent = indent.replace(' ', '');
-    arg.dump += indent + '}<br>';
-  } else if (obj === null) {
-    arg.dump += '<span style="color:#ccc;">null</span>' + '<br>'; arg.cnt++;
-  } else if (obj === undefined) {
-    arg.dump += '<span style="color:#ccc;">undefined</span>' + '<br>'; arg.cnt++;
-  } else if (typeof obj ==='string') {
-    arg.dump += '"' + obj + '"<br>'; arg.cnt++;
-  } else {
-    arg.dump += obj + '<br>'; arg.cnt++;
-  }
-  return arg;
-}
-
 DebugJS.prototype = {
-  init:  function(elmId, options) {
-    if(!Debug.ENABLE){return;}
-    if (elmId == null) {
+  init:  function(options) {
+    if(!DebugJS.ENABLE){return;}
+    this.options = this.DEFAULT_OPTIONS;
+    if (options) {
+      for (var key in this.options) {
+        for (var k in options) {
+          if (key == k) {
+            this.options[key] = options[key];
+            break;
+          }
+        }
+      }
+    }
+
+    if (this.options.elmId == null) {
       this.id = this.DEFAULT_ELM_ID;
       this.status |= DebugJS.STATE_DYNAMIC;
       this.status |= DebugJS.STATE_DRAGGABLE;
     } else {
-      this.id = elmId;
+      this.id = options.elmId;
       this.debugWindow = document.getElementById(this.id);
     }
     this.msgAreaId = this.id + '-msg';
     this.cmdLineId = this.id + '-cmd';
 
-    if (this.DEFAULT_VISIBLE) {
+    if (this.options.visible) {
       this.status |= DebugJS.STATE_VISIBLE;
     } else {
       this.status &= ~DebugJS.STATE_VISIBLE;
-    }
-
-    if (options == null) {
-      this.options = this.DEFAULT_OPTIONS;
-    } else {
-      this.options = options;
     }
 
     // Create a window
@@ -498,7 +259,7 @@ DebugJS.prototype = {
       this.initCmdArea();
     }
 
-    this.msgBuff = new DebugJS.RingBuffer(this.options.buffSize);
+    this.msgBuf = new DebugJS.RingBuffer(this.options.buffSize);
 
     var styles = {};
     styles['#' + this.id] = this.STYLE;
@@ -524,7 +285,7 @@ DebugJS.prototype = {
     };
 
     styles['.' + this.id + '-btn'] = {
-      'color': '#0cf',
+      'color': '#6cf',
       'text-decoration': 'none'
     };
 
@@ -537,7 +298,7 @@ DebugJS.prototype = {
 
     styles['.' + this.id + '-sys-info'] = {
       'margin-left': '1px',
-      'color': Debug.options.systemInfoColor,
+      'color': this.options.systemInfoColor,
       'display': 'inline-block'
     };
 
@@ -593,28 +354,28 @@ DebugJS.prototype = {
     window.addEventListener('keydown', this.keyhandler, true);
 
     if (this.options.showWindowSize) {
-      window.addEventListener('resize', DebugJS.resizeHandler, true);
-      DebugJS.resizeHandler();
+      window.addEventListener('resize', this.resizeHandler, true);
+      this.resizeHandler();
 
-      window.addEventListener('scroll', DebugJS.scrollHandler, true);
-      DebugJS.scrollHandler();
+      window.addEventListener('scroll', this.scrollHandler, true);
+      this.scrollHandler();
     }
 
     if (this.options.showMouseStatus) {
-      window.addEventListener('mousemove', DebugJS.mousemoveHandler, true);
-      window.addEventListener('mousedown', DebugJS.mousedownHandler, true);
-      window.addEventListener('mouseup', DebugJS.mouseupHandler, true);
+      window.addEventListener('mousemove', this.mousemoveHandler, true);
+      window.addEventListener('mousedown', this.mousedownHandler, true);
+      window.addEventListener('mouseup', this.mouseupHandler, true);
     }
 
     if (this.options.showKeyStatus) {
-      window.addEventListener('keydown', DebugJS.keyDownHandler, true);
-      Debug.updateKeyDownArea();
+      window.addEventListener('keydown', this.keyDownHandler, true);
+      this.updateKeyDownArea();
 
-      window.addEventListener('keypress', DebugJS.keyPressHandler, true);
-      Debug.updateKeyPressArea();
+      window.addEventListener('keypress', this.keyPressHandler, true);
+      this.updateKeyPressArea();
 
-      window.addEventListener('keyup', DebugJS.keyUpHandler, true);
-      Debug.updateKeyUpArea();
+      window.addEventListener('keyup', this.keyUpHandler, true);
+      this.updateKeyUpArea();
     }
   },
 
@@ -671,7 +432,6 @@ DebugJS.prototype = {
     }
 
     this.printMessage();
-
     this.status |= DebugJS.STATE_INITIALIZED;
   },
 
@@ -684,7 +444,7 @@ DebugJS.prototype = {
   updateClockArea: function() {
     var dt = DebugJS.getTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;color:' + Debug.options.timeColor + ';margin-right:10px;">' + tm + '</span>';
+    var msg = '<span style=";font-size:12px;color:' + this.options.timeColor + ';margin-right:10px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
     if (this.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -714,39 +474,39 @@ DebugJS.prototype = {
 
   // Update Scroll Position
   updateScrollPosArea: function() {
-    this.scrollPosArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">SCROLL:' + DebugJS.scrollPos + '</span>';
+    this.scrollPosArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">SCROLL:' + this.scrollPos + '</span>';
   },
 
   // Update Mouse Position
   updateMousePositionArea: function() {
-    this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">POS:' + DebugJS.mousePos + '</span>';
+    this.mousePositionArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">POS:' + this.mousePos + '</span>';
   },
 
   // Update Mouse Click
   updateMouseClickArea: function() {
-    DebugJS.mouseClick = '<span style="color:' + DebugJS.mouseClickL + ';">L</span><span style="color:' + DebugJS.mouseClickC + ';">C</span><span style="color:' + DebugJS.mouseClickR + ';">R</span>';
-    this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + DebugJS.mouseClick + '</span>';
+    var mouseClick = '<span style="color:' + this.mouseClickL + ';">L</span><span style="color:' + this.mouseClickC + ';">C</span><span style="color:' + this.mouseClickR + ';">R</span>';
+    this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + mouseClick + '</span>';
   },
 
   // Update key Down
   updateKeyDownArea: function() {
-    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info">Key Down:' + DebugJS.keyDownCode + '&nbsp;</span>';
+    this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info">Key Down:' + this.keyDownCode + '&nbsp;</span>';
   },
 
   // Update key Press
   updateKeyPressArea: function() {
-    this.keyPressArea.innerHTML = '<span class="' + this.id + '-sys-info">Press:' + DebugJS.keyPressCode + '&nbsp;</span>';
+    this.keyPressArea.innerHTML = '<span class="' + this.id + '-sys-info">Press:' + this.keyPressCode + '&nbsp;</span>';
   },
 
   // Update key Up
   updateKeyUpArea: function() {
-    this.keyUpArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">Up:' + DebugJS.keyUpCode + '&nbsp;</span>';
+    this.keyUpArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">Up:' + this.keyUpCode + '&nbsp;</span>';
   },
 
   // Update Stop Watch Button
   updateSwBtnArea: function() {
-    var msg = '<span style="float:right;margin-right:4px;"><span class="' + this.id + '-btn" onclick="DebugJS.resetStopwatch();">🔃</span>';
-    msg += '<span class="' + this.id + '-btn" onclick="DebugJS.startStopStopWatch();">';
+    var msg = '<span style="float:right;margin-right:4px;"><span class="' + this.id + '-btn" onclick="Debug.resetStopwatch();">🔃</span>';
+    msg += '<span class="' + this.id + '-btn" onclick="Debug.startStopStopWatch();">';
     if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
     } else {
@@ -758,8 +518,8 @@ DebugJS.prototype = {
 
   // Update Stop Watch
   updateSwArea: function() {
-    DebugJS.updateStopWatch();
-    var msg = '<span style="float:right;margin-right:10px;">' + DebugJS.elapsedTime + '</span>';
+    this.updateStopWatch();
+    var msg = '<span style="float:right;margin-right:10px;">' + this.elapsedTime + '</span>';
     this.swArea.innerHTML = msg;
 
     if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
@@ -783,19 +543,19 @@ DebugJS.prototype = {
 
   // Close Button
   initCloseBtnArea: function() {
-    this.closeBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\'" onmouseout="this.style.color=\'#888\'">×</span>'
+    this.closeBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</span>'
   },
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 3px 3px 3px;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + Debug.cmdLineId + '"></input></div>';
-    this.cmdLine = document.getElementById(Debug.cmdLineId);
-    this.cmdHistory = new DebugJS.RingBuffer(10);
+    this.cmdArea.innerHTML = '<div style="padding:0 3px 3px 3px;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + this.cmdLineId + '"></input></div>';
+    this.cmdLine = document.getElementById(this.cmdLineId);
+    this.cmdHistoryBuf = new DebugJS.RingBuffer(10);
   },
 
   // Log Output
   printMessage: function() {
-    var buf = this.msgBuff.getLog();
+    var buf = this.getLog();
     var msg = '';
 
     // Log Area
@@ -812,7 +572,7 @@ DebugJS.prototype = {
   },
 
   clearMessage: function() {
-    this.msgBuff.clear();
+    this.msgBuf.clear();
     this.printMessage();
   },
 
@@ -872,16 +632,73 @@ DebugJS.prototype = {
   },
 
   toggleDraggable: function() {
-    if (Debug.status & DebugJS.STATE_DRAGGABLE) {
-      Debug.status &= ~DebugJS.STATE_DRAGGABLE;
+    if (this.status & DebugJS.STATE_DRAGGABLE) {
+      this.status &= ~DebugJS.STATE_DRAGGABLE;
       this.infoArea.style.cursor = 'auto';
       this.msgArea.style.cursor = 'auto';
     } else {
-      Debug.status |= DebugJS.STATE_DRAGGABLE;
+      this.status |= DebugJS.STATE_DRAGGABLE;
       this.infoArea.style.cursor = 'default';
       this.msgArea.style.cursor = 'default';
     }
-    Debug.updatePinBtnArea();
+    this.updatePinBtnArea();
+  },
+
+  startStopStopWatch: function() {
+    if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+      // stop
+      this.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
+      this.updateSwBtnArea();
+    } else {
+      // start
+      this.status |= DebugJS.STATE_STOPWATCH_RUNNING;
+      this.swStartTime = (new Date()).getTime() - this.swElapsedTime;
+      this.updateStopWatch();
+      this.updateSwArea();
+      this.updateSwBtnArea();
+    }
+  },
+
+  updateStopWatch: function() {
+    if (!(this.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
+    var swCurrentTime = (new Date()).getTime();
+    this.swElapsedTime = swCurrentTime - this.swStartTime;
+    this.elapsedTime = DebugJS.getPassedTimeStr(this.swElapsedTime);
+  },
+
+  resetStopwatch: function() {
+    this.swStartTime = (new Date()).getTime();
+    this.elapsedTime = DebugJS.getPassedTimeStr(0);
+    this.swElapsedTime = 0;
+    this.updateSwArea();
+  },
+
+  getLog: function() {
+    var allBuf = this.msgBuf.getAll();
+    var bufCnt = this.msgBuf.count();
+    var bufLen = allBuf.length;
+    var buf = [];
+    for (var i = 0; i < bufLen; i++) {
+      var lineCnt = bufCnt - bufLen + i + 1;
+      var line = '<tr style="vertical-align:top;">';
+      if (allBuf[i] == undefined) {
+        break;
+      }
+      var lineNum = '';
+      if (Debug.options.showLineNums) {
+        var diffDigits = DebugJS.digits(bufCnt) - DebugJS.digits(lineCnt);
+        var lineNumPadding = '';
+        for (var j = 0; j < diffDigits; j++) {
+          lineNumPadding = lineNumPadding + '0';
+        }
+        lineNum = lineNumPadding + lineCnt + ':';
+        line += '<td style="padding-right:3px;word-break:normal;">' + lineNum + '</td>';
+      }
+      line += '<td><pre>' + allBuf[i] + '</pre></td>';
+      line += '</tr>';
+      buf[i] = line;
+    }
+    return buf;
   },
 
   keyhandler: function(e) {
@@ -898,9 +715,9 @@ DebugJS.prototype = {
         }
         break;
 
-      case 38: // ↑
+      case 38: // Up
         if (document.activeElement == Debug.cmdLine) {
-          var cmds = Debug.cmdHistory.getAll();
+          var cmds = Debug.cmdHistoryBuf.getAll();
           if (cmds.length == 0) return;
           if (cmds.length < Debug.cmdHistoryIdx) {
             Debug.cmdHistoryIdx = cmds.length;
@@ -915,9 +732,9 @@ DebugJS.prototype = {
         }
         break;
 
-      case 40: // ↓
+      case 40: // Down
         if (document.activeElement == Debug.cmdLine) {
-          var cmds = Debug.cmdHistory.getAll();
+          var cmds = Debug.cmdHistoryBuf.getAll();
           if (cmds.length == 0) return;
           if (Debug.cmdHistoryIdx < cmds.length) {
             Debug.cmdHistoryIdx++;
@@ -951,77 +768,200 @@ DebugJS.prototype = {
     }
   },
 
+  keyDownHandler: function(e) {
+    var metaKey = DebugJS.checkMetaKey(e);
+    Debug.keyDownCode = e.keyCode + metaKey;
+    Debug.updateKeyDownArea();
+  
+    Debug.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
+    Debug.updateKeyPressArea();
+  
+    Debug.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
+    Debug.updateKeyUpArea();
+  },
+
+  keyPressHandler: function(e) {
+    var metaKey = DebugJS.checkMetaKey(e);
+    Debug.keyPressCode = e.keyCode + metaKey;
+    Debug.updateKeyPressArea();
+  },
+
+  keyUpHandler: function(e) {
+    var metaKey = DebugJS.checkMetaKey(e);
+    Debug.keyUpCode = e.keyCode + metaKey;
+    Debug.updateKeyUpArea();
+  },
+
+  resizeHandler: function() {
+    Debug.updateWindowSizeArea();
+    Debug.updateClientSizeArea();
+    Debug.updateBodySizeArea();
+  },
+
+  scrollHandler: function() {
+    var x, y;
+    if (window.scrollX === undefined) {
+      x = document.documentElement.scrollLeft;
+      y = document.documentElement.scrollTop;
+    } else {
+      x = window.scrollX;
+      y = window.scrollY;
+    }
+    Debug.scrollPos = 'x=' + x + ',y=' + y;
+    Debug.updateScrollPosArea();
+  },
+
+  mousemoveHandler: function(e) {
+    Debug.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
+    Debug.updateMousePositionArea();
+  },
+
+  mousedownHandler: function(e) {
+    switch (e.button) {
+      case 0:
+        Debug.mouseClickL = DebugJS.COLOR_ACTIVE;
+        break;
+      case 1:
+        Debug.mouseClickC = DebugJS.COLOR_ACTIVE;
+        break;
+      case 2:
+        Debug.mouseClickR = DebugJS.COLOR_ACTIVE;
+        break;
+      default:
+        break;
+    }
+    Debug.updateMouseClickArea();
+  },
+
+  mouseupHandler: function(e) {
+    switch (e.button) {
+      case 0:
+        Debug.mouseClickL = DebugJS.COLOR_INACTIVE;
+        break;
+      case 1:
+        Debug.mouseClickC = DebugJS.COLOR_INACTIVE;
+        break;
+      case 2:
+        Debug.mouseClickR = DebugJS.COLOR_INACTIVE;
+        break;
+      default:
+        break;
+    }
+    Debug.updateMouseClickArea();
+  },
+
   hideDebugWindow: function() {
     if (!this.options.showCloseButton) return;
     this.status &= ~DebugJS.STATE_DRAGGING;
     var styles = {};
-    styles['#' + Debug.id] = {'display': 'none'};
+    styles['#' + this.id] = {'display': 'none'};
     this.applyStyles(styles);
     this.status &= ~DebugJS.STATE_VISIBLE;
   },
 
   showDebugWindow: function() {
     var styles = {};
-    styles['#' + Debug.id] = {'display': 'block'};
-    Debug.applyStyles(styles);
+    styles['#' + this.id] = {'display': 'block'};
+    this.applyStyles(styles);
     this.status |= DebugJS.STATE_VISIBLE;
   },
 
   execCmd: function() {
-    if (document.activeElement != Debug.cmdLine) {
+    if (document.activeElement != this.cmdLine) {
       return;
     }
-
-    var cmd = Debug.cmdLine.value;
-    if (cmd != '') {
-      Debug.cmdHistory.add(cmd);
+    var cl = this.cmdLine.value;
+    if (cl != '') {
+      this.cmdHistoryBuf.add(cl);
     }
-    Debug.cmdHistoryIdx = (Debug.cmdHistory.count() < Debug.cmdHistoryMax) ? Debug.cmdHistory.count() : Debug.cmdHistoryMax;
-    Debug.cmdLine.value = '';
-    log.s(cmd);
-
-    if (cmd.indexOf("p ") == 0) {
-      DebugJS.execCmdP(cmd);
-      return;
+    this.cmdHistoryIdx = (this.cmdHistoryBuf.count() < this.cmdHistoryMax) ? this.cmdHistoryBuf.count() : this.cmdHistoryMax;
+    this.cmdLine.value = '';
+    log.s(cl);
+    wkCL = cl.replace(/\s{2,}/g, ' ');
+    var cmds = wkCL.match(/([^\s]{1,})\s(.*)/);
+    var cmd = wkCL, args = null;
+    if (cmds != null) {
+      cmd = cmds[1];
+      args = cmds[2]
+    }
+    var found = false;
+    for (var i=0; i<this.CMD_TBL.length; i++) {
+      if (cmd == this.CMD_TBL[i].cmd) {
+        found = true;
+        this.CMD_TBL[i].fnc(args, this.CMD_TBL[i]);
+        break;
+      }
     }
 
-    if (cmd.indexOf("rgb ") == 0) {
-      DebugJS.convRGB(cmd);
-      return;
+    if (!found) {
+      try {
+        DebugJS.log(eval(cl));
+      } catch (e) {
+        log.e(e)
+      }
     }
+  },
 
-    switch (cmd) {
-      case 'p':
-        log('Usage: p &lt;object&gt;');
-        break;
-      case 'rgb':
-        log('Usage: rgb &lt;color value(#RGB or R G B)&gt;');
-        break;
-      case 'v':
-        log('ver.' + Debug.v);
-        break;
-      case 'cls':
-        Debug.clearMessage();
-        break;
-      case 'exit':
-      case 'quit':
-      case '\\q':
-        Debug.clearMessage();
-        Debug.hideDebugWindow();
-        break;
-      case 'help':
-        DebugJS.printHelp();
-        break;
-      default:
-        try {
-          log(eval(cmd));
-        } catch (e) {
-          log.e(e);
-        }
-        break;
+  cmdCls: function(args, tbl) {
+    Debug.clearMessage();  
+  },
+
+  cmdExit: function(args, tbl) {
+    Debug.clearMessage();
+    Debug.hideDebugWindow();
+  },
+
+  cmdHelp: function(args, tbl) {
+    var str = 'Available Commands:<br>';
+    str += 'cls      Clear log message.<br>';
+    str += 'exit     Close the debug window.<br>';
+    str += 'p        Print object.<br>';
+    str += 'help     Displays available command list.<br>';
+    str += 'history  Displays command history.<br>';
+    str += 'exit     Close the debug window.<br>';
+    str += 'rgb      Convert RGB color values between HEX and DEC.<br>';
+    str += 'v        Displays version info.<br>';
+    DebugJS.log(str);
+  },
+
+  cmdHistory: function(args, tbl) {
+    var buf = Debug.cmdHistoryBuf.getAll();
+    var str = 'Command History:<br>';
+    for (var i=0; i< (buf.length - 1); i++) {
+      str += buf[i] + '<br>';
     }
+    DebugJS.log(str);
+  },
+
+  cmdP: function(args, tbl) {
+    if (args == null) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.execCmdP(args);
+    }
+  },
+
+  cmdRGB: function(args, tbl) {
+    if (args == null) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.convRGB(args);
+    }
+  },
+
+  cmdStart: function(args, tbl) {
+    if (args == 'log') Debug.status &= ~DebugJS.STATE_LOG_SUSPEND;
+  },
+
+  cmdStop: function(args, tbl) {
+    if (args == 'log') Debug.status |= DebugJS.STATE_LOG_SUSPEND;
+  },
+
+  cmdV: function(args, tbl) {
+    DebugJS.log('ver.' + Debug.v);
   }
 };
+
 
 DebugJS.RingBuffer = function(len) {
   if (len == undefined) {
@@ -1053,14 +993,12 @@ DebugJS.RingBuffer.prototype = {
   },
 
   getAll: function() {
-    var allBuff = [];
+    var allBuf = [];
     var bufLen = this.buffer.length;
     var pos = 0;
-
     if (this.cnt > bufLen) {
       pos = (this.cnt % bufLen);
     }
-
     for (var i = 0; i < bufLen; i++) {
       if (pos >= bufLen) {
         pos = 0;
@@ -1068,69 +1006,12 @@ DebugJS.RingBuffer.prototype = {
       if (this.buffer[pos] == undefined) {
         break;
       } else {
-        allBuff[i] = this.buffer[pos];
+        allBuf[i] = this.buffer[pos];
         pos++;
       }
     }
 
-    return allBuff;
-  },
-
-  getLog: function() {
-    var allBuff = [];
-    var bufCnt = this.cnt;
-    var bufLen = this.buffer.length;
-    var line = '';
-    var lineNum = '';
-    var lineNumPadding = '';
-    var msg = '';
-    var pos = 0;
-    var cnt;
-
-    var maxCnt = bufLen;
-    if (bufCnt > this.buffer.length) {
-      pos = (bufCnt % this.buffer.length);
-      maxCnt = bufCnt;
-    }
-
-    for (var i = 0; i < bufLen; i++) {
-      line = '<tr style="vertical-align:top;">';
-
-      if (pos >= bufLen) {
-        pos = 0;
-      }
-
-      if (bufCnt < bufLen) {
-        cnt = i;
-      } else {
-        cnt = bufCnt - bufLen + i;
-      }
-      cnt++; //start at 1
-
-      if (this.buffer[pos] == undefined) {
-        break;
-      } else {
-        msg = this.buffer[pos];
-      }
-
-      if (Debug.options.showLineNums) {
-        var diffDigits = this.digits(maxCnt) - this.digits(cnt);
-        lineNumPadding = '';
-        for (var j = 0; j < diffDigits; j++) {
-          lineNumPadding = lineNumPadding + '0';
-        }
-        lineNum = lineNumPadding + cnt + ':';
-        line += '<td style="padding-right:3px; word-break:normal;">' + lineNum + '</td>';
-      }
-
-      line += '<td><pre>' + msg + '</pre></td>';
-      line += '</tr>';
-
-      allBuff[i] = line;
-      pos++;
-    }
-
-    return allBuff;
+    return allBuf;
   },
 
   clear: function() {
@@ -1146,40 +1027,159 @@ DebugJS.RingBuffer.prototype = {
   lastIndex: function() {
     var lastIdx = (this.cnt - 1) % this.buffer.length;
     return lastIdx;
-  },
-
-  digits: function(x) {
-    var digit = 0;
-    while (x != 0) {
-      x = (x / 10) << 0; digit++;
-    }
-    return digit;
   }
 };
 
-DebugJS.printHelp = function() {
-  var h = 'Available Commands:<br>';
-  h += 'cls   Clear log message.<br>';
-  h += 'exit  Close the debug window.<br>';
-  h += 'p     Print object.<br>';
-  h += 'rgb   Convert RGB color values between HEX and DEC.<br>';
-  h += 'v     Displays version info.<br>';
-  log(h);
+DebugJS.getTime = function() {
+  var nowDate = new Date();
+  var mm = nowDate.getMonth() + 1;
+  var dd = nowDate.getDate();
+  var hh = nowDate.getHours();
+  var mi = nowDate.getMinutes();
+  var ss = nowDate.getSeconds();
+  var ms = nowDate.getMilliseconds();
+
+  if (mm < 10) mm = '0' + mm;
+  if (dd < 10) dd = '0' + dd;
+  if (hh < 10) hh = '0' + hh;
+  if (mi < 10) mi = '0' + mi;
+  if (ss < 10) ss = '0' + ss;
+  if (ms < 10) {ms = '00' + ms;}
+  else if (ms < 100) {ms = '0' + ms;}
+
+  var dateTime = {'yyyy': nowDate.getFullYear(), 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'ms': ms, 'wday': nowDate.getDay()};
+  return dateTime;
+}
+
+DebugJS.time = function() {
+  var dt = DebugJS.getTime();
+  var tm = dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.ms;
+  return tm;
+}
+
+DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
+  var passedTimeSec = Math.floor((swPassedTimeMsec) / 1000);
+  var wkPassedTimeSec = passedTimeSec;
+
+  var passedHour;
+  var passedMin;
+  if (wkPassedTimeSec >= 3600) {
+    passedHour = Math.floor((wkPassedTimeSec / 3600));
+    wkPassedTimeSec = (wkPassedTimeSec - (passedHour * 3600));
+  } else {
+    passedHour = 0;
+  }
+
+  if (wkPassedTimeSec >= 60) {
+    passedMin  = Math.floor((wkPassedTimeSec / 60));
+    wkPassedTimeSec = (wkPassedTimeSec - (passedMin * 60));
+  } else {
+    passedMin = 0;
+  }
+
+  var passedSec = wkPassedTimeSec;
+  var passedMsec = Math.floor(swPassedTimeMsec & 999);
+
+  if (passedHour < 10) passedHour = '0' + passedHour;
+  if (passedMin < 10) passedMin = '0' + passedMin;
+  if (passedSec< 10) passedSec = '0' + passedSec;
+  if (passedMsec< 10) {passedMsec = '00' + passedMsec;}
+  else if (passedMsec< 100) passedMsec = '0' + passedMsec;
+
+  var retStr = passedHour + ':' + passedMin + ':' + passedSec + '.' + passedMsec;
+  return retStr;
+}
+
+DebugJS.checkMetaKey = function(e) {
+  var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
+  var ctrl = e.ctrlKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
+  var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
+  var metaKey = ' <span style="color:' + shift + ';">S</span><span style="color:' + ctrl + ';">C</span><span style="color:' + alt + ';">A</span>';
+  return metaKey;
+}
+
+DebugJS.execCmdP = function(args) {
+  var objs = args.split(' ');
+  for (var i=0; i<objs.length; i++) {
+    var command = 'DebugJS.buf="<br>' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log(DebugJS.buf);';
+    eval(command);
+  }
+}
+
+DebugJS.OBJDUMP_MAX = 100;
+DebugJS.objDump = function(obj) {
+  var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
+  var ret = DebugJS._objDump(obj, arg);
+  if (ret.cnt >= DebugJS.OBJDUMP_MAX) {
+    log.w('The object is too large. (' + ret.cnt + ')');
+  }
+  return ret.dump;
+}
+
+DebugJS._objDump = function(obj, arg) {
+  if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
+    arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
+    return arg;
+  }
+  var indent = '';
+  for (var i=0; i<arg.lv; i++) {
+    indent += ' ';
+  }
+
+  if (obj instanceof Array) {
+    arg.dump += '<span style="color:#c08;">[Array]</span><br>'; arg.cnt++;
+    for (var i in obj) {
+      arg.lv++;
+      arg.dump += indent + '[' + i + '] ';
+      arg = DebugJS._objDump(obj[i], arg);
+      arg.lv--;
+    }
+  } else if (obj instanceof Object) {
+    arg.dump += '<span style="color:#88f;">[Object]</span> {<br>'; arg.cnt++;
+    indent += ' ';
+    for (var key in obj) {
+      arg.dump += indent + key + ': ';
+      arg.lv++;
+      arg = DebugJS._objDump(obj[key], arg);
+      arg.lv--;
+    }
+    indent = indent.replace(' ', '');
+    arg.dump += indent + '}<br>';
+  } else if (obj === null) {
+    arg.dump += '<span style="color:#ccc;">null</span>' + '<br>'; arg.cnt++;
+  } else if (obj === undefined) {
+    arg.dump += '<span style="color:#ccc;">undefined</span>' + '<br>'; arg.cnt++;
+  } else if (typeof obj ==='string') {
+    arg.dump += '"' + obj + '"<br>'; arg.cnt++;
+  } else {
+    arg.dump += obj + '<br>'; arg.cnt++;
+  }
+  return arg;
+}
+
+DebugJS.digits = function(x) {
+  var digit = 0;
+  while (x != 0) {
+    x = (x / 10) << 0; digit++;
+  }
+  return digit;
+}
+
+DebugJS.printUsage = function(m) {
+  DebugJS.log('Usage: ' + m);
 }
 
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
-DebugJS.convRGB = function(cmd) {
-  var v = cmd.replace('rgb ', '');
+DebugJS.convRGB = function(v) {
   var rgb;
-  v = v.replace(/^\s+/g, '');
   if (v.indexOf("#") == 0) {
     rgb = DebugJS.convRGB16to10(v);
   } else {
     rgb = DebugJS.convRGB10to16(v);
   }
-  log(rgb);
+  DebugJS.log(rgb);
 }
 
 DebugJS.convRGB16to10 = function(rgb16) {
@@ -1201,7 +1201,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
-  var rgb10 = 'RGB = <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
+  var rgb10 = '<span style="vertical-align:middle;display:inline-block;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:8px;height:8px;margin-top:2px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
   return rgb10;
 }
 
@@ -1219,72 +1219,69 @@ DebugJS.convRGB10to16 = function(rgb10) {
     g16 = g16.substring(0, 1);
     b16 = b16.substring(0, 1);
   }
-  var rgb16 = 'RGB = #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
+  var rgb16 = '<span style="vertical-align:middle;display:inline-block;"><span style="background:#' + r16 + g16 + b16 + ';width:8px;height:8px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   return rgb16;
 }
 
-var Debug = new DebugJS();
-
-var log = function(msg) {
-  var m = log.init(msg);
-  log.out(m, null);
+DebugJS.log = function(m) {
+  m = DebugJS.log.init(m);
+  DebugJS.log.out(m, null);
 }
 
-log.e = function(msg) {
-  var m = log.init(msg);
+DebugJS.log.e = function(m) {
+  m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.errorColor + ';';
-  log.out(m, style);
+  DebugJS.log.out(m, style);
 }
 
-log.w = function(msg) {
-  var m = log.init(msg);
+DebugJS.log.w = function(m) {
+  m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.warnColor + ';';
-  log.out(m, style);
+  DebugJS.log.out(m, style);
 }
 
-log.i = function(msg) {
-  var m = log.init(msg);
+DebugJS.log.i = function(m) {
+  m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.infoColor + ';';
-  log.out(m, style);
+  DebugJS.log.out(m, style);
 }
 
-log.d = function(msg) {
-  var m = log.init(msg);
+DebugJS.log.d = function(m) {
+  m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.debugColor + ';';
-  log.out(m, style);
+  DebugJS.log.out(m, style);
 }
 
-log.v = function(msg) {
-  var m = log.init(msg);
+DebugJS.log.v = function(m) {
+  m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.verboseColor + ';';
-  log.out(m, style);
+  DebugJS.log.out(m, style);
 }
 
-log.s = function(msg) {
-  var m = log.init(msg);
+DebugJS.log.s = function(m) {
+  m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;';
-  log.out(m, style);
+  DebugJS.log.out(m, style);
 }
 
-// for object dump
-log.p = function(o) {
+DebugJS.log.p = function(m) {
   var m = log.init(o);
   var m = '<br>' + DebugJS.objDump(m);
-  log.out(m, null);
+  DebugJS.log.out(m, null);
 }
 
-log.init = function(msg) {
+DebugJS.log.init = function(m) {
   if (!Debug.isInitialized()) {
     Debug.init(null, null);
   }
   if (!Debug.isWindowInitialized()) {
     Debug.initDebugWindow();
   }
-  return msg;
+  return m;
 }
 
-log.out = function(msg, style) {
-  if (msg != null) {
+DebugJS.log.out = function(m, style) {
+  if (m != null) {
     var t = '';
     if (Debug.options.showTimeStamp) {
       t = DebugJS.time() + ' ';
@@ -1292,13 +1289,55 @@ log.out = function(msg, style) {
     if (style != null) {
       style = ' style="' + style + '"';
     }
-    var m = '<span' + style + '>' + t + msg + '</span>';
-    Debug.msgBuff.add(m);
+    m = '<span' + style + '>' + t + m + '</span>';
+    Debug.msgBuf.add(m);
   }
   Debug.printMessage();
 }
 
-if(!Debug.ENABLE){
+var log = function(m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log(m);
+}
+
+log.e = function(m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log.e(m);
+}
+
+log.w = function(m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log.w(m);
+}
+
+log.i = function(m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log.i(m);
+}
+
+log.d = function(m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log.d(m);
+}
+
+log.v = function(m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log.v(m);
+}
+
+log.s = function(m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log.s(m);
+}
+
+log.p = function(o) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  DebugJS.log.p(o);
+}
+
+var Debug = new DebugJS();
+
+if(!DebugJS.ENABLE){
 log=function(x){};
 log.e=function(x){};
 log.w=function(x){};

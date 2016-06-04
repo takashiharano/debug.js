@@ -157,48 +157,14 @@ var h = [
 window.onload = function() {
 //in the absence of this initialization, debug.js works in default configuration.
   var options = {
-    'buffSize': 18,
-    'width': 500,
-    'position': 'center', // left-top, left-bottom, center, right-top, right-bottom
-    'posAdjX': 20,
-    'posAdjY': 20,
-    'errorColor': '#d44',
-    'warnColor': '#ed0',
-    'infoColor': '#fff',
-    'debugColor': '#8cf',
-    'verboseColor': '#ccc',
-    'specialColor': '#fff',
-    'timeColor': '#0f0',
-    'systemInfoColor': '#ddd',
-    'showLineNums': true,
-    'showTimeStamp': true,
-    'showClock': true,
-    'showClearButton': true,
-    'showCloseButton': true,
-    'showWindowSize': true,
-    'showMouseStatus': true,
-    'showKeyStatus': true,
-    'enableStopWatch': true,
-    'enableCommandLine': true
+    'position': 'center' // left-top, left-bottom, center, right-top, right-bottom
   };
-  Debug.init(null, options);
+  Debug.init(options);
 
 // If you want to output the logs to a designated area, pass the element id to 1st argument.
   var options2 = {
+    'elmId': 'dbg',
     'buffSize': 10,
-    'width': 500,
-    'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
-    'posAdjX': 20,
-    'posAdjY': 20,
-    'errorColor': '#d44',
-    'warnColor': '#ed0',
-    'infoColor': '#fff',
-    'debugColor': '#8cf',
-    'verboseColor': '#ccc',
-    'specialColor': '#fff',
-    'timeColor': '#0f0',
-    'systemInfoColor': '#ddd',
-    'showLineNums': true,
     'showTimeStamp': false,
     'showClock': false,
     'showClearButton': true,
@@ -209,8 +175,8 @@ window.onload = function() {
     'enableStopWatch': false,
     'enableCommandLine': false
   };
-//  Debug.init('test1', options2);
-//  Debug.init('test1', null);
+//  Debug.init(options2);
+//  Debug.init(null);
 
   log('Here is the output example!');
   log('The window\'s load event fired.');
@@ -246,7 +212,7 @@ document.onclick = function(e) {
 
 <div class="description">
 That's it!<br><br>
-The debug window will be <span style="background:linear-gradient(transparent 60%, #66ccff 80%);">automatically generated.</span><br>
+The debug window will be <span style="background:linear-gradient(transparent 60%, #6cf 80%);">automatically generated.</span><br>
 The window is draggable and you can switch hide/show by F2 key.<br>
 </div>
 <br>
@@ -284,32 +250,11 @@ The window is draggable and you can switch hide/show by F2 key.<br>
 <div class="description">If you want to change the log settings, explicitly call initialization function in advance.</div>
 <pre class="code emphasis">
 var options = {
-  'buffSize': 18,
-  'width': 500,
-  'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
-  'posAdjX': 20,
-  'posAdjY': 20,
-  'errorColor': '#d44',
-  'warnColor': '#ed0',
-  'infoColor': '#fff',
-  'debugColor': '#8cf',
-  'verboseColor': '#ccc',
-  'specialColor': '#fff',
-  'timeColor': '#0f0',
-  'systemInfoColor': '#ddd',
-  'showLineNums': true,
-  'showTimeStamp': true,
-  'showClock': true,
-  'showClearButton': true,
-  'showCloseButton': true,
-  'showWindowSize': true,
-  'showMouseStatus': true,
-  'showKeyStatus': true,
-  'enableStopWatch': true,
-  'enableCommandLine': true
+  'position': 'center', // left-top, left-bottom, center, right-top, right-bottom
+  'showTimeStamp': false,
 };
 
-Debug.init(null, options);
+Debug.init(options);
 </pre>
 
 <div class="description">You can also use the log function with log type.</div>
@@ -322,7 +267,7 @@ log.v('verbose log');
 log.s('special log');
 </pre>
 
-<div id="test1"></div>
+<div id="dbg"></div>
 
 <br>
 <div class="caption">DEMO:</div>
