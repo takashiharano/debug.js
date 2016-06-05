@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>debug.js demo</title>
+<title>debug.js</title>
 <!--<link rel="stylesheet" type="text/css" href="../foundation.css" />-->
 <script src="debug.js"></script>
 <style>
@@ -51,6 +51,7 @@ a:hover {
   font-size: 9pt;
   color: #aaa;
   background: #111;
+  border-top: solid 3px #1883d7;
 }
 
 .code1 {
@@ -95,6 +96,27 @@ a:hover {
 .button:hover {
   background: #00a8ff;
   text-decoration: none;
+}
+
+.desc-table {
+  font-family: Tahoma, Arial;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+
+.desc-table th {
+  background-color: #eee;
+  border: solid 1px #444;
+  padding: 4px 6px;
+}
+
+.desc-table td {
+  border: solid 1px #444;
+  padding: 4px 6px;
+}
+
+.desc-table .name {
+  color: #0000a0;
 }
 
 /*td {*/
@@ -183,6 +205,8 @@ window.onload = function() {
 
   log('Here is the output example!');
   log('The window\'s load event fired.');
+
+  setTimeout(displayMessages, 1000);
 }
 
 document.onkeydown = function(e) {
@@ -196,6 +220,31 @@ document.onmousemove = function(e) {
 document.onclick = function(e) {
   //log('click count: ' + event.detail);
 }
+
+
+var dispCount = 0;
+function displayMessages() {
+  if (dispCount >= messages.length) return;
+  var msgData = messages[dispCount];
+  dispCount++;
+  msgData.fnc(msgData.msg);
+  setTimeout(displayMessages, msgData.delay);
+}
+
+
+var messages = [
+{
+  'fnc': log,
+  'msg': 'This debug window is automatically generated.',
+  'delay': 500
+},
+{
+  'fnc': log,
+  'msg': 'The window is draggable and you can switch hide/show by F2 key.',
+  'delay': 500
+}
+]
+
 </script>
 
 </head>
@@ -253,13 +302,14 @@ The window is draggable and you can switch hide/show by F2 key.<br>
 <div class="description">If you want to change the log settings, explicitly call initialization function in advance.</div>
 <pre class="code emphasis">
 var options = {
-  'position': 'center', // left-top, left-bottom, center, right-top, right-bottom
-  'showTimeStamp': false,
+  'position': 'center',
+  'showTimeStamp': false
 };
 
 Debug.init(options);
 </pre>
 
+<!--
 <div class="description">You can also use the log function with log type.</div>
 <pre class="code emphasis">
 log.e('error log');
@@ -269,6 +319,287 @@ log.d('debug log');
 log.v('verbose log');
 log.s('special log');
 </pre>
+-->
+
+Options:
+<table class="desc-table">
+  <tr>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Default</th>
+  </tr>
+
+  <tr>
+    <td class="name">visible</td>
+    <td>Default vibible status</td>
+    <td>true</td>
+  <tr>
+
+    <td class="name">dispLine</td>
+    <td>Number of lines to display</td>
+    <td>18</td>
+  </tr>
+
+  <tr>
+    <td class="name">buffSize</td>
+    <td>Log buffer size</td>
+    <td>100</td>
+  </tr>
+
+  <tr>
+    <td class="name">width</td>
+    <td>Debug window size (px)</td>
+    <td>500</td>
+  </tr>
+
+  <tr>
+    <td class="name">position</td>
+    <td>Default window position (left-top / left-bottom / center / right-top / right-bottom)</td>
+    <td>right-bottom</td>
+  </tr>
+
+  <tr>
+    <td class="name">posAdjX</td>
+    <td>Debug window position x-adjustment (px)</td>
+    <td>20</td>
+  </tr>
+
+  <tr>
+    <td class="name">posAdjX</td>
+    <td>Debug window position y-adjustment (px)</td>
+    <td>20</td>
+  </tr>
+
+  <tr>
+    <td class="name">errorColor</td>
+    <td>Error log color</td>
+    <td>#d44</td>
+  </tr>
+
+  <tr>
+    <td class="name">warnColor</td>
+    <td>Warning log color</td>
+    <td>#ed0</td>
+  </tr>
+
+  <tr>
+    <td class="name">infoColor</td>
+    <td>Information log color</td>
+    <td>#fff</td>
+  </tr>
+
+  <tr>
+    <td class="name">debugColor</td>
+    <td>Debug log color</td>
+    <td>#8cf</td>
+  </tr>
+
+  <tr>
+    <td class="name">verboseColor</td>
+    <td>Verbose log color</td>
+    <td>#ccc</td>
+  </tr>
+
+  <tr>
+    <td class="name">specialColor</td>
+    <td>Special log color</td>
+    <td>#ff</td>
+  </tr>
+
+  <tr>
+    <td class="name">clockColor</td>
+    <td>Clock color</td>
+    <td>#0f0</td>
+  </tr>
+
+  <tr>
+    <td class="name">systemInfoColor</td>
+    <td>System info color (window / mouse / key status, etc.)</td>
+    <td>#ddd</td>
+  </tr>
+
+  <tr>
+    <td class="name">showLineNums</td>
+    <td>Show log line numbers</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showTimeStamp</td>
+    <td>Show log timestamp</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showClock</td>
+    <td>Show clock</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showClearButton</td>
+    <td>Show [CLR] button</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showSuspendLogButton</td>
+    <td>Show 🚫 button</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showCloseButton</td>
+    <td>Show × button</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showWindowSize</td>
+    <td>Show window size monitor</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showMouseStatus</td>
+    <td>Show mouse status monitor</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">showKeyStatus</td>
+    <td>Show key status monitor</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">enableStopWatch</td>
+    <td>Enable stopwatch function</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">enableCommandLine</td>
+    <td>Enable command-line</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">target</td>
+    <td>Debug window element id (The window is automatically generated in case of null)</td>
+    <td>null</td>
+  </tr>
+</table>
+<br>
+
+Methods:
+<table class="desc-table">
+  <tr>
+    <th>Name</th>
+    <th>Argument</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">log.e</td>
+    <td>messag string</td>
+    <td>Output error log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.w</td>
+    <td>messag string</td>
+    <td>Output warning log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.i</td>
+    <td>messag string</td>
+    <td>Output information log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.d</td>
+    <td>messag string</td>
+    <td>Output debug log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.v</td>
+    <td>messag string</td>
+    <td>Output verbose log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.s</td>
+    <td>messag string</td>
+    <td>Output special log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.p</td>
+    <td>variable</td>
+    <td>Output object dump</td>
+  </tr>
+</table>
+<br>
+
+Commands:
+<table class="desc-table">
+  <tr>
+    <th>Name</th>
+    <th>Arguments</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">cls</td>
+    <td></td>
+    <td>Clear log message.</td>
+  </tr>
+
+  <tr>
+    <td class="name">exit</td>
+    <td></td>
+    <td>Close the debug window.</td>
+  </tr>
+
+  <tr>
+    <td class="name">p</td>
+    <td>variable(s)</td>
+    <td>Print object dump.</td>
+  </tr>
+
+  <tr>
+    <td class="name">help</td>
+    <td></td>
+    <td>Displays available command list.</td>
+  </tr>
+
+  <tr>
+    <td class="name">history</td>
+    <td></td>
+    <td>Displays command history.</td>
+  </tr>
+
+  <tr>
+    <td class="name">rgb</td>
+    <td>RGB Color Value</td>
+    <td>
+      Convert RGB color values between HEX and DEC.<br><br>
+      $ rgb #fff<br>
+      -&gt; 255 255 255<br><br>
+      $ rgb 255 255 255<br>
+      -&gt; #fff
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">v</td>
+    <td></td>
+    <td>Displays version info.</td>
+  </tr>
+</table>
 
 <div id="dbg"></div>
 
@@ -295,6 +626,9 @@ log.v('verbose log');
 
 log.s('special log');
 <a href="" class="button" onclick="log.s('special log');return false;">log.s()</a>
+
+log.p(window.applicationCache);
+<a href="" class="button" onclick="log.p(window.applicationCache);return false;">log.p()</a>
 
 <!--
 log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');

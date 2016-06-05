@@ -5,9 +5,10 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606051410';
+  this.v = '201606052000';
 
   this.DEFAULT_OPTIONS = {
+    'visible': true,
     'dispLine': 18,
     'buffSize': 100,
     'width': 500,
@@ -20,7 +21,7 @@ var DebugJS = function() {
     'debugColor': '#8cf',
     'verboseColor': '#ccc',
     'specialColor': '#fff',
-    'timeColor': '#0f0',
+    'clockColor': '#0f0',
     'systemInfoColor': '#ddd',
     'showLineNums': true,
     'showTimeStamp': true,
@@ -33,8 +34,7 @@ var DebugJS = function() {
     'showKeyStatus': true,
     'enableStopWatch': true,
     'enableCommandLine': true,
-    'target': null,
-    'visible': true
+    'target': null
   };
 
   this.STYLE = {
@@ -460,7 +460,7 @@ DebugJS.prototype = {
   updateClockArea: function() {
     var dt = DebugJS.getTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;color:' + this.options.timeColor + ';margin-right:10px;">' + tm + '</span>';
+    var msg = '<span style=";font-size:12px;color:' + this.options.clockColor + ';margin-right:10px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
 
     if (this.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -941,7 +941,6 @@ DebugJS.prototype = {
     str += 'p        Print object.<br>';
     str += 'help     Displays available command list.<br>';
     str += 'history  Displays command history.<br>';
-    str += 'exit     Close the debug window.<br>';
     str += 'rgb      Convert RGB color values between HEX and DEC.<br>';
     str += 'v        Displays version info.<br>';
     DebugJS.log(str);
@@ -1290,9 +1289,9 @@ DebugJS.log.s = function(m) {
   DebugJS.log.out(m, style);
 }
 
-DebugJS.log.p = function(m) {
-  var m = log.init(o);
-  var m = '<br>' + DebugJS.objDump(m);
+DebugJS.log.p = function(o) {
+  var m = DebugJS.log.init(null);
+  var m = '<br>' + DebugJS.objDump(o);
   DebugJS.log.out(m, null);
 }
 
