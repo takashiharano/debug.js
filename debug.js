@@ -5,13 +5,13 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606051357';
+  this.v = '201606051410';
 
   this.DEFAULT_OPTIONS = {
     'dispLine': 18,
     'buffSize': 100,
     'width': 500,
-    'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
+    'position': 'right-bottom',
     'posAdjX': 20,
     'posAdjY': 20,
     'errorColor': '#d44',
@@ -334,8 +334,8 @@ DebugJS.prototype = {
           wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
           break;
         case 'center':
-          wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + this.options.posAdjY + 'px';
-          wkStyle.left = ((document.documentElement.clientWidth / 2) - (this.options.width / 2)) + this.options.posAdjX + 'px';
+          wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+          wkStyle.left = ((document.documentElement.clientWidth / 2) - (this.options.width / 2)) + 'px';
           break;
         case 'left-bottom':
           wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - this.options.posAdjY) + 'px';
@@ -451,7 +451,7 @@ DebugJS.prototype = {
     this.infoArea.innerHTML = '<div style="padding:1px 2px 0px 2px;background:rgba(0,68,118,0);"></div>';
   },
 
-  // Update Clear Button
+  // Init Clear Button
   initClrBtnArea: function() {
     this.clrBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="margin-right:4px;" onclick="Debug.clearMessage();">[CLR]</span>';
   },
