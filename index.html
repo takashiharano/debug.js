@@ -309,18 +309,6 @@ var options = {
 Debug.init(options);
 </pre>
 
-<!--
-<div class="description">You can also use the log function with log type.</div>
-<pre class="code emphasis">
-log.e('error log');
-log.w('warn log');
-log.i('info log');
-log.d('debug log');
-log.v('verbose log');
-log.s('special log');
-</pre>
--->
-
 Options:
 <table class="desc-table">
   <tr>
@@ -501,6 +489,12 @@ Methods:
   </tr>
 
   <tr>
+    <td class="name">log</td>
+    <td>messag string</td>
+    <td>Output standard log</td>
+  </tr>
+
+  <tr>
     <td class="name">log.e</td>
     <td>messag string</td>
     <td>Output error log</td>
@@ -606,8 +600,8 @@ Commands:
 <br>
 <div class="caption">DEMO:</div>
 
-log('normal log');
-<a href="" class="button" onclick="log('normal log');return false;">log()</a>
+log('standard log');
+<a href="" class="button" onclick="log('standard log');return false;">log()</a>
 
 log.e('error log');
 <a href="" class="button" onclick="log.e('error log');return false;">log.e()</a>
