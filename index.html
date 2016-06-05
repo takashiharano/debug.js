@@ -159,15 +159,16 @@ window.onload = function() {
   var options = {
     'position': 'center' // left-top, left-bottom, center, right-top, right-bottom
   };
-  Debug.init(options);
 
 // If you want to output the logs to a designated area, pass the element id to 1st argument.
   var options2 = {
-    'elmId': 'dbg',
+    'target': 'dbg',
+    'dispLine': 10,
     'buffSize': 10,
     'showTimeStamp': false,
     'showClock': false,
     'showClearButton': true,
+    'showSuspendLogButton': false,
     'showCloseButton': false,
     'showWindowSize': false,
     'showMouseStatus': false,
@@ -175,8 +176,10 @@ window.onload = function() {
     'enableStopWatch': false,
     'enableCommandLine': false
   };
+
+  Debug.init(options);
 //  Debug.init(options2);
-//  Debug.init(null);
+//  Debug.init();
 
   log('Here is the output example!');
   log('The window\'s load event fired.');

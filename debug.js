@@ -5,10 +5,11 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606050135';
+  this.v = '201606051357';
 
   this.DEFAULT_OPTIONS = {
-    'buffSize': 18,
+    'dispLine': 18,
+    'buffSize': 100,
     'width': 500,
     'position': 'right-bottom', // left-top, left-bottom, center, right-top, right-bottom
     'posAdjX': 20,
@@ -25,13 +26,14 @@ var DebugJS = function() {
     'showTimeStamp': true,
     'showClock': true,
     'showClearButton': true,
+    'showSuspendLogButton': true,
     'showCloseButton': true,
     'showWindowSize': true,
     'showMouseStatus': true,
     'showKeyStatus': true,
     'enableStopWatch': true,
     'enableCommandLine': true,
-    'elmId': null,
+    'target': null,
     'visible': true
   };
 
@@ -60,6 +62,7 @@ var DebugJS = function() {
   this.swElapsedTime = 0;
   this.elapsedTime = '00:00:00.000';
   this.clrBtnArea = null;
+  this.suspendLogBtnArea = null;
   this.pinBtnArea = null;
   this.closeBtnArea = null;
   this.mousePositionArea = null;
@@ -98,8 +101,6 @@ var DebugJS = function() {
     {'cmd': 'history', 'fnc': this.cmdHistory},
     {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
-    {'cmd': 'start', 'fnc': this.cmdStart},
-    {'cmd': 'stop', 'fnc': this.cmdStop},
     {'cmd': 'v', 'fnc': this.cmdV}
   ];
 }
@@ -111,7 +112,7 @@ DebugJS.STATE_SHOW_CLOCK = 0x4;
 DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
 DebugJS.STATE_DRAGGABLE = 0x10;
 DebugJS.STATE_DRAGGING = 0x20;
-DebugJS.STATE_LOG_SUSPEND = 0x40;
+DebugJS.STATE_LOG_SUSPENDING = 0x40;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 
 DebugJS.COLOR_ACTIVE = '#fff';
@@ -134,12 +135,12 @@ DebugJS.prototype = {
       }
     }
 
-    if (this.options.elmId == null) {
+    if (this.options.target == null) {
       this.id = this.DEFAULT_ELM_ID;
       this.status |= DebugJS.STATE_DYNAMIC;
       this.status |= DebugJS.STATE_DRAGGABLE;
     } else {
-      this.id = options.elmId;
+      this.id = options.target;
       this.debugWindow = document.getElementById(this.id);
     }
     this.msgAreaId = this.id + '-msg';
@@ -165,6 +166,12 @@ DebugJS.prototype = {
     this.infoArea.style.cursor = 'default';
     this.initInfoArea();
 
+    // CLR Button
+    if (this.options.showClearButton) {
+      this.clrBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.clrBtnArea);
+    }
+
     // Clock
     if (this.options.showClock) {
       this.clockArea = document.createElement('span');
@@ -184,10 +191,10 @@ DebugJS.prototype = {
       this.infoArea.appendChild(this.pinBtnArea);
     }
 
-    // CLR Button
-    if (this.options.showClearButton) {
-      this.clrBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.clrBtnArea);
+    // Suspend Log Button
+    if (this.options.showSuspendLogButton) {
+      this.suspendLogBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.suspendLogBtnArea);
     }
 
     // Stopwatch
@@ -414,6 +421,10 @@ DebugJS.prototype = {
       this.updatePinBtnArea();
     }
 
+    if (this.options.showSuspendLogButton) {
+      this.updateSuspendLogBtnArea();
+    }
+
     if (this.options.showCloseButton) {
       this.initCloseBtnArea();
     }
@@ -438,6 +449,11 @@ DebugJS.prototype = {
   // Init Info Area
  initInfoArea: function() {
     this.infoArea.innerHTML = '<div style="padding:1px 2px 0px 2px;background:rgba(0,68,118,0);"></div>';
+  },
+
+  // Update Clear Button
+  initClrBtnArea: function() {
+    this.clrBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="margin-right:4px;" onclick="Debug.clearMessage();">[CLR]</span>';
   },
 
   // Update Clock
@@ -527,17 +543,15 @@ DebugJS.prototype = {
     }
   },
 
-  // Update Clear Button
-  initClrBtnArea: function() {
-    this.clrBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;" onclick="Debug.clearMessage();">[CLR]</span>';
+  // Update Suspend Log Button
+  updateSuspendLogBtnArea: function() {
+    var c = (this.status & DebugJS.STATE_LOG_SUSPENDING) ? '#d00' : '#888';
+    this.suspendLogBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleLogSuspend();">🚫</span>';
   },
 
   // Update Pin Button
   updatePinBtnArea: function() {
-    var c = '#dd0';
-    if (this.status & DebugJS.STATE_DRAGGABLE) {
-       c = '#888';
-    }
+    var c = (this.status & DebugJS.STATE_DRAGGABLE) ? '#888' : '#dd0';
     this.pinBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
   },
 
@@ -559,7 +573,7 @@ DebugJS.prototype = {
     var msg = '';
 
     // Log Area
-    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.buffSize + '.2em;overflow:auto;" id="' + this.msgAreaId + '">';
+    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.dispLine + '.2em;overflow:auto;" id="' + this.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -629,6 +643,15 @@ DebugJS.prototype = {
       el.style.top = e.clientY - clickOffsetTop + 'px';
       el.style.left = e.clientX - clickOffsetLeft + 'px';
     }
+  },
+
+  toggleLogSuspend: function() {
+    if (this.status & DebugJS.STATE_LOG_SUSPENDING) {
+      this.status &= ~DebugJS.STATE_LOG_SUSPENDING;
+    } else {
+      this.status |= DebugJS.STATE_LOG_SUSPENDING;
+    }
+    this.updateSuspendLogBtnArea();
   },
 
   toggleDraggable: function() {
@@ -879,7 +902,7 @@ DebugJS.prototype = {
     log.s(cl);
     wkCL = cl.replace(/\s{2,}/g, ' ');
     var cmds = wkCL.match(/([^\s]{1,})\s(.*)/);
-    var cmd = wkCL, args = null;
+    var cmd = wkCL, args = '';
     if (cmds != null) {
       cmd = cmds[1];
       args = cmds[2]
@@ -934,7 +957,7 @@ DebugJS.prototype = {
   },
 
   cmdP: function(args, tbl) {
-    if (args == null) {
+    if (args == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.execCmdP(args);
@@ -942,19 +965,11 @@ DebugJS.prototype = {
   },
 
   cmdRGB: function(args, tbl) {
-    if (args == null) {
+    if (args == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.convRGB(args);
     }
-  },
-
-  cmdStart: function(args, tbl) {
-    if (args == 'log') Debug.status &= ~DebugJS.STATE_LOG_SUSPEND;
-  },
-
-  cmdStop: function(args, tbl) {
-    if (args == 'log') Debug.status |= DebugJS.STATE_LOG_SUSPEND;
   },
 
   cmdV: function(args, tbl) {
@@ -1101,8 +1116,13 @@ DebugJS.checkMetaKey = function(e) {
 DebugJS.execCmdP = function(args) {
   var objs = args.split(' ');
   for (var i=0; i<objs.length; i++) {
+    if (objs[i] == '') continue;
     var command = 'DebugJS.buf="<br>' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log(DebugJS.buf);';
-    eval(command);
+    try {
+      eval(command);
+    } catch (e) {
+      DebugJS.log.e(e);
+    }
   }
 }
 
@@ -1135,7 +1155,12 @@ DebugJS._objDump = function(obj, arg) {
       arg.lv--;
     }
   } else if (obj instanceof Object) {
-    arg.dump += '<span style="color:#88f;">[Object]</span> {<br>'; arg.cnt++;
+    arg.cnt++;
+    if (typeof obj === 'function') {
+      arg.dump += '<span style="color:#8c8;">[Function]</span><br>';
+    } else {
+      arg.dump += '<span style="color:#88f;">[Object]</span> {<br>';
+    }
     indent += ' ';
     for (var key in obj) {
       arg.dump += indent + key + ': ';
@@ -1149,7 +1174,7 @@ DebugJS._objDump = function(obj, arg) {
     arg.dump += '<span style="color:#ccc;">null</span>' + '<br>'; arg.cnt++;
   } else if (obj === undefined) {
     arg.dump += '<span style="color:#ccc;">undefined</span>' + '<br>'; arg.cnt++;
-  } else if (typeof obj ==='string') {
+  } else if (typeof obj === 'string') {
     arg.dump += '"' + obj + '"<br>'; arg.cnt++;
   } else {
     arg.dump += obj + '<br>'; arg.cnt++;
@@ -1184,6 +1209,7 @@ DebugJS.convRGB = function(v) {
 
 DebugJS.convRGB16to10 = function(rgb16) {
   var r16, g16, b16, r10, g10, b10;
+  rgb16 = rgb16.replace(/\s/g, '');
   if (rgb16.length == 7) {
     r16 = rgb16.substr(1, 2);
     g16 = rgb16.substr(3, 2);
@@ -1296,42 +1322,42 @@ DebugJS.log.out = function(m, style) {
 }
 
 var log = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log(m);
 }
 
 log.e = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.e(m);
 }
 
 log.w = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.w(m);
 }
 
 log.i = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.i(m);
 }
 
 log.d = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.d(m);
 }
 
 log.v = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.v(m);
 }
 
 log.s = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.s(m);
 }
 
 log.p = function(o) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPEND) return;
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.p(o);
 }
 
