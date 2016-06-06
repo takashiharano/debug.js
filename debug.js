@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606052000';
+  this.v = '201606062159';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -17,7 +17,7 @@ var DebugJS = function() {
     'posAdjY': 20,
     'errorColor': '#d44',
     'warnColor': '#ed0',
-    'infoColor': '#fff',
+    'infoColor': '#eff',
     'debugColor': '#8cf',
     'verboseColor': '#ccc',
     'specialColor': '#fff',
@@ -105,6 +105,7 @@ var DebugJS = function() {
   ];
 }
 DebugJS.ENABLE = true;
+DebugJS.UNIFY_CONSOLE = false;
 
 DebugJS.STATE_VISIBLE = 0x1;
 DebugJS.STATE_DYNAMIC = 0x2;
@@ -1360,7 +1361,19 @@ log.p = function(o) {
   DebugJS.log.p(o);
 }
 
+log.stk = function() {
+  var err = new Error();
+  DebugJS.log(err.stack);
+}
+
 var Debug = new DebugJS();
+
+if(DebugJS.UNIFY_CONSOLE){
+console.log=function(x){log(x);}
+console.info=function(x){log.i(x);}
+console.warn=function(x){log.w(x);}
+console.error=function(x){log.e(x);}
+}
 
 if(!DebugJS.ENABLE){
 log=function(x){};
@@ -1371,6 +1384,5 @@ log.d=function(x){};
 log.v=function(x){};
 log.s=function(x){};
 log.p=function(x){};
-log.init=function(x){};
-log.out=function(x){};
+log.stk=function(){};
 }

@@ -373,7 +373,7 @@ Options:
   <tr>
     <td class="name">infoColor</td>
     <td>Information log color</td>
-    <td>#fff</td>
+    <td>#eff</td>
   </tr>
 
   <tr>
@@ -623,6 +623,24 @@ log.s('special log');
 
 log.p(window.applicationCache);
 <a href="" class="button" onclick="log.p(window.applicationCache);return false;">log.p()</a>
+
+log.stk();
+<a href="" class="button" onclick="log.stk();return false;">log.stk()</a>
+
+<br>
+
+console.log('hello');
+<a href="" class="button" onclick="console.log('hello');return false;">console.log()</a>
+
+console.error('hello');
+<a href="" class="button" onclick="console.error('hello');return false;">console.error()</a>
+
+console.info('hello');
+<a href="" class="button" onclick="console.info('hello');return false;">console.info()</a>
+
+console.warn('hello');
+<a href="" class="button" onclick="console.warn('hello');return false;">console.warn()</a>
+
 
 <!--
 log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');
