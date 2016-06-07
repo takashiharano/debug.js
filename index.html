@@ -91,11 +91,21 @@ a:hover {
   color:#fff;
   background: #0068cc;
   border-radius: 5px;
+  float: left;
 }
 
 .button:hover {
+  cursor: pointer;
   background: #00a8ff;
   text-decoration: none;
+}
+
+.button-green {
+  background: #00cc68;
+}
+
+.button-green:hover {
+  background: #00ffa8;
 }
 
 .desc-table {
@@ -118,6 +128,18 @@ a:hover {
 .desc-table .name {
   color: #0000a0;
 }
+
+.demo-table td {
+  font-family: Consolas;
+  font-size: 11px;
+  color: #0000a0;
+  width: 184px;
+}
+
+.demo-table-green td {
+  color: #060;
+}
+
 
 /*td {*/
 /*  width: 100px;*/
@@ -407,6 +429,18 @@ Options:
   </tr>
 
   <tr>
+    <td class="name">bgColor</td>
+    <td>Background Color</td>
+    <td>0,0,0</td>
+  </tr>
+
+  <tr>
+    <td class="name">bgOpacity</td>
+    <td>Background Opacity. 0.0 (fully transparent) &lt;-&gt; 1.0 (fully opaque)</td>
+    <td>0.7</td>
+  </tr>
+
+  <tr>
     <td class="name">showLineNums</td>
     <td>Show log line numbers</td>
     <td>true</td>
@@ -535,6 +569,12 @@ Methods:
     <td>variable</td>
     <td>Output object dump</td>
   </tr>
+
+  <tr>
+    <td class="name">log.stk</td>
+    <td>variable</td>
+    <td>Output stack trace</td>
+  </tr>
 </table>
 <br>
 
@@ -600,54 +640,89 @@ Commands:
 <br>
 <div class="caption">DEMO:</div>
 
-log('standard log');
-<a href="" class="button" onclick="log('standard log');return false;">log()</a>
+<table class="demo-table">
+<tr>
+<td>
+log('standard log');<br>
+<span class="button" onclick="log('standard log');">log()</span>
+</td>
 
-log.e('error log');
-<a href="" class="button" onclick="log.e('error log');return false;">log.e()</a>
+<td>
+log.e('error log');<br>
+<span class="button" onclick="log.e('error log');">log.e()</span>
+</td>
 
-log.w('warn log');
-<a href="" class="button" onclick="log.w('warn log');return false;">log.w()</a>
+<td>
+log.w('warn log');<br>
+<span class="button" onclick="log.w('warn log');">log.w()</span>
+</td>
 
-log.i('info log');
-<a href="" class="button" onclick="log.i('info log');return false;">log.i()</a>
+<td>
+log.i('info log');<br>
+<span class="button" onclick="log.i('info log');">log.i()</span>
+</td>
 
-log.d('debug log');
-<a href="" class="button" onclick="log.d('debug log');return false;">log.d()</a>
+<td>
+log.d('debug log');<br>
+<span class="button" onclick="log.d('debug log');">log.d()</span>
+</td>
 
-log.v('verbose log');
-<a href="" class="button" onclick="log.v('verbose log');return false;">log.v()</a>
+<td>
+log.v('verbose log');<br>
+<span class="button" onclick="log.v('verbose log');">log.v()</span>
+</td>
+</tr>
 
-log.s('special log');
-<a href="" class="button" onclick="log.s('special log');return false;">log.s()</a>
+<tr>
+<td>
+log.s('special log');<br>
+<span class="button" onclick="log.s('special log');">log.s()</span>
+</td>
 
-log.p(window.applicationCache);
-<a href="" class="button" onclick="log.p(window.applicationCache);return false;">log.p()</a>
+<td>
+log.p(window.applicationCache);<br>
+<span class="button" onclick="log.p(window.applicationCache);">log.p()</span>
+</td>
 
-log.stk();
-<a href="" class="button" onclick="log.stk();return false;">log.stk()</a>
+<td>
+log.stk();<br>
+<span class="button" onclick="log.stk();">log.stk()</span>
+</td>
+</tr>
+</table>
 
 <br>
 
-console.log('hello');
-<a href="" class="button" onclick="console.log('hello');return false;">console.log()</a>
+<table class="demo-table demo-table-green">
+<tr>
+<td>
+console.log('hello');<br>
+<span class="button button-green" onclick="console.log('hello');">console.log()</span>
+</td>
 
-console.error('hello');
-<a href="" class="button" onclick="console.error('hello');return false;">console.error()</a>
+<td>
+console.error('hello');<br>
+<span class="button button-green" onclick="console.error('hello');">console.error()</span>
+</td>
 
-console.info('hello');
-<a href="" class="button" onclick="console.info('hello');return false;">console.info()</a>
+<td>
+console.info('hello');<br>
+<span class="button button-green" onclick="console.info('hello');">console.info()</span>
+</td>
 
-console.warn('hello');
-<a href="" class="button" onclick="console.warn('hello');return false;">console.warn()</a>
-
+<td>
+console.warn('hello');<br>
+<span class="button button-green" onclick="console.warn('hello');">console.warn()</span>
+</td>
+</tr>
+</table>
 
 <!--
 log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');
-<a href="" class="button" onclick="log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');return false;">long text</a>
+<span class="button" onclick="log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');">long text</span>
 
 log('&nbsp;&nbsp;&nbsp;&nbsp;leading spaces');
-<a href="" class="button" onclick="log('    leading spaces');return false;">spaces</a>
+<span class="button" onclick="log('    leading spaces');">spaces</span>
 -->
 
 <br>
@@ -659,7 +734,7 @@ log('&nbsp;&nbsp;&nbsp;&nbsp;leading spaces');
 
 <!--
 log('&lt;img src=img.jpg&gt;');
-<a href="" class="button" onclick="log('<img src=img.jpg>');return false;">image</a>
+<span class="button" onclick="log('<img src=img.jpg>');">image</span>
 -->
 
 <!--

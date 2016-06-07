@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606072302';
+  this.v = '201606080031';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -23,6 +23,8 @@ var DebugJS = function() {
     'specialColor': '#fff',
     'clockColor': '#0f0',
     'systemInfoColor': '#ddd',
+    'bgColor': '0,0,0',
+    'bgOpacity': '0.7',
     'showLineNums': true,
     'showTimeStamp': true,
     'showClock': true,
@@ -318,7 +320,7 @@ DebugJS.prototype = {
       var wkStyle = styles['#' + this.id];
       wkStyle.position = 'fixed';
       wkStyle.width = this.options.width + 'px';
-      wkStyle.background = 'rgba(0,0,0,0.7)';
+      wkStyle.background = 'rgba(' + this.options.bgColor + ',' + this.options.bgOpacity + ')';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
       wkStyle['z-index'] = 0x7fffffff;
 
