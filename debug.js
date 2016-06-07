@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606062159';
+  this.v = '201606072302';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -82,8 +82,10 @@ var DebugJS = function() {
   this.keyDownCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
-  this.msgAreaId = null;
   this.msgArea = null;
+  this.msgAreaId = null;
+  this.msgAreaScrollX = 0;
+  this.msgAreaScrollY = 0;
   this.msgBuf = null;
   this.cmdArea = null;
   this.cmdLineId = null;
@@ -876,6 +878,8 @@ DebugJS.prototype = {
 
   hideDebugWindow: function() {
     if (!this.options.showCloseButton) return;
+    this.msgAreaScrollX = this.msgArea.children[this.msgAreaId].scrollLeft;
+    this.msgAreaScrollY = this.msgArea.children[this.msgAreaId].scrollTop;
     this.status &= ~DebugJS.STATE_DRAGGING;
     var styles = {};
     styles['#' + this.id] = {'display': 'none'};
@@ -888,6 +892,8 @@ DebugJS.prototype = {
     styles['#' + this.id] = {'display': 'block'};
     this.applyStyles(styles);
     this.status |= DebugJS.STATE_VISIBLE;
+    this.msgArea.children[this.msgAreaId].scrollTop = this.msgAreaScrollY;
+    this.msgArea.children[this.msgAreaId].scrollLeft = this.msgAreaScrollX;
   },
 
   execCmd: function() {
@@ -900,7 +906,7 @@ DebugJS.prototype = {
     }
     this.cmdHistoryIdx = (this.cmdHistoryBuf.count() < this.cmdHistoryMax) ? this.cmdHistoryBuf.count() : this.cmdHistoryMax;
     this.cmdLine.value = '';
-    log.s(cl);
+    DebugJS.log.s(cl);
     wkCL = cl.replace(/\s{2,}/g, ' ');
     var cmds = wkCL.match(/([^\s]{1,})\s(.*)/);
     var cmd = wkCL, args = '';
