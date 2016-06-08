@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606080031';
+  this.v = '201606090024';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -35,6 +35,7 @@ var DebugJS = function() {
     'showMouseStatus': true,
     'showKeyStatus': true,
     'enableStopWatch': true,
+    'enableScreenMeasure': true,
     'enableCommandLine': true,
     'target': null
   };
@@ -55,9 +56,14 @@ var DebugJS = function() {
   this.DEFAULT_ELM_ID = '_debug_';
   this.options = null;
   this.id = null;
+  this.bodyElm = null;
   this.debugWindow = null;
   this.infoArea = null;
   this.clockArea = null;
+  this.measureBtnArea = null;
+  this.measureStartX = 0;
+  this.measureStartY = 0;
+  this.measureBox = null;
   this.swBtnArea = null;
   this.swArea = null;
   this.swStartTime = 0;
@@ -118,6 +124,8 @@ DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
 DebugJS.STATE_DRAGGABLE = 0x10;
 DebugJS.STATE_DRAGGING = 0x20;
 DebugJS.STATE_LOG_SUSPENDING = 0x40;
+DebugJS.STATE_MEASURE = 0x100;
+DebugJS.STATE_MEASURING = 0x200;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 
 DebugJS.COLOR_ACTIVE = '#fff';
@@ -161,8 +169,8 @@ DebugJS.prototype = {
     if (this.debugWindow == null) {
       this.debugWindow = document.createElement('div');
       this.debugWindow.id = this.id;
-      var body = document.getElementsByTagName('body')[0];
-      body.appendChild(this.debugWindow);
+      this.bodyElm = document.getElementsByTagName('body')[0];
+      this.bodyElm.appendChild(this.debugWindow);
     }
 
     // Info Area
@@ -209,6 +217,12 @@ DebugJS.prototype = {
 
       this.swBtnArea = document.createElement('span');
       this.infoArea.appendChild(this.swBtnArea);
+    }
+
+    // Screen Measure Button
+    if (this.options.enableScreenMeasure) {
+      this.measureBtnArea = document.createElement('span');
+      this.infoArea.appendChild(this.measureBtnArea);
     }
     // -- R to L
 
@@ -413,6 +427,10 @@ DebugJS.prototype = {
       this.updateClockArea();
     }
 
+    if (this.options.enableScreenMeasure) {
+      this.updateMeasureBtnArea();
+    }
+
     if (this.options.enableStopWatch) {
       this.updateSwBtnArea();
       this.updateSwArea();
@@ -522,6 +540,12 @@ DebugJS.prototype = {
   // Update key Up
   updateKeyUpArea: function() {
     this.keyUpArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">Up:' + this.keyUpCode + '&nbsp;</span>';
+  },
+
+  // Update Measure Button
+  updateMeasureBtnArea: function() {
+    var c = (this.status & DebugJS.STATE_MEASURE) ? '#0f0' : '#888';
+    this.measureBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleMeasureMode();">●</span>';
   },
 
   // Update Stop Watch Button
@@ -659,6 +683,17 @@ DebugJS.prototype = {
     this.updateSuspendLogBtnArea();
   },
 
+  toggleMeasureMode: function() {
+    if (Debug.status & DebugJS.STATE_MEASURE) {
+      Debug.status &= ~DebugJS.STATE_MEASURE;
+      DebugJS.log.s('Screen Measure OFF.');
+    } else {
+      DebugJS.log.s('Screen Measure ON.');
+      Debug.status |= DebugJS.STATE_MEASURE;
+    }
+    Debug.updateMeasureBtnArea();
+  },
+
   toggleDraggable: function() {
     if (this.status & DebugJS.STATE_DRAGGABLE) {
       this.status &= ~DebugJS.STATE_DRAGGABLE;
@@ -736,6 +771,11 @@ DebugJS.prototype = {
         break;
 
       case 27: // ESC
+        if (Debug.status & DebugJS.STATE_MEASURE) {
+          Debug.stopMeasure();
+          Debug.status &= ~DebugJS.STATE_MEASURE;
+          Debug.updateMeasureBtnArea();
+        }
         if (Debug.status & DebugJS.STATE_DRAGGING) {
           Debug.status &= ~DebugJS.STATE_DRAGGING;
         } else {
@@ -785,6 +825,11 @@ DebugJS.prototype = {
 
       case 113: // F2
         if (Debug.status & DebugJS.STATE_VISIBLE) {
+          if (Debug.status & DebugJS.STATE_MEASURE) {
+            Debug.stopMeasure();
+            Debug.status &= ~DebugJS.STATE_MEASURE;
+            Debug.updateMeasureBtnArea();
+          }
           Debug.hideDebugWindow();
         } else {
           Debug.showDebugWindow();
@@ -842,12 +887,18 @@ DebugJS.prototype = {
   mousemoveHandler: function(e) {
     Debug.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
     Debug.updateMousePositionArea();
+    if (Debug.status & DebugJS.STATE_MEASURING) {
+      Debug.measure(e);
+    }
   },
 
   mousedownHandler: function(e) {
     switch (e.button) {
       case 0:
         Debug.mouseClickL = DebugJS.COLOR_ACTIVE;
+        if (Debug.status & DebugJS.STATE_MEASURE) {
+          Debug.startMeasure(e);
+        }
         break;
       case 1:
         Debug.mouseClickC = DebugJS.COLOR_ACTIVE;
@@ -865,6 +916,9 @@ DebugJS.prototype = {
     switch (e.button) {
       case 0:
         Debug.mouseClickL = DebugJS.COLOR_INACTIVE;
+        if (Debug.status & DebugJS.STATE_MEASURING) {
+          Debug.stopMeasure();
+        }
         break;
       case 1:
         Debug.mouseClickC = DebugJS.COLOR_INACTIVE;
@@ -887,6 +941,55 @@ DebugJS.prototype = {
     styles['#' + this.id] = {'display': 'none'};
     this.applyStyles(styles);
     this.status &= ~DebugJS.STATE_VISIBLE;
+  },
+
+  startMeasure: function(e) {
+    Debug.status |= DebugJS.STATE_MEASURING;
+    Debug.measureStartX = e.clientX;
+    Debug.measureStartY = e.clientY;
+
+    if (Debug.measureBox == null) {
+      Debug.measureBox = document.createElement('div');
+      Debug.measureBox.id = Debug.id + '-mbox';
+      Debug.bodyElm.appendChild(Debug.measureBox);
+      var styles = {};
+      styles['#' + Debug.id + '-mbox'] = {'position': 'fixed'}
+      wkStyle = styles['#' + Debug.id + '-mbox'];
+      wkStyle['top'] = Debug.measureStartY + 'px';
+      wkStyle['left'] = Debug.measureStartX + 'px';
+      wkStyle['width'] = '0px';
+      wkStyle['height'] = '0px';
+      wkStyle['border'] = 'dotted 1px #333';
+      wkStyle['background'] = 'rgba(0,0,0,0.1)';
+      wkStyle['z-index'] = 0x7fffffff;
+      wkStyle['-webkit-user-select'] = 'none';
+      Debug.applyStyles(styles);
+    }
+  },
+
+  measure: function(e) {
+    var moveX = e.clientX - Debug.measureStartX;
+    var moveY = e.clientY - Debug.measureStartY;
+
+    if (moveX < 0) {
+      Debug.measureBox.style.left = e.clientX + 'px';
+      moveX *= -1;
+    }
+    if (moveY < 0) {
+      Debug.measureBox.style.top = e.clientY+ 'px';
+      moveY *= -1;
+    }
+    Debug.measureBox.style.width = moveX + 'px';
+    Debug.measureBox.style.height = moveY + 'px';
+
+    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);">x=' + moveX + ', y=' + moveY + '</span>';
+    Debug.measureBox.innerHTML = size;
+  },
+
+  stopMeasure: function() {
+    Debug.bodyElm.removeChild(Debug.measureBox);
+    Debug.measureBox = null;
+    Debug.status &= ~DebugJS.STATE_MEASURING;
   },
 
   showDebugWindow: function() {
@@ -935,7 +1038,7 @@ DebugJS.prototype = {
   },
 
   cmdCls: function(args, tbl) {
-    Debug.clearMessage();  
+    Debug.clearMessage();
   },
 
   cmdExit: function(args, tbl) {
