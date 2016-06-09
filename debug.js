@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606090024';
+  this.v = '201606101000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -34,6 +34,7 @@ var DebugJS = function() {
     'showWindowSize': true,
     'showMouseStatus': true,
     'showKeyStatus': true,
+    'showElement': false,
     'enableStopWatch': true,
     'enableScreenMeasure': true,
     'enableCommandLine': true,
@@ -83,13 +84,16 @@ var DebugJS = function() {
   this.clientSizeArea = null;
   this.bodySizeArea = null;
   this.scrollPosArea = null;
-  this.scrollPos = '';
+  this.scrollPosX = 0;
+  this.scrollPosY = 0;
   this.keyDownArea = null;
   this.keyPressArea = null;
   this.keyUpArea = null;
   this.keyDownCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
+  this.elmArea = null;
+  this.domElement = '';
   this.msgArea = null;
   this.msgAreaId = null;
   this.msgAreaScrollX = 0;
@@ -100,8 +104,9 @@ var DebugJS = function() {
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
   this.cmdHistoryMax = 10;
-  this.cmdHistoryIdx = this.cmdHistoryMax;
+  this.cmdHistoryIdx = self.cmdHistoryMax;
   this.cmdTmp = '';
+  this.savedFunc = null;
   this.status = 0;
 
   this.CMD_TBL = [
@@ -136,277 +141,285 @@ DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 DebugJS.prototype = {
   init:  function(options) {
     if(!DebugJS.ENABLE){return;}
-    this.options = this.DEFAULT_OPTIONS;
+    var self = Debug;
+    self.options = self.DEFAULT_OPTIONS;
     if (options) {
-      for (var key in this.options) {
+      for (var key in self.options) {
         for (var k in options) {
           if (key == k) {
-            this.options[key] = options[key];
+            self.options[key] = options[key];
             break;
           }
         }
       }
     }
 
-    if (this.options.target == null) {
-      this.id = this.DEFAULT_ELM_ID;
-      this.status |= DebugJS.STATE_DYNAMIC;
-      this.status |= DebugJS.STATE_DRAGGABLE;
+    if (self.options.target == null) {
+      self.id = self.DEFAULT_ELM_ID;
+      self.status |= DebugJS.STATE_DYNAMIC;
+      self.status |= DebugJS.STATE_DRAGGABLE;
     } else {
-      this.id = options.target;
-      this.debugWindow = document.getElementById(this.id);
+      self.id = options.target;
+      self.debugWindow = document.getElementById(self.id);
     }
-    this.msgAreaId = this.id + '-msg';
-    this.cmdLineId = this.id + '-cmd';
+    self.msgAreaId = self.id + '-msg';
+    self.cmdLineId = self.id + '-cmd';
 
-    if (this.options.visible) {
-      this.status |= DebugJS.STATE_VISIBLE;
+    if (self.options.visible) {
+      self.status |= DebugJS.STATE_VISIBLE;
     } else {
-      this.status &= ~DebugJS.STATE_VISIBLE;
+      self.status &= ~DebugJS.STATE_VISIBLE;
     }
 
     // Create a window
-    if (this.debugWindow == null) {
-      this.debugWindow = document.createElement('div');
-      this.debugWindow.id = this.id;
-      this.bodyElm = document.getElementsByTagName('body')[0];
-      this.bodyElm.appendChild(this.debugWindow);
+    if (self.debugWindow == null) {
+      self.debugWindow = document.createElement('div');
+      self.debugWindow.id = self.id;
+      self.bodyElm = document.getElementsByTagName('body')[0];
+      self.bodyElm.appendChild(self.debugWindow);
     }
 
     // Info Area
-    this.infoArea = document.createElement('div');
-    this.debugWindow.appendChild(this.infoArea);
-    this.infoArea.style.cursor = 'default';
-    this.initInfoArea();
+    self.infoArea = document.createElement('div');
+    self.debugWindow.appendChild(self.infoArea);
+    self.infoArea.style.cursor = 'default';
+    self.initInfoArea();
 
     // CLR Button
-    if (this.options.showClearButton) {
-      this.clrBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.clrBtnArea);
+    if (self.options.showClearButton) {
+      self.clrBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.clrBtnArea);
     }
 
     // Clock
-    if (this.options.showClock) {
-      this.clockArea = document.createElement('span');
-      this.infoArea.appendChild(this.clockArea);
+    if (self.options.showClock) {
+      self.clockArea = document.createElement('span');
+      self.infoArea.appendChild(self.clockArea);
     }
 
     // -- R to L
     // X Button
-    if (this.options.showCloseButton) {
-      this.closeBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.closeBtnArea);
+    if (self.options.showCloseButton) {
+      self.closeBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.closeBtnArea);
     }
 
     // Pin Button
-    if (this.status & DebugJS.STATE_DYNAMIC) {
-      this.pinBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.pinBtnArea);
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      self.pinBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.pinBtnArea);
     }
 
     // Suspend Log Button
-    if (this.options.showSuspendLogButton) {
-      this.suspendLogBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.suspendLogBtnArea);
+    if (self.options.showSuspendLogButton) {
+      self.suspendLogBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.suspendLogBtnArea);
     }
 
     // Stopwatch
-    if (this.options.enableStopWatch) {
-      this.swArea = document.createElement('span');
-      this.infoArea.appendChild(this.swArea);
+    if (self.options.enableStopWatch) {
+      self.swArea = document.createElement('span');
+      self.infoArea.appendChild(self.swArea);
 
-      this.swBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.swBtnArea);
+      self.swBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.swBtnArea);
     }
 
     // Screen Measure Button
-    if (this.options.enableScreenMeasure) {
-      this.measureBtnArea = document.createElement('span');
-      this.infoArea.appendChild(this.measureBtnArea);
+    if (self.options.enableScreenMeasure) {
+      self.measureBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.measureBtnArea);
     }
     // -- R to L
 
-    if ((this.options.showClock) || (this.options.showCloseButton) || (this.options.showClearButton) || (this.options.enableStopWatch)) {
-      this.infoArea.appendChild(document.createElement('br'));
+    if ((self.options.showClock) || (self.options.showCloseButton) || (self.options.showClearButton) || (self.options.enableStopWatch)) {
+      self.infoArea.appendChild(document.createElement('br'));
     }
 
     // Window Size
-    if (this.options.showWindowSize) {
-      this.screenSizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.screenSizeArea);
+    if (self.options.showWindowSize) {
+      self.screenSizeArea = document.createElement('span');
+      self.infoArea.appendChild(self.screenSizeArea);
 
-      this.windowSizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.windowSizeArea);
+      self.windowSizeArea = document.createElement('span');
+      self.infoArea.appendChild(self.windowSizeArea);
 
-      this.clientSizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.clientSizeArea);
+      self.clientSizeArea = document.createElement('span');
+      self.infoArea.appendChild(self.clientSizeArea);
 
-      this.bodySizeArea = document.createElement('span');
-      this.infoArea.appendChild(this.bodySizeArea);
+      self.bodySizeArea = document.createElement('span');
+      self.infoArea.appendChild(self.bodySizeArea);
 
-      this.scrollPosArea = document.createElement('span');
-      this.infoArea.appendChild(this.scrollPosArea);
+      self.scrollPosArea = document.createElement('span');
+      self.infoArea.appendChild(self.scrollPosArea);
     }
 
     // Mouse Status
-    if (this.options.showMouseStatus) {
-      this.mousePositionArea = document.createElement('span');
-      this.infoArea.appendChild(this.mousePositionArea);
+    if (self.options.showMouseStatus) {
+      self.mousePositionArea = document.createElement('span');
+      self.infoArea.appendChild(self.mousePositionArea);
 
-      this.mouseClickArea = document.createElement('span');
-      this.infoArea.appendChild(this.mouseClickArea);
+      self.mouseClickArea = document.createElement('span');
+      self.infoArea.appendChild(self.mouseClickArea);
     }
 
-    if ((this.options.showWindowSize) || (this.options.showMouseStatus)) {
-      this.infoArea.appendChild(document.createElement('br'));
+    // DOM Element
+    if (self.options.showElement) {
+      self.elmArea = document.createElement('span');
+      self.infoArea.appendChild(self.elmArea);
+    }
+
+    if ((self.options.showWindowSize) || (self.options.showMouseStatus) || (self.options.showElement)) {
+      self.infoArea.appendChild(document.createElement('br'));
     }
 
     // Key Status
-    if (this.options.showKeyStatus) {
-      this.keyDownArea = document.createElement('span');
-      this.infoArea.appendChild(this.keyDownArea);
+    if (self.options.showKeyStatus) {
+      self.keyDownArea = document.createElement('span');
+      self.infoArea.appendChild(self.keyDownArea);
 
-      this.keyPressArea = document.createElement('span');
-      this.infoArea.appendChild(this.keyPressArea);
+      self.keyPressArea = document.createElement('span');
+      self.infoArea.appendChild(self.keyPressArea);
 
-      this.keyUpArea = document.createElement('span');
-      this.infoArea.appendChild(this.keyUpArea);
+      self.keyUpArea = document.createElement('span');
+      self.infoArea.appendChild(self.keyUpArea);
     }
 
     // Log
-    this.msgArea = document.createElement('div');
-    this.debugWindow.appendChild(this.msgArea);
-    this.msgArea.style.cursor = 'default';
+    self.msgArea = document.createElement('div');
+    self.debugWindow.appendChild(self.msgArea);
+    self.msgArea.style.cursor = 'default';
 
     // Command Line
-    if (this.options.enableCommandLine) {
-      this.cmdArea = document.createElement('div');
-      this.debugWindow.appendChild(this.cmdArea);
-      this.initCmdArea();
+    if (self.options.enableCommandLine) {
+      self.cmdArea = document.createElement('div');
+      self.debugWindow.appendChild(self.cmdArea);
+      self.initCmdArea();
     }
 
-    this.msgBuf = new DebugJS.RingBuffer(this.options.buffSize);
+    self.msgBuf = new DebugJS.RingBuffer(self.options.buffSize);
 
     var styles = {};
-    styles['#' + this.id] = this.STYLE;
+    styles['#' + self.id] = self.STYLE;
 
-    styles['#' + this.id + ' td'] = {
-      'font-size': this.STYLE['font-size'],
-      'font-family': this.STYLE['font-family'],
-      'color': this.STYLE['color'],
+    styles['#' + self.id + ' td'] = {
+      'font-size': self.STYLE['font-size'],
+      'font-family': self.STYLE['font-family'],
+      'color': self.STYLE['color'],
       'background': 'initial',
       'width': 'initial',
       'border': 'initial',
       'padding': '0 3px'
     };
 
-    styles['#' + this.id + ' pre'] = {
+    styles['#' + self.id + ' pre'] = {
       'white-space': 'pre-wrap',
       'word-break': 'break-all', 
-      'font-size': this.STYLE['font-size'],
-      'font-family': this.STYLE['font-family'],
-      'color': this.STYLE['color'],
+      'font-size': self.STYLE['font-size'],
+      'font-family': self.STYLE['font-family'],
+      'color': self.STYLE['color'],
       'margin': '0',
       'overflow': 'visible'
     };
 
-    styles['.' + this.id + '-btn'] = {
+    styles['.' + self.id + '-btn'] = {
       'color': '#6cf',
       'text-decoration': 'none'
     };
 
-    styles['.' + this.id + '-btn:hover'] = {
+    styles['.' + self.id + '-btn:hover'] = {
       'color': '#fff',
       'text-decoration': 'none',
       'text-shadow': '0 0 3px',
       'cursor': 'pointer'
     };
 
-    styles['.' + this.id + '-sys-info'] = {
+    styles['.' + self.id + '-sys-info'] = {
       'margin-left': '1px',
-      'color': this.options.systemInfoColor,
+      'color': self.options.systemInfoColor,
       'display': 'inline-block'
     };
 
-    if (this.status & DebugJS.STATE_DYNAMIC) {
-      this.setupMove();
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      self.setupMove();
 
-      var wkStyle = styles['#' + this.id];
+      var wkStyle = styles['#' + self.id];
       wkStyle.position = 'fixed';
-      wkStyle.width = this.options.width + 'px';
-      wkStyle.background = 'rgba(' + this.options.bgColor + ',' + this.options.bgOpacity + ')';
+      wkStyle.width = self.options.width + 'px';
+      wkStyle.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
       wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
       wkStyle['z-index'] = 0x7fffffff;
 
       // adjust the window position
       var dbgWinHeight = 273;
-      if (this.options.enableCommandLine) {
+      if (self.options.enableCommandLine) {
         dbgWinHeight = 294;
       }
-      switch (this.options.position) {
+      switch (self.options.position) {
         case 'right-bottom':
-          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - this.options.posAdjY) + 'px';
-          wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
+          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+          wkStyle.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
         case 'right-top':
-          wkStyle.top = this.options.posAdjY + 'px';
-          wkStyle.left = (document.documentElement.clientWidth - this.options.width - this.options.posAdjX) + 'px';
+          wkStyle.top = self.options.posAdjY + 'px';
+          wkStyle.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
         case 'center':
           wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-          wkStyle.left = ((document.documentElement.clientWidth / 2) - (this.options.width / 2)) + 'px';
+          wkStyle.left = ((document.documentElement.clientWidth / 2) - (self.options.width / 2)) + 'px';
           break;
         case 'left-bottom':
-          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - this.options.posAdjY) + 'px';
-          wkStyle.left = this.options.posAdjX + 'px';
+          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+          wkStyle.left = self.options.posAdjX + 'px';
           break;
         default:
-          wkStyle.top = this.options.posAdjY + 'px';
-          wkStyle.left = this.options.posAdjX + 'px';
+          wkStyle.top = self.options.posAdjY + 'px';
+          wkStyle.left = self.options.posAdjX + 'px';
           break;
       }
 
-      if (!(this.status & DebugJS.STATE_VISIBLE)) {
+      if (!(self.status & DebugJS.STATE_VISIBLE)) {
         wkStyle.display = 'none';
       }
     }
 
-    this.applyStyles(styles);
-    this.clearMessage();
-    this.setupEventHandler();
+    self.applyStyles(styles);
+    self.clearMessage();
+    self.setupEventHandler();
   },
 
   setupEventHandler: function() {
-    window.addEventListener('keydown', this.keyhandler, true);
+    var self = Debug;
+    window.addEventListener('keydown', self.keyhandler, true);
 
-    if (this.options.showWindowSize) {
-      window.addEventListener('resize', this.resizeHandler, true);
-      this.resizeHandler();
+    if (self.options.showWindowSize) {
+      window.addEventListener('resize', self.resizeHandler, true);
+      self.resizeHandler();
 
-      window.addEventListener('scroll', this.scrollHandler, true);
-      this.scrollHandler();
+      window.addEventListener('scroll', self.scrollHandler, true);
+      self.scrollHandler();
     }
 
-    if (this.options.showMouseStatus) {
-      window.addEventListener('mousemove', this.mousemoveHandler, true);
-      window.addEventListener('mousedown', this.mousedownHandler, true);
-      window.addEventListener('mouseup', this.mouseupHandler, true);
+    if (self.options.showMouseStatus) {
+      window.addEventListener('mousemove', self.mousemoveHandler, true);
+      window.addEventListener('mousedown', self.mousedownHandler, true);
+      window.addEventListener('mouseup', self.mouseupHandler, true);
     }
 
-    if (this.options.showKeyStatus) {
-      window.addEventListener('keydown', this.keyDownHandler, true);
-      this.updateKeyDownArea();
+    if (self.options.showKeyStatus) {
+      window.addEventListener('keydown', self.keyDownHandler, true);
+      self.updateKeyDownArea();
 
-      window.addEventListener('keypress', this.keyPressHandler, true);
-      this.updateKeyPressArea();
+      window.addEventListener('keypress', self.keyPressHandler, true);
+      self.updateKeyPressArea();
 
-      window.addEventListener('keyup', this.keyUpHandler, true);
-      this.updateKeyUpArea();
+      window.addEventListener('keyup', self.keyUpHandler, true);
+      self.updateKeyUpArea();
     }
   },
 
   isInitialized: function() {
-    if (this.debugWindow == null) {
+    if (Debug.debugWindow == null) {
       return false;
     } else {
       return true;
@@ -414,7 +427,7 @@ DebugJS.prototype = {
   },
 
   isWindowInitialized: function() {
-    if (this.status & DebugJS.STATE_INITIALIZED) {
+    if (Debug.status & DebugJS.STATE_INITIALIZED) {
       return true;
     } else {
       return false;
@@ -422,51 +435,56 @@ DebugJS.prototype = {
   },
 
   initDebugWindow: function() {
-    if (this.options.showClock) {
-      this.status |= DebugJS.STATE_SHOW_CLOCK;
-      this.updateClockArea();
+    var self = Debug;
+    if (self.options.showClock) {
+      self.status |= DebugJS.STATE_SHOW_CLOCK;
+      self.updateClockArea();
     }
 
-    if (this.options.enableScreenMeasure) {
-      this.updateMeasureBtnArea();
+    if (self.options.enableScreenMeasure) {
+      self.updateMeasureBtnArea();
     }
 
-    if (this.options.enableStopWatch) {
-      this.updateSwBtnArea();
-      this.updateSwArea();
+    if (self.options.enableStopWatch) {
+      self.updateSwBtnArea();
+      self.updateSwArea();
     }
 
-    if (this.options.showClearButton) {
-      this.initClrBtnArea();
+    if (self.options.showClearButton) {
+      self.initClrBtnArea();
     }
 
-    if (this.status & DebugJS.STATE_DYNAMIC) {
-      this.updatePinBtnArea();
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      self.updatePinBtnArea();
     }
 
-    if (this.options.showSuspendLogButton) {
-      this.updateSuspendLogBtnArea();
+    if (self.options.showSuspendLogButton) {
+      self.updateSuspendLogBtnArea();
     }
 
-    if (this.options.showCloseButton) {
-      this.initCloseBtnArea();
+    if (self.options.showCloseButton) {
+      self.initCloseBtnArea();
     }
 
-    if (this.options.showMouseStatus) {
-      this.updateMousePositionArea();
-      this.updateMouseClickArea();
+    if (self.options.showMouseStatus) {
+      self.updateMousePositionArea();
+      self.updateMouseClickArea();
     }
 
-    if (this.options.showWindowSize) {
-      this.initScreenSizeArea();
-      this.updateWindowSizeArea();
-      this.updateClientSizeArea();
-      this.updateBodySizeArea();
-      this.updateScrollPosArea();
+    if (self.options.showElement) {
+      self.updateElementArea();
     }
 
-    this.printMessage();
-    this.status |= DebugJS.STATE_INITIALIZED;
+    if (self.options.showWindowSize) {
+      self.initScreenSizeArea();
+      self.updateWindowSizeArea();
+      self.updateClientSizeArea();
+      self.updateBodySizeArea();
+      self.updateScrollPosArea();
+    }
+
+    self.printMessage();
+    self.status |= DebugJS.STATE_INITIALIZED;
   },
 
   // Init Info Area
@@ -513,7 +531,7 @@ DebugJS.prototype = {
 
   // Update Scroll Position
   updateScrollPosArea: function() {
-    this.scrollPosArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">SCROLL:' + this.scrollPos + '</span>';
+    this.scrollPosArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">SCROLL:x=' + this.scrollPosX + ',y=' + this.scrollPosY + '</span>';
   },
 
   // Update Mouse Position
@@ -525,6 +543,11 @@ DebugJS.prototype = {
   updateMouseClickArea: function() {
     var mouseClick = '<span style="color:' + this.mouseClickL + ';">L</span><span style="color:' + this.mouseClickC + ';">C</span><span style="color:' + this.mouseClickR + ';">R</span>';
     this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + mouseClick + '</span>';
+  },
+
+  // Update DOM Element
+  updateElementArea: function() {
+    this.elmArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">DOM:' + this.domElement + '</span>';
   },
 
   // Update key Down
@@ -544,65 +567,73 @@ DebugJS.prototype = {
 
   // Update Measure Button
   updateMeasureBtnArea: function() {
+    var self = Debug;
     var c = (this.status & DebugJS.STATE_MEASURE) ? '#0f0' : '#888';
-    this.measureBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleMeasureMode();">●</span>';
+    self.measureBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleMeasureMode();">●</span>';
   },
 
   // Update Stop Watch Button
   updateSwBtnArea: function() {
+    var self = Debug;
     var msg = '<span style="float:right;margin-right:4px;"><span class="' + this.id + '-btn" onclick="Debug.resetStopwatch();">🔃</span>';
     msg += '<span class="' + this.id + '-btn" onclick="Debug.startStopStopWatch();">';
-    if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
     } else {
       msg += '>>';
     }
     msg += '</span></span>';
-    this.swBtnArea.innerHTML = msg;
+    self.swBtnArea.innerHTML = msg;
   },
 
   // Update Stop Watch
   updateSwArea: function() {
-    this.updateStopWatch();
+    var self = Debug;
+    self.updateStopWatch();
     var msg = '<span style="float:right;margin-right:10px;">' + this.elapsedTime + '</span>';
-    this.swArea.innerHTML = msg;
+    self.swArea.innerHTML = msg;
 
-    if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       setTimeout('Debug.updateSwArea()', 50);
     }
   },
 
   // Update Suspend Log Button
   updateSuspendLogBtnArea: function() {
-    var c = (this.status & DebugJS.STATE_LOG_SUSPENDING) ? '#d00' : '#888';
-    this.suspendLogBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleLogSuspend();">🚫</span>';
+    var self = Debug;
+    var c = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? '#d00' : '#888';
+    self.suspendLogBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleLogSuspend();">🚫</span>';
   },
 
   // Update Pin Button
   updatePinBtnArea: function() {
-    var c = (this.status & DebugJS.STATE_DRAGGABLE) ? '#888' : '#dd0';
-    this.pinBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
+    var self = Debug;
+    var c = (self.status & DebugJS.STATE_DRAGGABLE) ? '#888' : '#dd0';
+    self.pinBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
   },
 
   // Close Button
   initCloseBtnArea: function() {
-    this.closeBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</span>'
+    var self = Debug;
+    self.closeBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</span>'
   },
 
   // Command-line Area
  initCmdArea: function() {
-    this.cmdArea.innerHTML = '<div style="padding:0 3px 3px 3px;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + this.cmdLineId + '"></input></div>';
-    this.cmdLine = document.getElementById(this.cmdLineId);
-    this.cmdHistoryBuf = new DebugJS.RingBuffer(10);
+    var self = Debug;
+    self.cmdArea.innerHTML = '<div style="padding:0 3px 3px 3px;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
+    self.cmdLine = document.getElementById(self.cmdLineId);
+    self.cmdHistoryBuf = new DebugJS.RingBuffer(10);
   },
 
   // Log Output
   printMessage: function() {
-    var buf = this.getLog();
+    var self = Debug;
+    var buf = self.getLog();
     var msg = '';
 
     // Log Area
-    msg += '<div style="position:relative;padding:4px 0;height:' + this.options.dispLine + '.2em;overflow:auto;" id="' + this.msgAreaId + '">';
+    msg += '<div style="position:relative;padding:4px 0;height:' + self.options.dispLine + '.2em;overflow:auto;" id="' + self.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -610,21 +641,23 @@ DebugJS.prototype = {
     msg += '</table>';
     msg += '</div>';
 
-    this.msgArea.innerHTML = msg;
-    this.msgArea.children[this.msgAreaId].scrollTop = this.msgArea.children[this.msgAreaId].scrollHeight;
+    self.msgArea.innerHTML = msg;
+    self.msgArea.children[self.msgAreaId].scrollTop = self.msgArea.children[self.msgAreaId].scrollHeight;
   },
 
   clearMessage: function() {
-    this.msgBuf.clear();
-    this.printMessage();
+    var self = Debug;
+    self.msgBuf.clear();
+    self.printMessage();
   },
 
   setStyle: function(prop, val) {
+    var self = Debug;
     var styles = {};
     var style = {};
     style[prop] = val;
-    styles['#' + this.id] = style;
-    this.applyStyles(styles);
+    styles['#' + self.id] = style;
+    self.applyStyles(styles);
   },
 
   applyStyles: function(styles) {
@@ -649,13 +682,15 @@ DebugJS.prototype = {
   },
 
   setupMove: function() {
-    var el = this.debugWindow;
+    var self = Debug;
+    var el = self.debugWindow;
     var clickOffsetTop;
     var clickOffsetLeft;
 
     el.onmousedown = function(e) {
-      if ((!(Debug.status & DebugJS.STATE_DRAGGABLE)) || (document.activeElement == Debug.cmdLine)) return;
-      Debug.status |= DebugJS.STATE_DRAGGING;
+      var self= Debug;
+      if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
+      self.status |= DebugJS.STATE_DRAGGING;
       e = (e) || window.event;
       clickOffsetTop = e.clientY - el.offsetTop;
       clickOffsetLeft = e.clientX - el.offsetLeft;
@@ -663,82 +698,103 @@ DebugJS.prototype = {
          window.getSelection().removeAllRanges();
       }
     }
-    el.onmouseup = function(e) {
-      Debug.status &= ~DebugJS.STATE_DRAGGING;
-    }
+
     el.onmousemove = function(e) {
-      if (!(Debug.status & DebugJS.STATE_DRAGGING)) return;
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_DRAGGING)) return;
       e = (e) || window.event;
       el.style.top = e.clientY - clickOffsetTop + 'px';
       el.style.left = e.clientX - clickOffsetLeft + 'px';
     }
+
+    el.onmouseup = function(e) {
+      var self= Debug;
+      self.status &= ~DebugJS.STATE_DRAGGING;
+    }
   },
 
   toggleLogSuspend: function() {
-    if (this.status & DebugJS.STATE_LOG_SUSPENDING) {
-      this.status &= ~DebugJS.STATE_LOG_SUSPENDING;
+    var self = Debug;
+    if (self.status & DebugJS.STATE_LOG_SUSPENDING) {
+      self.status &= ~DebugJS.STATE_LOG_SUSPENDING;
     } else {
-      this.status |= DebugJS.STATE_LOG_SUSPENDING;
+      self.status |= DebugJS.STATE_LOG_SUSPENDING;
     }
-    this.updateSuspendLogBtnArea();
+    self.updateSuspendLogBtnArea();
   },
 
   toggleMeasureMode: function() {
-    if (Debug.status & DebugJS.STATE_MEASURE) {
-      Debug.status &= ~DebugJS.STATE_MEASURE;
-      DebugJS.log.s('Screen Measure OFF.');
+    var self = Debug;
+    if (self.status & DebugJS.STATE_MEASURE) {
+      self.disableMeasureMode();
     } else {
-      DebugJS.log.s('Screen Measure ON.');
-      Debug.status |= DebugJS.STATE_MEASURE;
+      self.enableMeasureMode();
     }
-    Debug.updateMeasureBtnArea();
+  },
+
+  enableMeasureMode: function() {
+    var self = Debug;
+    DebugJS.log.s('Screen Measure ON.');
+    self.status |= DebugJS.STATE_MEASURE;
+    self.updateMeasureBtnArea();
+  },
+
+  disableMeasureMode: function() {
+    var self = Debug;
+    self.stopMeasure();
+    self.status &= ~DebugJS.STATE_MEASURE;
+    DebugJS.log.s('Screen Measure OFF.');
+    self.updateMeasureBtnArea();
   },
 
   toggleDraggable: function() {
-    if (this.status & DebugJS.STATE_DRAGGABLE) {
-      this.status &= ~DebugJS.STATE_DRAGGABLE;
-      this.infoArea.style.cursor = 'auto';
-      this.msgArea.style.cursor = 'auto';
+    if (Debug.status & DebugJS.STATE_DRAGGABLE) {
+      Debug.status &= ~DebugJS.STATE_DRAGGABLE;
+      Debug.infoArea.style.cursor = 'auto';
+      Debug.msgArea.style.cursor = 'auto';
     } else {
-      this.status |= DebugJS.STATE_DRAGGABLE;
-      this.infoArea.style.cursor = 'default';
-      this.msgArea.style.cursor = 'default';
+      Debug.status |= DebugJS.STATE_DRAGGABLE;
+      Debug.infoArea.style.cursor = 'default';
+      Debug.msgArea.style.cursor = 'default';
     }
-    this.updatePinBtnArea();
+    Debug.updatePinBtnArea();
   },
 
   startStopStopWatch: function() {
-    if (this.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (Debug.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       // stop
-      this.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
-      this.updateSwBtnArea();
+      Debug.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
+      Debug.updateSwBtnArea();
     } else {
       // start
-      this.status |= DebugJS.STATE_STOPWATCH_RUNNING;
-      this.swStartTime = (new Date()).getTime() - this.swElapsedTime;
-      this.updateStopWatch();
-      this.updateSwArea();
-      this.updateSwBtnArea();
+      Debug.status |= DebugJS.STATE_STOPWATCH_RUNNING;
+      Debug.swStartTime = (new Date()).getTime() - Debug.swElapsedTime;
+      Debug.updateStopWatch();
+      Debug.updateSwArea();
+      Debug.updateSwBtnArea();
     }
   },
 
   updateStopWatch: function() {
-    if (!(this.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
+    if (!(Debug.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
+    var self = Debug;
     var swCurrentTime = (new Date()).getTime();
-    this.swElapsedTime = swCurrentTime - this.swStartTime;
-    this.elapsedTime = DebugJS.getPassedTimeStr(this.swElapsedTime);
+    self.swElapsedTime = swCurrentTime - self.swStartTime;
+    self.elapsedTime = DebugJS.getPassedTimeStr(self.swElapsedTime);
   },
 
   resetStopwatch: function() {
-    this.swStartTime = (new Date()).getTime();
-    this.elapsedTime = DebugJS.getPassedTimeStr(0);
-    this.swElapsedTime = 0;
-    this.updateSwArea();
+    var self = Debug;
+    self.swStartTime = (new Date()).getTime();
+    self.elapsedTime = DebugJS.getPassedTimeStr(0);
+    self.swElapsedTime = 0;
+    self.updateSwArea();
   },
 
   getLog: function() {
-    var allBuf = this.msgBuf.getAll();
-    var bufCnt = this.msgBuf.count();
+    var self = Debug;
+    var allBuf = self.msgBuf.getAll();
+    var bufCnt = self.msgBuf.count();
     var bufLen = allBuf.length;
     var buf = [];
     for (var i = 0; i < bufLen; i++) {
@@ -765,74 +821,72 @@ DebugJS.prototype = {
   },
 
   keyhandler: function(e) {
+    var self = Debug;
     switch (e.keyCode) {
       case 13: // Enter
-        Debug.execCmd();
+        self.execCmd();
         break;
 
       case 27: // ESC
-        if (Debug.status & DebugJS.STATE_MEASURE) {
-          Debug.stopMeasure();
-          Debug.status &= ~DebugJS.STATE_MEASURE;
-          Debug.updateMeasureBtnArea();
+        if (self.status & DebugJS.STATE_MEASURE) {
+          self.disableMeasureMode();
+          return;
         }
-        if (Debug.status & DebugJS.STATE_DRAGGING) {
-          Debug.status &= ~DebugJS.STATE_DRAGGING;
+        if (self.status & DebugJS.STATE_DRAGGING) {
+          self.status &= ~DebugJS.STATE_DRAGGING;
         } else {
-          Debug.hideDebugWindow();
+          self.hideDebugWindow();
         }
         break;
 
       case 38: // Up
-        if (document.activeElement == Debug.cmdLine) {
-          var cmds = Debug.cmdHistoryBuf.getAll();
+        if (document.activeElement == self.cmdLine) {
+          var cmds = self.cmdHistoryBuf.getAll();
           if (cmds.length == 0) return;
-          if (cmds.length < Debug.cmdHistoryIdx) {
-            Debug.cmdHistoryIdx = cmds.length;
+          if (cmds.length < self.cmdHistoryIdx) {
+            self.cmdHistoryIdx = cmds.length;
           }
-          if (Debug.cmdHistoryIdx == cmds.length) {
-            Debug.cmdTmp = Debug.cmdLine.value;
+          if (self.cmdHistoryIdx == cmds.length) {
+            self.cmdTmp = self.cmdLine.value;
           }
-          if (Debug.cmdHistoryIdx > 0) {
-            Debug.cmdHistoryIdx--;
+          if (self.cmdHistoryIdx > 0) {
+            self.cmdHistoryIdx--;
           }
-          Debug.cmdLine.value = cmds[Debug.cmdHistoryIdx];
+          self.cmdLine.value = cmds[self.cmdHistoryIdx];
         }
         break;
 
       case 40: // Down
-        if (document.activeElement == Debug.cmdLine) {
-          var cmds = Debug.cmdHistoryBuf.getAll();
+        if (document.activeElement == self.cmdLine) {
+          var cmds = self.cmdHistoryBuf.getAll();
           if (cmds.length == 0) return;
-          if (Debug.cmdHistoryIdx < cmds.length) {
-            Debug.cmdHistoryIdx++;
+          if (self.cmdHistoryIdx < cmds.length) {
+            self.cmdHistoryIdx++;
           }
-          if (Debug.cmdHistoryIdx == cmds.length) {
-            Debug.cmdLine.value =  Debug.cmdTmp;
+          if (self.cmdHistoryIdx == cmds.length) {
+            self.cmdLine.value =  self.cmdTmp;
           } else {
-            Debug.cmdLine.value = cmds[Debug.cmdHistoryIdx];
+            self.cmdLine.value = cmds[self.cmdHistoryIdx];
           }
         }
         break;
 
       case 112: // F1
-        if (Debug.status & DebugJS.STATE_DYNAMIC) {
-          Debug.debugWindow.style.top = 0;
-          Debug.debugWindow.style.left = 0;
-          Debug.status &= ~DebugJS.STATE_DRAGGING;
+        if (self.status & DebugJS.STATE_DYNAMIC) {
+          self.debugWindow.style.top = 0;
+          self.debugWindow.style.left = 0;
+          self.status &= ~DebugJS.STATE_DRAGGING;
         }
         break;
 
       case 113: // F2
-        if (Debug.status & DebugJS.STATE_VISIBLE) {
-          if (Debug.status & DebugJS.STATE_MEASURE) {
-            Debug.stopMeasure();
-            Debug.status &= ~DebugJS.STATE_MEASURE;
-            Debug.updateMeasureBtnArea();
+        if (self.status & DebugJS.STATE_VISIBLE) {
+          if (self.status & DebugJS.STATE_MEASURE) {
+            self.disableMeasureMode();
           }
-          Debug.hideDebugWindow();
+          self.hideDebugWindow();
         } else {
-          Debug.showDebugWindow();
+          self.showDebugWindow();
         }
         break;
 
@@ -842,175 +896,212 @@ DebugJS.prototype = {
   },
 
   keyDownHandler: function(e) {
+    var self = Debug;
     var metaKey = DebugJS.checkMetaKey(e);
-    Debug.keyDownCode = e.keyCode + metaKey;
-    Debug.updateKeyDownArea();
+    self.keyDownCode = e.keyCode + metaKey;
+    self.updateKeyDownArea();
   
-    Debug.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
-    Debug.updateKeyPressArea();
+    self.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
+    self.updateKeyPressArea();
   
-    Debug.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
-    Debug.updateKeyUpArea();
+    self.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
+    self.updateKeyUpArea();
   },
 
   keyPressHandler: function(e) {
+    var self = Debug;
     var metaKey = DebugJS.checkMetaKey(e);
-    Debug.keyPressCode = e.keyCode + metaKey;
-    Debug.updateKeyPressArea();
+    self.keyPressCode = e.keyCode + metaKey;
+    self.updateKeyPressArea();
   },
 
   keyUpHandler: function(e) {
+    var self = Debug;
     var metaKey = DebugJS.checkMetaKey(e);
-    Debug.keyUpCode = e.keyCode + metaKey;
-    Debug.updateKeyUpArea();
+    self.keyUpCode = e.keyCode + metaKey;
+    self.updateKeyUpArea();
   },
 
   resizeHandler: function() {
-    Debug.updateWindowSizeArea();
-    Debug.updateClientSizeArea();
-    Debug.updateBodySizeArea();
+    var self = Debug;
+    self.updateWindowSizeArea();
+    self.updateClientSizeArea();
+    self.updateBodySizeArea();
   },
 
   scrollHandler: function() {
-    var x, y;
+    var self = Debug;
     if (window.scrollX === undefined) {
-      x = document.documentElement.scrollLeft;
-      y = document.documentElement.scrollTop;
+      self.scrollPosX = document.documentElement.scrollLeft;
+      self.scrollPosY = document.documentElement.scrollTop;
     } else {
-      x = window.scrollX;
-      y = window.scrollY;
+      self.scrollPosX = window.scrollX;
+      self.scrollPosY = window.scrollY;
     }
-    Debug.scrollPos = 'x=' + x + ',y=' + y;
-    Debug.updateScrollPosArea();
+    self.updateScrollPosArea();
   },
 
   mousemoveHandler: function(e) {
-    Debug.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
-    Debug.updateMousePositionArea();
-    if (Debug.status & DebugJS.STATE_MEASURING) {
-      Debug.measure(e);
+    var self = Debug;
+    self.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
+    self.updateMousePositionArea();
+
+    if (self.options.showElement) {
+      var elm = document.elementFromPoint(e.clientX, e.clientY);
+      self.domElement = '&lt;' + elm.nodeName + '&gt;';
+      self.updateElementArea();
+    }
+
+    if (self.status & DebugJS.STATE_MEASURING) {
+      self.measure(e);
     }
   },
 
   mousedownHandler: function(e) {
+    var self = Debug;
     switch (e.button) {
       case 0:
-        Debug.mouseClickL = DebugJS.COLOR_ACTIVE;
-        if (Debug.status & DebugJS.STATE_MEASURE) {
-          Debug.startMeasure(e);
+        self.mouseClickL = DebugJS.COLOR_ACTIVE;
+        if (self.status & DebugJS.STATE_MEASURE) {
+          self.startMeasure(e);
         }
         break;
       case 1:
-        Debug.mouseClickC = DebugJS.COLOR_ACTIVE;
+        self.mouseClickC = DebugJS.COLOR_ACTIVE;
         break;
       case 2:
-        Debug.mouseClickR = DebugJS.COLOR_ACTIVE;
+        self.mouseClickR = DebugJS.COLOR_ACTIVE;
         break;
       default:
         break;
     }
-    Debug.updateMouseClickArea();
+    self.updateMouseClickArea();
   },
 
   mouseupHandler: function(e) {
+    var self = Debug;
     switch (e.button) {
       case 0:
-        Debug.mouseClickL = DebugJS.COLOR_INACTIVE;
-        if (Debug.status & DebugJS.STATE_MEASURING) {
-          Debug.stopMeasure();
+        self.mouseClickL = DebugJS.COLOR_INACTIVE;
+        if (self.status & DebugJS.STATE_MEASURING) {
+          self.stopMeasure();
         }
         break;
       case 1:
-        Debug.mouseClickC = DebugJS.COLOR_INACTIVE;
+        self.mouseClickC = DebugJS.COLOR_INACTIVE;
         break;
       case 2:
-        Debug.mouseClickR = DebugJS.COLOR_INACTIVE;
+        self.mouseClickR = DebugJS.COLOR_INACTIVE;
         break;
       default:
         break;
     }
-    Debug.updateMouseClickArea();
+    self.updateMouseClickArea();
   },
 
   hideDebugWindow: function() {
-    if (!this.options.showCloseButton) return;
-    this.msgAreaScrollX = this.msgArea.children[this.msgAreaId].scrollLeft;
-    this.msgAreaScrollY = this.msgArea.children[this.msgAreaId].scrollTop;
-    this.status &= ~DebugJS.STATE_DRAGGING;
+    var self = Debug;
+    if (!self.options.showCloseButton) return;
+    self.msgAreaScrollX = self.msgArea.children[self.msgAreaId].scrollLeft;
+    self.msgAreaScrollY = self.msgArea.children[self.msgAreaId].scrollTop;
+    self.status &= ~DebugJS.STATE_DRAGGING;
     var styles = {};
-    styles['#' + this.id] = {'display': 'none'};
-    this.applyStyles(styles);
-    this.status &= ~DebugJS.STATE_VISIBLE;
+    styles['#' + self.id] = {'display': 'none'};
+    self.applyStyles(styles);
+    self.status &= ~DebugJS.STATE_VISIBLE;
   },
 
   startMeasure: function(e) {
-    Debug.status |= DebugJS.STATE_MEASURING;
-    Debug.measureStartX = e.clientX;
-    Debug.measureStartY = e.clientY;
+    var self = Debug;
+    var rect = self.debugWindow.getBoundingClientRect();
+    var winX1 = rect.left;
+    var winY1 = rect.top;
+    var winX2 = winX1 + self.debugWindow.clientWidth;
+    var winY2 = winY1 + self.debugWindow.clientHeight;
 
-    if (Debug.measureBox == null) {
-      Debug.measureBox = document.createElement('div');
-      Debug.measureBox.id = Debug.id + '-mbox';
-      Debug.bodyElm.appendChild(Debug.measureBox);
+    if (((e.clientX >= winX1) && (e.clientX <= winX2)) && ((e.clientY >= winY1) && (e.clientY <= winY2))) {
+      return;
+    }
+
+    self.status |= DebugJS.STATE_MEASURING;
+    self.measureStartX = e.clientX;
+    self.measureStartY = e.clientY;
+
+    if (self.measureBox == null) {
+      self.measureBox = document.createElement('div');
+      self.measureBox.id = self.id + '-mbox';
+      self.bodyElm.appendChild(self.measureBox);
       var styles = {};
-      styles['#' + Debug.id + '-mbox'] = {'position': 'fixed'}
-      wkStyle = styles['#' + Debug.id + '-mbox'];
-      wkStyle['top'] = Debug.measureStartY + 'px';
-      wkStyle['left'] = Debug.measureStartX + 'px';
+      styles['#' + self.id + '-mbox'] = {'position': 'fixed'}
+      wkStyle = styles['#' + self.id + '-mbox'];
+      wkStyle['top'] = self.measureStartY + 'px';
+      wkStyle['left'] = self.measureStartX + 'px';
       wkStyle['width'] = '0px';
       wkStyle['height'] = '0px';
       wkStyle['border'] = 'dotted 1px #333';
       wkStyle['background'] = 'rgba(0,0,0,0.1)';
       wkStyle['z-index'] = 0x7fffffff;
-      wkStyle['-webkit-user-select'] = 'none';
-      Debug.applyStyles(styles);
+      self.applyStyles(styles);
     }
+    self.savedFunc = self.bodyElm.onselectstart;
+    self.bodyElm.onselectstart = function() {return false;};
   },
 
   measure: function(e) {
-    var moveX = e.clientX - Debug.measureStartX;
-    var moveY = e.clientY - Debug.measureStartY;
+    var self = Debug;
+    var moveX = e.clientX - self.measureStartX;
+    var moveY = e.clientY - self.measureStartY;
 
     if (moveX < 0) {
-      Debug.measureBox.style.left = e.clientX + 'px';
+      self.measureBox.style.left = e.clientX + 'px';
       moveX *= -1;
     }
     if (moveY < 0) {
-      Debug.measureBox.style.top = e.clientY+ 'px';
+      self.measureBox.style.top = e.clientY+ 'px';
       moveY *= -1;
     }
-    Debug.measureBox.style.width = moveX + 'px';
-    Debug.measureBox.style.height = moveY + 'px';
+    self.measureBox.style.width = moveX + 'px';
+    self.measureBox.style.height = moveY + 'px';
 
-    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);">x=' + moveX + ', y=' + moveY + '</span>';
-    Debug.measureBox.innerHTML = size;
+    var w = 240;
+    var h = 40;
+    var t = (moveY / 2) - (h /2);
+    var l = (moveX / 2) - (w /2);
+    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);white-space:pre;position:relative;top:' + t + 'px;left:' + l + 'px;">w=' + moveX + ', h=' + moveY + '</span>';
+    self.measureBox.innerHTML = size;
   },
 
   stopMeasure: function() {
-    Debug.bodyElm.removeChild(Debug.measureBox);
-    Debug.measureBox = null;
-    Debug.status &= ~DebugJS.STATE_MEASURING;
+    var self = Debug;
+    if (self.measureBox != null) {
+      self.bodyElm.removeChild(self.measureBox);
+      self.measureBox = null;
+    }
+    self.bodyElm.onselectstart = self.savedFunc;
+    self.status &= ~DebugJS.STATE_MEASURING;
   },
 
   showDebugWindow: function() {
+    var self = Debug;
     var styles = {};
-    styles['#' + this.id] = {'display': 'block'};
-    this.applyStyles(styles);
-    this.status |= DebugJS.STATE_VISIBLE;
-    this.msgArea.children[this.msgAreaId].scrollTop = this.msgAreaScrollY;
-    this.msgArea.children[this.msgAreaId].scrollLeft = this.msgAreaScrollX;
+    styles['#' + self.id] = {'display': 'block'};
+    self.applyStyles(styles);
+    self.status |= DebugJS.STATE_VISIBLE;
+    self.msgArea.children[self.msgAreaId].scrollTop = self.msgAreaScrollY;
+    self.msgArea.children[self.msgAreaId].scrollLeft = self.msgAreaScrollX;
   },
 
   execCmd: function() {
-    if (document.activeElement != this.cmdLine) {
+    var self = Debug;
+    if (document.activeElement != self.cmdLine) {
       return;
     }
-    var cl = this.cmdLine.value;
+    var cl = self.cmdLine.value;
     if (cl != '') {
-      this.cmdHistoryBuf.add(cl);
+      self.cmdHistoryBuf.add(cl);
     }
-    this.cmdHistoryIdx = (this.cmdHistoryBuf.count() < this.cmdHistoryMax) ? this.cmdHistoryBuf.count() : this.cmdHistoryMax;
-    this.cmdLine.value = '';
+    self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.cmdHistoryMax) ? self.cmdHistoryBuf.count() : self.cmdHistoryMax;
+    self.cmdLine.value = '';
     DebugJS.log.s(cl);
     wkCL = cl.replace(/\s{2,}/g, ' ');
     var cmds = wkCL.match(/([^\s]{1,})\s(.*)/);
@@ -1020,10 +1111,10 @@ DebugJS.prototype = {
       args = cmds[2]
     }
     var found = false;
-    for (var i=0; i<this.CMD_TBL.length; i++) {
-      if (cmd == this.CMD_TBL[i].cmd) {
+    for (var i=0; i<self.CMD_TBL.length; i++) {
+      if (cmd == self.CMD_TBL[i].cmd) {
         found = true;
-        this.CMD_TBL[i].fnc(args, this.CMD_TBL[i]);
+        self.CMD_TBL[i].fnc(args, self.CMD_TBL[i]);
         break;
       }
     }
@@ -1038,12 +1129,14 @@ DebugJS.prototype = {
   },
 
   cmdCls: function(args, tbl) {
-    Debug.clearMessage();
+    var self = Debug;
+    self.clearMessage();
   },
 
   cmdExit: function(args, tbl) {
-    Debug.clearMessage();
-    Debug.hideDebugWindow();
+    var self = Debug;
+    self.clearMessage();
+    self.hideDebugWindow();
   },
 
   cmdHelp: function(args, tbl) {
@@ -1059,7 +1152,8 @@ DebugJS.prototype = {
   },
 
   cmdHistory: function(args, tbl) {
-    var buf = Debug.cmdHistoryBuf.getAll();
+    var self = Debug;
+    var buf = self.cmdHistoryBuf.getAll();
     var str = 'Command History:<br>';
     for (var i=0; i< (buf.length - 1); i++) {
       str += buf[i] + '<br>';
@@ -1084,7 +1178,8 @@ DebugJS.prototype = {
   },
 
   cmdV: function(args, tbl) {
-    DebugJS.log('ver.' + Debug.v);
+    var self = Debug;
+    DebugJS.log('ver.' + self.v);
   }
 };
 
