@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606101000';
+  this.v = '201606102150';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -120,6 +120,7 @@ var DebugJS = function() {
   ];
 }
 DebugJS.ENABLE = true;
+DebugJS.CATCH_ALL_ERRORS = true;
 DebugJS.UNIFY_CONSOLE = false;
 
 DebugJS.STATE_VISIBLE = 0x1;
@@ -171,11 +172,12 @@ DebugJS.prototype = {
       self.status &= ~DebugJS.STATE_VISIBLE;
     }
 
+    self.bodyElm = document.getElementsByTagName('body')[0];
+
     // Create a window
     if (self.debugWindow == null) {
       self.debugWindow = document.createElement('div');
       self.debugWindow.id = self.id;
-      self.bodyElm = document.getElementsByTagName('body')[0];
       self.bodyElm.appendChild(self.debugWindow);
     }
 
@@ -400,7 +402,7 @@ DebugJS.prototype = {
       self.scrollHandler();
     }
 
-    if (self.options.showMouseStatus) {
+    if ((self.options.showMouseStatus) || (self.options.enableScreenMeasure)) {
       window.addEventListener('mousemove', self.mousemoveHandler, true);
       window.addEventListener('mousedown', self.mousedownHandler, true);
       window.addEventListener('mouseup', self.mouseupHandler, true);
@@ -941,22 +943,6 @@ DebugJS.prototype = {
     self.updateScrollPosArea();
   },
 
-  mousemoveHandler: function(e) {
-    var self = Debug;
-    self.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
-    self.updateMousePositionArea();
-
-    if (self.options.showElement) {
-      var elm = document.elementFromPoint(e.clientX, e.clientY);
-      self.domElement = '&lt;' + elm.nodeName + '&gt;';
-      self.updateElementArea();
-    }
-
-    if (self.status & DebugJS.STATE_MEASURING) {
-      self.measure(e);
-    }
-  },
-
   mousedownHandler: function(e) {
     var self = Debug;
     switch (e.button) {
@@ -975,7 +961,27 @@ DebugJS.prototype = {
       default:
         break;
     }
-    self.updateMouseClickArea();
+    if (self.options.showMouseStatus) {
+      self.updateMouseClickArea();
+    }
+  },
+
+  mousemoveHandler: function(e) {
+    var self = Debug;
+    if (self.options.showMouseStatus) {
+      self.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
+      self.updateMousePositionArea();
+    }
+
+    if (self.options.showElement) {
+      var elm = document.elementFromPoint(e.clientX, e.clientY);
+      self.domElement = '&lt;' + elm.nodeName + '&gt;';
+      self.updateElementArea();
+    }
+
+    if (self.status & DebugJS.STATE_MEASURING) {
+      self.measure(e);
+    }
   },
 
   mouseupHandler: function(e) {
@@ -996,7 +1002,9 @@ DebugJS.prototype = {
       default:
         break;
     }
-    self.updateMouseClickArea();
+    if (self.options.showMouseStatus) {
+      self.updateMouseClickArea();
+    }
   },
 
   hideDebugWindow: function() {
@@ -1063,11 +1071,23 @@ DebugJS.prototype = {
     self.measureBox.style.width = moveX + 'px';
     self.measureBox.style.height = moveY + 'px';
 
-    var w = 240;
+    var w = 210;
     var h = 40;
     var t = (moveY / 2) - (h /2);
     var l = (moveX / 2) - (w /2);
-    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);white-space:pre;position:relative;top:' + t + 'px;left:' + l + 'px;">w=' + moveX + ', h=' + moveY + '</span>';
+    if (moveX < w) {
+      l = 0;
+      if ((moveY < h) || (moveY > self.measureStartY)) {
+        if (self.measureStartY < h) {
+          t = moveY;
+        } else {
+          t = h * (-1);
+        }
+      } else {
+        t = h * (-1);
+      }
+    }
+    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);white-space:pre;position:relative;top:' + t + 'px;left:' + l + 'px;">w=' + moveX + ' h=' + moveY + '</span>';
     self.measureBox.innerHTML = size;
   },
 
@@ -1573,6 +1593,12 @@ log.stk = function() {
 }
 
 var Debug = new DebugJS();
+
+if(DebugJS.CATCH_ALL_ERRORS){
+window.onerror = function (msg, file, line, column, err) {
+log.e(msg + ' ' + file + ':' + line + ':' + column);
+};
+}
 
 if(DebugJS.UNIFY_CONSOLE){
 console.log=function(x){log(x);}

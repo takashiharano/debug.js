@@ -40,10 +40,6 @@ a:hover {
   color: #333;
 }
 
-.annotation {
-  color: #5b7;
-}
-
 .code {
   width: 800px;
   padding: .5em;
@@ -218,12 +214,17 @@ window.onload = function() {
     'showMouseStatus': false,
     'showKeyStatus': false,
     'enableStopWatch': false,
-    'enableCommandLine': false
+    'enableScreenMeasure': false,
+    'enableCommandLine': true
+  };
+
+  var options3 = {
+    'target': 'dbg'
   };
 
   Debug.init(options);
 //  Debug.init(options2);
-//  Debug.init();
+//  Debug.init(options3);
 
   log('Here is the output example!');
   log('The window\'s load event fired.');
@@ -258,12 +259,22 @@ var messages = [
 {
   'fnc': log,
   'msg': 'This debug window is automatically generated.',
-  'delay': 500
+  'delay': 250
 },
 {
   'fnc': log,
-  'msg': 'The window is draggable and you can switch hide/show by F2 key.',
-  'delay': 500
+  'msg': 'The window is draggable.',
+  'delay': 250
+},
+{
+  'fnc': log,
+  'msg': 'You can switch hide/show the window by F2 key.',
+  'delay': 250
+},
+{
+  'fnc': log,
+  'msg': 'Also, useful functions such as Stopwatch, Screen Measure, Command Line, etc. are available.',
+  'delay': 250
 }
 ]
 
@@ -291,7 +302,7 @@ The window is draggable and you can switch hide/show by F2 key.<br>
 </div>
 <br>
 
-<div class="caption">e.g.,)</div>
+e.g.,)
 <pre class="code">
 &lt;!DOCTYPE html&gt;
 &lt;html&gt;
@@ -318,9 +329,9 @@ The window is draggable and you can switch hide/show by F2 key.<br>
   ...
 &lt;/body&gt;
 &lt;/html&gt;
-</pre>
+</pre><br>
 
-<div class="annotation">(optional)</div>
+<div class="caption">Options:</div>
 <div class="description">If you want to change the log settings, explicitly call initialization function in advance.</div>
 <pre class="code emphasis">
 var options = {
@@ -331,7 +342,6 @@ var options = {
 Debug.init(options);
 </pre>
 
-Options:
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -507,6 +517,12 @@ Options:
   </tr>
 
   <tr>
+    <td class="name">enableScreenMeasure</td>
+    <td>Enable Screen Measure</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
     <td class="name">enableCommandLine</td>
     <td>Enable command-line</td>
     <td>true</td>
@@ -520,7 +536,7 @@ Options:
 </table>
 <br>
 
-Methods:
+<div class="caption">Methods:</div>
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -584,7 +600,7 @@ Methods:
 </table>
 <br>
 
-Commands:
+<div class="caption">Commands:</div>
 <table class="desc-table">
   <tr>
     <th>Name</th>
