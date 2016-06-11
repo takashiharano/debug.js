@@ -1,5 +1,9 @@
 #debug.js
-debug.js allows you to debug easily with direct output log messages to HTML page.
+debug.js is an auxiliary library for web development.
+
+It allows you to debug easily with direct output log messages to HTML page.
+
+Also the library has useful functions such as stopwatch, screen measure, command-line, etc.
 
 [Demo and Description](http://debugjs.net/ "debug.js demo page")
 
