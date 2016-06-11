@@ -9,6 +9,7 @@
 body {
   font-family: "Arial";
   font-size: 24px;
+  color: #333;
 }
 
 a {
@@ -18,6 +19,27 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5rem;
+  background: #00a8ff;
+  color: #fff;
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  top: 5rem;
+  padding: 5px;
+}
+
+.usage {
+  margin-left: 20px;
 }
 
 .title {
@@ -34,10 +56,6 @@ a:hover {
 .caption {
   font-size: 1.8rem;
   font-weight: bold;
-}
-
-.description {
-  color: #333;
 }
 
 .code {
@@ -57,22 +75,6 @@ a:hover {
 
 .emphasis {
   color: #fff;
-}
-
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5rem;
-  background: #00a8ff;
-  color: #fff;
-  z-index: 1;
-}
-
-.content {
-  position: relative;
-  top: 5.2rem;
 }
 
 .button {
@@ -226,7 +228,7 @@ window.onload = function() {
 //  Debug.init(options2);
 //  Debug.init(options3);
 
-  log('Here is the output example!');
+  log('Here is the log output example!');
   log('The window\'s load event fired.');
 
   setTimeout(displayMessages, 1000);
@@ -259,22 +261,7 @@ var messages = [
 {
   'fnc': log,
   'msg': 'This debug window is automatically generated.',
-  'delay': 250
-},
-{
-  'fnc': log,
-  'msg': 'The window is draggable.',
-  'delay': 250
-},
-{
-  'fnc': log,
-  'msg': 'You can switch hide/show the window by F2 key.',
-  'delay': 250
-},
-{
-  'fnc': log,
-  'msg': 'Also, useful functions such as Stopwatch, Screen Measure, Command Line, etc. are available.',
-  'delay': 250
+  'delay': 500
 }
 ]
 
@@ -288,18 +275,16 @@ var messages = [
 
 <div class="content">
 <div class="caption">Usage:</div><br>
-<div class="description"><b>HTML</b><br>Include the script file.</div>
+<div class="usage">
+<b>HTML</b><br>Include the script file.
 <div class="code1">&lt;script src="debug.js"&gt;&lt;/script&gt;</div>
 <br>
-
 <div class="description"><b>JavaScript</b><br>Put log messages anywhere you want.</div>
 <div class="code1">log(&lt;message&gt;);</div><br>
-
-<div class="description">
+</div>
 That's it!<br><br>
 The debug window will be <span style="background:linear-gradient(transparent 60%, #6cf 80%);">automatically generated.</span><br>
 The window is draggable and you can switch hide/show by F2 key.<br>
-</div>
 <br>
 
 e.g.,)
@@ -332,7 +317,7 @@ e.g.,)
 </pre><br>
 
 <div class="caption">Options:</div>
-<div class="description">If you want to change the log settings, explicitly call initialization function in advance.</div>
+If you want to change the log settings, explicitly call initialization function in advance.
 <pre class="code emphasis">
 var options = {
   'position': 'center',
@@ -423,7 +408,7 @@ Debug.init(options);
   <tr>
     <td class="name">specialColor</td>
     <td>Special log color</td>
-    <td>#ff</td>
+    <td>#fff</td>
   </tr>
 
   <tr>
@@ -750,7 +735,7 @@ log('&nbsp;&nbsp;&nbsp;&nbsp;leading spaces');
 <br>
 
 <div class="caption">Download:</div>
-<div class="description"><a href="https://github.com/takashiharano/debug.js">https://github.com/takashiharano/debug.js</a></div>
+<a href="https://github.com/takashiharano/debug.js">https://github.com/takashiharano/debug.js</a>
 
 <br>
 

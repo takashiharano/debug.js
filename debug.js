@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606102150';
+  this.v = '201606111315';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1073,22 +1073,38 @@ DebugJS.prototype = {
 
     var w = 210;
     var h = 40;
-    var t = (moveY / 2) - (h /2);
-    var l = (moveX / 2) - (w /2);
+    var sizeY = (moveY / 2) - (h /2);
+    var sizeX = (moveX / 2) - (w /2);
+    var originY = 'top';
+    var originX = 'left';
     if (moveX < w) {
-      l = 0;
+      sizeX = 0;
       if ((moveY < h) || (moveY > self.measureStartY)) {
         if (self.measureStartY < h) {
-          t = moveY;
+          sizeY = moveY;
         } else {
-          t = h * (-1);
+          sizeY = h * (-1);
         }
       } else {
-        t = h * (-1);
+        sizeY = h * (-1);
       }
     }
-    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);white-space:pre;position:relative;top:' + t + 'px;left:' + l + 'px;">w=' + moveX + ' h=' + moveY + '</span>';
-    self.measureBox.innerHTML = size;
+
+    var endPointY = 'bottom';
+    var endPointX = 'right';
+    if (e.clientX < self.measureStartX) {
+      originX = 'right';
+      endPointX = 'left';
+    }
+    if (e.clientY < self.measureStartY) {
+      originY = 'bottom';
+      endPointY = 'top';
+    }
+    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
+    var origin = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.measureStartX + ',y=' + self.measureStartY + '</span>';
+    //var endPoint = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
+    var endPoint = '';
+    self.measureBox.innerHTML = origin + size + endPoint;
   },
 
   stopMeasure: function() {
@@ -1594,11 +1610,7 @@ log.stk = function() {
 
 var Debug = new DebugJS();
 
-if(DebugJS.CATCH_ALL_ERRORS){
-window.onerror = function (msg, file, line, column, err) {
-log.e(msg + ' ' + file + ':' + line + ':' + column);
-};
-}
+if(DebugJS.CATCH_ALL_ERRORS){window.onerror=function (msg,file,line,col,err){log.e(msg+' '+file+'('+line+':'+col+')');};}
 
 if(DebugJS.UNIFY_CONSOLE){
 console.log=function(x){log(x);}
