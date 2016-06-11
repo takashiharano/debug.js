@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <title>debug.js</title>
+<meta name="description" content="debug.js is an auxiliary JavaScript library for web development.">
 <!--<link rel="stylesheet" type="text/css" href="../foundation.css" />-->
 <script src="debug.js"></script>
 <style>
 body {
   font-family: "Arial";
-  font-size: 24px;
+  font-size: 20px;
   color: #333;
 }
 
@@ -43,8 +44,7 @@ a:hover {
 }
 
 .title {
-  font-size: 3.5rem;
-  font-weight: bold;
+  font-size: 4rem;
   top: 0;
   bottom: 0;
   margin: auto;
@@ -59,17 +59,18 @@ a:hover {
 }
 
 .code {
-  width: 800px;
+  width: 720px;
   padding: .5em;
   font-family: Consolas;
   font-size: 9pt;
   color: #aaa;
   background: #111;
   border-top: solid 3px #1883d7;
+  border-radius: 4px;
 }
 
 .code1 {
-  font-size: 1.5rem;
+  font-size: 1.2em;
   color: #07c;
 }
 
@@ -82,14 +83,23 @@ a:hover {
   font-size:20px;
   font-weight:bold;
   text-decoration:none;
-  display:block;
+  display:inline-block;
   text-align:center;
+  vertical-align: middle;
   padding:8px 0 10px;
   margin: 4px 4px 12px 4px;
   color:#fff;
   background: #0068cc;
   border-radius: 5px;
-  float: left;
+}
+
+.dl-btn {
+  position: relative;
+  top: -4px;
+  width:100px;
+  margin: 0;
+  padding:4px 0;
+  font-size:14px;
 }
 
 .button:hover {
@@ -121,6 +131,7 @@ a:hover {
 .desc-table td {
   border: solid 1px #444;
   padding: 4px 6px;
+  vertical-align: top;
 }
 
 .desc-table .name {
@@ -138,6 +149,11 @@ a:hover {
   color: #060;
 }
 
+.eg {
+  font-family: Consolas;
+  line-height: 1em;
+}
+
 
 /*td {*/
 /*  width: 100px;*/
@@ -145,7 +161,6 @@ a:hover {
 /*  border: solid 1px #ccc;*/
 /*}*/
 </style>
-
 <script>
 var a = {
   'key1': 'val1',
@@ -202,7 +217,7 @@ window.onload = function() {
     'position': 'center' // left-top, left-bottom, center, right-top, right-bottom
   };
 
-// If you want to output the logs to a designated area, pass the element id to 1st argument.
+// If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options2 = {
     'target': 'dbg',
     'dispLine': 10,
@@ -246,7 +261,6 @@ document.onclick = function(e) {
   //log('click count: ' + event.detail);
 }
 
-
 var dispCount = 0;
 function displayMessages() {
   if (dispCount >= messages.length) return;
@@ -256,7 +270,6 @@ function displayMessages() {
   setTimeout(displayMessages, msgData.delay);
 }
 
-
 var messages = [
 {
   'fnc': log,
@@ -264,19 +277,17 @@ var messages = [
   'delay': 500
 }
 ]
-
 </script>
-
 </head>
 <body>
 <div class="header">
-<div class="title">debug.js - demo & description</div>
+<div class="title">debug.js <span style="font-size:2rem;">demo & description</span></div>
 </div>
-
 <div class="content">
 <div class="caption">Usage:</div><br>
 <div class="usage">
-<b>HTML</b><br>Include the script file.
+<b>HTML</b><br>
+Include the script file. <a href="https://github.com/takashiharano/debug.js"><span class="button dl-btn" onclick="log('standard log');"><img src="github.png" width="14"> Download</span></a>
 <div class="code1">&lt;script src="debug.js"&gt;&lt;/script&gt;</div>
 <br>
 <div class="description"><b>JavaScript</b><br>Put log messages anywhere you want.</div>
@@ -286,7 +297,6 @@ That's it!<br><br>
 The debug window will be <span style="background:linear-gradient(transparent 60%, #6cf 80%);">automatically generated.</span><br>
 The window is draggable and you can switch hide/show by F2 key.<br>
 <br>
-
 e.g.,)
 <pre class="code">
 &lt;!DOCTYPE html&gt;
@@ -299,12 +309,18 @@ e.g.,)
       <span class="emphasis">log('The window\'s load event fired.');</span>
     }
 
-    document.onkeydown = function(e) {
-      <span class="emphasis">log('KeyDown: keyCode = ' + e.keyCode);</span>
-    }
+    function foo() {
+      ...
+      <span class="emphasis">log('bla bla bla');</span>
+      ...
+    };
 
-    document.onmousemove = function(e) {
-      <span class="emphasis">log('mouseMoved: x=' + e.clientX + ', y=' + e.clientY);</span>
+    function bar() {
+      ...
+      if (error) {
+        <span class="emphasis">log.e('error! val=' + val);</span>
+      }
+      ...
     };
     ...
   &lt;/script&gt;
@@ -594,9 +610,37 @@ Debug.init(options);
   </tr>
 
   <tr>
+    <td class="name">bin</td>
+    <td>binary value</td>
+    <td>
+      Convert BIN to DEC and HEX.
+<pre class="eg">
+$ bin 11111111
+-&gt;
+BIN 11111111
+DEC 255
+HEX ff</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">cls</td>
     <td></td>
     <td>Clear log message.</td>
+  </tr>
+
+  <tr>
+    <td class="name">dec</td>
+    <td>decimal value</td>
+    <td>
+      Convert DEC to HEX and BIN.
+<pre class="eg">
+$ dec 255
+-&gt;
+DEC 255
+HEX ff
+BIN 11111111</pre>
+    </td>
   </tr>
 
   <tr>
@@ -608,13 +652,27 @@ Debug.init(options);
   <tr>
     <td class="name">p</td>
     <td>variable(s)</td>
-    <td>Print object dump.</td>
+    <td>Print object dump. (recursive)</td>
   </tr>
 
   <tr>
     <td class="name">help</td>
     <td></td>
     <td>Displays available command list.</td>
+  </tr>
+
+  <tr>
+    <td class="name">hex</td>
+    <td>hexadecimal value</td>
+    <td>
+      Convert HEX to DEC and BIN.
+<pre class="eg">
+$ hex ff
+-&gt;
+HEX ff
+DEC 255
+BIN 11111111</pre>
+    </td>
   </tr>
 
   <tr>
@@ -627,11 +685,13 @@ Debug.init(options);
     <td class="name">rgb</td>
     <td>RGB Color Value</td>
     <td>
-      Convert RGB color values between HEX and DEC.<br><br>
-      $ rgb #fff<br>
-      -&gt; 255 255 255<br><br>
-      $ rgb 255 255 255<br>
-      -&gt; #fff
+      Convert RGB color values between HEX and DEC.
+<pre class="eg">
+$ rgb #fff
+-&gt; 255 255 255
+
+$ rgb 255 255 255
+-&gt; #fff</pre>
     </td>
   </tr>
 
@@ -663,7 +723,9 @@ log.e('error log');<br>
 log.w('warn log');<br>
 <span class="button" onclick="log.w('warn log');">log.w()</span>
 </td>
+</tr>
 
+<tr>
 <td>
 log.i('info log');<br>
 <span class="button" onclick="log.i('info log');">log.i()</span>
@@ -713,13 +775,13 @@ console.error('hello');<br>
 </td>
 
 <td>
-console.info('hello');<br>
-<span class="button button-green" onclick="console.info('hello');">console.info()</span>
+console.warn('hello');<br>
+<span class="button button-green" onclick="console.warn('hello');">console.warn()</span>
 </td>
 
 <td>
-console.warn('hello');<br>
-<span class="button button-green" onclick="console.warn('hello');">console.warn()</span>
+console.info('hello');<br>
+<span class="button button-green" onclick="console.info('hello');">console.info()</span>
 </td>
 </tr>
 </table>

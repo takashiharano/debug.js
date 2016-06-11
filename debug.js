@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606111315';
+  this.v = '201606112253';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -110,9 +110,12 @@ var DebugJS = function() {
   this.status = 0;
 
   this.CMD_TBL = [
+    {'cmd': 'bin', 'fnc': this.cmdBin, 'usage': 'dec &lt;binary value&gt;'},
     {'cmd': 'cls', 'fnc': this.cmdCls},
     {'cmd': 'exit', 'fnc': this.cmdExit},
+    {'cmd': 'dec', 'fnc': this.cmdDec, 'usage': 'dec &lt;decimal value&gt;'},
     {'cmd': 'help', 'fnc': this.cmdHelp},
+    {'cmd': 'hex', 'fnc': this.cmdHex, 'usage': 'hex &lt;hexadecimal value&gt;'},
     {'cmd': 'history', 'fnc': this.cmdHistory},
     {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
@@ -1169,6 +1172,51 @@ DebugJS.prototype = {
     self.clearMessage();
   },
 
+  cmdDec: function(args, tbl) {
+    if (args == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var v10 = args;
+    var v2 = parseInt(v10).toString(2);
+    var v16 = parseInt(v10).toString(16);
+    var res = '<br>';
+    res += 'DEC ' + v10 + '<br>';
+    res += 'HEX ' + v16 + '<br>';
+    res += 'BIN ' + v2 + '<br>';
+    DebugJS.log(res);
+  },
+
+  cmdBin: function(args, tbl) {
+    if (args == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var v2 = args;
+    var v10 = parseInt(v2, 2).toString(10);
+    var v16 = parseInt(v2, 2).toString(16);
+    var res = '<br>';
+    res += 'BIN ' + v2 + '<br>';
+    res += 'DEC ' + v10 + '<br>';
+    res += 'HEX ' + v16 + '<br>';
+    DebugJS.log(res);
+  },
+
+  cmdHex: function(args, tbl) {
+    if (args == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var v16 = args;
+    var v10 = parseInt(v16, 16).toString(10);
+    var v2 = parseInt(v16, 16).toString(2);
+    var res = '<br>';
+    res += 'HEX ' + v16 + '<br>';
+    res += 'DEC ' + v10 + '<br>';
+    res += 'BIN ' + v2 + '<br>';
+    DebugJS.log(res);
+  },
+
   cmdExit: function(args, tbl) {
     var self = Debug;
     self.clearMessage();
@@ -1177,10 +1225,13 @@ DebugJS.prototype = {
 
   cmdHelp: function(args, tbl) {
     var str = 'Available Commands:<br>';
+    str += 'bin      Convert BIN to DEC and HEX.<br>';
     str += 'cls      Clear log message.<br>';
+    str += 'dec      Convert DEC to HEX and BIN.<br>';
     str += 'exit     Close the debug window.<br>';
     str += 'p        Print object.<br>';
     str += 'help     Displays available command list.<br>';
+    str += 'hex      Convert HEX to DEC and BIN.<br>';
     str += 'history  Displays command history.<br>';
     str += 'rgb      Convert RGB color values between HEX and DEC.<br>';
     str += 'v        Displays version info.<br>';
