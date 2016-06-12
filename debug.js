@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606112253';
+  this.v = '201606121320';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -574,7 +574,7 @@ DebugJS.prototype = {
   updateMeasureBtnArea: function() {
     var self = Debug;
     var c = (this.status & DebugJS.STATE_MEASURE) ? '#0f0' : '#888';
-    self.measureBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleMeasureMode();">●</span>';
+    self.measureBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="display:inline-block;float:right;margin-right:4px;width:8px;height:8px;margin-top:2px;background:' + c + ';" onclick="Debug.toggleMeasureMode();"> </span>';
   },
 
   // Update Stop Watch Button
@@ -1390,9 +1390,9 @@ DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
 
   if (passedHour < 10) passedHour = '0' + passedHour;
   if (passedMin < 10) passedMin = '0' + passedMin;
-  if (passedSec< 10) passedSec = '0' + passedSec;
-  if (passedMsec< 10) {passedMsec = '00' + passedMsec;}
-  else if (passedMsec< 100) passedMsec = '0' + passedMsec;
+  if (passedSec < 10) passedSec = '0' + passedSec;
+  if (passedMsec < 10) passedMsec = '00' + passedMsec;
+  else if (passedMsec < 100) passedMsec = '0' + passedMsec;
 
   var retStr = passedHour + ':' + passedMin + ':' + passedSec + '.' + passedMsec;
   return retStr;
