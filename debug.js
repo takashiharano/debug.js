@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606121320';
+  this.v = '201606122020';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -110,12 +110,9 @@ var DebugJS = function() {
   this.status = 0;
 
   this.CMD_TBL = [
-    {'cmd': 'bin', 'fnc': this.cmdBin, 'usage': 'dec &lt;binary value&gt;'},
     {'cmd': 'cls', 'fnc': this.cmdCls},
     {'cmd': 'exit', 'fnc': this.cmdExit},
-    {'cmd': 'dec', 'fnc': this.cmdDec, 'usage': 'dec &lt;decimal value&gt;'},
     {'cmd': 'help', 'fnc': this.cmdHelp},
-    {'cmd': 'hex', 'fnc': this.cmdHex, 'usage': 'hex &lt;hexadecimal value&gt;'},
     {'cmd': 'history', 'fnc': this.cmdHistory},
     {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
@@ -149,8 +146,8 @@ DebugJS.prototype = {
     self.options = self.DEFAULT_OPTIONS;
     if (options) {
       for (var key in self.options) {
-        for (var k in options) {
-          if (key == k) {
+        for (var key1 in options) {
+          if (key == key1) {
             self.options[key] = options[key];
             break;
           }
@@ -1103,7 +1100,7 @@ DebugJS.prototype = {
       originY = 'bottom';
       endPointY = 'top';
     }
-    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
+    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
     var origin = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.measureStartX + ',y=' + self.measureStartY + '</span>';
     //var endPoint = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
     var endPoint = '';
@@ -1158,6 +1155,8 @@ DebugJS.prototype = {
       }
     }
 
+    found = self.cmdRadixConv(cl);
+
     if (!found) {
       try {
         DebugJS.log(eval(cl));
@@ -1172,51 +1171,6 @@ DebugJS.prototype = {
     self.clearMessage();
   },
 
-  cmdDec: function(args, tbl) {
-    if (args == '') {
-      DebugJS.printUsage(tbl.usage);
-      return;
-    }
-    var v10 = args;
-    var v2 = parseInt(v10).toString(2);
-    var v16 = parseInt(v10).toString(16);
-    var res = '<br>';
-    res += 'DEC ' + v10 + '<br>';
-    res += 'HEX ' + v16 + '<br>';
-    res += 'BIN ' + v2 + '<br>';
-    DebugJS.log(res);
-  },
-
-  cmdBin: function(args, tbl) {
-    if (args == '') {
-      DebugJS.printUsage(tbl.usage);
-      return;
-    }
-    var v2 = args;
-    var v10 = parseInt(v2, 2).toString(10);
-    var v16 = parseInt(v2, 2).toString(16);
-    var res = '<br>';
-    res += 'BIN ' + v2 + '<br>';
-    res += 'DEC ' + v10 + '<br>';
-    res += 'HEX ' + v16 + '<br>';
-    DebugJS.log(res);
-  },
-
-  cmdHex: function(args, tbl) {
-    if (args == '') {
-      DebugJS.printUsage(tbl.usage);
-      return;
-    }
-    var v16 = args;
-    var v10 = parseInt(v16, 16).toString(10);
-    var v2 = parseInt(v16, 16).toString(2);
-    var res = '<br>';
-    res += 'HEX ' + v16 + '<br>';
-    res += 'DEC ' + v10 + '<br>';
-    res += 'BIN ' + v2 + '<br>';
-    DebugJS.log(res);
-  },
-
   cmdExit: function(args, tbl) {
     var self = Debug;
     self.clearMessage();
@@ -1225,13 +1179,10 @@ DebugJS.prototype = {
 
   cmdHelp: function(args, tbl) {
     var str = 'Available Commands:<br>';
-    str += 'bin      Convert BIN to DEC and HEX.<br>';
     str += 'cls      Clear log message.<br>';
-    str += 'dec      Convert DEC to HEX and BIN.<br>';
     str += 'exit     Close the debug window.<br>';
     str += 'p        Print object.<br>';
     str += 'help     Displays available command list.<br>';
-    str += 'hex      Convert HEX to DEC and BIN.<br>';
     str += 'history  Displays command history.<br>';
     str += 'rgb      Convert RGB color values between HEX and DEC.<br>';
     str += 'v        Displays version info.<br>';
@@ -1253,6 +1204,21 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.execCmdP(args);
+    }
+  },
+
+  cmdRadixConv: function(val) {
+    if (val.match(/^\-{0,1}[0-9]+$/)) {
+      DebugJS.convDEC(val);
+      return true;
+    } else if (val.match(/^\-{0,1}0x[0-9A-Fa-f]+$/)) {
+      DebugJS.convHEX(val.replace('0x', ''));
+      return true;
+    } else if (val.match(/^\-{0,1}0b[0-1]+$/)) {
+      DebugJS.convBIN(val.replace('0b', ''));
+      return true;
+    } else {
+      return false;
     }
   },
 
@@ -1540,6 +1506,36 @@ DebugJS.convRGB10to16 = function(rgb10) {
   }
   var rgb16 = '<span style="vertical-align:middle;display:inline-block;"><span style="background:#' + r16 + g16 + b16 + ';width:8px;height:8px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   return rgb16;
+}
+
+DebugJS.convHEX = function(v16) {
+  var v10 = parseInt(v16, 16).toString(10);
+  var v2 = parseInt(v16, 16).toString(2);
+  var res = '<br>';
+  res += 'HEX ' + v16 + '<br>';
+  res += 'DEC ' + v10 + '<br>';
+  res += 'BIN ' + v2 + '<br>';
+  DebugJS.log(res);
+}
+
+DebugJS.convDEC = function(v10) {
+  var v2 = parseInt(v10).toString(2);
+  var v16 = parseInt(v10).toString(16);
+  var res = '<br>';
+  res += 'DEC ' + v10 + '<br>';
+  res += 'HEX ' + v16 + '<br>';
+  res += 'BIN ' + v2 + '<br>';
+  DebugJS.log(res);
+}
+
+DebugJS.convBIN = function(v2) {
+  var v10 = parseInt(v2, 2).toString(10);
+  var v16 = parseInt(v2, 2).toString(16);
+  var res = '<br>';
+  res += 'BIN ' + v2 + '<br>';
+  res += 'DEC ' + v10 + '<br>';
+  res += 'HEX ' + v16 + '<br>';
+  DebugJS.log(res);
 }
 
 DebugJS.log = function(m) {
