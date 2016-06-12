@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606122020';
+  this.v = '201606122030';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1155,7 +1155,9 @@ DebugJS.prototype = {
       }
     }
 
-    found = self.cmdRadixConv(cl);
+    if (!found) {
+      found = self.cmdRadixConv(cl);
+    }
 
     if (!found) {
       try {
