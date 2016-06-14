@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606150127';
+  this.v = '201606150717';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1453,7 +1453,9 @@ DebugJS._objDump = function(obj, arg) {
   } else if (obj === undefined) {
     arg.dump += '<span style="color:#ccc;">undefined</span>' + '<br>'; arg.cnt++;
   } else if (typeof obj === 'string') {
-    arg.dump += '"' + obj + '"<br>'; arg.cnt++;
+    var str = obj.replace(/</g, '&lt;');
+    str = str.replace(/>/g, '&gt;');
+    arg.dump += '"' + str + '"<br>'; arg.cnt++;
   } else {
     arg.dump += obj + '<br>'; arg.cnt++;
   }
