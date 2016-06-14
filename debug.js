@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606122030';
+  this.v = '201606150127';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1214,10 +1214,10 @@ DebugJS.prototype = {
       DebugJS.convDEC(val);
       return true;
     } else if (val.match(/^\-{0,1}0x[0-9A-Fa-f]+$/)) {
-      DebugJS.convHEX(val.replace('0x', ''));
+      DebugJS.convHEX(val.substr(2));
       return true;
     } else if (val.match(/^\-{0,1}0b[0-1]+$/)) {
-      DebugJS.convBIN(val.replace('0b', ''));
+      DebugJS.convBIN(val.substr(2));
       return true;
     } else {
       return false;
@@ -1390,6 +1390,9 @@ DebugJS.execCmdP = function(args) {
 DebugJS.OBJDUMP_MAX = 100;
 DebugJS.objDump = function(obj) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
+  if (typeof obj === 'function') {
+    arg.dump += '<span style="color:#4c4;">function()</span><br>';
+  }
   var ret = DebugJS._objDump(obj, arg);
   if (ret.cnt >= DebugJS.OBJDUMP_MAX) {
     log.w('The object is too large. (' + ret.cnt + ')');
@@ -1399,38 +1402,52 @@ DebugJS.objDump = function(obj) {
 
 DebugJS._objDump = function(obj, arg) {
   if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
-    arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
+    if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
+      arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
+    }
     return arg;
   }
   var indent = '';
   for (var i=0; i<arg.lv; i++) {
     indent += ' ';
   }
-
   if (obj instanceof Array) {
     arg.dump += '<span style="color:#c08;">[Array]</span><br>'; arg.cnt++;
     for (var i in obj) {
-      arg.lv++;
+      arg.lv++; indent += ' ';
       arg.dump += indent + '[' + i + '] ';
       arg = DebugJS._objDump(obj[i], arg);
-      arg.lv--;
+      arg.lv--; indent = indent.replace(' ', '');
     }
   } else if (obj instanceof Object) {
     arg.cnt++;
-    if (typeof obj === 'function') {
-      arg.dump += '<span style="color:#8c8;">[Function]</span><br>';
-    } else {
+    if (typeof obj !== 'function') {
       arg.dump += '<span style="color:#88f;">[Object]</span> {<br>';
     }
     indent += ' ';
     for (var key in obj) {
-      arg.dump += indent + key + ': ';
+      if (typeof obj[key] === 'function') {
+        arg.dump += indent + '<span style="color:#4c4;">function</span> ' + key + '()'; arg.cnt++;
+        if (Object.keys(obj[key]).length > 0) {
+          arg.dump += ' {';
+        }
+        arg.dump += '<br>';
+      } else {
+        arg.dump += indent + key + ': ';
+      }
       arg.lv++;
       arg = DebugJS._objDump(obj[key], arg);
       arg.lv--;
+      if (typeof obj[key] === 'function') {
+        if (Object.keys(obj[key]).length > 0) {
+          arg.dump += indent + '}<br>';
+        }
+      }
     }
     indent = indent.replace(' ', '');
-    arg.dump += indent + '}<br>';
+    if (typeof obj !== 'function') {
+      arg.dump += indent + '}<br>';
+    }
   } else if (obj === null) {
     arg.dump += '<span style="color:#ccc;">null</span>' + '<br>'; arg.cnt++;
   } else if (obj === undefined) {
