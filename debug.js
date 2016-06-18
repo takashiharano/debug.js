@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606150717';
+  this.v = '201606190205';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -15,6 +15,7 @@ var DebugJS = function() {
     'position': 'right-bottom',
     'posAdjX': 20,
     'posAdjY': 20,
+    'resizable': true,
     'errorColor': '#d44',
     'warnColor': '#ed0',
     'infoColor': '#eff',
@@ -62,8 +63,6 @@ var DebugJS = function() {
   this.infoArea = null;
   this.clockArea = null;
   this.measureBtnArea = null;
-  this.measureStartX = 0;
-  this.measureStartY = 0;
   this.measureBox = null;
   this.swBtnArea = null;
   this.swArea = null;
@@ -106,6 +105,13 @@ var DebugJS = function() {
   this.cmdHistoryMax = 10;
   this.cmdHistoryIdx = self.cmdHistoryMax;
   this.cmdTmp = '';
+  this.resizeSE = null;
+  this.resizeOrgWidth = 0;
+  this.resizeOrgHeight = 0;
+  this.clickedPosX = 0;
+  this.clickedPosY = 0;
+  this.moveClickOffsetTop = 0;
+  this.moveClickOffsetLeft = 0;
   this.savedFunc = null;
   this.status = 0;
 
@@ -129,9 +135,11 @@ DebugJS.STATE_SHOW_CLOCK = 0x4;
 DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
 DebugJS.STATE_DRAGGABLE = 0x10;
 DebugJS.STATE_DRAGGING = 0x20;
-DebugJS.STATE_LOG_SUSPENDING = 0x40;
+DebugJS.STATE_RESIZABLE = 0x40;
+DebugJS.STATE_RESIZING = 0x80;
 DebugJS.STATE_MEASURE = 0x100;
 DebugJS.STATE_MEASURING = 0x200;
+DebugJS.STATE_LOG_SUSPENDING = 0x400;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 
 DebugJS.COLOR_ACTIVE = '#fff';
@@ -166,11 +174,8 @@ DebugJS.prototype = {
     self.msgAreaId = self.id + '-msg';
     self.cmdLineId = self.id + '-cmd';
 
-    if (self.options.visible) {
-      self.status |= DebugJS.STATE_VISIBLE;
-    } else {
-      self.status &= ~DebugJS.STATE_VISIBLE;
-    }
+    if (self.options.visible) self.status |= DebugJS.STATE_VISIBLE;
+    if (self.options.resizable) self.status |= DebugJS.STATE_RESIZABLE;
 
     self.bodyElm = document.getElementsByTagName('body')[0];
 
@@ -184,8 +189,8 @@ DebugJS.prototype = {
     // Info Area
     self.infoArea = document.createElement('div');
     self.debugWindow.appendChild(self.infoArea);
-    self.infoArea.style.cursor = 'default';
-    self.initInfoArea();
+    self.infoArea.innerHTML = '<div style="padding:1px 2px 0px 2px;background:rgba(24,131,215,0);"></div>';
+    if (self.status & DebugJS.STATE_DRAGGABLE) self.infoArea.style.cursor = 'move';
 
     // CLR Button
     if (self.options.showClearButton) {
@@ -290,13 +295,22 @@ DebugJS.prototype = {
     // Log
     self.msgArea = document.createElement('div');
     self.debugWindow.appendChild(self.msgArea);
-    self.msgArea.style.cursor = 'default';
+    self.msgArea.style.height = self.options.dispLine + '.2em';
+    if (self.status & DebugJS.STATE_DRAGGABLE) self.msgArea.style.cursor = 'move';
 
     // Command Line
     if (self.options.enableCommandLine) {
       self.cmdArea = document.createElement('div');
       self.debugWindow.appendChild(self.cmdArea);
       self.initCmdArea();
+    }
+
+    // Resize
+    if (self.status & DebugJS.STATE_RESIZABLE) {
+      self.resizeSE = document.createElement('div');
+      self.resizeSE.innerHTML = '<div class="' + self.id  + '-resize-corner" style="bottom:-3px;right:-3px;cursor:nwse-resize">';
+      self.debugWindow.appendChild(self.resizeSE);
+      self.setupResize();
     }
 
     self.msgBuf = new DebugJS.RingBuffer(self.options.buffSize);
@@ -340,6 +354,13 @@ DebugJS.prototype = {
       'margin-left': '1px',
       'color': self.options.systemInfoColor,
       'display': 'inline-block'
+    };
+
+    styles['.' + self.id + '-resize-corner'] = {
+      'position': 'absolute',
+      'width': '6px',
+      'height': '6px',
+      'background': 'rgba(0,0,0,0)'
     };
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
@@ -489,11 +510,6 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_INITIALIZED;
   },
 
-  // Init Info Area
- initInfoArea: function() {
-    this.infoArea.innerHTML = '<div style="padding:1px 2px 0px 2px;background:rgba(0,68,118,0);"></div>';
-  },
-
   // Init Clear Button
   initClrBtnArea: function() {
     this.clrBtnArea.innerHTML = '<span class="' + this.id + '-btn" style="margin-right:4px;" onclick="Debug.clearMessage();">[CLR]</span>';
@@ -623,7 +639,7 @@ DebugJS.prototype = {
   // Command-line Area
  initCmdArea: function() {
     var self = Debug;
-    self.cmdArea.innerHTML = '<div style="padding:0 3px 3px 3px;"><span style="color:#0cf;margin-right:2px;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
+    self.cmdArea.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
     self.cmdLine = document.getElementById(self.cmdLineId);
     self.cmdHistoryBuf = new DebugJS.RingBuffer(10);
   },
@@ -635,7 +651,7 @@ DebugJS.prototype = {
     var msg = '';
 
     // Log Area
-    msg += '<div style="position:relative;padding:4px 0;height:' + self.options.dispLine + '.2em;overflow:auto;" id="' + self.msgAreaId + '">';
+    msg += '<div style="position:relative;padding:4px 0;height:100%;overflow:auto;" id="' + self.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
     for (var i = 0; i < buf.length; i++) {
       msg += buf[i];
@@ -685,34 +701,55 @@ DebugJS.prototype = {
 
   setupMove: function() {
     var self = Debug;
-    var el = self.debugWindow;
-    var clickOffsetTop;
-    var clickOffsetLeft;
+    self.infoArea.onmousedown = self.startWindowMove;
+    self.msgArea.onmousedown = self.startWindowMove;
+  },
 
-    el.onmousedown = function(e) {
+  startWindowMove: function(e) {
+    var self= Debug;
+    if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
+    self.status |= DebugJS.STATE_DRAGGING;
+    e = (e) || window.event;
+    self.moveClickOffsetTop = e.clientY - self.debugWindow.offsetTop;
+    self.moveClickOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
+    if (!document.all) {
+       window.getSelection().removeAllRanges();
+    }
+  },
+
+  windowMove: function(e) {
+    var self= Debug;
+    if (!(self.status & DebugJS.STATE_DRAGGING)) return;
+    e = (e) || window.event;
+    self.debugWindow.style.top = e.clientY - self.moveClickOffsetTop + 'px';
+    self.debugWindow.style.left = e.clientX - self.moveClickOffsetLeft + 'px';
+  },
+
+  setupResize: function() {
+    var self = Debug;
+    self.resizeSE.onmousedown = function(e) {
       var self= Debug;
-      if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
-      self.status |= DebugJS.STATE_DRAGGING;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.status |= DebugJS.STATE_RESIZING;
       e = (e) || window.event;
-      clickOffsetTop = e.clientY - el.offsetTop;
-      clickOffsetLeft = e.clientX - el.offsetLeft;
-      if (!document.all) {
-         window.getSelection().removeAllRanges();
-      }
+      self.resizeOrgWidth = self.debugWindow.offsetWidth;
+      self.resizeOrgHeight = self.debugWindow.offsetHeight;
+      self.clickedPosX = e.clientX;
+      self.clickedPosY = e.clientY;
+      self.bodyElm.style.cursor = 'nwse-resize';
     }
+  },
 
-    el.onmousemove = function(e) {
-      var self= Debug;
-      if (!(self.status & DebugJS.STATE_DRAGGING)) return;
-      e = (e) || window.event;
-      el.style.top = e.clientY - clickOffsetTop + 'px';
-      el.style.left = e.clientX - clickOffsetLeft + 'px';
-    }
-
-    el.onmouseup = function(e) {
-      var self= Debug;
-      self.status &= ~DebugJS.STATE_DRAGGING;
-    }
+  resize: function(e) {
+    var self= Debug;
+    e = (e) || window.event;
+    var moveX = e.clientX - self.clickedPosX;
+    var moveY = e.clientY - self.clickedPosY;
+    self.debugWindow.style.width = self.resizeOrgWidth + moveX + 'px';
+    self.debugWindow.style.height = self.resizeOrgHeight + moveY + 'px';
+    var adj = 5;
+    var msgAreaHeight = self.debugWindow.offsetHeight - self.infoArea.offsetHeight - self.cmdArea.offsetHeight - adj;
+    self.msgArea.style.height = msgAreaHeight + 'px';
   },
 
   toggleLogSuspend: function() {
@@ -756,8 +793,8 @@ DebugJS.prototype = {
       Debug.msgArea.style.cursor = 'auto';
     } else {
       Debug.status |= DebugJS.STATE_DRAGGABLE;
-      Debug.infoArea.style.cursor = 'default';
-      Debug.msgArea.style.cursor = 'default';
+      Debug.infoArea.style.cursor = 'move';
+      Debug.msgArea.style.cursor = 'move';
     }
     Debug.updatePinBtnArea();
   },
@@ -979,9 +1016,9 @@ DebugJS.prototype = {
       self.updateElementArea();
     }
 
-    if (self.status & DebugJS.STATE_MEASURING) {
-      self.measure(e);
-    }
+    if (self.status & DebugJS.STATE_DRAGGING) self.windowMove(e);
+    if (self.status & DebugJS.STATE_RESIZING) self.resize(e);
+    if (self.status & DebugJS.STATE_MEASURING) self.measure(e);
   },
 
   mouseupHandler: function(e) {
@@ -991,6 +1028,12 @@ DebugJS.prototype = {
         self.mouseClickL = DebugJS.COLOR_INACTIVE;
         if (self.status & DebugJS.STATE_MEASURING) {
           self.stopMeasure();
+        }
+        self.status &= ~DebugJS.STATE_DRAGGING;
+
+        if (self.status & DebugJS.STATE_RESIZING) {
+          self.status &= ~DebugJS.STATE_RESIZING;
+          self.bodyElm.style.cursor = 'auto';
         }
         break;
       case 1:
@@ -1022,18 +1065,19 @@ DebugJS.prototype = {
   startMeasure: function(e) {
     var self = Debug;
     var rect = self.debugWindow.getBoundingClientRect();
+    var resizeBoxSize = 3;
     var winX1 = rect.left;
     var winY1 = rect.top;
-    var winX2 = winX1 + self.debugWindow.clientWidth;
-    var winY2 = winY1 + self.debugWindow.clientHeight;
+    var winX2 = winX1 + self.debugWindow.clientWidth + resizeBoxSize;
+    var winY2 = winY1 + self.debugWindow.clientHeight + resizeBoxSize;
 
     if (((e.clientX >= winX1) && (e.clientX <= winX2)) && ((e.clientY >= winY1) && (e.clientY <= winY2))) {
       return;
     }
 
     self.status |= DebugJS.STATE_MEASURING;
-    self.measureStartX = e.clientX;
-    self.measureStartY = e.clientY;
+    self.clickedPosX = e.clientX;
+    self.clickedPosY = e.clientY;
 
     if (self.measureBox == null) {
       self.measureBox = document.createElement('div');
@@ -1042,8 +1086,8 @@ DebugJS.prototype = {
       var styles = {};
       styles['#' + self.id + '-mbox'] = {'position': 'fixed'}
       wkStyle = styles['#' + self.id + '-mbox'];
-      wkStyle['top'] = self.measureStartY + 'px';
-      wkStyle['left'] = self.measureStartX + 'px';
+      wkStyle['top'] = self.clickedPosY + 'px';
+      wkStyle['left'] = self.clickedPosX + 'px';
       wkStyle['width'] = '0px';
       wkStyle['height'] = '0px';
       wkStyle['border'] = 'dotted 1px #333';
@@ -1057,8 +1101,8 @@ DebugJS.prototype = {
 
   measure: function(e) {
     var self = Debug;
-    var moveX = e.clientX - self.measureStartX;
-    var moveY = e.clientY - self.measureStartY;
+    var moveX = e.clientX - self.clickedPosX;
+    var moveY = e.clientY - self.clickedPosY;
 
     if (moveX < 0) {
       self.measureBox.style.left = e.clientX + 'px';
@@ -1092,7 +1136,7 @@ DebugJS.prototype = {
 
     var endPointY = 'bottom';
     var endPointX = 'right';
-    if (e.clientX < self.measureStartX) {
+    if (e.clientX < self.clickedPosX) {
       originX = 'right';
       endPointX = 'left';
     }
@@ -1101,7 +1145,7 @@ DebugJS.prototype = {
       endPointY = 'top';
     }
     var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
-    var origin = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.measureStartX + ',y=' + self.measureStartY + '</span>';
+    var origin = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.clickedPosX + ',y=' + self.clickedPosY + '</span>';
     //var endPoint = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
     var endPoint = '';
     self.measureBox.innerHTML = origin + size + endPoint;
