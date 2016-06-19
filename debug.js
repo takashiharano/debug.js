@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606190205';
+  this.v = '201606191635';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -105,13 +105,16 @@ var DebugJS = function() {
   this.cmdHistoryMax = 10;
   this.cmdHistoryIdx = self.cmdHistoryMax;
   this.cmdTmp = '';
+  this.resizeNW = null;
+  this.resizeNE = null;
   this.resizeSE = null;
+  this.resizeSW = null;
   this.resizeOrgWidth = 0;
   this.resizeOrgHeight = 0;
   this.clickedPosX = 0;
   this.clickedPosY = 0;
-  this.moveClickOffsetTop = 0;
-  this.moveClickOffsetLeft = 0;
+  this.orgOffsetTop = 0;
+  this.orgOffsetLeft = 0;
   this.savedFunc = null;
   this.status = 0;
 
@@ -135,13 +138,20 @@ DebugJS.STATE_SHOW_CLOCK = 0x4;
 DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
 DebugJS.STATE_DRAGGABLE = 0x10;
 DebugJS.STATE_DRAGGING = 0x20;
-DebugJS.STATE_RESIZABLE = 0x40;
-DebugJS.STATE_RESIZING = 0x80;
-DebugJS.STATE_MEASURE = 0x100;
-DebugJS.STATE_MEASURING = 0x200;
-DebugJS.STATE_LOG_SUSPENDING = 0x400;
+DebugJS.STATE_RESIZABLE = 0x100;
+DebugJS.STATE_RESIZING = 0x200;
+DebugJS.STATE_RESIZING_N = 0x400;
+DebugJS.STATE_RESIZING_E = 0x800;
+DebugJS.STATE_RESIZING_S = 0x1000;
+DebugJS.STATE_RESIZING_W = 0x2000;
+DebugJS.STATE_RESIZING_ALL = DebugJS.STATE_RESIZING | DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E | DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
+DebugJS.STATE_MEASURE = 0x10000;
+DebugJS.STATE_MEASURING = 0x20000;
+DebugJS.STATE_LOG_SUSPENDING = 0x40000;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 
+DebugJS.DEBUG_WIN_MIN_W = 320;
+DebugJS.DEBUG_WIN_MIN_H = 200;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
 DebugJS.KEY_STATUS_DEFAULT =  '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
@@ -307,9 +317,22 @@ DebugJS.prototype = {
 
     // Resize
     if (self.status & DebugJS.STATE_RESIZABLE) {
+      self.resizeNW = document.createElement('div');
+      self.resizeNW.innerHTML = '<div class="' + self.id  + '-resize-corner" style="top:-3px;left:-3px;cursor:nwse-resize">';
+      self.debugWindow.appendChild(self.resizeNW);
+
+      self.resizeNE = document.createElement('div');
+      self.resizeNE.innerHTML = '<div class="' + self.id  + '-resize-corner" style="top:-3px;right:-3px;cursor:nesw-resize">';
+      self.debugWindow.appendChild(self.resizeNE);
+
       self.resizeSE = document.createElement('div');
       self.resizeSE.innerHTML = '<div class="' + self.id  + '-resize-corner" style="bottom:-3px;right:-3px;cursor:nwse-resize">';
       self.debugWindow.appendChild(self.resizeSE);
+
+      self.resizeSW = document.createElement('div');
+      self.resizeSW.innerHTML = '<div class="' + self.id  + '-resize-corner" style="bottom:-3px;left:-3px;cursor:nesw-resize">';
+      self.debugWindow.appendChild(self.resizeSW);
+
       self.setupResize();
     }
 
@@ -710,8 +733,8 @@ DebugJS.prototype = {
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
     self.status |= DebugJS.STATE_DRAGGING;
     e = (e) || window.event;
-    self.moveClickOffsetTop = e.clientY - self.debugWindow.offsetTop;
-    self.moveClickOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
+    self.orgOffsetTop = e.clientY - self.debugWindow.offsetTop;
+    self.orgOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
     if (!document.all) {
        window.getSelection().removeAllRanges();
     }
@@ -721,32 +744,100 @@ DebugJS.prototype = {
     var self= Debug;
     if (!(self.status & DebugJS.STATE_DRAGGING)) return;
     e = (e) || window.event;
-    self.debugWindow.style.top = e.clientY - self.moveClickOffsetTop + 'px';
-    self.debugWindow.style.left = e.clientX - self.moveClickOffsetLeft + 'px';
+    self.debugWindow.style.top = e.clientY - self.orgOffsetTop + 'px';
+    self.debugWindow.style.left = e.clientX - self.orgOffsetLeft + 'px';
   },
 
   setupResize: function() {
     var self = Debug;
+    self.resizeNW.onmousedown = function(e) {
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_W;
+      self.bodyElm.style.cursor = 'nwse-resize';
+    }
+
+    self.resizeNE.onmousedown = function(e) {
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E;
+      self.bodyElm.style.cursor = 'nesw-resize';
+    }
+
     self.resizeSE.onmousedown = function(e) {
       var self= Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-      self.status |= DebugJS.STATE_RESIZING;
-      e = (e) || window.event;
-      self.resizeOrgWidth = self.debugWindow.offsetWidth;
-      self.resizeOrgHeight = self.debugWindow.offsetHeight;
-      self.clickedPosX = e.clientX;
-      self.clickedPosY = e.clientY;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_E;
       self.bodyElm.style.cursor = 'nwse-resize';
     }
+
+    self.resizeSW.onmousedown = function(e) {
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
+      self.bodyElm.style.cursor = 'nesw-resize';
+    }
+  },
+
+  startResize: function(e) {
+    var self= Debug;
+    e = (e) || window.event;
+    self.status |= DebugJS.STATE_RESIZING;
+    self.clickedPosX = e.clientX;
+    self.clickedPosY = e.clientY;
+    self.orgOffsetTop = self.debugWindow.offsetTop;
+    self.orgOffsetLeft = self.debugWindow.offsetLeft;
+    self.resizeOrgWidth = self.debugWindow.offsetWidth;
+    self.resizeOrgHeight = self.debugWindow.offsetHeight;
   },
 
   resize: function(e) {
     var self= Debug;
+    var moveX, moveY, t, l, w, h;
     e = (e) || window.event;
-    var moveX = e.clientX - self.clickedPosX;
-    var moveY = e.clientY - self.clickedPosY;
-    self.debugWindow.style.width = self.resizeOrgWidth + moveX + 'px';
-    self.debugWindow.style.height = self.resizeOrgHeight + moveY + 'px';
+
+    if (self.status & DebugJS.STATE_RESIZING_N) {
+      moveY = self.clickedPosY - e.clientY;
+      h = self.resizeOrgHeight + moveY;
+      if (h < DebugJS.DEBUG_WIN_MIN_H) {
+        h = DebugJS.DEBUG_WIN_MIN_H;
+      } else {
+        t = self.orgOffsetTop - moveY;
+        self.debugWindow.style.top = t + 'px';
+      }
+      self.debugWindow.style.height = h + 'px';
+    }
+
+    if (self.status & DebugJS.STATE_RESIZING_W) {
+      moveX = self.clickedPosX - e.clientX;
+      w = self.resizeOrgWidth + moveX;
+      if (w < DebugJS.DEBUG_WIN_MIN_W) {
+        w = DebugJS.DEBUG_WIN_MIN_W;
+      } else {
+        l = self.orgOffsetLeft - moveX;
+        self.debugWindow.style.left = l + 'px';
+      }
+      self.debugWindow.style.width = w + 'px';
+    }
+
+    if (self.status & DebugJS.STATE_RESIZING_E) {
+      moveX = e.clientX - self.clickedPosX;
+      w = self.resizeOrgWidth + moveX;
+      if (w < DebugJS.DEBUG_WIN_MIN_W) w = DebugJS.DEBUG_WIN_MIN_W;
+      self.debugWindow.style.width = w + 'px';
+    }
+
+    if (self.status & DebugJS.STATE_RESIZING_S) {
+      moveY = e.clientY - self.clickedPosY;
+      h = self.resizeOrgHeight + moveY;
+      if (h < DebugJS.DEBUG_WIN_MIN_H) h = DebugJS.DEBUG_WIN_MIN_H;
+      self.debugWindow.style.height = h + 'px';
+    }
+
     var adj = 5;
     var msgAreaHeight = self.debugWindow.offsetHeight - self.infoArea.offsetHeight - self.cmdArea.offsetHeight - adj;
     self.msgArea.style.height = msgAreaHeight + 'px';
@@ -1032,7 +1123,7 @@ DebugJS.prototype = {
         self.status &= ~DebugJS.STATE_DRAGGING;
 
         if (self.status & DebugJS.STATE_RESIZING) {
-          self.status &= ~DebugJS.STATE_RESIZING;
+          self.status &= ~DebugJS.STATE_RESIZING_ALL;
           self.bodyElm.style.cursor = 'auto';
         }
         break;
@@ -1431,7 +1522,7 @@ DebugJS.execCmdP = function(args) {
   }
 }
 
-DebugJS.OBJDUMP_MAX = 100;
+DebugJS.OBJDUMP_MAX = 256;
 DebugJS.objDump = function(obj) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
