@@ -5,6 +5,7 @@
 <title>debug.js</title>
 <meta name="description" content="debug.js is an auxiliary JavaScript library for web development.">
 <!--<link rel="stylesheet" type="text/css" href="../foundation.css" />-->
+<link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" />
 <script src="debug.js"></script>
 <style>
 body {
@@ -61,7 +62,7 @@ a:hover {
 .code {
   width: 720px;
   padding: .5em;
-  font-family: Consolas;
+  font-family: "Source Code Pro", Consolas;
   font-size: 9pt;
   color: #aaa;
   background: #111;
@@ -70,7 +71,8 @@ a:hover {
 }
 
 .code1 {
-  font-size: 1.2em;
+  font-family: "Source Code Pro", Consolas;
+  font-size: 1.1em;
   color: #07c;
 }
 
@@ -214,7 +216,7 @@ var h = [
 window.onload = function() {
 //in the absence of this initialization, debug.js works in default configuration.
   var options = {
-    'position': 'center' // left-top, left-bottom, center, right-top, right-bottom
+    'position': 'c'
   };
 
 // If you want to output the logs to a designated area, pass the element id to 'target' option.
@@ -375,8 +377,8 @@ Debug.init(options);
 
   <tr>
     <td class="name">position</td>
-    <td>Default window position (left-top / left-bottom / center / right-top / right-bottom)</td>
-    <td>right-bottom</td>
+    <td>Default window position (nw=left-top / sw=left-bottom / c=center / ne=right-top / se=right-bottom)</td>
+    <td>se</td>
   </tr>
 
   <tr>

@@ -5,14 +5,14 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606191635';
+  this.v = '201606200000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
     'dispLine': 18,
     'buffSize': 100,
     'width': 500,
-    'position': 'right-bottom',
+    'position': 'se',
     'posAdjX': 20,
     'posAdjY': 20,
     'resizable': true,
@@ -105,6 +105,10 @@ var DebugJS = function() {
   this.cmdHistoryMax = 10;
   this.cmdHistoryIdx = self.cmdHistoryMax;
   this.cmdTmp = '';
+  this.resizeN = null;
+  this.resizeE = null;
+  this.resizeS = null;
+  this.resizeW = null;
   this.resizeNW = null;
   this.resizeNE = null;
   this.resizeSE = null;
@@ -317,6 +321,22 @@ DebugJS.prototype = {
 
     // Resize
     if (self.status & DebugJS.STATE_RESIZABLE) {
+      self.resizeN = document.createElement('div');
+      self.resizeN.innerHTML = '<div class="' + self.id  + '-resize-side" style="top:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
+      self.debugWindow.appendChild(self.resizeN);
+
+      self.resizeE = document.createElement('div');
+      self.resizeE.innerHTML = '<div class="' + self.id  + '-resize-side" style="top:0px;right:-3px;width:6px;height:100%;cursor:ew-resize">';
+      self.debugWindow.appendChild(self.resizeE);
+
+      self.resizeS = document.createElement('div');
+      self.resizeS.innerHTML = '<div class="' + self.id  + '-resize-side" style="bottom:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
+      self.debugWindow.appendChild(self.resizeS);
+
+      self.resizeW = document.createElement('div');
+      self.resizeW.innerHTML = '<div class="' + self.id  + '-resize-side" style="top:0px;left:-3px;width:6px;height:100%;cursor:ew-resize">';
+      self.debugWindow.appendChild(self.resizeW);
+
       self.resizeNW = document.createElement('div');
       self.resizeNW.innerHTML = '<div class="' + self.id  + '-resize-corner" style="top:-3px;left:-3px;cursor:nwse-resize">';
       self.debugWindow.appendChild(self.resizeNW);
@@ -386,6 +406,11 @@ DebugJS.prototype = {
       'background': 'rgba(0,0,0,0)'
     };
 
+    styles['.' + self.id + '-resize-side'] = {
+      'position': 'absolute',
+      'background': 'rgba(0,0,0,0)'
+    };
+
     if (self.status & DebugJS.STATE_DYNAMIC) {
       self.setupMove();
 
@@ -402,19 +427,19 @@ DebugJS.prototype = {
         dbgWinHeight = 294;
       }
       switch (self.options.position) {
-        case 'right-bottom':
+        case 'se':
           wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
           wkStyle.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
-        case 'right-top':
+        case 'ne':
           wkStyle.top = self.options.posAdjY + 'px';
           wkStyle.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
-        case 'center':
+        case 'c':
           wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
           wkStyle.left = ((document.documentElement.clientWidth / 2) - (self.options.width / 2)) + 'px';
           break;
-        case 'left-bottom':
+        case 'sw':
           wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
           wkStyle.left = self.options.posAdjX + 'px';
           break;
@@ -750,6 +775,39 @@ DebugJS.prototype = {
 
   setupResize: function() {
     var self = Debug;
+
+    self.resizeN.onmousedown = function(e) {
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_N;
+      self.bodyElm.style.cursor = 'ns-resize';
+    }
+
+    self.resizeE.onmousedown = function(e) {
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_E;
+      self.bodyElm.style.cursor = 'ew-resize';
+    }
+
+    self.resizeS.onmousedown = function(e) {
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_S;
+      self.bodyElm.style.cursor = 'ns-resize';
+    }
+
+    self.resizeW.onmousedown = function(e) {
+      var self= Debug;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= DebugJS.STATE_RESIZING_W;
+      self.bodyElm.style.cursor = 'ew-resize';
+    }
+
     self.resizeNW.onmousedown = function(e) {
       var self= Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
@@ -810,6 +868,7 @@ DebugJS.prototype = {
         self.debugWindow.style.top = t + 'px';
       }
       self.debugWindow.style.height = h + 'px';
+      self.resizeMsgHeight();
     }
 
     if (self.status & DebugJS.STATE_RESIZING_W) {
@@ -836,8 +895,12 @@ DebugJS.prototype = {
       h = self.resizeOrgHeight + moveY;
       if (h < DebugJS.DEBUG_WIN_MIN_H) h = DebugJS.DEBUG_WIN_MIN_H;
       self.debugWindow.style.height = h + 'px';
+      self.resizeMsgHeight();
     }
+  },
 
+  resizeMsgHeight: function() {
+    var self= Debug;
     var adj = 5;
     var msgAreaHeight = self.debugWindow.offsetHeight - self.infoArea.offsetHeight - self.cmdArea.offsetHeight - adj;
     self.msgArea.style.height = msgAreaHeight + 'px';
@@ -1214,8 +1277,8 @@ DebugJS.prototype = {
     var originX = 'left';
     if (moveX < w) {
       sizeX = 0;
-      if ((moveY < h) || (moveY > self.measureStartY)) {
-        if (self.measureStartY < h) {
+      if ((moveY < h) || (moveY > self.clickedPosY)) {
+        if (self.clickedPosY < h) {
           sizeY = moveY;
         } else {
           sizeY = h * (-1);
@@ -1231,7 +1294,7 @@ DebugJS.prototype = {
       originX = 'right';
       endPointX = 'left';
     }
-    if (e.clientY < self.measureStartY) {
+    if (e.clientY < self.clickedPosY) {
       originY = 'bottom';
       endPointY = 'top';
     }
