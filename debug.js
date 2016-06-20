@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606200000';
+  this.v = '201606202120';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -167,8 +167,8 @@ DebugJS.prototype = {
     var self = Debug;
     self.options = self.DEFAULT_OPTIONS;
     if (options) {
-      for (var key in self.options) {
-        for (var key1 in options) {
+      for (var key in options) {
+        for (var key1 in self.options) {
           if (key == key1) {
             self.options[key] = options[key];
             break;
@@ -189,7 +189,7 @@ DebugJS.prototype = {
     self.cmdLineId = self.id + '-cmd';
 
     if (self.options.visible) self.status |= DebugJS.STATE_VISIBLE;
-    if (self.options.resizable) self.status |= DebugJS.STATE_RESIZABLE;
+    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.resizable)) self.status |= DebugJS.STATE_RESIZABLE;
 
     self.bodyElm = document.getElementsByTagName('body')[0];
 
@@ -687,7 +687,7 @@ DebugJS.prototype = {
   // Command-line Area
  initCmdArea: function() {
     var self = Debug;
-    self.cmdArea.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:97% !important;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
+    self.cmdArea.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:96% !important;margin-left:2px;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
     self.cmdLine = document.getElementById(self.cmdLineId);
     self.cmdHistoryBuf = new DebugJS.RingBuffer(10);
   },
