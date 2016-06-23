@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606202120';
+  this.v = '201606240000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -154,8 +154,8 @@ DebugJS.STATE_MEASURING = 0x20000;
 DebugJS.STATE_LOG_SUSPENDING = 0x40000;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 
-DebugJS.DEBUG_WIN_MIN_W = 320;
-DebugJS.DEBUG_WIN_MIN_H = 200;
+DebugJS.DEBUG_WIN_MIN_W = 280;
+DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
 DebugJS.KEY_STATUS_DEFAULT =  '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
@@ -204,7 +204,7 @@ DebugJS.prototype = {
     self.infoArea = document.createElement('div');
     self.debugWindow.appendChild(self.infoArea);
     self.infoArea.innerHTML = '<div style="padding:1px 2px 0px 2px;background:rgba(24,131,215,0);"></div>';
-    if (self.status & DebugJS.STATE_DRAGGABLE) self.infoArea.style.cursor = 'move';
+    if (self.status & DebugJS.STATE_DRAGGABLE) self.infoArea.style.cursor = 'default';
 
     // CLR Button
     if (self.options.showClearButton) {
@@ -310,7 +310,7 @@ DebugJS.prototype = {
     self.msgArea = document.createElement('div');
     self.debugWindow.appendChild(self.msgArea);
     self.msgArea.style.height = self.options.dispLine + '.2em';
-    if (self.status & DebugJS.STATE_DRAGGABLE) self.msgArea.style.cursor = 'move';
+    if (self.status & DebugJS.STATE_DRAGGABLE) self.msgArea.style.cursor = 'default';
 
     // Command Line
     if (self.options.enableCommandLine) {
@@ -565,7 +565,7 @@ DebugJS.prototype = {
 
   // Update Clock
   updateClockArea: function() {
-    var dt = DebugJS.getTime();
+    var dt = DebugJS.getCurrentDateTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
     var msg = '<span style=";font-size:12px;color:' + this.options.clockColor + ';margin-right:10px;">' + tm + '</span>';
     this.clockArea.innerHTML = msg;
@@ -947,8 +947,8 @@ DebugJS.prototype = {
       Debug.msgArea.style.cursor = 'auto';
     } else {
       Debug.status |= DebugJS.STATE_DRAGGABLE;
-      Debug.infoArea.style.cursor = 'move';
-      Debug.msgArea.style.cursor = 'move';
+      Debug.infoArea.style.cursor = 'default';
+      Debug.msgArea.style.cursor = 'default';
     }
     Debug.updatePinBtnArea();
   },
@@ -1504,14 +1504,15 @@ DebugJS.RingBuffer.prototype = {
   }
 };
 
-DebugJS.getTime = function() {
-  var nowDate = new Date();
-  var mm = nowDate.getMonth() + 1;
-  var dd = nowDate.getDate();
-  var hh = nowDate.getHours();
-  var mi = nowDate.getMinutes();
-  var ss = nowDate.getSeconds();
-  var ms = nowDate.getMilliseconds();
+DebugJS.getDateTime = function(dt) {
+  var yyyy = dt.getFullYear();
+  var mm = dt.getMonth() + 1;
+  var dd = dt.getDate();
+  var hh = dt.getHours();
+  var mi = dt.getMinutes();
+  var ss = dt.getSeconds();
+  var ms = dt.getMilliseconds();
+  var wd = dt.getDay();
 
   if (mm < 10) mm = '0' + mm;
   if (dd < 10) dd = '0' + dd;
@@ -1521,14 +1522,18 @@ DebugJS.getTime = function() {
   if (ms < 10) {ms = '00' + ms;}
   else if (ms < 100) {ms = '0' + ms;}
 
-  var dateTime = {'yyyy': nowDate.getFullYear(), 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'ms': ms, 'wday': nowDate.getDay()};
+  var dateTime = {'yyyy': yyyy, 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'ms': ms, 'wday': wd};
   return dateTime;
 }
 
+DebugJS.getCurrentDateTime = function() {
+  return DebugJS.getDateTime(new Date());
+}
+
 DebugJS.time = function() {
-  var dt = DebugJS.getTime();
-  var tm = dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.ms;
-  return tm;
+  var d = DebugJS.getCurrentDateTime();
+  var t = d.hh + ':' + d.mi + ':' + d.ss + '.' + d.ms;
+  return t;
 }
 
 DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
@@ -1585,7 +1590,7 @@ DebugJS.execCmdP = function(args) {
   }
 }
 
-DebugJS.OBJDUMP_MAX = 256;
+DebugJS.OBJDUMP_MAX = 1000;
 DebugJS.objDump = function(obj) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
@@ -1620,7 +1625,7 @@ DebugJS._objDump = function(obj, arg) {
   } else if (obj instanceof Object) {
     arg.cnt++;
     if (typeof obj !== 'function') {
-      arg.dump += '<span style="color:#88f;">[Object]</span> {<br>';
+      arg.dump += '<span style="color:#79f;">[Object]</span> {<br>';
     }
     indent += ' ';
     for (var key in obj) {
