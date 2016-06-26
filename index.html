@@ -606,6 +606,18 @@ Debug.init(options);
     <td></td>
     <td>Output stack trace</td>
   </tr>
+
+  <tr>
+    <td class="name">timeStart</td>
+    <td>timer name</td>
+    <td>Start a timer</td>
+  </tr>
+
+  <tr>
+    <td class="name">timeEnd</td>
+    <td>timer name</td>
+    <td>Print elapsed time of the timer</td>
+  </tr>
 </table>
 <br>
 
@@ -724,6 +736,30 @@ log.stk();<br>
 <span class="button" onclick="log.stk();">log.stk()</span>
 </td>
 </tr>
+
+<tr>
+<td>
+timeStart('timer1');<br>
+<span class="button" onclick="timeStart('timer1');">timerStart()</span>
+</td>
+
+<td>
+timeEnd('timer1');<br>
+<span class="button" onclick="timeEnd('timer1');">timerEnd()</span>
+</td>
+</tr>
+
+<tr>
+<td>
+timeStart('timer2');<br>
+<span class="button" onclick="timeStart('timer2');">timerStart()</span>
+</td>
+
+<td>
+timeEnd('timer2');<br>
+<span class="button" onclick="timeEnd('timer2');">timerEnd()</span>
+</td>
+</tr>
 </table>
 
 <br>
@@ -749,6 +785,19 @@ console.warn('hello');<br>
 console.info('hello');<br>
 <span class="button button-green" onclick="console.info('hello');">console.info()</span>
 </td>
+</tr>
+
+<tr>
+<td>
+console.time('timer3');<br>
+<span class="button button-green" onclick="console.time('timer3');">console.time()</span>
+</td>
+
+<td>
+console.timeEnd('timer3');<br>
+<span class="button button-green" onclick="console.timeEnd('timer3');" style="width:210px;">console.timeEnd()</span>
+</td>
+
 </tr>
 </table>
 

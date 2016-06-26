@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606240000';
+  this.v = '201606260000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -68,7 +68,7 @@ var DebugJS = function() {
   this.swArea = null;
   this.swStartTime = 0;
   this.swElapsedTime = 0;
-  this.elapsedTime = '00:00:00.000';
+  this.swElapsedTimeDisp = '00:00:00.000';
   this.clrBtnArea = null;
   this.suspendLogBtnArea = null;
   this.pinBtnArea = null;
@@ -105,6 +105,7 @@ var DebugJS = function() {
   this.cmdHistoryMax = 10;
   this.cmdHistoryIdx = self.cmdHistoryMax;
   this.cmdTmp = '';
+  this.timers = {};
   this.resizeN = null;
   this.resizeE = null;
   this.resizeS = null;
@@ -656,7 +657,7 @@ DebugJS.prototype = {
   updateSwArea: function() {
     var self = Debug;
     self.updateStopWatch();
-    var msg = '<span style="float:right;margin-right:10px;">' + this.elapsedTime + '</span>';
+    var msg = '<span style="float:right;margin-right:10px;">' + this.swElapsedTimeDisp + '</span>';
     self.swArea.innerHTML = msg;
 
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
@@ -973,13 +974,13 @@ DebugJS.prototype = {
     var self = Debug;
     var swCurrentTime = (new Date()).getTime();
     self.swElapsedTime = swCurrentTime - self.swStartTime;
-    self.elapsedTime = DebugJS.getPassedTimeStr(self.swElapsedTime);
+    self.swElapsedTimeDisp = DebugJS.getTimerStr(self.swElapsedTime);
   },
 
   resetStopwatch: function() {
     var self = Debug;
     self.swStartTime = (new Date()).getTime();
-    self.elapsedTime = DebugJS.getPassedTimeStr(0);
+    self.swElapsedTimeDisp = DebugJS.getTimerStr(0);
     self.swElapsedTime = 0;
     self.updateSwArea();
   },
@@ -1536,7 +1537,7 @@ DebugJS.time = function() {
   return t;
 }
 
-DebugJS.getPassedTimeStr = function(swPassedTimeMsec) {
+DebugJS.getTimerStr = function(swPassedTimeMsec) {
   var passedTimeSec = Math.floor((swPassedTimeMsec) / 1000);
   var wkPassedTimeSec = passedTimeSec;
 
@@ -1879,6 +1880,23 @@ log.stk = function() {
   DebugJS.log(err.stack);
 }
 
+timeStart = function(timerName) {
+  Debug.timers[timerName] = {};
+  Debug.timers[timerName].start = (new Date());
+  DebugJS.log(timerName + ': timer started');
+}
+
+timeEnd = function(timerName) {
+  if (!Debug.timers[timerName]) {
+    DebugJS.log.w(timerName + ': timer undefined');
+    return;
+  }
+  Debug.timers[timerName].end = new Date();
+  var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
+  var elapsed = DebugJS.getTimerStr(delta);
+  DebugJS.log(timerName + ': ' + elapsed);
+}
+
 var Debug = new DebugJS();
 
 if(DebugJS.CATCH_ALL_ERRORS){window.onerror=function (msg,file,line,col,err){log.e(msg+' '+file+'('+line+':'+col+')');};}
@@ -1888,6 +1906,8 @@ console.log=function(x){log(x);}
 console.info=function(x){log.i(x);}
 console.warn=function(x){log.w(x);}
 console.error=function(x){log.e(x);}
+console.time=function(x){timeStart(x);}
+console.timeEnd=function(x){timeEnd(x);}
 }
 
 if(!DebugJS.ENABLE){
