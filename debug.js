@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606260000';
+  this.v = '201606280000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1920,4 +1920,6 @@ log.v=function(x){};
 log.s=function(x){};
 log.p=function(x){};
 log.stk=function(){};
+timeStart=function(x){};
+timeEnd=function(x){};
 }
