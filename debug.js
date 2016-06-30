@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201606280000';
+  this.v = '201607010000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -130,6 +130,7 @@ var DebugJS = function() {
     {'cmd': 'history', 'fnc': this.cmdHistory},
     {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
+    {'cmd': 'time', 'fnc': this.cmdTime, 'usage': 'time &lt;start/end&gt; &lt;timer name&gt;'},
     {'cmd': 'v', 'fnc': this.cmdV}
   ];
 }
@@ -688,7 +689,7 @@ DebugJS.prototype = {
   // Command-line Area
  initCmdArea: function() {
     var self = Debug;
-    self.cmdArea.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:96% !important;margin-left:2px;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
+    self.cmdArea.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:calc(100% - 12px) !important;margin-left:2px;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
     self.cmdLine = document.getElementById(self.cmdLineId);
     self.cmdHistoryBuf = new DebugJS.RingBuffer(10);
   },
@@ -1386,6 +1387,7 @@ DebugJS.prototype = {
     str += 'help     Displays available command list.<br>';
     str += 'history  Displays command history.<br>';
     str += 'rgb      Convert RGB color values between HEX and DEC.<br>';
+    str += 'time     Time test.<br>';
     str += 'v        Displays version info.<br>';
     DebugJS.log(str);
   },
@@ -1428,6 +1430,31 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.convRGB(args);
+    }
+  },
+
+  cmdTime: function(args, tbl) {
+    if (args == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else if (args == 'list') {
+      DebugJS.timeList();
+    } else {
+      var a = args.match(/([^\s]{1,})\s(.*)/);
+      if (a == null) {
+        DebugJS.printUsage(tbl.usage);
+      } else {
+        switch (a[1]) {
+          case 'start':
+            DebugJS.timeStart(a[2]);
+            break;
+          case 'end':
+            DebugJS.timeEnd(a[2]);
+            break;
+          default:
+            DebugJS.printUsage(tbl.usage);
+            break;
+        }
+      }
     }
   },
 
@@ -1763,6 +1790,35 @@ DebugJS.convBIN = function(v2) {
   DebugJS.log(res);
 }
 
+DebugJS.timeStart = function(timerName) {
+  Debug.timers[timerName] = {};
+  Debug.timers[timerName].start = (new Date());
+  DebugJS.log(timerName + ': timer started');
+}
+
+DebugJS.timeEnd = function(timerName) {
+  if (!Debug.timers[timerName]) {
+    DebugJS.log.w(timerName + ': timer undefined');
+    return;
+  }
+  Debug.timers[timerName].end = new Date();
+  var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
+  var elapsed = DebugJS.getTimerStr(delta);
+  DebugJS.log(timerName + ': ' + elapsed);
+}
+
+DebugJS.timeList = function() {
+  var l = 'Time List:<br>';
+  if (Object.keys(Debug.timers).length == 0) {
+    l += '<span style="color:#ccc;">no timers</span>';
+  } else {
+    for (var key in Debug.timers) {
+      l += key + '<br>';
+    }
+  }
+  DebugJS.log(l);
+}
+
 DebugJS.log = function(m) {
   m = DebugJS.log.init(m);
   DebugJS.log.out(m, null);
@@ -1876,25 +1932,17 @@ log.p = function(o) {
 }
 
 log.stk = function() {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   var err = new Error();
   DebugJS.log(err.stack);
 }
 
 timeStart = function(timerName) {
-  Debug.timers[timerName] = {};
-  Debug.timers[timerName].start = (new Date());
-  DebugJS.log(timerName + ': timer started');
+  DebugJS.timeStart(timerName);
 }
 
 timeEnd = function(timerName) {
-  if (!Debug.timers[timerName]) {
-    DebugJS.log.w(timerName + ': timer undefined');
-    return;
-  }
-  Debug.timers[timerName].end = new Date();
-  var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
-  var elapsed = DebugJS.getTimerStr(delta);
-  DebugJS.log(timerName + ': ' + elapsed);
+  DebugJS.timeEnd(timerName);
 }
 
 var Debug = new DebugJS();
