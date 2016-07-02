@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607010000';
+  this.v = '201607020000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -124,14 +124,14 @@ var DebugJS = function() {
   this.status = 0;
 
   this.CMD_TBL = [
-    {'cmd': 'cls', 'fnc': this.cmdCls},
-    {'cmd': 'exit', 'fnc': this.cmdExit},
-    {'cmd': 'help', 'fnc': this.cmdHelp},
-    {'cmd': 'history', 'fnc': this.cmdHistory},
-    {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;'},
-    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
-    {'cmd': 'time', 'fnc': this.cmdTime, 'usage': 'time &lt;start/end&gt; &lt;timer name&gt;'},
-    {'cmd': 'v', 'fnc': this.cmdV}
+    {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
+    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window.'},
+    {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
+    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
+    {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;', 'desc': 'Print object.'},
+    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;', 'desc': 'Convert RGB color values between HEX and DEC.'},
+    {'cmd': 'time', 'fnc': this.cmdTime, 'usage': 'time &lt;start/split/end&gt; &lt;timer name&gt;', 'desc': 'Time test.'},
+    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
 }
 DebugJS.ENABLE = true;
@@ -1381,14 +1381,11 @@ DebugJS.prototype = {
 
   cmdHelp: function(args, tbl) {
     var str = 'Available Commands:<br>';
-    str += 'cls      Clear log message.<br>';
-    str += 'exit     Close the debug window.<br>';
-    str += 'p        Print object.<br>';
-    str += 'help     Displays available command list.<br>';
-    str += 'history  Displays command history.<br>';
-    str += 'rgb      Convert RGB color values between HEX and DEC.<br>';
-    str += 'time     Time test.<br>';
-    str += 'v        Displays version info.<br>';
+    str += '<table>';
+    for (var i=0; i<Debug.CMD_TBL.length; i++) {
+      str += '<tr><td>' + Debug.CMD_TBL[i].cmd + '</td><td>' + Debug.CMD_TBL[i].desc + '</td></tr>';
+    }
+    str += '</table>';
     DebugJS.log(str);
   },
 
@@ -1446,6 +1443,9 @@ DebugJS.prototype = {
         switch (a[1]) {
           case 'start':
             DebugJS.timeStart(a[2]);
+            break;
+          case 'split':
+            DebugJS.timeSplit(a[2]);
             break;
           case 'end':
             DebugJS.timeEnd(a[2]);
@@ -1796,27 +1796,42 @@ DebugJS.timeStart = function(timerName) {
   DebugJS.log(timerName + ': timer started');
 }
 
+DebugJS.timeSplit = function(timerName) {
+  if (!Debug.timers[timerName]) {
+    DebugJS.log.w(timerName + ': timer undefined');
+    return;
+  }
+  DebugJS.log(timerName + ': ' + DebugJS.timer(timerName));
+}
+
 DebugJS.timeEnd = function(timerName) {
   if (!Debug.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
     return;
   }
-  Debug.timers[timerName].end = new Date();
-  var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
-  var elapsed = DebugJS.getTimerStr(delta);
-  DebugJS.log(timerName + ': ' + elapsed);
+  DebugJS.timeSplit(timerName);
+  delete Debug.timers[timerName];
 }
 
 DebugJS.timeList = function() {
-  var l = 'Time List:<br>';
+  var l = '<br>';
   if (Object.keys(Debug.timers).length == 0) {
     l += '<span style="color:#ccc;">no timers</span>';
   } else {
+    l += '<table>';
     for (var key in Debug.timers) {
-      l += key + '<br>';
+      l += '<tr><td>' + key + '</td><td>' + DebugJS.timer(key) + '</td></tr>';
     }
+    l += '</table>';
   }
   DebugJS.log(l);
+}
+
+DebugJS.timer = function(timerName) {
+  Debug.timers[timerName].end = new Date();
+  var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
+  var elapsed = DebugJS.getTimerStr(delta);
+  return elapsed;
 }
 
 DebugJS.log = function(m) {
@@ -1941,6 +1956,10 @@ timeStart = function(timerName) {
   DebugJS.timeStart(timerName);
 }
 
+timeSplit = function(timerName) {
+  DebugJS.timeSplit(timerName);
+}
+
 timeEnd = function(timerName) {
   DebugJS.timeEnd(timerName);
 }
@@ -1969,5 +1988,6 @@ log.s=function(x){};
 log.p=function(x){};
 log.stk=function(){};
 timeStart=function(x){};
+timeSplit=function(x){};
 timeEnd=function(x){};
 }

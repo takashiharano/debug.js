@@ -249,7 +249,7 @@ window.onload = function() {
   log('Here is the log output example!');
   log('The window\'s load event fired.');
 
-  setTimeout(displayMessages, 1000);
+  setTimeout(displayMessages, 500);
 }
 
 document.onkeydown = function(e) {
@@ -615,9 +615,15 @@ Debug.init(options);
   </tr>
 
   <tr>
-    <td class="name">timeEnd</td>
+    <td class="name">timeSplit</td>
     <td>timer name</td>
     <td>Print elapsed time of the timer</td>
+  </tr>
+
+  <tr>
+    <td class="name">timeEnd</td>
+    <td>timer name</td>
+    <td>Print elapsed time of the timer and clear.</td>
   </tr>
 </table>
 <br>
@@ -676,7 +682,7 @@ $ rgb 255 255 255
 
   <tr>
     <td class="name">time</td>
-    <td>start/end, timer name</td>
+    <td>start/split/end, timer name</td>
     <td>Time test.</td>
   </tr>
 
@@ -747,24 +753,34 @@ log.stk();<br>
 <tr>
 <td>
 timeStart('timer1');<br>
-<span class="button" onclick="timeStart('timer1');">timerStart()</span>
+<span class="button" onclick="timeStart('timer1');">timeStart()</span>
+</td>
+
+<td>
+timeSplit('timer1');<br>
+<span class="button" onclick="timeSplit('timer1');">timeSplit()</span>
 </td>
 
 <td>
 timeEnd('timer1');<br>
-<span class="button" onclick="timeEnd('timer1');">timerEnd()</span>
+<span class="button" onclick="timeEnd('timer1');">timeEnd()</span>
 </td>
 </tr>
 
 <tr>
 <td>
 timeStart('timer2');<br>
-<span class="button" onclick="timeStart('timer2');">timerStart()</span>
+<span class="button" onclick="timeStart('timer2');">timeStart()</span>
+</td>
+
+<td>
+timeSplit('timer2');<br>
+<span class="button" onclick="timeSplit('timer2');">timeSplit()</span>
 </td>
 
 <td>
 timeEnd('timer2');<br>
-<span class="button" onclick="timeEnd('timer2');">timerEnd()</span>
+<span class="button" onclick="timeEnd('timer2');">timeEnd()</span>
 </td>
 </tr>
 </table>
