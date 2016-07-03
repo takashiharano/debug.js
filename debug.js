@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607020000';
+  this.v = '201607021400';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1663,6 +1663,9 @@ DebugJS._objDump = function(obj, arg) {
           arg.dump += ' {';
         }
         arg.dump += '<br>';
+      } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
+        arg.dump += indent + key + ': <span style="color:#f80;">[Date]</span> ' + obj[key] + '<br>';
+        continue;
       } else {
         arg.dump += indent + key + ': ';
       }
