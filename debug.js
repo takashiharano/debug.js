@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607030000';
+  this.v = '201607090000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -133,7 +133,7 @@ var DebugJS = function() {
     {'cmd': 'time', 'fnc': this.cmdTime, 'usage': 'time &lt;start/split/end&gt; &lt;timer name&gt;', 'desc': 'Time test.'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
-}
+};
 DebugJS.ENABLE = true;
 DebugJS.CATCH_ALL_ERRORS = true;
 DebugJS.UNIFY_CONSOLE = false;
@@ -160,11 +160,11 @@ DebugJS.DEBUG_WIN_MIN_W = 280;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
-DebugJS.KEY_STATUS_DEFAULT =  '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
+DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 
 DebugJS.prototype = {
-  init:  function(options) {
+  init: function(options) {
     if(!DebugJS.ENABLE){return;}
     var self = Debug;
     self.options = self.DEFAULT_OPTIONS;
@@ -324,35 +324,35 @@ DebugJS.prototype = {
     // Resize
     if (self.status & DebugJS.STATE_RESIZABLE) {
       self.resizeN = document.createElement('div');
-      self.resizeN.innerHTML = '<div class="' + self.id  + '-resize-side" style="top:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
+      self.resizeN.innerHTML = '<div class="' + self.id + '-resize-side" style="top:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
       self.debugWindow.appendChild(self.resizeN);
 
       self.resizeE = document.createElement('div');
-      self.resizeE.innerHTML = '<div class="' + self.id  + '-resize-side" style="top:0px;right:-3px;width:6px;height:100%;cursor:ew-resize">';
+      self.resizeE.innerHTML = '<div class="' + self.id + '-resize-side" style="top:0px;right:-3px;width:6px;height:100%;cursor:ew-resize">';
       self.debugWindow.appendChild(self.resizeE);
 
       self.resizeS = document.createElement('div');
-      self.resizeS.innerHTML = '<div class="' + self.id  + '-resize-side" style="bottom:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
+      self.resizeS.innerHTML = '<div class="' + self.id + '-resize-side" style="bottom:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
       self.debugWindow.appendChild(self.resizeS);
 
       self.resizeW = document.createElement('div');
-      self.resizeW.innerHTML = '<div class="' + self.id  + '-resize-side" style="top:0px;left:-3px;width:6px;height:100%;cursor:ew-resize">';
+      self.resizeW.innerHTML = '<div class="' + self.id + '-resize-side" style="top:0px;left:-3px;width:6px;height:100%;cursor:ew-resize">';
       self.debugWindow.appendChild(self.resizeW);
 
       self.resizeNW = document.createElement('div');
-      self.resizeNW.innerHTML = '<div class="' + self.id  + '-resize-corner" style="top:-3px;left:-3px;cursor:nwse-resize">';
+      self.resizeNW.innerHTML = '<div class="' + self.id + '-resize-corner" style="top:-3px;left:-3px;cursor:nwse-resize">';
       self.debugWindow.appendChild(self.resizeNW);
 
       self.resizeNE = document.createElement('div');
-      self.resizeNE.innerHTML = '<div class="' + self.id  + '-resize-corner" style="top:-3px;right:-3px;cursor:nesw-resize">';
+      self.resizeNE.innerHTML = '<div class="' + self.id + '-resize-corner" style="top:-3px;right:-3px;cursor:nesw-resize">';
       self.debugWindow.appendChild(self.resizeNE);
 
       self.resizeSE = document.createElement('div');
-      self.resizeSE.innerHTML = '<div class="' + self.id  + '-resize-corner" style="bottom:-3px;right:-3px;cursor:nwse-resize">';
+      self.resizeSE.innerHTML = '<div class="' + self.id + '-resize-corner" style="bottom:-3px;right:-3px;cursor:nwse-resize">';
       self.debugWindow.appendChild(self.resizeSE);
 
       self.resizeSW = document.createElement('div');
-      self.resizeSW.innerHTML = '<div class="' + self.id  + '-resize-corner" style="bottom:-3px;left:-3px;cursor:nesw-resize">';
+      self.resizeSW.innerHTML = '<div class="' + self.id + '-resize-corner" style="bottom:-3px;left:-3px;cursor:nesw-resize">';
       self.debugWindow.appendChild(self.resizeSW);
 
       self.setupResize();
@@ -375,7 +375,7 @@ DebugJS.prototype = {
 
     styles['#' + self.id + ' pre'] = {
       'white-space': 'pre-wrap',
-      'word-break': 'break-all', 
+      'word-break': 'break-all',
       'font-size': self.STYLE['font-size'],
       'font-family': self.STYLE['font-family'],
       'color': self.STYLE['color'],
@@ -683,7 +683,7 @@ DebugJS.prototype = {
   // Close Button
   initCloseBtnArea: function() {
     var self = Debug;
-    self.closeBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</span>'
+    self.closeBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:22px;color:#888;" onclick="Debug.hideDebugWindow();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</span>';
   },
 
   // Command-line Area
@@ -741,7 +741,7 @@ DebugJS.prototype = {
         var propImportant = '';
         if (propVal[1] === true) {
           propVal = propVal[0];
-          propImportant = ' !important'
+          propImportant = ' !important';
         }
         propStr += propName + ':' + propVal + propImportant + ';\n';
       }
@@ -756,7 +756,7 @@ DebugJS.prototype = {
   },
 
   startWindowMove: function(e) {
-    var self= Debug;
+    var self = Debug;
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
     self.status |= DebugJS.STATE_DRAGGING;
     e = (e) || window.event;
@@ -768,7 +768,7 @@ DebugJS.prototype = {
   },
 
   windowMove: function(e) {
-    var self= Debug;
+    var self = Debug;
     if (!(self.status & DebugJS.STATE_DRAGGING)) return;
     e = (e) || window.event;
     self.debugWindow.style.top = e.clientY - self.orgOffsetTop + 'px';
@@ -779,72 +779,72 @@ DebugJS.prototype = {
     var self = Debug;
 
     self.resizeN.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N;
       self.bodyElm.style.cursor = 'ns-resize';
-    }
+    };
 
     self.resizeE.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_E;
       self.bodyElm.style.cursor = 'ew-resize';
-    }
+    };
 
     self.resizeS.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S;
       self.bodyElm.style.cursor = 'ns-resize';
-    }
+    };
 
     self.resizeW.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_W;
       self.bodyElm.style.cursor = 'ew-resize';
-    }
+    };
 
     self.resizeNW.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_W;
       self.bodyElm.style.cursor = 'nwse-resize';
-    }
+    };
 
     self.resizeNE.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E;
       self.bodyElm.style.cursor = 'nesw-resize';
-    }
+    };
 
     self.resizeSE.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_E;
       self.bodyElm.style.cursor = 'nwse-resize';
-    }
+    };
 
     self.resizeSW.onmousedown = function(e) {
-      var self= Debug;
+      var self = Debug;
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
       self.bodyElm.style.cursor = 'nesw-resize';
-    }
+    };
   },
 
   startResize: function(e) {
-    var self= Debug;
+    var self = Debug;
     e = (e) || window.event;
     self.status |= DebugJS.STATE_RESIZING;
     self.clickedPosX = e.clientX;
@@ -856,7 +856,7 @@ DebugJS.prototype = {
   },
 
   resize: function(e) {
-    var self= Debug;
+    var self = Debug;
     var moveX, moveY, t, l, w, h;
     e = (e) || window.event;
 
@@ -902,7 +902,7 @@ DebugJS.prototype = {
   },
 
   resizeMsgHeight: function() {
-    var self= Debug;
+    var self = Debug;
     var adj = 5;
     var msgAreaHeight = self.debugWindow.offsetHeight - self.infoArea.offsetHeight - self.cmdArea.offsetHeight - adj;
     self.msgArea.style.height = msgAreaHeight + 'px';
@@ -1059,7 +1059,7 @@ DebugJS.prototype = {
             self.cmdHistoryIdx++;
           }
           if (self.cmdHistoryIdx == cmds.length) {
-            self.cmdLine.value =  self.cmdTmp;
+            self.cmdLine.value = self.cmdTmp;
           } else {
             self.cmdLine.value = cmds[self.cmdHistoryIdx];
           }
@@ -1095,10 +1095,10 @@ DebugJS.prototype = {
     var metaKey = DebugJS.checkMetaKey(e);
     self.keyDownCode = e.keyCode + metaKey;
     self.updateKeyDownArea();
-  
+
     self.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
     self.updateKeyPressArea();
-  
+
     self.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
     self.updateKeyUpArea();
   },
@@ -1240,7 +1240,7 @@ DebugJS.prototype = {
       self.measureBox.id = self.id + '-mbox';
       self.bodyElm.appendChild(self.measureBox);
       var styles = {};
-      styles['#' + self.id + '-mbox'] = {'position': 'fixed'}
+      styles['#' + self.id + '-mbox'] = {'position': 'fixed'};
       wkStyle = styles['#' + self.id + '-mbox'];
       wkStyle['top'] = self.clickedPosY + 'px';
       wkStyle['left'] = self.clickedPosX + 'px';
@@ -1265,7 +1265,7 @@ DebugJS.prototype = {
       moveX *= -1;
     }
     if (moveY < 0) {
-      self.measureBox.style.top = e.clientY+ 'px';
+      self.measureBox.style.top = e.clientY + 'px';
       moveY *= -1;
     }
     self.measureBox.style.width = moveX + 'px';
@@ -1273,8 +1273,8 @@ DebugJS.prototype = {
 
     var w = 210;
     var h = 40;
-    var sizeY = (moveY / 2) - (h /2);
-    var sizeX = (moveX / 2) - (w /2);
+    var sizeY = (moveY / 2) - (h / 2);
+    var sizeX = (moveX / 2) - (w / 2);
     var originY = 'top';
     var originX = 'left';
     if (moveX < w) {
@@ -1344,10 +1344,10 @@ DebugJS.prototype = {
     var cmd = wkCL, args = '';
     if (cmds != null) {
       cmd = cmds[1];
-      args = cmds[2]
+      args = cmds[2];
     }
     var found = false;
-    for (var i=0; i<self.CMD_TBL.length; i++) {
+    for (var i = 0; i < self.CMD_TBL.length; i++) {
       if (cmd == self.CMD_TBL[i].cmd) {
         found = true;
         self.CMD_TBL[i].fnc(args, self.CMD_TBL[i]);
@@ -1363,7 +1363,7 @@ DebugJS.prototype = {
       try {
         DebugJS.log(eval(cl));
       } catch (e) {
-        log.e(e)
+        log.e(e);
       }
     }
   },
@@ -1382,7 +1382,7 @@ DebugJS.prototype = {
   cmdHelp: function(args, tbl) {
     var str = 'Available Commands:<br>';
     str += '<table>';
-    for (var i=0; i<Debug.CMD_TBL.length; i++) {
+    for (var i = 0; i < Debug.CMD_TBL.length; i++) {
       str += '<tr><td>' + Debug.CMD_TBL[i].cmd + '</td><td>' + Debug.CMD_TBL[i].desc + '</td></tr>';
     }
     str += '</table>';
@@ -1393,7 +1393,7 @@ DebugJS.prototype = {
     var self = Debug;
     var buf = self.cmdHistoryBuf.getAll();
     var str = 'Command History:<br>';
-    for (var i=0; i< (buf.length - 1); i++) {
+    for (var i = 0; i < (buf.length - 1); i++) {
       str += buf[i] + '<br>';
     }
     DebugJS.log(str);
@@ -1552,17 +1552,17 @@ DebugJS.getDateTime = function(dt) {
 
   var dateTime = {'yyyy': yyyy, 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'ms': ms, 'wday': wd};
   return dateTime;
-}
+};
 
 DebugJS.getCurrentDateTime = function() {
   return DebugJS.getDateTime(new Date());
-}
+};
 
 DebugJS.time = function() {
   var d = DebugJS.getCurrentDateTime();
   var t = d.hh + ':' + d.mi + ':' + d.ss + '.' + d.ms;
   return t;
-}
+};
 
 DebugJS.getTimerStr = function(swPassedTimeMsec) {
   var passedTimeSec = Math.floor((swPassedTimeMsec) / 1000);
@@ -1578,7 +1578,7 @@ DebugJS.getTimerStr = function(swPassedTimeMsec) {
   }
 
   if (wkPassedTimeSec >= 60) {
-    passedMin  = Math.floor((wkPassedTimeSec / 60));
+    passedMin = Math.floor((wkPassedTimeSec / 60));
     wkPassedTimeSec = (wkPassedTimeSec - (passedMin * 60));
   } else {
     passedMin = 0;
@@ -1595,7 +1595,7 @@ DebugJS.getTimerStr = function(swPassedTimeMsec) {
 
   var retStr = passedHour + ':' + passedMin + ':' + passedSec + '.' + passedMsec;
   return retStr;
-}
+};
 
 DebugJS.checkMetaKey = function(e) {
   var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
@@ -1603,11 +1603,11 @@ DebugJS.checkMetaKey = function(e) {
   var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
   var metaKey = ' <span style="color:' + shift + ';">S</span><span style="color:' + ctrl + ';">C</span><span style="color:' + alt + ';">A</span>';
   return metaKey;
-}
+};
 
 DebugJS.execCmdP = function(args) {
   var objs = args.split(' ');
-  for (var i=0; i<objs.length; i++) {
+  for (var i = 0; i < objs.length; i++) {
     if (objs[i] == '') continue;
     var command = 'DebugJS.buf="<br>' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log(DebugJS.buf);';
     try {
@@ -1616,7 +1616,7 @@ DebugJS.execCmdP = function(args) {
       DebugJS.log.e(e);
     }
   }
-}
+};
 
 DebugJS.OBJDUMP_MAX = 1000;
 DebugJS.objDump = function(obj) {
@@ -1629,7 +1629,7 @@ DebugJS.objDump = function(obj) {
     log.w('The object is too large. (' + ret.cnt + ')');
   }
   return ret.dump;
-}
+};
 
 DebugJS._objDump = function(obj, arg) {
   if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
@@ -1639,7 +1639,7 @@ DebugJS._objDump = function(obj, arg) {
     return arg;
   }
   var indent = '';
-  for (var i=0; i<arg.lv; i++) {
+  for (var i = 0; i < arg.lv; i++) {
     indent += ' ';
   }
   if (obj instanceof Array) {
@@ -1694,7 +1694,7 @@ DebugJS._objDump = function(obj, arg) {
     arg.dump += obj + '<br>'; arg.cnt++;
   }
   return arg;
-}
+};
 
 DebugJS.digits = function(x) {
   var digit = 0;
@@ -1702,24 +1702,24 @@ DebugJS.digits = function(x) {
     x = (x / 10) << 0; digit++;
   }
   return digit;
-}
+};
 
 DebugJS.printUsage = function(m) {
   DebugJS.log('Usage: ' + m);
-}
+};
 
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
 DebugJS.convRGB = function(v) {
   var rgb;
-  if (v.indexOf("#") == 0) {
+  if (v.indexOf('#') == 0) {
     rgb = DebugJS.convRGB16to10(v);
   } else {
     rgb = DebugJS.convRGB10to16(v);
   }
   DebugJS.log(rgb);
-}
+};
 
 DebugJS.convRGB16to10 = function(rgb16) {
   var r16, g16, b16, r10, g10, b10;
@@ -1743,7 +1743,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
   b10 = parseInt(b16, 16);
   var rgb10 = '<span style="vertical-align:middle;display:inline-block;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:8px;height:8px;margin-top:2px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
   return rgb10;
-}
+};
 
 DebugJS.convRGB10to16 = function(rgb10) {
   rgb10 = rgb10.replace(/\s{2,}/g, ' ');
@@ -1761,7 +1761,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
   }
   var rgb16 = '<span style="vertical-align:middle;display:inline-block;"><span style="background:#' + r16 + g16 + b16 + ';width:8px;height:8px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   return rgb16;
-}
+};
 
 DebugJS.convHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
@@ -1771,7 +1771,7 @@ DebugJS.convHEX = function(v16) {
   res += 'DEC ' + v10 + '<br>';
   res += 'BIN ' + v2 + '<br>';
   DebugJS.log(res);
-}
+};
 
 DebugJS.convDEC = function(v10) {
   var v2 = parseInt(v10).toString(2);
@@ -1781,7 +1781,7 @@ DebugJS.convDEC = function(v10) {
   res += 'HEX ' + v16 + '<br>';
   res += 'BIN ' + v2 + '<br>';
   DebugJS.log(res);
-}
+};
 
 DebugJS.convBIN = function(v2) {
   var v10 = parseInt(v2, 2).toString(10);
@@ -1791,13 +1791,13 @@ DebugJS.convBIN = function(v2) {
   res += 'DEC ' + v10 + '<br>';
   res += 'HEX ' + v16 + '<br>';
   DebugJS.log(res);
-}
+};
 
 DebugJS.timeStart = function(timerName) {
   Debug.timers[timerName] = {};
   Debug.timers[timerName].start = (new Date());
   DebugJS.log(timerName + ': timer started');
-}
+};
 
 DebugJS.timeSplit = function(timerName) {
   if (!Debug.timers[timerName]) {
@@ -1805,7 +1805,7 @@ DebugJS.timeSplit = function(timerName) {
     return;
   }
   DebugJS.log(timerName + ': ' + DebugJS.timer(timerName));
-}
+};
 
 DebugJS.timeEnd = function(timerName) {
   if (!Debug.timers[timerName]) {
@@ -1814,7 +1814,7 @@ DebugJS.timeEnd = function(timerName) {
   }
   DebugJS.timeSplit(timerName);
   delete Debug.timers[timerName];
-}
+};
 
 DebugJS.timeList = function() {
   var l = '<br>';
@@ -1828,61 +1828,61 @@ DebugJS.timeList = function() {
     l += '</table>';
   }
   DebugJS.log(l);
-}
+};
 
 DebugJS.timer = function(timerName) {
   Debug.timers[timerName].end = new Date();
   var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
   var elapsed = DebugJS.getTimerStr(delta);
   return elapsed;
-}
+};
 
 DebugJS.log = function(m) {
   m = DebugJS.log.init(m);
   DebugJS.log.out(m, null);
-}
+};
 
 DebugJS.log.e = function(m) {
   m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.errorColor + ';';
   DebugJS.log.out(m, style);
-}
+};
 
 DebugJS.log.w = function(m) {
   m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.warnColor + ';';
   DebugJS.log.out(m, style);
-}
+};
 
 DebugJS.log.i = function(m) {
   m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.infoColor + ';';
   DebugJS.log.out(m, style);
-}
+};
 
 DebugJS.log.d = function(m) {
   m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.debugColor + ';';
   DebugJS.log.out(m, style);
-}
+};
 
 DebugJS.log.v = function(m) {
   m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.verboseColor + ';';
   DebugJS.log.out(m, style);
-}
+};
 
 DebugJS.log.s = function(m) {
   m = DebugJS.log.init(m);
   var style = 'color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;';
   DebugJS.log.out(m, style);
-}
+};
 
 DebugJS.log.p = function(o) {
   var m = DebugJS.log.init(null);
   var m = '<br>' + DebugJS.objDump(o);
   DebugJS.log.out(m, null);
-}
+};
 
 DebugJS.log.init = function(m) {
   if (!Debug.isInitialized()) {
@@ -1892,7 +1892,7 @@ DebugJS.log.init = function(m) {
     Debug.initDebugWindow();
   }
   return m;
-}
+};
 
 DebugJS.log.out = function(m, style) {
   if (m != null) {
@@ -1907,69 +1907,69 @@ DebugJS.log.out = function(m, style) {
     Debug.msgBuf.add(m);
   }
   Debug.printMessage();
-}
+};
 
 var log = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log(m);
-}
+};
 
 log.e = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.e(m);
-}
+};
 
 log.w = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.w(m);
-}
+};
 
 log.i = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.i(m);
-}
+};
 
 log.d = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.d(m);
-}
+};
 
 log.v = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.v(m);
-}
+};
 
 log.s = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.s(m);
-}
+};
 
 log.p = function(o) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.p(o);
-}
+};
 
 log.stk = function() {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   var err = new Error();
   DebugJS.log(err.stack);
-}
+};
 
 timeStart = function(timerName) {
   DebugJS.timeStart(timerName);
-}
+};
 
 timeSplit = function(timerName) {
   DebugJS.timeSplit(timerName);
-}
+};
 
 timeEnd = function(timerName) {
   DebugJS.timeEnd(timerName);
-}
+};
 
 var Debug = new DebugJS();
 
-if(DebugJS.CATCH_ALL_ERRORS){window.onerror=function (msg,file,line,col,err){log.e(msg+' '+file+'('+line+':'+col+')');};}
+if(DebugJS.CATCH_ALL_ERRORS){window.onerror=function(msg,file,line,col,err){log.e(msg+' '+file+'('+line+':'+col+')');};}
 
 if(DebugJS.UNIFY_CONSOLE){
 console.log=function(x){log(x);}
