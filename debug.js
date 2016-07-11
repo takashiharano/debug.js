@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607090000';
+  this.v = '201607110000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -128,9 +128,10 @@ var DebugJS = function() {
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window.'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
-    {'cmd': 'p', 'fnc': this.cmdP, 'usage': 'p &lt;object&gt;', 'desc': 'Print object.'},
-    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;', 'desc': 'Convert RGB color values between HEX and DEC.'},
-    {'cmd': 'time', 'fnc': this.cmdTime, 'usage': 'time &lt;start/split/end&gt; &lt;timer name&gt;', 'desc': 'Time test.'},
+    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json &lt;json&gt;'},
+    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print object.', 'usage': 'p &lt;object&gt;'},
+    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
+    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end&gt; &lt;timer name&gt;'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
 };
@@ -1399,6 +1400,14 @@ DebugJS.prototype = {
     DebugJS.log(str);
   },
 
+  cmdJson: function(args, tbl) {
+    if (args == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.execCmdJson(args);
+    }
+  },
+
   cmdP: function(args, tbl) {
     if (args == '') {
       DebugJS.printUsage(tbl.usage);
@@ -1694,6 +1703,10 @@ DebugJS._objDump = function(obj, arg) {
     arg.dump += obj + '<br>'; arg.cnt++;
   }
   return arg;
+};
+
+DebugJS.execCmdJson = function(jsn) {
+  eval('var j=' + jsn + ';DebugJS.log.p(j)');
 };
 
 DebugJS.digits = function(x) {
