@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607110000';
+  this.v = '201607140000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -43,22 +43,17 @@ var DebugJS = function() {
   };
 
   this.STYLE = {
-    'position': 'relative',
-    'padding': '1px',
-    'line-height': '1em',
-    'border': 'solid 1px #888',
     'font-family': 'Consolas',
     'font-size': '12px',
     'color': '#fff',
     'background': '#111',
-    'display': 'block',
-    'box-sizing': 'content-box'
+    'border': 'solid 1px #888'
   };
 
   this.DEFAULT_ELM_ID = '_debug_';
   this.options = null;
   this.id = null;
-  this.bodyElm = null;
+  this.styleElm = null;
   this.debugWindow = null;
   this.infoArea = null;
   this.clockArea = null;
@@ -168,6 +163,18 @@ DebugJS.prototype = {
   init: function(options) {
     if(!DebugJS.ENABLE){return;}
     var self = Debug;
+
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      if (self.debugWindow != null) {
+        for (var i = self.debugWindow.childNodes.length - 1; i >= 0; i--) {
+          self.debugWindow.removeChild(self.debugWindow.childNodes[i]);
+        }
+        document.body.removeChild(self.debugWindow);
+      }
+    }
+
+    self.status = 0;
+
     self.options = self.DEFAULT_OPTIONS;
     if (options) {
       for (var key in options) {
@@ -194,13 +201,13 @@ DebugJS.prototype = {
     if (self.options.visible) self.status |= DebugJS.STATE_VISIBLE;
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.resizable)) self.status |= DebugJS.STATE_RESIZABLE;
 
-    self.bodyElm = document.getElementsByTagName('body')[0];
+    document.body = document.getElementsByTagName('body')[0];
 
     // Create a window
-    if (self.debugWindow == null) {
+    if (self.status & DebugJS.STATE_DYNAMIC) {
       self.debugWindow = document.createElement('div');
       self.debugWindow.id = self.id;
-      self.bodyElm.appendChild(self.debugWindow);
+      document.body.appendChild(self.debugWindow);
     }
 
     // Info Area
@@ -362,8 +369,6 @@ DebugJS.prototype = {
     self.msgBuf = new DebugJS.RingBuffer(self.options.buffSize);
 
     var styles = {};
-    styles['#' + self.id] = self.STYLE;
-
     styles['#' + self.id + ' td'] = {
       'font-size': self.STYLE['font-size'],
       'font-family': self.STYLE['font-family'],
@@ -414,15 +419,27 @@ DebugJS.prototype = {
       'background': 'rgba(0,0,0,0)'
     };
 
-    if (self.status & DebugJS.STATE_DYNAMIC) {
-      self.setupMove();
+    self.applyStyles(styles);
 
-      var wkStyle = styles['#' + self.id];
-      wkStyle.position = 'fixed';
-      wkStyle.width = self.options.width + 'px';
-      wkStyle.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
-      wkStyle['box-shadow'] = '10px 10px 10px rgba(0,0,0,.3)';
-      wkStyle['z-index'] = 0x7fffffff;
+    self.debugWindow.style.position = 'relative';
+    self.debugWindow.style.padding = '1px';
+    self.debugWindow.style.lineHeight = '1em';
+    self.debugWindow.style.display = 'block';
+    self.debugWindow.style.boxSizing = 'content-box';
+    self.debugWindow.style.fontFamily = self.STYLE['font-family'];
+    self.debugWindow.style.fontSize = self.STYLE['font-size'];
+    self.debugWindow.style.color = self.STYLE['color'];
+    self.debugWindow.style.background = self.STYLE['background'];
+    self.debugWindow.style.border = self.STYLE['border'];
+
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      self.debugWindow.style.position = 'fixed';
+      self.debugWindow.style.width = self.options.width + 'px';
+      self.debugWindow.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
+      self.debugWindow.style.boxShadow = '10px 10px 10px rgba(0,0,0,.3)';
+      self.debugWindow.style.zIndex = 0x7fffffff;
+
+      self.setupMove();
 
       // adjust the window position
       var dbgWinHeight = 273;
@@ -431,33 +448,32 @@ DebugJS.prototype = {
       }
       switch (self.options.position) {
         case 'se':
-          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-          wkStyle.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
+          self.debugWindow.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+          self.debugWindow.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
         case 'ne':
-          wkStyle.top = self.options.posAdjY + 'px';
-          wkStyle.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
+          self.debugWindow.style.top = self.options.posAdjY + 'px';
+          self.debugWindow.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
         case 'c':
-          wkStyle.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-          wkStyle.left = ((document.documentElement.clientWidth / 2) - (self.options.width / 2)) + 'px';
+          self.debugWindow.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+          self.debugWindow.style.left = ((document.documentElement.clientWidth / 2) - (self.options.width / 2)) + 'px';
           break;
         case 'sw':
-          wkStyle.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-          wkStyle.left = self.options.posAdjX + 'px';
+          self.debugWindow.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+          self.debugWindow.style.left = self.options.posAdjX + 'px';
           break;
         default:
-          wkStyle.top = self.options.posAdjY + 'px';
-          wkStyle.left = self.options.posAdjX + 'px';
+          self.debugWindow.style.top = self.options.posAdjY + 'px';
+          self.debugWindow.style.left = self.options.posAdjX + 'px';
           break;
       }
 
       if (!(self.status & DebugJS.STATE_VISIBLE)) {
-        wkStyle.display = 'none';
+        self.debugWindow.style.display = 'none';
       }
     }
 
-    self.applyStyles(styles);
     self.clearMessage();
     self.setupEventHandler();
   },
@@ -720,20 +736,15 @@ DebugJS.prototype = {
     self.printMessage();
   },
 
-  setStyle: function(prop, val) {
-    var self = Debug;
-    var styles = {};
-    var style = {};
-    style[prop] = val;
-    styles['#' + self.id] = style;
-    self.applyStyles(styles);
-  },
-
   applyStyles: function(styles) {
-    var styleEl = document.createElement('style');
-    document.head.appendChild(styleEl);
-    styleEl.appendChild(document.createTextNode(''));
-    var s = styleEl.sheet;
+    var self = Debug;
+    if (self.styleElm != null) {
+      document.head.removeChild(self.styleElm);
+    }
+    self.styleElm = document.createElement('style');
+    document.head.appendChild(self.styleElm);
+    self.styleElm.appendChild(document.createTextNode(''));
+    var s = self.styleElm.sheet;
     for (var selector in styles) {
       var props = styles[selector];
       var propStr = '';
@@ -784,7 +795,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N;
-      self.bodyElm.style.cursor = 'ns-resize';
+      document.body.style.cursor = 'ns-resize';
     };
 
     self.resizeE.onmousedown = function(e) {
@@ -792,7 +803,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_E;
-      self.bodyElm.style.cursor = 'ew-resize';
+      document.body.style.cursor = 'ew-resize';
     };
 
     self.resizeS.onmousedown = function(e) {
@@ -800,7 +811,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S;
-      self.bodyElm.style.cursor = 'ns-resize';
+      document.body.style.cursor = 'ns-resize';
     };
 
     self.resizeW.onmousedown = function(e) {
@@ -808,7 +819,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_W;
-      self.bodyElm.style.cursor = 'ew-resize';
+      document.body.style.cursor = 'ew-resize';
     };
 
     self.resizeNW.onmousedown = function(e) {
@@ -816,7 +827,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_W;
-      self.bodyElm.style.cursor = 'nwse-resize';
+      document.body.style.cursor = 'nwse-resize';
     };
 
     self.resizeNE.onmousedown = function(e) {
@@ -824,7 +835,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E;
-      self.bodyElm.style.cursor = 'nesw-resize';
+      document.body.style.cursor = 'nesw-resize';
     };
 
     self.resizeSE.onmousedown = function(e) {
@@ -832,7 +843,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_E;
-      self.bodyElm.style.cursor = 'nwse-resize';
+      document.body.style.cursor = 'nwse-resize';
     };
 
     self.resizeSW.onmousedown = function(e) {
@@ -840,7 +851,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
-      self.bodyElm.style.cursor = 'nesw-resize';
+      document.body.style.cursor = 'nesw-resize';
     };
   },
 
@@ -1190,7 +1201,7 @@ DebugJS.prototype = {
 
         if (self.status & DebugJS.STATE_RESIZING) {
           self.status &= ~DebugJS.STATE_RESIZING_ALL;
-          self.bodyElm.style.cursor = 'auto';
+          document.body.style.cursor = 'auto';
         }
         break;
       case 1:
@@ -1213,9 +1224,7 @@ DebugJS.prototype = {
     self.msgAreaScrollX = self.msgArea.children[self.msgAreaId].scrollLeft;
     self.msgAreaScrollY = self.msgArea.children[self.msgAreaId].scrollTop;
     self.status &= ~DebugJS.STATE_DRAGGING;
-    var styles = {};
-    styles['#' + self.id] = {'display': 'none'};
-    self.applyStyles(styles);
+    self.debugWindow.style.display = 'none';
     self.status &= ~DebugJS.STATE_VISIBLE;
   },
 
@@ -1239,21 +1248,18 @@ DebugJS.prototype = {
     if (self.measureBox == null) {
       self.measureBox = document.createElement('div');
       self.measureBox.id = self.id + '-mbox';
-      self.bodyElm.appendChild(self.measureBox);
-      var styles = {};
-      styles['#' + self.id + '-mbox'] = {'position': 'fixed'};
-      wkStyle = styles['#' + self.id + '-mbox'];
-      wkStyle['top'] = self.clickedPosY + 'px';
-      wkStyle['left'] = self.clickedPosX + 'px';
-      wkStyle['width'] = '0px';
-      wkStyle['height'] = '0px';
-      wkStyle['border'] = 'dotted 1px #333';
-      wkStyle['background'] = 'rgba(0,0,0,0.1)';
-      wkStyle['z-index'] = 0x7fffffff;
-      self.applyStyles(styles);
+      self.measureBox.style.position = 'fixed';
+      self.measureBox.style.top = self.clickedPosY + 'px';
+      self.measureBox.style.left = self.clickedPosX + 'px';
+      self.measureBox.style.width = '0px';
+      self.measureBox.style.height = '0px';
+      self.measureBox.style.border = 'dotted 1px #333';
+      self.measureBox.style.background = 'rgba(0,0,0,0.1)';
+      self.measureBox.style.zIndex = 0x7fffffff;
+      document.body.appendChild(self.measureBox);
     }
-    self.savedFunc = self.bodyElm.onselectstart;
-    self.bodyElm.onselectstart = function() {return false;};
+    self.savedFunc = document.body.onselectstart;
+    document.body.onselectstart = function() {return false;};
   },
 
   measure: function(e) {
@@ -1311,18 +1317,16 @@ DebugJS.prototype = {
   stopMeasure: function() {
     var self = Debug;
     if (self.measureBox != null) {
-      self.bodyElm.removeChild(self.measureBox);
+      document.body.removeChild(self.measureBox);
       self.measureBox = null;
     }
-    self.bodyElm.onselectstart = self.savedFunc;
+    document.body.onselectstart = self.savedFunc;
     self.status &= ~DebugJS.STATE_MEASURING;
   },
 
   showDebugWindow: function() {
     var self = Debug;
-    var styles = {};
-    styles['#' + self.id] = {'display': 'block'};
-    self.applyStyles(styles);
+    self.debugWindow.style.display = 'block';
     self.status |= DebugJS.STATE_VISIBLE;
     self.msgArea.children[self.msgAreaId].scrollTop = self.msgAreaScrollY;
     self.msgArea.children[self.msgAreaId].scrollLeft = self.msgAreaScrollX;
@@ -1851,60 +1855,59 @@ DebugJS.timer = function(timerName) {
 };
 
 DebugJS.log = function(m) {
-  m = DebugJS.log.init(m);
+  DebugJS.log.init();
   DebugJS.log.out(m, null);
 };
 
 DebugJS.log.e = function(m) {
-  m = DebugJS.log.init(m);
+  DebugJS.log.init();
   var style = 'color:' + Debug.options.errorColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.w = function(m) {
-  m = DebugJS.log.init(m);
+  DebugJS.log.init();
   var style = 'color:' + Debug.options.warnColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.i = function(m) {
-  m = DebugJS.log.init(m);
+  DebugJS.log.init();
   var style = 'color:' + Debug.options.infoColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.d = function(m) {
-  m = DebugJS.log.init(m);
+  DebugJS.log.init();
   var style = 'color:' + Debug.options.debugColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.v = function(m) {
-  m = DebugJS.log.init(m);
+  DebugJS.log.init();
   var style = 'color:' + Debug.options.verboseColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.s = function(m) {
-  m = DebugJS.log.init(m);
+  DebugJS.log.init();
   var style = 'color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.p = function(o) {
-  var m = DebugJS.log.init(null);
+  DebugJS.log.init();
   var m = '<br>' + DebugJS.objDump(o);
   DebugJS.log.out(m, null);
 };
 
-DebugJS.log.init = function(m) {
+DebugJS.log.init = function() {
   if (!Debug.isInitialized()) {
     Debug.init(null, null);
   }
   if (!Debug.isWindowInitialized()) {
     Debug.initDebugWindow();
   }
-  return m;
 };
 
 DebugJS.log.out = function(m, style) {
@@ -1980,30 +1983,35 @@ timeEnd = function(timerName) {
   DebugJS.timeEnd(timerName);
 };
 
-var Debug = new DebugJS();
-
-if(DebugJS.CATCH_ALL_ERRORS){window.onerror=function(msg,file,line,col,err){log.e(msg+' '+file+'('+line+':'+col+')');};}
-
-if(DebugJS.UNIFY_CONSOLE){
-console.log=function(x){log(x);}
-console.info=function(x){log.i(x);}
-console.warn=function(x){log.w(x);}
-console.error=function(x){log.e(x);}
-console.time=function(x){timeStart(x);}
-console.timeEnd=function(x){timeEnd(x);}
+if (DebugJS.CATCH_ALL_ERRORS) {
+  window.onerror = function(msg,file,line,col,err) {
+    log.e(msg + ' ' + file + '(' + line + ':' + col + ')');
+  };
 }
 
-if(!DebugJS.ENABLE){
-log=function(x){};
-log.e=function(x){};
-log.w=function(x){};
-log.i=function(x){};
-log.d=function(x){};
-log.v=function(x){};
-log.s=function(x){};
-log.p=function(x){};
-log.stk=function(){};
-timeStart=function(x){};
-timeSplit=function(x){};
-timeEnd=function(x){};
+if (DebugJS.UNIFY_CONSOLE) {
+  console.log = function(x) {log(x);}
+  console.info = function(x) {log.i(x);}
+  console.warn = function(x) {log.w(x);}
+  console.error = function(x) {log.e(x);}
+  console.time = function(x) {timeStart(x);}
+  console.timeEnd = function(x) {timeEnd(x);}
+}
+
+var Debug = new DebugJS();
+if (DebugJS.ENABLE) {
+  window.addEventListener('load', DebugJS.log.init, true);
+} else {
+  log = function(x) {};
+  log.e = function(x) {};
+  log.w = function(x) {};
+  log.i = function(x) {};
+  log.d = function(x) {};
+  log.v = function(x) {};
+  log.s = function(x) {};
+  log.p = function(x) {};
+  log.stk = function() {};
+  timeStart = function(x) {};
+  timeSplit = function(x) {};
+  timeEnd = function(x) {};
 }
