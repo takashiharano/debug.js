@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607142130';
+  this.v = '201607150000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -773,6 +773,8 @@ DebugJS.prototype = {
     var self = Debug;
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
     self.status |= DebugJS.STATE_DRAGGING;
+    Debug.infoArea.style.cursor = 'move';
+    Debug.msgArea.style.cursor = 'move';
     e = (e) || window.event;
     self.orgOffsetTop = e.clientY - self.debugWindow.offsetTop;
     self.orgOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
@@ -1199,8 +1201,11 @@ DebugJS.prototype = {
         if (self.status & DebugJS.STATE_MEASURING) {
           self.stopMeasure();
         }
-        self.status &= ~DebugJS.STATE_DRAGGING;
-
+        if (self.status & DebugJS.STATE_DRAGGABLE) {
+          self.status &= ~DebugJS.STATE_DRAGGING;
+          Debug.infoArea.style.cursor = 'default';
+          Debug.msgArea.style.cursor = 'default';
+        }
         if (self.status & DebugJS.STATE_RESIZING) {
           self.status &= ~DebugJS.STATE_RESIZING_ALL;
           document.body.style.cursor = 'auto';
