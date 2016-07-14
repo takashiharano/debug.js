@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607140000';
+  this.v = '201607142130';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -121,10 +121,12 @@ var DebugJS = function() {
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window.'},
+    {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get &lt;url&gt;'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json &lt;json&gt;'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print object.', 'usage': 'p &lt;object&gt;'},
+    {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post &lt;url&gt;'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end&gt; &lt;timer name&gt;'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
@@ -132,7 +134,7 @@ var DebugJS = function() {
 };
 DebugJS.ENABLE = true;
 DebugJS.CATCH_ALL_ERRORS = true;
-DebugJS.UNIFY_CONSOLE = false;
+DebugJS.UNIFY_CONSOLE = true;
 
 DebugJS.STATE_VISIBLE = 0x1;
 DebugJS.STATE_DYNAMIC = 0x2;
@@ -1364,6 +1366,11 @@ DebugJS.prototype = {
       found = self.cmdRadixConv(cl);
     }
 
+    if ((!found) && (cl.match(/^http/))) {
+      DebugJS.httpRequest(cl, 'GET');
+      found = true;
+    }
+
     if (!found) {
       try {
         DebugJS.log(eval(cl));
@@ -1382,6 +1389,14 @@ DebugJS.prototype = {
     var self = Debug;
     self.clearMessage();
     self.hideDebugWindow();
+  },
+
+  cmdGet: function(args, tbl) {
+    if (args == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.httpRequest(args, 'GET');
+    }
   },
 
   cmdHelp: function(args, tbl) {
@@ -1417,6 +1432,14 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.execCmdP(args);
+    }
+  },
+
+  cmdPost: function(args, tbl) {
+    if (args == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.httpRequest(args, 'POST');
     }
   },
 
@@ -1852,6 +1875,24 @@ DebugJS.timer = function(timerName) {
   var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
   var elapsed = DebugJS.getTimerStr(delta);
   return elapsed;
+};
+
+DebugJS.httpRequest = function(url, method) {
+  var xhr = new XMLHttpRequest();
+  xhr.open(method, url, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status !== 200) {
+        log.e('fetch failed: ' + xhr.status + ' ' + xhr.statusText);
+      }
+      var head = xhr.getAllResponseHeaders();
+      var txt = xhr.responseText.replace(/</g, '&lt;');
+      txt = txt.replace(/>/g, '&gt;');
+      var res = 'Response:<br><span style="color:#5ff">' + head + '</span>' + txt;
+      log(res);
+    }
+  };
+  xhr.send(null);
 };
 
 DebugJS.log = function(m) {
