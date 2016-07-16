@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607150000';
+  this.v = '201607160000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -53,7 +53,8 @@ var DebugJS = function() {
   this.DEFAULT_ELM_ID = '_debug_';
   this.options = null;
   this.id = null;
-  this.styleElm = null;
+  this.bodyEl = null;
+  this.styleEl = null;
   this.debugWindow = null;
   this.infoArea = null;
   this.clockArea = null;
@@ -120,6 +121,7 @@ var DebugJS = function() {
 
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
+    {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window.'},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get &lt;url&gt;'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
@@ -159,19 +161,21 @@ DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
-DebugJS.WDAYS = new Array('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
+DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 DebugJS.prototype = {
   init: function(options) {
     if(!DebugJS.ENABLE){return;}
     var self = Debug;
+    self.bodyEl = document.body;
+    var dbgWin = self.debugWindow;
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      if (self.debugWindow != null) {
-        for (var i = self.debugWindow.childNodes.length - 1; i >= 0; i--) {
-          self.debugWindow.removeChild(self.debugWindow.childNodes[i]);
+      if (dbgWin != null) {
+        for (var i = dbgWin.childNodes.length - 1; i >= 0; i--) {
+          dbgWin.removeChild(dbgWin.childNodes[i]);
         }
-        document.body.removeChild(self.debugWindow);
+        self.bodyEl.removeChild(dbgWin);
       }
     }
 
@@ -195,7 +199,7 @@ DebugJS.prototype = {
       self.status |= DebugJS.STATE_DRAGGABLE;
     } else {
       self.id = options.target;
-      self.debugWindow = document.getElementById(self.id);
+      dbgWin = document.getElementById(self.id);
     }
     self.msgAreaId = self.id + '-msg';
     self.cmdLineId = self.id + '-cmd';
@@ -203,18 +207,18 @@ DebugJS.prototype = {
     if (self.options.visible) self.status |= DebugJS.STATE_VISIBLE;
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.resizable)) self.status |= DebugJS.STATE_RESIZABLE;
 
-    document.body = document.getElementsByTagName('body')[0];
+    self.bodyEl = document.getElementsByTagName('body')[0];
 
     // Create a window
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      self.debugWindow = document.createElement('div');
-      self.debugWindow.id = self.id;
-      document.body.appendChild(self.debugWindow);
+      dbgWin = document.createElement('div');
+      dbgWin.id = self.id;
+      self.bodyEl.appendChild(dbgWin);
     }
 
     // Info Area
     self.infoArea = document.createElement('div');
-    self.debugWindow.appendChild(self.infoArea);
+    dbgWin.appendChild(self.infoArea);
     self.infoArea.innerHTML = '<div style="padding:1px 2px 0px 2px;background:rgba(24,131,215,0);"></div>';
     if (self.status & DebugJS.STATE_DRAGGABLE) self.infoArea.style.cursor = 'default';
 
@@ -320,14 +324,14 @@ DebugJS.prototype = {
 
     // Log
     self.msgArea = document.createElement('div');
-    self.debugWindow.appendChild(self.msgArea);
+    dbgWin.appendChild(self.msgArea);
     self.msgArea.style.height = self.options.dispLine + '.2em';
     if (self.status & DebugJS.STATE_DRAGGABLE) self.msgArea.style.cursor = 'default';
 
     // Command Line
     if (self.options.enableCommandLine) {
       self.cmdArea = document.createElement('div');
-      self.debugWindow.appendChild(self.cmdArea);
+      dbgWin.appendChild(self.cmdArea);
       self.initCmdArea();
     }
 
@@ -335,35 +339,35 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZABLE) {
       self.resizeN = document.createElement('div');
       self.resizeN.innerHTML = '<div class="' + self.id + '-resize-side" style="top:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
-      self.debugWindow.appendChild(self.resizeN);
+      dbgWin.appendChild(self.resizeN);
 
       self.resizeE = document.createElement('div');
       self.resizeE.innerHTML = '<div class="' + self.id + '-resize-side" style="top:0px;right:-3px;width:6px;height:100%;cursor:ew-resize">';
-      self.debugWindow.appendChild(self.resizeE);
+      dbgWin.appendChild(self.resizeE);
 
       self.resizeS = document.createElement('div');
       self.resizeS.innerHTML = '<div class="' + self.id + '-resize-side" style="bottom:-3px;left:0;width:100%;height:6px;cursor:ns-resize">';
-      self.debugWindow.appendChild(self.resizeS);
+      dbgWin.appendChild(self.resizeS);
 
       self.resizeW = document.createElement('div');
       self.resizeW.innerHTML = '<div class="' + self.id + '-resize-side" style="top:0px;left:-3px;width:6px;height:100%;cursor:ew-resize">';
-      self.debugWindow.appendChild(self.resizeW);
+      dbgWin.appendChild(self.resizeW);
 
       self.resizeNW = document.createElement('div');
       self.resizeNW.innerHTML = '<div class="' + self.id + '-resize-corner" style="top:-3px;left:-3px;cursor:nwse-resize">';
-      self.debugWindow.appendChild(self.resizeNW);
+      dbgWin.appendChild(self.resizeNW);
 
       self.resizeNE = document.createElement('div');
       self.resizeNE.innerHTML = '<div class="' + self.id + '-resize-corner" style="top:-3px;right:-3px;cursor:nesw-resize">';
-      self.debugWindow.appendChild(self.resizeNE);
+      dbgWin.appendChild(self.resizeNE);
 
       self.resizeSE = document.createElement('div');
       self.resizeSE.innerHTML = '<div class="' + self.id + '-resize-corner" style="bottom:-3px;right:-3px;cursor:nwse-resize">';
-      self.debugWindow.appendChild(self.resizeSE);
+      dbgWin.appendChild(self.resizeSE);
 
       self.resizeSW = document.createElement('div');
       self.resizeSW.innerHTML = '<div class="' + self.id + '-resize-corner" style="bottom:-3px;left:-3px;cursor:nesw-resize">';
-      self.debugWindow.appendChild(self.resizeSW);
+      dbgWin.appendChild(self.resizeSW);
 
       self.setupResize();
     }
@@ -423,23 +427,23 @@ DebugJS.prototype = {
 
     self.applyStyles(styles);
 
-    self.debugWindow.style.position = 'relative';
-    self.debugWindow.style.padding = '1px';
-    self.debugWindow.style.lineHeight = '1em';
-    self.debugWindow.style.display = 'block';
-    self.debugWindow.style.boxSizing = 'content-box';
-    self.debugWindow.style.fontFamily = self.STYLE['font-family'];
-    self.debugWindow.style.fontSize = self.STYLE['font-size'];
-    self.debugWindow.style.color = self.STYLE['color'];
-    self.debugWindow.style.background = self.STYLE['background'];
-    self.debugWindow.style.border = self.STYLE['border'];
+    dbgWin.style.position = 'relative';
+    dbgWin.style.padding = '1px';
+    dbgWin.style.lineHeight = '1em';
+    dbgWin.style.display = 'block';
+    dbgWin.style.boxSizing = 'content-box';
+    dbgWin.style.fontFamily = self.STYLE['font-family'];
+    dbgWin.style.fontSize = self.STYLE['font-size'];
+    dbgWin.style.color = self.STYLE['color'];
+    dbgWin.style.background = self.STYLE['background'];
+    dbgWin.style.border = self.STYLE['border'];
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      self.debugWindow.style.position = 'fixed';
-      self.debugWindow.style.width = self.options.width + 'px';
-      self.debugWindow.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
-      self.debugWindow.style.boxShadow = '10px 10px 10px rgba(0,0,0,.3)';
-      self.debugWindow.style.zIndex = 0x7fffffff;
+      dbgWin.style.position = 'fixed';
+      dbgWin.style.width = self.options.width + 'px';
+      dbgWin.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
+      dbgWin.style.boxShadow = '10px 10px 10px rgba(0,0,0,.3)';
+      dbgWin.style.zIndex = 0x7fffffff;
 
       self.setupMove();
 
@@ -450,32 +454,33 @@ DebugJS.prototype = {
       }
       switch (self.options.position) {
         case 'se':
-          self.debugWindow.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-          self.debugWindow.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
+          dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+          dbgWin.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
         case 'ne':
-          self.debugWindow.style.top = self.options.posAdjY + 'px';
-          self.debugWindow.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
+          dbgWin.style.top = self.options.posAdjY + 'px';
+          dbgWin.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
           break;
         case 'c':
-          self.debugWindow.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-          self.debugWindow.style.left = ((document.documentElement.clientWidth / 2) - (self.options.width / 2)) + 'px';
+          dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+          dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (self.options.width / 2)) + 'px';
           break;
         case 'sw':
-          self.debugWindow.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-          self.debugWindow.style.left = self.options.posAdjX + 'px';
+          dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+          dbgWin.style.left = self.options.posAdjX + 'px';
           break;
         default:
-          self.debugWindow.style.top = self.options.posAdjY + 'px';
-          self.debugWindow.style.left = self.options.posAdjX + 'px';
+          dbgWin.style.top = self.options.posAdjY + 'px';
+          dbgWin.style.left = self.options.posAdjX + 'px';
           break;
       }
 
       if (!(self.status & DebugJS.STATE_VISIBLE)) {
-        self.debugWindow.style.display = 'none';
+        dbgWin.style.display = 'none';
       }
     }
 
+    self.debugWindow = dbgWin;
     self.clearMessage();
     self.setupEventHandler();
   },
@@ -613,7 +618,7 @@ DebugJS.prototype = {
 
   // Update Body Size
   updateBodySizeArea: function() {
-    this.bodySizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">BODY:w=' + document.body.clientWidth + ',h=' + document.body.clientHeight + '</span>';
+    this.bodySizeArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">BODY:w=' + this.bodyEl.clientWidth + ',h=' + document.body.clientHeight + '</span>';
   },
 
   // Update Scroll Position
@@ -740,13 +745,13 @@ DebugJS.prototype = {
 
   applyStyles: function(styles) {
     var self = Debug;
-    if (self.styleElm != null) {
-      document.head.removeChild(self.styleElm);
+    if (self.styleEl != null) {
+      document.head.removeChild(self.styleEl);
     }
-    self.styleElm = document.createElement('style');
-    document.head.appendChild(self.styleElm);
-    self.styleElm.appendChild(document.createTextNode(''));
-    var s = self.styleElm.sheet;
+    self.styleEl = document.createElement('style');
+    document.head.appendChild(self.styleEl);
+    self.styleEl.appendChild(document.createTextNode(''));
+    var s = self.styleEl.sheet;
     for (var selector in styles) {
       var props = styles[selector];
       var propStr = '';
@@ -775,7 +780,6 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_DRAGGING;
     Debug.infoArea.style.cursor = 'move';
     Debug.msgArea.style.cursor = 'move';
-    e = (e) || window.event;
     self.orgOffsetTop = e.clientY - self.debugWindow.offsetTop;
     self.orgOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
     if (!document.all) {
@@ -786,7 +790,6 @@ DebugJS.prototype = {
   windowMove: function(e) {
     var self = Debug;
     if (!(self.status & DebugJS.STATE_DRAGGING)) return;
-    e = (e) || window.event;
     self.debugWindow.style.top = e.clientY - self.orgOffsetTop + 'px';
     self.debugWindow.style.left = e.clientX - self.orgOffsetLeft + 'px';
   },
@@ -799,7 +802,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N;
-      document.body.style.cursor = 'ns-resize';
+      self.bodyEl.style.cursor = 'ns-resize';
     };
 
     self.resizeE.onmousedown = function(e) {
@@ -807,7 +810,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_E;
-      document.body.style.cursor = 'ew-resize';
+      self.bodyEl.style.cursor = 'ew-resize';
     };
 
     self.resizeS.onmousedown = function(e) {
@@ -815,7 +818,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S;
-      document.body.style.cursor = 'ns-resize';
+      self.bodyEl.style.cursor = 'ns-resize';
     };
 
     self.resizeW.onmousedown = function(e) {
@@ -823,7 +826,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_W;
-      document.body.style.cursor = 'ew-resize';
+      self.bodyEl.style.cursor = 'ew-resize';
     };
 
     self.resizeNW.onmousedown = function(e) {
@@ -831,7 +834,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_W;
-      document.body.style.cursor = 'nwse-resize';
+      self.bodyEl.style.cursor = 'nwse-resize';
     };
 
     self.resizeNE.onmousedown = function(e) {
@@ -839,7 +842,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E;
-      document.body.style.cursor = 'nesw-resize';
+      self.bodyEl.style.cursor = 'nesw-resize';
     };
 
     self.resizeSE.onmousedown = function(e) {
@@ -847,7 +850,7 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_E;
-      document.body.style.cursor = 'nwse-resize';
+      self.bodyEl.style.cursor = 'nwse-resize';
     };
 
     self.resizeSW.onmousedown = function(e) {
@@ -855,13 +858,12 @@ DebugJS.prototype = {
       if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
       self.startResize(e);
       self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
-      document.body.style.cursor = 'nesw-resize';
+      self.bodyEl.style.cursor = 'nesw-resize';
     };
   },
 
   startResize: function(e) {
     var self = Debug;
-    e = (e) || window.event;
     self.status |= DebugJS.STATE_RESIZING;
     self.clickedPosX = e.clientX;
     self.clickedPosY = e.clientY;
@@ -874,7 +876,6 @@ DebugJS.prototype = {
   resize: function(e) {
     var self = Debug;
     var moveX, moveY, t, l, w, h;
-    e = (e) || window.event;
 
     if (self.status & DebugJS.STATE_RESIZING_N) {
       moveY = self.clickedPosY - e.clientY;
@@ -1005,18 +1006,18 @@ DebugJS.prototype = {
   getLog: function() {
     var self = Debug;
     var allBuf = self.msgBuf.getAll();
-    var bufCnt = self.msgBuf.count();
-    var bufLen = allBuf.length;
-    var buf = [];
-    for (var i = 0; i < bufLen; i++) {
-      var lineCnt = bufCnt - bufLen + i + 1;
+    var cnt = self.msgBuf.count();
+    var len = allBuf.length;
+    var logs = new Array(len);
+    for (var i = 0; i < len; i++) {
+      var lineCnt = cnt - len + i + 1;
       var line = '<tr style="vertical-align:top;">';
       if (allBuf[i] == undefined) {
         break;
       }
       var lineNum = '';
       if (Debug.options.showLineNums) {
-        var diffDigits = DebugJS.digits(bufCnt) - DebugJS.digits(lineCnt);
+        var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var lineNumPadding = '';
         for (var j = 0; j < diffDigits; j++) {
           lineNumPadding = lineNumPadding + '0';
@@ -1026,9 +1027,9 @@ DebugJS.prototype = {
       }
       line += '<td><pre>' + allBuf[i] + '</pre></td>';
       line += '</tr>';
-      buf[i] = line;
+      logs[i] = line;
     }
-    return buf;
+    return logs;
   },
 
   keyhandler: function(e) {
@@ -1208,7 +1209,7 @@ DebugJS.prototype = {
         }
         if (self.status & DebugJS.STATE_RESIZING) {
           self.status &= ~DebugJS.STATE_RESIZING_ALL;
-          document.body.style.cursor = 'auto';
+          self.bodyEl.style.cursor = 'auto';
         }
         break;
       case 1:
@@ -1263,10 +1264,10 @@ DebugJS.prototype = {
       self.measureBox.style.border = 'dotted 1px #333';
       self.measureBox.style.background = 'rgba(0,0,0,0.1)';
       self.measureBox.style.zIndex = 0x7fffffff;
-      document.body.appendChild(self.measureBox);
+      self.bodyEl.appendChild(self.measureBox);
     }
-    self.savedFunc = document.body.onselectstart;
-    document.body.onselectstart = function() {return false;};
+    self.savedFunc = self.bodyEl.onselectstart;
+    self.bodyEl.onselectstart = function() {return false;};
   },
 
   measure: function(e) {
@@ -1324,10 +1325,10 @@ DebugJS.prototype = {
   stopMeasure: function() {
     var self = Debug;
     if (self.measureBox != null) {
-      document.body.removeChild(self.measureBox);
+      self.bodyEl.removeChild(self.measureBox);
       self.measureBox = null;
     }
-    document.body.onselectstart = self.savedFunc;
+    self.bodyEl.onselectstart = self.savedFunc;
     self.status &= ~DebugJS.STATE_MEASURING;
   },
 
@@ -1388,6 +1389,10 @@ DebugJS.prototype = {
   cmdCls: function(args, tbl) {
     var self = Debug;
     self.clearMessage();
+  },
+
+  cmdElements: function(args, tbl) {
+    DebugJS.countElements();
   },
 
   cmdExit: function(args, tbl) {
@@ -1606,20 +1611,20 @@ DebugJS.time = function() {
 };
 
 DebugJS.getTimerStr = function(swPassedTimeMsec) {
-  var passedTimeSec = Math.floor((swPassedTimeMsec) / 1000);
+  var passedTimeSec = Math.floor(swPassedTimeMsec / 1000);
   var wkPassedTimeSec = passedTimeSec;
 
   var passedHour;
   var passedMin;
   if (wkPassedTimeSec >= 3600) {
-    passedHour = Math.floor((wkPassedTimeSec / 3600));
+    passedHour = Math.floor(wkPassedTimeSec / 3600);
     wkPassedTimeSec = (wkPassedTimeSec - (passedHour * 3600));
   } else {
     passedHour = 0;
   }
 
   if (wkPassedTimeSec >= 60) {
-    passedMin = Math.floor((wkPassedTimeSec / 60));
+    passedMin = Math.floor(wkPassedTimeSec / 60);
     wkPassedTimeSec = (wkPassedTimeSec - (passedMin * 60));
   } else {
     passedMin = 0;
@@ -1650,30 +1655,30 @@ DebugJS.execCmdP = function(args) {
   var objs = args.split(' ');
   for (var i = 0; i < objs.length; i++) {
     if (objs[i] == '') continue;
-    var command = 'DebugJS.buf="<br>' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log(DebugJS.buf);';
+    var cmd = 'DebugJS.buf="<br>' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log(DebugJS.buf);';
     try {
-      eval(command);
+      eval(cmd);
     } catch (e) {
       DebugJS.log.e(e);
     }
   }
 };
 
-DebugJS.OBJDUMP_MAX = 1000;
+DebugJS.OBJDMP_MAX = 500;
 DebugJS.objDump = function(obj) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
     arg.dump += '<span style="color:#4c4;">function()</span><br>';
   }
   var ret = DebugJS._objDump(obj, arg);
-  if (ret.cnt >= DebugJS.OBJDUMP_MAX) {
+  if (ret.cnt >= DebugJS.OBJDMP_MAX) {
     log.w('The object is too large. (' + ret.cnt + ')');
   }
   return ret.dump;
 };
 
 DebugJS._objDump = function(obj, arg) {
-  if (arg.cnt >= DebugJS.OBJDUMP_MAX) {
+  if (arg.cnt >= DebugJS.OBJDMP_MAX) {
     if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
       arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
     }
@@ -1737,8 +1742,28 @@ DebugJS._objDump = function(obj, arg) {
   return arg;
 };
 
+DebugJS.countElements = function() {
+  var cnt = {};
+  var elms = document.getElementsByTagName('*');
+  for (var i = 0; i < elms.length; i++) {
+    if (!cnt[elms[i].tagName]) {
+      cnt[elms[i].tagName] = 1;
+    } else {
+      cnt[elms[i].tagName]++;
+    }
+  }
+  var l = '<table>';
+  for (var key in cnt) {
+    l += '<tr><td>' + key + '</td><td style="text-align:right;">' + cnt[key] + '</td></tr>';
+  }
+    l += '<tr><td>Total</td><td style="text-align:right;">' + elms.length + '</td></tr>';
+  l += '</table>';
+  DebugJS.log(l);
+}
+
 DebugJS.execCmdJson = function(jsn) {
-  eval('var j=' + jsn + ';DebugJS.log.p(j)');
+  var j = JSON.parse(jsn);
+  DebugJS.log.p(j);
 };
 
 DebugJS.digits = function(x) {
@@ -1888,13 +1913,15 @@ DebugJS.httpRequest = function(url, method) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
       if (xhr.status !== 200) {
-        log.e('fetch failed: ' + xhr.status + ' ' + xhr.statusText);
+        log.e('cannot load: ' + xhr.status + ' ' + xhr.statusText);
       }
       var head = xhr.getAllResponseHeaders();
       var txt = xhr.responseText.replace(/</g, '&lt;');
       txt = txt.replace(/>/g, '&gt;');
-      var res = 'Response:<br><span style="color:#5ff">' + head + '</span>' + txt;
-      log(res);
+      if (head || txt) {
+        var res = 'Response:<br><span style="color:#5ff">' + head + '</span>' + txt;
+        log(res);
+      }
     }
   };
   xhr.send(null);
