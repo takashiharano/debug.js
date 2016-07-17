@@ -218,8 +218,23 @@ window.onload = function() {
   var options = {
     'position': 'c'
   };
+  //in the absence of this initialization, debug.js works in default configuration.
+  //Debug.init(options);
 
   var options2 = {
+    'fontSize': '16px',
+    'width': 700,
+    'dispLine': 30,
+  };
+  //Debug.init(options2);
+
+  // If you want to output the logs to a designated area, pass the element id to 'target' option.
+  var options3 = {
+    'target': 'dbg'
+  };
+  //Debug.init(options3);
+
+  var options4 = {
     'target': 'dbg',
     'dispLine': 10,
     'buffSize': 10,
@@ -235,16 +250,7 @@ window.onload = function() {
     'enableScreenMeasure': false,
     'enableCommandLine': true
   };
-
-  // If you want to output the logs to a designated area, pass the element id to 'target' option.
-  var options3 = {
-    'target': 'dbg'
-  };
-
-//in the absence of this initialization, debug.js works in default configuration.
-//  Debug.init(options);
-//  Debug.init(options2);
-//  Debug.init(options3);
+  //Debug.init(options4);
 
   log('Here is the log output example!');
   log('The window\'s load event fired.');
@@ -356,8 +362,15 @@ Debug.init(options);
     <td class="name">visible</td>
     <td>Default vibible status</td>
     <td>true</td>
-  <tr>
+  </tr>
 
+  <tr>
+    <td class="name">fontSize</td>
+    <td>Log message font size</td>
+    <td>12px</td>
+  </tr>
+
+  <tr>
     <td class="name">dispLine</td>
     <td>Number of lines to display</td>
     <td>18</td>
@@ -377,7 +390,7 @@ Debug.init(options);
 
   <tr>
     <td class="name">position</td>
-    <td>Default window position (nw=left-top / sw=left-bottom / c=center / ne=right-top / se=right-bottom)</td>
+    <td>Default window position<br>(nw=left-top / sw=left-bottom / c=center / ne=right-top / se=right-bottom)</td>
     <td>se</td>
   </tr>
 
@@ -414,18 +427,12 @@ Debug.init(options);
   <tr>
     <td class="name">infoColor</td>
     <td>Information log color</td>
-    <td>#eff</td>
+    <td>#8cf</td>
   </tr>
 
   <tr>
     <td class="name">debugColor</td>
     <td>Debug log color</td>
-    <td>#8cf</td>
-  </tr>
-
-  <tr>
-    <td class="name">verboseColor</td>
-    <td>Verbose log color</td>
     <td>#ccc</td>
   </tr>
 
@@ -584,12 +591,6 @@ Debug.init(options);
   </tr>
 
   <tr>
-    <td class="name">log.v</td>
-    <td>messag string</td>
-    <td>Output verbose log</td>
-  </tr>
-
-  <tr>
     <td class="name">log.s</td>
     <td>messag string</td>
     <td>Output special log</td>
@@ -605,6 +606,12 @@ Debug.init(options);
     <td class="name">log.stk</td>
     <td></td>
     <td>Output stack trace</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.clr</td>
+    <td></td>
+    <td>Clear log message</td>
   </tr>
 
   <tr>
@@ -751,17 +758,12 @@ log.d('debug log');<br>
 </td>
 
 <td>
-log.v('verbose log');<br>
-<span class="button" onclick="log.v('verbose log');">log.v()</span>
+log.s('special log');<br>
+<span class="button" onclick="log.s('special log');">log.s()</span>
 </td>
 </tr>
 
 <tr>
-<td>
-log.s('special log');<br>
-<span class="button" onclick="log.s('special log');">log.s()</span>
-</td>
-
 <td>
 log.p(window.applicationCache);<br>
 <span class="button" onclick="log.p(window.applicationCache);">log.p()</span>
@@ -770,6 +772,11 @@ log.p(window.applicationCache);<br>
 <td>
 log.stk();<br>
 <span class="button" onclick="log.stk();">log.stk()</span>
+</td>
+
+<td>
+log.clr();<br>
+<span class="button" onclick="log.clr();">log.clr()</span>
 </td>
 </tr>
 

@@ -5,10 +5,11 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607171800';
+  this.v = '201607172030';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
+    'fontSize': '12px',
     'dispLine': 18,
     'buffSize': 100,
     'width': 500,
@@ -18,9 +19,8 @@ var DebugJS = function() {
     'resizable': true,
     'errorColor': '#d44',
     'warnColor': '#ed0',
-    'infoColor': '#eff',
-    'debugColor': '#8cf',
-    'verboseColor': '#ccc',
+    'infoColor': '#8cf',
+    'debugColor': '#ccc',
     'specialColor': '#fff',
     'clockColor': '#0f0',
     'systemInfoColor': '#ddd',
@@ -399,7 +399,6 @@ DebugJS.prototype = {
     styles['#' + self.id + ' pre'] = {
       'white-space': 'pre-wrap',
       'word-break': 'break-all',
-      'font-size': self.STYLE['font-size'],
       'font-family': self.STYLE['font-family'],
       'color': self.STYLE['color'],
       'margin': '0',
@@ -449,6 +448,10 @@ DebugJS.prototype = {
     dbgWin.style.background = self.STYLE['background'];
     dbgWin.style.border = self.STYLE['border'];
 
+    self.clearMessage();
+    self.setupEventHandler();
+    self.initDebugWindow();
+
     if (self.status & DebugJS.STATE_DYNAMIC) {
       dbgWin.style.position = 'fixed';
       dbgWin.style.width = self.options.width + 'px';
@@ -459,22 +462,20 @@ DebugJS.prototype = {
       self.setupMove();
 
       // adjust the window position
-      var dbgWinHeight = 273;
-      if (self.options.enableCommandLine) {
-        dbgWinHeight = 294;
-      }
+      var dbgWinWidth = dbgWin.offsetWidth;
+      var dbgWinHeight = dbgWin.offsetHeight;
       switch (self.options.position) {
         case 'se':
           dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-          dbgWin.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
+          dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
           break;
         case 'ne':
           dbgWin.style.top = self.options.posAdjY + 'px';
-          dbgWin.style.left = (document.documentElement.clientWidth - self.options.width - self.options.posAdjX) + 'px';
+          dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
           break;
         case 'c':
           dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-          dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (self.options.width / 2)) + 'px';
+          dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
           break;
         case 'sw':
           dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
@@ -490,11 +491,7 @@ DebugJS.prototype = {
         dbgWin.style.display = 'none';
       }
     }
-
     self.debugWindow = dbgWin;
-    self.clearMessage();
-    self.setupEventHandler();
-    self.initDebugWindow();
     self.status |= DebugJS.STATE_INITIALIZED;
     return true;
   },
@@ -1044,9 +1041,9 @@ DebugJS.prototype = {
           lineNumPadding = lineNumPadding + '0';
         }
         lineNum = lineNumPadding + lineCnt + ':';
-        line += '<td style="padding-right:3px;word-break:normal;">' + lineNum + '</td>';
+        line += '<td style="padding-right:3px;word-break:normal;font-size:' + self.options.fontSize + ';">' + lineNum + '</td>';
       }
-      line += '<td><pre>' + allBuf[i] + '</pre></td>';
+      line += '<td style="font-size:' + self.options.fontSize + ';line-height:1em;"><pre>' + allBuf[i] + '</pre></td>';
       line += '</tr>';
       logs[i] = line;
     }
@@ -1918,7 +1915,7 @@ DebugJS.convBIN = function(v2) {
 DebugJS.timeStart = function(timerName, msg) {
   Debug.timers[timerName] = {};
   Debug.timers[timerName].start = (new Date());
-  var str = timerName + ': timer started.';
+  var str = timerName + ': timer started';
   if (msg) {str += ' ' + msg;}
   DebugJS.log(str);
 };
@@ -1983,49 +1980,66 @@ DebugJS.httpRequest = function(url, method) {
   xhr.send(null);
 };
 
+DebugJS.getElementCount = function(name) {
+  return document.getElementsByTagName(name).length;
+}
+
 DebugJS.log = function(m) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   DebugJS.log.out(m, null);
 };
 
 DebugJS.log.e = function(m) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   var style = 'color:' + Debug.options.errorColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.w = function(m) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   var style = 'color:' + Debug.options.warnColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.i = function(m) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   var style = 'color:' + Debug.options.infoColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.d = function(m) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   var style = 'color:' + Debug.options.debugColor + ';';
   DebugJS.log.out(m, style);
 };
 
-DebugJS.log.v = function(m) {
-  var style = 'color:' + Debug.options.verboseColor + ';';
-  DebugJS.log.out(m, style);
-};
-
 DebugJS.log.s = function(m) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   var style = 'color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.p = function(o) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   var m = '<br>' + DebugJS.objDump(o);
   DebugJS.log.out(m, null);
 };
 
 DebugJS.log.out = function(m, style) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
   if (m != null) {
     var t = '';
     if (Debug.options.showTimeStamp) {
@@ -2073,11 +2087,6 @@ log.d = function(m) {
   DebugJS.log.d(m);
 };
 
-log.v = function(m) {
-  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.log.v(m);
-};
-
 log.s = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.s(m);
@@ -2092,6 +2101,11 @@ log.stk = function() {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   var err = new Error();
   DebugJS.log(err.stack);
+};
+
+log.clr = function() {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  Debug.clearMessage();
 };
 
 timeStart = function(timerName, msg) {
@@ -2128,7 +2142,6 @@ if (DebugJS.ENABLE) {
   log.w = function(x) {};
   log.i = function(x) {};
   log.d = function(x) {};
-  log.v = function(x) {};
   log.s = function(x) {};
   log.p = function(x) {};
   log.stk = function() {};
