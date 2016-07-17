@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607172030';
+  this.v = '201607180000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -111,6 +111,8 @@ var DebugJS = function() {
   this.resizeNE = null;
   this.resizeSE = null;
   this.resizeSW = null;
+  this.initWidth = 0;
+  this.initHeight = 0;
   this.resizeOrgWidth = 0;
   this.resizeOrgHeight = 0;
   this.orgOffsetTop = 0;
@@ -160,7 +162,7 @@ DebugJS.STATE_MEASURING = 0x20000;
 DebugJS.STATE_LOG_SUSPENDING = 0x40000;
 DebugJS.STATE_INITIALIZED = 0x80000000;
 
-DebugJS.DEBUG_WIN_MIN_W = 280;
+DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#888';
@@ -202,6 +204,11 @@ DebugJS.prototype = {
       self.id = self.DEFAULT_ELM_ID;
       self.status |= DebugJS.STATE_DYNAMIC;
       self.status |= DebugJS.STATE_DRAGGABLE;
+
+      // Create a window
+      dbgWin = document.createElement('div');
+      dbgWin.id = self.id;
+      self.bodyEl.appendChild(dbgWin);
     } else {
       self.id = options.target;
       dbgWin = document.getElementById(self.id);
@@ -211,15 +218,6 @@ DebugJS.prototype = {
 
     if (self.options.visible) self.status |= DebugJS.STATE_VISIBLE;
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.resizable)) self.status |= DebugJS.STATE_RESIZABLE;
-
-    self.bodyEl = document.getElementsByTagName('body')[0];
-
-    // Create a window
-    if (self.status & DebugJS.STATE_DYNAMIC) {
-      dbgWin = document.createElement('div');
-      dbgWin.id = self.id;
-      self.bodyEl.appendChild(dbgWin);
-    }
 
     // Info Area
     self.infoArea = document.createElement('div');
@@ -452,6 +450,7 @@ DebugJS.prototype = {
     self.setupEventHandler();
     self.initDebugWindow();
 
+    self.debugWindow = dbgWin;
     if (self.status & DebugJS.STATE_DYNAMIC) {
       dbgWin.style.position = 'fixed';
       dbgWin.style.width = self.options.width + 'px';
@@ -462,36 +461,14 @@ DebugJS.prototype = {
       self.setupMove();
 
       // adjust the window position
-      var dbgWinWidth = dbgWin.offsetWidth;
-      var dbgWinHeight = dbgWin.offsetHeight;
-      switch (self.options.position) {
-        case 'se':
-          dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-          dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
-          break;
-        case 'ne':
-          dbgWin.style.top = self.options.posAdjY + 'px';
-          dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
-          break;
-        case 'c':
-          dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-          dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
-          break;
-        case 'sw':
-          dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-          dbgWin.style.left = self.options.posAdjX + 'px';
-          break;
-        default:
-          dbgWin.style.top = self.options.posAdjY + 'px';
-          dbgWin.style.left = self.options.posAdjX + 'px';
-          break;
-      }
+      self.initWidth = dbgWin.offsetWidth;
+      self.initHeight = dbgWin.offsetHeight;
+      self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
 
       if (!(self.status & DebugJS.STATE_VISIBLE)) {
         dbgWin.style.display = 'none';
       }
     }
-    self.debugWindow = dbgWin;
     self.status |= DebugJS.STATE_INITIALIZED;
     return true;
   },
@@ -580,6 +557,32 @@ DebugJS.prototype = {
     }
 
     self.printMessage();
+  },
+
+  setWindowPosition: function(pos, dbgWinWidth, dbgWinHeight) {
+    var self = Debug;
+    switch (pos) {
+      case 'se':
+        self.debugWindow.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+        self.debugWindow.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
+        break;
+      case 'ne':
+        self.debugWindow.style.top = self.options.posAdjY + 'px';
+        self.debugWindow.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
+        break;
+      case 'c':
+        self.debugWindow.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+        self.debugWindow.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
+        break;
+      case 'sw':
+        self.debugWindow.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+        self.debugWindow.style.left = self.options.posAdjX + 'px';
+        break;
+      default:
+        self.debugWindow.style.top = self.options.posAdjY + 'px';
+        self.debugWindow.style.left = self.options.posAdjX + 'px';
+        break;
+    }
   },
 
   // Init Clear Button
@@ -709,10 +712,11 @@ DebugJS.prototype = {
     var btn = '□';
     if (self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) {
       fn = 'Debug.restoreDebugWindow()';
-      btn = '－';
+      btn = '❐';
     }
-    self.winBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:16px;color:#888;" onclick="' + fn + ';Debug.updateWinBtnArea();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>';
-
+    var b = '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:16px;color:#888;" onclick="' + fn + ';Debug.updateWinBtnArea();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>';
+    b += '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:16px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinBtnArea();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
+    self.winBtnArea.innerHTML = b;
   },
 
   // Close Button
@@ -1270,6 +1274,16 @@ DebugJS.prototype = {
     self.debugWindow.style.height = self.resizeOrgHeight + 'px';
     self.debugWindow.style.top = self.orgOffsetTop + 'px';
     self.debugWindow.style.left = self.orgOffsetLeft + 'px';
+    self.resizeMsgHeight();
+    self.msgArea.children[self.msgAreaId].scrollTop = self.msgArea.children[self.msgAreaId].scrollHeight;
+    self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+  },
+
+  resetDebugWindow: function() {
+    var self = Debug;
+    self.debugWindow.style.width = self.initWidth + 'px';
+    self.debugWindow.style.height = self.initHeight + 'px';
+    self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
     self.resizeMsgHeight();
     self.msgArea.children[self.msgAreaId].scrollTop = self.msgArea.children[self.msgAreaId].scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
