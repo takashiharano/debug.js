@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607170000';
+  this.v = '201607171530';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -525,10 +525,6 @@ DebugJS.prototype = {
       window.addEventListener('keyup', self.keyUpHandler, true);
       self.updateKeyUpArea();
     }
-  },
-
-  isInitialized: function() {
-    return Debug.status & DebugJS.STATE_INITIALIZED;
   },
 
   initDebugWindow: function() {
@@ -1207,8 +1203,9 @@ DebugJS.prototype = {
     }
 
     if (self.options.showElement) {
-      var elm = document.elementFromPoint(e.clientX, e.clientY);
-      self.domElement = '&lt;' + elm.nodeName + '&gt;';
+      var el = document.elementFromPoint(e.clientX, e.clientY);
+      self.domElement = '&lt;' + el.nodeName + '&gt;';
+      if (el.id) {self.domElement += ' id:' + el.id;}
       self.updateElementArea();
     }
 
@@ -1716,7 +1713,7 @@ DebugJS.execCmdP = function(args) {
   }
 };
 
-DebugJS.OBJDMP_MAX = 500;
+DebugJS.OBJDMP_MAX = 150;
 DebugJS.objDump = function(obj) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
@@ -1724,7 +1721,7 @@ DebugJS.objDump = function(obj) {
   }
   var ret = DebugJS._objDump(obj, arg);
   if (ret.cnt >= DebugJS.OBJDMP_MAX) {
-    log.w('The object is too large. (' + ret.cnt + ')');
+    log.w('The object is too large. (>=' + ret.cnt + ')');
   }
   return ret.dump;
 };
@@ -1915,26 +1912,30 @@ DebugJS.convBIN = function(v2) {
   DebugJS.log(res);
 };
 
-DebugJS.timeStart = function(timerName) {
+DebugJS.timeStart = function(timerName, msg) {
   Debug.timers[timerName] = {};
   Debug.timers[timerName].start = (new Date());
-  DebugJS.log(timerName + ': timer started');
+  var str = timerName + ': timer started.';
+  if (msg) {str += ' ' + msg;}
+  DebugJS.log(str);
 };
 
-DebugJS.timeSplit = function(timerName) {
+DebugJS.timeSplit = function(timerName, msg) {
   if (!Debug.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
     return;
   }
-  DebugJS.log(timerName + ': ' + DebugJS.timer(timerName));
+  var str = timerName + ': ' + DebugJS.timer(timerName);
+  if (msg) {str += ' ' + msg;}
+  DebugJS.log(str);
 };
 
-DebugJS.timeEnd = function(timerName) {
+DebugJS.timeEnd = function(timerName, msg) {
   if (!Debug.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
     return;
   }
-  DebugJS.timeSplit(timerName);
+  DebugJS.timeSplit(timerName, msg);
   delete Debug.timers[timerName];
 };
 
@@ -2019,6 +2020,7 @@ DebugJS.log.p = function(o) {
 };
 
 DebugJS.log.out = function(m, style) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {DebugJS.init();}
   if (m != null) {
     var t = '';
     if (Debug.options.showTimeStamp) {
@@ -2034,7 +2036,7 @@ DebugJS.log.out = function(m, style) {
 };
 
 DebugJS.init = function() {
-  if (!Debug.isInitialized()) {
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
     Debug.init(null, null);
   }
 };
@@ -2085,16 +2087,16 @@ log.stk = function() {
   DebugJS.log(err.stack);
 };
 
-timeStart = function(timerName) {
-  DebugJS.timeStart(timerName);
+timeStart = function(timerName, msg) {
+  DebugJS.timeStart(timerName, msg);
 };
 
-timeSplit = function(timerName) {
-  DebugJS.timeSplit(timerName);
+timeSplit = function(timerName, msg) {
+  DebugJS.timeSplit(timerName, msg);
 };
 
-timeEnd = function(timerName) {
-  DebugJS.timeEnd(timerName);
+timeEnd = function(timerName, msg) {
+  DebugJS.timeEnd(timerName, msg);
 };
 
 if (DebugJS.CATCH_ALL_ERRORS) {
@@ -2125,7 +2127,7 @@ if (DebugJS.ENABLE) {
   log.s = function(x) {};
   log.p = function(x) {};
   log.stk = function() {};
-  timeStart = function(x) {};
-  timeSplit = function(x) {};
-  timeEnd = function(x) {};
+  timeStart = function(x, xx) {};
+  timeSplit = function(x, xx) {};
+  timeEnd = function(x, xx) {};
 }

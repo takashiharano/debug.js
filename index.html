@@ -215,12 +215,10 @@ var h = [
 ];
 
 window.onload = function() {
-//in the absence of this initialization, debug.js works in default configuration.
   var options = {
     'position': 'c'
   };
 
-// If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options2 = {
     'target': 'dbg',
     'dispLine': 10,
@@ -238,17 +236,18 @@ window.onload = function() {
     'enableCommandLine': true
   };
 
+  // If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options3 = {
     'target': 'dbg'
   };
 
+//in the absence of this initialization, debug.js works in default configuration.
 //  Debug.init(options);
 //  Debug.init(options2);
 //  Debug.init(options3);
 
   log('Here is the log output example!');
   log('The window\'s load event fired.');
-
   setTimeout(displayMessages, 500);
 }
 
@@ -284,7 +283,7 @@ var messages = [
 </head>
 <body>
 <div class="header">
-<div class="title">debug.js <span style="font-size:2rem;">demo & description</span></div>
+<div class="title" id="title">debug.js <span style="font-size:2rem;" id="title2">demo & description</span></div>
 </div>
 <div class="content">
 <div class="caption">Usage:</div><br>
