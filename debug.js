@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607171530';
+  this.v = '201607171800';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -169,9 +169,10 @@ DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 DebugJS.prototype = {
   init: function(options) {
-    if(!DebugJS.ENABLE){return;}
+    if(!DebugJS.ENABLE){return false;}
     var self = Debug;
     self.bodyEl = document.body;
+    if (!self.bodyEl) {return false;}
     var dbgWin = self.debugWindow;
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
@@ -495,6 +496,7 @@ DebugJS.prototype = {
     self.setupEventHandler();
     self.initDebugWindow();
     self.status |= DebugJS.STATE_INITIALIZED;
+    return true;
   },
 
   setupEventHandler: function() {
@@ -1272,6 +1274,7 @@ DebugJS.prototype = {
     self.debugWindow.style.top = self.orgOffsetTop + 'px';
     self.debugWindow.style.left = self.orgOffsetLeft + 'px';
     self.resizeMsgHeight();
+    self.msgArea.children[self.msgAreaId].scrollTop = self.msgArea.children[self.msgAreaId].scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
 
@@ -1366,8 +1369,8 @@ DebugJS.prototype = {
     }
     var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
     var origin = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.clickedPosX + ',y=' + self.clickedPosY + '</span>';
-    //var endPoint = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
     var endPoint = '';
+    //endPoint = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
     self.measureBox.innerHTML = origin + size + endPoint;
   },
 
@@ -2020,7 +2023,9 @@ DebugJS.log.p = function(o) {
 };
 
 DebugJS.log.out = function(m, style) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {DebugJS.init();}
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
+  }
   if (m != null) {
     var t = '';
     if (Debug.options.showTimeStamp) {
@@ -2037,7 +2042,9 @@ DebugJS.log.out = function(m, style) {
 
 DebugJS.init = function() {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    Debug.init(null, null);
+    return Debug.init(null, null);
+  } else {
+    return true;
   }
 };
 
@@ -2099,24 +2106,22 @@ timeEnd = function(timerName, msg) {
   DebugJS.timeEnd(timerName, msg);
 };
 
-if (DebugJS.CATCH_ALL_ERRORS) {
-  window.onerror = function(msg,file,line,col,err) {
-    log.e(msg + ' ' + file + '(' + line + ':' + col + ')');
-  };
-}
-
-if (DebugJS.UNIFY_CONSOLE) {
-  console.log = function(x) {log(x);}
-  console.info = function(x) {log.i(x);}
-  console.warn = function(x) {log.w(x);}
-  console.error = function(x) {log.e(x);}
-  console.time = function(x) {timeStart(x);}
-  console.timeEnd = function(x) {timeEnd(x);}
-}
-
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
   window.addEventListener('load', DebugJS.init, true);
+  if (DebugJS.CATCH_ALL_ERRORS) {
+    window.onerror = function(msg,file,line,col,err) {
+      log.e(msg + ' ' + file + '(' + line + ':' + col + ')');
+    };
+  }
+  if (DebugJS.UNIFY_CONSOLE) {
+    console.log = function(x) {log(x);}
+    console.info = function(x) {log.i(x);}
+    console.warn = function(x) {log.w(x);}
+    console.error = function(x) {log.e(x);}
+    console.time = function(x) {timeStart(x);}
+    console.timeEnd = function(x) {timeEnd(x);}
+  }
 } else {
   log = function(x) {};
   log.e = function(x) {};
