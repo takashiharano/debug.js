@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607160000';
+  this.v = '201607170000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -68,6 +68,7 @@ var DebugJS = function() {
   this.clrBtnArea = null;
   this.suspendLogBtnArea = null;
   this.pinBtnArea = null;
+  this.winBtnArea = null;
   this.closeBtnArea = null;
   this.mousePositionArea = null;
   this.mousePos = 'x=-,y=-';
@@ -112,10 +113,12 @@ var DebugJS = function() {
   this.resizeSW = null;
   this.resizeOrgWidth = 0;
   this.resizeOrgHeight = 0;
-  this.clickedPosX = 0;
-  this.clickedPosY = 0;
   this.orgOffsetTop = 0;
   this.orgOffsetLeft = 0;
+  this.clickedPosX = 0;
+  this.clickedPosY = 0;
+  this.prevOffsetTop = 0;
+  this.prevOffsetLeft = 0;
   this.savedFunc = null;
   this.status = 0;
 
@@ -151,6 +154,7 @@ DebugJS.STATE_RESIZING_E = 0x800;
 DebugJS.STATE_RESIZING_S = 0x1000;
 DebugJS.STATE_RESIZING_W = 0x2000;
 DebugJS.STATE_RESIZING_ALL = DebugJS.STATE_RESIZING | DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E | DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
+DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x4000;
 DebugJS.STATE_MEASURE = 0x10000;
 DebugJS.STATE_MEASURING = 0x20000;
 DebugJS.STATE_LOG_SUSPENDING = 0x40000;
@@ -239,6 +243,12 @@ DebugJS.prototype = {
     if (self.options.showCloseButton) {
       self.closeBtnArea = document.createElement('span');
       self.infoArea.appendChild(self.closeBtnArea);
+    }
+
+    // Window Button
+    if (self.status & DebugJS.STATE_RESIZABLE) {
+      self.winBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.winBtnArea);
     }
 
     // Pin Button
@@ -483,6 +493,8 @@ DebugJS.prototype = {
     self.debugWindow = dbgWin;
     self.clearMessage();
     self.setupEventHandler();
+    self.initDebugWindow();
+    self.status |= DebugJS.STATE_INITIALIZED;
   },
 
   setupEventHandler: function() {
@@ -516,19 +528,7 @@ DebugJS.prototype = {
   },
 
   isInitialized: function() {
-    if (Debug.debugWindow == null) {
-      return false;
-    } else {
-      return true;
-    }
-  },
-
-  isWindowInitialized: function() {
-    if (Debug.status & DebugJS.STATE_INITIALIZED) {
-      return true;
-    } else {
-      return false;
-    }
+    return Debug.status & DebugJS.STATE_INITIALIZED;
   },
 
   initDebugWindow: function() {
@@ -559,6 +559,10 @@ DebugJS.prototype = {
       self.updateSuspendLogBtnArea();
     }
 
+    if (self.status & DebugJS.STATE_RESIZABLE) {
+      self.updateWinBtnArea();
+    }
+
     if (self.options.showCloseButton) {
       self.initCloseBtnArea();
     }
@@ -581,7 +585,6 @@ DebugJS.prototype = {
     }
 
     self.printMessage();
-    self.status |= DebugJS.STATE_INITIALIZED;
   },
 
   // Init Clear Button
@@ -704,6 +707,19 @@ DebugJS.prototype = {
     self.pinBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
   },
 
+  // Window Button
+  updateWinBtnArea: function() {
+    var self = Debug;
+    var fn = 'Debug.expandDebugWindow()';
+    var btn = '□';
+    if (self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) {
+      fn = 'Debug.restoreDebugWindow()';
+      btn = '－';
+    }
+    self.winBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:16px;color:#888;" onclick="' + fn + ';Debug.updateWinBtnArea();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>';
+
+  },
+
   // Close Button
   initCloseBtnArea: function() {
     var self = Debug;
@@ -780,8 +796,8 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_DRAGGING;
     Debug.infoArea.style.cursor = 'move';
     Debug.msgArea.style.cursor = 'move';
-    self.orgOffsetTop = e.clientY - self.debugWindow.offsetTop;
-    self.orgOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
+    self.prevOffsetTop = e.clientY - self.debugWindow.offsetTop;
+    self.prevOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
     if (!document.all) {
        window.getSelection().removeAllRanges();
     }
@@ -790,8 +806,8 @@ DebugJS.prototype = {
   windowMove: function(e) {
     var self = Debug;
     if (!(self.status & DebugJS.STATE_DRAGGING)) return;
-    self.debugWindow.style.top = e.clientY - self.orgOffsetTop + 'px';
-    self.debugWindow.style.left = e.clientX - self.orgOffsetLeft + 'px';
+    self.debugWindow.style.top = e.clientY - self.prevOffsetTop + 'px';
+    self.debugWindow.style.left = e.clientX - self.prevOffsetLeft + 'px';
   },
 
   setupResize: function() {
@@ -862,15 +878,22 @@ DebugJS.prototype = {
     };
   },
 
+  storeSizeAndPos: function() {
+    var self = Debug;
+    self.orgOffsetTop = self.debugWindow.offsetTop;
+    self.orgOffsetLeft = self.debugWindow.offsetLeft;
+    self.resizeOrgWidth = self.debugWindow.offsetWidth;
+    self.resizeOrgHeight = self.debugWindow.offsetHeight;
+  },
+
   startResize: function(e) {
     var self = Debug;
     self.status |= DebugJS.STATE_RESIZING;
     self.clickedPosX = e.clientX;
     self.clickedPosY = e.clientY;
-    self.orgOffsetTop = self.debugWindow.offsetTop;
-    self.orgOffsetLeft = self.debugWindow.offsetLeft;
-    self.resizeOrgWidth = self.debugWindow.offsetWidth;
-    self.resizeOrgHeight = self.debugWindow.offsetHeight;
+    self.storeSizeAndPos();
+    self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+    self.updateWinBtnArea();
   },
 
   resize: function(e) {
@@ -1224,6 +1247,35 @@ DebugJS.prototype = {
     if (self.options.showMouseStatus) {
       self.updateMouseClickArea();
     }
+  },
+
+  expandDebugWindow: function() {
+    var self = Debug;
+    self.storeSizeAndPos();
+    var cw = document.documentElement.clientWidth;
+    var ch = document.documentElement.clientHeight;
+    var w = 900;
+    var h = 600;
+    var t = ch / 2 - h / 2;
+    var l = cw / 2 - w / 2;
+    if (w > cw) {w = cw; l = 0;}
+    if (h > ch) {h = ch; t = 0;}
+    self.debugWindow.style.top = t + 'px';
+    self.debugWindow.style.left = l + 'px';
+    self.debugWindow.style.width = w + 'px';
+    self.debugWindow.style.height = h + 'px';
+    self.resizeMsgHeight();
+    self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+  },
+
+  restoreDebugWindow: function() {
+    var self = Debug;
+    self.debugWindow.style.width = self.resizeOrgWidth + 'px';
+    self.debugWindow.style.height = self.resizeOrgHeight + 'px';
+    self.debugWindow.style.top = self.orgOffsetTop + 'px';
+    self.debugWindow.style.left = self.orgOffsetLeft + 'px';
+    self.resizeMsgHeight();
+    self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
 
   hideDebugWindow: function() {
@@ -1668,7 +1720,7 @@ DebugJS.OBJDMP_MAX = 500;
 DebugJS.objDump = function(obj) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
-    arg.dump += '<span style="color:#4c4;">function()</span><br>';
+    arg.dump += '<span style="color:#4c4;">function()</span>\n';
   }
   var ret = DebugJS._objDump(obj, arg);
   if (ret.cnt >= DebugJS.OBJDMP_MAX) {
@@ -1680,7 +1732,7 @@ DebugJS.objDump = function(obj) {
 DebugJS._objDump = function(obj, arg) {
   if (arg.cnt >= DebugJS.OBJDMP_MAX) {
     if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
-      arg.dump += '<span style="color:#aaa;">...</span><br>'; arg.cnt++;
+      arg.dump += '<span style="color:#aaa;">...</span>\n'; arg.cnt++;
     }
     return arg;
   }
@@ -1689,7 +1741,7 @@ DebugJS._objDump = function(obj, arg) {
     indent += ' ';
   }
   if (obj instanceof Array) {
-    arg.dump += '<span style="color:#c08;">[Array]</span><br>'; arg.cnt++;
+    arg.dump += '<span style="color:#c08;">[Array]</span>\n'; arg.cnt++;
     for (var i in obj) {
       arg.lv++; indent += ' ';
       arg.dump += indent + '[' + i + '] ';
@@ -1699,7 +1751,7 @@ DebugJS._objDump = function(obj, arg) {
   } else if (obj instanceof Object) {
     arg.cnt++;
     if (typeof obj !== 'function') {
-      arg.dump += '<span style="color:#79f;">[Object]</span> {<br>';
+      arg.dump += '<span style="color:#79f;">[Object]</span> {\n';
     }
     indent += ' ';
     for (var key in obj) {
@@ -1708,9 +1760,9 @@ DebugJS._objDump = function(obj, arg) {
         if (Object.keys(obj[key]).length > 0) {
           arg.dump += ' {';
         }
-        arg.dump += '<br>';
+        arg.dump += '\n';
       } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
-        arg.dump += indent + key + ': <span style="color:#f80;">[Date]</span> ' + obj[key] + '<br>';
+        arg.dump += indent + key + ': <span style="color:#f80;">[Date]</span> ' + obj[key] + '\n';
         continue;
       } else {
         arg.dump += indent + key + ': ';
@@ -1720,24 +1772,24 @@ DebugJS._objDump = function(obj, arg) {
       arg.lv--;
       if (typeof obj[key] === 'function') {
         if (Object.keys(obj[key]).length > 0) {
-          arg.dump += indent + '}<br>';
+          arg.dump += indent + '}\n';
         }
       }
     }
     indent = indent.replace(' ', '');
     if (typeof obj !== 'function') {
-      arg.dump += indent + '}<br>';
+      arg.dump += indent + '}\n';
     }
   } else if (obj === null) {
-    arg.dump += '<span style="color:#ccc;">null</span>' + '<br>'; arg.cnt++;
+    arg.dump += '<span style="color:#ccc;">null</span>' + '\n'; arg.cnt++;
   } else if (obj === undefined) {
-    arg.dump += '<span style="color:#ccc;">undefined</span>' + '<br>'; arg.cnt++;
+    arg.dump += '<span style="color:#ccc;">undefined</span>' + '\n'; arg.cnt++;
   } else if (typeof obj === 'string') {
     var str = obj.replace(/</g, '&lt;');
     str = str.replace(/>/g, '&gt;');
-    arg.dump += '"' + str + '"<br>'; arg.cnt++;
+    arg.dump += '"' + str + '"\n'; arg.cnt++;
   } else {
-    arg.dump += obj + '<br>'; arg.cnt++;
+    arg.dump += obj + '\n'; arg.cnt++;
   }
   return arg;
 };
@@ -1928,59 +1980,42 @@ DebugJS.httpRequest = function(url, method) {
 };
 
 DebugJS.log = function(m) {
-  DebugJS.log.init();
   DebugJS.log.out(m, null);
 };
 
 DebugJS.log.e = function(m) {
-  DebugJS.log.init();
   var style = 'color:' + Debug.options.errorColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.w = function(m) {
-  DebugJS.log.init();
   var style = 'color:' + Debug.options.warnColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.i = function(m) {
-  DebugJS.log.init();
   var style = 'color:' + Debug.options.infoColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.d = function(m) {
-  DebugJS.log.init();
   var style = 'color:' + Debug.options.debugColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.v = function(m) {
-  DebugJS.log.init();
   var style = 'color:' + Debug.options.verboseColor + ';';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.s = function(m) {
-  DebugJS.log.init();
   var style = 'color:' + Debug.options.specialColor + ';text-shadow:0 0 3px;';
   DebugJS.log.out(m, style);
 };
 
 DebugJS.log.p = function(o) {
-  DebugJS.log.init();
   var m = '<br>' + DebugJS.objDump(o);
   DebugJS.log.out(m, null);
-};
-
-DebugJS.log.init = function() {
-  if (!Debug.isInitialized()) {
-    Debug.init(null, null);
-  }
-  if (!Debug.isWindowInitialized()) {
-    Debug.initDebugWindow();
-  }
 };
 
 DebugJS.log.out = function(m, style) {
@@ -1996,6 +2031,12 @@ DebugJS.log.out = function(m, style) {
     Debug.msgBuf.add(m);
   }
   Debug.printMessage();
+};
+
+DebugJS.init = function() {
+  if (!Debug.isInitialized()) {
+    Debug.init(null, null);
+  }
 };
 
 var log = function(m) {
@@ -2073,7 +2114,7 @@ if (DebugJS.UNIFY_CONSOLE) {
 
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
-  window.addEventListener('load', DebugJS.log.init, true);
+  window.addEventListener('load', DebugJS.init, true);
 } else {
   log = function(x) {};
   log.e = function(x) {};
