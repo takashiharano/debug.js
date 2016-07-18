@@ -157,7 +157,6 @@ a:hover {
   line-height: 1em;
 }
 
-
 /*td {*/
 /*  width: 100px;*/
 /*  font-size: 20px;*/
@@ -279,12 +278,47 @@ function displayMessages() {
 }
 
 var messages = [
-{
-  'fnc': log,
-  'msg': 'This debug window is automatically generated.',
-  'delay': 500
-}
-]
+  {
+    'fnc': log,
+    'msg': 'This debug window is automatically generated.',
+    'delay': 100
+  },
+  {
+    'fnc': log,
+    'msg': '--------------------',
+    'delay': 100
+  },
+  {
+    'fnc': log,
+    'msg': 'standard log sample.',
+    'delay': 100
+  },
+  {
+    'fnc': log.e,
+    'msg': 'error log sample.',
+    'delay': 100
+  },
+  {
+    'fnc': log.w,
+    'msg': 'warning log sample.',
+    'delay': 100
+  },
+  {
+    'fnc': log.i,
+    'msg': 'information log sample.',
+    'delay': 100
+  },
+  {
+    'fnc': log.d,
+    'msg': 'debug log sample.',
+    'delay': 100
+  },
+  {
+    'fnc': log.s,
+    'msg': 'special log sample.',
+    'delay': 100
+  }
+];
 </script>
 </head>
 <body>
