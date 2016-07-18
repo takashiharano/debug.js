@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607181500';
+  this.v = '201607190000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -171,7 +171,7 @@ DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 DebugJS.prototype = {
   init: function(options) {
-    if(!DebugJS.ENABLE){return false;}
+    if (!DebugJS.ENABLE) {return false;}
     var self = Debug;
     self.bodyEl = document.body;
     if (!self.bodyEl) {return false;}
@@ -1455,7 +1455,7 @@ DebugJS.prototype = {
   },
 
   cmdElements: function(args, tbl) {
-    DebugJS.countElements();
+    DebugJS.countElements(args, true);
   },
 
   cmdExit: function(args, tbl) {
@@ -1806,25 +1806,62 @@ DebugJS._objDump = function(obj, arg) {
   return arg;
 };
 
-DebugJS.countElements = function() {
+DebugJS.countElements = function(selector, showDetail) {
+  if (!selector) {selector = '*';}
   var cnt = {};
-  var elms = document.getElementsByTagName('*');
-  var len = elms.length;
-  for (var i = 0; i < len; i++) {
-    if (!cnt[elms[i].tagName]) {
-      cnt[elms[i].tagName] = 1;
-    } else {
-      cnt[elms[i].tagName]++;
+  var element = null;
+  var elmList = [];
+  var total = 0;
+  switch (selector.charAt(0)) {
+    case '#':
+      element = document.getElementById(selector.substr(1));
+      break;
+    case '.':
+      elmList = document.getElementsByClassName(selector.substr(1));
+      break;
+    default:
+      elmList = document.getElementsByTagName(selector);
+      break;
+  }
+
+  if (element) {
+    DebugJS.getChildElements(element, elmList);
+  }
+
+  if (elmList) {
+    for (var i = 0, len = elmList.length; i < len; i++) {
+      if (!cnt[elmList[i].tagName]) {
+        cnt[elmList[i].tagName] = 1;
+      } else {
+        cnt[elmList[i].tagName]++;
+      }
+      total++;
     }
   }
-  var l = '<table>';
-  for (var key in cnt) {
-    l += '<tr><td>' + key + '</td><td style="text-align:right;">' + cnt[key] + '</td></tr>';
+
+  if (showDetail) {
+    var l = '<table>';
+    for (var key in cnt) {
+      l += '<tr><td>' + key + '</td><td style="text-align:right;">' + cnt[key] + '</td></tr>';
+    }
+    l += '<tr><td>Total</td><td style="text-align:right;">' + total + '</td></tr>';
+    l += '</table>';
+    DebugJS.log(l);
   }
-    l += '<tr><td>Total</td><td style="text-align:right;">' + len + '</td></tr>';
-  l += '</table>';
-  DebugJS.log(l);
-}
+  return total;
+};
+
+DebugJS.getChildElements = function(el, list) {
+  if (!el.tagName) {return;}
+  list.push(el);
+  var children = el.childNodes;
+  if (children) {
+    var len = children.length;
+    for (var i = 0; i < len; i++) {
+      DebugJS.getChildElements(children[i], list);
+    }
+  }
+};
 
 DebugJS.execCmdJson = function(jsn) {
   var j = JSON.parse(jsn);
@@ -1994,10 +2031,6 @@ DebugJS.httpRequest = function(url, method) {
     }
   };
   xhr.send(null);
-};
-
-DebugJS.getElementCount = function(name) {
-  return document.getElementsByTagName(name).length;
 };
 
 DebugJS.log = function(m) {

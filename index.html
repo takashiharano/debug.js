@@ -23,15 +23,24 @@ a:hover {
   text-decoration: underline;
 }
 
-.header {
+#wrapper {
+  width: 100%;
+}
+
+#main {
+  width: 900px;
+  margin: 0 auto;
+}
+
+#header {
   position: fixed;
+  width: 100%;
   top: 0;
   left: 0;
-  width: 100%;
   height: 5rem;
-  background: #00a8ff;
   color: #fff;
   z-index: 1;
+  background: #00a8ff;
 }
 
 .content {
@@ -44,13 +53,12 @@ a:hover {
   margin-left: 20px;
 }
 
-.title {
+#title {
+  width: 900px;
   font-size: 4rem;
-  top: 0;
-  bottom: 0;
   margin: auto;
-  height:  3.5rem;
-  margin-left: 5px;
+  height:  5rem;
+  padding-left: 5px;
   white-space: nowrap;
 }
 
@@ -253,7 +261,7 @@ window.onload = function() {
 
   log('Here is the log output example!');
   log('The window\'s load event fired.');
-  setTimeout(displayMessages, 500);
+  setTimeout(displayMessages, 1500);
 }
 
 document.onkeydown = function(e) {
@@ -322,8 +330,10 @@ var messages = [
 </script>
 </head>
 <body>
-<div class="header">
-<div class="title" id="title">debug.js <span style="font-size:2rem;" id="title2">demo & description</span></div>
+<div id="wrapper">
+<div id="main">
+<div id="header">
+<div id="title">debug.js <span style="font-size:2rem;" id="title2">demo & description</span></div>
 </div>
 <div class="content">
 <div class="caption">Usage:</div><br>
@@ -684,7 +694,7 @@ Debug.init(options);
 
   <tr>
     <td class="name">elements</td>
-    <td></td>
+    <td>(opt.) #id / .class / tagName</td>
     <td>Count elements by tag name.</td>
   </tr>
 
@@ -919,5 +929,7 @@ log('&lt;img src=img.jpg&gt;');
 -->
 
 </div><!-- content -->
+</div><!-- main -->
+</div><!-- wrapper -->
 </body>
 </html>
