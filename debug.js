@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607180000';
+  this.v = '201607181500';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -143,12 +143,13 @@ DebugJS.ENABLE = true;
 DebugJS.CATCH_ALL_ERRORS = true;
 DebugJS.UNIFY_CONSOLE = true;
 
-DebugJS.STATE_VISIBLE = 0x1;
-DebugJS.STATE_DYNAMIC = 0x2;
-DebugJS.STATE_SHOW_CLOCK = 0x4;
-DebugJS.STATE_STOPWATCH_RUNNING = 0x8;
-DebugJS.STATE_DRAGGABLE = 0x10;
-DebugJS.STATE_DRAGGING = 0x20;
+DebugJS.STATE_INITIALIZED = 0x1;
+DebugJS.STATE_VISIBLE = 0x2;
+DebugJS.STATE_DYNAMIC = 0x4;
+DebugJS.STATE_SHOW_CLOCK = 0x8;
+DebugJS.STATE_STOPWATCH_RUNNING = 0x10;
+DebugJS.STATE_DRAGGABLE = 0x20;
+DebugJS.STATE_DRAGGING = 0x40;
 DebugJS.STATE_RESIZABLE = 0x100;
 DebugJS.STATE_RESIZING = 0x200;
 DebugJS.STATE_RESIZING_N = 0x400;
@@ -160,7 +161,6 @@ DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x4000;
 DebugJS.STATE_MEASURE = 0x10000;
 DebugJS.STATE_MEASURING = 0x20000;
 DebugJS.STATE_LOG_SUSPENDING = 0x40000;
-DebugJS.STATE_INITIALIZED = 0x80000000;
 
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
@@ -742,7 +742,7 @@ DebugJS.prototype = {
     // Log Area
     msg += '<div style="position:relative;padding:4px 0;height:100%;overflow:auto;" id="' + self.msgAreaId + '">';
     msg += '<table style="border-spacing:0;">';
-    for (var i = 0; i < buf.length; i++) {
+    for (var i = 0, len = buf.length; i < len; i++) {
       msg += buf[i];
     }
     msg += '</table>';
@@ -1423,7 +1423,7 @@ DebugJS.prototype = {
       args = cmds[2];
     }
     var found = false;
-    for (var i = 0; i < self.CMD_TBL.length; i++) {
+    for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
       if (cmd == self.CMD_TBL[i].cmd) {
         found = true;
         self.CMD_TBL[i].fnc(args, self.CMD_TBL[i]);
@@ -1473,10 +1473,11 @@ DebugJS.prototype = {
   },
 
   cmdHelp: function(args, tbl) {
+    var self = Debug;
     var str = 'Available Commands:<br>';
     str += '<table>';
-    for (var i = 0; i < Debug.CMD_TBL.length; i++) {
-      str += '<tr><td>' + Debug.CMD_TBL[i].cmd + '</td><td>' + Debug.CMD_TBL[i].desc + '</td></tr>';
+    for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
+      str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
     }
     str += '</table>';
     DebugJS.log(str);
@@ -1486,7 +1487,7 @@ DebugJS.prototype = {
     var self = Debug;
     var buf = self.cmdHistoryBuf.getAll();
     var str = 'Command History:<br>';
-    for (var i = 0; i < (buf.length - 1); i++) {
+    for (var i = 0, len = (buf.length - 1); i < len; i++) {
       str += buf[i] + '<br>';
     }
     DebugJS.log(str);
@@ -1716,7 +1717,7 @@ DebugJS.checkMetaKey = function(e) {
 
 DebugJS.execCmdP = function(args) {
   var objs = args.split(' ');
-  for (var i = 0; i < objs.length; i++) {
+  for (var i = 0, len = objs.length; i < len; i++) {
     if (objs[i] == '') continue;
     var cmd = 'DebugJS.buf="<br>' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log(DebugJS.buf);';
     try {
@@ -1808,7 +1809,8 @@ DebugJS._objDump = function(obj, arg) {
 DebugJS.countElements = function() {
   var cnt = {};
   var elms = document.getElementsByTagName('*');
-  for (var i = 0; i < elms.length; i++) {
+  var len = elms.length;
+  for (var i = 0; i < len; i++) {
     if (!cnt[elms[i].tagName]) {
       cnt[elms[i].tagName] = 1;
     } else {
@@ -1819,7 +1821,7 @@ DebugJS.countElements = function() {
   for (var key in cnt) {
     l += '<tr><td>' + key + '</td><td style="text-align:right;">' + cnt[key] + '</td></tr>';
   }
-    l += '<tr><td>Total</td><td style="text-align:right;">' + elms.length + '</td></tr>';
+    l += '<tr><td>Total</td><td style="text-align:right;">' + len + '</td></tr>';
   l += '</table>';
   DebugJS.log(l);
 }
@@ -1996,7 +1998,7 @@ DebugJS.httpRequest = function(url, method) {
 
 DebugJS.getElementCount = function(name) {
   return document.getElementsByTagName(name).length;
-}
+};
 
 DebugJS.log = function(m) {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
@@ -2138,17 +2140,17 @@ var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
   window.addEventListener('load', DebugJS.init, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
-    window.onerror = function(msg,file,line,col,err) {
+    window.onerror = function(msg, file, line, col, err) {
       log.e(msg + ' ' + file + '(' + line + ':' + col + ')');
     };
   }
   if (DebugJS.UNIFY_CONSOLE) {
-    console.log = function(x) {log(x);}
-    console.info = function(x) {log.i(x);}
-    console.warn = function(x) {log.w(x);}
-    console.error = function(x) {log.e(x);}
-    console.time = function(x) {timeStart(x);}
-    console.timeEnd = function(x) {timeEnd(x);}
+    console.log = function(x) {log(x);};
+    console.info = function(x) {log.i(x);};
+    console.warn = function(x) {log.w(x);};
+    console.error = function(x) {log.e(x);};
+    console.time = function(x) {timeStart(x);};
+    console.timeEnd = function(x) {timeEnd(x);};
   }
 } else {
   log = function(x) {};
@@ -2159,6 +2161,7 @@ if (DebugJS.ENABLE) {
   log.s = function(x) {};
   log.p = function(x) {};
   log.stk = function() {};
+  log.clr = function() {};
   timeStart = function(x, xx) {};
   timeSplit = function(x, xx) {};
   timeEnd = function(x, xx) {};
