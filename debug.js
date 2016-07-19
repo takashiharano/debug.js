@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607190000';
+  this.v = '201607200000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -35,9 +35,9 @@ var DebugJS = function() {
     'showWindowSize': true,
     'showMouseStatus': true,
     'showKeyStatus': true,
-    'showElement': false,
     'enableStopWatch': true,
     'enableScreenMeasure': true,
+    'enableElementInspection': true,
     'enableCommandLine': true,
     'target': null
   };
@@ -60,6 +60,8 @@ var DebugJS = function() {
   this.clockArea = null;
   this.measureBtnArea = null;
   this.measureBox = null;
+  this.elmInspectionBtnArea = null;
+  this.elmInspectionBox = null;
   this.swBtnArea = null;
   this.swArea = null;
   this.swStartTime = 0;
@@ -88,8 +90,7 @@ var DebugJS = function() {
   this.keyDownCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
-  this.elmArea = null;
-  this.domElement = '';
+  this.mainArea = null;
   this.msgArea = null;
   this.msgAreaId = null;
   this.msgAreaScrollX = 0;
@@ -111,6 +112,7 @@ var DebugJS = function() {
   this.resizeNE = null;
   this.resizeSE = null;
   this.resizeSW = null;
+  this.subPanelMargin = 1;
   this.initWidth = 0;
   this.initHeight = 0;
   this.resizeOrgWidth = 0;
@@ -160,7 +162,8 @@ DebugJS.STATE_RESIZING_ALL = DebugJS.STATE_RESIZING | DebugJS.STATE_RESIZING_N |
 DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x4000;
 DebugJS.STATE_MEASURE = 0x10000;
 DebugJS.STATE_MEASURING = 0x20000;
-DebugJS.STATE_LOG_SUSPENDING = 0x40000;
+DebugJS.STATE_ELEMENT_INSPECTING = 0x40000;
+DebugJS.STATE_LOG_SUSPENDING = 0x100000;
 
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
@@ -271,6 +274,12 @@ DebugJS.prototype = {
       self.infoArea.appendChild(self.swBtnArea);
     }
 
+    // Element Inspection Button
+    if (self.options.enableElementInspection) {
+      self.elmInspectionBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.elmInspectionBtnArea);
+    }
+
     // Screen Measure Button
     if (self.options.enableScreenMeasure) {
       self.measureBtnArea = document.createElement('span');
@@ -309,13 +318,7 @@ DebugJS.prototype = {
       self.infoArea.appendChild(self.mouseClickArea);
     }
 
-    // DOM Element
-    if (self.options.showElement) {
-      self.elmArea = document.createElement('span');
-      self.infoArea.appendChild(self.elmArea);
-    }
-
-    if ((self.options.showWindowSize) || (self.options.showMouseStatus) || (self.options.showElement)) {
+    if ((self.options.showWindowSize) || (self.options.showMouseStatus)) {
       self.infoArea.appendChild(document.createElement('br'));
     }
 
@@ -331,11 +334,16 @@ DebugJS.prototype = {
       self.infoArea.appendChild(self.keyUpArea);
     }
 
+    // Main
+    self.mainArea = document.createElement('div');
+    dbgWin.appendChild(self.mainArea);
+    self.mainArea.style.height = self.options.dispLine + '.2em';
+    if (self.status & DebugJS.STATE_DRAGGABLE) self.mainArea.style.cursor = 'default';
+
     // Log
     self.msgArea = document.createElement('div');
-    dbgWin.appendChild(self.msgArea);
-    self.msgArea.style.height = self.options.dispLine + '.2em';
-    if (self.status & DebugJS.STATE_DRAGGABLE) self.msgArea.style.cursor = 'default';
+    self.mainArea.appendChild(self.msgArea);
+    self.msgArea.style.height = '100%';
 
     // Command Line
     if (self.options.enableCommandLine) {
@@ -514,6 +522,10 @@ DebugJS.prototype = {
       self.updateMeasureBtnArea();
     }
 
+    if (self.options.enableElementInspection) {
+      self.updateElmInspectionBtnArea();
+    }
+
     if (self.options.enableStopWatch) {
       self.updateSwBtnArea();
       self.updateSwArea();
@@ -638,11 +650,6 @@ DebugJS.prototype = {
     this.mouseClickArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">CLICK:' + mouseClick + '</span>';
   },
 
-  // Update DOM Element
-  updateElementArea: function() {
-    this.elmArea.innerHTML = '<span class="' + this.id + '-sys-info" style="margin-right:10px;">DOM:' + this.domElement + '</span>';
-  },
-
   // Update key Down
   updateKeyDownArea: function() {
     this.keyDownArea.innerHTML = '<span class="' + this.id + '-sys-info">Key Down:' + this.keyDownCode + '&nbsp;</span>';
@@ -663,6 +670,13 @@ DebugJS.prototype = {
     var self = Debug;
     var c = (this.status & DebugJS.STATE_MEASURE) ? '#0f0' : '#888';
     self.measureBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="display:inline-block;float:right;margin-right:4px;width:8px;height:8px;margin-top:2px;background:' + c + ';" onclick="Debug.toggleMeasureMode();"> </span>';
+  },
+
+  // Update Measure Button
+  updateElmInspectionBtnArea: function() {
+    var self = Debug;
+    var c = (this.status & DebugJS.STATE_ELEMENT_INSPECTING) ? '#0f0' : '#888';
+    self.elmInspectionBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="display:inline-block;float:right;margin-right:4px;width:10px;height:6px;margin-top:2px;border:solid 1px ' + c + ';" onclick="Debug.toggleElmInspectionMode();"> </span>';
   },
 
   // Update Stop Watch Button
@@ -786,7 +800,7 @@ DebugJS.prototype = {
   setupMove: function() {
     var self = Debug;
     self.infoArea.onmousedown = self.startWindowMove;
-    self.msgArea.onmousedown = self.startWindowMove;
+    self.mainArea.onmousedown = self.startWindowMove;
   },
 
   startWindowMove: function(e) {
@@ -794,7 +808,7 @@ DebugJS.prototype = {
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
     self.status |= DebugJS.STATE_DRAGGING;
     Debug.infoArea.style.cursor = 'move';
-    Debug.msgArea.style.cursor = 'move';
+    Debug.mainArea.style.cursor = 'move';
     self.prevOffsetTop = e.clientY - self.debugWindow.offsetTop;
     self.prevOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
     if (!document.all) {
@@ -909,7 +923,7 @@ DebugJS.prototype = {
         self.debugWindow.style.top = t + 'px';
       }
       self.debugWindow.style.height = h + 'px';
-      self.resizeMsgHeight();
+      self.resizeMainHeight();
     }
 
     if (self.status & DebugJS.STATE_RESIZING_W) {
@@ -936,15 +950,15 @@ DebugJS.prototype = {
       h = self.resizeOrgHeight + moveY;
       if (h < DebugJS.DEBUG_WIN_MIN_H) h = DebugJS.DEBUG_WIN_MIN_H;
       self.debugWindow.style.height = h + 'px';
-      self.resizeMsgHeight();
+      self.resizeMainHeight();
     }
   },
 
-  resizeMsgHeight: function() {
+  resizeMainHeight: function() {
     var self = Debug;
     var adj = 5;
-    var msgAreaHeight = self.debugWindow.offsetHeight - self.infoArea.offsetHeight - self.cmdArea.offsetHeight - adj;
-    self.msgArea.style.height = msgAreaHeight + 'px';
+    var mainAreaHeight = self.debugWindow.offsetHeight - self.infoArea.offsetHeight - self.cmdArea.offsetHeight - adj;
+    self.mainArea.style.height = mainAreaHeight + 'px';
   },
 
   toggleLogSuspend: function() {
@@ -985,11 +999,11 @@ DebugJS.prototype = {
     if (Debug.status & DebugJS.STATE_DRAGGABLE) {
       Debug.status &= ~DebugJS.STATE_DRAGGABLE;
       Debug.infoArea.style.cursor = 'auto';
-      Debug.msgArea.style.cursor = 'auto';
+      Debug.mainArea.style.cursor = 'auto';
     } else {
       Debug.status |= DebugJS.STATE_DRAGGABLE;
       Debug.infoArea.style.cursor = 'default';
-      Debug.msgArea.style.cursor = 'default';
+      Debug.mainArea.style.cursor = 'default';
     }
     Debug.updatePinBtnArea();
   },
@@ -1064,6 +1078,10 @@ DebugJS.prototype = {
       case 27: // ESC
         if (self.status & DebugJS.STATE_MEASURE) {
           self.disableMeasureMode();
+          return;
+        }
+        if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
+          self.disableElmInspection();
           return;
         }
         if (self.status & DebugJS.STATE_DRAGGING) {
@@ -1205,16 +1223,10 @@ DebugJS.prototype = {
       self.updateMousePositionArea();
     }
 
-    if (self.options.showElement) {
-      var el = document.elementFromPoint(e.clientX, e.clientY);
-      self.domElement = '&lt;' + el.nodeName + '&gt;';
-      if (el.id) {self.domElement += ' id:' + el.id;}
-      self.updateElementArea();
-    }
-
     if (self.status & DebugJS.STATE_DRAGGING) self.windowMove(e);
     if (self.status & DebugJS.STATE_RESIZING) self.resize(e);
     if (self.status & DebugJS.STATE_MEASURING) self.measure(e);
+    if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) self.inspectElement(e);
   },
 
   mouseupHandler: function(e) {
@@ -1228,7 +1240,7 @@ DebugJS.prototype = {
         if (self.status & DebugJS.STATE_DRAGGABLE) {
           self.status &= ~DebugJS.STATE_DRAGGING;
           Debug.infoArea.style.cursor = 'default';
-          Debug.msgArea.style.cursor = 'default';
+          Debug.mainArea.style.cursor = 'default';
         }
         if (self.status & DebugJS.STATE_RESIZING) {
           self.status &= ~DebugJS.STATE_RESIZING_ALL;
@@ -1264,7 +1276,7 @@ DebugJS.prototype = {
     self.debugWindow.style.left = l + 'px';
     self.debugWindow.style.width = w + 'px';
     self.debugWindow.style.height = h + 'px';
-    self.resizeMsgHeight();
+    self.resizeMainHeight();
     self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
 
@@ -1274,7 +1286,7 @@ DebugJS.prototype = {
     self.debugWindow.style.height = self.resizeOrgHeight + 'px';
     self.debugWindow.style.top = self.orgOffsetTop + 'px';
     self.debugWindow.style.left = self.orgOffsetLeft + 'px';
-    self.resizeMsgHeight();
+    self.resizeMainHeight();
     self.msgArea.children[self.msgAreaId].scrollTop = self.msgArea.children[self.msgAreaId].scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
@@ -1284,7 +1296,7 @@ DebugJS.prototype = {
     self.debugWindow.style.width = self.initWidth + 'px';
     self.debugWindow.style.height = self.initHeight + 'px';
     self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
-    self.resizeMsgHeight();
+    self.resizeMainHeight();
     self.msgArea.children[self.msgAreaId].scrollTop = self.msgArea.children[self.msgAreaId].scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
@@ -1301,24 +1313,16 @@ DebugJS.prototype = {
 
   startMeasure: function(e) {
     var self = Debug;
-    var rect = self.debugWindow.getBoundingClientRect();
-    var resizeBoxSize = 3;
-    var winX1 = rect.left;
-    var winY1 = rect.top;
-    var winX2 = winX1 + self.debugWindow.clientWidth + resizeBoxSize;
-    var winY2 = winY1 + self.debugWindow.clientHeight + resizeBoxSize;
-
-    if (((e.clientX >= winX1) && (e.clientX <= winX2)) && ((e.clientY >= winY1) && (e.clientY <= winY2))) {
-      return;
-    }
+    var posX = e.clientX;
+    var posY = e.clientY;
+    if (self.isOnDebugWindow(posX, posY)) return;
 
     self.status |= DebugJS.STATE_MEASURING;
-    self.clickedPosX = e.clientX;
-    self.clickedPosY = e.clientY;
+    self.clickedPosX = posX;
+    self.clickedPosY = posY;
 
     if (self.measureBox == null) {
       self.measureBox = document.createElement('div');
-      self.measureBox.id = self.id + '-mbox';
       self.measureBox.style.position = 'fixed';
       self.measureBox.style.top = self.clickedPosY + 'px';
       self.measureBox.style.left = self.clickedPosX + 'px';
@@ -1401,6 +1405,111 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_VISIBLE;
     self.msgArea.children[self.msgAreaId].scrollTop = self.msgAreaScrollY;
     self.msgArea.children[self.msgAreaId].scrollLeft = self.msgAreaScrollX;
+  },
+
+  toggleElmInspectionMode: function() {
+    var self = Debug;
+    if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
+      self.disableElmInspection();
+    } else {
+      self.enableElmInspection();
+    }
+  },
+
+  enableElmInspection: function() {
+    var self = Debug;
+    DebugJS.log.s('Element Inspection ON.');
+    self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
+
+    if (self.elmInspectionBox == null) {
+      self.elmInspectionBox = document.createElement('div');
+      self.elmInspectionBox.style.position = 'absolute';
+      self.elmInspectionBox.style.width = 'calc(100% - 14px)';
+      self.elmInspectionBox.style.height = 'calc(100% - 47px)';
+      self.elmInspectionBox.style.padding = '5px';
+      self.elmInspectionBox.style.border = 'dotted 1px #333';
+      self.elmInspectionBox.style.background = 'rgba(0,0,0,0.7)';
+      self.elmInspectionBox.style.top = '15px';
+      self.elmInspectionBox.style.left = self.subPanelMargin + 'px';
+      self.mainArea.appendChild(self.elmInspectionBox);
+    }
+
+    self.updateElmInspectionBtnArea();
+    self.bodyEl.style.cursor = 'zoom-in';
+  },
+
+  disableElmInspection: function() {
+    var self = Debug;
+    self.stopElmInspection();
+    DebugJS.log.s('Element Inspection OFF.');
+    self.updateElmInspectionBtnArea();
+    self.bodyEl.style.cursor = 'auto';
+  },
+
+  stopElmInspection: function() {
+    var self = Debug;
+    if (self.elmInspectionBox != null) {
+      self.mainArea.removeChild(self.elmInspectionBox);
+      self.elmInspectionBox = null;
+    }
+    self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
+  },
+
+  inspectElement: function(e) {
+    var self = Debug;
+    var posX = e.clientX;
+    var posY = e.clientY;
+    if (self.isOnDebugWindow(posX, posY)) return;
+    var el = document.elementFromPoint(posX, posY);
+    var style = window.getComputedStyle(el);
+    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:Consolas;font-size:12px;color:#fff;">Element Info\n\n';
+    dom += 'tag        : &lt;' + el.tagName + '&gt;\n';
+    dom += 'id         : ' + el.id + '\n';
+    dom += 'class      : ' + el.className + '\n';
+    dom += 'type       : ' + (el.type ? el.type : '') + '\n';
+    dom += 'name       : ' + (el.name ? el.name : '') + '\n';
+    dom += 'width      : ' + el.clientWidth + ' px\n';
+    dom += 'height     : ' + el.clientHeight + ' px\n';
+    dom += 'top        : ' + style.top + ' (clientTop : ' + el.clientTop + ' px)\n';
+    dom += 'left       : ' + style.left + ' (clientLeft: ' + el.clientLeft + ' px)\n';
+    dom += 'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + '\n';
+    dom += 'padding    : ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n';
+    dom += 'font-family: ' + style.fontFamily + '\n';
+    dom += 'font-size  : ' + style.fontSize + '\n';
+    dom += 'color      : ' + style.color + ' <span style="background:' + style.color + ';width:6px;height:12px;display:inline-block;"> </span>\n';
+    dom += 'bg-color   : ' + style.backgroundColor + ' <span style="background:' + style.backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n';
+    dom += 'position   : ' + style.position + '\n';
+    dom += 'float      : ' + style.float + '\n';
+    dom += 'clear      : ' + style.clear + '\n';
+    var fnOnClick = el.onclick;
+    var fnOnFocus = el.onfocus;
+    var fnOnBlur = el.onblur;
+    var fnOnChange = el.onchange;
+    var fnOnMouseOver = el.onmouseover;
+    var fnOnMouseOut = el.onmouseout;
+    dom += '----------------------------------------\n';
+    dom += 'onclick    : ' + (fnOnClick ? fnOnClick.toString().replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '') : null) + '\n';
+    dom += 'onfocus    : ' + (fnOnFocus ? fnOnFocus.toString().replace(/\n/g, '') : null) + '\n';
+    dom += 'onblur     : ' + (fnOnBlur ? fnOnBlur.toString().replace(/\n/g, '') : null) + '\n';
+    dom += 'onchange   : ' + (fnOnChange ? fnOnChange.toString().replace(/\n/g, '') : null) + '\n';
+    dom += 'onmouseover: ' + (fnOnMouseOver ? fnOnMouseOver.toString().replace(/\n/g, '') : null) + '\n';
+    dom += 'onmouseout : ' + (fnOnMouseOut ? fnOnMouseOut.toString().replace(/\n/g, '') : null) + '\n';
+    dom += '</pre></div>';
+    self.elmInspectionBox.innerHTML = dom;
+  },
+
+  isOnDebugWindow: function(x, y) {
+    var self = Debug;
+    var rect = self.debugWindow.getBoundingClientRect();
+    var resizeBoxSize = 3;
+    var winX1 = rect.left;
+    var winY1 = rect.top;
+    var winX2 = winX1 + self.debugWindow.clientWidth + resizeBoxSize;
+    var winY2 = winY1 + self.debugWindow.clientHeight + resizeBoxSize;
+    if (((x >= winX1) && (x <= winX2)) && ((y >= winY1) && (y <= winY2))) {
+      return true;
+    }
+    return false;
   },
 
   execCmd: function() {
