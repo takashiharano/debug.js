@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607200000';
+  this.v = '201607220000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -675,8 +675,8 @@ DebugJS.prototype = {
   // Update Measure Button
   updateElmInspectionBtnArea: function() {
     var self = Debug;
-    var c = (this.status & DebugJS.STATE_ELEMENT_INSPECTING) ? '#0f0' : '#888';
-    self.elmInspectionBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="display:inline-block;float:right;margin-right:4px;width:10px;height:6px;margin-top:2px;border:solid 1px ' + c + ';" onclick="Debug.toggleElmInspectionMode();"> </span>';
+    var c = (this.status & DebugJS.STATE_ELEMENT_INSPECTING) ? '#ff0' : '#888';
+    self.elmInspectionBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + ';" onclick="Debug.toggleElmInspectionMode();">&lt;DOM&gt;</span>';
   },
 
   // Update Stop Watch Button
@@ -715,7 +715,7 @@ DebugJS.prototype = {
   // Update Pin Button
   updatePinBtnArea: function() {
     var self = Debug;
-    var c = (self.status & DebugJS.STATE_DRAGGABLE) ? '#888' : '#dd0';
+    var c = (self.status & DebugJS.STATE_DRAGGABLE) ? '#888' : '#fa0';
     self.pinBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
   },
 
@@ -1462,25 +1462,26 @@ DebugJS.prototype = {
     if (self.isOnDebugWindow(posX, posY)) return;
     var el = document.elementFromPoint(posX, posY);
     var style = window.getComputedStyle(el);
+    var rect = el.getBoundingClientRect();
     var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:Consolas;font-size:12px;color:#fff;">Element Info\n\n';
-    dom += 'tag        : &lt;' + el.tagName + '&gt;\n';
+    dom += 'tag        : &lt;' + el.tagName + '&gt;' + (el.type ? ' ' + el.type : '') + '\n';
     dom += 'id         : ' + el.id + '\n';
     dom += 'class      : ' + el.className + '\n';
-    dom += 'type       : ' + (el.type ? el.type : '') + '\n';
+    var txt = el.innerText;
+    dom += 'text       : ' + txt.replace(/\n/g, '').replace(/\r/g, '').substr(0, 50).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (txt.length > 50) {dom += '<span style="color:#888">...</span>';}
+    dom += '\n';
     dom += 'name       : ' + (el.name ? el.name : '') + '\n';
-    dom += 'width      : ' + el.clientWidth + ' px\n';
-    dom += 'height     : ' + el.clientHeight + ' px\n';
-    dom += 'top        : ' + style.top + ' (clientTop : ' + el.clientTop + ' px)\n';
-    dom += 'left       : ' + style.left + ' (clientLeft: ' + el.clientLeft + ' px)\n';
-    dom += 'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + '\n';
-    dom += 'padding    : ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n';
-    dom += 'font-family: ' + style.fontFamily + '\n';
-    dom += 'font-size  : ' + style.fontSize + '\n';
+    dom += 'value      : ' + (el.value ? el.value : '') + '\n';
+    dom += 'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n';
+    dom += 'font       : size: ' + style.fontSize + '  family: ' + style.fontFamily + '\n';
     dom += 'color      : ' + style.color + ' <span style="background:' + style.color + ';width:6px;height:12px;display:inline-block;"> </span>\n';
     dom += 'bg-color   : ' + style.backgroundColor + ' <span style="background:' + style.backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n';
-    dom += 'position   : ' + style.position + '\n';
-    dom += 'float      : ' + style.float + '\n';
-    dom += 'clear      : ' + style.clear + '\n';
+    dom += 'location   : top: ' + Math.round(rect.top + window.pageYOffset) + 'px / left: ' + Math.round(rect.left + window.pageXOffset) +' px\n';
+    dom += 'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + ' / padding: ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n';
+    dom += 'display    : ' + style.display + '\n';
+    dom += 'position   : ' + style.position + ' / float: ' + style.float + ' / clear: ' + style.clear + '\n';
+    dom += 'z-index    : ' + style.zIndex + '\n';
     var fnOnClick = el.onclick;
     var fnOnFocus = el.onfocus;
     var fnOnBlur = el.onblur;

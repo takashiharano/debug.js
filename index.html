@@ -9,8 +9,8 @@
 <script src="debug.js"></script>
 <style>
 body {
-  font-family: "Arial";
-  font-size: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
   color: #333;
 }
 
@@ -49,10 +49,6 @@ a:hover {
   padding: 5px;
 }
 
-.usage {
-  margin-left: 20px;
-}
-
 #title {
   width: 900px;
   font-size: 4rem;
@@ -71,21 +67,15 @@ a:hover {
   width: 750px;
   padding: .5em;
   font-family: "Source Code Pro", Consolas;
-  font-size: 9pt;
+  font-size: 14px;
   color: #aaa;
-  background: #111;
-  border-top: solid 3px #1883d7;
+  background: #333;
+  border: solid 1px #888;
   border-radius: 4px;
 }
 
-.code1 {
-  font-family: "Source Code Pro", Consolas;
-  font-size: 1.1em;
-  color: #07c;
-}
-
 .emphasis {
-  color: #fff;
+  color: #eee;
 }
 
 .button {
@@ -127,7 +117,7 @@ a:hover {
 }
 
 .desc-table {
-  font-family: Tahoma, Arial;
+  font-family: Arial, sans-serif;
   font-size: 14px;
   border-collapse: collapse;
   width: 760px;
@@ -332,17 +322,22 @@ var messages = [
 <div id="title">debug.js <span style="font-size:2rem;" id="title2">demo & description</span></div>
 </div>
 <div class="content">
-<div class="caption">Usage:</div><br>
-<div class="usage">
+<div class="caption">// Usage</div><br>
+
 <b>HTML</b><br>
 Include the script file. <a href="https://github.com/takashiharano/debug.js"><span class="button dl-btn"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RERCMUIwOUY4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RERCMUIwOUU4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkU1MTc4QTJBOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkU1MTc4QTJCOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+jUqS1wAAApVJREFUeNq0l89rE1EQx3e3gVJoSPzZeNEWPKgHoa0HBak0iHiy/4C3WvDmoZ56qJ7txVsPQu8qlqqHIhRKJZceesmhioQEfxTEtsoSpdJg1u/ABJ7Pmc1m8zLwgWTmzcw3L+/te+tHUeQltONgCkyCi2AEDHLsJ6iBMlgHL8FeoqokoA2j4CloRMmtwTmj7erHBXPgCWhG6a3JNXKdCiDl1cidVbXZkJoXQRi5t5BrxwoY71FzU8S4JuAIqFkJ2+BFSlEh525b/hr3+k/AklDkNsf6wTT4yv46KIMNpsy+iMdMc47HNWxbsgVcUn7FmLAzzoFAWDsBx+wVP6bUpp5ewI+DOeUx0Wd9D8F70BTGNjkWtqnhmT1JQAHcUgZd8Lo3rQb1LAT8eJVUfgGvHQigGp+V2Z0iAUUl8QH47kAA1XioxIo+bRN8OG8F/oBjwv+Z1nJgX5jpdzQDw0LCjsPmrcW7I/iHScCAEDj03FtD8A0EyuChHgg4KTlJQF3wZ7WELppnBX+dBFSVpJsOBWi1qiRgSwnOgoyD5hmuJdkWCVhTgnTvW3AgYIFrSbZGh0UW/Io5Vp+DQoK7o80pztWMemZbgxeNwCNwDbw1fIfgGZjhU6xPaJgBV8BdsMw5cbZoHsenwYFxkZzl83xTSKTiviCAfCsJLysH3POfC8m8NegyGAGfLP/VmGmfSChgXroR0RSWjEFv2J/nG84cuKFMf4sTCZqXuJd4KaXFVjEG3+tw4eXbNK/YC9oXXs3O8NY8y99L4BXY5cvLY/Bb2VZ58EOJVcB18DHJq9lRsKr8inyKGVjlmh29mtHs3AHfuhCwy1vXT/Nu2GKQt+UHsGdctyX6eQyNvc+5sfX9Dl7Pe2J/BRgAl2CpwmrsHR0AAAAASUVORK5CYII=" width="14"> Download</span></a>
-<div class="code1">&lt;script src="debug.js"&gt;&lt;/script&gt;</div>
+<pre class="code emphasis">
+&lt;script src="debug.js"&gt;&lt;/script&gt;
+</pre>
+
 <br>
 <div class="description"><b>JavaScript</b><br>Put log messages anywhere you want.</div>
-<div class="code1">log(&lt;message&gt;);</div><br>
-</div>
+<pre class="code emphasis">
+log(&lt;message&gt;);
+</pre>
+
 That's it!<br><br>
-The debug window will be <span style="background:linear-gradient(transparent 60%, #6cf 80%);">automatically generated.</span><br>
+The debug window will be automatically generated.<br>
 The window is draggable and you can switch hide/show by F2 key.<br>
 <br>
 e.g.,)
@@ -361,10 +356,6 @@ e.g.,)
       ...
       <span class="emphasis">log('bla bla bla');</span>
       ...
-    };
-
-    function bar() {
-      ...
       if (error) {
         <span class="emphasis">log.e('error! val=' + val);</span>
       }
@@ -380,11 +371,11 @@ e.g.,)
 &lt;/html&gt;
 </pre><br>
 
-<div class="caption">Options:</div>
+<div class="caption">// Options</div>
 If you want to change the log settings, explicitly call initialization function in advance.
 <pre class="code emphasis">
 var options = {
-  'position': 'center',
+  'position': 'c',
   'showTimeStamp': false
 };
 
@@ -586,13 +577,13 @@ Debug.init(options);
 
   <tr>
     <td class="name">target</td>
-    <td>Debug window element id (The window is automatically generated in case of null)</td>
+    <td>Debug window element id<br>(The window is automatically generated in case of null)</td>
     <td>null</td>
   </tr>
 </table>
 <br>
 
-<div class="caption">Methods:</div>
+<div class="caption">// Methods</div>
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -674,7 +665,7 @@ Debug.init(options);
 </table>
 <br>
 
-<div class="caption">Commands:</div>
+<div class="caption">// Commands</div>
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -766,7 +757,7 @@ $ rgb 255 255 255
 <div id="dbg"></div>
 
 <br>
-<div class="caption">DEMO:</div>
+<div class="caption">// DEMO</div>
 
 <table class="demo-table">
 <tr>
@@ -895,17 +886,17 @@ console.timeEnd('timer3');<br>
 </table>
 
 <!--
-log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');
-<span class="button" onclick="log('abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz');">long text</span>
-
-log('&nbsp;&nbsp;&nbsp;&nbsp;leading spaces');
-<span class="button" onclick="log('    leading spaces');">spaces</span>
+<input name="input1">
+<input type="password">
+<input type="submit" value="Submit">
+<input type="button" value="BUTTON">
+<button>button</button>
+<select name="select1">
+  <option value="1">opt1</option>
+  <option value="2">opt2</option>
+  <option value="3">opt3</option>
+</select>
 -->
-
-<br>
-
-<div class="caption">Download:</div>
-<a href="https://github.com/takashiharano/debug.js">https://github.com/takashiharano/debug.js</a>
 
 <br>
 
