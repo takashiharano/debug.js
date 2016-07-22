@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607220000';
+  this.v = '201607230000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -143,7 +143,7 @@ var DebugJS = function() {
 };
 DebugJS.ENABLE = true;
 DebugJS.CATCH_ALL_ERRORS = true;
-DebugJS.UNIFY_CONSOLE = true;
+DebugJS.UNIFY_CONSOLE = false;
 
 DebugJS.STATE_INITIALIZED = 0x1;
 DebugJS.STATE_VISIBLE = 0x2;
@@ -701,7 +701,7 @@ DebugJS.prototype = {
     self.swArea.innerHTML = msg;
 
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
-      setTimeout('Debug.updateSwArea()', 50);
+      setTimeout('Debug.updateSwArea()', 21);
     }
   },
 
@@ -1072,7 +1072,9 @@ DebugJS.prototype = {
     var self = Debug;
     switch (e.keyCode) {
       case 13: // Enter
-        self.execCmd();
+        if (document.activeElement == self.cmdLine) {
+          self.execCmd();
+        }
         break;
 
       case 27: // ESC
@@ -1418,7 +1420,6 @@ DebugJS.prototype = {
 
   enableElmInspection: function() {
     var self = Debug;
-    DebugJS.log.s('Element Inspection ON.');
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
 
     if (self.elmInspectionBox == null) {
@@ -1441,7 +1442,6 @@ DebugJS.prototype = {
   disableElmInspection: function() {
     var self = Debug;
     self.stopElmInspection();
-    DebugJS.log.s('Element Inspection OFF.');
     self.updateElmInspectionBtnArea();
     self.bodyEl.style.cursor = 'auto';
   },
@@ -1515,9 +1515,6 @@ DebugJS.prototype = {
 
   execCmd: function() {
     var self = Debug;
-    if (document.activeElement != self.cmdLine) {
-      return;
-    }
     var cl = self.cmdLine.value;
     if (cl != '') {
       self.cmdHistoryBuf.add(cl);
@@ -1540,16 +1537,12 @@ DebugJS.prototype = {
         break;
       }
     }
-
-    if (!found) {
-      found = self.cmdRadixConv(cl);
-    }
-
+    if (!found) {found = self.cmdRadixConv(cl);}
+    if (!found) {found = self.cmdTimeCalc(cl);}
     if ((!found) && (cl.match(/^http/))) {
       DebugJS.httpRequest(cl, 'GET');
       found = true;
     }
-
     if (!found) {
       try {
         DebugJS.log(eval(cl));
@@ -1640,6 +1633,184 @@ DebugJS.prototype = {
     } else {
       return false;
     }
+  },
+
+  cmdTimeCalc: function(args) {
+    var self = Debug;
+    if (!args.match(/[\d :\.]{1,}/)) {
+      return false;
+    }
+    var vals = args.split(' ');
+    if (vals.length < 3) {
+      return false;
+    }
+
+    var timeL = self.convertTimeJson(vals[0]);
+    var timeR = self.convertTimeJson(vals[2]);
+    if ((timeL == null) || (timeR == null)) {
+      return false;
+    }
+    var ret;
+    if (vals[1] == '-') {
+      ret = self.subTime(timeL, timeR);
+    } else if (vals[1] == '+') {
+      ret = self.addTime(timeL, timeR);
+    }
+
+    log('<span style="color:#0ff;">' + ret + '</span>');
+    return true;
+  },
+
+  subTime: function(tL, tR) {
+    var hh, mm, ss, ms;
+    var c = false;
+    if (tL.msec >= tR.msec) {
+      ms = tL.msec - tR.msec;
+    } else {
+      ms = 1000 - tR.msec + tL.msec;
+      c = true;
+    }
+
+    if (tL.sec > tR.sec) {
+      ss = tL.sec - tR.sec;
+      if (c) {
+        ss -= 1;
+      }
+      c = false;
+    } else if (tL.sec == tR.sec) {
+      ss = tL.sec;
+      if (c) {
+        ss -= 1;
+        if (ss == -1) {
+          ss = 59;
+        }
+      }
+    } else {
+      ss = 60 - tR.sec + tL.sec;
+      if (c) {
+        ss -= 1;
+      }
+      c = true;
+    }
+
+    if (tL.min > tR.min) {
+      mm = tL.min - tR.min;
+      if (c) {
+        mm -= 1;
+      }
+      c = false;
+    } else if (tL.min == tR.min) {
+      mm = tL.min;
+      if (c) {
+        mm -= 1;
+        if (mm == -1) {
+          mm = 59;
+        }
+      }
+    } else {
+      mm = 60 - tR.min + tL.min;
+      if (c) {
+        mm -= 1;
+      }
+      c = true;
+    }
+
+    if (tL.hour > tR.hour) {
+      hh = tL.hour - tR.hour;
+      if (c) {
+        hh -= 1;
+      }
+      c = false;
+    } else if (tL.hour == tR.hour) {
+      hh = tL.hour;
+      if (c) {
+        hh -= 1;
+        if (mm == -1) {
+          mm = 23;
+        }
+      }
+    } else {
+      hh = 24 - tR.hour + tL.hour;
+      if (c) {
+        hh -= 1;
+      }
+      c = true;
+    }
+
+    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3);
+    return ret;
+  },
+
+  addTime: function(tL, tR) {
+    var hh, mm, ss, ms;
+    var c = false;
+    ms = tR.msec + tL.msec;
+    if (ms >= 1000) {
+      ms -= 1000;
+      c = true;
+    }
+
+    ss = tL.sec + tR.sec;
+    if (c) {
+      ss++;
+    }
+    if (ss >= 60) {
+      ss -= 60;
+      c = true;
+    } else {
+      c = false;
+    }
+
+    mm = tL.min + tR.min;
+    if (c) {
+      mm++;
+    }
+    if (mm >= 60) {
+      mm -= 60;
+      c = true;
+    } else {
+      c = false;
+    }
+
+    hh = tL.hour + tR.hour;
+    if (c) {
+      hh++;
+    }
+    if (hh >= 24) {
+      hh -= 24;
+      c = true;
+    } else {
+      c = false;
+    }
+
+    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3);
+    return ret;
+  },
+
+  convertTimeJson: function(t) {
+    var hour = min = sec = msec = 0;
+    var s;
+    var times = t.split(':');
+    if (times.length == 3) {
+      hour = times[0] | 0;
+      min = times[1] | 0;
+      s = times[2];
+    } else if (times.length == 2) {
+      hour = times[0] | 0;
+      min = times[1] | 0;
+      s = '0';
+    } else {
+      return null;
+    }
+    var ss = s.split('.');
+    if (ss.length == 2) {
+      sec = ss[0] | 0;
+      msec = ((ss[1] + '00').substr(0, 3)) | 0;
+    } else {
+      sec = ss | 0;
+    }
+    var time = {'hour': hour, 'min': min, 'sec': sec, 'msec': msec};
+    return time;
   },
 
   cmdRGB: function(args, tbl) {
@@ -1805,13 +1976,11 @@ DebugJS.getTimerStr = function(swPassedTimeMsec) {
   }
 
   var passedSec = wkPassedTimeSec;
-  var passedMsec = Math.floor(swPassedTimeMsec & 999);
+  var passedMsec = ('00' + swPassedTimeMsec).slice(-3);
 
   if (passedHour < 10) passedHour = '0' + passedHour;
   if (passedMin < 10) passedMin = '0' + passedMin;
   if (passedSec < 10) passedSec = '0' + passedSec;
-  if (passedMsec < 10) passedMsec = '00' + passedMsec;
-  else if (passedMsec < 100) passedMsec = '0' + passedMsec;
 
   var retStr = passedHour + ':' + passedMin + ':' + passedSec + '.' + passedMsec;
   return retStr;
