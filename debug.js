@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607230000';
+  this.v = '201607231100';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1637,23 +1637,29 @@ DebugJS.prototype = {
 
   cmdTimeCalc: function(args) {
     var self = Debug;
-    if (!args.match(/[\d :\.]{1,}/)) {
+    if (!args.match(/[\d :\.\+]{1,}/)) {
       return false;
     }
-    var vals = args.split(' ');
-    if (vals.length < 3) {
+    var arg = args.replace(/\s/g, '');
+    var op;
+    if (arg.indexOf('-') >= 0) {
+      op = '-';
+    } else if (arg.indexOf('+') >= 0) {
+      op = '+';
+    }
+    var vals = arg.split(op);
+    if (vals.length < 2) {
       return false;
     }
-
     var timeL = self.convertTimeJson(vals[0]);
-    var timeR = self.convertTimeJson(vals[2]);
+    var timeR = self.convertTimeJson(vals[1]);
     if ((timeL == null) || (timeR == null)) {
       return false;
     }
     var ret;
-    if (vals[1] == '-') {
+    if (op == '-') {
       ret = self.subTime(timeL, timeR);
-    } else if (vals[1] == '+') {
+    } else if (op == '+') {
       ret = self.addTime(timeL, timeR);
     }
 
@@ -1808,6 +1814,9 @@ DebugJS.prototype = {
       msec = ((ss[1] + '00').substr(0, 3)) | 0;
     } else {
       sec = ss | 0;
+    }
+    if ((min >= 60) || (sec >= 60)) {
+      return null;
     }
     var time = {'hour': hour, 'min': min, 'sec': sec, 'msec': msec};
     return time;
