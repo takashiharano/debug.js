@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607242000';
+  this.v = '201607242035';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1540,13 +1540,14 @@ DebugJS.prototype = {
     var self = Debug;
     self.status |= DebugJS.STATE_SCRIPT;
     if (self.scriptPanel == null) {
-      self.msgPanel.style.height = '50%';
+      var scriptHeight = 75; //%
+      self.msgPanel.style.height = (100 - scriptHeight) + '%';
       self.msgPanel.children[self.msgPanelId].scrollTop = self.msgPanel.children[self.msgPanelId].scrollHeight;
 
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.style.position = 'relative';
       self.scriptPanel.style.width = 'calc(100% - 12px)';
-      self.scriptPanel.style.height = 'calc(50% - 10px)';
+      self.scriptPanel.style.height = 'calc(' + scriptHeight + '% - 10px)';
       self.scriptPanel.style.padding = '4px';
       self.scriptPanel.style.border = 'solid 1px #333';
       self.scriptPanel.style.background = 'rgba(0,0,0,0.7)';
@@ -1572,7 +1573,7 @@ DebugJS.prototype = {
     try {
       DebugJS.log(eval(self.scriptBuf));
     } catch (e) {
-      log.e(e);
+      DebugJS.log.e(e);
     }
   },
 
@@ -1640,7 +1641,7 @@ DebugJS.prototype = {
       try {
         DebugJS.log(eval(cl));
       } catch (e) {
-        log.e(e);
+        DebugJS.log.e(e);
       }
     }
   },
@@ -2400,14 +2401,14 @@ DebugJS.httpRequest = function(url, method) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
       if (xhr.status !== 200) {
-        log.e('cannot load: ' + xhr.status + ' ' + xhr.statusText);
+        DebugJS.log.e('cannot load: ' + xhr.status + ' ' + xhr.statusText);
       }
       var head = xhr.getAllResponseHeaders();
       var txt = xhr.responseText.replace(/</g, '&lt;');
       txt = txt.replace(/>/g, '&gt;');
       if (head || txt) {
         var res = 'Response:<br><span style="color:#5ff">' + head + '</span>' + txt;
-        log(res);
+        DebugJS.log(res);
       }
     }
   };
@@ -2555,7 +2556,7 @@ if (DebugJS.ENABLE) {
   window.addEventListener('load', DebugJS.init, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
     window.onerror = function(msg, file, line, col, err) {
-      log.e(msg + ' ' + file + '(' + line + ':' + col + ')');
+      DebugJS.log.e(msg + ' ' + file + '(' + line + ':' + col + ')');
     };
   }
   if (DebugJS.UNIFY_CONSOLE) {
