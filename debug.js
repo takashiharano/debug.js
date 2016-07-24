@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607231100';
+  this.v = '201607240000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -38,6 +38,7 @@ var DebugJS = function() {
     'enableStopWatch': true,
     'enableScreenMeasure': true,
     'enableElementInspection': true,
+    'enableScript': true,
     'enableCommandLine': true,
     'target': null
   };
@@ -61,7 +62,12 @@ var DebugJS = function() {
   this.measureBtnArea = null;
   this.measureBox = null;
   this.elmInspectionBtnArea = null;
-  this.elmInspectionBox = null;
+  this.elmInspectionPanel = null;
+  this.scriptBtnArea = null;
+  this.scriptPanel = null;
+  this.scriptEditor = null;
+  this.scriptEditorId = null;
+  this.scriptBuf = '';
   this.swBtnArea = null;
   this.swArea = null;
   this.swStartTime = 0;
@@ -129,6 +135,7 @@ var DebugJS = function() {
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
+    {'cmd': 'execute', 'fnc': this.cmdExec, 'desc': 'Execute JavaScript.'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window.'},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get &lt;url&gt;'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
@@ -163,12 +170,13 @@ DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x4000;
 DebugJS.STATE_MEASURE = 0x10000;
 DebugJS.STATE_MEASURING = 0x20000;
 DebugJS.STATE_ELEMENT_INSPECTING = 0x40000;
+DebugJS.STATE_SCRIPT = 0x80000;
 DebugJS.STATE_LOG_SUSPENDING = 0x100000;
 
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.COLOR_ACTIVE = '#fff';
-DebugJS.COLOR_INACTIVE = '#888';
+DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
@@ -218,6 +226,7 @@ DebugJS.prototype = {
     }
     self.msgAreaId = self.id + '-msg';
     self.cmdLineId = self.id + '-cmd';
+    self.scriptEditorId = self.id + '-script';
 
     if (self.options.visible) self.status |= DebugJS.STATE_VISIBLE;
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.resizable)) self.status |= DebugJS.STATE_RESIZABLE;
@@ -272,6 +281,12 @@ DebugJS.prototype = {
 
       self.swBtnArea = document.createElement('span');
       self.infoArea.appendChild(self.swBtnArea);
+    }
+
+    // Script Button
+    if (self.options.enableScript) {
+      self.scriptBtnArea = document.createElement('span');
+      self.infoArea.appendChild(self.scriptBtnArea);
     }
 
     // Element Inspection Button
@@ -526,6 +541,10 @@ DebugJS.prototype = {
       self.updateElmInspectionBtnArea();
     }
 
+    if (self.options.enableScript) {
+      self.updateScriptBtnArea();
+    }
+
     if (self.options.enableStopWatch) {
       self.updateSwBtnArea();
       self.updateSwArea();
@@ -668,15 +687,22 @@ DebugJS.prototype = {
   // Update Measure Button
   updateMeasureBtnArea: function() {
     var self = Debug;
-    var c = (this.status & DebugJS.STATE_MEASURE) ? '#0f0' : '#888';
+    var c = (this.status & DebugJS.STATE_MEASURE) ? '#0f0' : DebugJS.COLOR_INACTIVE;
     self.measureBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="display:inline-block;float:right;margin-right:4px;width:8px;height:8px;margin-top:2px;background:' + c + ';" onclick="Debug.toggleMeasureMode();"> </span>';
   },
 
-  // Update Measure Button
+  // Update Element Inspection Button
   updateElmInspectionBtnArea: function() {
     var self = Debug;
-    var c = (this.status & DebugJS.STATE_ELEMENT_INSPECTING) ? '#ff0' : '#888';
+    var c = (this.status & DebugJS.STATE_ELEMENT_INSPECTING) ? '#ff0' : DebugJS.COLOR_INACTIVE;
     self.elmInspectionBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + ';" onclick="Debug.toggleElmInspectionMode();">&lt;DOM&gt;</span>';
+  },
+
+  // Update Script Button
+  updateScriptBtnArea: function() {
+    var self = Debug;
+    var c = (this.status & DebugJS.STATE_SCRIPT) ? '#0ff' : DebugJS.COLOR_INACTIVE;
+    self.scriptBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + ';" onclick="Debug.toggleScriptMode();">&lt;JS&gt;</span>';
   },
 
   // Update Stop Watch Button
@@ -708,14 +734,14 @@ DebugJS.prototype = {
   // Update Suspend Log Button
   updateSuspendLogBtnArea: function() {
     var self = Debug;
-    var c = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? '#d00' : '#888';
+    var c = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? '#d00' : DebugJS.COLOR_INACTIVE;
     self.suspendLogBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleLogSuspend();">🚫</span>';
   },
 
   // Update Pin Button
   updatePinBtnArea: function() {
     var self = Debug;
-    var c = (self.status & DebugJS.STATE_DRAGGABLE) ? '#888' : '#fa0';
+    var c = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : '#fa0';
     self.pinBtnArea.innerHTML = '<span class="' + self.id + '-btn" style="float:right;margin-right:4px;color:' + c + '" onclick="Debug.toggleDraggable();">📌</span>';
   },
 
@@ -805,7 +831,7 @@ DebugJS.prototype = {
 
   startWindowMove: function(e) {
     var self = Debug;
-    if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT')) return;
+    if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT') || (e.target.nodeName == 'TEXTAREA')) return;
     self.status |= DebugJS.STATE_DRAGGING;
     Debug.infoArea.style.cursor = 'move';
     Debug.mainArea.style.cursor = 'move';
@@ -1422,17 +1448,17 @@ DebugJS.prototype = {
     var self = Debug;
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
 
-    if (self.elmInspectionBox == null) {
-      self.elmInspectionBox = document.createElement('div');
-      self.elmInspectionBox.style.position = 'absolute';
-      self.elmInspectionBox.style.width = 'calc(100% - 14px)';
-      self.elmInspectionBox.style.height = 'calc(100% - 47px)';
-      self.elmInspectionBox.style.padding = '5px';
-      self.elmInspectionBox.style.border = 'dotted 1px #333';
-      self.elmInspectionBox.style.background = 'rgba(0,0,0,0.7)';
-      self.elmInspectionBox.style.top = '15px';
-      self.elmInspectionBox.style.left = self.subPanelMargin + 'px';
-      self.mainArea.appendChild(self.elmInspectionBox);
+    if (self.elmInspectionPanel == null) {
+      self.elmInspectionPanel = document.createElement('div');
+      self.elmInspectionPanel.style.position = 'absolute';
+      self.elmInspectionPanel.style.width = 'calc(100% - 14px)';
+      self.elmInspectionPanel.style.height = 'calc(100% - 47px)';
+      self.elmInspectionPanel.style.padding = '5px';
+      self.elmInspectionPanel.style.border = 'dotted 1px #333';
+      self.elmInspectionPanel.style.background = 'rgba(0,0,0,0.7)';
+      self.elmInspectionPanel.style.top = '15px';
+      self.elmInspectionPanel.style.left = self.subPanelMargin + 'px';
+      self.mainArea.appendChild(self.elmInspectionPanel);
     }
 
     self.updateElmInspectionBtnArea();
@@ -1448,9 +1474,9 @@ DebugJS.prototype = {
 
   stopElmInspection: function() {
     var self = Debug;
-    if (self.elmInspectionBox != null) {
-      self.mainArea.removeChild(self.elmInspectionBox);
-      self.elmInspectionBox = null;
+    if (self.elmInspectionPanel != null) {
+      self.mainArea.removeChild(self.elmInspectionPanel);
+      self.elmInspectionPanel = null;
     }
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
   },
@@ -1463,7 +1489,7 @@ DebugJS.prototype = {
     var el = document.elementFromPoint(posX, posY);
     var style = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
-    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:Consolas;font-size:12px;color:#fff;">Element Info\n\n';
+    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:Consolas;font-size:' + self.options.fontSize + ';color:#fff;">Element Info\n\n';
     dom += 'tag        : &lt;' + el.tagName + '&gt;' + (el.type ? ' ' + el.type : '') + '\n';
     dom += 'id         : ' + el.id + '\n';
     dom += 'class      : ' + el.className + '\n';
@@ -1496,7 +1522,69 @@ DebugJS.prototype = {
     dom += 'onmouseover: ' + (fnOnMouseOver ? fnOnMouseOver.toString().replace(/\n/g, '') : null) + '\n';
     dom += 'onmouseout : ' + (fnOnMouseOut ? fnOnMouseOut.toString().replace(/\n/g, '') : null) + '\n';
     dom += '</pre></div>';
-    self.elmInspectionBox.innerHTML = dom;
+    self.elmInspectionPanel.innerHTML = dom;
+  },
+
+  toggleScriptMode: function() {
+    var self = Debug;
+    if (self.status & DebugJS.STATE_SCRIPT) {
+      self.disableScript();
+    } else {
+      self.enableScript();
+    }
+  },
+
+  enableScript: function() {
+    var self = Debug;
+    self.status |= DebugJS.STATE_SCRIPT;
+
+    if (self.scriptPanel == null) {
+      self.scriptPanel = document.createElement('div');
+      self.scriptPanel.style.position = 'absolute';
+      self.scriptPanel.style.width = 'calc(100% - 14px)';
+      self.scriptPanel.style.height = 'calc(100% - 47px)';
+      self.scriptPanel.style.padding = '5px';
+      self.scriptPanel.style.border = 'dotted 1px #333';
+      self.scriptPanel.style.background = 'rgba(0,0,0,0.7)';
+      self.scriptPanel.style.top = '15px';
+      self.scriptPanel.style.left = self.subPanelMargin + 'px';
+      var panel = '<span style="color:#ccc;">Script Editor</span><span class="' + this.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>'
+      panel += '<textarea style="width:calc(100% - 5px);height:calc(100% - 17px);margin-top:2px;font-size:' + self.options.fontSize + ';font-family:Consolas;color:#fff;background:transparent;border:solid 1px #888;outline:none;resize:none;" id="' + self.scriptEditorId + '" onblur="Debug.saveScriptBuf();">' + self.scriptBuf + '</textarea>';
+      self.scriptPanel.innerHTML = panel;
+      self.mainArea.appendChild(self.scriptPanel);
+      self.scriptEditor = document.getElementById(self.scriptEditorId);
+    }
+
+    self.updateScriptBtnArea();
+  },
+
+  saveScriptBuf: function() {
+    var self = Debug;
+    self.scriptBuf = self.scriptEditor.value;
+  },
+
+  execScript: function() {
+    var self = Debug;
+    try {
+      DebugJS.log(eval(self.scriptBuf));
+    } catch (e) {
+      log.e(e);
+    }
+  },
+
+  disableScript: function() {
+    var self = Debug;
+    self.stopScript();
+    self.updateScriptBtnArea();
+  },
+
+  stopScript: function() {
+    var self = Debug;
+    if (self.scriptPanel != null) {
+      self.mainArea.removeChild(self.scriptPanel);
+      self.scriptPanel = null;
+    }
+    self.status &= ~DebugJS.STATE_SCRIPT;
   },
 
   isOnDebugWindow: function(x, y) {
@@ -1559,6 +1647,11 @@ DebugJS.prototype = {
 
   cmdElements: function(args, tbl) {
     DebugJS.countElements(args, true);
+  },
+
+  cmdExec: function(args, tbl) {
+    var self = Debug;
+    self.execScript();
   },
 
   cmdExit: function(args, tbl) {

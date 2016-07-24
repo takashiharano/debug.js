@@ -246,6 +246,7 @@ window.onload = function() {
     'enableStopWatch': false,
     'enableScreenMeasure': false,
     'enableElementInspection': false,
+    'enableScript': false,
     'enableCommandLine': true
   };
   //Debug.init(options4);
@@ -570,6 +571,12 @@ Debug.init(options);
   </tr>
 
   <tr>
+    <td class="name">enableScript</td>
+    <td>Enable Script Editor</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
     <td class="name">enableCommandLine</td>
     <td>Enable command-line</td>
     <td>true</td>
@@ -683,6 +690,12 @@ Debug.init(options);
     <td class="name">elements</td>
     <td>(opt.) #id / .class / tagName</td>
     <td>Count elements by tag name.</td>
+  </tr>
+
+  <tr>
+    <td class="name">execute</td>
+    <td></td>
+    <td>Execute JavaScript.</td>
   </tr>
 
   <tr>
