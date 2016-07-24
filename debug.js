@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607242035';
+  this.v = '201607250000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -17,6 +17,8 @@ var DebugJS = function() {
     'posAdjX': 20,
     'posAdjY': 20,
     'resizable': true,
+    'fontFamily': 'Consolas',
+    'color': '#fff',
     'errorColor': '#d44',
     'warnColor': '#ed0',
     'infoColor': '#8cf',
@@ -26,6 +28,7 @@ var DebugJS = function() {
     'systemInfoColor': '#ddd',
     'bgColor': '0,0,0',
     'bgOpacity': '0.7',
+    'border': 'solid 1px #888',
     'showLineNums': true,
     'showTimeStamp': true,
     'showClock': true,
@@ -41,14 +44,6 @@ var DebugJS = function() {
     'enableScript': true,
     'enableCommandLine': true,
     'target': null
-  };
-
-  this.STYLE = {
-    'font-family': 'Consolas',
-    'font-size': '12px',
-    'color': '#fff',
-    'background': '#111',
-    'border': 'solid 1px #888'
   };
 
   this.DEFAULT_ELM_ID = '_debug_';
@@ -415,9 +410,9 @@ DebugJS.prototype = {
 
     var styles = {};
     styles['#' + self.id + ' td'] = {
-      'font-size': self.STYLE['font-size'],
-      'font-family': self.STYLE['font-family'],
-      'color': self.STYLE['color'],
+      'font-size': self.options.fontSize,
+      'font-family': self.options.fontFamily,
+      'color': self.options.color,
       'background': 'initial',
       'width': 'initial',
       'border': 'initial',
@@ -427,8 +422,8 @@ DebugJS.prototype = {
     styles['#' + self.id + ' pre'] = {
       'white-space': 'pre-wrap',
       'word-break': 'break-all',
-      'font-family': self.STYLE['font-family'],
-      'color': self.STYLE['color'],
+      'font-family': self.options.fontFamily,
+      'color': self.options.color,
       'margin': '0',
       'overflow': 'visible'
     };
@@ -470,11 +465,11 @@ DebugJS.prototype = {
     dbgWin.style.lineHeight = '1em';
     dbgWin.style.display = 'block';
     dbgWin.style.boxSizing = 'content-box';
-    dbgWin.style.fontFamily = self.STYLE['font-family'];
-    dbgWin.style.fontSize = self.STYLE['font-size'];
-    dbgWin.style.color = self.STYLE['color'];
-    dbgWin.style.background = self.STYLE['background'];
-    dbgWin.style.border = self.STYLE['border'];
+    dbgWin.style.fontFamily = self.options.fontFamily;
+    dbgWin.style.fontSize = self.options.fontSize,
+    dbgWin.style.color = self.options.color;
+    dbgWin.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
+    dbgWin.style.border = self.options.border;
 
     self.clearMessage();
     self.setupEventHandler();
@@ -484,7 +479,6 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_DYNAMIC) {
       dbgWin.style.position = 'fixed';
       dbgWin.style.width = self.options.width + 'px';
-      dbgWin.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
       dbgWin.style.boxShadow = '10px 10px 10px rgba(0,0,0,.3)';
       dbgWin.style.zIndex = 0x7fffffff;
 
@@ -632,7 +626,7 @@ DebugJS.prototype = {
   updateClockPanel: function() {
     var dt = DebugJS.getCurrentDateTime();
     var tm = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    var msg = '<span style=";font-size:12px;color:' + this.options.clockColor + ';margin-right:10px;">' + tm + '</span>';
+    var msg = '<span style=";font-size:' + this.options.fontSize + ';color:' + this.options.clockColor + ';margin-right:10px;">' + tm + '</span>';
     this.clockPanel.innerHTML = msg;
 
     if (this.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -715,7 +709,7 @@ DebugJS.prototype = {
   // Update Stop Watch Button
   updateSwBtnPanel: function() {
     var self = Debug;
-    var msg = '<span style="float:right;margin-right:4px;"><span class="' + this.id + '-btn" onclick="Debug.resetStopwatch();">🔃</span>';
+    var msg = '<span style="float:right;margin-right:4px;"><span class="' + this.id + '-btn" onclick="Debug.resetStopWatch();">🔃</span>';
     msg += '<span class="' + this.id + '-btn" onclick="Debug.startStopStopWatch();">';
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       msg += '||';
@@ -775,7 +769,7 @@ DebugJS.prototype = {
   // Command-line Panel
  initCmdPanel: function() {
     var self = Debug;
-    self.cmdPanel.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:calc(100% - 12px) !important;margin-left:2px;font-family:Consolas !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
+    self.cmdPanel.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:calc(100% - 12px) !important;margin-left:2px;font-family:' + self.options.fontFamily + ' !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
     self.cmdLine = document.getElementById(self.cmdLineId);
     self.cmdHistoryBuf = new DebugJS.RingBuffer(10);
   },
@@ -1039,17 +1033,23 @@ DebugJS.prototype = {
 
   startStopStopWatch: function() {
     if (Debug.status & DebugJS.STATE_STOPWATCH_RUNNING) {
-      // stop
-      Debug.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
-      Debug.updateSwBtnPanel();
+      Debug.stopStopWatch();
     } else {
-      // start
-      Debug.status |= DebugJS.STATE_STOPWATCH_RUNNING;
-      Debug.swStartTime = (new Date()).getTime() - Debug.swElapsedTime;
-      Debug.updateStopWatch();
-      Debug.updateSwPanel();
-      Debug.updateSwBtnPanel();
+      Debug.startStopWatch();
     }
+  },
+
+  startStopWatch: function() {
+    Debug.status |= DebugJS.STATE_STOPWATCH_RUNNING;
+    Debug.swStartTime = (new Date()).getTime() - Debug.swElapsedTime;
+    Debug.updateStopWatch();
+    Debug.updateSwPanel();
+    Debug.updateSwBtnPanel();
+  },
+
+  stopStopWatch: function() {
+    Debug.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
+    Debug.updateSwBtnPanel();
   },
 
   updateStopWatch: function() {
@@ -1060,7 +1060,7 @@ DebugJS.prototype = {
     self.swElapsedTimeDisp = DebugJS.getTimerStr(self.swElapsedTime);
   },
 
-  resetStopwatch: function() {
+  resetStopWatch: function() {
     var self = Debug;
     self.swStartTime = (new Date()).getTime();
     self.swElapsedTimeDisp = DebugJS.getTimerStr(0);
@@ -1412,10 +1412,10 @@ DebugJS.prototype = {
       originY = 'bottom';
       endPointY = 'top';
     }
-    var size = '<span style="font-family:Consolas;font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
-    var origin = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.clickedPosX + ',y=' + self.clickedPosY + '</span>';
+    var size = '<span style="font-family:' + self.options.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
+    var origin = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.clickedPosX + ',y=' + self.clickedPosY + '</span>';
     var endPoint = '';
-    //endPoint = '<span style="font-family:Consolas;font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
+    //endPoint = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
     self.measureBox.innerHTML = origin + size + endPoint;
   },
 
@@ -1491,16 +1491,15 @@ DebugJS.prototype = {
     var el = document.elementFromPoint(posX, posY);
     var style = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
-    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:Consolas;font-size:' + self.options.fontSize + ';color:#fff;">Element Info\n\n';
+    var maxLen = 50;
+    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + ';color:#fff;">Element Info\n\n';
     dom += 'tag        : &lt;' + el.tagName + '&gt;' + (el.type ? ' ' + el.type : '') + '\n';
     dom += 'id         : ' + el.id + '\n';
     dom += 'class      : ' + el.className + '\n';
     var txt = el.innerText;
-    dom += 'text       : ' + txt.replace(/\n/g, '').replace(/\r/g, '').substr(0, 50).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    if (txt.length > 50) {dom += '<span style="color:#888">...</span>';}
+    dom += 'text       : ' + txt.replace(/\n/g, '').replace(/\r/g, '').substr(0, maxLen).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (txt.length > maxLen) {dom += '<span style="color:#888">...</span>';}
     dom += '\n';
-    dom += 'name       : ' + (el.name ? el.name : '') + '\n';
-    dom += 'value      : ' + (el.value ? el.value : '') + '\n';
     dom += 'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n';
     dom += 'font       : size: ' + style.fontSize + '  family: ' + style.fontFamily + '\n';
     dom += 'color      : ' + style.color + ' <span style="background:' + style.color + ';width:6px;height:12px;display:inline-block;"> </span>\n';
@@ -1510,6 +1509,15 @@ DebugJS.prototype = {
     dom += 'display    : ' + style.display + '\n';
     dom += 'position   : ' + style.position + ' / float: ' + style.float + ' / clear: ' + style.clear + '\n';
     dom += 'z-index    : ' + style.zIndex + '\n';
+    dom += 'name       : ' + (el.name ? el.name : '') + '\n';
+    dom += 'value      : ' + (el.value ? el.value : '') + '\n';
+    var src = (el.src ? el.src : '');
+    if (src.length > maxLen) {
+      var src1 = src.substr(0, (maxLen / 2));
+      var src2 = src.slice(-(maxLen / 2));
+      src = src1 + '<span style="color:#888">...</span>' + src2;
+    }
+    dom += 'src        : ' + src + '\n';
     var fnOnClick = el.onclick;
     var fnOnFocus = el.onfocus;
     var fnOnBlur = el.onblur;
@@ -1555,7 +1563,7 @@ DebugJS.prototype = {
       self.scriptPanel.style.left = '1px';
       var panel = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:22px;color:#888;" onclick="Debug.disableScript();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>';
       panel += '<span style="color:#ccc;">Script Editor</span><span class="' + this.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
-      panel += '<textarea style="width:calc(100% - 5px);height:calc(100% - 18px);margin-top:2px;font-size:' + self.options.fontSize + ';font-family:Consolas;color:#fff;background:transparent;border:solid 1px #1883d7;outline:none;resize:none;" id="' + self.scriptEditorId + '" onblur="Debug.saveScriptBuf();">' + self.scriptBuf + '</textarea>';
+      panel += '<textarea style="width:calc(100% - 5px);height:calc(100% - 18px);margin-top:2px;font-size:' + self.options.fontSize + ';font-family:' + self.options.fontFamily + ';color:#fff;background:transparent;border:solid 1px #1883d7;outline:none;resize:none;" id="' + self.scriptEditorId + '" onblur="Debug.saveScriptBuf();">' + self.scriptBuf + '</textarea>';
       self.scriptPanel.innerHTML = panel;
       self.mainPanel.appendChild(self.scriptPanel);
       self.scriptEditor = document.getElementById(self.scriptEditorId);
@@ -1657,6 +1665,18 @@ DebugJS.prototype = {
 
   cmdExit: function(args, tbl) {
     var self = Debug;
+    if (self.status & DebugJS.STATE_MEASURE) {
+      self.disableMeasureMode();
+    }
+    if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
+      self.disableElmInspection();
+    }
+    if (self.status & DebugJS.STATE_SCRIPT) {
+      self.disableScript();
+      self.scriptBuf = '';
+    }
+    self.stopStopWatch();
+    self.resetStopWatch();
     self.clearMessage();
     self.hideDebugWindow();
   },

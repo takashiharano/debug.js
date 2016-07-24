@@ -220,8 +220,7 @@ window.onload = function() {
 
   var options2 = {
     'fontSize': '16px',
-    'width': 700,
-    'dispLine': 30,
+    'width': 700
   };
   //Debug.init(options2);
 
@@ -235,6 +234,7 @@ window.onload = function() {
     'target': 'dbg',
     'dispLine': 10,
     'buffSize': 10,
+    'bgOpacity': '0.9',
     'showTimeStamp': false,
     'showClock': false,
     'showClearButton': true,
@@ -247,7 +247,7 @@ window.onload = function() {
     'enableScreenMeasure': false,
     'enableElementInspection': false,
     'enableScript': false,
-    'enableCommandLine': true
+    'enableCommandLine': false
   };
   //Debug.init(options4);
 
@@ -445,6 +445,18 @@ Debug.init(options);
   </tr>
 
   <tr>
+    <td class="name">fontFamily</td>
+    <td>Font family</td>
+    <td>Consolas</td>
+  </tr>
+
+  <tr>
+    <td class="name">color</td>
+    <td>General font color</td>
+    <td>#fff</td>
+  </tr>
+
+  <tr>
     <td class="name">errorColor</td>
     <td>Error log color</td>
     <td>#d44</td>
@@ -488,7 +500,7 @@ Debug.init(options);
 
   <tr>
     <td class="name">bgColor</td>
-    <td>Background Color</td>
+    <td>Background Color (rgb format)</td>
     <td>0,0,0</td>
   </tr>
 
@@ -496,6 +508,12 @@ Debug.init(options);
     <td class="name">bgOpacity</td>
     <td>Background Opacity. 0.0 (fully transparent) &lt;-&gt; 1.0 (fully opaque)</td>
     <td>0.7</td>
+  </tr>
+
+  <tr>
+    <td class="name">border</td>
+    <td>Debug window border style</td>
+    <td>solid 1px #888</td>
   </tr>
 
   <tr>
