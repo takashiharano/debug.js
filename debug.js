@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607250000';
+  this.v = '201607260000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -60,6 +60,8 @@ var DebugJS = function() {
   this.measureBox = null;
   this.elmInspectionBtnPanel = null;
   this.elmInspectionPanel = null;
+  this.prevElm = null;
+  this.prevElmStyle = {};
   this.scriptBtnPanel = null;
   this.scriptPanel = null;
   this.scriptEditor = null;
@@ -1435,6 +1437,10 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_VISIBLE;
     self.msgPanel.children[self.msgPanelId].scrollTop = self.msgPanelScrollY;
     self.msgPanel.children[self.msgPanelId].scrollLeft = self.msgPanelScrollX;
+    var sizePos = self.getSelfSizePos();
+    if ((sizePos.winX1 > document.documentElement.clientWidth) || (sizePos.winY1 > document.documentElement.clientHeight)) {
+      self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+    }
   },
 
   toggleElmInspectionMode: function() {
@@ -1476,6 +1482,12 @@ DebugJS.prototype = {
 
   stopElmInspection: function() {
     var self = Debug;
+    if (self.prevElm) {
+      self.prevElm.style.border = self.prevElmStyle.border;
+      self.prevElm.style.opacity = self.prevElmStyle.opacity;
+      self.prevElm = null;
+      self.prevElmStyle = {};
+    }
     if (self.elmInspectionPanel != null) {
       self.mainPanel.removeChild(self.elmInspectionPanel);
       self.elmInspectionPanel = null;
@@ -1533,6 +1545,18 @@ DebugJS.prototype = {
     dom += 'onmouseout : ' + (fnOnMouseOut ? fnOnMouseOut.toString().replace(/\n/g, '') : null) + '\n';
     dom += '</pre></div>';
     self.elmInspectionPanel.innerHTML = dom;
+
+    if (el != self.prevElm) {
+      if (self.prevElm) {
+        self.prevElm.style.border = self.prevElmStyle.border;
+        self.prevElm.style.opacity = self.prevElmStyle.opacity;
+      }
+      self.prevElmStyle.border = el.style.border;
+      self.prevElmStyle.opacity = el.style.opacity;
+      el.style.border = 'solid 1px #f00';
+      el.style.opacity = 0.7;
+      self.prevElm = el;
+    }
   },
 
   toggleScriptMode: function() {
@@ -1563,7 +1587,7 @@ DebugJS.prototype = {
       self.scriptPanel.style.left = '1px';
       var panel = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:22px;color:#888;" onclick="Debug.disableScript();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>';
       panel += '<span style="color:#ccc;">Script Editor</span><span class="' + this.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
-      panel += '<textarea style="width:calc(100% - 5px);height:calc(100% - 18px);margin-top:2px;font-size:' + self.options.fontSize + ';font-family:' + self.options.fontFamily + ';color:#fff;background:transparent;border:solid 1px #1883d7;outline:none;resize:none;" id="' + self.scriptEditorId + '" onblur="Debug.saveScriptBuf();">' + self.scriptBuf + '</textarea>';
+      panel += '<textarea style="width:calc(100% - 5px);height:calc(100% - 18px);margin-top:2px;font-size:' + self.options.fontSize + ';font-family:' + self.options.fontFamily + ';color:#fff;background:transparent;border:solid 1px #1883d7;padding:2px;border-radius:0;outline:none;resize:none;" id="' + self.scriptEditorId + '" onblur="Debug.saveScriptBuf();">' + self.scriptBuf + '</textarea>';
       self.scriptPanel.innerHTML = panel;
       self.mainPanel.appendChild(self.scriptPanel);
       self.scriptEditor = document.getElementById(self.scriptEditorId);
@@ -1603,16 +1627,25 @@ DebugJS.prototype = {
 
   isOnDebugWindow: function(x, y) {
     var self = Debug;
-    var rect = self.debugWindow.getBoundingClientRect();
-    var resizeBoxSize = 3;
-    var winX1 = rect.left;
-    var winY1 = rect.top;
-    var winX2 = winX1 + self.debugWindow.clientWidth + resizeBoxSize;
-    var winY2 = winY1 + self.debugWindow.clientHeight + resizeBoxSize;
-    if (((x >= winX1) && (x <= winX2)) && ((y >= winY1) && (y <= winY2))) {
+    var sizePos = self.getSelfSizePos();
+    if (((x >= sizePos.winX1) && (x <= sizePos.winX2)) && ((y >= sizePos.winY1) && (y <= sizePos.winY2))) {
       return true;
     }
     return false;
+  },
+
+  getSelfSizePos: function() {
+    var self = Debug;
+    var rect = self.debugWindow.getBoundingClientRect();
+    var resizeBoxSize = 3;
+    var sizePos = {};
+    sizePos.width = self.debugWindow.clientWidth;
+    sizePos.height = self.debugWindow.clientHeight;
+    sizePos.winX1 = rect.left - resizeBoxSize;
+    sizePos.winY1 = rect.top - resizeBoxSize;
+    sizePos.winX2 = sizePos.winX1 + self.debugWindow.clientWidth + resizeBoxSize;
+    sizePos.winY2 = sizePos.winY1 + self.debugWindow.clientHeight + resizeBoxSize;
+    return sizePos;
   },
 
   execCmd: function() {
