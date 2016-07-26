@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607270000';
+  this.v = '201607270730';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -2202,19 +2202,18 @@ DebugJS._objDump = function(obj, arg, toJson) {
       arg.dump += '[\n';
       indent += DebugJS.INDENT_SP;
     } else {
-      arg.dump += '<span style="color:#c08;">[Array]</span>\n';
+      arg.dump += '<span style="color:#c08;">[Array](' + obj.length + ')</span>';
     }
     var s = 0;
     for (var i in obj) {
       if (s > 0) {
         if (toJson) {
-          arg.dump += ',';
+          arg.dump += ',\n';
         }
-        arg.dump += '\n';
       }
       arg.lv++; indent += DebugJS.INDENT_SP;
       if (!toJson) {
-        arg.dump += indent + '[' + i + '] ';
+        arg.dump += '\n' + indent + '[' + i + '] ';
       }
       arg = DebugJS._objDump(obj[i], arg, toJson);
       arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
