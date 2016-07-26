@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607260000';
+  this.v = '201607262222';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -41,7 +41,7 @@ var DebugJS = function() {
     'enableStopWatch': true,
     'enableScreenMeasure': true,
     'enableElementInspection': true,
-    'enableScript': true,
+    'enableScriptEditor': true,
     'enableCommandLine': true,
     'target': null
   };
@@ -133,7 +133,7 @@ var DebugJS = function() {
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
-    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window.'},
+    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status.'},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get &lt;url&gt;'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
@@ -285,7 +285,7 @@ DebugJS.prototype = {
     }
 
     // Script Button
-    if (self.options.enableScript) {
+    if (self.options.enableScriptEditor) {
       self.scriptBtnPanel = document.createElement('span');
       self.headPanel.appendChild(self.scriptBtnPanel);
     }
@@ -544,7 +544,7 @@ DebugJS.prototype = {
       self.updateElmInspectionBtnPanel();
     }
 
-    if (self.options.enableScript) {
+    if (self.options.enableScriptEditor) {
       self.updateScriptBtnPanel();
     }
 
@@ -1562,13 +1562,13 @@ DebugJS.prototype = {
   toggleScriptMode: function() {
     var self = Debug;
     if (self.status & DebugJS.STATE_SCRIPT) {
-      self.disableScript();
+      self.disableScriptEditor();
     } else {
-      self.enableScript();
+      self.enableScriptEditor();
     }
   },
 
-  enableScript: function() {
+  enableScriptEditor: function() {
     var self = Debug;
     self.status |= DebugJS.STATE_SCRIPT;
     if (self.scriptPanel == null) {
@@ -1585,7 +1585,7 @@ DebugJS.prototype = {
       self.scriptPanel.style.background = 'rgba(0,0,0,0.7)';
       self.scriptPanel.style.top = '5px';
       self.scriptPanel.style.left = '1px';
-      var panel = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:22px;color:#888;" onclick="Debug.disableScript();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>';
+      var panel = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:22px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>';
       panel += '<span style="color:#ccc;">Script Editor</span><span class="' + this.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
       panel += '<textarea style="width:calc(100% - 5px);height:calc(100% - 18px);margin-top:2px;font-size:' + self.options.fontSize + ';font-family:' + self.options.fontFamily + ';color:#fff;background:transparent;border:solid 1px #1883d7;padding:2px;border-radius:0;outline:none;resize:none;" id="' + self.scriptEditorId + '" onblur="Debug.saveScriptBuf();">' + self.scriptBuf + '</textarea>';
       self.scriptPanel.innerHTML = panel;
@@ -1593,6 +1593,7 @@ DebugJS.prototype = {
       self.scriptEditor = document.getElementById(self.scriptEditorId);
     }
     self.updateScriptBtnPanel();
+    self.scriptEditor.focus();
   },
 
   saveScriptBuf: function() {
@@ -1609,7 +1610,7 @@ DebugJS.prototype = {
     }
   },
 
-  disableScript: function() {
+  disableScriptEditor: function() {
     var self = Debug;
     self.stopScript();
     self.updateScriptBtnPanel();
@@ -1705,7 +1706,7 @@ DebugJS.prototype = {
       self.disableElmInspection();
     }
     if (self.status & DebugJS.STATE_SCRIPT) {
-      self.disableScript();
+      self.disableScriptEditor();
       self.scriptBuf = '';
     }
     self.stopStopWatch();
@@ -2163,80 +2164,131 @@ DebugJS.execCmdP = function(args) {
   }
 };
 
+DebugJS.INDENT_SP;
 DebugJS.OBJDMP_MAX = 150;
-DebugJS.objDump = function(obj) {
+DebugJS.objDump = function(obj, toJson) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
-  if (typeof obj === 'function') {
-    arg.dump += '<span style="color:#4c4;">function()</span>\n';
+  if (toJson) {
+    DebugJS.INDENT_SP = '  ';
+  } else {
+    DebugJS.INDENT_SP = ' ';
   }
-  var ret = DebugJS._objDump(obj, arg);
+  if (typeof obj === 'function') {
+    arg.dump += '<span style="color:#4c4;">function</span>()\n';
+  }
+  var ret = DebugJS._objDump(obj, arg, toJson);
   if (ret.cnt >= DebugJS.OBJDMP_MAX) {
     log.w('The object is too large. (>=' + ret.cnt + ')');
   }
+  ret.dump = ret.dump.replace(/: {2,}\{/g, ': {');
+  ret.dump = ret.dump.replace(/\[\n {2,}\]/g, '\[\]');
   return ret.dump;
 };
 
-DebugJS._objDump = function(obj, arg) {
+DebugJS._objDump = function(obj, arg, toJson) {
   if (arg.cnt >= DebugJS.OBJDMP_MAX) {
     if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
-      arg.dump += '<span style="color:#aaa;">...</span>\n'; arg.cnt++;
+      arg.dump += '<span style="color:#aaa;">...</span>'; arg.cnt++;
     }
     return arg;
   }
   var indent = '';
   for (var i = 0; i < arg.lv; i++) {
-    indent += ' ';
+    indent += DebugJS.INDENT_SP;
   }
   if (obj instanceof Array) {
-    arg.dump += '<span style="color:#c08;">[Array]</span>\n'; arg.cnt++;
+    arg.cnt++;
+    if (toJson) {
+      arg.dump += '[\n';
+      indent += DebugJS.INDENT_SP;
+    } else {
+      arg.dump += '<span style="color:#c08;">[Array]</span>\n';
+    }
+    var s = 0;
     for (var i in obj) {
-      arg.lv++; indent += ' ';
-      arg.dump += indent + '[' + i + '] ';
-      arg = DebugJS._objDump(obj[i], arg);
-      arg.lv--; indent = indent.replace(' ', '');
+      if (s > 0) {
+        if (toJson) {
+          arg.dump += ',';
+        }
+        arg.dump += '\n';
+      }
+      arg.lv++; indent += DebugJS.INDENT_SP;
+      if (!toJson) {
+        arg.dump += indent + '[' + i + '] ';
+      }
+      arg = DebugJS._objDump(obj[i], arg, toJson);
+      arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
+      s++;
+    }
+    if (toJson) {
+      indent = indent.replace(DebugJS.INDENT_SP, '');
+      if (s > 0) {
+        arg.dump += '\n';
+      }
+      arg.dump += indent + ']';
     }
   } else if (obj instanceof Object) {
     arg.cnt++;
     if (typeof obj !== 'function') {
-      arg.dump += '<span style="color:#79f;">[Object]</span> {\n';
+      if (toJson) {
+        arg.dump += indent;
+      } else {
+        arg.dump += '<span style="color:#79f;">[Object]</span> ';
+      }
+      arg.dump += '{\n';
     }
-    indent += ' ';
+    indent += DebugJS.INDENT_SP;
+    var s = 0;
     for (var key in obj) {
+      if (s > 0) {
+        if (toJson) {
+          arg.dump += ',';
+        }
+        arg.dump += '\n';
+      }
       if (typeof obj[key] === 'function') {
         arg.dump += indent + '<span style="color:#4c4;">function</span> ' + key + '()'; arg.cnt++;
         if (Object.keys(obj[key]).length > 0) {
-          arg.dump += ' {';
+          arg.dump += ' {\n';
         }
-        arg.dump += '\n';
       } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
-        arg.dump += indent + key + ': <span style="color:#f80;">[Date]</span> ' + obj[key] + '\n';
+        arg.dump += indent;
+        if (toJson) {arg.dump += '"';}
+        arg.dump += key;
+        if (toJson) {arg.dump += '"';}
+        arg.dump += ': <span style="color:#f80;">[Date]</span> ' + obj[key];
         continue;
       } else {
-        arg.dump += indent + key + ': ';
+        arg.dump += indent;
+        if (toJson) {arg.dump += '"';}
+        arg.dump += key;
+        if (toJson) {arg.dump += '"';}
+        arg.dump += ': ';
       }
       arg.lv++;
-      arg = DebugJS._objDump(obj[key], arg);
+      arg = DebugJS._objDump(obj[key], arg, toJson);
       arg.lv--;
       if (typeof obj[key] === 'function') {
         if (Object.keys(obj[key]).length > 0) {
-          arg.dump += indent + '}\n';
+          arg.dump += '\n' + indent + '}';
         }
       }
+      s++;
     }
-    indent = indent.replace(' ', '');
+    indent = indent.replace(DebugJS.INDENT_SP, '');
     if (typeof obj !== 'function') {
-      arg.dump += indent + '}\n';
+      arg.dump += '\n' + indent + '}';
     }
   } else if (obj === null) {
-    arg.dump += '<span style="color:#ccc;">null</span>' + '\n'; arg.cnt++;
+    arg.dump += '<span style="color:#ccc;">null</span>'; arg.cnt++;
   } else if (obj === undefined) {
-    arg.dump += '<span style="color:#ccc;">undefined</span>' + '\n'; arg.cnt++;
+    arg.dump += '<span style="color:#ccc;">undefined</span>'; arg.cnt++;
   } else if (typeof obj === 'string') {
     var str = obj.replace(/</g, '&lt;');
     str = str.replace(/>/g, '&gt;');
-    arg.dump += '"' + str + '"\n'; arg.cnt++;
+    arg.dump += '"' + str + '"'; arg.cnt++;
   } else {
-    arg.dump += obj + '\n'; arg.cnt++;
+    arg.dump += obj; arg.cnt++;
   }
   return arg;
 };
@@ -2300,7 +2352,8 @@ DebugJS.getChildElements = function(el, list) {
 
 DebugJS.execCmdJson = function(jsn) {
   var j = JSON.parse(jsn);
-  DebugJS.log.p(j);
+  var json = '\n' + DebugJS.objDump(j, true);
+  DebugJS.log(json);
 };
 
 DebugJS.digits = function(x) {
