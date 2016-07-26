@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607262222';
+  this.v = '201607270000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -2257,6 +2257,7 @@ DebugJS._objDump = function(obj, arg, toJson) {
         arg.dump += key;
         if (toJson) {arg.dump += '"';}
         arg.dump += ': <span style="color:#f80;">[Date]</span> ' + obj[key];
+        s++;
         continue;
       } else {
         arg.dump += indent;
@@ -2350,10 +2351,20 @@ DebugJS.getChildElements = function(el, list) {
   }
 };
 
-DebugJS.execCmdJson = function(jsn) {
-  var j = JSON.parse(jsn);
-  var json = '\n' + DebugJS.objDump(j, true);
-  DebugJS.log(json);
+DebugJS.execCmdJson = function(json) {
+  var jsn = '\n';
+  var flg = true;;
+  if (json.substr(0, 2) == '-p') {
+    json = json.substr(3);
+    flg = false;;
+  }
+  try {
+    var j = JSON.parse(json);
+    jsn += DebugJS.objDump(j, flg);
+    DebugJS.log(jsn);
+  } catch (e) {
+    DebugJS.log.e('JSON format error.');
+  }
 };
 
 DebugJS.digits = function(x) {
@@ -2645,15 +2656,17 @@ log.clr = function() {
   Debug.clearMessage();
 };
 
-timeStart = function(timerName, msg) {
+var time = function() {};
+
+time.start = function(timerName, msg) {
   DebugJS.timeStart(timerName, msg);
 };
 
-timeSplit = function(timerName, msg) {
+time.split = function(timerName, msg) {
   DebugJS.timeSplit(timerName, msg);
 };
 
-timeEnd = function(timerName, msg) {
+time.end = function(timerName, msg) {
   DebugJS.timeEnd(timerName, msg);
 };
 
