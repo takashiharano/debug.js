@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607280045';
+  this.v = '201607280700';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -2690,6 +2690,10 @@ time.end = function(timerName, msg) {
 };
 
 var dbg = function() {};
+dbg.init = function(options){
+  Debug.init(options);
+};
+
 dbg.countElements = function(selector, showDetail) {
   return DebugJS.countElements(selector, showDetail);
 };
@@ -2724,4 +2728,5 @@ if (DebugJS.ENABLE) {
   time.split = function(x, xx) {};
   time.end = function(x, xx) {};
   dbg.countElements = function(x, xx) {};
+  dbg.init = function(x) {};
 }

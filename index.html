@@ -229,19 +229,19 @@ window.onload = function() {
     'position': 'c'
   };
   //in the absence of this initialization, debug.js works in default configuration.
-  //Debug.init(options);
+  //dbg.init(options);
 
   var options2 = {
     'fontSize': '16px',
     'width': 700
   };
-  //Debug.init(options2);
+  //dbg.init(options2);
 
   // If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options3 = {
     'target': 'debug'
   };
-  //Debug.init(options3);
+  //dbg.init(options3);
 
   var options4 = {
     'target': 'debug',
@@ -262,7 +262,7 @@ window.onload = function() {
     'enableScriptEditor': false,
     'enableCommandLine': false
   };
-  //Debug.init(options4);
+  //dbg.init(options4);
 
   var options5 = {
     'target': 'debug',
@@ -288,7 +288,7 @@ window.onload = function() {
     'enableScriptEditor': false,
     'enableCommandLine': false
   };
-  //Debug.init(options5);
+  //dbg.init(options5);
 
   log('Here is the log output example!');
   log('The window\'s load event fired.');
@@ -781,6 +781,14 @@ dbg.countElements('*');
 dbg.countElements('#id');
 -&gt; Count the id's element
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.init</td>
+    <td>options</td>
+    <td>
+      Initialize debug.js
     </td>
   </tr>
 </table>
