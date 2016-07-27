@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607280000';
+  this.v = '201607280030';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -2465,6 +2465,8 @@ DebugJS.timeStart = function(timerName, msg) {
   var str;
   if (msg) {
     str = msg.replace(/%n/g, timerName);
+  } else if (msg == null) {
+    return;
   } else {
     str = timerName + ': timer started';
   }
