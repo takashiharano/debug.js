@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607280000';
+  this.v = '201607280045';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -2665,13 +2665,13 @@ log.p = function(o) {
   DebugJS.log.p(o);
 };
 
-log.stk = function() {
+log.stack = function() {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   var err = new Error();
   DebugJS.log(err.stack);
 };
 
-log.clr = function() {
+log.clear = function() {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   Debug.clearMessage();
 };
@@ -2718,8 +2718,8 @@ if (DebugJS.ENABLE) {
   log.d = function(x) {};
   log.s = function(x) {};
   log.p = function(x) {};
-  log.stk = function() {};
-  log.clr = function() {};
+  log.stack = function() {};
+  log.clear = function() {};
   time.start = function(x, xx) {};
   time.split = function(x, xx) {};
   time.end = function(x, xx) {};
