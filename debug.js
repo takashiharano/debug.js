@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607272345';
+  this.v = '201607280000';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -1880,8 +1880,8 @@ DebugJS.prototype = {
       hh = 0;
       if (c) {
         hh -= 1;
-        if (mm == -1) {
-          mm = 23;
+        if (hh == -1) {
+          hh = 23;
         }
       }
     } else {
