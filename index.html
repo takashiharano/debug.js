@@ -79,7 +79,7 @@ a:hover {
 }
 
 .button {
-  width:180px;
+  width:200px;
   font-size:20px;
   font-weight:bold;
   text-decoration:none;
@@ -159,6 +159,13 @@ a:hover {
   font-family: Consolas;
   font-size: 12px;
   margin: 16px 5px;
+}
+
+.opt {
+  font-size: 10px;
+  color: #888;
+  font-style: italic;
+  margin-left: 2px;
 }
 
 /*td {*/
@@ -678,20 +685,77 @@ Debug.init(options);
 
   <tr>
     <td class="name">time.start</td>
-    <td>timer name</td>
-    <td>Start a timer</td>
+    <td>
+      arg1: timer name<br>
+      arg2: message<span class="opt">(opt)</span>
+    </td>
+    <td>
+     Start a timer
+<pre class="eg">
+time.start('timer1')
+-&gt; timer1: timer started
+
+time.start('timer1', 'Timer Start: %n')
+-&gt; Timer Start: timer1
+</pre>
+    </td>
   </tr>
 
   <tr>
     <td class="name">time.split</td>
-    <td>timer name</td>
-    <td>Print elapsed time of the timer</td>
+    <td>
+      arg1: timer name<br>
+      arg2: message<span class="opt">(opt)</span>
+    </td>
+    <td>
+      Print elapsed time of the timer
+<pre class="eg">
+time.split('timer1')
+-&gt; timer1: 00:01:02.345
+
+time.split('timer1')
+-&gt; timer1: 00:01:03.345 (⊿00:00:01.000)
+
+time.split('timer1', '[%n] epalsed time: %t (%lt)')
+-&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
+</pre>
+    </td>
   </tr>
 
   <tr>
     <td class="name">time.end</td>
-    <td>timer name</td>
-    <td>Print elapsed time of the timer and clear.</td>
+    <td>
+      arg1: timer name<br>
+      arg2: message<span class="opt">(opt)</span>
+    </td>
+    <td>
+      Print elapsed time of the timer and clear.
+<pre class="eg">
+time.end('timer1')
+-&gt; timer1: 00:01:02.345
+
+time.end('timer1')
+-&gt; timer1: 00:01:03.345 (⊿00:00:01.000)
+
+time.end('timer1', '[%n] epalsed time: %t (%lt)')
+-&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.countElements</td>
+    <td>element selector</td>
+    <td>
+      Count number of elements.
+<pre class="eg">
+dbg.countElements('*');
+-&gt; Count all elements
+
+dbg.countElements('#id');
+-&gt; Count the id's element
+</pre>
+    </td>
   </tr>
 </table>
 <br>
@@ -712,7 +776,7 @@ Debug.init(options);
 
   <tr>
     <td class="name">elements</td>
-    <td>(opt.) #id / .class / tagName</td>
+    <td><span class="opt">(opt)</span> #id / .class / tagName</td>
     <td>Count elements by tag name.</td>
   </tr>
 
@@ -774,7 +838,10 @@ $ rgb 255 255 255
 
   <tr>
     <td class="name">time</td>
-    <td>start/split/end, timer name</td>
+    <td>
+      arg1: start / split / end<br>
+      arg2: timer name
+    </td>
     <td>Time test.</td>
   </tr>
 
@@ -927,6 +994,19 @@ time.split('timer2');<br>
 time.eEnd('timer2');<br>
 <span class="button" onclick="time.end('timer2');">time.end()</span>
 </td>
+</tr>
+
+<tr>
+<td>
+dbg.countElements('*');<br>
+<span class="button" onclick="log(dbg.countElements('*'));">dbg.countElements</span>
+</td>
+
+<td>
+dbg.countElements('#title');<br>
+<span class="button" onclick="log(dbg.countElements('#title'));">dbg.countElements</span>
+</td>
+
 </tr>
 </table>
 

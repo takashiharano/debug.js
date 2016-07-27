@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607270730';
+  this.v = '201607272300';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -771,7 +771,7 @@ DebugJS.prototype = {
   // Command-line Panel
  initCmdPanel: function() {
     var self = Debug;
-    self.cmdPanel.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:calc(100% - 12px) !important;margin-left:2px;font-family:' + self.options.fontFamily + ' !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
+    self.cmdPanel.innerHTML = '<div style="padding:3px;margin-top:3px;"><span style="color:#0cf;">$</span><input style="width:calc(100% - 15px) !important;margin-left:2px;font-family:' + self.options.fontFamily + ' !important;font-size:12px !important;color:#fff !important;background:transparent !important;border:0;border-bottom:solid 1px #888;border-radius:0 !important;outline:none;" id="' + self.cmdLineId + '"></input></div>';
     self.cmdLine = document.getElementById(self.cmdLineId);
     self.cmdHistoryBuf = new DebugJS.RingBuffer(10);
   },
@@ -1504,7 +1504,8 @@ DebugJS.prototype = {
     var style = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
     var maxLen = 50;
-    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + ';color:#fff;">Element Info\n\n';
+    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + ';color:#fff;">Element Info';
+    dom += '<span style="float:right;margin-right:4px;">(' + document.getElementsByTagName("*").length + ')</span>\n\n';
     dom += 'tag        : &lt;' + el.tagName + '&gt;' + (el.type ? ' ' + el.type : '') + '\n';
     dom += 'id         : ' + el.id + '\n';
     dom += 'class      : ' + el.className + '\n';
@@ -1824,7 +1825,6 @@ DebugJS.prototype = {
       ms = 1000 - tR.msec + tL.msec;
       c = true;
     }
-
     if (tL.sec > tR.sec) {
       ss = tL.sec - tR.sec;
       if (c) {
@@ -1832,7 +1832,7 @@ DebugJS.prototype = {
       }
       c = false;
     } else if (tL.sec == tR.sec) {
-      ss = tL.sec;
+      ss = 0;
       if (c) {
         ss -= 1;
         if (ss == -1) {
@@ -1854,7 +1854,7 @@ DebugJS.prototype = {
       }
       c = false;
     } else if (tL.min == tR.min) {
-      mm = tL.min;
+      mm = 0;
       if (c) {
         mm -= 1;
         if (mm == -1) {
@@ -1876,7 +1876,7 @@ DebugJS.prototype = {
       }
       c = false;
     } else if (tL.hour == tR.hour) {
-      hh = tL.hour;
+      hh = 0;
       if (c) {
         hh -= 1;
         if (mm == -1) {
@@ -2164,15 +2164,10 @@ DebugJS.execCmdP = function(args) {
   }
 };
 
-DebugJS.INDENT_SP;
-DebugJS.OBJDMP_MAX = 150;
+DebugJS.INDENT_SP = ' ';
+DebugJS.OBJDMP_MAX = 1000;
 DebugJS.objDump = function(obj, toJson) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
-  if (toJson) {
-    DebugJS.INDENT_SP = '  ';
-  } else {
-    DebugJS.INDENT_SP = ' ';
-  }
   if (typeof obj === 'function') {
     arg.dump += '<span style="color:#4c4;">function</span>()\n';
   }
@@ -2466,47 +2461,71 @@ DebugJS.convBIN = function(v2) {
 DebugJS.timeStart = function(timerName, msg) {
   Debug.timers[timerName] = {};
   Debug.timers[timerName].start = (new Date());
-  var str = timerName + ': timer started';
-  if (msg) {str += ' ' + msg;}
+  var str;
+  if (msg) {
+    str = msg.replace(/%n/g, timerName);
+  } else {
+    str = timerName + ': timer started';
+  }
   DebugJS.log(str);
 };
 
 DebugJS.timeSplit = function(timerName, msg) {
+  var t2 = new Date();
   if (!Debug.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
-    return;
+    return null;
   }
-  var str = timerName + ': ' + DebugJS.timer(timerName);
-  if (msg) {str += ' ' + msg;}
+  var t = DebugJS.getElapsedTimeStr(Debug.timers[timerName].start, t2);
+  var dt = '<span style="color:#8ff;">' + t + '</span>';
+
+  var dtLap = '';
+  if (Debug.timers[timerName].split) {
+    var tLap = DebugJS.getElapsedTimeStr(Debug.timers[timerName].split, t2);
+    dtLap = '<span style="color:#8ff;">' + tLap + '</span>';
+  }
+
+  var str;
+  if (msg) {
+    str = msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+  } else {
+    str = timerName + ': ' + dt;
+    if (dtLap != '') {
+      str += ' (⊿' + dtLap + ')';
+    }
+  }
   DebugJS.log(str);
+  Debug.timers[timerName].split = t2;
+  return t;
 };
 
 DebugJS.timeEnd = function(timerName, msg) {
   if (!Debug.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
-    return;
+    return null;
   }
-  DebugJS.timeSplit(timerName, msg);
+  var t = DebugJS.timeSplit(timerName, msg);
   delete Debug.timers[timerName];
+  return t;
 };
 
 DebugJS.timeList = function() {
+  var now = new Date();
   var l = '<br>';
   if (Object.keys(Debug.timers).length == 0) {
     l += '<span style="color:#ccc;">no timers</span>';
   } else {
     l += '<table>';
     for (var key in Debug.timers) {
-      l += '<tr><td>' + key + '</td><td>' + DebugJS.timer(key) + '</td></tr>';
+      l += '<tr><td>' + key + '</td><td><span style="color:#8ff;">' + DebugJS.getElapsedTimeStr(Debug.timers[key].start, now) + '</span></td></tr>';
     }
     l += '</table>';
   }
   DebugJS.log(l);
 };
 
-DebugJS.timer = function(timerName) {
-  Debug.timers[timerName].end = new Date();
-  var delta = Debug.timers[timerName].end.getTime() - Debug.timers[timerName].start.getTime();
+DebugJS.getElapsedTimeStr = function(t1, t2) {
+  var delta = t2.getTime() - t1.getTime();
   var elapsed = DebugJS.getTimerStr(delta);
   return elapsed;
 };
@@ -2608,7 +2627,7 @@ DebugJS.init = function() {
     return true;
   }
 };
-
+// ---- ---- ---- ---- ---- ---- ---- ----
 var log = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log(m);
@@ -2669,6 +2688,12 @@ time.end = function(timerName, msg) {
   DebugJS.timeEnd(timerName, msg);
 };
 
+var dbg = function() {};
+
+dbg.countElements = function(selector, showDetail) {
+  return DebugJS.countElements(selector, showDetail);
+};
+// ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
   window.addEventListener('load', DebugJS.init, true);
