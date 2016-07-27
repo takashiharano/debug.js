@@ -239,12 +239,12 @@ window.onload = function() {
 
   // If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options3 = {
-    'target': 'dbg'
+    'target': 'debug'
   };
   //Debug.init(options3);
 
   var options4 = {
-    'target': 'dbg',
+    'target': 'debug',
     'dispLine': 10,
     'buffSize': 10,
     'bgOpacity': '0.9',
@@ -263,6 +263,32 @@ window.onload = function() {
     'enableCommandLine': false
   };
   //Debug.init(options4);
+
+  var options5 = {
+    'target': 'debug',
+    'dispLine': 10,
+    'fontSize': '13px',
+    'fontFamily': 'MS Gothic',
+    'color': '#000',
+    'timerColor': '#00f',
+    'bgColor': '255,255,255',
+    'bgOpacity': '1.0',
+    'showLineNums': false,
+    'showTimeStamp': false,
+    'showClock': false,
+    'showClearButton': false,
+    'showSuspendLogButton': false,
+    'showCloseButton': false,
+    'showWindowSize': false,
+    'showMouseStatus': false,
+    'showKeyStatus': false,
+    'enableStopWatch': false,
+    'enableScreenMeasure': false,
+    'enableElementInspection': false,
+    'enableScriptEditor': false,
+    'enableCommandLine': false
+  };
+  //Debug.init(options5);
 
   log('Here is the log output example!');
   log('The window\'s load event fired.');
@@ -334,7 +360,7 @@ var messages = [
 <div id="main">
 <div id="header">
 <div id="title">debug.js <span style="font-size:2rem;" id="title2">demo & description</span></div>
-</div>
+</div><!--header-->
 <div class="content">
 <div class="caption">// Usage</div><br>
 
@@ -905,7 +931,7 @@ $ rgb 255 255 255
   </tr>
 </table>
 
-<div id="dbg"></div>
+<div id="debug"></div>
 
 <br>
 <div class="caption">// DEMO</div>

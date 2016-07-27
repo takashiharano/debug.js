@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607272300';
+  this.v = '201607272345';
 
   this.DEFAULT_OPTIONS = {
     'visible': true,
@@ -25,6 +25,7 @@ var DebugJS = function() {
     'debugColor': '#ccc',
     'specialColor': '#fff',
     'clockColor': '#0f0',
+    'timerColor': '#8ff',
     'systemInfoColor': '#ddd',
     'bgColor': '0,0,0',
     'bgOpacity': '0.7',
@@ -1505,7 +1506,7 @@ DebugJS.prototype = {
     var rect = el.getBoundingClientRect();
     var maxLen = 50;
     var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + ';color:#fff;">Element Info';
-    dom += '<span style="float:right;margin-right:4px;">(' + document.getElementsByTagName("*").length + ')</span>\n\n';
+    dom += '<span style="float:right;margin-right:4px;">(' + document.getElementsByTagName('*').length + ')</span>\n\n';
     dom += 'tag        : &lt;' + el.tagName + '&gt;' + (el.type ? ' ' + el.type : '') + '\n';
     dom += 'id         : ' + el.id + '\n';
     dom += 'class      : ' + el.className + '\n';
@@ -2347,10 +2348,10 @@ DebugJS.getChildElements = function(el, list) {
 
 DebugJS.execCmdJson = function(json) {
   var jsn = '\n';
-  var flg = true;;
+  var flg = true;
   if (json.substr(0, 2) == '-p') {
     json = json.substr(3);
-    flg = false;;
+    flg = false;
   }
   try {
     var j = JSON.parse(json);
@@ -2471,18 +2472,19 @@ DebugJS.timeStart = function(timerName, msg) {
 };
 
 DebugJS.timeSplit = function(timerName, msg) {
+  var self = Debug;
   var t2 = new Date();
   if (!Debug.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
     return null;
   }
   var t = DebugJS.getElapsedTimeStr(Debug.timers[timerName].start, t2);
-  var dt = '<span style="color:#8ff;">' + t + '</span>';
+  var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
 
   var dtLap = '';
   if (Debug.timers[timerName].split) {
     var tLap = DebugJS.getElapsedTimeStr(Debug.timers[timerName].split, t2);
-    dtLap = '<span style="color:#8ff;">' + tLap + '</span>';
+    dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
   }
 
   var str;
@@ -2517,7 +2519,7 @@ DebugJS.timeList = function() {
   } else {
     l += '<table>';
     for (var key in Debug.timers) {
-      l += '<tr><td>' + key + '</td><td><span style="color:#8ff;">' + DebugJS.getElapsedTimeStr(Debug.timers[key].start, now) + '</span></td></tr>';
+      l += '<tr><td>' + key + '</td><td><span style="color:' + self.options.timerColor + ';">' + DebugJS.getElapsedTimeStr(Debug.timers[key].start, now) + '</span></td></tr>';
     }
     l += '</table>';
   }
@@ -2675,7 +2677,6 @@ log.clr = function() {
 };
 
 var time = function() {};
-
 time.start = function(timerName, msg) {
   DebugJS.timeStart(timerName, msg);
 };
@@ -2689,7 +2690,6 @@ time.end = function(timerName, msg) {
 };
 
 var dbg = function() {};
-
 dbg.countElements = function(selector, showDetail) {
   return DebugJS.countElements(selector, showDetail);
 };
@@ -2707,8 +2707,8 @@ if (DebugJS.ENABLE) {
     console.info = function(x) {log.i(x);};
     console.warn = function(x) {log.w(x);};
     console.error = function(x) {log.e(x);};
-    console.time = function(x) {timeStart(x);};
-    console.timeEnd = function(x) {timeEnd(x);};
+    console.time = function(x) {time.start(x);};
+    console.timeEnd = function(x) {time.end(x);};
   }
 } else {
   log = function(x) {};
@@ -2720,7 +2720,8 @@ if (DebugJS.ENABLE) {
   log.p = function(x) {};
   log.stk = function() {};
   log.clr = function() {};
-  timeStart = function(x, xx) {};
-  timeSplit = function(x, xx) {};
-  timeEnd = function(x, xx) {};
+  time.start = function(x, xx) {};
+  time.split = function(x, xx) {};
+  time.end = function(x, xx) {};
+  dbg.countElements = function(x, xx) {};
 }
