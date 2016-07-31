@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607312000';
+  this.v = '201607312020';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -199,7 +199,7 @@ DebugJS.prototype = {
 
     self.status = 0;
 
-    self.setupDefaultOptions();;
+    self.setupDefaultOptions();
     if (options) {
       for (var key1 in options) {
         for (var key2 in self.options) {
@@ -911,7 +911,7 @@ DebugJS.prototype = {
   // Update Pin Button
   updatePinBtnPanel: function() {
     var self = Debug;
-    self.pinBtnPanel.style.color =  (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : '#fa0';
+    self.pinBtnPanel.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : '#fa0';
   },
 
   // Window Button
@@ -2857,7 +2857,7 @@ time.end = function(timerName, msg) {
 };
 
 var dbg = function() {};
-dbg.init = function(options){
+dbg.init = function(options) {
   Debug.init(options);
 };
 
