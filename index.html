@@ -168,11 +168,12 @@ a:hover {
   margin-left: 2px;
 }
 
-/*td {*/
-/*  width: 100px;*/
-/*  font-size: 20px;*/
-/*  border: solid 1px #ccc;*/
-/*}*/
+/*td {                         */
+/*  width: 100px;              */
+/*  font-size: 50px !important;*/
+/*  border: solid 1px #ccc;    */
+/*  line-height:2em;           */
+/*}                            */
 </style>
 <script>
 var a = {
@@ -233,14 +234,20 @@ window.onload = function() {
   var options1 = {
     'visible': true,
     'position': 'c'
+    //'position': 'n'
+    //'position': 'ne'
+    //'position': 'e'
+    //'position': 'se'
+    //'position': 's'
+    //'position': 'sw'
+    //'position': 'w'
+    //'position': 'nw'
   };
-  //in the absence of this initialization, debug.js works in default configuration.
   //dbg.init(options1);
 
   var options2 = {
     'visible': true,
-    'fontSize': '16px',
-    'width': 700
+    'zoom': '1.4'
   };
   //dbg.init(options2);
 
@@ -256,25 +263,19 @@ window.onload = function() {
     'buffSize': 10,
     'bgOpacity': '0.9',
     'showTimeStamp': false,
-    'showClock': false,
-    'showSuspendLogButton': false,
-    'togglableShowHide': false,
-    'showWindowSize': false,
-    'showMouseStatus': false,
-    'showKeyStatus': false,
-    'enableStopWatch': false,
-    'enableScreenMeasure': false,
-    'enableElementInspection': false,
-    'enableScriptEditor': false,
-    'enableCommandLine': false
+    'disableAllFeatures': true,
+    'useClearButton': true
   };
   //dbg.init(options4);
 
   var options5 = {
     'target': 'debug',
-    'dispLine': 10,
-    'fontSize': '13px',
+    'dispLine': 12,
     'fontColor': '#333',
+    'warnLogColor': '#ca0',
+    'infoLogColor': '#08f',
+    'debugLogColor': '#888',
+    'specialLogColor': '#0ca',
     'timerColor': '#00f',
     'bgColor': '255,255,255',
     'bgOpacity': '1.0',
@@ -450,9 +451,26 @@ dbg.init(options);
   </tr>
 
   <tr>
+    <td class="name">zoom</td>
+    <td>Zoom ratio</td>
+    <td>1</td>
+  </tr>
+
+  <tr>
     <td class="name">position</td>
-    <td>Default window position<br>(nw=left-top / sw=left-bottom / c=center / ne=right-top / se=right-bottom)</td>
-    <td>se</td>
+    <td>
+      Default window position<br>
+      'n' = top | center<br>
+      'ne' = top | right<br>
+      'e' = middle | right<br>
+      'se' = bottom | right<br>
+      's' = bottom | center<br>
+      'sw' = bottom | left<br>
+      'w' = middle | left<br>
+      'nw' = top | center<br>
+      'c' = middle | center<br>
+    </td>
+    <td>'se'</td>
   </tr>
 
   <tr>
@@ -476,79 +494,79 @@ dbg.init(options);
   <tr>
     <td class="name">fontFamily</td>
     <td>Font family</td>
-    <td>Consolas</td>
+    <td>'Consolas'</td>
   </tr>
 
   <tr>
     <td class="name">fontSize</td>
     <td>Log message font size</td>
-    <td>12px</td>
+    <td>'12px'</td>
   </tr>
 
   <tr>
     <td class="name">fontColor</td>
     <td>General font color</td>
-    <td>#fff</td>
+    <td>'#fff'</td>
   </tr>
 
   <tr>
-    <td class="name">errorColor</td>
+    <td class="name">errorLogColor</td>
     <td>Error log color</td>
-    <td>#e55</td>
+    <td>'#e55'</td>
   </tr>
 
   <tr>
-    <td class="name">warnColor</td>
+    <td class="name">warnLogColor</td>
     <td>Warning log color</td>
-    <td>#fe0</td>
+    <td>'#fe0'</td>
   </tr>
 
   <tr>
-    <td class="name">infoColor</td>
+    <td class="name">infoLogColor</td>
     <td>Information log color</td>
-    <td>#9ef</td>
+    <td>'#9ef'</td>
   </tr>
 
   <tr>
-    <td class="name">debugColor</td>
+    <td class="name">debugLogColor</td>
     <td>Debug log color</td>
-    <td>#ccc</td>
+    <td>'#ccc'</td>
   </tr>
 
   <tr>
-    <td class="name">specialColor</td>
+    <td class="name">specialLogColor</td>
     <td>Special log color</td>
-    <td>#fff</td>
+    <td>'#fff'</td>
   </tr>
 
   <tr>
     <td class="name">clockColor</td>
     <td>Clock color</td>
-    <td>#0f0</td>
+    <td>'#0f0'</td>
   </tr>
 
   <tr>
     <td class="name">systemInfoColor</td>
     <td>System info color (window / mouse / key status, etc.)</td>
-    <td>#ddd</td>
+    <td>'#ddd'</td>
   </tr>
 
   <tr>
     <td class="name">bgColor</td>
     <td>Background Color (rgb format)</td>
-    <td>0,0,0</td>
+    <td>'0,0,0'</td>
   </tr>
 
   <tr>
     <td class="name">bgOpacity</td>
     <td>Background Opacity. 0.0 (fully transparent) &lt;-&gt; 1.0 (fully opaque)</td>
-    <td>0.7</td>
+    <td>'0.7'</td>
   </tr>
 
   <tr>
     <td class="name">border</td>
     <td>Debug window border style</td>
-    <td>solid 1px #888</td>
+    <td>'solid 1px #888'</td>
   </tr>
 
   <tr>
@@ -564,73 +582,73 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">showClock</td>
-    <td>Show clock</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">showClearButton</td>
-    <td>Show [CLR] button</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">showSuspendLogButton</td>
-    <td>Show 🚫 button</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">showWindowSize</td>
-    <td>Show window size monitor</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">showMouseStatus</td>
-    <td>Show mouse status monitor</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">showKeyStatus</td>
-    <td>Show key status monitor</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
     <td class="name">togglableShowHide</td>
     <td>Togglable Show / Hide (Show × button)</td>
     <td>true</td>
   </tr>
 
   <tr>
-    <td class="name">enableStopWatch</td>
+    <td class="name">useClock</td>
+    <td>Show clock</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">useClearButton</td>
+    <td>Show [CLR] button</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">useSuspendLogButton</td>
+    <td>Show 🚫 button</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">useWindowSizeInfo</td>
+    <td>Show window size monitor</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">useMouseStatusInfo</td>
+    <td>Show mouse status monitor</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">useKeyStatusInfo</td>
+    <td>Show key status monitor</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">useStopWatch</td>
     <td>Enable stopwatch function</td>
     <td>true</td>
   </tr>
 
   <tr>
-    <td class="name">enableScreenMeasure</td>
+    <td class="name">useScreenMeasure</td>
     <td>Enable Screen Measure</td>
     <td>true</td>
   </tr>
 
   <tr>
-    <td class="name">enableElementInspection</td>
+    <td class="name">useElementInspection</td>
     <td>Enable DOM Element inspection</td>
     <td>true</td>
   </tr>
 
   <tr>
-    <td class="name">enableScriptEditor</td>
+    <td class="name">useScriptEditor</td>
     <td>Enable Script Editor</td>
     <td>true</td>
   </tr>
 
   <tr>
-    <td class="name">enableCommandLine</td>
+    <td class="name">useCommandLine</td>
     <td>Enable command-line</td>
     <td>true</td>
   </tr>
