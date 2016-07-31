@@ -749,6 +749,9 @@ time.start('timer1')
 
 time.start('timer1', 'Timer Start: %n')
 -&gt; Timer Start: timer1
+
+time.start('timer1', null)
+-&gt; <span class="opt">no output log (only start the timer)</span>
 </pre>
     </td>
   </tr>
@@ -770,6 +773,9 @@ time.split('timer1')
 
 time.split('timer1', '[%n] epalsed time: %t (%lt)')
 -&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
+
+time.split('timer1', null)
+-&gt; <span class="opt">no output log (only split the timer)</span>
 </pre>
     </td>
   </tr>
@@ -791,6 +797,23 @@ time.end('timer1')
 
 time.end('timer1', '[%n] epalsed time: %t (%lt)')
 -&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
+
+time.end('timer1', null)
+-&gt; <span class="opt">no output log (only clear the timer)</span>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">time.check</td>
+    <td>
+      arg1: timer name
+    </td>
+    <td>
+     Get elapsed time of the timer.
+<pre class="eg">
+time.check('timer1')
+-&gt; 00:01:23.456
 </pre>
     </td>
   </tr>
