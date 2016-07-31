@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607312345';
+  this.v = '201608010000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -581,7 +581,7 @@ DebugJS.prototype = {
     if (self.options.useStopWatch) {
       self.swPanel = document.createElement('span');
       self.swPanel.style.float = 'right';
-      self.swPanel.style.marginRight = '6px';
+      self.swPanel.style.marginRight = '8px';
       self.headPanel.appendChild(self.swPanel);
 
       self.swBtnPanel = document.createElement('span');
@@ -2643,8 +2643,7 @@ DebugJS.timeCheck = function(timerName, now) {
   if (!now) now = new Date();
   if (!Debug.timers[timerName]) return null;
   var t = DebugJS.getElapsedTimeStr(Debug.timers[timerName].start, now);
-  var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
-  return dt;
+  return t;
 };
 
 DebugJS.timeSplit = function(timerName, msg) {
@@ -2689,6 +2688,27 @@ DebugJS.timeEnd = function(timerName, msg) {
   return t;
 };
 
+DebugJS.timeLog = function(timerName, msg) {
+  var self = Debug;
+  var now = new Date();
+  if (!Debug.timers[timerName]) {
+    DebugJS.log.w(timerName + ': timer undefined');
+    return;
+  }
+  var t = DebugJS.getElapsedTimeStr(Debug.timers[timerName].start, now);
+  var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
+
+  var dtLap = '';
+  if (Debug.timers[timerName].split) {
+    var tLap = DebugJS.getElapsedTimeStr(Debug.timers[timerName].split, t2);
+    dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
+  }
+
+  var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+  DebugJS.log(str);
+  return;
+};
+
 DebugJS.timeList = function() {
   var self = Debug;
   var now = new Date();
@@ -2698,7 +2718,7 @@ DebugJS.timeList = function() {
   } else {
     l += '<table>';
     for (var key in Debug.timers) {
-      l += '<tr><td>' + key + '</td><td>' + DebugJS.timeCheck(key, now) + '</td></tr>';
+      l += '<tr><td>' + key + '</td><td><span style="color:' + self.options.timerColor + ';">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
     }
     l += '</table>';
   }
@@ -2837,6 +2857,11 @@ log.d = function(m) {
 log.s = function(m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.s(m);
+};
+
+log.t = function(n, m) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  DebugJS.timeLog(n, m);
 };
 
 log.p = function(o) {
