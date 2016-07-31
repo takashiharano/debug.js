@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201607310000';
+  this.v = '201607312000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -20,11 +20,11 @@ var DebugJS = function() {
     'fontFamily': 'Consolas',
     'fontSize': 12,
     'fontColor': '#fff',
-    'errorLogColor': '#e55',
-    'warnLogColor': '#fe0',
-    'infoLogColor': '#9ef',
-    'debugLogColor': '#ccc',
-    'specialLogColor': '#fff',
+    'logColorE': '#e55',
+    'logColorW': '#fe0',
+    'logColorI': '#9ef',
+    'logColorD': '#ccc',
+    'logColorS': '#fff',
     'clockColor': '#0f0',
     'timerColor': '#8ff',
     'systemInfoColor': '#ddd',
@@ -173,14 +173,13 @@ DebugJS.STATE_LOG_SUSPENDING = 0x100000;
 
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
+DebugJS.WINDOW_SHADOW = 10;
+DebugJS.WINDOW_ADJUST = 1;
+DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-
-DebugJS.WINDOW_SHADOW = 10;
-DebugJS.WINDOW_ADJUST = 1;
-DebugJS.CMD_LINE_PADDING = 3;
 
 DebugJS.prototype = {
   init: function(options) {
@@ -530,7 +529,7 @@ DebugJS.prototype = {
       self.clockPanel = document.createElement('span');
       self.clockPanel.style.fontSize = self.options.fontSize + 'px';
       self.clockPanel.style.color = self.options.clockColor;
-      self.clockPanel.style.marginRight = '10px';
+      self.clockPanel.style.marginRight = '4px';
       self.headPanel.appendChild(self.clockPanel);
     }
 
@@ -582,7 +581,7 @@ DebugJS.prototype = {
     if (self.options.useStopWatch) {
       self.swPanel = document.createElement('span');
       self.swPanel.style.float = 'right';
-      self.swPanel.style.marginRight = '10px';
+      self.swPanel.style.marginRight = '6px';
       self.headPanel.appendChild(self.swPanel);
 
       self.swBtnPanel = document.createElement('span');
@@ -752,7 +751,7 @@ DebugJS.prototype = {
     }
 
     if (self.options.useWindowSizeInfo) {
-      self.initScreenSizePanel();
+      self.updateScreenSizePanel();
       self.updateWindowSizePanel();
       self.updateClientSizePanel();
       self.updateBodySizePanel();
@@ -812,8 +811,8 @@ DebugJS.prototype = {
     }
   },
 
-  // Init Screen Size
-  initScreenSizePanel: function() {
+  // Update Screen Size
+  updateScreenSizePanel: function() {
     this.screenSizePanel.innerText = 'SCR:' + 'w=' + screen.width + ',h=' + screen.height;
   },
 
@@ -1746,6 +1745,7 @@ DebugJS.prototype = {
       self.scriptEditor.style.width = 'calc(100% - 5px)';
       self.scriptEditor.style.height = 'calc(100% - ' + (self.options.fontSize + 7) + 'px)';
       self.scriptEditor.style.marginTop = '2px';
+      self.scriptEditor.style.boxSizing = 'content-box';
       self.scriptEditor.style.fontSize = self.options.fontSize + 'px';
       self.scriptEditor.style.fontFamily = self.options.fontFamily;
       self.scriptEditor.style.color = self.options.fontColor;
@@ -2567,7 +2567,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
     g16 += g16;
     b16 += b16;
   } else {
-    return '<span style="color:' + Debug.options.errorLogColor + '">invalid value.</span>';
+    return '<span style="color:' + Debug.options.logColorE + '">invalid value.</span>';
   }
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
@@ -2581,7 +2581,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
   rgb10 = rgb10.replace(/\s{2,}/g, ' ');
   var rgb10s = rgb10.split(' ', 3);
   if ((rgb10s.length != 3) || ((rgb10s[0] < 0) || (rgb10s[0] > 255)) || ((rgb10s[1] < 0) || (rgb10s[1] > 255)) || ((rgb10s[2] < 0) || (rgb10s[2] > 255))) {
-    return '<span style="color:' + Debug.options.errorLogColor + '">invalid value.</span>';
+    return '<span style="color:' + Debug.options.logColorE + '">invalid value.</span>';
   }
   var r16 = ('0' + parseInt(rgb10s[0]).toString(16)).slice(-2);
   var g16 = ('0' + parseInt(rgb10s[1]).toString(16)).slice(-2);
@@ -2730,7 +2730,7 @@ DebugJS.log.e = function(m) {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS.init()) {return;}
   }
-  var style = 'color:' + Debug.options.errorLogColor + ';';
+  var style = 'color:' + Debug.options.logColorE + ';';
   DebugJS.log.out(m, style);
 };
 
@@ -2738,7 +2738,7 @@ DebugJS.log.w = function(m) {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS.init()) {return;}
   }
-  var style = 'color:' + Debug.options.warnLogColor + ';';
+  var style = 'color:' + Debug.options.logColorW + ';';
   DebugJS.log.out(m, style);
 };
 
@@ -2746,7 +2746,7 @@ DebugJS.log.i = function(m) {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS.init()) {return;}
   }
-  var style = 'color:' + Debug.options.infoLogColor + ';';
+  var style = 'color:' + Debug.options.logColorI + ';';
   DebugJS.log.out(m, style);
 };
 
@@ -2754,7 +2754,7 @@ DebugJS.log.d = function(m) {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS.init()) {return;}
   }
-  var style = 'color:' + Debug.options.debugLogColor + ';';
+  var style = 'color:' + Debug.options.logColorD + ';';
   DebugJS.log.out(m, style);
 };
 
@@ -2762,7 +2762,7 @@ DebugJS.log.s = function(m) {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS.init()) {return;}
   }
-  var style = 'color:' + Debug.options.specialLogColor + ';text-shadow:0 0 3px;';
+  var style = 'color:' + Debug.options.logColorS + ';text-shadow:0 0 3px;';
   DebugJS.log.out(m, style);
 };
 

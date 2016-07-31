@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <title>debug.js</title>
 <meta name="description" content="debug.js is an auxiliary JavaScript library for web development.">
-<!--<link rel="stylesheet" type="text/css" href="../foundation.css" />-->
-<link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" />
+<!--<link rel="stylesheet" href="../foundation.css" />-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro" />
 <script src="debug.js"></script>
 <style>
 body {
@@ -272,10 +272,10 @@ window.onload = function() {
     'target': 'debug',
     'dispLine': 12,
     'fontColor': '#333',
-    'warnLogColor': '#ca0',
-    'infoLogColor': '#08f',
-    'debugLogColor': '#888',
-    'specialLogColor': '#0ca',
+    'logColorW': '#ca0',
+    'logColorI': '#08f',
+    'logColorD': '#888',
+    'logColorS': '#0c8',
     'timerColor': '#00f',
     'bgColor': '255,255,255',
     'bgOpacity': '1.0',
@@ -440,7 +440,7 @@ dbg.init(options);
 
   <tr>
     <td class="name">buffSize</td>
-    <td>Log buffer size</td>
+    <td>Log buffer size (lines)</td>
     <td>100</td>
   </tr>
 
@@ -499,8 +499,8 @@ dbg.init(options);
 
   <tr>
     <td class="name">fontSize</td>
-    <td>Log message font size</td>
-    <td>'12px'</td>
+    <td>Log message font size (px)</td>
+    <td>12</td>
   </tr>
 
   <tr>
@@ -510,31 +510,31 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">errorLogColor</td>
+    <td class="name">logColorE</td>
     <td>Error log color</td>
     <td>'#e55'</td>
   </tr>
 
   <tr>
-    <td class="name">warnLogColor</td>
+    <td class="name">logColorW</td>
     <td>Warning log color</td>
     <td>'#fe0'</td>
   </tr>
 
   <tr>
-    <td class="name">infoLogColor</td>
+    <td class="name">logColorI</td>
     <td>Information log color</td>
     <td>'#9ef'</td>
   </tr>
 
   <tr>
-    <td class="name">debugLogColor</td>
+    <td class="name">logColorD</td>
     <td>Debug log color</td>
     <td>'#ccc'</td>
   </tr>
 
   <tr>
-    <td class="name">specialLogColor</td>
+    <td class="name">logColorS</td>
     <td>Special log color</td>
     <td>'#fff'</td>
   </tr>
@@ -543,6 +543,12 @@ dbg.init(options);
     <td class="name">clockColor</td>
     <td>Clock color</td>
     <td>'#0f0'</td>
+  </tr>
+
+  <tr>
+    <td class="name">timerColor</td>
+    <td>Timer color</td>
+    <td>'#8ff'</td>
   </tr>
 
   <tr>
