@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608010000';
+  this.v = '201608020000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -22,7 +22,7 @@ var DebugJS = function() {
     'fontColor': '#fff',
     'logColorE': '#e55',
     'logColorW': '#fe0',
-    'logColorI': '#9ef',
+    'logColorI': '#8ff',
     'logColorD': '#ccc',
     'logColorS': '#fff',
     'clockColor': '#0f0',
@@ -37,6 +37,8 @@ var DebugJS = function() {
     'useClock': true,
     'useClearButton': true,
     'useSuspendLogButton': true,
+    'usePinButton': true,
+    'useWindowControlButton': true,
     'useWindowSizeInfo': true,
     'useMouseStatusInfo': true,
     'useKeyStatusInfo': true,
@@ -77,7 +79,7 @@ var DebugJS = function() {
   this.clrBtnPanel = null;
   this.suspendLogBtnPanel = null;
   this.pinBtnPanel = null;
-  this.winBtnPanel = null;
+  this.winCtrlBtnPanel = null;
   this.closeBtnPanel = null;
   this.mousePositionPanel = null;
   this.mousePos = 'x=-,y=-';
@@ -446,10 +448,12 @@ DebugJS.prototype = {
 
   disableAllFeatures: function() {
     var self = Debug;
+    self.options.togglableShowHide = false;
     self.options.useClock = false;
     self.options.useClearButton = false;
     self.options.useSuspendLogButton = false;
-    self.options.togglableShowHide = false;
+    self.options.usePinButton = false;
+    self.options.useWindowControlButton = false;
     self.options.useWindowSizeInfo = false;
     self.options.useMouseStatusInfo = false;
     self.options.useKeyStatusInfo = false;
@@ -466,6 +470,8 @@ DebugJS.prototype = {
     if (self.options.useClock) return false;
     if (self.options.useClearButton) return false;
     if (self.options.useSuspendLogButton) return false;
+    if (self.options.usePinButton) return false;
+    if (self.options.useWindowControlButton) return false;
     if (self.options.useWindowSizeInfo) return false;
     if (self.options.useMouseStatusInfo) return false;
     if (self.options.useKeyStatusInfo) return false;
@@ -488,7 +494,6 @@ DebugJS.prototype = {
       // Head Panel
       self.headPanel = document.createElement('div');
       self.headPanel.style.padding = '2px';
-      self.headPanel.style.background = 'rgba(24,131,215,0)';
       self.windowBody.appendChild(self.headPanel);
 
       // Info Panel
@@ -505,6 +510,7 @@ DebugJS.prototype = {
     // Log
     self.msgPanel = document.createElement('div');
     self.msgPanel.style.position = 'relative';
+    self.msgPanel.style.width = '100%';
     self.msgPanel.style.height = '100%';
     self.msgPanel.style.padding = '0';
     self.msgPanel.style.overflow = 'auto';
@@ -549,14 +555,14 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.closeBtnPanel);
     }
 
-    // Window Resize Button
-    if (self.status & DebugJS.STATE_RESIZABLE) {
-      self.winBtnPanel = document.createElement('span');
-      self.headPanel.appendChild(self.winBtnPanel);
+    // Window Control Button
+    if ((self.status & DebugJS.STATE_RESIZABLE) && (self.options.useWindowControlButton)) {
+      self.winCtrlBtnPanel = document.createElement('span');
+      self.headPanel.appendChild(self.winCtrlBtnPanel);
     }
 
     // Pin Button
-    if (self.status & DebugJS.STATE_DYNAMIC) {
+    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
       self.pinBtnPanel = document.createElement('span');
       self.pinBtnPanel.className = this.id + '-btn';
       self.pinBtnPanel.style.float = 'right';
@@ -686,17 +692,17 @@ DebugJS.prototype = {
 
       self.cmdPanel.innerHTML = '<span style="color:#0cf;">$</span>';
       self.cmdLine = document.createElement('input');
-      self.cmdLine.style.width = 'calc(100% - ' + self.options.fontSize + 'px)';
-      self.cmdLine.style.marginLeft = '2px';
-      self.cmdLine.style.padding = '1px';
-      self.cmdLine.style.fontFamily = self.options.fontFamily;
-      self.cmdLine.style.fontSize = self.options.fontSize + 'px';
-      self.cmdLine.style.color = '#fff';
-      self.cmdLine.style.background = 'transparent';
-      self.cmdLine.style.border = '0';
-      self.cmdLine.style.borderBottom = 'solid 1px #888';
-      self.cmdLine.style.borderRadius = '0';
-      self.cmdLine.style.outline = 'none';
+      self.cmdLine.style.setProperty('width', 'calc(100% - ' + self.options.fontSize + 'px)', 'important');
+      self.cmdLine.style.setProperty('margin-left', '2px', 'important');
+      self.cmdLine.style.setProperty('padding', '1px', 'important');
+      self.cmdLine.style.setProperty('font-family', self.options.fontFamily, 'important');
+      self.cmdLine.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.cmdLine.style.setProperty('color', '#fff', 'important');
+      self.cmdLine.style.setProperty('background', 'transparent', 'important');
+      self.cmdLine.style.setProperty('border', '0', 'important');
+      self.cmdLine.style.setProperty('border-bottom', 'solid 1px #888', 'important');
+      self.cmdLine.style.setProperty('border-radius', '0', 'important');
+      self.cmdLine.style.setProperty('outline', 'none', 'important');
       self.cmdPanel.appendChild(self.cmdLine);
       self.cmdHistoryBuf = new DebugJS.RingBuffer(10);
     }
@@ -729,7 +735,7 @@ DebugJS.prototype = {
       self.updateSwPanel();
     }
 
-    if (self.status & DebugJS.STATE_DYNAMIC) {
+    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
       self.updatePinBtnPanel();
     }
 
@@ -737,8 +743,8 @@ DebugJS.prototype = {
       self.updateSuspendLogBtnPanel();
     }
 
-    if (self.status & DebugJS.STATE_RESIZABLE) {
-      self.updateWinBtnPanel();
+    if ((self.status & DebugJS.STATE_RESIZABLE) && (self.options.useWindowControlButton)) {
+      self.updateWinCtrlBtnPanel();
     }
 
     if (self.options.useMouseStatusInfo) {
@@ -805,6 +811,7 @@ DebugJS.prototype = {
   updateClockPanel: function() {
     var dt = DebugJS.getCurrentDateTime();
     var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
+    //t += (dt.ms < 500) ? ' ' : '.';
     this.clockPanel.innerText = t;
     if (this.status & DebugJS.STATE_SHOW_CLOCK) {
       setTimeout('Debug.updateClockPanel()', 500);
@@ -914,8 +921,8 @@ DebugJS.prototype = {
     self.pinBtnPanel.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : '#fa0';
   },
 
-  // Window Button
-  updateWinBtnPanel: function() {
+  // Window Control Button
+  updateWinCtrlBtnPanel: function() {
     var self = Debug;
     var fn = 'Debug.expandDebugWindow()';
     var btn = '□';
@@ -923,9 +930,9 @@ DebugJS.prototype = {
       fn = 'Debug.restoreDebugWindow()';
       btn = '❐';
     }
-    var b = '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';Debug.updateWinBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>';
-    b += '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
-    self.winBtnPanel.innerHTML = b;
+    var b = '<span class="' + self.id + '-btn" style="float:right;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>';
+    b += '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
+    self.winCtrlBtnPanel.innerHTML = b;
   },
 
   // Log Output
@@ -1079,7 +1086,7 @@ DebugJS.prototype = {
     self.clickedPosY = e.clientY;
     self.storeSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
-    self.updateWinBtnPanel();
+    self.updateWinCtrlBtnPanel();
   },
 
   resize: function(e) {
@@ -2700,7 +2707,7 @@ DebugJS.timeLog = function(timerName, msg) {
 
   var dtLap = '';
   if (Debug.timers[timerName].split) {
-    var tLap = DebugJS.getElapsedTimeStr(Debug.timers[timerName].split, t2);
+    var tLap = DebugJS.getElapsedTimeStr(Debug.timers[timerName].split, now);
     dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
   }
 

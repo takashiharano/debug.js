@@ -144,6 +144,7 @@ a:hover {
   font-size: 11px;
   color: #0000a0;
   width: 184px;
+  vertical-align: bottom;
 }
 
 .demo-table-green td {
@@ -283,6 +284,15 @@ window.onload = function() {
     'disableAllFeatures': true
   };
   //dbg.init(options5);
+
+  var options6 = {
+    'visible': true,
+    'dispLine': 20,
+    'showTimeStamp': false,
+    'disableAllFeatures': true,
+    'useCommandLine': true
+  };
+  //dbg.init(options6);
 
   log('Here is the log output example!');
   log('The window\'s load event fired.');
@@ -524,7 +534,7 @@ dbg.init(options);
   <tr>
     <td class="name">logColorI</td>
     <td>Information log color</td>
-    <td>'#9ef'</td>
+    <td>'#8ff'</td>
   </tr>
 
   <tr>
@@ -608,6 +618,18 @@ dbg.init(options);
   <tr>
     <td class="name">useSuspendLogButton</td>
     <td>Show 🚫 button</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">usePinButton</td>
+    <td>Show 📌 button</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">useWindowControlButton</td>
+    <td>Show － □ button</td>
     <td>true</td>
   </tr>
 
@@ -1046,6 +1068,18 @@ log.clear();<br>
 
 <tr>
 <td>
+log.t('timer1', 'elapsed time of %n');<br>
+<span class="button" onclick="log.t('timer1', 'elapsed time of %n');">log.t</span>
+</td>
+
+<td>
+<span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
+</td>
+
+</tr>
+
+<tr>
+<td>
 time.start('timer1');<br>
 <span class="button" onclick="time.start('timer1');">time.start()</span>
 </td>
@@ -1063,18 +1097,18 @@ time.end('timer1');<br>
 
 <tr>
 <td>
-time.start('timer2');<br>
-<span class="button" onclick="time.start('timer2');">time.start()</span>
+time.start('timer2', 'start [Timer Name = %n]');<br>
+<span class="button" onclick="time.start('timer2', 'start [Timer Name = %n]');">time.start()</span>
 </td>
 
 <td>
-time.split('timer2');<br>
-<span class="button" onclick="time.split('timer2');">time.split()</span>
+time.split('timer2', '%n: split=%t/lap=%lt');<br>
+<span class="button" onclick="time.split('timer2', '%n: split=%t/lap=%lt');">time.split()</span>
 </td>
 
 <td>
-time.eEnd('timer2');<br>
-<span class="button" onclick="time.end('timer2');">time.end()</span>
+time.eEnd('timer2', '%n: split=%t/lap=%lt');<br>
+<span class="button" onclick="time.end('timer2', '%n: split=%t/lap=%lt');">time.end()</span>
 </td>
 </tr>
 
