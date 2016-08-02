@@ -143,7 +143,7 @@ a:hover {
   font-family: Consolas;
   font-size: 11px;
   color: #0000a0;
-  width: 184px;
+  width: 210px;
   vertical-align: bottom;
 }
 
@@ -252,26 +252,36 @@ window.onload = function() {
   };
   //dbg.init(options2);
 
-  // If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options3 = {
-    'target': 'debug'
+    'visible': true,
+    'lines': 20,
+    'showTimeStamp': false,
+    'disableAllFeatures': true,
+    'useCommandLine': true
   };
   //dbg.init(options3);
 
+  // If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options4 = {
-    'target': 'debug',
-    'dispLine': 10,
-    'buffSize': 10,
-    'bgOpacity': '0.9',
-    'showTimeStamp': false,
-    'disableAllFeatures': true,
-    'useClearButton': true
+    'target': 'debug'
   };
   //dbg.init(options4);
 
   var options5 = {
     'target': 'debug',
-    'dispLine': 12,
+    'lines': 10,
+    'bufsize': 10,
+    'bgOpacity': '0.9',
+    'showTimeStamp': false,
+    'disableAllFeatures': true,
+    'useClearButton': true
+  };
+  //dbg.init(options5);
+
+  var options6 = {
+    'target': 'debug',
+    'lines': 10,
+    'fontSize': 13,
     'fontColor': '#333',
     'logColorW': '#ca0',
     'logColorI': '#08f',
@@ -282,15 +292,6 @@ window.onload = function() {
     'bgOpacity': '1.0',
     'showTimeStamp': false,
     'disableAllFeatures': true
-  };
-  //dbg.init(options5);
-
-  var options6 = {
-    'visible': true,
-    'dispLine': 20,
-    'showTimeStamp': false,
-    'disableAllFeatures': true,
-    'useCommandLine': true
   };
   //dbg.init(options6);
 
@@ -353,7 +354,7 @@ var messages = [
   },
   {
     'fnc': log.s,
-    'msg': 'special log sample.',
+    'msg': 'system log sample.',
     'delay': 100
   }
 ];
@@ -443,13 +444,13 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">dispLine</td>
+    <td class="name">lines</td>
     <td>Number of lines to display</td>
     <td>18</td>
   </tr>
 
   <tr>
-    <td class="name">buffSize</td>
+    <td class="name">bufsize</td>
     <td>Log buffer size (lines)</td>
     <td>100</td>
   </tr>
@@ -545,7 +546,7 @@ dbg.init(options);
 
   <tr>
     <td class="name">logColorS</td>
-    <td>Special log color</td>
+    <td>System log color</td>
     <td>'#fff'</td>
   </tr>
 
@@ -736,7 +737,7 @@ dbg.init(options);
   <tr>
     <td class="name">log.s</td>
     <td>messag string</td>
-    <td>Output special log</td>
+    <td>Output system log</td>
   </tr>
 
   <tr>
@@ -829,7 +830,7 @@ time.end('timer1', null)
   <tr>
     <td class="name">time.check</td>
     <td>
-      arg1: timer name
+      timer name
     </td>
     <td>
      Get elapsed time of the timer.
@@ -852,6 +853,22 @@ dbg.countElements('*');
 dbg.countElements('#id');
 -&gt; Count the id's element
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.callFunc</td>
+    <td>function</td>
+    <td>
+      Call function asynchronously
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.exec</td>
+    <td>command</td>
+    <td>
+      Execute command
     </td>
   </tr>
 
@@ -944,8 +961,8 @@ $ rgb 255 255 255
   <tr>
     <td class="name">time</td>
     <td>
-      arg1: start / split / end<br>
-      arg2: timer name
+      arg1: start / split / end / list<br>
+      arg2: timer name<span class="opt">(opt)</span>
     </td>
     <td>Time test.</td>
   </tr>
@@ -1044,8 +1061,8 @@ log.d('debug log');<br>
 </td>
 
 <td>
-log.s('special log');<br>
-<span class="button" onclick="log.s('special log');">log.s()</span>
+log.s('system log');<br>
+<span class="button" onclick="log.s('system log');">log.s()</span>
 </td>
 </tr>
 
@@ -1068,12 +1085,24 @@ log.clear();<br>
 
 <tr>
 <td>
-log.t('timer1', 'elapsed time of %n');<br>
-<span class="button" onclick="log.t('timer1', 'elapsed time of %n');">log.t</span>
+<span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
+</td>
+</tr>
+
+<tr>
+<td>
+time.start();<br>
+<span class="button" onclick="time.start();">time.start()</span>
 </td>
 
 <td>
-<span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
+time.split();<br>
+<span class="button" onclick="time.split();">time.split()</span>
+</td>
+
+<td>
+time.end();<br>
+<span class="button" onclick="time.end();">time.end()</span>
 </td>
 
 </tr>
@@ -1093,22 +1122,32 @@ time.split('timer1');<br>
 time.end('timer1');<br>
 <span class="button" onclick="time.end('timer1');">time.end()</span>
 </td>
+
+<td>
+log.t('timer1', 'elapsed time of %n');<br>
+<span class="button" onclick="log.t('timer1', 'elapsed time of %n');">log.t()</span>
+</td>
 </tr>
 
 <tr>
 <td>
-time.start('timer2', 'start [Timer Name = %n]');<br>
-<span class="button" onclick="time.start('timer2', 'start [Timer Name = %n]');">time.start()</span>
+time.start('timer2', '%t start [Timer Name = %n]');<br>
+<span class="button" onclick="time.start('timer2', '%t start [Timer Name = %n]');">time.start()</span>
 </td>
 
 <td>
 time.split('timer2', '%n: split=%t/lap=%lt');<br>
-<span class="button" onclick="time.split('timer2', '%n: split=%t/lap=%lt');">time.split()</span>
+<span class="button" onclick="time.split('timer2', '%t %n: lap=%lt');">time.split()</span>
 </td>
 
 <td>
 time.eEnd('timer2', '%n: split=%t/lap=%lt');<br>
-<span class="button" onclick="time.end('timer2', '%n: split=%t/lap=%lt');">time.end()</span>
+<span class="button" onclick="time.end('timer2', '%t %n: lap=%lt');">time.end()</span>
+</td>
+
+<td>
+log.t('timer2', 'elapsed time of %n');<br>
+<span class="button" onclick="log.t('timer2', 'elapsed time of %n');">log.t()</span>
 </td>
 </tr>
 
@@ -1119,13 +1158,35 @@ dbg.countElements('*');<br>
 </td>
 
 <td>
+dbg.countElements('*', true);<br>
+<span class="button" onclick="log(dbg.countElements('*', true));">dbg.countElements</span>
+</td>
+
+<td>
 dbg.countElements('#title');<br>
 <span class="button" onclick="log(dbg.countElements('#title'));">dbg.countElements</span>
 </td>
 
 <td>
-dbg.countElements('*', true);<br>
-<span class="button" onclick="log(dbg.countElements('*', true));">dbg.countElements</span>
+dbg.countElements('div');<br>
+<span class="button" onclick="log(dbg.countElements('div'));">dbg.countElements</span>
+</td>
+</tr>
+
+<tr>
+<td>
+dbg.exec('rgb #fff');<br>
+<span class="button" onclick="dbg.exec('rgb #fff');">dbg.exec()</span>
+</td>
+
+<td>
+dbg.exec('json {"name": "John Smith", "age": 25, "city": "New York"}');<br>
+<span class="button" onclick='dbg.exec("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}");'>dbg.exec()</span>
+</td>
+
+<td>
+dbg.exec('00:05:30.700 - 00:05:20.400');<br>
+<span class="button" onclick="dbg.exec('00:05:30.700 - 00:05:20.400');">dbg.exec()</span>
 </td>
 </tr>
 </table>

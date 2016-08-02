@@ -5,12 +5,12 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608020000';
+  this.v = '201608030000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
-    'dispLine': 18,
-    'buffSize': 100,
+    'lines': 18,
+    'bufsize': 100,
     'width': 500,
     'zoom': 1,
     'position': 'se',
@@ -108,8 +108,8 @@ var DebugJS = function() {
   this.cmdPanel = null;
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
-  this.cmdHistoryMax = 10;
-  this.cmdHistoryIdx = self.cmdHistoryMax;
+  this.CMD_HISTORY_MAX = 10;
+  this.cmdHistoryIdx = self.CMD_HISTORY_MAX;
   this.cmdTmp = '';
   this.timers = {};
   this.resizeN = null;
@@ -144,7 +144,7 @@ var DebugJS = function() {
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print object.', 'usage': 'p &lt;object&gt;'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post &lt;url&gt;'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
-    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end&gt; &lt;timer name&gt;'},
+    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end/list&gt; [&lt;timer name&gt;]'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
 };
@@ -182,6 +182,7 @@ DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+DebugJS.DEFAULT_TIMER_NAME = 'timer0';
 
 DebugJS.prototype = {
   init: function(options) {
@@ -304,7 +305,7 @@ DebugJS.prototype = {
       self.setupResize();
     }
 
-    self.msgBuf = new DebugJS.RingBuffer(self.options.buffSize);
+    self.msgBuf = new DebugJS.RingBuffer(self.options.bufsize);
 
     var styles = {};
     styles['#' + self.id + ' td'] = {
@@ -504,7 +505,7 @@ DebugJS.prototype = {
 
     // Main
     self.mainPanel = document.createElement('div');
-    self.mainPanel.style.height = self.options.dispLine + '.1em';
+    self.mainPanel.style.height = self.options.lines + '.1em';
     self.windowBody.appendChild(self.mainPanel);
 
     // Log
@@ -1175,13 +1176,23 @@ DebugJS.prototype = {
   },
 
   toggleDraggable: function() {
+    var self = Debug;
     if (Debug.status & DebugJS.STATE_DRAGGABLE) {
-      Debug.status &= ~DebugJS.STATE_DRAGGABLE;
-      Debug.windowBody.style.cursor = 'auto';
+      self.disableDraggable();
     } else {
-      Debug.status |= DebugJS.STATE_DRAGGABLE;
-      Debug.windowBody.style.cursor = 'default';
+      self.enableDraggable();
     }
+  },
+
+  enableDraggable: function() {
+    Debug.status |= DebugJS.STATE_DRAGGABLE;
+    Debug.windowBody.style.cursor = 'default';
+    Debug.updatePinBtnPanel();
+  },
+
+  disableDraggable: function() {
+    Debug.status &= ~DebugJS.STATE_DRAGGABLE;
+    Debug.windowBody.style.cursor = 'auto';
     Debug.updatePinBtnPanel();
   },
 
@@ -1339,7 +1350,7 @@ DebugJS.prototype = {
   keyDownHandler: function(e) {
     var self = Debug;
     var metaKey = DebugJS.checkMetaKey(e);
-    self.keyDownCode = e.keyCode + '(' + String.fromCharCode(e.keyCode) + ')' + metaKey;
+    self.keyDownCode = e.keyCode + ' ' + metaKey;
     self.updateKeyDownPanel();
 
     self.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
@@ -1359,7 +1370,7 @@ DebugJS.prototype = {
   keyUpHandler: function(e) {
     var self = Debug;
     var metaKey = DebugJS.checkMetaKey(e);
-    self.keyUpCode = e.keyCode + '(' + String.fromCharCode(e.keyCode) + ')' + metaKey;
+    self.keyUpCode = e.keyCode + ' ' + metaKey;
     self.updateKeyUpPanel();
   },
 
@@ -1660,15 +1671,15 @@ DebugJS.prototype = {
     var el = document.elementFromPoint(posX, posY);
     var style = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
-    var maxLen = 50;
+    var MAX_LEN = 50;
     var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;">Element Info';
     dom += '<span style="float:right;margin-right:4px;">(' + document.getElementsByTagName('*').length + ')</span>\n\n';
     dom += 'tag        : &lt;' + el.tagName + '&gt;' + (el.type ? ' ' + el.type : '') + '\n';
     dom += 'id         : ' + el.id + '\n';
     dom += 'class      : ' + el.className + '\n';
     var txt = el.innerText;
-    dom += 'text       : ' + txt.replace(/\n/g, '').replace(/\r/g, '').substr(0, maxLen).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    if (txt.length > maxLen) {dom += '<span style="color:#888">...</span>';}
+    dom += 'text       : ' + txt.replace(/\n/g, '').replace(/\r/g, '').substr(0, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (txt.length > MAX_LEN) {dom += '<span style="color:#888">...</span>';}
     dom += '\n';
     dom += 'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n';
     dom += 'font       : size: ' + style.fontSize + '  family: ' + style.fontFamily + '\n';
@@ -1682,9 +1693,9 @@ DebugJS.prototype = {
     dom += 'name       : ' + (el.name ? el.name : '') + '\n';
     dom += 'value      : ' + (el.value ? el.value : '') + '\n';
     var src = (el.src ? el.src : '');
-    if (src.length > maxLen) {
-      var src1 = src.substr(0, (maxLen / 2));
-      var src2 = src.slice(-(maxLen / 2));
+    if (src.length > MAX_LEN) {
+      var src1 = src.substr(0, (MAX_LEN / 2));
+      var src2 = src.slice(-(MAX_LEN / 2));
       src = src1 + '<span style="color:#888">...</span>' + src2;
     }
     dom += 'src        : ' + src + '\n';
@@ -1829,9 +1840,14 @@ DebugJS.prototype = {
     if (cl != '') {
       self.cmdHistoryBuf.add(cl);
     }
-    self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.cmdHistoryMax) ? self.cmdHistoryBuf.count() : self.cmdHistoryMax;
+    self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
     self.cmdLine.value = '';
     DebugJS.log.s(cl);
+    self._execCmd(cl);
+  },
+
+  _execCmd: function(cl) {
+    var self = Debug;
     wkCL = cl.replace(/\s{2,}/g, ' ');
     var cmds = wkCL.match(/([^\s]{1,})\s(.*)/);
     var cmd = wkCL, args = '';
@@ -1883,7 +1899,16 @@ DebugJS.prototype = {
       self.disableScriptEditor();
       self.scriptBuf = '';
     }
-    self.stopStopWatch();
+    if (self.options.useSuspendLogButton) {
+      self.status &= ~DebugJS.STATE_LOG_SUSPENDING;
+      self.updateSuspendLogBtnPanel();
+    }
+    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
+      self.enableDraggable();
+    }
+    if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+      self.stopStopWatch();
+    }
     self.resetStopWatch();
     self.clearMessage();
     self.hideDebugWindow();
@@ -2154,13 +2179,12 @@ DebugJS.prototype = {
   cmdTime: function(args, tbl) {
     if (args == '') {
       DebugJS.printUsage(tbl.usage);
-    } else if (args == 'list') {
-      DebugJS.timeList();
     } else {
-      var a = args.match(/([^\s]{1,})\s(.*)/);
+      var a = args.match(/([^\s]{1,})\s{0,}(.*)/);
       if (a == null) {
         DebugJS.printUsage(tbl.usage);
       } else {
+        if (a[2] == '') a[2] = DebugJS.DEFAULT_TIMER_NAME;
         switch (a[1]) {
           case 'start':
             DebugJS.timeStart(a[2]);
@@ -2170,6 +2194,9 @@ DebugJS.prototype = {
             break;
           case 'end':
             DebugJS.timeEnd(a[2]);
+            break;
+          case 'list':
+            DebugJS.timeList();
             break;
           default:
             DebugJS.printUsage(tbl.usage);
@@ -2579,7 +2606,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
-  var rgb10 = '<span style="vertical-align:middle;display:inline-block;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
+  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
   return rgb10;
 };
 
@@ -2598,7 +2625,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
     g16 = g16.substring(0, 1);
     b16 = b16.substring(0, 1);
   }
-  var rgb16 = '<span style="vertical-align:middle;display:inline-block;"><span style="background:#' + r16 + g16 + b16 + ';width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
+  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:#' + r16 + g16 + b16 + ';width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   return rgb16;
 };
 
@@ -2633,43 +2660,49 @@ DebugJS.convBIN = function(v2) {
 };
 
 DebugJS.timeStart = function(timerName, msg) {
-  Debug.timers[timerName] = {};
-  Debug.timers[timerName].start = (new Date());
+  var self = Debug;
+  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
+  self.timers[timerName] = {};
+  self.timers[timerName].start = (new Date());
   if (msg === null) return;
   var str;
   if (msg === undefined) {
     str = timerName + ': timer started';
   } else {
-    str = msg.replace(/%n/g, timerName);
+    str = msg.replace(/%n/g, timerName).replace(/%t/g, '<span style="color:' + self.options.timerColor + ';">00:00:00.000</span>');
   }
   DebugJS.log(str);
 };
 
 DebugJS.timeCheck = function(timerName, now) {
   var self = Debug;
+  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
   if (!now) now = new Date();
-  if (!Debug.timers[timerName]) return null;
-  var t = DebugJS.getElapsedTimeStr(Debug.timers[timerName].start, now);
+  if (!self.timers[timerName]) return null;
+  var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
   return t;
 };
 
 DebugJS.timeSplit = function(timerName, msg) {
   var self = Debug;
+  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
   var t2 = new Date();
-  if (!Debug.timers[timerName]) {
+  if (!self.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
     return null;
   }
-  var t = DebugJS.getElapsedTimeStr(Debug.timers[timerName].start, t2);
+  var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, t2);
   var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
 
   var dtLap = '';
-  if (Debug.timers[timerName].split) {
-    var tLap = DebugJS.getElapsedTimeStr(Debug.timers[timerName].split, t2);
+  if (self.timers[timerName].split) {
+    var tLap = DebugJS.getElapsedTimeStr(self.timers[timerName].split, t2);
     dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
+  } else {
+    dtLap = dt;
   }
 
-  Debug.timers[timerName].split = t2;
+  self.timers[timerName].split = t2;
   if (msg === null) {
     return t;
   }
@@ -2688,26 +2721,29 @@ DebugJS.timeSplit = function(timerName, msg) {
 };
 
 DebugJS.timeEnd = function(timerName, msg) {
+  var self = Debug;
+  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
   var t = DebugJS.timeSplit(timerName, msg);
   if (t !== null) {
-    delete Debug.timers[timerName];
+    delete self.timers[timerName];
   }
   return t;
 };
 
 DebugJS.timeLog = function(timerName, msg) {
   var self = Debug;
+  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
   var now = new Date();
-  if (!Debug.timers[timerName]) {
+  if (!self.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
     return;
   }
-  var t = DebugJS.getElapsedTimeStr(Debug.timers[timerName].start, now);
+  var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
   var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
 
   var dtLap = '';
-  if (Debug.timers[timerName].split) {
-    var tLap = DebugJS.getElapsedTimeStr(Debug.timers[timerName].split, now);
+  if (self.timers[timerName].split) {
+    var tLap = DebugJS.getElapsedTimeStr(self.timers[timerName].split, now);
     dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
   }
 
@@ -2916,6 +2952,11 @@ dbg.countElements = function(selector, showDetail) {
 dbg.callFunc = function(fnc, delay) {
   if (delay === undefined) delay = 0;
   return setTimeout(fnc, delay);
+};
+
+dbg.exec = function(cmd) {
+  if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  Debug._execCmd(cmd);
 };
 // ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
