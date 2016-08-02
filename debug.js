@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608030000';
+  this.v = '201608030730';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -810,12 +810,13 @@ DebugJS.prototype = {
 
   // Update Clock
   updateClockPanel: function() {
+    var self = Debug;
     var dt = DebugJS.getCurrentDateTime();
     var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
     //t += (dt.ms < 500) ? ' ' : '.';
-    this.clockPanel.innerText = t;
-    if (this.status & DebugJS.STATE_SHOW_CLOCK) {
-      setTimeout('Debug.updateClockPanel()', 500);
+    self.clockPanel.innerText = t;
+    if (self.status & DebugJS.STATE_SHOW_CLOCK) {
+      setTimeout(self.updateClockPanel, 500);
     }
   },
 
@@ -904,9 +905,9 @@ DebugJS.prototype = {
   updateSwPanel: function() {
     var self = Debug;
     self.updateStopWatch();
-    self.swPanel.innerText = this.swElapsedTimeDisp;
+    self.swPanel.innerText = self.swElapsedTimeDisp;
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
-      setTimeout('Debug.updateSwPanel()', 21);
+      setTimeout(self.updateSwPanel, 21);
     }
   },
 
@@ -1197,24 +1198,27 @@ DebugJS.prototype = {
   },
 
   startStopStopWatch: function() {
-    if (Debug.status & DebugJS.STATE_STOPWATCH_RUNNING) {
-      Debug.stopStopWatch();
+    var self = Debug;
+    if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+      self.stopStopWatch();
     } else {
-      Debug.startStopWatch();
+      self.startStopWatch();
     }
   },
 
   startStopWatch: function() {
-    Debug.status |= DebugJS.STATE_STOPWATCH_RUNNING;
-    Debug.swStartTime = (new Date()).getTime() - Debug.swElapsedTime;
-    Debug.updateStopWatch();
-    Debug.updateSwPanel();
-    Debug.updateSwBtnPanel();
+    var self = Debug;
+    self.status |= DebugJS.STATE_STOPWATCH_RUNNING;
+    self.swStartTime = (new Date()).getTime() - self.swElapsedTime;
+    self.updateStopWatch();
+    self.updateSwPanel();
+    self.updateSwBtnPanel();
   },
 
   stopStopWatch: function() {
-    Debug.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
-    Debug.updateSwBtnPanel();
+    var self = Debug;
+    self.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
+    self.updateSwBtnPanel();
   },
 
   updateStopWatch: function() {
