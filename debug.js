@@ -2982,12 +2982,16 @@ if (DebugJS.ENABLE) {
   log.i = function(x) {};
   log.d = function(x) {};
   log.s = function(x) {};
+  log.t = function(x, xx) {};
   log.p = function(x) {};
   log.stack = function() {};
   log.clear = function() {};
   time.start = function(x, xx) {};
   time.split = function(x, xx) {};
   time.end = function(x, xx) {};
+  time.check = function(x) {};
   dbg.init = function(x) {};
   dbg.countElements = function(x, xx) {};
+  dbg.callFunc = function(x, xx) {};
+  dbg.exec = function(x) {};
 }
