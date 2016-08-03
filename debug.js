@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608040000';
+  this.v = '201608040742';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1050,6 +1050,7 @@ DebugJS.prototype = {
   },
 
   startWindowMove: function(e) {
+    if (e.button != 0) return;
     var self = Debug;
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.target.nodeName == 'INPUT') || (e.target.nodeName == 'TEXTAREA')) return;
     self.status |= DebugJS.STATE_DRAGGING;
@@ -1077,6 +1078,7 @@ DebugJS.prototype = {
   },
 
   startResize: function(e) {
+    if (e.button != 0) return;
     var self = Debug;
     self.status |= DebugJS.STATE_RESIZING;
     self.clickedPosX = e.clientX;
