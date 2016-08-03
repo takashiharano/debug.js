@@ -257,7 +257,8 @@ window.onload = function() {
     'lines': 20,
     'showTimeStamp': false,
     'disableAllFeatures': true,
-    'useCommandLine': true
+    'useCommandLine': true,
+    //'resizable': false
   };
   //dbg.init(options3);
 
@@ -273,6 +274,7 @@ window.onload = function() {
     'bufsize': 10,
     'bgOpacity': '0.9',
     'showTimeStamp': false,
+    'resizable': false,
     'disableAllFeatures': true,
     'useClearButton': true
   };
@@ -286,12 +288,18 @@ window.onload = function() {
     'logColorW': '#ca0',
     'logColorI': '#08f',
     'logColorD': '#888',
-    'logColorS': '#0c8',
+    'logColorS': '#0df',
     'timerColor': '#00f',
+    'btnColor': '#00f',
+    'promptColor': '#00f',
     'bgColor': '255,255,255',
     'bgOpacity': '1.0',
     'showTimeStamp': false,
-    'disableAllFeatures': true
+    'disableAllFeatures': true,
+    //'clockColor': '#00f',
+    //'useClock': true,
+    //'useCommandLine': true,
+    'useClearButton': true
   };
   //dbg.init(options6);
 
@@ -497,21 +505,15 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">resizable</td>
-    <td>Debug window resizable</td>
-    <td>true</td>
+    <td class="name">fontSize</td>
+    <td>Log message font size (px)</td>
+    <td>12</td>
   </tr>
 
   <tr>
     <td class="name">fontFamily</td>
     <td>Font family</td>
     <td>'Consolas'</td>
-  </tr>
-
-  <tr>
-    <td class="name">fontSize</td>
-    <td>Log message font size (px)</td>
-    <td>12</td>
   </tr>
 
   <tr>
@@ -563,9 +565,21 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">systemInfoColor</td>
+    <td class="name">sysInfoColor</td>
     <td>System info color (window / mouse / key status, etc.)</td>
     <td>'#ddd'</td>
+  </tr>
+
+  <tr>
+    <td class="name">btnColor</td>
+    <td>Button color ([CLR], >>,  etc.)</td>
+    <td>'#6cf'</td>
+  </tr>
+
+  <tr>
+    <td class="name">btnHoverColor</td>
+    <td>Button color for onMouseOver</td>
+    <td>'#8ef'</td>
   </tr>
 
   <tr>
@@ -595,6 +609,12 @@ dbg.init(options);
   <tr>
     <td class="name">showTimeStamp</td>
     <td>Show log timestamp</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">resizable</td>
+    <td>Debug window resizable</td>
     <td>true</td>
   </tr>
 
@@ -1231,7 +1251,7 @@ console.timeEnd('timer3');<br>
 </table>
 
 <!--
-<input name="input1">
+<input id="inputtext1" name="input1">
 <input type="password">
 <input type="submit" value="Submit">
 <input type="button" value="BUTTON">
