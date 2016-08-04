@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608040742';
+  this.v = '201608050100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -179,7 +179,9 @@ DebugJS.STATE_LOG_SUSPENDING = 0x100000;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.WINDOW_SHADOW = 10;
-DebugJS.WINDOW_ADJUST = 1;
+DebugJS.WINDOW_BORDER = 1;
+DebugJS.WINDOW_PADDING = 1;
+DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING * 2));
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
@@ -424,7 +426,7 @@ DebugJS.prototype = {
 
     self.debugWindow.style.display = 'block';
     self.debugWindow.style.position = 'relative';
-    self.debugWindow.style.padding = '1px';
+    self.debugWindow.style.padding = DebugJS.WINDOW_BORDER + 'px';
     self.debugWindow.style.lineHeight = '1em';
     self.debugWindow.style.boxSizing = 'content-box';
     self.debugWindow.style.border = self.options.border;
@@ -446,14 +448,17 @@ DebugJS.prototype = {
       self.setupMove();
 
       // move to initial window position
-      self.setWindowPosition(self.options.position, self.debugWindow.offsetWidth, self.debugWindow.offsetHeight);
+      self.initWidth = self.debugWindow.offsetWidth;
+      self.initHeight = self.debugWindow.offsetHeight;
+      self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
 
       if (!(self.status & DebugJS.STATE_VISIBLE)) {
         self.debugWindow.style.display = 'none';
       }
+    } else {
+      self.initWidth = self.debugWindow.offsetWidth - DebugJS.WINDOW_ADJUST;
+      self.initHeight = self.debugWindow.offsetHeight - DebugJS.WINDOW_ADJUST;
     }
-    self.initWidth = self.debugWindow.offsetWidth;
-    self.initHeight = self.debugWindow.offsetHeight;
     self.status |= DebugJS.STATE_INITIALIZED;
     return true;
   },
@@ -480,8 +485,8 @@ DebugJS.prototype = {
     }
 
     if (self.options.useWindowSizeInfo) {
-      window.addEventListener('resize', self.resizeHandler, true);
-      self.resizeHandler();
+      window.addEventListener('resize', self.windowResizeHandler, true);
+      self.windowResizeHandler();
 
       window.addEventListener('scroll', self.scrollHandler, true);
       self.scrollHandler();
@@ -505,7 +510,9 @@ DebugJS.prototype = {
       self.status |= DebugJS.STATE_DYNAMIC;
       self.status |= DebugJS.STATE_DRAGGABLE;
     }
-    if (self.options.visible) self.status |= DebugJS.STATE_VISIBLE;
+    if ((self.options.visible) || (self.options.target != null)) {
+      self.status |= DebugJS.STATE_VISIBLE;
+    }
     if (self.options.resizable) self.status |= DebugJS.STATE_RESIZABLE;
     if (self.options.useClock) self.status |= DebugJS.STATE_SHOW_CLOCK;
   },
@@ -1071,10 +1078,11 @@ DebugJS.prototype = {
 
   storeSizeAndPos: function() {
     var self = Debug;
+    var shadow = (self.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
     self.orgOffsetTop = self.debugWindow.offsetTop;
     self.orgOffsetLeft = self.debugWindow.offsetLeft;
-    self.resizeOrgWidth = self.debugWindow.offsetWidth;
-    self.resizeOrgHeight = self.debugWindow.offsetHeight;
+    self.resizeOrgWidth = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
+    self.resizeOrgHeight = (self.debugWindow.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
   },
 
   startResize: function(e) {
@@ -1110,12 +1118,11 @@ DebugJS.prototype = {
         self.debugWindow.style.top = t + 'px';
       }
       self.debugWindow.style.height = h + 'px';
-      self.resizeMainHeight();
     }
 
     if (self.status & DebugJS.STATE_RESIZING_W) {
       moveX = self.clickedPosX - currentX;
-      w = self.resizeOrgWidth + moveX - ((DebugJS.WINDOW_SHADOW / 2) - DebugJS.WINDOW_ADJUST);
+      w = self.resizeOrgWidth + moveX;
       if (w < DebugJS.DEBUG_WIN_MIN_W) {
         w = DebugJS.DEBUG_WIN_MIN_W;
       } else {
@@ -1127,7 +1134,7 @@ DebugJS.prototype = {
 
     if (self.status & DebugJS.STATE_RESIZING_E) {
       moveX = currentX - self.clickedPosX;
-      w = self.resizeOrgWidth + moveX - ((DebugJS.WINDOW_SHADOW / 2) - DebugJS.WINDOW_ADJUST);
+      w = self.resizeOrgWidth + moveX;
       if (w < DebugJS.DEBUG_WIN_MIN_W) w = DebugJS.DEBUG_WIN_MIN_W;
       self.debugWindow.style.width = w + 'px';
     }
@@ -1135,22 +1142,31 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING_S) {
       moveY = currentY - self.clickedPosY;
       h = self.resizeOrgHeight + moveY;
-      if ((self.initHeight < DebugJS.DEBUG_WIN_MIN_H) && (h < self.initHeight)) {
-        h = self.initHeight;
+      if (self.initHeight < DebugJS.DEBUG_WIN_MIN_H) {
+        if (h < self.initHeight) {
+          h = self.initHeight;
+        }
       } else if (h < DebugJS.DEBUG_WIN_MIN_H) {
         h = DebugJS.DEBUG_WIN_MIN_H;
       }
       self.debugWindow.style.height = h + 'px';
-      self.resizeMainHeight();
     }
+
+    self.resizeMainHeight();
+  },
+
+  endResize: function() {
+    var self = Debug;
+    self.status &= ~DebugJS.STATE_RESIZING_ALL;
+    self.bodyEl.style.cursor = 'auto';
   },
 
   resizeMainHeight: function() {
     var self = Debug;
     var headPanelH = (self.headPanel) ? self.headPanel.offsetHeight : 0;
     var infoPanelH = (self.infoPanel) ? self.infoPanel.offsetHeight : 0;
-    var cmdPanelH = (self.cmdPanel) ? (self.cmdPanel.offsetHeight + DebugJS.CMD_LINE_PADDING) : 0;
-    var mainPanelHeight = self.debugWindow.offsetHeight - headPanelH - infoPanelH - cmdPanelH;
+    var cmdPanelH = (self.cmdPanel) ? self.cmdPanel.offsetHeight : 0;
+    var mainPanelHeight = self.debugWindow.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WINDOW_ADJUST;
     self.mainPanel.style.height = mainPanelHeight + 'px';
   },
 
@@ -1300,6 +1316,10 @@ DebugJS.prototype = {
           self.disableScriptEditor();
           return;
         }
+        if (self.status & DebugJS.STATE_RESIZING) {
+          self.endResize();
+          return;
+        }
         if (self.status & DebugJS.STATE_DRAGGING) {
           self.status &= ~DebugJS.STATE_DRAGGING;
         } else {
@@ -1390,7 +1410,7 @@ DebugJS.prototype = {
     self.updateKeyUpPanel();
   },
 
-  resizeHandler: function() {
+  windowResizeHandler: function() {
     var self = Debug;
     self.updateWindowSizePanel();
     self.updateClientSizePanel();
@@ -1458,8 +1478,7 @@ DebugJS.prototype = {
           Debug.windowBody.style.cursor = 'default';
         }
         if (self.status & DebugJS.STATE_RESIZING) {
-          self.status &= ~DebugJS.STATE_RESIZING_ALL;
-          self.bodyEl.style.cursor = 'auto';
+          self.endResize();
         }
         break;
       case 1:
@@ -1508,8 +1527,8 @@ DebugJS.prototype = {
 
   resetDebugWindow: function() {
     var self = Debug;
-    self.debugWindow.style.width = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_ADJUST) + 'px';
-    self.debugWindow.style.height = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_ADJUST) + 'px';
+    self.debugWindow.style.width = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
+    self.debugWindow.style.height = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
     self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
     self.resizeMainHeight();
     self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
@@ -1640,12 +1659,12 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
 
     if (self.elmInspectionPanel == null) {
-      var top = (self.options.fontSize + 4);
+      var top = (self.options.fontSize + DebugJS.WINDOW_ADJUST);
       self.elmInspectionPanel = document.createElement('div');
       self.elmInspectionPanel.style.position = 'absolute';
       self.elmInspectionPanel.style.top = top + 'px';
       self.elmInspectionPanel.style.left = '1px';
-      self.elmInspectionPanel.style.width = 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + 4) + 'px)';
+      self.elmInspectionPanel.style.width = 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + DebugJS.WINDOW_ADJUST) + 'px)';
       self.elmInspectionPanel.style.height = 'calc(100% - ' + (top + DebugJS.WINDOW_SHADOW + self.options.fontSize + 10) + 'px)';
       self.elmInspectionPanel.style.padding = '5px';
       self.elmInspectionPanel.style.border = 'solid 1px #333';
