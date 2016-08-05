@@ -80,7 +80,7 @@ a:hover {
 
 .button {
   width:200px;
-  font-size:20px;
+  font-size:18px;
   font-weight:bold;
   text-decoration:none;
   display:inline-block;
@@ -306,6 +306,7 @@ window.onload = function() {
   log('Here is the log output example!');
   log('The window\'s load event fired.');
   setTimeout(displayMessages, 1500);
+  setTimeout(execDemo, 1500);
 }
 
 document.onkeydown = function(e) {
@@ -364,6 +365,82 @@ var messages = [
     'fnc': log.s,
     'msg': 'system log sample.',
     'delay': 100
+  }
+];
+
+function demoStep1() {
+  dbg.indicatorOn(3);
+}
+function demoStep2() {
+  dbg.indicatorOn(2);
+}
+function demoStep3() {
+  dbg.indicatorOn(1);
+}
+function demoStep4() {
+  dbg.indicatorOn(0);
+}
+function demoStep5() {
+  dbg.indicatorAllOff();
+}
+function demoStep6() {
+  dbg.indicatorAllOn();
+}
+function demoStep7() {
+  dbg.indicatorAllOff();
+}
+function demoStep8() {
+  dbg.indicatorAllOn();
+}
+function demoStep9() {
+  dbg.indicatorAllOff();
+}
+
+var demoStepCount = 0;
+function execDemo() {
+  if (demoStepCount >= demoSteps.length) return;
+  var step = demoSteps[demoStepCount];
+  demoStepCount++;
+  step.fnc();
+  setTimeout(execDemo, step.delay);
+}
+
+var demoSteps = [
+  {
+    'fnc': demoStep1,
+    'delay': 100
+  },
+  {
+    'fnc': demoStep2,
+    'delay': 100
+  },
+  {
+    'fnc': demoStep3,
+    'delay': 100
+  },
+  {
+    'fnc': demoStep4,
+    'delay': 1000
+  },
+  {
+    'fnc': demoStep5,
+    'delay': 250
+  },
+  {
+    'fnc': demoStep6,
+    'delay': 250
+  },
+  {
+    'fnc': demoStep7,
+    'delay': 250
+  },
+  {
+    'fnc': demoStep8,
+    'delay': 250
+  },
+  {
+    'fnc': demoStep9,
+    'delay': 250
   }
 ];
 </script>
@@ -655,6 +732,12 @@ dbg.init(options);
   </tr>
 
   <tr>
+    <td class="name">useStopWatch</td>
+    <td>Enable stopwatch function</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
     <td class="name">useWindowSizeInfo</td>
     <td>Show window size monitor</td>
     <td>true</td>
@@ -673,8 +756,8 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">useStopWatch</td>
-    <td>Enable stopwatch function</td>
+    <td class="name">useIndicator</td>
+    <td>Show indicator (<span style="color:#ff0;margin-right:2px;">●</span><span style="color:#f66;margin-right:2px;">●</span><span style="color:#4cf;margin-right:2px;">●</span><span style="color:#6f6;margin-right:2px;">●</span>)</td>
     <td>true</td>
   </tr>
 
@@ -889,6 +972,54 @@ dbg.countElements('#id');
     <td>command</td>
     <td>
       Execute command
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.indicatorOn</td>
+    <td>bit position (0 - 3)</td>
+    <td>
+      turn on the indicator<br>
+      <table style="border: solid 0 #fff;">
+        <tr>
+         <td style="border:0"> </td>
+         <td style="border:0"><span style="color:#ff0;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#f66;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#4cf;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#6f6;margin-right:2px;">●</span></td>
+       </tr>
+        <tr>
+         <td style="border:0">bit</td>
+         <td style="border:0">3</td>
+         <td style="border:0">2</td>
+         <td style="border:0">1</td>
+         <td style="border:0">0</td>
+       </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.indicatorOff</td>
+    <td>bit position (0 - 3)</td>
+    <td>
+      turn off the indicator<br>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.indicatorAllOn</td>
+    <td></td>
+    <td>
+      turn on all indicator<br>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.indicatorAllOff</td>
+    <td></td>
+    <td>
+      turn off all indicator<br>
     </td>
   </tr>
 
@@ -1108,7 +1239,11 @@ log.clear();<br>
 <span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
 </td>
 </tr>
+</table>
 
+<br>
+
+<table class="demo-table">
 <tr>
 <td>
 time.start();<br>
@@ -1170,7 +1305,11 @@ log.t('timer2', 'elapsed time of %n');<br>
 <span class="button" onclick="log.t('timer2', 'elapsed time of %n');">log.t()</span>
 </td>
 </tr>
+</table>
 
+<br>
+
+<table class="demo-table">
 <tr>
 <td>
 dbg.countElements('*');<br>
@@ -1213,6 +1352,66 @@ dbg.exec('00:05:30.700 - 00:05:20.400');<br>
 
 <br>
 
+<table class="demo-table">
+<tr>
+<td>
+dbg.indicatorOn(3);<br>
+<span class="button" onclick="dbg.indicatorOn(3);">dbg.indicatorOn(3)</span>
+</td>
+
+<td>
+dbg.indicatorOn(2);<br>
+<span class="button" onclick="dbg.indicatorOn(2);">dbg.indicatorOn(2)</span>
+</td>
+
+<td>
+dbg.indicatorOn(1);<br>
+<span class="button" onclick="dbg.indicatorOn(1);">dbg.indicatorOn(1)</span>
+</td>
+
+<td>
+dbg.indicatorOn(0);<br>
+<span class="button" onclick="dbg.indicatorOn(0);">dbg.indicatorOn(0)</span>
+</td>
+</tr>
+
+<tr>
+<td>
+dbg.indicatorOff(3);<br>
+<span class="button" onclick="dbg.indicatorOff(3);">dbg.indicatorOff(3)</span>
+</td>
+
+<td>
+dbg.indicatorOff(2);<br>
+<span class="button" onclick="dbg.indicatorOff(2);">dbg.indicatorOff(2)</span>
+</td>
+
+<td>
+dbg.indicatorOff(1);<br>
+<span class="button" onclick="dbg.indicatorOff(1);">dbg.indicatorOff(1)</span>
+</td>
+
+<td>
+dbg.indicatorOff(0);<br>
+<span class="button" onclick="dbg.indicatorOff(0);">dbg.indicatorOff(0)</span>
+</td>
+</tr>
+
+<tr>
+<td>
+dbg.indicatorAllOn();<br>
+<span class="button" onclick="dbg.indicatorAllOn();">dbg.indicatorAllOn()</span>
+</td>
+
+<td>
+dbg.indicatorAllOff();<br>
+<span class="button" onclick="dbg.indicatorAllOff();">dbg.indicatorAllOff</span>
+</td>
+</tr>
+</table>
+
+<br>
+
 <table class="demo-table demo-table-green">
 <tr>
 <td>
@@ -1246,7 +1445,6 @@ console.time('timer3');<br>
 console.timeEnd('timer3');<br>
 <span class="button button-green" onclick="console.timeEnd('timer3');" style="width:210px;">console.timeEnd()</span>
 </td>
-
 </tr>
 </table>
 

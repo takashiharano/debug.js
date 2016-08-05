@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608050100';
+  this.v = '201608051630';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -42,10 +42,11 @@ var DebugJS = function() {
     'useSuspendLogButton': true,
     'usePinButton': true,
     'useWindowControlButton': true,
+    'useStopWatch': true,
     'useWindowSizeInfo': true,
     'useMouseStatusInfo': true,
     'useKeyStatusInfo': true,
-    'useStopWatch': true,
+    'useIndicator': true,
     'useScreenMeasure': true,
     'useElementInspection': true,
     'useScriptEditor': true,
@@ -103,6 +104,8 @@ var DebugJS = function() {
   this.keyDownCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
+  this.indicatorPanel = null;
+  this.indicator = 0;
   this.mainPanel = null;
   this.msgPanel = null;
   this.msgPanelScrollX = 0;
@@ -185,9 +188,21 @@ DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING *
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
+DebugJS.COLOR_R = '#f66';
+DebugJS.COLOR_G = '#6f6';
+DebugJS.COLOR_B = '#6bf';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
+
+DebugJS.IND_BIT_3 = 0x8;
+DebugJS.IND_BIT_2 = 0x4;
+DebugJS.IND_BIT_1 = 0x2;
+DebugJS.IND_BIT_0 = 0x1;
+DebugJS.IND_BIT_3_COLOR = '#ff0';
+DebugJS.IND_BIT_2_COLOR = '#f66';
+DebugJS.IND_BIT_1_COLOR = '#4cf';
+DebugJS.IND_BIT_0_COLOR = '#6f6';
 
 DebugJS.prototype = {
   init: function(options) {
@@ -525,10 +540,11 @@ DebugJS.prototype = {
     self.options.useSuspendLogButton = false;
     self.options.usePinButton = false;
     self.options.useWindowControlButton = false;
+    self.options.useStopWatch = false;
     self.options.useWindowSizeInfo = false;
     self.options.useMouseStatusInfo = false;
     self.options.useKeyStatusInfo = false;
-    self.options.useStopWatch = false;
+    self.options.useIndicator = false;
     self.options.useScreenMeasure = false;
     self.options.useElementInspection = false;
     self.options.useScriptEditor = false;
@@ -543,10 +559,11 @@ DebugJS.prototype = {
     if (self.options.useSuspendLogButton) return false;
     if (self.options.usePinButton) return false;
     if (self.options.useWindowControlButton) return false;
+    if (self.options.useStopWatch) return false;
     if (self.options.useWindowSizeInfo) return false;
     if (self.options.useMouseStatusInfo) return false;
     if (self.options.useKeyStatusInfo) return false;
-    if (self.options.useStopWatch) return false;
+    if (self.options.useIndicator) return false;
     if (self.options.useScreenMeasure) return false;
     if (self.options.useElementInspection) return false;
     if (self.options.useScriptEditor) return false;
@@ -702,6 +719,15 @@ DebugJS.prototype = {
     }
     // -- R to L
 
+    // Indicator
+    if (self.options.useIndicator) {
+      self.indicatorPanel = document.createElement('span');
+      self.indicatorPanel.className = this.id + '-sys-info';
+      self.indicatorPanel.style.float = 'right';
+      self.indicatorPanel.style.marginRight = '4px';
+      self.infoPanel.appendChild(self.indicatorPanel);
+    }
+
     // Window Size
     if (self.options.useWindowSizeInfo) {
       self.screenSizePanel = document.createElement('span');
@@ -833,6 +859,10 @@ DebugJS.prototype = {
       self.updateBodySizePanel();
       self.updateScrollPosPanel();
     }
+
+    if (self.options.useIndicator) {
+      self.updateIndicatorPanel();
+    }
   },
 
   setWindowPosition: function(pos, dbgWinWidth, dbgWinHeight) {
@@ -938,6 +968,16 @@ DebugJS.prototype = {
   // Update key Up
   updateKeyUpPanel: function() {
     this.keyUpPanel.innerHTML = 'Up:' + this.keyUpCode;
+  },
+
+  // Update Indicator
+  updateIndicatorPanel: function() {
+    var self = Debug;
+    var bit3Color = (self.indicator & DebugJS.IND_BIT_3) ? DebugJS.IND_BIT_3_COLOR : DebugJS.COLOR_INACTIVE;
+    var bit2Color = (self.indicator & DebugJS.IND_BIT_2) ? DebugJS.IND_BIT_2_COLOR : DebugJS.COLOR_INACTIVE;
+    var bit1Color = (self.indicator & DebugJS.IND_BIT_1) ? DebugJS.IND_BIT_1_COLOR : DebugJS.COLOR_INACTIVE;
+    var bit0Color = (self.indicator & DebugJS.IND_BIT_0) ? DebugJS.IND_BIT_0_COLOR : DebugJS.COLOR_INACTIVE;
+    self.indicatorPanel.innerHTML = '<span style="color:' + bit3Color + ';margin-right:2px;">●</span><span style="color:' + bit2Color + ';margin-right:2px;">●</span><span style="color:' + bit1Color + ';margin-right:2px;">●</span><span style="color:' + bit0Color + ';">●</span>';
   },
 
   // Update Measure Button
@@ -1866,6 +1906,36 @@ DebugJS.prototype = {
     sizePos.winX2 = sizePos.winX1 + self.debugWindow.clientWidth + resizeBoxSize;
     sizePos.winY2 = sizePos.winY1 + self.debugWindow.clientHeight + resizeBoxSize;
     return sizePos;
+  },
+
+  setIndicator: function(pos, active) {
+    var self = Debug;
+    var bit = 0;
+    switch (pos) {
+      case 0:
+        bit = DebugJS.IND_BIT_0;
+        break;
+      case 1:
+        bit = DebugJS.IND_BIT_1;
+        break;
+      case 2:
+        bit = DebugJS.IND_BIT_2;
+        break;
+      case 3:
+        bit = DebugJS.IND_BIT_3;
+        break;
+      case -1:
+        bit = DebugJS.IND_BIT_0 | DebugJS.IND_BIT_1 | DebugJS.IND_BIT_2 | DebugJS.IND_BIT_3;
+        break;
+      default:
+        break;
+    }
+    if (active) {
+      self.indicator |= bit;
+    } else {
+      self.indicator &= ~bit;
+    }
+    self.updateIndicatorPanel();
   },
 
   execCmd: function() {
@@ -2992,6 +3062,22 @@ dbg.exec = function(cmd) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
   Debug._execCmd(cmd);
 };
+
+dbg.indicatorOn = function(pos) {
+  Debug.setIndicator(pos, true);
+};
+
+dbg.indicatorOff = function(pos) {
+  Debug.setIndicator(pos, false);
+};
+
+dbg.indicatorAllOn = function() {
+  Debug.setIndicator(-1, true);
+};
+
+dbg.indicatorAllOff = function() {
+  Debug.setIndicator(-1, false);
+};
 // ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
@@ -3028,4 +3114,8 @@ if (DebugJS.ENABLE) {
   dbg.countElements = function(x, xx) {};
   dbg.callFunc = function(x, xx) {};
   dbg.exec = function(x) {};
+  dbg.indicatorOn = function(x) {};
+  dbg.indicatorOff = function(x) {};
+  dbg.indicatorAllOn = function() {};
+  dbg.indicatorAllOff = function() {};
 }
