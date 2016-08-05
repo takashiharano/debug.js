@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608051630';
+  this.v = '201608052050';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1908,7 +1908,7 @@ DebugJS.prototype = {
     return sizePos;
   },
 
-  setIndicator: function(pos, active) {
+  turnIndicator: function(pos, active) {
     var self = Debug;
     var bit = 0;
     switch (pos) {
@@ -1923,9 +1923,6 @@ DebugJS.prototype = {
         break;
       case 3:
         bit = DebugJS.IND_BIT_3;
-        break;
-      case -1:
-        bit = DebugJS.IND_BIT_0 | DebugJS.IND_BIT_1 | DebugJS.IND_BIT_2 | DebugJS.IND_BIT_3;
         break;
       default:
         break;
@@ -3053,7 +3050,7 @@ dbg.countElements = function(selector, showDetail) {
   return DebugJS.countElements(selector, showDetail);
 };
 
-dbg.callFunc = function(fnc, delay) {
+dbg.call = function(fnc, delay) {
   if (delay === undefined) delay = 0;
   return setTimeout(fnc, delay);
 };
@@ -3063,20 +3060,26 @@ dbg.exec = function(cmd) {
   Debug._execCmd(cmd);
 };
 
+dbg.setIndicator = function(val) {
+  Debug.indicator = val;
+};
+
 dbg.indicatorOn = function(pos) {
-  Debug.setIndicator(pos, true);
+  Debug.turnIndicator(pos, true);
 };
 
 dbg.indicatorOff = function(pos) {
-  Debug.setIndicator(pos, false);
+  Debug.turnIndicator(pos, false);
 };
 
 dbg.indicatorAllOn = function() {
-  Debug.setIndicator(-1, true);
+  Debug.indicator = 0b1111;
+  Debug.updateIndicatorPanel();
 };
 
 dbg.indicatorAllOff = function() {
-  Debug.setIndicator(-1, false);
+  Debug.indicator = 0;
+  Debug.updateIndicatorPanel();
 };
 // ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
@@ -3112,7 +3115,7 @@ if (DebugJS.ENABLE) {
   time.check = function(x) {};
   dbg.init = function(x) {};
   dbg.countElements = function(x, xx) {};
-  dbg.callFunc = function(x, xx) {};
+  dbg.call = function(x, xx) {};
   dbg.exec = function(x) {};
   dbg.indicatorOn = function(x) {};
   dbg.indicatorOff = function(x) {};
