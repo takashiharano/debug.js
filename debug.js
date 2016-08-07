@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608052050';
+  this.v = '201608070000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -149,6 +149,7 @@ var DebugJS = function() {
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json [-p] &lt;one-line json&gt;'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p &lt;object&gt;'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post &lt;url&gt;'},
+    {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number / string.', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end/list&gt; [&lt;timer name&gt;]'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
@@ -194,7 +195,6 @@ DebugJS.COLOR_B = '#6bf';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
-
 DebugJS.IND_BIT_3 = 0x8;
 DebugJS.IND_BIT_2 = 0x4;
 DebugJS.IND_BIT_1 = 0x2;
@@ -203,6 +203,8 @@ DebugJS.IND_BIT_3_COLOR = '#ff0';
 DebugJS.IND_BIT_2_COLOR = '#f66';
 DebugJS.IND_BIT_1_COLOR = '#4cf';
 DebugJS.IND_BIT_0_COLOR = '#6f6';
+DebugJS.RANDOM_TYPE_NUM = '-d';
+DebugJS.RANDOM_TYPE_STR = '-s';
 
 DebugJS.prototype = {
   init: function(options) {
@@ -2068,6 +2070,35 @@ DebugJS.prototype = {
     }
   },
 
+  cmdRandom: function(args, tbl) {
+    var a = args.split(' ');
+    if (a == null) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var type = a[0] || DebugJS.RANDOM_TYPE_NUM;
+      var min, max;
+
+      if (!a[0]) {
+        type = DebugJS.RANDOM_TYPE_NUM;
+      } else {
+        if ((a[0] == DebugJS.RANDOM_TYPE_NUM) || (a[0] == DebugJS.RANDOM_TYPE_STR)) {
+          type = a[0];
+          min = a[1];
+          max = a[2];
+        } else if (a[0].match(/[0-9]{1,}/)) {
+          type = DebugJS.RANDOM_TYPE_NUM;
+          min = a[0];
+          max = a[1];
+        } else {
+          DebugJS.printUsage(tbl.usage);
+        }
+      }
+
+      var random = DebugJS.getRandom(type, min, max);
+      DebugJS.log(random);
+    }
+  },
+
   cmdRadixConv: function(val) {
     if (val.match(/^\-{0,1}[0-9]+$/)) {
       DebugJS.convDEC(val);
@@ -2875,6 +2906,75 @@ DebugJS.getElapsedTimeStr = function(t1, t2) {
   return elapsed;
 };
 
+DebugJS.getRandom = function(type, min, max) {
+  if (min) {
+    min |= 0;
+    if (max) {
+      max |= 0;
+    } else {
+      if (type == DebugJS.RANDOM_TYPE_NUM) {
+        max = min;
+        min = 0;
+      } else if (type == DebugJS.RANDOM_TYPE_STR) {
+        max = min;
+      }
+    }
+    if (min > max) {
+      var wk = min; min = max; max = wk;
+    }
+  } else {
+    if (type == DebugJS.RANDOM_TYPE_NUM) {
+      min = 0;
+      max = 0x7fffffff;
+    } else if (type == DebugJS.RANDOM_TYPE_STR) {
+      min = DebugJS.RANDOM_STRING_DEFAULT_LEN;
+      max = DebugJS.RANDOM_STRING_DEFAULT_LEN;
+    }
+  }
+  var random;
+  switch (type) {
+    case DebugJS.RANDOM_TYPE_NUM:
+      random = DebugJS.getRandomNumber(min, max);
+      break;
+    case DebugJS.RANDOM_TYPE_STR:
+      random = DebugJS.getRandomString(min, max);
+      break;
+    default:
+      break;
+  }
+  return random;
+};
+
+DebugJS.getRandomNumber = function(min, max) {
+  var minDigit = (min + '').length;
+  var maxDigit = (max + '').length;
+  var digit = Math.floor(Math.random() * (maxDigit - minDigit + 1)) + minDigit;
+  var randMin = (digit == 1) ? 0 : Math.pow(10, (digit - 1));
+  var randMax = Math.pow(10, digit) - 1;
+  if (min < randMin) min = randMin;
+  if (max > randMax) max = randMax;
+  var random = Math.floor(Math.random() * (max - min + 1)) + min;
+  return random;
+};
+
+DebugJS.getRandomCharater = function() {
+  var ch = String.fromCharCode(DebugJS.getRandomNumber(0x20, 0x7e));
+  return ch;
+};
+
+DebugJS.RANDOM_STRING_DEFAULT_LEN = 10;
+DebugJS.RANDOM_STRING_MAX_LEN = 256;
+DebugJS.getRandomString = function(min, max) {
+  if (min > DebugJS.RANDOM_STRING_MAX_LEN) min = DebugJS.RANDOM_STRING_MAX_LEN;
+  if (max > DebugJS.RANDOM_STRING_MAX_LEN) max = DebugJS.RANDOM_STRING_MAX_LEN;
+  var len = DebugJS.getRandomNumber(min, max);
+  var str = '';
+  for (var i = 0; i < len; i++) {
+    str += DebugJS.getRandomCharater();
+  }
+  return str;
+};
+
 DebugJS.httpRequest = function(url, method) {
   var xhr = new XMLHttpRequest();
   xhr.open(method, url, true);
@@ -3081,6 +3181,14 @@ dbg.indicatorAllOff = function() {
   Debug.indicator = 0;
   Debug.updateIndicatorPanel();
 };
+
+dbg.random = function(min, max) {
+  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_NUM, min, max);
+};
+
+dbg.randomString = function(min, max) {
+  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
+};
 // ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
@@ -3121,4 +3229,6 @@ if (DebugJS.ENABLE) {
   dbg.indicatorOff = function(x) {};
   dbg.indicatorAllOn = function() {};
   dbg.indicatorAllOff = function() {};
+  dbg.random = function(min, max) {};
+  dbg.randomString = function(min, max) {};
 }
