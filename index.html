@@ -66,7 +66,7 @@ a:hover {
 .code {
   width: 750px;
   padding: .5em;
-  font-family: "Source Code Pro", Consolas;
+  font-family: "Source Code Pro", Consolas, monospace;
   font-size: 14px;
   color: #aaa;
   background: #333;
@@ -140,7 +140,7 @@ a:hover {
 }
 
 .demo-table td {
-  font-family: Consolas;
+  font-family: Consolas, monospace;
   font-size: 11px;
   color: #0000a0;
   width: 210px;
@@ -152,12 +152,12 @@ a:hover {
 }
 
 .eg {
-  font-family: Consolas;
+  font-family: Consolas, monospace;
   line-height: 1em;
 }
 
 .json {
-  font-family: Consolas;
+  font-family: Consolas, monospace;
   font-size: 12px;
   margin: 16px 5px;
 }
@@ -447,8 +447,8 @@ var demoSteps = [
 randomDemoFlag = false;
 function randomDemo() {
   if (!randomDemoFlag) return;
-  var next = dbg.random(10, 3000);
-  var str = dbg.randomString(1, 50);
+  var next = dbg.random(10, 5000);
+  var str = dbg.randomString(1, 64);
   var type = dbg.random(10);
   switch (type) {
     case 1:
@@ -622,7 +622,7 @@ dbg.init(options);
   <tr>
     <td class="name">fontFamily</td>
     <td>Font family</td>
-    <td>'Consolas'</td>
+    <td>'Consolas, monospace'</td>
   </tr>
 
   <tr>
@@ -1215,7 +1215,7 @@ $ rgb 255 255 255
     <th>Description</th>
   </tr>
   <tr>
-    <td>■</td>
+    <td><span style="display:inline-block;width:12px;height:8px;border:solid 1px #888;"> </span></td>
     <td>Screen Measure</td>
   </tr>
   <tr>

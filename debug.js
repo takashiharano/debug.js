@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608070000';
+  this.v = '201608080000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -17,7 +17,7 @@ var DebugJS = function() {
     'posAdjX': 20,
     'posAdjY': 20,
     'fontSize': 12,
-    'fontFamily': 'Consolas',
+    'fontFamily': 'Consolas, monospace',
     'fontColor': '#fff',
     'logColorE': '#e55',
     'logColorW': '#fe0',
@@ -623,7 +623,7 @@ DebugJS.prototype = {
     // Clock
     if (self.options.useClock) {
       self.clockPanel = document.createElement('span');
-      self.clockPanel.style.marginRight = '4px';
+      self.clockPanel.style.marginRight = '2px';
       self.clockPanel.style.color = self.options.clockColor;
       self.clockPanel.style.fontSize = self.options.fontSize + 'px';
       self.headPanel.appendChild(self.clockPanel);
@@ -691,7 +691,8 @@ DebugJS.prototype = {
       self.scriptBtnPanel = document.createElement('span');
       self.scriptBtnPanel.className = this.id + '-btn';
       self.scriptBtnPanel.style.float = 'right';
-      self.scriptBtnPanel.style.marginRight = '4px';
+      self.scriptBtnPanel.style.marginRight = '3px';
+      self.scriptBtnPanel.innerText = '<JS>';
       self.scriptBtnPanel.onclick = new Function('Debug.toggleScriptMode();');
       self.headPanel.appendChild(self.scriptBtnPanel);
     }
@@ -701,7 +702,8 @@ DebugJS.prototype = {
       self.elmInspectionBtnPanel = document.createElement('span');
       self.elmInspectionBtnPanel.className = this.id + '-btn';
       self.elmInspectionBtnPanel.style.float = 'right';
-      self.elmInspectionBtnPanel.style.marginRight = '4px';
+      self.elmInspectionBtnPanel.style.marginRight = '3px';
+      self.elmInspectionBtnPanel.innerText = '<DOM>';
       self.elmInspectionBtnPanel.onclick = new Function('Debug.toggleElmInspectionMode();');
       self.headPanel.appendChild(self.elmInspectionBtnPanel);
     }
@@ -712,10 +714,11 @@ DebugJS.prototype = {
       self.measureBtnPanel.className = this.id + '-btn';
       self.measureBtnPanel.style.display = 'inline-block';
       self.measureBtnPanel.style.float = 'right';
-      self.measureBtnPanel.style.marginTop = '2px';
-      self.measureBtnPanel.style.marginRight = '4px';
-      self.measureBtnPanel.style.width = (8 * self.options.zoom) + 'px';
+      self.measureBtnPanel.style.marginTop = '1px';
+      self.measureBtnPanel.style.marginRight = '6px';
+      self.measureBtnPanel.style.width = (12 * self.options.zoom) + 'px';
       self.measureBtnPanel.style.height = (8 * self.options.zoom) + 'px';
+      self.measureBtnPanel.innerText = ' ';
       self.measureBtnPanel.onclick = new Function('Debug.toggleMeasureMode();');
       self.headPanel.appendChild(self.measureBtnPanel);
     }
@@ -985,22 +988,19 @@ DebugJS.prototype = {
   // Update Measure Button
   updateMeasureBtnPanel: function() {
     var self = Debug;
-    self.measureBtnPanel.style.background = (this.status & DebugJS.STATE_MEASURE) ? '#0f0' : DebugJS.COLOR_INACTIVE;
-    self.measureBtnPanel.innerText = ' ';
+    self.measureBtnPanel.style.border = 'solid 1px ' + ((this.status & DebugJS.STATE_MEASURE) ? self.options.btnColor : DebugJS.COLOR_INACTIVE);
   },
 
   // Update Element Inspection Button
   updateElmInspectionBtnPanel: function() {
     var self = Debug;
     self.elmInspectionBtnPanel.style.color = (this.status & DebugJS.STATE_ELEMENT_INSPECTING) ? '#ff0' : DebugJS.COLOR_INACTIVE;
-    self.elmInspectionBtnPanel.innerText = '<DOM>';
   },
 
   // Update Script Button
   updateScriptBtnPanel: function() {
     var self = Debug;
     self.scriptBtnPanel.style.color = (this.status & DebugJS.STATE_SCRIPT) ? '#0ff' : DebugJS.COLOR_INACTIVE;
-    self.scriptBtnPanel.innerText = '<JS>';
   },
 
   // Update Stop Watch Button
@@ -1759,8 +1759,14 @@ DebugJS.prototype = {
     dom += 'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + ' / padding: ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n';
     dom += 'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n';
     dom += 'location   : top: ' + Math.round(rect.top + window.pageYOffset) + 'px / left: ' + Math.round(rect.left + window.pageXOffset) + ' px\n';
-    dom += 'bg-color   : ' + style.backgroundColor + ' <span style="background:' + style.backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n';
-    dom += 'color      : ' + style.color + ' <span style="background:' + style.color + ';width:6px;height:12px;display:inline-block;"> </span>\n';
+    var backgroundColor = style.backgroundColor;
+    var bgColor10 = backgroundColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+    var bgColor16 = DebugJS.convRGB10to16(bgColor10);
+    dom += 'bg-color   : ' + backgroundColor + ' #' + bgColor16.r + bgColor16.g + bgColor16.b + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n';
+    var color = style.color;
+    var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+    var color16 = DebugJS.convRGB10to16(color10);
+    dom += 'color      : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n';
     dom += 'font       : size: ' + style.fontSize + '  family: ' + style.fontFamily + '\n';
     dom += 'name       : ' + (el.name ? el.name : '') + '\n';
     dom += 'value      : ' + (el.value ? el.value : '') + '\n';
@@ -2322,7 +2328,7 @@ DebugJS.prototype = {
             DebugJS.timeStart(a[2]);
             break;
           case 'split':
-            DebugJS.timeSplit(a[2]);
+            DebugJS.timeSplit(a[2], false);
             break;
           case 'end':
             DebugJS.timeEnd(a[2]);
@@ -2708,13 +2714,13 @@ DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
 DebugJS.convRGB = function(v) {
-  var rgb;
+  var ret;
   if (v.indexOf('#') == 0) {
-    rgb = DebugJS.convRGB16to10(v);
+    ret = DebugJS.convRGB16to10(v);
   } else {
-    rgb = DebugJS.convRGB10to16(v);
+    ret = DebugJS.convRGB10to16(v);
   }
-  DebugJS.log(rgb);
+  DebugJS.log(ret.rgb);
 };
 
 DebugJS.convRGB16to10 = function(rgb16) {
@@ -2739,7 +2745,8 @@ DebugJS.convRGB16to10 = function(rgb16) {
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
   var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
-  return rgb10;
+  var rgb = {'r': r10, 'g': g10, 'b': b10, 'rgb': rgb10}
+  return rgb;
 };
 
 DebugJS.convRGB10to16 = function(rgb10) {
@@ -2758,7 +2765,8 @@ DebugJS.convRGB10to16 = function(rgb10) {
     b16 = b16.substring(0, 1);
   }
   var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:#' + r16 + g16 + b16 + ';width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
-  return rgb16;
+  var rgb = {'r': r16, 'g': g16, 'b': b16, 'rgb': rgb16}
+  return rgb;
 };
 
 DebugJS.convHEX = function(v16) {
@@ -2815,7 +2823,7 @@ DebugJS.timeCheck = function(timerName, now) {
   return t;
 };
 
-DebugJS.timeSplit = function(timerName, msg) {
+DebugJS.timeSplit = function(timerName, isEnd, msg) {
   var self = Debug;
   if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
   var t2 = new Date();
@@ -2831,7 +2839,9 @@ DebugJS.timeSplit = function(timerName, msg) {
     var tLap = DebugJS.getElapsedTimeStr(self.timers[timerName].split, t2);
     dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
   } else {
-    dtLap = dt;
+    if (!isEnd) {
+      dtLap = dt;
+    }
   }
 
   self.timers[timerName].split = t2;
@@ -2855,7 +2865,7 @@ DebugJS.timeSplit = function(timerName, msg) {
 DebugJS.timeEnd = function(timerName, msg) {
   var self = Debug;
   if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
-  var t = DebugJS.timeSplit(timerName, msg);
+  var t = DebugJS.timeSplit(timerName, true, msg);
   if (t !== null) {
     delete self.timers[timerName];
   }
@@ -2927,8 +2937,8 @@ DebugJS.getRandom = function(type, min, max) {
       min = 0;
       max = 0x7fffffff;
     } else if (type == DebugJS.RANDOM_TYPE_STR) {
-      min = DebugJS.RANDOM_STRING_DEFAULT_LEN;
-      max = DebugJS.RANDOM_STRING_DEFAULT_LEN;
+      min = 1;
+      max = DebugJS.RANDOM_STRING_DEFAULT_MAX_LEN;
     }
   }
   var random;
@@ -2962,15 +2972,23 @@ DebugJS.getRandomCharater = function() {
   return ch;
 };
 
-DebugJS.RANDOM_STRING_DEFAULT_LEN = 10;
-DebugJS.RANDOM_STRING_MAX_LEN = 256;
+DebugJS.RANDOM_STRING_DEFAULT_MAX_LEN = 10;
+DebugJS.RANDOM_STRING_MAX_LEN = 1024;
 DebugJS.getRandomString = function(min, max) {
   if (min > DebugJS.RANDOM_STRING_MAX_LEN) min = DebugJS.RANDOM_STRING_MAX_LEN;
   if (max > DebugJS.RANDOM_STRING_MAX_LEN) max = DebugJS.RANDOM_STRING_MAX_LEN;
   var len = DebugJS.getRandomNumber(min, max);
   var str = '';
   for (var i = 0; i < len; i++) {
-    str += DebugJS.getRandomCharater();
+    var ch;
+    var retry = true;
+    while (retry) {
+      ch = DebugJS.getRandomCharater();
+      if (!(ch.match(/[!-/:-@[-`{-~]/))) {
+        retry = false;
+      }
+    }
+    str += ch
   }
   return str;
 };
@@ -3130,7 +3148,7 @@ time.start = function(timerName, msg) {
 };
 
 time.split = function(timerName, msg) {
-  DebugJS.timeSplit(timerName, msg);
+  DebugJS.timeSplit(timerName, false, msg);
 };
 
 time.end = function(timerName, msg) {
