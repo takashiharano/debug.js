@@ -79,27 +79,31 @@ a:hover {
 }
 
 .button {
-  width:200px;
-  font-size:18px;
-  font-weight:bold;
-  text-decoration:none;
-  display:inline-block;
-  text-align:center;
+  width: 200px;
+  font-size: 18px;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
   vertical-align: middle;
-  padding:8px 0 10px;
+  padding: 8px 0 10px;
   margin: 4px 4px 12px 4px;
-  color:#fff;
+  color: #fff;
   background: #0068cc;
   border-radius: 5px;
+}
+
+.button-100 {
+  width: 100px;
 }
 
 .dl-btn {
   position: relative;
   top: -4px;
-  width:100px;
+  width: 100px;
   margin: 0;
-  padding:4px 0;
-  font-size:14px;
+  padding: 4px 0;
+  font-size: 14px;
 }
 
 .button:hover {
@@ -368,34 +372,6 @@ var messages = [
   }
 ];
 
-function demoStep1() {
-  dbg.indicatorOn(3);
-}
-function demoStep2() {
-  dbg.indicatorOn(2);
-}
-function demoStep3() {
-  dbg.indicatorOn(1);
-}
-function demoStep4() {
-  dbg.indicatorOn(0);
-}
-function demoStep5() {
-  dbg.indicatorAllOff();
-}
-function demoStep6() {
-  dbg.indicatorAllOn();
-}
-function demoStep7() {
-  dbg.indicatorAllOff();
-}
-function demoStep8() {
-  dbg.indicatorAllOn();
-}
-function demoStep9() {
-  dbg.indicatorAllOff();
-}
-
 var demoStepCount = 0;
 function execDemo() {
   if (demoStepCount >= demoSteps.length) return;
@@ -407,39 +383,55 @@ function execDemo() {
 
 var demoSteps = [
   {
-    'fnc': demoStep1,
+    'fnc': function() {dbg.indicatorOn(0);},
     'delay': 100
   },
   {
-    'fnc': demoStep2,
+    'fnc': function() {dbg.indicatorOn(1);},
     'delay': 100
   },
   {
-    'fnc': demoStep3,
+    'fnc': function() {dbg.indicatorOn(2);},
     'delay': 100
   },
   {
-    'fnc': demoStep4,
+    'fnc': function() {dbg.indicatorOn(3);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.indicatorOn(4);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.indicatorOn(5);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.indicatorOn(6);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.indicatorOn(7);},
     'delay': 1000
   },
   {
-    'fnc': demoStep5,
+    'fnc': function() {dbg.indicatorAllOff();},
     'delay': 250
   },
   {
-    'fnc': demoStep6,
+    'fnc': function() {dbg.indicatorAllOn();},
     'delay': 250
   },
   {
-    'fnc': demoStep7,
+    'fnc': function() {dbg.indicatorAllOff();},
     'delay': 250
   },
   {
-    'fnc': demoStep8,
+    'fnc': function() {dbg.indicatorAllOn();},
     'delay': 250
   },
   {
-    'fnc': demoStep9,
+    'fnc': function() {dbg.indicatorAllOff();},
     'delay': 250
   }
 ];
@@ -448,7 +440,7 @@ randomDemoFlag = false;
 function randomDemo() {
   if (!randomDemoFlag) return;
   var next = dbg.random(10, 5000);
-  var str = dbg.randomString(1, 64);
+  var str = dbg.randomString(1, 55);
   var type = dbg.random(10);
   switch (type) {
     case 1:
@@ -789,7 +781,16 @@ dbg.init(options);
 
   <tr>
     <td class="name">useIndicator</td>
-    <td>Show indicator (<span style="color:#ff0;margin-right:2px;">●</span><span style="color:#f66;margin-right:2px;">●</span><span style="color:#4cf;margin-right:2px;">●</span><span style="color:#6f6;margin-right:2px;">●</span>)</td>
+    <td>Show 8bit indicator (
+<span style="color:#ddd;margin-right:2px;">●</span>
+<span style="color:#f0f;margin-right:2px;">●</span>
+<span style="color:#f66;margin-right:2px;">●</span>
+<span style="color:#f80;margin-right:2px;">●</span>
+<span style="color:#ee0;margin-right:2px;">●</span>
+<span style="color:#6f6;margin-right:2px;">●</span>
+<span style="color:#0ff;margin-right:2px;">●</span>
+<span style="color:#4cf;margin-right:2px;">●</span>
+)</td>
     <td>true</td>
   </tr>
 
@@ -1009,19 +1010,27 @@ dbg.countElements('#id');
 
   <tr>
     <td class="name">dbg.indicatorOn</td>
-    <td>bit position (0 - 3)</td>
+    <td>bit position</td>
     <td>
       turn on the indicator<br>
       <table style="border: solid 0 #fff;">
         <tr>
          <td style="border:0"> </td>
-         <td style="border:0"><span style="color:#ff0;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#ddd;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#f0f;margin-right:2px;">●</span></td>
          <td style="border:0"><span style="color:#f66;margin-right:2px;">●</span></td>
-         <td style="border:0"><span style="color:#4cf;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#f80;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#ee0;margin-right:2px;">●</span></td>
          <td style="border:0"><span style="color:#6f6;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#0ff;margin-right:2px;">●</span></td>
+         <td style="border:0"><span style="color:#4cf;margin-right:2px;">●</span></td>
        </tr>
         <tr>
-         <td style="border:0">bit</td>
+         <td style="border:0">bit posision</td>
+         <td style="border:0">7</td>
+         <td style="border:0">6</td>
+         <td style="border:0">5</td>
+         <td style="border:0">4</td>
          <td style="border:0">3</td>
          <td style="border:0">2</td>
          <td style="border:0">1</td>
@@ -1033,9 +1042,17 @@ dbg.countElements('#id');
 
   <tr>
     <td class="name">dbg.indicatorOff</td>
-    <td>bit position (0 - 3)</td>
+    <td>bit position</td>
     <td>
       turn off the indicator<br>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.setIndicator</td>
+    <td>value</td>
+    <td>
+      Set indicator bit pattern<br>
     </td>
   </tr>
 
@@ -1058,8 +1075,8 @@ dbg.countElements('#id');
   <tr>
     <td class="name">dbg.random</td>
     <td>
-      arg1: min(opt)</span><br>
-      arg2: max(opt)</span>
+      arg1: min<span class="opt">(opt)</span><br>
+      arg2: max<span class="opt">(opt)</span>
     </td>
     <td>
       Get random number<br>
@@ -1073,8 +1090,8 @@ max: maximum number
   <tr>
     <td class="name">dbg.randomString</td>
     <td>
-      arg1: min(opt)</span><br>
-      arg2: max(opt)</span>
+      arg1: min<span class="opt">(opt)</span><br>
+      arg2: max<span class="opt">(opt)</span>
     </td>
     <td>
       Get random string<br>
@@ -1160,9 +1177,9 @@ max: maximum length
   <tr>
     <td class="name">random</td>
     <td>
-      arg1: type(opt)<br>
-      arg2: min(opt)</span><br>
-      arg3: max(opt)</span>
+      arg1: type<span class="opt">(opt)</span><br>
+      arg2: min<span class="opt">(opt)</span><br>
+      arg3: max<span class="opt">(opt)</span>
     </td>
     <td>
       Get random number / string.<br>
@@ -1264,6 +1281,8 @@ $ rgb 255 255 255
 
 <div class="caption">// DEMO</div>
 
+<!-- ********************************************************************** -->
+log
 <table class="demo-table">
 <tr>
 <td>
@@ -1329,6 +1348,8 @@ log.clear();<br>
 
 <br>
 
+<!-- ********************************************************************** -->
+time
 <table class="demo-table">
 <tr>
 <td>
@@ -1395,6 +1416,8 @@ log.t('timer2', 'elapsed time of %n');<br>
 
 <br>
 
+<!-- ********************************************************************** -->
+dbg.countElements
 <table class="demo-table">
 <tr>
 <td>
@@ -1417,7 +1440,11 @@ dbg.countElements('div');<br>
 <span class="button" onclick="log(dbg.countElements('div'));">dbg.countElements</span>
 </td>
 </tr>
+</table>
 
+<!-- ********************************************************************** -->
+dbg.exec
+<table class="demo-table">
 <tr>
 <td>
 dbg.exec('rgb #fff');<br>
@@ -1438,58 +1465,95 @@ dbg.exec('00:05:30.700 - 00:05:20.400');<br>
 
 <br>
 
+<!-- ********************************************************************** -->
+dbg.indicatorOn(n); / dbg.indicatorOff(n);
 <table class="demo-table">
 <tr>
 <td>
-dbg.indicatorOn(3);<br>
-<span class="button" onclick="dbg.indicatorOn(3);">dbg.indicatorOn(3)</span>
+<span class="button button-100" onclick="dbg.indicatorOn(7);">On(7)</span>
 </td>
 
 <td>
-dbg.indicatorOn(2);<br>
-<span class="button" onclick="dbg.indicatorOn(2);">dbg.indicatorOn(2)</span>
+<span class="button button-100" onclick="dbg.indicatorOn(6);">On(6)</span>
 </td>
 
 <td>
-dbg.indicatorOn(1);<br>
-<span class="button" onclick="dbg.indicatorOn(1);">dbg.indicatorOn(1)</span>
+<span class="button button-100" onclick="dbg.indicatorOn(5);">On(5)</span>
 </td>
 
 <td>
-dbg.indicatorOn(0);<br>
-<span class="button" onclick="dbg.indicatorOn(0);">dbg.indicatorOn(0)</span>
-</td>
-</tr>
-
-<tr>
-<td>
-dbg.indicatorOff(3);<br>
-<span class="button" onclick="dbg.indicatorOff(3);">dbg.indicatorOff(3)</span>
+<span class="button button-100" onclick="dbg.indicatorOn(4);">On(4)</span>
 </td>
 
 <td>
-dbg.indicatorOff(2);<br>
-<span class="button" onclick="dbg.indicatorOff(2);">dbg.indicatorOff(2)</span>
+<span class="button button-100" onclick="dbg.indicatorOn(3);">On(3)</span>
 </td>
 
 <td>
-dbg.indicatorOff(1);<br>
-<span class="button" onclick="dbg.indicatorOff(1);">dbg.indicatorOff(1)</span>
+<span class="button button-100" onclick="dbg.indicatorOn(2);">On(2)</span>
 </td>
 
 <td>
-dbg.indicatorOff(0);<br>
-<span class="button" onclick="dbg.indicatorOff(0);">dbg.indicatorOff(0)</span>
+<span class="button button-100" onclick="dbg.indicatorOn(1);">On(1)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOn(0);">On(0)</span>
 </td>
 </tr>
 
 <tr>
 <td>
+<span class="button button-100" onclick="dbg.indicatorOff(7);">Off(7)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOff(6);">Off(6)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOff(5);">Off(5)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOff(4);">Off(4)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOff(3);">Off(3)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOff(2);">Off(2)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOff(1);">Off(1)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.indicatorOff(0);">Off(0)</span>
+</td>
+</tr>
+
+<tr>
+<td colspan="2">
+dbg.setIndicator(n);<br>
+<span class="button" onclick="dbg.setIndicator(0x55);">setIndicator(0x55)</span>
+</td>
+
+<td>
+<span class="button button-100" onclick="dbg.setIndicator(0xaa);">0xaa</span>
+</td>
+
+<td></td>
+
+<td colspan="2">
 dbg.indicatorAllOn();<br>
 <span class="button" onclick="dbg.indicatorAllOn();">dbg.indicatorAllOn</span>
 </td>
 
-<td>
+<td colspan="2">
 dbg.indicatorAllOff();<br>
 <span class="button" onclick="dbg.indicatorAllOff();">dbg.indicatorAllOff</span>
 </td>
@@ -1498,6 +1562,8 @@ dbg.indicatorAllOff();<br>
 
 <br>
 
+<!-- ********************************************************************** -->
+console
 <table class="demo-table demo-table-green">
 <tr>
 <td>
@@ -1564,6 +1630,7 @@ log('&lt;img src=img.jpg&gt;');
 </table>
 -->
 
+<!-- ********************************************************************** -->
 JSON Sample for "json" command
 <div id="json1" class="json">
 {"name": "John Smith", "age": 25, "city": "New York"}

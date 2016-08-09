@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608080000';
+  this.v = '201608100000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -189,20 +189,32 @@ DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING *
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
+DebugJS.DOM_BUTTON_COLOR = '#ff0';
+DebugJS.JS_BUTTON_COLOR = '#0ff';
+DebugJS.PIN_BUTTON_COLOR = '#fa0';
+DebugJS.LOG_SUSPEND_BUTTON_COLOR = '#d00';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
+DebugJS.IND_BIT_7 = 0x80;
+DebugJS.IND_BIT_6 = 0x40;
+DebugJS.IND_BIT_5 = 0x20;
+DebugJS.IND_BIT_4 = 0x10;
 DebugJS.IND_BIT_3 = 0x8;
 DebugJS.IND_BIT_2 = 0x4;
 DebugJS.IND_BIT_1 = 0x2;
 DebugJS.IND_BIT_0 = 0x1;
-DebugJS.IND_BIT_3_COLOR = '#ff0';
-DebugJS.IND_BIT_2_COLOR = '#f66';
-DebugJS.IND_BIT_1_COLOR = '#4cf';
-DebugJS.IND_BIT_0_COLOR = '#6f6';
+DebugJS.IND_BIT_7_COLOR = '#ddd';
+DebugJS.IND_BIT_6_COLOR = '#f0f';
+DebugJS.IND_BIT_5_COLOR = '#f66';
+DebugJS.IND_BIT_4_COLOR = '#f80';
+DebugJS.IND_BIT_3_COLOR = '#ee0';
+DebugJS.IND_BIT_2_COLOR = '#6f6';
+DebugJS.IND_BIT_1_COLOR = '#0ff';
+DebugJS.IND_BIT_0_COLOR = '#4cf';
 DebugJS.RANDOM_TYPE_NUM = '-d';
 DebugJS.RANDOM_TYPE_STR = '-s';
 
@@ -657,8 +669,10 @@ DebugJS.prototype = {
       self.pinBtnPanel.className = this.id + '-btn';
       self.pinBtnPanel.style.float = 'right';
       self.pinBtnPanel.style.marginRight = '4px';
-      self.pinBtnPanel.onclick = new Function('Debug.toggleDraggable();');
       self.pinBtnPanel.innerText = '📌';
+      self.pinBtnPanel.onclick = new Function('Debug.toggleDraggable();');
+      self.pinBtnPanel.onmouseover = new Function('Debug.pinBtnPanel.style.color=DebugJS.PIN_BUTTON_COLOR;');
+      self.pinBtnPanel.onmouseout = new Function('Debug.pinBtnPanel.style.color=(Debug.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;');
       self.headPanel.appendChild(self.pinBtnPanel);
     }
 
@@ -668,8 +682,10 @@ DebugJS.prototype = {
       self.suspendLogBtnPanel.className = this.id + '-btn';
       self.suspendLogBtnPanel.style.float = 'right';
       self.suspendLogBtnPanel.style.marginRight = '4px';
-      self.suspendLogBtnPanel.onclick = new Function('Debug.toggleLogSuspend();');
       self.suspendLogBtnPanel.innerText = '🚫';
+      self.suspendLogBtnPanel.onclick = new Function('Debug.toggleLogSuspend();');
+      self.suspendLogBtnPanel.onmouseover = new Function('Debug.suspendLogBtnPanel.style.color=DebugJS.LOG_SUSPEND_BUTTON_COLOR;');
+      self.suspendLogBtnPanel.onmouseout = new Function('Debug.suspendLogBtnPanel.style.color=(Debug.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.suspendLogBtnPanel);
     }
 
@@ -694,6 +710,8 @@ DebugJS.prototype = {
       self.scriptBtnPanel.style.marginRight = '3px';
       self.scriptBtnPanel.innerText = '<JS>';
       self.scriptBtnPanel.onclick = new Function('Debug.toggleScriptMode();');
+      self.scriptBtnPanel.onmouseover = new Function('Debug.scriptBtnPanel.style.color=DebugJS.JS_BUTTON_COLOR;');
+      self.scriptBtnPanel.onmouseout = new Function('Debug.scriptBtnPanel.style.color=(Debug.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.scriptBtnPanel);
     }
 
@@ -705,6 +723,8 @@ DebugJS.prototype = {
       self.elmInspectionBtnPanel.style.marginRight = '3px';
       self.elmInspectionBtnPanel.innerText = '<DOM>';
       self.elmInspectionBtnPanel.onclick = new Function('Debug.toggleElmInspectionMode();');
+      self.elmInspectionBtnPanel.onmouseover = new Function('Debug.elmInspectionBtnPanel.style.color=DebugJS.DOM_BUTTON_COLOR;');
+      self.elmInspectionBtnPanel.onmouseout = new Function('Debug.elmInspectionBtnPanel.style.color=(Debug.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.elmInspectionBtnPanel);
     }
 
@@ -720,6 +740,8 @@ DebugJS.prototype = {
       self.measureBtnPanel.style.height = (8 * self.options.zoom) + 'px';
       self.measureBtnPanel.innerText = ' ';
       self.measureBtnPanel.onclick = new Function('Debug.toggleMeasureMode();');
+      self.measureBtnPanel.onmouseover = new Function('Debug.measureBtnPanel.style.borderColor=\'' + Debug.options.btnColor + '\';');
+      self.measureBtnPanel.onmouseout = new Function('Debug.measureBtnPanel.style.borderColor=(Debug.status & DebugJS.STATE_MEASURE) ? Debug.options.btnColor : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.measureBtnPanel);
     }
     // -- R to L
@@ -978,29 +1000,42 @@ DebugJS.prototype = {
   // Update Indicator
   updateIndicatorPanel: function() {
     var self = Debug;
+    var bit7Color = (self.indicator & DebugJS.IND_BIT_7) ? DebugJS.IND_BIT_7_COLOR : DebugJS.COLOR_INACTIVE;
+    var bit6Color = (self.indicator & DebugJS.IND_BIT_6) ? DebugJS.IND_BIT_6_COLOR : DebugJS.COLOR_INACTIVE;
+    var bit5Color = (self.indicator & DebugJS.IND_BIT_5) ? DebugJS.IND_BIT_5_COLOR : DebugJS.COLOR_INACTIVE;
+    var bit4Color = (self.indicator & DebugJS.IND_BIT_4) ? DebugJS.IND_BIT_4_COLOR : DebugJS.COLOR_INACTIVE;
     var bit3Color = (self.indicator & DebugJS.IND_BIT_3) ? DebugJS.IND_BIT_3_COLOR : DebugJS.COLOR_INACTIVE;
     var bit2Color = (self.indicator & DebugJS.IND_BIT_2) ? DebugJS.IND_BIT_2_COLOR : DebugJS.COLOR_INACTIVE;
     var bit1Color = (self.indicator & DebugJS.IND_BIT_1) ? DebugJS.IND_BIT_1_COLOR : DebugJS.COLOR_INACTIVE;
     var bit0Color = (self.indicator & DebugJS.IND_BIT_0) ? DebugJS.IND_BIT_0_COLOR : DebugJS.COLOR_INACTIVE;
-    self.indicatorPanel.innerHTML = '<span style="color:' + bit3Color + ';margin-right:2px;">●</span><span style="color:' + bit2Color + ';margin-right:2px;">●</span><span style="color:' + bit1Color + ';margin-right:2px;">●</span><span style="color:' + bit0Color + ';">●</span>';
+    var indicator = '';
+    indicator += '<span style="color:' + bit7Color + ';margin-right:2px;">●</span>';
+    indicator += '<span style="color:' + bit6Color + ';margin-right:2px;">●</span>';
+    indicator += '<span style="color:' + bit5Color + ';margin-right:2px;">●</span>';
+    indicator += '<span style="color:' + bit4Color + ';margin-right:2px;">●</span>';
+    indicator += '<span style="color:' + bit3Color + ';margin-right:2px;">●</span>';
+    indicator += '<span style="color:' + bit2Color + ';margin-right:2px;">●</span>';
+    indicator += '<span style="color:' + bit1Color + ';margin-right:2px;">●</span>';
+    indicator += '<span style="color:' + bit0Color + ';">●</span>';
+    self.indicatorPanel.innerHTML = indicator;
   },
 
   // Update Measure Button
   updateMeasureBtnPanel: function() {
     var self = Debug;
-    self.measureBtnPanel.style.border = 'solid 1px ' + ((this.status & DebugJS.STATE_MEASURE) ? self.options.btnColor : DebugJS.COLOR_INACTIVE);
+    self.measureBtnPanel.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? self.options.btnColor : DebugJS.COLOR_INACTIVE);
   },
 
   // Update Element Inspection Button
   updateElmInspectionBtnPanel: function() {
     var self = Debug;
-    self.elmInspectionBtnPanel.style.color = (this.status & DebugJS.STATE_ELEMENT_INSPECTING) ? '#ff0' : DebugJS.COLOR_INACTIVE;
+    self.elmInspectionBtnPanel.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Script Button
   updateScriptBtnPanel: function() {
     var self = Debug;
-    self.scriptBtnPanel.style.color = (this.status & DebugJS.STATE_SCRIPT) ? '#0ff' : DebugJS.COLOR_INACTIVE;
+    self.scriptBtnPanel.style.color = (self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Stop Watch Button
@@ -1025,13 +1060,13 @@ DebugJS.prototype = {
   // Update Suspend Log Button
   updateSuspendLogBtnPanel: function() {
     var self = Debug;
-    self.suspendLogBtnPanel.style.color = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? '#d00' : DebugJS.COLOR_INACTIVE;
+    self.suspendLogBtnPanel.style.color = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Pin Button
   updatePinBtnPanel: function() {
     var self = Debug;
-    self.pinBtnPanel.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : '#fa0';
+    self.pinBtnPanel.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;
   },
 
   // Window Control Button
@@ -1760,9 +1795,13 @@ DebugJS.prototype = {
     dom += 'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n';
     dom += 'location   : top: ' + Math.round(rect.top + window.pageYOffset) + 'px / left: ' + Math.round(rect.left + window.pageXOffset) + ' px\n';
     var backgroundColor = style.backgroundColor;
-    var bgColor10 = backgroundColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-    var bgColor16 = DebugJS.convRGB10to16(bgColor10);
-    dom += 'bg-color   : ' + backgroundColor + ' #' + bgColor16.r + bgColor16.g + bgColor16.b + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n';
+    var bgColor16 = '';
+    if (backgroundColor != 'transparent') {
+      var bgColor10 = backgroundColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+      var bgColor16conv = DebugJS.convRGB10to16(bgColor10);
+      bgColor16 = '#' + bgColor16conv.r + bgColor16conv.g + bgColor16conv.b;
+    }
+    dom += 'bg-color   : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n';
     var color = style.color;
     var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
     var color16 = DebugJS.convRGB10to16(color10);
@@ -1931,6 +1970,18 @@ DebugJS.prototype = {
         break;
       case 3:
         bit = DebugJS.IND_BIT_3;
+        break;
+      case 4:
+        bit = DebugJS.IND_BIT_4;
+        break;
+      case 5:
+        bit = DebugJS.IND_BIT_5;
+        break;
+      case 6:
+        bit = DebugJS.IND_BIT_6;
+        break;
+      case 7:
+        bit = DebugJS.IND_BIT_7;
         break;
       default:
         break;
@@ -2745,7 +2796,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
   var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
-  var rgb = {'r': r10, 'g': g10, 'b': b10, 'rgb': rgb10}
+  var rgb = {'r': r10, 'g': g10, 'b': b10, 'rgb': rgb10};
   return rgb;
 };
 
@@ -2765,7 +2816,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
     b16 = b16.substring(0, 1);
   }
   var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:#' + r16 + g16 + b16 + ';width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
-  var rgb = {'r': r16, 'g': g16, 'b': b16, 'rgb': rgb16}
+  var rgb = {'r': r16, 'g': g16, 'b': b16, 'rgb': rgb16};
   return rgb;
 };
 
@@ -2988,7 +3039,7 @@ DebugJS.getRandomString = function(min, max) {
         retry = false;
       }
     }
-    str += ch
+    str += ch;
   }
   return str;
 };
@@ -3180,6 +3231,7 @@ dbg.exec = function(cmd) {
 
 dbg.setIndicator = function(val) {
   Debug.indicator = val;
+  Debug.updateIndicatorPanel();
 };
 
 dbg.indicatorOn = function(pos) {
@@ -3191,7 +3243,7 @@ dbg.indicatorOff = function(pos) {
 };
 
 dbg.indicatorAllOn = function() {
-  Debug.indicator = 0b1111;
+  Debug.indicator = 0b11111111;
   Debug.updateIndicatorPanel();
 };
 
@@ -3243,6 +3295,7 @@ if (DebugJS.ENABLE) {
   dbg.countElements = function(x, xx) {};
   dbg.call = function(x, xx) {};
   dbg.exec = function(x) {};
+  dbg.setIndicator = function(x) {};
   dbg.indicatorOn = function(x) {};
   dbg.indicatorOff = function(x) {};
   dbg.indicatorAllOn = function() {};
