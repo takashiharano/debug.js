@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608100000';
+  this.v = '201608101500';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -215,6 +215,7 @@ DebugJS.IND_BIT_3_COLOR = '#ee0';
 DebugJS.IND_BIT_2_COLOR = '#6f6';
 DebugJS.IND_BIT_1_COLOR = '#0ff';
 DebugJS.IND_BIT_0_COLOR = '#4cf';
+DebugJS.IND_COLOR_INACTIVE = '#777';
 DebugJS.RANDOM_TYPE_NUM = '-d';
 DebugJS.RANDOM_TYPE_STR = '-s';
 
@@ -1000,14 +1001,14 @@ DebugJS.prototype = {
   // Update Indicator
   updateIndicatorPanel: function() {
     var self = Debug;
-    var bit7Color = (self.indicator & DebugJS.IND_BIT_7) ? DebugJS.IND_BIT_7_COLOR : DebugJS.COLOR_INACTIVE;
-    var bit6Color = (self.indicator & DebugJS.IND_BIT_6) ? DebugJS.IND_BIT_6_COLOR : DebugJS.COLOR_INACTIVE;
-    var bit5Color = (self.indicator & DebugJS.IND_BIT_5) ? DebugJS.IND_BIT_5_COLOR : DebugJS.COLOR_INACTIVE;
-    var bit4Color = (self.indicator & DebugJS.IND_BIT_4) ? DebugJS.IND_BIT_4_COLOR : DebugJS.COLOR_INACTIVE;
-    var bit3Color = (self.indicator & DebugJS.IND_BIT_3) ? DebugJS.IND_BIT_3_COLOR : DebugJS.COLOR_INACTIVE;
-    var bit2Color = (self.indicator & DebugJS.IND_BIT_2) ? DebugJS.IND_BIT_2_COLOR : DebugJS.COLOR_INACTIVE;
-    var bit1Color = (self.indicator & DebugJS.IND_BIT_1) ? DebugJS.IND_BIT_1_COLOR : DebugJS.COLOR_INACTIVE;
-    var bit0Color = (self.indicator & DebugJS.IND_BIT_0) ? DebugJS.IND_BIT_0_COLOR : DebugJS.COLOR_INACTIVE;
+    var bit7Color = (self.indicator & DebugJS.IND_BIT_7) ? DebugJS.IND_BIT_7_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit6Color = (self.indicator & DebugJS.IND_BIT_6) ? DebugJS.IND_BIT_6_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit5Color = (self.indicator & DebugJS.IND_BIT_5) ? DebugJS.IND_BIT_5_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit4Color = (self.indicator & DebugJS.IND_BIT_4) ? DebugJS.IND_BIT_4_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit3Color = (self.indicator & DebugJS.IND_BIT_3) ? DebugJS.IND_BIT_3_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit2Color = (self.indicator & DebugJS.IND_BIT_2) ? DebugJS.IND_BIT_2_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit1Color = (self.indicator & DebugJS.IND_BIT_1) ? DebugJS.IND_BIT_1_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit0Color = (self.indicator & DebugJS.IND_BIT_0) ? DebugJS.IND_BIT_0_COLOR : DebugJS.IND_COLOR_INACTIVE;
     var indicator = '';
     indicator += '<span style="color:' + bit7Color + ';margin-right:2px;">●</span>';
     indicator += '<span style="color:' + bit6Color + ';margin-right:2px;">●</span>';
@@ -1087,12 +1088,7 @@ DebugJS.prototype = {
   // Log Output
   printMessage: function() {
     var self = Debug;
-    var buf = self.getLog();
-    var msg = '<table style="border-spacing:0;">';
-    for (var i = 0, len = buf.length; i < len; i++) {
-      msg += buf[i];
-    }
-    msg += '</table>';
+    var msg = '<table style="border-spacing:0;">' + self.getLog() + '</table>';
     self.msgPanel.innerHTML = msg;
     self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
   },
@@ -1344,16 +1340,17 @@ DebugJS.prototype = {
 
   getLog: function() {
     var self = Debug;
-    var allBuf = self.msgBuf.getAll();
+    var buf = self.msgBuf.getAll();
     var cnt = self.msgBuf.count();
-    var len = allBuf.length;
-    var logs = new Array(len);
+    var len = buf.length;
+    var lineCnt = cnt - len;
+    var logs = '';
     for (var i = 0; i < len; i++) {
-      var lineCnt = cnt - len + i + 1;
-      var line = '<tr style="vertical-align:top;">';
-      if (allBuf[i] == undefined) {
+      lineCnt++;
+      if (buf[i] == undefined) {
         break;
       }
+      logs += '<tr style="vertical-align:top;">';
       var lineNum = '';
       if (Debug.options.showLineNums) {
         var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
@@ -1362,11 +1359,10 @@ DebugJS.prototype = {
           lineNumPadding = lineNumPadding + '0';
         }
         lineNum = lineNumPadding + lineCnt + ':';
-        line += '<td style="padding-right:3px;word-break:normal;font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;">' + lineNum + '</td>';
+        logs += '<td style="padding-right:3px;white-space:pre;font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;">' + lineNum + '</td>';
       }
-      line += '<td style="font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;"><pre>' + allBuf[i] + '</pre></td>';
-      line += '</tr>';
-      logs[i] = line;
+      logs += '<td style="font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;"><pre>' + buf[i] + '</pre></td>';
+      logs += '</tr>';
     }
     return logs;
   },
@@ -2825,8 +2821,8 @@ DebugJS.convHEX = function(v16) {
   var v2 = parseInt(v16, 16).toString(2);
   var res = '<br>';
   res += 'HEX ' + v16 + '<br>';
-  res += 'DEC ' + v10 + '<br>';
-  res += 'BIN ' + v2 + '<br>';
+  res += 'DEC ' + DebugJS.formatDec(v10) + '<br>';
+  res += 'BIN ' + DebugJS.formatBin(v2) + '<br>';
   DebugJS.log(res);
 };
 
@@ -2834,9 +2830,9 @@ DebugJS.convDEC = function(v10) {
   var v2 = parseInt(v10).toString(2);
   var v16 = parseInt(v10).toString(16);
   var res = '<br>';
-  res += 'DEC ' + v10 + '<br>';
+  res += 'DEC ' + DebugJS.formatDec(v10) + '<br>';
   res += 'HEX ' + v16 + '<br>';
-  res += 'BIN ' + v2 + '<br>';
+  res += 'BIN ' + DebugJS.formatBin(v2) + '<br>';
   DebugJS.log(res);
 };
 
@@ -2844,10 +2840,34 @@ DebugJS.convBIN = function(v2) {
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
   var res = '<br>';
-  res += 'BIN ' + v2 + '<br>';
-  res += 'DEC ' + v10 + '<br>';
+  res += 'BIN ' + DebugJS.formatBin(v2) + '<br>';
+  res += 'DEC ' + DebugJS.formatDec(v10) + '<br>';
   res += 'HEX ' + v16 + '<br>';
   DebugJS.log(res);
+};
+
+DebugJS.formatBin = function(v2) {
+  var len = v2.length;
+  var bin = '';
+  for (var i = 0; i < len; i++) {
+    if ((i != 0) && ((len - i) % 4 == 0)) {
+      bin += ' ';
+    }
+    bin += v2.charAt(i);
+  }
+  return bin;
+};
+
+DebugJS.formatDec = function(v10) {
+  var len = v10.length;
+  var dec = '';
+  for (var i = 0; i < len; i++) {
+    if ((i != 0) && ((len - i) % 3 == 0)) {
+      dec += ',';
+    }
+    dec += v10.charAt(i);
+  }
+  return dec;
 };
 
 DebugJS.timeStart = function(timerName, msg) {
@@ -3035,7 +3055,7 @@ DebugJS.getRandomString = function(min, max) {
     var retry = true;
     while (retry) {
       ch = DebugJS.getRandomCharater();
-      if (!(ch.match(/[!-/:-@[-`{-~]/))) {
+      if ((!(ch.match(/[!-/:-@[-`{-~]/))) && (!(((i == 0) || (i == (len - 1))) && (ch == ' ')))) {
         retry = false;
       }
     }
@@ -3243,7 +3263,7 @@ dbg.indicatorOff = function(pos) {
 };
 
 dbg.indicatorAllOn = function() {
-  Debug.indicator = 0b11111111;
+  Debug.indicator = 0xff;
   Debug.updateIndicatorPanel();
 };
 
