@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608101500';
+  this.v = '201608101945';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -46,7 +46,7 @@ var DebugJS = function() {
     'useWindowSizeInfo': true,
     'useMouseStatusInfo': true,
     'useKeyStatusInfo': true,
-    'useIndicator': true,
+    'useLed': true,
     'useScreenMeasure': true,
     'useElementInspection': true,
     'useScriptEditor': true,
@@ -104,8 +104,8 @@ var DebugJS = function() {
   this.keyDownCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
   this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
-  this.indicatorPanel = null;
-  this.indicator = 0;
+  this.ledPanel = null;
+  this.led = 0;
   this.mainPanel = null;
   this.msgPanel = null;
   this.msgPanelScrollX = 0;
@@ -147,6 +147,7 @@ var DebugJS = function() {
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json [-p] &lt;one-line json&gt;'},
+    {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded.'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p &lt;object&gt;'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post &lt;url&gt;'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number / string.', 'usage': 'random [-d|-s] [min] [max]'},
@@ -559,7 +560,7 @@ DebugJS.prototype = {
     self.options.useWindowSizeInfo = false;
     self.options.useMouseStatusInfo = false;
     self.options.useKeyStatusInfo = false;
-    self.options.useIndicator = false;
+    self.options.useLed = false;
     self.options.useScreenMeasure = false;
     self.options.useElementInspection = false;
     self.options.useScriptEditor = false;
@@ -578,7 +579,7 @@ DebugJS.prototype = {
     if (self.options.useWindowSizeInfo) return false;
     if (self.options.useMouseStatusInfo) return false;
     if (self.options.useKeyStatusInfo) return false;
-    if (self.options.useIndicator) return false;
+    if (self.options.useLed) return false;
     if (self.options.useScreenMeasure) return false;
     if (self.options.useElementInspection) return false;
     if (self.options.useScriptEditor) return false;
@@ -747,13 +748,13 @@ DebugJS.prototype = {
     }
     // -- R to L
 
-    // Indicator
-    if (self.options.useIndicator) {
-      self.indicatorPanel = document.createElement('span');
-      self.indicatorPanel.className = this.id + '-sys-info';
-      self.indicatorPanel.style.float = 'right';
-      self.indicatorPanel.style.marginRight = '4px';
-      self.infoPanel.appendChild(self.indicatorPanel);
+    // LED
+    if (self.options.useLed) {
+      self.ledPanel = document.createElement('span');
+      self.ledPanel.className = this.id + '-sys-info';
+      self.ledPanel.style.float = 'right';
+      self.ledPanel.style.marginRight = '4px';
+      self.infoPanel.appendChild(self.ledPanel);
     }
 
     // Window Size
@@ -888,8 +889,8 @@ DebugJS.prototype = {
       self.updateScrollPosPanel();
     }
 
-    if (self.options.useIndicator) {
-      self.updateIndicatorPanel();
+    if (self.options.useLed) {
+      self.updateLedPanel();
     }
   },
 
@@ -998,27 +999,27 @@ DebugJS.prototype = {
     this.keyUpPanel.innerHTML = 'Up:' + this.keyUpCode;
   },
 
-  // Update Indicator
-  updateIndicatorPanel: function() {
+  // Update LED
+  updateLedPanel: function() {
     var self = Debug;
-    var bit7Color = (self.indicator & DebugJS.IND_BIT_7) ? DebugJS.IND_BIT_7_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var bit6Color = (self.indicator & DebugJS.IND_BIT_6) ? DebugJS.IND_BIT_6_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var bit5Color = (self.indicator & DebugJS.IND_BIT_5) ? DebugJS.IND_BIT_5_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var bit4Color = (self.indicator & DebugJS.IND_BIT_4) ? DebugJS.IND_BIT_4_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var bit3Color = (self.indicator & DebugJS.IND_BIT_3) ? DebugJS.IND_BIT_3_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var bit2Color = (self.indicator & DebugJS.IND_BIT_2) ? DebugJS.IND_BIT_2_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var bit1Color = (self.indicator & DebugJS.IND_BIT_1) ? DebugJS.IND_BIT_1_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var bit0Color = (self.indicator & DebugJS.IND_BIT_0) ? DebugJS.IND_BIT_0_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var indicator = '';
-    indicator += '<span style="color:' + bit7Color + ';margin-right:2px;">●</span>';
-    indicator += '<span style="color:' + bit6Color + ';margin-right:2px;">●</span>';
-    indicator += '<span style="color:' + bit5Color + ';margin-right:2px;">●</span>';
-    indicator += '<span style="color:' + bit4Color + ';margin-right:2px;">●</span>';
-    indicator += '<span style="color:' + bit3Color + ';margin-right:2px;">●</span>';
-    indicator += '<span style="color:' + bit2Color + ';margin-right:2px;">●</span>';
-    indicator += '<span style="color:' + bit1Color + ';margin-right:2px;">●</span>';
-    indicator += '<span style="color:' + bit0Color + ';">●</span>';
-    self.indicatorPanel.innerHTML = indicator;
+    var bit7Color = (self.led & DebugJS.IND_BIT_7) ? DebugJS.IND_BIT_7_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit6Color = (self.led & DebugJS.IND_BIT_6) ? DebugJS.IND_BIT_6_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit5Color = (self.led & DebugJS.IND_BIT_5) ? DebugJS.IND_BIT_5_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit4Color = (self.led & DebugJS.IND_BIT_4) ? DebugJS.IND_BIT_4_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit3Color = (self.led & DebugJS.IND_BIT_3) ? DebugJS.IND_BIT_3_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit2Color = (self.led & DebugJS.IND_BIT_2) ? DebugJS.IND_BIT_2_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit1Color = (self.led & DebugJS.IND_BIT_1) ? DebugJS.IND_BIT_1_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var bit0Color = (self.led & DebugJS.IND_BIT_0) ? DebugJS.IND_BIT_0_COLOR : DebugJS.IND_COLOR_INACTIVE;
+    var led = '';
+    led += '<span style="color:' + bit7Color + ';margin-right:2px;">●</span>';
+    led += '<span style="color:' + bit6Color + ';margin-right:2px;">●</span>';
+    led += '<span style="color:' + bit5Color + ';margin-right:2px;">●</span>';
+    led += '<span style="color:' + bit4Color + ';margin-right:2px;">●</span>';
+    led += '<span style="color:' + bit3Color + ';margin-right:2px;">●</span>';
+    led += '<span style="color:' + bit2Color + ';margin-right:2px;">●</span>';
+    led += '<span style="color:' + bit1Color + ';margin-right:2px;">●</span>';
+    led += '<span style="color:' + bit0Color + ';">●</span>';
+    self.ledPanel.innerHTML = led;
   },
 
   // Update Measure Button
@@ -1872,7 +1873,14 @@ DebugJS.prototype = {
       self.scriptPanel.style.border = 'solid 1px #333';
       self.scriptPanel.style.background = 'rgba(0,0,0,0.7)';
       var panel = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>';
-      panel += '<span style="color:#ccc;">Script Editor</span><span class="' + this.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
+      panel += '<span style="color:#ccc;">Script Editor</span>';
+      var code1 = 'time.start();\\nfor (var i = 0; i < 1000000; i++) {\\n  \\n}\\ntime.end();\\n';
+      var code2 = 'var i = 0;\\nled();\\nfunction led() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    setTimeout(led, 500);\\n  }\\n  i++;\\n}\\n';
+      var code3 = '';
+      panel += '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code1 + '\';">[CODE1]</span>';
+      panel += '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code2 + '\';">[CODE2]</span>';
+      panel += '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code3 + '\';">[CODE3]</span>';
+      panel += '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
       self.scriptPanel.innerHTML = panel;
       self.mainPanel.appendChild(self.scriptPanel);
 
@@ -1951,7 +1959,7 @@ DebugJS.prototype = {
     return sizePos;
   },
 
-  turnIndicator: function(pos, active) {
+  turnLed: function(pos, active) {
     var self = Debug;
     var bit = 0;
     switch (pos) {
@@ -1983,11 +1991,11 @@ DebugJS.prototype = {
         break;
     }
     if (active) {
-      self.indicator |= bit;
+      self.led |= bit;
     } else {
-      self.indicator &= ~bit;
+      self.led &= ~bit;
     }
-    self.updateIndicatorPanel();
+    self.updateLedPanel();
   },
 
   execCmd: function() {
@@ -2104,6 +2112,14 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.execCmdJson(args);
+    }
+  },
+
+  cmdJquery: function(args, tbl) {
+    if (typeof jQuery == 'undefined') {
+      DebugJS.log.w('jQuery is not loaded.');
+    } else {
+      DebugJS.log('jQuery v' + jQuery.fn.jquery);
     }
   },
 
@@ -3249,27 +3265,27 @@ dbg.exec = function(cmd) {
   Debug._execCmd(cmd);
 };
 
-dbg.setIndicator = function(val) {
-  Debug.indicator = val;
-  Debug.updateIndicatorPanel();
+dbg.setLed = function(val) {
+  Debug.led = val;
+  Debug.updateLedPanel();
 };
 
-dbg.indicatorOn = function(pos) {
-  Debug.turnIndicator(pos, true);
+dbg.ledOn = function(pos) {
+  Debug.turnLed(pos, true);
 };
 
-dbg.indicatorOff = function(pos) {
-  Debug.turnIndicator(pos, false);
+dbg.ledOff = function(pos) {
+  Debug.turnLed(pos, false);
 };
 
-dbg.indicatorAllOn = function() {
-  Debug.indicator = 0xff;
-  Debug.updateIndicatorPanel();
+dbg.ledAllOn = function() {
+  Debug.led = 0xff;
+  Debug.updateLedPanel();
 };
 
-dbg.indicatorAllOff = function() {
-  Debug.indicator = 0;
-  Debug.updateIndicatorPanel();
+dbg.ledAllOff = function() {
+  Debug.led = 0;
+  Debug.updateLedPanel();
 };
 
 dbg.random = function(min, max) {
@@ -3315,11 +3331,11 @@ if (DebugJS.ENABLE) {
   dbg.countElements = function(x, xx) {};
   dbg.call = function(x, xx) {};
   dbg.exec = function(x) {};
-  dbg.setIndicator = function(x) {};
-  dbg.indicatorOn = function(x) {};
-  dbg.indicatorOff = function(x) {};
-  dbg.indicatorAllOn = function() {};
-  dbg.indicatorAllOff = function() {};
+  dbg.setLed = function(x) {};
+  dbg.ledOn = function(x) {};
+  dbg.ledOff = function(x) {};
+  dbg.ledAllOn = function() {};
+  dbg.ledAllOff = function() {};
   dbg.random = function(min, max) {};
   dbg.randomString = function(min, max) {};
 }
