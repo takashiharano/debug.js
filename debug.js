@@ -5,7 +5,6 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608152230';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1977,13 +1976,13 @@ DebugJS.prototype = {
       'font-weight: <input type="range" min="100" max="900" step="100" value="400" id="' + self.id + '-fontweight-range" class="' + self.id + '-txt-range" style="width:80px;" oninput="Debug.onChangeFontWeight();" onchange="Debug.onChangeFontWeight();"><span id="' + self.id + '-font-weight"></span> ' +
       '<table>' +
       '<tr><td colspan="2">FG #<input id="' + self.id + '-fg-rgb" class="' + self.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px;" oninput="Debug.onChangeFgRGB()"></td></tr>' +
-      '<tr><td>R:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-r"></span></td></tr>' +
-      '<tr><td>G:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-g" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-g"></span></td></tr>' +
-      '<tr><td>B:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-b" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-b"></span></td></tr>' +
+      '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-r"></span></td></tr>' +
+      '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-g" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-g"></span></td></tr>' +
+      '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-b" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-b"></span></td></tr>' +
       '<tr><td colspan="2">BG #<input id="' + self.id + '-bg-rgb" class="' + self.id + '-txt-text" value="' + defaultBgRGB16 + '" style="width:80px;" oninput="Debug.onChangeBgRGB()"></td></tr>' +
-      '<tr><td>R:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-r"></span></td></tr>' +
-      '<tr><td>G:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-g" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-g"></span></td></tr>' +
-      '<tr><td>B:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-b" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-b"></span></td></tr>' +
+      '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-r"></span></td></tr>' +
+      '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-g" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-g"></span></td></tr>' +
+      '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-b" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-b"></span></td></tr>' +
       '</tbale>';
       self.textCheckCtrl.innerHTML = html;
 
@@ -2677,7 +2676,7 @@ DebugJS.prototype = {
 
   cmdV: function(args, tbl) {
     var self = Debug;
-    DebugJS.log('ver.' + self.v);
+    DebugJS.log(self.v);
   }
 };
 
@@ -3040,9 +3039,6 @@ DebugJS.printUsage = function(m) {
   DebugJS.log('Usage: ' + m);
 };
 
-DebugJS.COLOR_R = '#f66';
-DebugJS.COLOR_G = '#6f6';
-DebugJS.COLOR_B = '#6bf';
 DebugJS.convRGB = function(v) {
   var ret;
   if (v.indexOf('#') == 0) {
