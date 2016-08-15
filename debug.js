@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608152100';
+  this.v = '201608152230';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2146,10 +2146,10 @@ DebugJS.prototype = {
       self.scriptPanel.style.background = 'rgba(0,0,0,0.7)';
       var html = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
+      '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
       '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code1 + '\';">[CODE1]</span>' +
       '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code2 + '\';">[CODE2]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code3 + '\';">[CODE3]</span>' +
-      '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code3 + '\';">[CODE3]</span>';
       self.scriptPanel.innerHTML = html;
       self.mainPanel.appendChild(self.scriptPanel);
 
@@ -2223,8 +2223,8 @@ DebugJS.prototype = {
     sizePos.height = self.debugWindow.clientHeight;
     sizePos.winX1 = rect.left - resizeBoxSize / 2;
     sizePos.winY1 = rect.top - resizeBoxSize / 2;
-    sizePos.winX2 = sizePos.winX1 + self.debugWindow.clientWidth + resizeBoxSize;
-    sizePos.winY2 = sizePos.winY1 + self.debugWindow.clientHeight + resizeBoxSize;
+    sizePos.winX2 = sizePos.winX1 + self.debugWindow.clientWidth + resizeBoxSize + DebugJS.WINDOW_BORDER;
+    sizePos.winY2 = sizePos.winY1 + self.debugWindow.clientHeight + resizeBoxSize + DebugJS.WINDOW_BORDER;
     return sizePos;
   },
 
