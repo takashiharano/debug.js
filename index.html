@@ -10,171 +10,33 @@
 <!--<script src="../jquery-3.1.0.min.js"></script>-->
 <script src="debug.js"></script>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  color: #333;
-}
-
-a {
-  color: #00f;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-#wrapper {
-  width: 100%;
-}
-
-#main {
-  width: 900px;
-  margin: 0 auto;
-}
-
-#header {
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-  height: 5rem;
-  color: #fff;
-  z-index: 1;
-  background: #00a8ff;
-}
-
-.content {
-  position: relative;
-  top: 5rem;
-  padding: 5px;
-}
-
-#title {
-  width: 900px;
-  font-size: 4rem;
-  margin: auto;
-  height:  5rem;
-  padding-left: 5px;
-  white-space: nowrap;
-}
-
-.caption {
-  font-size: 1.8rem;
-  font-weight: bold;
-}
-
-.code {
-  width: 750px;
-  padding: .5em;
-  font-family: "Source Code Pro", Consolas, monospace;
-  font-size: 14px;
-  color: #aaa;
-  background: #333;
-  border: solid 1px #888;
-  border-radius: 4px;
-}
-
-.emphasis {
-  color: #eee;
-}
-
-.button {
-  width: 200px;
-  font-size: 18px;
-  font-weight: bold;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-  vertical-align: middle;
-  padding: 8px 0 10px;
-  margin: 4px 4px 12px 4px;
-  color: #fff;
-  background: #0068cc;
-  border-radius: 5px;
-}
-
-.button-100 {
-  width: 100px;
-}
-
-.dl-btn {
-  position: relative;
-  top: -4px;
-  width: 100px;
-  margin: 0;
-  padding: 4px 0;
-  font-size: 14px;
-}
-
-.button:hover {
-  cursor: pointer;
-  background: #00a8ff;
-  text-decoration: none;
-}
-
-.button-green {
-  background: #00cc68;
-}
-
-.button-green:hover {
-  background: #00ffa8;
-}
-
-.desc-table {
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  border-collapse: collapse;
-  width: 760px;
-}
-
-.desc-table th {
-  background-color: #eee;
-  border: solid 1px #444;
-  padding: 4px 6px;
-}
-
-.desc-table td {
-  border: solid 1px #444;
-  padding: 4px 6px;
-  vertical-align: top;
-}
-
-.desc-table .name {
-  color: #0000a0;
-}
-
-.demo-table td {
-  font-family: Consolas, monospace;
-  font-size: 11px;
-  color: #0000a0;
-  width: 210px;
-  vertical-align: bottom;
-}
-
-.demo-table-green td {
-  color: #060;
-}
-
-.eg {
-  font-family: Consolas, monospace;
-  line-height: 1em;
-}
-
-.json {
-  font-family: Consolas, monospace;
-  font-size: 12px;
-  margin: 16px 5px;
-}
-
-.opt {
-  font-size: 10px;
-  color: #888;
-  font-style: italic;
-  margin-left: 2px;
-}
-
+body {font-family: Arial, sans-serif; font-size: 18px; color: #333;}
+a {color: #00f; text-decoration: none;}
+a:hover {text-decoration: underline;}
+button, input[type="button"], input[type="submit"], select {width: 80px; height: 30px; font-size: 16px;}
+#wrapper {width: 100%;}
+#main {width: 900px; margin: 0 auto;}
+#header {position: fixed; width: 100%; top: 0; left: 0; height: 5rem; color: #fff; z-index: 1; background: #00a8ff;}
+#title { width: 900px; font-size: 4rem; margin: auto; height: 5rem; padding-left: 5px; white-space: nowrap;}
+.content {position: relative; top: 5rem; padding: 5px;}
+.caption { font-size: 1.8rem; font-weight: bold;}
+.code {width: 750px; padding: .5em; font-family: "Source Code Pro", Consolas, monospace; font-size: 14px; color: #aaa; background: #333; border: solid 1px #888; border-radius: 4px;}
+.emphasis {color: #eee;}
+.button {width: 200px; font-size: 18px; font-weight: bold; text-decoration: none; display: inline-block; text-align: center; vertical-align: middle; padding: 8px 0 10px; margin: 4px 4px 12px 4px; color: #fff; background: #0068cc; border-radius: 5px;}
+.button-100 {width: 100px;}
+.dl-btn {position: relative; top: -4px; width: 100px; margin: 0; padding: 4px 0; font-size: 14px;}
+.button:hover {cursor: pointer; background: #00a8ff; text-decoration: none;}
+.button-green {background: #00cc68;}
+.button-green:hover {background: #00ffa8;}
+.desc-table {font-family: Arial, sans-serif; font-size: 14px; border-collapse: collapse; width: 760px;}
+.desc-table th {background-color: #eee; border: solid 1px #444; padding: 4px 6px;}
+.desc-table td {border: solid 1px #444; padding: 4px 6px; vertical-align: top;}
+.desc-table .name {color: #0000a0;}
+.demo-table td {font-family: Consolas, monospace; font-size: 11px; color: #0000a0; width: 210px; vertical-align: bottom;}
+.demo-table-green td {color: #060;}
+.eg {font-family: Consolas, monospace; line-height: 1em;}
+.json {font-family: Consolas, monospace; font-size: 12px; margin: 16px 5px;}
+.annotation {font-size: 10px; color: #888; font-style: italic; margin-left: 2px;}
 /*td {                         */
 /*  width: 100px;              */
 /*  font-size: 50px !important;*/
@@ -260,10 +122,11 @@ window.onload = function() {
 
   var options3 = {
     'visible': true,
-    'lines': 20,
+    'lines': 23,
     'showTimeStamp': false,
     'disableAllFeatures': true,
-    'useCommandLine': true,
+    //'useCommandLine': true,
+    //'useTextChecker': true,
     //'resizable': false
   };
   //dbg.init(options3);
@@ -496,7 +359,7 @@ That's it!<br><br>
 The debug window will be automatically generated.<br>
 You can switch hide/show by F2 key and the window is draggable.<br>
 <br>
-(note) The debug window is hidden by default setting.<br>
+⚠The debug window is hidden by default setting.<br>
 <br>
 e.g.,)
 <pre class="code">
@@ -658,7 +521,7 @@ dbg.init(options);
   <tr>
     <td class="name">clockColor</td>
     <td>Clock color</td>
-    <td>'#0f0'</td>
+    <td>'#8f0'</td>
   </tr>
 
   <tr>
@@ -809,6 +672,12 @@ dbg.init(options);
   </tr>
 
   <tr>
+    <td class="name">useTextChecker</td>
+    <td>Enable text font checker</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
     <td class="name">useScriptEditor</td>
     <td>Enable Script Editor</td>
     <td>true</td>
@@ -822,7 +691,9 @@ dbg.init(options);
 
   <tr>
     <td class="name">disableAllFeatures</td>
-    <td>Disable all features except log feature</td>
+    <td>
+      Disable all features except log feature<span class="annotation">overridable</span>
+    </td>
     <td>false</td>
   </tr>
 
@@ -900,7 +771,7 @@ dbg.init(options);
     <td class="name">time.start</td>
     <td>
       arg1: timer name<br>
-      arg2: message<span class="opt">(opt)</span>
+      arg2: message<span class="annotation">(opt)</span>
     </td>
     <td>
      Start a timer
@@ -912,7 +783,7 @@ time.start('timer1', 'Timer Start: %n')
 -&gt; Timer Start: timer1
 
 time.start('timer1', null)
--&gt; <span class="opt">no output log (only start the timer)</span>
+-&gt; <span class="annotation">no output log (only start the timer)</span>
 </pre>
     </td>
   </tr>
@@ -921,7 +792,7 @@ time.start('timer1', null)
     <td class="name">time.split</td>
     <td>
       arg1: timer name<br>
-      arg2: message<span class="opt">(opt)</span>
+      arg2: message<span class="annotation">(opt)</span>
     </td>
     <td>
       Print elapsed time of the timer
@@ -936,7 +807,7 @@ time.split('timer1', '[%n] epalsed time: %t (%lt)')
 -&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
 
 time.split('timer1', null)
--&gt; <span class="opt">no output log (only split the timer)</span>
+-&gt; <span class="annotation">no output log (only split the timer)</span>
 </pre>
     </td>
   </tr>
@@ -945,7 +816,7 @@ time.split('timer1', null)
     <td class="name">time.end</td>
     <td>
       arg1: timer name<br>
-      arg2: message<span class="opt">(opt)</span>
+      arg2: message<span class="annotation">(opt)</span>
     </td>
     <td>
       Print elapsed time of the timer and clear.
@@ -960,7 +831,7 @@ time.end('timer1', '[%n] epalsed time: %t (%lt)')
 -&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
 
 time.end('timer1', null)
--&gt; <span class="opt">no output log (only clear the timer)</span>
+-&gt; <span class="annotation">no output log (only clear the timer)</span>
 </pre>
     </td>
   </tr>
@@ -996,9 +867,13 @@ dbg.countElements('#id');
 
   <tr>
     <td class="name">dbg.call</td>
-    <td>function</td>
     <td>
-      Call function asynchronously
+      arg1: function<br>
+      arg2: delay<span class="annotation">(opt) default: 0ms</span>
+    </td>
+    <td>
+      Call function asynchronously<br>
+      <span class="annotation">This function is an alias of "setTimeout()".</span>
     </td>
   </tr>
 
@@ -1077,8 +952,8 @@ dbg.countElements('#id');
   <tr>
     <td class="name">dbg.random</td>
     <td>
-      arg1: min<span class="opt">(opt)</span><br>
-      arg2: max<span class="opt">(opt)</span>
+      arg1: min<span class="annotation">(opt)</span><br>
+      arg2: max<span class="annotation">(opt)</span>
     </td>
     <td>
       Get random number<br>
@@ -1092,8 +967,8 @@ max: maximum number
   <tr>
     <td class="name">dbg.randomString</td>
     <td>
-      arg1: min<span class="opt">(opt)</span><br>
-      arg2: max<span class="opt">(opt)</span>
+      arg1: min<span class="annotation">(opt)</span><br>
+      arg2: max<span class="annotation">(opt)</span>
     </td>
     <td>
       Get random string<br>
@@ -1130,7 +1005,7 @@ max: maximum length
 
   <tr>
     <td class="name">elements</td>
-    <td><span class="opt">(opt)</span> #id / .class / tagName</td>
+    <td><span class="annotation">(opt)</span> #id / .class / tagName</td>
     <td>Count elements by tag name.</td>
   </tr>
 
@@ -1185,9 +1060,9 @@ max: maximum length
   <tr>
     <td class="name">random</td>
     <td>
-      arg1: type<span class="opt">(opt)</span><br>
-      arg2: min<span class="opt">(opt)</span><br>
-      arg3: max<span class="opt">(opt)</span>
+      arg1: type<span class="annotation">(opt)</span><br>
+      arg2: min<span class="annotation">(opt)</span><br>
+      arg3: max<span class="annotation">(opt)</span>
     </td>
     <td>
       Get random number / string.<br>
@@ -1220,7 +1095,7 @@ $ rgb 255 255 255
     <td class="name">time</td>
     <td>
       arg1: start / split / end / list<br>
-      arg2: timer name<span class="opt">(opt)</span>
+      arg2: timer name<span class="annotation">(opt)</span>
     </td>
     <td>Time test.</td>
   </tr>
@@ -1244,11 +1119,15 @@ $ rgb 255 255 255
     <td>Screen Measure</td>
   </tr>
   <tr>
-    <td>&lt;DOM&gt;</td>
+    <td>DOM</td>
     <td>DOM Element Inspection</td>
   </tr>
   <tr>
-    <td>&lt;JS&gt;</td>
+    <td>TXT</td>
+    <td>Text Font Checker</td>
+  </tr>
+  <tr>
+    <td>JS</td>
     <td>JavaScript Editor</td>
   </tr>
   <tr>
@@ -1608,35 +1487,7 @@ console.timeEnd('timer3');<br>
 </tr>
 </table>
 
-<!--
-<input id="inputtext1" name="input1">
-<input type="password">
-<input type="submit" value="Submit">
-<input type="button" value="BUTTON">
-<button>button</button>
-<select name="select1">
-  <option value="1">opt1</option>
-  <option value="2">opt2</option>
-  <option value="3">opt3</option>
-</select>
--->
-
 <br>
-
-<!--
-log('&lt;img src=img.jpg&gt;');
-<span class="button" onclick="log('<img src=img.jpg>');">image</span>
--->
-
-<!--
-<table>
-  <tr>
-    <td>AAA</td>
-    <td>BBB</td>
-    <td>CCC</td>
-  </tr>
-</table>
--->
 
 <!-- ********************************************************************** -->
 JSON Sample for "json" command
@@ -1648,6 +1499,33 @@ JSON Sample for "json" command
 {"firstName":"John","lastName":"Smith","isAlive":true,"age":25,"address":{"streetAddress":"21 2nd Street","city": "New York","state":"NY","postalCode":"10021-3100"},"phoneNumbers":[{"type":"home","number":"212 555-1234"},{"type":"office","number":"646 555-4567"},{"type":"mobile","number":"123 456-7890"}],"children":[],"spouse":null}
 </div>
 
+<br>
+
+dummy form for DOM Element inspection
+<form name="f1">
+  text <input id="inputtext1" name="input1" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"><br>
+  pass <input type="password" name="pass1"><br>
+  <input type="submit" value="Submit" onsubmit="return false;">
+  <input type="button" value="BUTTON">
+  <button type="button">button</button>
+  <select name="select1" onchange="log('select1: ' + this.value);">
+    <option value="1">opt1</option>
+    <option value="2">opt2</option>
+    <option value="3">opt3</option>
+  </select>
+</form>
+
+<!--
+<table>
+  <tr>
+    <td>AAA</td>
+    <td>BBB</td>
+    <td>CCC</td>
+  </tr>
+</table>
+-->
+
+<br><br>
 </div><!-- content -->
 </div><!-- main -->
 </div><!-- wrapper -->

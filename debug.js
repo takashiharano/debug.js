@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608101945';
+  this.v = '201608152100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -24,7 +24,7 @@ var DebugJS = function() {
     'logColorI': '#8ff',
     'logColorD': '#ccc',
     'logColorS': '#fff',
-    'clockColor': '#0f0',
+    'clockColor': '#8f0',
     'timerColor': '#8ff',
     'sysInfoColor': '#ddd',
     'btnColor': '#6cf',
@@ -49,6 +49,7 @@ var DebugJS = function() {
     'useLed': true,
     'useScreenMeasure': true,
     'useElementInspection': true,
+    'useTextChecker': true,
     'useScriptEditor': true,
     'useCommandLine': true,
     'disableAllFeatures': false,
@@ -71,6 +72,26 @@ var DebugJS = function() {
   this.elmInspectionPanel = null;
   this.prevElm = null;
   this.prevElmStyle = {};
+  this.textCheckerPanel = null;
+  this.textCheck = null;
+  this.textCheckFontSizeRange = null;
+  this.textCheckFontSizeInput = null;
+  this.textCheckFontWeightRange = null;
+  this.textCheckFontWeightLabel = null;
+  this.textCheckerInputFgRGB = null;
+  this.textCheckerRangeFgR = null;
+  this.textCheckerRangeFgG = null;
+  this.textCheckerRangeFgB = null;
+  this.textCheckerLabelFgR = null;
+  this.textCheckerLabelFgG = null;
+  this.textCheckerLabelFgB = null;
+  this.textCheckerInputBgRGB = null;
+  this.textCheckerRangeBgR = null;
+  this.textCheckerRangeBgG = null;
+  this.textCheckerRangeBgB = null;
+  this.textCheckerLabelBgR = null;
+  this.textCheckerLabelBgG = null;
+  this.textCheckerLabelBgB = null;
   this.scriptBtnPanel = null;
   this.scriptPanel = null;
   this.scriptEditor = null;
@@ -138,7 +159,6 @@ var DebugJS = function() {
   this.prevOffsetLeft = 0;
   this.savedFunc = null;
   this.status = 0;
-
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
@@ -151,7 +171,7 @@ var DebugJS = function() {
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p &lt;object&gt;'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post &lt;url&gt;'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number / string.', 'usage': 'random [-d|-s] [min] [max]'},
-    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb &lt;color value(#RGB or R G B)&gt;'},
+    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb &lt;color value&gt;(#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> or <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end/list&gt; [&lt;timer name&gt;]'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
@@ -178,8 +198,9 @@ DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x4000;
 DebugJS.STATE_MEASURE = 0x10000;
 DebugJS.STATE_MEASURING = 0x20000;
 DebugJS.STATE_ELEMENT_INSPECTING = 0x40000;
-DebugJS.STATE_SCRIPT = 0x80000;
-DebugJS.STATE_LOG_SUSPENDING = 0x100000;
+DebugJS.STATE_TEXT_CHECKING = 0x80000;
+DebugJS.STATE_SCRIPT = 0x100000;
+DebugJS.STATE_LOG_SUSPENDING = 0x1000000;
 
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
@@ -190,8 +211,10 @@ DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING *
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
-DebugJS.DOM_BUTTON_COLOR = '#ff0';
-DebugJS.JS_BUTTON_COLOR = '#0ff';
+DebugJS.MEASURE_BUTTON_COLOR = '#6cf';
+DebugJS.DOM_BUTTON_COLOR = '#f66';
+DebugJS.TXT_BUTTON_COLOR = '#ff0';
+DebugJS.JS_BUTTON_COLOR = '#6df';
 DebugJS.PIN_BUTTON_COLOR = '#fa0';
 DebugJS.LOG_SUSPEND_BUTTON_COLOR = '#d00';
 DebugJS.COLOR_R = '#f66';
@@ -219,6 +242,24 @@ DebugJS.IND_BIT_0_COLOR = '#4cf';
 DebugJS.IND_COLOR_INACTIVE = '#777';
 DebugJS.RANDOM_TYPE_NUM = '-d';
 DebugJS.RANDOM_TYPE_STR = '-s';
+DebugJS.FEATURES = [
+  'togglableShowHide',
+  'useClock',
+  'useClearButton',
+  'useSuspendLogButton',
+  'usePinButton',
+  'useWindowControlButton',
+  'useStopWatch',
+  'useWindowSizeInfo',
+  'useMouseStatusInfo',
+  'useKeyStatusInfo',
+  'useLed',
+  'useScreenMeasure',
+  'useElementInspection',
+  'useTextChecker',
+  'useScriptEditor',
+  'useCommandLine'
+];
 
 DebugJS.prototype = {
   init: function(options) {
@@ -404,6 +445,10 @@ DebugJS.prototype = {
     self.msgBuf = new DebugJS.RingBuffer(self.options.bufsize);
 
     var styles = {};
+    styles['#' + self.id] = {
+      'letter-spacing': '0'
+    };
+
     styles['#' + self.id + ' td'] = {
       'width': 'initial',
       'padding': '0 3px',
@@ -451,6 +496,37 @@ DebugJS.prototype = {
     styles['.' + self.id + '-resize-side'] = {
       'position': 'absolute',
       'background': 'rgba(0,0,0,0)'
+    };
+
+    var overlayPanelBorder = 1;
+    var overlayPanelPadding = 2;
+    styles['.' + self.id + '-overlay-panel'] = {
+      'position': 'absolute',
+      'top': (self.options.fontSize + DebugJS.WINDOW_ADJUST) + 'px',
+      'left': '1px',
+      'width': 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + DebugJS.WINDOW_ADJUST - ((overlayPanelPadding * 2) + (overlayPanelBorder * 2))) + 'px)',
+      'height': 'calc(100% - ' + ((self.options.fontSize + DebugJS.WINDOW_ADJUST) + DebugJS.WINDOW_SHADOW + self.options.fontSize + 10 - (overlayPanelPadding * 2)) + 'px)',
+      'padding': overlayPanelPadding + 'px',
+      'border': 'solid ' + overlayPanelBorder + 'px #333',
+      'background': 'rgba(0,0,0,0.7)',
+      'overflow': 'auto'
+    };
+
+    styles['.' + self.id + '-txt-text'] = {
+      'border': 'none !important',
+      'border-bottom': 'solid 1px #888 !important',
+      'border-radius': '0 !important',
+      'outline': 'none !important',
+      'background': 'transparent !important',
+      'color': self.options.fontColor + ' !important',
+      'font-size': self.options.fontSize + 'px !important',
+      'font-family': self.options.fontFamily + ' !important'
+    };
+
+    styles['.' + self.id + '-txt-range'] = {
+      'width': (256 * self.options.zoom) + 'px',
+      'height': (15 * self.options.zoom) + 'px',
+      'padding': '0'
     };
 
     self.applyStyles(styles);
@@ -550,40 +626,18 @@ DebugJS.prototype = {
 
   disableAllFeatures: function() {
     var self = Debug;
-    self.options.togglableShowHide = false;
-    self.options.useClock = false;
-    self.options.useClearButton = false;
-    self.options.useSuspendLogButton = false;
-    self.options.usePinButton = false;
-    self.options.useWindowControlButton = false;
-    self.options.useStopWatch = false;
-    self.options.useWindowSizeInfo = false;
-    self.options.useMouseStatusInfo = false;
-    self.options.useKeyStatusInfo = false;
-    self.options.useLed = false;
-    self.options.useScreenMeasure = false;
-    self.options.useElementInspection = false;
-    self.options.useScriptEditor = false;
-    self.options.useCommandLine = false;
+    var len = DebugJS.FEATURES.length;
+    for (var i = 0; i < len; i++) {
+      self.options[DebugJS.FEATURES[i]] = false;
+    }
   },
 
   isAllFeaturesDisabled: function() {
     var self = Debug;
-    if (self.options.togglableShowHide) return false;
-    if (self.options.useClock) return false;
-    if (self.options.useClearButton) return false;
-    if (self.options.useSuspendLogButton) return false;
-    if (self.options.usePinButton) return false;
-    if (self.options.useWindowControlButton) return false;
-    if (self.options.useStopWatch) return false;
-    if (self.options.useWindowSizeInfo) return false;
-    if (self.options.useMouseStatusInfo) return false;
-    if (self.options.useKeyStatusInfo) return false;
-    if (self.options.useLed) return false;
-    if (self.options.useScreenMeasure) return false;
-    if (self.options.useElementInspection) return false;
-    if (self.options.useScriptEditor) return false;
-    if (self.options.useCommandLine) return false;
+    var len = DebugJS.FEATURES.length;
+    for (var i = 0; i < len; i++) {
+      if (self.options[DebugJS.FEATURES[i]]) return false;
+    }
     return true;
   },
 
@@ -709,12 +763,25 @@ DebugJS.prototype = {
       self.scriptBtnPanel = document.createElement('span');
       self.scriptBtnPanel.className = this.id + '-btn';
       self.scriptBtnPanel.style.float = 'right';
-      self.scriptBtnPanel.style.marginRight = '3px';
-      self.scriptBtnPanel.innerText = '<JS>';
+      self.scriptBtnPanel.style.marginRight = '4px';
+      self.scriptBtnPanel.innerText = 'JS';
       self.scriptBtnPanel.onclick = new Function('Debug.toggleScriptMode();');
       self.scriptBtnPanel.onmouseover = new Function('Debug.scriptBtnPanel.style.color=DebugJS.JS_BUTTON_COLOR;');
       self.scriptBtnPanel.onmouseout = new Function('Debug.scriptBtnPanel.style.color=(Debug.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.scriptBtnPanel);
+    }
+
+    // Text Check Button
+    if (self.options.useTextChecker) {
+      self.textCheckerBtnPanel = document.createElement('span');
+      self.textCheckerBtnPanel.className = this.id + '-btn';
+      self.textCheckerBtnPanel.style.float = 'right';
+      self.textCheckerBtnPanel.style.marginRight = '4px';
+      self.textCheckerBtnPanel.innerText = 'TXT';
+      self.textCheckerBtnPanel.onclick = new Function('Debug.toggleTextCheckerMode();');
+      self.textCheckerBtnPanel.onmouseover = new Function('Debug.textCheckerBtnPanel.style.color=DebugJS.TXT_BUTTON_COLOR;');
+      self.textCheckerBtnPanel.onmouseout = new Function('Debug.textCheckerBtnPanel.style.color=(Debug.status & DebugJS.STATE_TEXT_CHECKING) ? DebugJS.TXT_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.textCheckerBtnPanel);
     }
 
     // Element Inspection Button
@@ -722,8 +789,8 @@ DebugJS.prototype = {
       self.elmInspectionBtnPanel = document.createElement('span');
       self.elmInspectionBtnPanel.className = this.id + '-btn';
       self.elmInspectionBtnPanel.style.float = 'right';
-      self.elmInspectionBtnPanel.style.marginRight = '3px';
-      self.elmInspectionBtnPanel.innerText = '<DOM>';
+      self.elmInspectionBtnPanel.style.marginRight = '4px';
+      self.elmInspectionBtnPanel.innerText = 'DOM';
       self.elmInspectionBtnPanel.onclick = new Function('Debug.toggleElmInspectionMode();');
       self.elmInspectionBtnPanel.onmouseover = new Function('Debug.elmInspectionBtnPanel.style.color=DebugJS.DOM_BUTTON_COLOR;');
       self.elmInspectionBtnPanel.onmouseout = new Function('Debug.elmInspectionBtnPanel.style.color=(Debug.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
@@ -742,8 +809,8 @@ DebugJS.prototype = {
       self.measureBtnPanel.style.height = (8 * self.options.zoom) + 'px';
       self.measureBtnPanel.innerText = ' ';
       self.measureBtnPanel.onclick = new Function('Debug.toggleMeasureMode();');
-      self.measureBtnPanel.onmouseover = new Function('Debug.measureBtnPanel.style.borderColor=\'' + Debug.options.btnColor + '\';');
-      self.measureBtnPanel.onmouseout = new Function('Debug.measureBtnPanel.style.borderColor=(Debug.status & DebugJS.STATE_MEASURE) ? Debug.options.btnColor : DebugJS.COLOR_INACTIVE;');
+      self.measureBtnPanel.onmouseover = new Function('Debug.measureBtnPanel.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
+      self.measureBtnPanel.onmouseout = new Function('Debug.measureBtnPanel.style.borderColor=(Debug.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.measureBtnPanel);
     }
     // -- R to L
@@ -849,6 +916,10 @@ DebugJS.prototype = {
 
     if (self.options.useElementInspection) {
       self.updateElmInspectionBtnPanel();
+    }
+
+    if (self.options.useTextChecker) {
+      self.updateTextCheckerBtnPanel();
     }
 
     if (self.options.useScriptEditor) {
@@ -1010,28 +1081,34 @@ DebugJS.prototype = {
     var bit2Color = (self.led & DebugJS.IND_BIT_2) ? DebugJS.IND_BIT_2_COLOR : DebugJS.IND_COLOR_INACTIVE;
     var bit1Color = (self.led & DebugJS.IND_BIT_1) ? DebugJS.IND_BIT_1_COLOR : DebugJS.IND_COLOR_INACTIVE;
     var bit0Color = (self.led & DebugJS.IND_BIT_0) ? DebugJS.IND_BIT_0_COLOR : DebugJS.IND_COLOR_INACTIVE;
-    var led = '';
-    led += '<span style="color:' + bit7Color + ';margin-right:2px;">●</span>';
-    led += '<span style="color:' + bit6Color + ';margin-right:2px;">●</span>';
-    led += '<span style="color:' + bit5Color + ';margin-right:2px;">●</span>';
-    led += '<span style="color:' + bit4Color + ';margin-right:2px;">●</span>';
-    led += '<span style="color:' + bit3Color + ';margin-right:2px;">●</span>';
-    led += '<span style="color:' + bit2Color + ';margin-right:2px;">●</span>';
-    led += '<span style="color:' + bit1Color + ';margin-right:2px;">●</span>';
-    led += '<span style="color:' + bit0Color + ';">●</span>';
+    var led = '' +
+    '<span style="color:' + bit7Color + ';margin-right:2px;">●</span>' +
+    '<span style="color:' + bit6Color + ';margin-right:2px;">●</span>' +
+    '<span style="color:' + bit5Color + ';margin-right:2px;">●</span>' +
+    '<span style="color:' + bit4Color + ';margin-right:2px;">●</span>' +
+    '<span style="color:' + bit3Color + ';margin-right:2px;">●</span>' +
+    '<span style="color:' + bit2Color + ';margin-right:2px;">●</span>' +
+    '<span style="color:' + bit1Color + ';margin-right:2px;">●</span>' +
+    '<span style="color:' + bit0Color + ';">●</span>';
     self.ledPanel.innerHTML = led;
   },
 
   // Update Measure Button
   updateMeasureBtnPanel: function() {
     var self = Debug;
-    self.measureBtnPanel.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? self.options.btnColor : DebugJS.COLOR_INACTIVE);
+    self.measureBtnPanel.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   // Update Element Inspection Button
   updateElmInspectionBtnPanel: function() {
     var self = Debug;
     self.elmInspectionBtnPanel.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+  },
+
+  // Update Text Checker Button
+  updateTextCheckerBtnPanel: function() {
+    var self = Debug;
+    self.textCheckerBtnPanel.style.color = (self.status & DebugJS.STATE_TEXT_CHECKING) ? DebugJS.TXT_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Script Button
@@ -1044,8 +1121,8 @@ DebugJS.prototype = {
   updateSwBtnPanel: function() {
     var self = Debug;
     var btn = (self.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
-    var btns = '<span class="' + this.id + '-btn" onclick="Debug.resetStopWatch();">🔃</span>';
-    btns += '<span class="' + this.id + '-btn" onclick="Debug.startStopStopWatch();">' + btn + '</span>';
+    var btns = '<span class="' + this.id + '-btn" onclick="Debug.resetStopWatch();">🔃</span>' +
+    '<span class="' + this.id + '-btn" onclick="Debug.startStopStopWatch();">' + btn + '</span>';
     self.swBtnPanel.innerHTML = btns;
   },
 
@@ -1081,8 +1158,8 @@ DebugJS.prototype = {
       fn = 'Debug.restoreDebugWindow()';
       btn = '❐';
     }
-    var b = '<span class="' + self.id + '-btn" style="float:right;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>';
-    b += '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
+    var b = '<span class="' + self.id + '-btn" style="float:right;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
+    '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -1362,8 +1439,7 @@ DebugJS.prototype = {
         lineNum = lineNumPadding + lineCnt + ':';
         logs += '<td style="padding-right:3px;white-space:pre;font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;">' + lineNum + '</td>';
       }
-      logs += '<td style="font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;"><pre>' + buf[i] + '</pre></td>';
-      logs += '</tr>';
+      logs += '<td style="font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;"><pre>' + buf[i] + '</pre></td></tr>';
     }
     return logs;
   },
@@ -1384,6 +1460,10 @@ DebugJS.prototype = {
         }
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
           self.disableElmInspection();
+          return;
+        }
+        if (self.status & DebugJS.STATE_TEXT_CHECKING) {
+          self.disableTextChecker();
           return;
         }
         if (self.status & DebugJS.STATE_SCRIPT) {
@@ -1532,7 +1612,6 @@ DebugJS.prototype = {
       self.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
       self.updateMousePositionPanel();
     }
-
     if (self.status & DebugJS.STATE_DRAGGING) self.windowMove(e);
     if (self.status & DebugJS.STATE_RESIZING) self.resize(e);
     if (self.status & DebugJS.STATE_MEASURING) self.measure(e);
@@ -1733,16 +1812,8 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
 
     if (self.elmInspectionPanel == null) {
-      var top = (self.options.fontSize + DebugJS.WINDOW_ADJUST);
       self.elmInspectionPanel = document.createElement('div');
-      self.elmInspectionPanel.style.position = 'absolute';
-      self.elmInspectionPanel.style.top = top + 'px';
-      self.elmInspectionPanel.style.left = '1px';
-      self.elmInspectionPanel.style.width = 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + DebugJS.WINDOW_ADJUST) + 'px)';
-      self.elmInspectionPanel.style.height = 'calc(100% - ' + (top + DebugJS.WINDOW_SHADOW + self.options.fontSize + 10) + 'px)';
-      self.elmInspectionPanel.style.padding = '5px';
-      self.elmInspectionPanel.style.border = 'solid 1px #333';
-      self.elmInspectionPanel.style.background = 'rgba(0,0,0,0.7)';
+      self.elmInspectionPanel.className = self.id + '-overlay-panel';
       self.mainPanel.appendChild(self.elmInspectionPanel);
     }
 
@@ -1781,16 +1852,16 @@ DebugJS.prototype = {
     var style = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
     var MAX_LEN = 50;
-    var dom = '<div style="height:100%;overflow:auto;"><pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;">Element Info';
-    dom += '<span style="float:right;margin-right:4px;">(' + document.getElementsByTagName('*').length + ')</span>\n\n';
-    dom += 'tag        : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + (el.id ? ' id="' + el.id + '"' : '') + '&gt;\n';
-    dom += 'class      : ' + el.className + '\n';
-    dom += 'display    : ' + style.display + '\n';
-    dom += 'position   : ' + style.position + ' / float: ' + style.float + ' / clear: ' + style.clear + '\n';
-    dom += 'z-index    : ' + style.zIndex + '\n';
-    dom += 'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + ' / padding: ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n';
-    dom += 'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n';
-    dom += 'location   : top: ' + Math.round(rect.top + window.pageYOffset) + 'px / left: ' + Math.round(rect.left + window.pageXOffset) + ' px\n';
+    var dom = '<pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;">Element Info' +
+    '<span style="float:right;margin-right:4px;">(Total: ' + document.getElementsByTagName('*').length + ')</span>\n\n' +
+    'tag        : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + (el.id ? ' id="' + el.id + '"' : '') + '&gt;\n' +
+    'class      : ' + el.className + '\n' +
+    'display    : ' + style.display + '\n' +
+    'position   : ' + style.position + ' / float: ' + style.float + ' / clear: ' + style.clear + '\n' +
+    'z-index    : ' + style.zIndex + '\n' +
+    'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + ' / padding: ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
+    'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n' +
+    'location   : top: ' + Math.round(rect.top + window.pageYOffset) + 'px / left: ' + Math.round(rect.left + window.pageXOffset) + ' px\n';
     var backgroundColor = style.backgroundColor;
     var bgColor16 = '';
     if (backgroundColor != 'transparent') {
@@ -1802,10 +1873,10 @@ DebugJS.prototype = {
     var color = style.color;
     var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
     var color16 = DebugJS.convRGB10to16(color10);
-    dom += 'color      : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n';
-    dom += 'font       : size: ' + style.fontSize + '  family: ' + style.fontFamily + '\n';
-    dom += 'name       : ' + (el.name ? el.name : '') + '\n';
-    dom += 'value      : ' + (el.value ? el.value : '') + '\n';
+    dom += 'color      : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+    'font       : size: ' + style.fontSize + '  family: ' + style.fontFamily + '\n' +
+    'name       : ' + (el.name ? el.name : '') + '\n' +
+    'value      : ' + (el.value ? el.value : '') + '\n';
     var src = (el.src ? el.src : '');
     if (src.length > MAX_LEN) {
       var src1 = src.substr(0, (MAX_LEN / 2));
@@ -1817,20 +1888,30 @@ DebugJS.prototype = {
     dom += 'text       : ' + txt.replace(/\n/g, '').replace(/\r/g, '').substr(0, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
     if (txt.length > MAX_LEN) {dom += '<span style="color:#888">...</span>';}
     dom += '\n';
-    var fnOnClick = el.onclick;
-    var fnOnFocus = el.onfocus;
-    var fnOnBlur = el.onblur;
-    var fnOnChange = el.onchange;
-    var fnOnMouseOver = el.onmouseover;
-    var fnOnMouseOut = el.onmouseout;
-    dom += '----------------------------------------\n';
-    dom += 'onclick    : ' + (fnOnClick ? fnOnClick.toString().replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '') : null) + '\n';
-    dom += 'onfocus    : ' + (fnOnFocus ? fnOnFocus.toString().replace(/\n/g, '') : null) + '\n';
-    dom += 'onblur     : ' + (fnOnBlur ? fnOnBlur.toString().replace(/\n/g, '') : null) + '\n';
-    dom += 'onchange   : ' + (fnOnChange ? fnOnChange.toString().replace(/\n/g, '') : null) + '\n';
-    dom += 'onmouseover: ' + (fnOnMouseOver ? fnOnMouseOver.toString().replace(/\n/g, '') : null) + '\n';
-    dom += 'onmouseout : ' + (fnOnMouseOut ? fnOnMouseOut.toString().replace(/\n/g, '') : null) + '\n';
-    dom += '</pre></div>';
+
+    dom += '----------------------------------------\n' +
+    'onclick      : ' + self.getEventHandlerString(el.onclick) + '\n' +
+    'ondblclick   : ' + self.getEventHandlerString(el.ondblclick) + '\n' +
+    'onmousedown  : ' + self.getEventHandlerString(el.onmousedown) + '\n' +
+    'onmouseup    : ' + self.getEventHandlerString(el.onmouseup) + '\n' +
+    'onmouseover  : ' + self.getEventHandlerString(el.onmouseover) + '\n' +
+    'onmouseout   : ' + self.getEventHandlerString(el.onmouseout) + '\n' +
+    'onmousemove  : ' + self.getEventHandlerString(el.onmousemove) + '\n' +
+    'oncontextmenu: ' + self.getEventHandlerString(el.oncontextmenu) + '\n' +
+    '\n' +
+    'onkeydown    : ' + self.getEventHandlerString(el.onkeydown) + '\n' +
+    'onkeypress   : ' + self.getEventHandlerString(el.onkeypress) + '\n' +
+    'onkeyup      : ' + self.getEventHandlerString(el.onkeyup) + '\n' +
+    '\n' +
+    'onfocus      : ' + self.getEventHandlerString(el.onfocus) + '\n' +
+    'onblur       : ' + self.getEventHandlerString(el.onblur) + '\n' +
+    'onchange     : ' + self.getEventHandlerString(el.onchange) + '\n' +
+    'oninput      : ' + self.getEventHandlerString(el.oninput) + '\n' +
+    'onselect     : ' + self.getEventHandlerString(el.onselect) + '\n' +
+    'onsubmit     : ' + self.getEventHandlerString(el.onsubmit) + '\n' +
+    '\n' +
+    'onscroll     : ' + self.getEventHandlerString(el.onscroll) + '\n' +
+    '</pre>';
     self.elmInspectionPanel.innerHTML = dom;
 
     if (el != self.prevElm) {
@@ -1846,6 +1927,193 @@ DebugJS.prototype = {
     }
   },
 
+  getEventHandlerString: function(handler) {
+    return (handler ? handler.toString().replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '').replace(/^\s{1,}/, '') : '<span style="color:#aaa;">null</span>');
+  },
+
+  toggleTextCheckerMode: function() {
+    var self = Debug;
+    if (self.status & DebugJS.STATE_TEXT_CHECKING) {
+      self.disableTextChecker();
+    } else {
+      self.enableTextChecker();
+    }
+  },
+
+  enableTextChecker: function() {
+    var self = Debug;
+    self.status |= DebugJS.STATE_TEXT_CHECKING;
+
+    if (self.textCheckerPanel == null) {
+      var defaultFontSize = Math.round(16 * self.options.zoom);
+      var defaultFgRGB16 = '000';
+      var defaultBgRGB16 = 'fff';
+      var panelPadding = 2;
+      self.textCheckerPanel = document.createElement('div');
+      self.textCheckerPanel.className = self.id + '-overlay-panel';
+      self.mainPanel.appendChild(self.textCheckerPanel);
+
+      var txtPadding = 8;
+      var fontFamily = 'sans-serif';
+      self.textCheck = document.createElement('input');
+      self.textCheck.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
+      self.textCheck.style.setProperty('min-height', (25 * self.options.zoom) + 'px', 'important');
+      self.textCheck.style.setProperty('margin-bottom', '2px', 'important');
+      self.textCheck.style.setProperty('padding', txtPadding + 'px', 'important');
+      self.textCheck.style.setProperty('border', '0', 'important');
+      self.textCheck.style.setProperty('border-radius', '0', 'important');
+      self.textCheck.style.setProperty('outline', 'none', 'important');
+      self.textCheck.style.setProperty('font-size', defaultFontSize + 'px', 'important');
+      self.textCheck.style.setProperty('font-family', fontFamily, 'important');
+      self.textCheck.value = 'ABCDEFG.abcdefg 12345-67890_!?';
+      self.textCheckerPanel.appendChild(self.textCheck);
+
+      self.textCheckCtrl = document.createElement('div');
+      self.textCheckerPanel.appendChild(self.textCheckCtrl);
+      var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + self.id + '-fontsize-range" class="' + self.id + '-txt-range" oninput="Debug.onChangeFontSize(true);" onchange="Debug.onChangeFontSize(true);">' +
+      '<input value="' + defaultFontSize + '" id="' + self.id + '-font-size" class="' + self.id + '-txt-text" style="width:30px;text-align:right;" oninput="Debug.onChangeFontSizeTxt()">px' +
+      '<br>' +
+      'font-family: <input value="' + fontFamily + '" class="' + self.id + '-txt-text" style="width:110px;" oninput="Debug.onChangeFontFamily(this)">&nbsp;&nbsp;' +
+      'font-weight: <input type="range" min="100" max="900" step="100" value="400" id="' + self.id + '-fontweight-range" class="' + self.id + '-txt-range" style="width:80px;" oninput="Debug.onChangeFontWeight();" onchange="Debug.onChangeFontWeight();"><span id="' + self.id + '-font-weight"></span> ' +
+      '<table>' +
+      '<tr><td colspan="2">FG #<input id="' + self.id + '-fg-rgb" class="' + self.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px;" oninput="Debug.onChangeFgRGB()"></td></tr>' +
+      '<tr><td>R:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-r"></span></td></tr>' +
+      '<tr><td>G:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-g" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-g"></span></td></tr>' +
+      '<tr><td>B:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-b" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-b"></span></td></tr>' +
+      '<tr><td colspan="2">BG #<input id="' + self.id + '-bg-rgb" class="' + self.id + '-txt-text" value="' + defaultBgRGB16 + '" style="width:80px;" oninput="Debug.onChangeBgRGB()"></td></tr>' +
+      '<tr><td>R:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-r"></span></td></tr>' +
+      '<tr><td>G:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-g" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-g"></span></td></tr>' +
+      '<tr><td>B:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-b" class="' + self.id + '-txt-range" oninput="Debug.onChangeBgColor(true);" onchange="Debug.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-b"></span></td></tr>' +
+      '</tbale>';
+      self.textCheckCtrl.innerHTML = html;
+
+      self.textCheckFontSizeRange = document.getElementById(self.id + '-fontsize-range');
+      self.textCheckFontSizeInput = document.getElementById(self.id + '-font-size');
+      self.textCheckFontWeightRange = document.getElementById(self.id + '-fontweight-range');
+      self.textCheckFontWeightLabel = document.getElementById(self.id + '-font-weight');
+      self.textCheckerInputFgRGB = document.getElementById(self.id + '-fg-rgb');
+      self.textCheckerRangeFgR = document.getElementById(self.id + '-fg-range-r');
+      self.textCheckerRangeFgG = document.getElementById(self.id + '-fg-range-g');
+      self.textCheckerRangeFgB = document.getElementById(self.id + '-fg-range-b');
+      self.textCheckerLabelFgR = document.getElementById(self.id + '-fg-r');
+      self.textCheckerLabelFgG = document.getElementById(self.id + '-fg-g');
+      self.textCheckerLabelFgB = document.getElementById(self.id + '-fg-b');
+      self.textCheckerInputBgRGB = document.getElementById(self.id + '-bg-rgb');
+      self.textCheckerRangeBgR = document.getElementById(self.id + '-bg-range-r');
+      self.textCheckerRangeBgG = document.getElementById(self.id + '-bg-range-g');
+      self.textCheckerRangeBgB = document.getElementById(self.id + '-bg-range-b');
+      self.textCheckerLabelBgR = document.getElementById(self.id + '-bg-r');
+      self.textCheckerLabelBgG = document.getElementById(self.id + '-bg-g');
+      self.textCheckerLabelBgB = document.getElementById(self.id + '-bg-b');
+
+      self.onChangeFontSizeTxt();
+      self.onChangeFontWeight();
+      self.onChangeFgRGB();
+      self.onChangeBgRGB();
+    } else {
+      self.mainPanel.appendChild(self.textCheckerPanel);
+    }
+
+    self.updateTextCheckerBtnPanel();
+  },
+
+  onChangeFgRGB: function() {
+    var self = Debug;
+    var rgb16 = '#' + self.textCheckerInputFgRGB.value;
+    var rgb10 = DebugJS.convRGB16to10(rgb16);
+    self.textCheckerRangeFgR.value = rgb10.r;
+    self.textCheckerRangeFgG.value = rgb10.g;
+    self.textCheckerRangeFgB.value = rgb10.b;
+    self.onChangeFgColor(null);
+    self.textCheck.style.setProperty('color', rgb16, 'important');
+  },
+
+  onChangeBgRGB: function() {
+    var self = Debug;
+    var rgb16 = '#' + self.textCheckerInputBgRGB.value;
+    var rgb10 = DebugJS.convRGB16to10(rgb16);
+    self.textCheckerRangeBgR.value = rgb10.r;
+    self.textCheckerRangeBgG.value = rgb10.g;
+    self.textCheckerRangeBgB.value = rgb10.b;
+    self.onChangeBgColor(null);
+    self.textCheck.style.setProperty('background', rgb16, 'important');
+  },
+
+  onChangeFgColor: function(callFromRange) {
+    var self = Debug;
+    var fgR = self.textCheckerRangeFgR.value;
+    var fgG = self.textCheckerRangeFgG.value;
+    var fgB = self.textCheckerRangeFgB.value;
+    var rgb16 = DebugJS.convRGB10to16(fgR + ' ' + fgG + ' ' + fgB);
+    self.textCheckerLabelFgR.innerText = fgR;
+    self.textCheckerLabelFgG.innerText = fgG;
+    self.textCheckerLabelFgB.innerText = fgB;
+    if (callFromRange) {
+      self.textCheckerInputFgRGB.value = rgb16.r + rgb16.g + rgb16.b;
+      self.textCheck.style.setProperty('color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')', 'important');
+    }
+  },
+
+  onChangeBgColor: function(callFromRange) {
+    var self = Debug;
+    var bgR = self.textCheckerRangeBgR.value;
+    var bgG = self.textCheckerRangeBgG.value;
+    var bgB = self.textCheckerRangeBgB.value;
+    var rgb16 = DebugJS.convRGB10to16(bgR + ' ' + bgG + ' ' + bgB);
+    self.textCheckerLabelBgR.innerText = bgR;
+    self.textCheckerLabelBgG.innerText = bgG;
+    self.textCheckerLabelBgB.innerText = bgB;
+    if (callFromRange) {
+      self.textCheckerInputBgRGB.value = rgb16.r + rgb16.g + rgb16.b;
+      self.textCheck.style.setProperty('background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')', 'important');
+    }
+  },
+
+  onChangeFontSizeTxt: function() {
+    var self = Debug;
+    var fontSize = self.textCheckFontSizeInput.value;
+    self.textCheckFontSizeRange.value = fontSize;
+    self.onChangeFontSize(null);
+    self.textCheck.style.setProperty('font-size', fontSize + 'px', 'important');
+  },
+
+  onChangeFontSize: function(callFromRange) {
+    var self = Debug;
+    var fontSize;
+    fontSize = self.textCheckFontSizeRange.value;
+    if (callFromRange) {
+      self.textCheckFontSizeInput.value = fontSize;
+      self.textCheck.style.setProperty('font-size', fontSize + 'px', 'important');
+    }
+  },
+
+  onChangeFontWeight: function() {
+    var self = Debug;
+    var fontWeight = self.textCheckFontWeightRange.value;
+    self.textCheck.style.setProperty('font-weight', fontWeight, 'important');
+    if (fontWeight == 400) {
+      fontWeight += '(normal)';
+    } else if (fontWeight == 700) {
+      fontWeight += '(bold)';
+    }
+    self.textCheckFontWeightLabel.innerText = fontWeight;
+  },
+
+  onChangeFontFamily: function(font) {
+    var self = Debug;
+    var fontFamily = font.value;
+    self.textCheck.style.setProperty('font-family', fontFamily, 'important');
+  },
+
+  disableTextChecker: function() {
+    var self = Debug;
+    if (self.textCheckerPanel != null) {
+      self.mainPanel.removeChild(self.textCheckerPanel);
+    }
+    self.status &= ~DebugJS.STATE_TEXT_CHECKING;
+    self.updateTextCheckerBtnPanel();
+  },
+
   toggleScriptMode: function() {
     var self = Debug;
     if (self.status & DebugJS.STATE_SCRIPT) {
@@ -1859,6 +2127,10 @@ DebugJS.prototype = {
     var self = Debug;
     self.status |= DebugJS.STATE_SCRIPT;
     if (self.scriptPanel == null) {
+      var code1 = 'time.start();\\nfor (var i = 0; i < 1000000; i++) {\\n\\n}\\ntime.end();\\n';
+      var code2 = 'var i = 0;\\nledTest();\\nfunction ledTest() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    dbg.call(ledTest, 500);\\n  }\\n  i++;\\n}';
+      var code3 = '';
+
       var scriptHeight = 72; //%
       self.msgPanel.style.height = (100 - scriptHeight) + '%';
       self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
@@ -1872,16 +2144,13 @@ DebugJS.prototype = {
       self.scriptPanel.style.padding = '4px';
       self.scriptPanel.style.border = 'solid 1px #333';
       self.scriptPanel.style.background = 'rgba(0,0,0,0.7)';
-      var panel = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>';
-      panel += '<span style="color:#ccc;">Script Editor</span>';
-      var code1 = 'time.start();\\nfor (var i = 0; i < 1000000; i++) {\\n  \\n}\\ntime.end();\\n';
-      var code2 = 'var i = 0;\\nled();\\nfunction led() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    setTimeout(led, 500);\\n  }\\n  i++;\\n}\\n';
-      var code3 = '';
-      panel += '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code1 + '\';">[CODE1]</span>';
-      panel += '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code2 + '\';">[CODE2]</span>';
-      panel += '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code3 + '\';">[CODE3]</span>';
-      panel += '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
-      self.scriptPanel.innerHTML = panel;
+      var html = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
+      '<span style="color:#ccc;">Script Editor</span>' +
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code1 + '\';">[CODE1]</span>' +
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code2 + '\';">[CODE2]</span>' +
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code3 + '\';">[CODE3]</span>' +
+      '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>';
+      self.scriptPanel.innerHTML = html;
       self.mainPanel.appendChild(self.scriptPanel);
 
       self.scriptEditor = document.createElement('textarea');
@@ -1899,7 +2168,7 @@ DebugJS.prototype = {
       self.scriptEditor.style.fontFamily = self.options.fontFamily;
       self.scriptEditor.style.resize = 'none';
       self.scriptEditor.onblur = new Function('Debug.saveScriptBuf();');
-      self.scriptEditor.innerText = self.scriptBuf;
+      self.scriptEditor.value = self.scriptBuf;
       self.scriptPanel.appendChild(self.scriptEditor);
     }
     self.updateScriptBtnPanel();
@@ -2088,8 +2357,7 @@ DebugJS.prototype = {
 
   cmdHelp: function(args, tbl) {
     var self = Debug;
-    var str = 'Available Commands:<br>';
-    str += '<table>';
+    var str = 'Available Commands:<br><table>';
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
       str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
     }
@@ -2726,8 +2994,7 @@ DebugJS.countElements = function(selector, showDetail) {
     for (var key in cnt) {
       l += '<tr><td>' + key + '</td><td style="text-align:right;">' + cnt[key] + '</td></tr>';
     }
-    l += '<tr><td>Total</td><td style="text-align:right;">' + total + '</td></tr>';
-    l += '</table>';
+    l += '<tr><td>Total</td><td style="text-align:right;">' + total + '</td></tr></table>';
     DebugJS.log(l);
   }
   return total;
@@ -2835,30 +3102,30 @@ DebugJS.convRGB10to16 = function(rgb10) {
 DebugJS.convHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
   var v2 = parseInt(v16, 16).toString(2);
-  var res = '<br>';
-  res += 'HEX ' + v16 + '<br>';
-  res += 'DEC ' + DebugJS.formatDec(v10) + '<br>';
-  res += 'BIN ' + DebugJS.formatBin(v2) + '<br>';
+  var res = '<br>' +
+  'HEX ' + v16 + '<br>' +
+  'DEC ' + DebugJS.formatDec(v10) + '<br>' +
+  'BIN ' + DebugJS.formatBin(v2) + '<br>';
   DebugJS.log(res);
 };
 
 DebugJS.convDEC = function(v10) {
   var v2 = parseInt(v10).toString(2);
   var v16 = parseInt(v10).toString(16);
-  var res = '<br>';
-  res += 'DEC ' + DebugJS.formatDec(v10) + '<br>';
-  res += 'HEX ' + v16 + '<br>';
-  res += 'BIN ' + DebugJS.formatBin(v2) + '<br>';
+  var res = '<br>' +
+  'DEC ' + DebugJS.formatDec(v10) + '<br>' +
+  'HEX ' + v16 + '<br>' +
+  'BIN ' + DebugJS.formatBin(v2) + '<br>';
   DebugJS.log(res);
 };
 
 DebugJS.convBIN = function(v2) {
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
-  var res = '<br>';
-  res += 'BIN ' + DebugJS.formatBin(v2) + '<br>';
-  res += 'DEC ' + DebugJS.formatDec(v10) + '<br>';
-  res += 'HEX ' + v16 + '<br>';
+  var res = '<br>' +
+  'BIN ' + DebugJS.formatBin(v2) + '<br>' +
+  'DEC ' + DebugJS.formatDec(v10) + '<br>' +
+  'HEX ' + v16 + '<br>';
   DebugJS.log(res);
 };
 
