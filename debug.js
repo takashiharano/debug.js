@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608152321';
+  this.v = '201608170135';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -131,7 +131,6 @@ var DebugJS = function() {
   this.msgPanel = null;
   this.msgPanelScrollX = 0;
   this.msgPanelScrollY = 0;
-  this.msgBuf = null;
   this.cmdPanel = null;
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
@@ -159,6 +158,7 @@ var DebugJS = function() {
   this.prevOffsetLeft = 0;
   this.savedFunc = null;
   this.status = 0;
+  this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
@@ -201,7 +201,13 @@ DebugJS.STATE_ELEMENT_INSPECTING = 0x40000;
 DebugJS.STATE_TEXT_CHECKING = 0x80000;
 DebugJS.STATE_SCRIPT = 0x100000;
 DebugJS.STATE_LOG_SUSPENDING = 0x1000000;
-
+DebugJS.LOG_TYPE_STANDARD = 0;
+DebugJS.LOG_TYPE_ERROR = 1;
+DebugJS.LOG_TYPE_WARNING = 2;
+DebugJS.LOG_TYPE_INFO = 3;
+DebugJS.LOG_TYPE_DEBUG = 4;
+DebugJS.LOG_TYPE_SYSTEM = 5;
+DebugJS.LOG_TYPE_MULTILINE = 6;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.WINDOW_SHADOW = 10;
@@ -300,15 +306,20 @@ DebugJS.prototype = {
 
     self.initStatus(self.options);
 
+    // Debug Window
     if (self.options.target == null) {
       self.id = self.DEFAULT_ELM_ID;
-      // Create a window
       self.debugWindow = document.createElement('div');
       self.debugWindow.id = self.id;
       self.bodyEl.appendChild(self.debugWindow);
     } else {
       self.id = options.target;
       self.debugWindow = document.getElementById(self.id);
+    }
+
+    // Buffer
+    if ((!self.msgBuf) || ((self.msgBuf) && (self.msgBuf.getSize() != self.options.bufsize))) {
+      self.msgBuf = new DebugJS.RingBuffer(self.options.bufsize);
     }
 
     self.createPanels();
@@ -442,8 +453,6 @@ DebugJS.prototype = {
       }
     }
 
-    self.msgBuf = new DebugJS.RingBuffer(self.options.bufsize);
-
     var styles = {};
     styles['#' + self.id] = {
       'letter-spacing': '0'
@@ -542,7 +551,6 @@ DebugJS.prototype = {
     self.debugWindow.style.fontSize = self.options.fontSize + 'px',
     self.debugWindow.style.fontFamily = self.options.fontFamily;
 
-    self.clearMessage();
     self.initDebugWindow();
     self.setupEventHandler();
 
@@ -567,6 +575,7 @@ DebugJS.prototype = {
       self.initHeight = self.debugWindow.offsetHeight - DebugJS.WINDOW_ADJUST;
     }
     self.status |= DebugJS.STATE_INITIALIZED;
+    self.printMessage();
     return true;
   },
 
@@ -1166,7 +1175,7 @@ DebugJS.prototype = {
   // Log Output
   printMessage: function() {
     var self = Debug;
-    var msg = '<table style="border-spacing:0;">' + self.getLog() + '</table>';
+    var msg = '<pre style="padding:0 3px;">' + self.getLog() + '</pre>';
     self.msgPanel.innerHTML = msg;
     self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
   },
@@ -1425,21 +1434,43 @@ DebugJS.prototype = {
     var logs = '';
     for (var i = 0; i < len; i++) {
       lineCnt++;
-      if (buf[i] == undefined) {
-        break;
-      }
-      logs += '<tr style="vertical-align:top;">';
+      if (buf[i] == undefined) break;
+      var line = '';
       var lineNum = '';
-      if (Debug.options.showLineNums) {
+      if ((self.options.showLineNums) && (buf[i].type != DebugJS.LOG_TYPE_MULTILINE)) {
         var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var lineNumPadding = '';
         for (var j = 0; j < diffDigits; j++) {
           lineNumPadding = lineNumPadding + '0';
         }
-        lineNum = lineNumPadding + lineCnt + ':';
-        logs += '<td style="padding-right:3px;white-space:pre;font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;">' + lineNum + '</td>';
+        lineNum = lineNumPadding + lineCnt
+        line += lineNum + ': ';
       }
-      logs += '<td style="font-size:' + self.options.fontSize + 'px !important;line-height:1em !important;"><pre>' + buf[i] + '</pre></td></tr>';
+      var msg = (((self.options.showTimeStamp) && (buf[i].type != DebugJS.LOG_TYPE_MULTILINE)) ? (buf[i].time + ' ' + buf[i].msg) : buf[i].msg);
+      switch (buf[i].type) {
+        case DebugJS.LOG_TYPE_ERROR:
+          line += '<span style="color:' + self.options.logColorE + '">' + msg + '</span>';
+          break;
+        case DebugJS.LOG_TYPE_WARNING:
+          line += '<span style="color:' + self.options.logColorW + '">' + msg + '</span>';
+          break;
+        case DebugJS.LOG_TYPE_INFO:
+          line += '<span style="color:' + self.options.logColorI + '">' + msg + '</span>';
+          break;
+        case DebugJS.LOG_TYPE_DEBUG:
+          line += '<span style="color:' + self.options.logColorD + '">' + msg + '</span>';
+          break;
+        case DebugJS.LOG_TYPE_SYSTEM:
+          line += '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px;">' + msg + '</span>';
+          break;
+        case DebugJS.LOG_TYPE_MULTILINE:
+          line += '<span style="display:inline-block;margin:' + Math.round(self.options.fontSize * 0.5) + 'px 0;">' + msg + '</span>';
+          break;
+        default:
+          line += msg;
+          break;
+      }
+      logs += line + '\n';
     }
     return logs;
   },
@@ -1854,11 +1885,11 @@ DebugJS.prototype = {
     var MAX_LEN = 50;
     var dom = '<pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;">Element Info' +
     '<span style="float:right;margin-right:4px;">(Total: ' + document.getElementsByTagName('*').length + ')</span>\n\n' +
-    'tag        : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + (el.id ? ' id="' + el.id + '"' : '') + '&gt;\n' +
+    'tag        : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
+    'id         : ' + el.id + '\n' +
     'class      : ' + el.className + '\n' +
-    'display    : ' + style.display + '\n' +
+    'display    : ' + style.display + ' / z-index: ' + style.zIndex + '\n' +
     'position   : ' + style.position + ' / float: ' + style.float + ' / clear: ' + style.clear + '\n' +
-    'z-index    : ' + style.zIndex + '\n' +
     'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + ' / padding: ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
     'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n' +
     'location   : top: ' + Math.round(rect.top + window.pageYOffset) + 'px / left: ' + Math.round(rect.left + window.pageXOffset) + ' px\n';
@@ -1953,12 +1984,12 @@ DebugJS.prototype = {
       self.textCheckerPanel.className = self.id + '-overlay-panel';
       self.mainPanel.appendChild(self.textCheckerPanel);
 
-      var txtPadding = 8;
+      var txtPadding = 4;
       var fontFamily = 'sans-serif';
       self.textCheck = document.createElement('input');
       self.textCheck.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
-      self.textCheck.style.setProperty('min-height', (25 * self.options.zoom) + 'px', 'important');
-      self.textCheck.style.setProperty('margin-bottom', '2px', 'important');
+      self.textCheck.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
+      self.textCheck.style.setProperty('margin-bottom', '8px', 'important');
       self.textCheck.style.setProperty('padding', txtPadding + 'px', 'important');
       self.textCheck.style.setProperty('border', '0', 'important');
       self.textCheck.style.setProperty('border-radius', '0', 'important');
@@ -2128,7 +2159,7 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_SCRIPT;
     if (self.scriptPanel == null) {
       var code1 = 'time.start();\\nfor (var i = 0; i < 1000000; i++) {\\n\\n}\\ntime.end();\\n';
-      var code2 = 'var i = 0;\\nledTest();\\nfunction ledTest() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    dbg.call(ledTest, 500);\\n  }\\n  i++;\\n}';
+      var code2 = 'var i = 0;\\nledTest();\\nfunction ledTest() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    dbg.call(ledTest, 500);\\n  } else {\\n    dbg.ledAllOff();\\n  }\\n  i++;\\n}\\n';
       var code3 = '';
 
       var scriptHeight = 72; //%
@@ -2357,22 +2388,22 @@ DebugJS.prototype = {
 
   cmdHelp: function(args, tbl) {
     var self = Debug;
-    var str = 'Available Commands:<br><table>';
+    var str = 'Available Commands:\n<table>';
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
       str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
     }
     str += '</table>';
-    DebugJS.log(str);
+    DebugJS.log.mlt(str);
   },
 
   cmdHistory: function(args, tbl) {
     var self = Debug;
     var buf = self.cmdHistoryBuf.getAll();
-    var str = 'Command History:<br>';
+    var str = '';
     for (var i = 0, len = (buf.length - 1); i < len; i++) {
-      str += buf[i] + '<br>';
+      str += buf[i] + '\n';
     }
-    DebugJS.log(str);
+    DebugJS.log.mlt(str);
   },
 
   cmdJson: function(args, tbl) {
@@ -2745,6 +2776,10 @@ DebugJS.RingBuffer.prototype = {
   lastIndex: function() {
     var lastIdx = (this.cnt - 1) % this.buffer.length;
     return lastIdx;
+  },
+
+  getSize: function() {
+    return this.buffer.length;
   }
 };
 
@@ -2823,7 +2858,7 @@ DebugJS.execCmdP = function(args) {
   var objs = args.split(' ');
   for (var i = 0, len = objs.length; i < len; i++) {
     if (objs[i] == '') continue;
-    var cmd = 'DebugJS.buf="<br>' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log(DebugJS.buf);';
+    var cmd = 'DebugJS.buf="' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log.mlt(DebugJS.buf);';
     try {
       eval(cmd);
     } catch (e) {
@@ -2865,7 +2900,7 @@ DebugJS._objDump = function(obj, arg, toJson) {
       arg.dump += '[\n';
       indent += DebugJS.INDENT_SP;
     } else {
-      arg.dump += '<span style="color:#c08;">[Array]</span>[' + obj.length + ']';
+      arg.dump += '<span style="color:#c08;">[Array][' + obj.length + ']</span>';
     }
     var s = 0;
     for (var i in obj) {
@@ -2995,7 +3030,7 @@ DebugJS.countElements = function(selector, showDetail) {
       l += '<tr><td>' + key + '</td><td style="text-align:right;">' + cnt[key] + '</td></tr>';
     }
     l += '<tr><td>Total</td><td style="text-align:right;">' + total + '</td></tr></table>';
-    DebugJS.log(l);
+    DebugJS.log.mlt(l);
   }
   return total;
 };
@@ -3013,7 +3048,6 @@ DebugJS.getChildElements = function(el, list) {
 };
 
 DebugJS.execCmdJson = function(json) {
-  var jsn = '\n';
   var flg = true;
   if (json.substr(0, 2) == '-p') {
     json = json.substr(3);
@@ -3021,8 +3055,8 @@ DebugJS.execCmdJson = function(json) {
   }
   try {
     var j = JSON.parse(json);
-    jsn += DebugJS.objDump(j, flg);
-    DebugJS.log(jsn);
+    var jsn = DebugJS.objDump(j, flg);
+    DebugJS.log.mlt(jsn);
   } catch (e) {
     DebugJS.log.e('JSON format error.');
   }
@@ -3099,31 +3133,28 @@ DebugJS.convRGB10to16 = function(rgb10) {
 DebugJS.convHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
   var v2 = parseInt(v16, 16).toString(2);
-  var res = '<br>' +
-  'HEX ' + v16 + '<br>' +
-  'DEC ' + DebugJS.formatDec(v10) + '<br>' +
-  'BIN ' + DebugJS.formatBin(v2) + '<br>';
-  DebugJS.log(res);
+  var res = 'HEX ' + v16 + '\n' +
+  'DEC ' + DebugJS.formatDec(v10) + '\n' +
+  'BIN ' + DebugJS.formatBin(v2) + '\n';
+  DebugJS.log.mlt(res);
 };
 
 DebugJS.convDEC = function(v10) {
   var v2 = parseInt(v10).toString(2);
   var v16 = parseInt(v10).toString(16);
-  var res = '<br>' +
-  'DEC ' + DebugJS.formatDec(v10) + '<br>' +
+  var res = 'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'HEX ' + v16 + '<br>' +
-  'BIN ' + DebugJS.formatBin(v2) + '<br>';
-  DebugJS.log(res);
+  'BIN ' + DebugJS.formatBin(v2) + '\n';
+  DebugJS.log.mlt(res);
 };
 
 DebugJS.convBIN = function(v2) {
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
-  var res = '<br>' +
-  'BIN ' + DebugJS.formatBin(v2) + '<br>' +
-  'DEC ' + DebugJS.formatDec(v10) + '<br>' +
-  'HEX ' + v16 + '<br>';
-  DebugJS.log(res);
+  var res = 'BIN ' + DebugJS.formatBin(v2) + '\n' +
+  'DEC ' + DebugJS.formatDec(v10) + '\n' +
+  'HEX ' + v16 + '\n';
+  DebugJS.log.mlt(res);
 };
 
 DebugJS.formatBin = function(v2) {
@@ -3248,17 +3279,17 @@ DebugJS.timeLog = function(timerName, msg) {
 DebugJS.timeList = function() {
   var self = Debug;
   var now = new Date();
-  var l = '<br>';
+  var l;
   if (Object.keys(Debug.timers).length == 0) {
-    l += '<span style="color:#ccc;">no timers</span>';
+    l = '<span style="color:#ccc;">no timers</span>';
   } else {
-    l += '<table>';
+    l = '<table>';
     for (var key in Debug.timers) {
       l += '<tr><td>' + key + '</td><td><span style="color:' + self.options.timerColor + ';">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
     }
     l += '</table>';
   }
-  DebugJS.log(l);
+  DebugJS.log.mlt(l);
 };
 
 DebugJS.getElapsedTimeStr = function(t1, t2) {
@@ -3356,8 +3387,8 @@ DebugJS.httpRequest = function(url, method) {
       var txt = xhr.responseText.replace(/</g, '&lt;');
       txt = txt.replace(/>/g, '&gt;');
       if (head || txt) {
-        var res = 'Response:<br><span style="color:#5ff">' + head + '</span>' + txt;
-        DebugJS.log(res);
+        var res = '<span style="color:#5ff">' + head + '</span>' + txt;
+        DebugJS.log.mlt(res);
       }
     }
   };
@@ -3365,71 +3396,45 @@ DebugJS.httpRequest = function(url, method) {
 };
 
 DebugJS.log = function(m) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
-  DebugJS.log.out(m, null);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_STANDARD);
 };
 
 DebugJS.log.e = function(m) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
-  var style = 'color:' + Debug.options.logColorE + ';';
-  DebugJS.log.out(m, style);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_ERROR);
 };
 
 DebugJS.log.w = function(m) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
-  var style = 'color:' + Debug.options.logColorW + ';';
-  DebugJS.log.out(m, style);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_WARNING);
 };
 
 DebugJS.log.i = function(m) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
-  var style = 'color:' + Debug.options.logColorI + ';';
-  DebugJS.log.out(m, style);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_INFO);
 };
 
 DebugJS.log.d = function(m) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
-  var style = 'color:' + Debug.options.logColorD + ';';
-  DebugJS.log.out(m, style);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_DEBUG);
 };
 
 DebugJS.log.s = function(m) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
-  var style = 'color:' + Debug.options.logColorS + ';text-shadow:0 0 3px;';
-  DebugJS.log.out(m, style);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_SYSTEM);
 };
 
 DebugJS.log.p = function(o) {
-  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
-  }
-  var m = '<br>' + DebugJS.objDump(o);
-  DebugJS.log.out(m, null);
+  var m = '\n' + DebugJS.objDump(o);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_STANDARD);
 };
 
-DebugJS.log.out = function(m, style) {
-  if (m != null) {
-    var t = '';
-    if (Debug.options.showTimeStamp) {
-      t = DebugJS.time() + ' ';
-    }
-    if (style != null) {
-      style = ' style="' + style + '"';
-    }
-    m = '<span' + style + '>' + t + m + '</span>';
-    Debug.msgBuf.add(m);
+DebugJS.log.mlt = function(m) {
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_MULTILINE);
+};
+
+DebugJS.log.out = function(msg, type) {
+  if (msg != null) {
+    var data = {'type': type, 'time': DebugJS.time(), 'msg': msg};
+    Debug.msgBuf.add(data);
+  }
+  if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
+    if (!DebugJS.init()) {return;}
   }
   Debug.printMessage();
 };

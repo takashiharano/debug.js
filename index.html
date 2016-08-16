@@ -45,6 +45,8 @@ button, input[type="button"], input[type="submit"], select {width: 80px; height:
 /*}                            */
 </style>
 <script>
+log('Here is the log output example!');
+
 var a = {
   'key1': 'val1',
   'key2': '123',
@@ -95,6 +97,8 @@ var h = [
 ];
 
 window.onload = function() {
+  log('The window\'s load event fired.');
+
   var options = {
     'visible': true,
   };
@@ -172,8 +176,6 @@ window.onload = function() {
   };
   //dbg.init(options6);
 
-  log('Here is the log output example!');
-  log('The window\'s load event fired.');
   setTimeout(displayMessages, 1500);
   setTimeout(execDemo, 1500);
 }
@@ -202,38 +204,38 @@ function displayMessages() {
 var messages = [
   {
     'fnc': log,
-    'msg': '--------------------',
-    'delay': 100
+    'msg': '-------------------------------',
+    'delay': 50
   },
   {
     'fnc': log,
     'msg': 'standard log sample.',
-    'delay': 100
+    'delay': 50
   },
   {
     'fnc': log.e,
     'msg': 'error log sample.',
-    'delay': 100
+    'delay': 50
   },
   {
     'fnc': log.w,
     'msg': 'warning log sample.',
-    'delay': 100
+    'delay': 50
   },
   {
     'fnc': log.i,
     'msg': 'information log sample.',
-    'delay': 100
+    'delay': 50
   },
   {
     'fnc': log.d,
     'msg': 'debug log sample.',
-    'delay': 100
+    'delay': 50
   },
   {
     'fnc': log.s,
     'msg': 'system log sample.',
-    'delay': 100
+    'delay': 50
   }
 ];
 
@@ -360,8 +362,8 @@ The debug window will be automatically generated and is draggable.<br><br>
 
 <table border="0">
 <tr>
-<td><span style="color:#e90;">⚠</span><td><td>The debug window is hidden by default setting.</td></tr>
-<td><td><td>You can switch hide/show by F2 key.</td></tr>
+<td><span style="color:#e90;">⚠</span></td><td>The debug window is hidden by default setting.</td></tr>
+<tr><td></td><td>You can switch hide/show by F2 key.</td></tr>
 </table>
 <br>
 e.g.,)
