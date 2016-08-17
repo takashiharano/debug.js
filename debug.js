@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608170135';
+  this.v = '201608172141';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1420,8 +1420,8 @@ DebugJS.prototype = {
   resetStopWatch: function() {
     var self = Debug;
     self.swStartTime = (new Date()).getTime();
-    self.swElapsedTimeDisp = DebugJS.getTimerStr(0);
     self.swElapsedTime = 0;
+    self.swElapsedTimeDisp = DebugJS.getTimerStr(self.swElapsedTime);
     self.updateSwPanel();
   },
 
@@ -1436,14 +1436,14 @@ DebugJS.prototype = {
       lineCnt++;
       if (buf[i] == undefined) break;
       var line = '';
-      var lineNum = '';
+      var lineNum;
       if ((self.options.showLineNums) && (buf[i].type != DebugJS.LOG_TYPE_MULTILINE)) {
         var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var lineNumPadding = '';
         for (var j = 0; j < diffDigits; j++) {
           lineNumPadding = lineNumPadding + '0';
         }
-        lineNum = lineNumPadding + lineCnt
+        lineNum = lineNumPadding + lineCnt;
         line += lineNum + ': ';
       }
       var msg = (((self.options.showTimeStamp) && (buf[i].type != DebugJS.LOG_TYPE_MULTILINE)) ? (buf[i].time + ' ' + buf[i].msg) : buf[i].msg);
@@ -2815,12 +2815,9 @@ DebugJS.time = function() {
   return t;
 };
 
-DebugJS.getTimerStr = function(swPassedTimeMsec) {
-  var passedTimeSec = Math.floor(swPassedTimeMsec / 1000);
-  var wkPassedTimeSec = passedTimeSec;
-
+DebugJS.getTimerStr = function(timeMs) {
+  var wkPassedTimeSec = Math.floor(timeMs / 1000);
   var passedHour;
-  var passedMin;
   if (wkPassedTimeSec >= 3600) {
     passedHour = Math.floor(wkPassedTimeSec / 3600);
     wkPassedTimeSec = (wkPassedTimeSec - (passedHour * 3600));
@@ -2828,6 +2825,7 @@ DebugJS.getTimerStr = function(swPassedTimeMsec) {
     passedHour = 0;
   }
 
+  var passedMin;
   if (wkPassedTimeSec >= 60) {
     passedMin = Math.floor(wkPassedTimeSec / 60);
     wkPassedTimeSec = (wkPassedTimeSec - (passedMin * 60));
@@ -2836,7 +2834,7 @@ DebugJS.getTimerStr = function(swPassedTimeMsec) {
   }
 
   var passedSec = wkPassedTimeSec;
-  var passedMsec = ('00' + swPassedTimeMsec).slice(-3);
+  var passedMsec = ('00' + timeMs).slice(-3);
 
   if (passedHour < 10) passedHour = '0' + passedHour;
   if (passedMin < 10) passedMin = '0' + passedMin;
@@ -3183,42 +3181,60 @@ DebugJS.formatDec = function(v10) {
 
 DebugJS.timeStart = function(timerName, msg) {
   var self = Debug;
-  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
-  self.timers[timerName] = {};
-  self.timers[timerName].start = (new Date());
-  if (msg === null) return;
+  var _timerName = timerName;
+
+  if ((timerName === undefined) || (timerName === null)) {
+    _timerName = DebugJS.DEFAULT_TIMER_NAME;
+  }
+
+  self.timers[_timerName] = {};
+  self.timers[_timerName].start = (new Date());
+
+  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+    return;
+  }
+
   var str;
   if (msg === undefined) {
-    str = timerName + ': timer started';
+    str = _timerName + ': timer started';
   } else {
-    str = msg.replace(/%n/g, timerName).replace(/%t/g, '<span style="color:' + self.options.timerColor + ';">00:00:00.000</span>');
+    str = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' + self.options.timerColor + ';">00:00:00.000</span>');
   }
+
   DebugJS.log(str);
 };
 
-DebugJS.timeCheck = function(timerName, now) {
-  var self = Debug;
-  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
-  if (!now) now = new Date();
-  if (!self.timers[timerName]) return null;
-  var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
-  return t;
-};
-
 DebugJS.timeSplit = function(timerName, isEnd, msg) {
+  var now = new Date();
   var self = Debug;
-  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
-  var t2 = new Date();
-  if (!self.timers[timerName]) {
-    DebugJS.log.w(timerName + ': timer undefined');
+  var _timerName = timerName;
+
+  if ((timerName === undefined) || (timerName === null)) {
+    _timerName = DebugJS.DEFAULT_TIMER_NAME;
+  }
+
+  if (!self.timers[_timerName]) {
+    DebugJS.log.w(_timerName + ': timer undefined');
     return null;
   }
-  var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, t2);
+
+  var prevSplit = self.timers[_timerName].split;
+  var t = DebugJS.getElapsedTimeStr(self.timers[_timerName].start, now);
   var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
 
+  if (isEnd) {
+    delete self.timers[_timerName];
+  } else {
+    self.timers[_timerName].split = now;
+  }
+
+  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+    return t;
+  }
+
   var dtLap = '';
-  if (self.timers[timerName].split) {
-    var tLap = DebugJS.getElapsedTimeStr(self.timers[timerName].split, t2);
+  if (prevSplit) {
+    var tLap = DebugJS.getElapsedTimeStr(prevSplit, now);
     dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
   } else {
     if (!isEnd) {
@@ -3226,42 +3242,37 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
     }
   }
 
-  self.timers[timerName].split = t2;
-  if (msg === null) {
-    return t;
-  }
-
   var str;
   if (msg === undefined) {
-    str = timerName + ': ' + dt;
+    str = _timerName + ': ' + dt;
     if (dtLap != '') {
       str += ' (⊿' + dtLap + ')';
     }
   } else {
-    str = msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+    str = msg.replace(/%n/g, _timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   }
+
   DebugJS.log(str);
   return t;
 };
 
 DebugJS.timeEnd = function(timerName, msg) {
-  var self = Debug;
-  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
-  var t = DebugJS.timeSplit(timerName, true, msg);
-  if (t !== null) {
-    delete self.timers[timerName];
-  }
-  return t;
+  return DebugJS.timeSplit(timerName, true, msg);
 };
 
 DebugJS.timeLog = function(timerName, msg) {
-  var self = Debug;
-  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
   var now = new Date();
+  var self = Debug;
+
+  if (timerName === null) {
+    timerName = DebugJS.DEFAULT_TIMER_NAME;
+  }
+
   if (!self.timers[timerName]) {
     DebugJS.log.w(timerName + ': timer undefined');
     return;
   }
+
   var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
   var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
 
@@ -3274,6 +3285,14 @@ DebugJS.timeLog = function(timerName, msg) {
   var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   DebugJS.log(str);
   return;
+};
+
+DebugJS.timeCheck = function(timerName, now) {
+  var self = Debug;
+  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
+  if (!self.timers[timerName]) return null;
+  var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
+  return t;
 };
 
 DebugJS.timeList = function() {
@@ -3504,15 +3523,24 @@ time.start = function(timerName, msg) {
 };
 
 time.split = function(timerName, msg) {
-  DebugJS.timeSplit(timerName, false, msg);
+  var t = DebugJS.timeSplit(timerName, false, msg);
+  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+    return t;
+  }
+  return;
 };
 
 time.end = function(timerName, msg) {
-  DebugJS.timeEnd(timerName, msg);
+  var t = DebugJS.timeEnd(timerName, msg);
+  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+    return t;
+  }
+  return;
 };
 
 time.check = function(timerName) {
-  return DebugJS.timeCheck(timerName);
+  var now = new Date();
+  return DebugJS.timeCheck(timerName, now);
 };
 
 var dbg = function() {};
