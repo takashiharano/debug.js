@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608172141';
+  this.v = '201608172330';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3318,7 +3318,7 @@ DebugJS.getElapsedTimeStr = function(t1, t2) {
 };
 
 DebugJS.getRandom = function(type, min, max) {
-  if (min) {
+  if (min !== undefined) {
     min |= 0;
     if (max) {
       max |= 0;

@@ -306,7 +306,7 @@ var demoSteps = [
 randomDemoFlag = false;
 function randomDemo() {
   if (!randomDemoFlag) return;
-  var next = dbg.random(10, 5000);
+  var next = dbg.random(0, 1500);
   var str = dbg.randomString(1, 55);
   var type = dbg.random(10);
   switch (type) {
