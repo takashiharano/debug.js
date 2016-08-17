@@ -10,37 +10,37 @@
 <!--<script src="../jquery-3.1.0.min.js"></script>-->
 <script src="debug.js"></script>
 <style>
-body {font-family: Arial, sans-serif; font-size: 18px; color: #333;}
-a {color: #00f; text-decoration: none;}
-a:hover {text-decoration: underline;}
-button, input[type="button"], input[type="submit"], select {width: 80px; height: 30px; font-size: 16px;}
-#wrapper {width: 100%;}
-#main {width: 900px; margin: 0 auto;}
-#header {position: fixed; width: 100%; top: 0; left: 0; height: 5rem; color: #fff; z-index: 1; background: #00a8ff;}
-#title { width: 900px; font-size: 4rem; margin: auto; height: 5rem; padding-left: 5px; white-space: nowrap;}
-.content {position: relative; top: 5rem; padding: 5px;}
-.caption { font-size: 1.8rem; font-weight: bold;}
-.code {width: 750px; padding: .5em; font-family: "Source Code Pro", Consolas, monospace; font-size: 14px; color: #aaa; background: #333; border: solid 1px #888; border-radius: 4px;}
-.emphasis {color: #eee;}
-.button {width: 200px; font-size: 18px; font-weight: bold; text-decoration: none; display: inline-block; text-align: center; vertical-align: middle; padding: 8px 0 10px; margin: 4px 4px 12px 4px; color: #fff; background: #0068cc; border-radius: 5px;}
-.button-100 {width: 100px;}
-.dl-btn {position: relative; top: -4px; width: 100px; margin: 0; padding: 4px 0; font-size: 14px;}
-.button:hover {cursor: pointer; background: #00a8ff; text-decoration: none;}
-.button-green {background: #00cc68;}
-.button-green:hover {background: #00ffa8;}
-.desc-table {font-family: Arial, sans-serif; font-size: 14px; border-collapse: collapse; width: 760px;}
-.desc-table th {background-color: #eee; border: solid 1px #444; padding: 4px 6px;}
-.desc-table td {border: solid 1px #444; padding: 4px 6px; vertical-align: top;}
-.desc-table .name {color: #0000a0;}
-.demo-table td {font-family: Consolas, monospace; font-size: 11px; color: #0000a0; width: 210px; vertical-align: bottom;}
-.demo-table-green td {color: #060;}
-.eg {font-family: Consolas, monospace; line-height: 1em;}
-.json {font-family: Consolas, monospace; font-size: 12px; margin: 16px 5px;}
-.annotation {font-size: 10px; color: #888; font-style: italic; margin-left: 2px;}
+body {font-family:Arial, sans-serif; font-size:18px; color:#333;}
+a {color:#00f; text-decoration:none;}
+a:hover {text-decoration:underline;}
+button, input[type="button"], input[type="submit"], select {width:80px; height:30px; font-size:16px;}
+#wrapper {width:100%;}
+#main {width:900px; margin:0 auto;}
+#header {position:fixed; width:100%; top:0; left:0; height:180px; color:#fff; z-index:1; background:#08f;}
+#title {position:absolute; width:900px; font-size:76px; top:0; bottom:0; left:0; right:0; margin:auto; height:80px; padding-left:5px; white-space:nowrap; font-family:Impact;line-height:28px;}
+.content {position:relative; top:190px; padding:5px;}
+.caption {font-size:30px; font-weight:bold;}
+.code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px;}
+.emphasis {color:#eee;}
+.button {width:200px; font-size:18px; font-weight:bold; text-decoration:none; display:inline-block; text-align:center; vertical-align:middle; padding:8px 0 10px; margin:4px 4px 12px 4px; color:#fff; background:#0068cc; border-radius:5px;}
+.button-100 {width:100px;}
+.dl-btn {position:relative; top:-4px; width:100px; margin:0; padding:4px 0; font-size:14px;}
+.button:hover {cursor:pointer; background:#00a8ff; text-decoration:none;}
+.button-green {background:#00cc68;}
+.button-green:hover {background:#00ffa8;}
+.desc-table {font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse; width:760px;}
+.desc-table th {background-color:#eee; border:solid 1px #444; padding:4px 6px;}
+.desc-table td {border:solid 1px #444; padding:4px 6px; vertical-align:top;}
+.desc-table .name {color:#0000a0;}
+.demo-table td {font-family:Consolas, monospace; font-size:11px; color:#0000a0; width:210px; vertical-align:bottom;}
+.demo-table-green td {color:#060;}
+.eg {font-family:Consolas, monospace; line-height:1em;}
+.json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
+.annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
 /*td {                         */
-/*  width: 100px;              */
-/*  font-size: 50px !important;*/
-/*  border: solid 1px #ccc;    */
+/*  width:100px;              */
+/*  font-size:50px !important;*/
+/*  border:solid 1px #ccc;    */
 /*  line-height:2em;           */
 /*}                            */
 </style>
@@ -340,7 +340,11 @@ function startStopRandomDemo() {
 <div id="wrapper">
 <div id="main">
 <div id="header">
-<div id="title">debug.js <span style="font-size:2rem;" id="title2">demo & description</span></div>
+<div id="title">
+debug.js
+<span style="font-size:34px;" id="title2">Easy Debugging w/o F12</span><br>
+<span style="font-size:22px;">Logging, Time Test, Element Inspection, Screen Measure, and more!</span>
+</div>
 </div><!--header-->
 <div class="content">
 <div class="caption">// Usage</div><br>
@@ -758,6 +762,25 @@ dbg.init(options);
     <td class="name">log.p</td>
     <td>variable</td>
     <td>Output object dump</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.t</td>
+    <td>
+      arg1: timer name<br>
+      arg2: message string
+    </td>
+    <td>
+      Output log w/ elapsed time
+<pre class="eg">
+log.t('timer1', foo)
+-&gt; 00:00:12.345 foo
+
+log.t(null, foo)
+-&gt; 00:00:12.345 foo
+<span class="annotation">default timer name will be used in case null is specified for the timer name.</span>
+</pre>
+    </td>
   </tr>
 
   <tr>
@@ -1264,44 +1287,44 @@ time.end();<br>
 <tr>
 <td>
 time.start('timer1');<br>
-<span class="button" onclick="time.start('timer1');">time.start()</span>
+<span class="button" onclick="time.start('timer1');">time.start() 1</span>
 </td>
 
 <td>
 time.split('timer1');<br>
-<span class="button" onclick="time.split('timer1');">time.split()</span>
+<span class="button" onclick="time.split('timer1');">time.split() 1</span>
 </td>
 
 <td>
 time.end('timer1');<br>
-<span class="button" onclick="time.end('timer1');">time.end()</span>
+<span class="button" onclick="time.end('timer1');">time.end() 1</span>
 </td>
 
 <td>
 log.t('timer1', 'elapsed time of %n');<br>
-<span class="button" onclick="log.t('timer1', 'elapsed time of %n');">log.t()</span>
+<span class="button" onclick="log.t('timer1', 'elapsed time of %n');">log.t() 1</span>
 </td>
 </tr>
 
 <tr>
 <td>
 time.start('timer2', '%t start [Timer Name = %n]');<br>
-<span class="button" onclick="time.start('timer2', '%t start [Timer Name = %n]');">time.start()</span>
+<span class="button" onclick="time.start('timer2', '%t start [Timer Name = %n]');">time.start() 2</span>
 </td>
 
 <td>
 time.split('timer2', '%n: split=%t/lap=%lt');<br>
-<span class="button" onclick="time.split('timer2', '%t %n: lap=%lt');">time.split()</span>
+<span class="button" onclick="time.split('timer2', '%t %n: lap=%lt');">time.split() 2</span>
 </td>
 
 <td>
 time.eEnd('timer2', '%n: split=%t/lap=%lt');<br>
-<span class="button" onclick="time.end('timer2', '%t %n: lap=%lt');">time.end()</span>
+<span class="button" onclick="time.end('timer2', '%t %n: lap=%lt');">time.end() 2</span>
 </td>
 
 <td>
-log.t('timer2', 'elapsed time of %n');<br>
-<span class="button" onclick="log.t('timer2', 'elapsed time of %n');">log.t()</span>
+log.t('timer2', 'elapsed time of %n t=%t lap=%lt');<br>
+<span class="button" onclick="log.t('timer2', 'n=%n t=%t lap=%lt');">log.t() 2</span>
 </td>
 </tr>
 </table>
@@ -1434,11 +1457,9 @@ dbg.setLed(n);<br>
 <span class="button" onclick="dbg.setLed(0x55);">setLed(0x55)</span>
 </td>
 
-<td>
-<span class="button button-100" onclick="dbg.setLed(0xaa);">0xaa</span>
+<td colspan="2">
+<span class="button" onclick="dbg.setLed(0xaa);">setLed(0xaa)</span>
 </td>
-
-<td></td>
 
 <td colspan="2">
 dbg.ledAllOn();<br>
