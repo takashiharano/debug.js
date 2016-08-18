@@ -5,10 +5,11 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608172330';
+  this.v = '201608190000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
+    'visibleKey': 113,
     'lines': 18,
     'bufsize': 100,
     'width': 500,
@@ -57,7 +58,6 @@ var DebugJS = function() {
   };
 
   this.DEFAULT_ELM_ID = '_debug_';
-  this.options = null;
   this.id = null;
   this.bodyEl = null;
   this.styleEl = null;
@@ -175,6 +175,8 @@ var DebugJS = function() {
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end/list&gt; [&lt;timer name&gt;]'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
+  this.options = null;
+  this.setupDefaultOptions();
 };
 DebugJS.ENABLE = true;
 DebugJS.CATCH_ALL_ERRORS = true;
@@ -201,6 +203,7 @@ DebugJS.STATE_ELEMENT_INSPECTING = 0x40000;
 DebugJS.STATE_TEXT_CHECKING = 0x80000;
 DebugJS.STATE_SCRIPT = 0x100000;
 DebugJS.STATE_LOG_SUSPENDING = 0x1000000;
+
 DebugJS.LOG_TYPE_STANDARD = 0;
 DebugJS.LOG_TYPE_ERROR = 1;
 DebugJS.LOG_TYPE_WARNING = 2;
@@ -214,6 +217,7 @@ DebugJS.WINDOW_SHADOW = 10;
 DebugJS.WINDOW_BORDER = 1;
 DebugJS.WINDOW_PADDING = 1;
 DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING * 2));
+DebugJS.OVERLAY_HALF_HEIGHT = 72; //%
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
@@ -266,6 +270,9 @@ DebugJS.FEATURES = [
   'useScriptEditor',
   'useCommandLine'
 ];
+
+dbg = function() {};
+dbg.el = null;
 
 DebugJS.prototype = {
   init: function(options) {
@@ -517,8 +524,19 @@ DebugJS.prototype = {
       'height': 'calc(100% - ' + ((self.options.fontSize + DebugJS.WINDOW_ADJUST) + DebugJS.WINDOW_SHADOW + self.options.fontSize + 10 - (overlayPanelPadding * 2)) + 'px)',
       'padding': overlayPanelPadding + 'px',
       'border': 'solid ' + overlayPanelBorder + 'px #333',
-      'background': 'rgba(0,0,0,0.7)',
+      'background': 'rgba(0,0,0,0.6)',
       'overflow': 'auto'
+    };
+
+    styles['.' + self.id + '-overlay-panel-half'] = {
+      'position': 'relative',
+      'top': '1px',
+      'left': '1px',
+      'width': 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + 2) + 'px)',
+      'height': 'calc(' + DebugJS.OVERLAY_HALF_HEIGHT + '% - ' + DebugJS.WINDOW_SHADOW + 'px)',
+      'padding': '4px',
+      'border': 'solid 1px #333',
+      'background': 'rgba(0,0,0,0.7)'
     };
 
     styles['.' + self.id + '-txt-text'] = {
@@ -580,10 +598,9 @@ DebugJS.prototype = {
   },
 
   setupDefaultOptions: function() {
-    var self = Debug;
-    self.options = {};
-    for (var key in self.DEFAULT_OPTIONS) {
-      self.options[key] = self.DEFAULT_OPTIONS[key];
+    this.options = {};
+    for (var key in this.DEFAULT_OPTIONS) {
+      this.options[key] = this.DEFAULT_OPTIONS[key];
     }
   },
 
@@ -1475,6 +1492,17 @@ DebugJS.prototype = {
     return logs;
   },
 
+  collapseMessagePanel: function() {
+    var self = Debug;
+    self.msgPanel.style.height = (100 - DebugJS.OVERLAY_HALF_HEIGHT) + '%';
+    self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+  },
+
+  expandMessagePanel: function() {
+    var self = Debug;
+    self.msgPanel.style.height = '100%';
+  },
+
   keyhandler: function(e) {
     var self = Debug;
     switch (e.keyCode) {
@@ -1552,7 +1580,7 @@ DebugJS.prototype = {
         }
         break;
 
-      case 113: // F2
+      case self.options.visibleKey:
         if (self.status & DebugJS.STATE_VISIBLE) {
           if (self.status & DebugJS.STATE_MEASURE) {
             self.disableMeasureMode();
@@ -1616,6 +1644,8 @@ DebugJS.prototype = {
 
   mousedownHandler: function(e) {
     var self = Debug;
+    var posX = e.clientX;
+    var posY = e.clientY;
     switch (e.button) {
       case 0:
         self.mouseClickL = DebugJS.COLOR_ACTIVE;
@@ -1628,6 +1658,10 @@ DebugJS.prototype = {
         break;
       case 2:
         self.mouseClickR = DebugJS.COLOR_ACTIVE;
+        if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
+          dbg.el = document.elementFromPoint(posX, posY);
+          DebugJS.log.s('dbg.el has been updated.');
+        }
         break;
       default:
         break;
@@ -1883,16 +1917,11 @@ DebugJS.prototype = {
     var style = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
     var MAX_LEN = 50;
-    var dom = '<pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;">Element Info' +
-    '<span style="float:right;margin-right:4px;">(Total: ' + document.getElementsByTagName('*').length + ')</span>\n\n' +
-    'tag        : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
-    'id         : ' + el.id + '\n' +
-    'class      : ' + el.className + '\n' +
-    'display    : ' + style.display + ' / z-index: ' + style.zIndex + '\n' +
-    'position   : ' + style.position + ' / float: ' + style.float + ' / clear: ' + style.clear + '\n' +
-    'margin     : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + ' / padding: ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
-    'size       : width: ' + el.clientWidth + 'px / height: ' + el.clientHeight + 'px\n' +
-    'location   : top: ' + Math.round(rect.top + window.pageYOffset) + 'px / left: ' + Math.round(rect.left + window.pageXOffset) + ' px\n';
+
+    var text = el.innerText;
+    txt = text.replace(/\s{2,}/g, '').replace(/\n/g, '').replace(/\r/g, '').substr(0, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (text.length > MAX_LEN) {txt += '<span style="color:#888">...</span>';}
+
     var backgroundColor = style.backgroundColor;
     var bgColor16 = '';
     if (backgroundColor != 'transparent') {
@@ -1900,27 +1929,38 @@ DebugJS.prototype = {
       var bgColor16conv = DebugJS.convRGB10to16(bgColor10);
       bgColor16 = '#' + bgColor16conv.r + bgColor16conv.g + bgColor16conv.b;
     }
-    dom += 'bg-color   : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n';
+
     var color = style.color;
     var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
     var color16 = DebugJS.convRGB10to16(color10);
-    dom += 'color      : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
-    'font       : size: ' + style.fontSize + '  family: ' + style.fontFamily + '\n' +
-    'name       : ' + (el.name ? el.name : '') + '\n' +
-    'value      : ' + (el.value ? el.value : '') + '\n';
+
     var src = (el.src ? el.src : '');
     if (src.length > MAX_LEN) {
       var src1 = src.substr(0, (MAX_LEN / 2));
       var src2 = src.slice(-(MAX_LEN / 2));
       src = src1 + '<span style="color:#888">...</span>' + src2;
     }
-    dom += 'src        : ' + src + '\n';
-    var txt = el.innerText;
-    dom += 'text       : ' + txt.replace(/\n/g, '').replace(/\r/g, '').substr(0, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    if (txt.length > MAX_LEN) {dom += '<span style="color:#888">...</span>';}
-    dom += '\n';
 
-    dom += '----------------------------------------\n' +
+    var dom = '<pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;"><span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>' +
+    '<span style="float:right;margin-right:4px;">(Total: ' + document.getElementsByTagName('*').length + ')</span>\n' +
+    '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
+    '----------------------------------------\n' +
+    'tag      : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
+    'id       : ' + el.id + '\n' +
+    'class    : ' + el.className + '\n' +
+    'display  : ' + style.display + ' / z-index = ' + style.zIndex + '\n' +
+    'position : ' + style.position + ' / float = ' + style.float + ' / clear = ' + style.clear + '\n' +
+    'size     : width = ' + el.clientWidth + 'px / height = ' + el.clientHeight + 'px\n' +
+    'margin   : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + '\n' +
+    'padding  : ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
+    'font     : size = ' + style.fontSize + '  family = ' + style.fontFamily + '\n' +
+    'color    : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+    'bg-color : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+    'location : top = ' + Math.round(rect.top + window.pageYOffset) + 'px / left = ' + Math.round(rect.left + window.pageXOffset) + ' px\n' +
+    'name     : ' + (el.name ? el.name : '') + '\n' +
+    'value    : ' + (el.value ? el.value : '') + '\n' +
+    'src      : ' + src + '\n' +
+    '----------------------------------------\n' +
     'onclick      : ' + self.getEventHandlerString(el.onclick) + '\n' +
     'ondblclick   : ' + self.getEventHandlerString(el.ondblclick) + '\n' +
     'onmousedown  : ' + self.getEventHandlerString(el.onmousedown) + '\n' +
@@ -1942,7 +1982,13 @@ DebugJS.prototype = {
     'onsubmit     : ' + self.getEventHandlerString(el.onsubmit) + '\n' +
     '\n' +
     'onscroll     : ' + self.getEventHandlerString(el.onscroll) + '\n' +
-    '</pre>';
+    '----------------------------------------\n';
+
+    for (data in el.dataset) {
+      dom += 'data-' + data + ': ' + el.dataset[data] + '\n';
+    }
+
+    dom += '</pre>';
     self.elmInspectionPanel.innerHTML = dom;
 
     if (el != self.prevElm) {
@@ -2162,19 +2208,8 @@ DebugJS.prototype = {
       var code2 = 'var i = 0;\\nledTest();\\nfunction ledTest() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    dbg.call(ledTest, 500);\\n  } else {\\n    dbg.ledAllOff();\\n  }\\n  i++;\\n}\\n';
       var code3 = '';
 
-      var scriptHeight = 72; //%
-      self.msgPanel.style.height = (100 - scriptHeight) + '%';
-      self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
-
       self.scriptPanel = document.createElement('div');
-      self.scriptPanel.style.position = 'relative';
-      self.scriptPanel.style.top = '1px';
-      self.scriptPanel.style.left = '1px';
-      self.scriptPanel.style.width = 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + 2) + 'px)';
-      self.scriptPanel.style.height = 'calc(' + scriptHeight + '% - ' + DebugJS.WINDOW_SHADOW + 'px)';
-      self.scriptPanel.style.padding = '4px';
-      self.scriptPanel.style.border = 'solid 1px #333';
-      self.scriptPanel.style.background = 'rgba(0,0,0,0.7)';
+      self.scriptPanel.className = self.id + '-overlay-panel-half';
       var html = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
@@ -2182,6 +2217,7 @@ DebugJS.prototype = {
       '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code2 + '\';">[CODE2]</span>' +
       '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code3 + '\';">[CODE3]</span>';
       self.scriptPanel.innerHTML = html;
+      self.collapseMessagePanel();
       self.mainPanel.appendChild(self.scriptPanel);
 
       self.scriptEditor = document.createElement('textarea');
@@ -2231,7 +2267,7 @@ DebugJS.prototype = {
     if (self.scriptPanel != null) {
       self.mainPanel.removeChild(self.scriptPanel);
       self.scriptPanel = null;
-      self.msgPanel.style.height = '100%';
+      self.expandMessagePanel();
     }
     self.status &= ~DebugJS.STATE_SCRIPT;
   },
@@ -3517,6 +3553,7 @@ log.clear = function() {
   Debug.clearMessage();
 };
 
+// ---- ---- ---- ---- ---- ---- ---- ----
 var time = function() {};
 time.start = function(timerName, msg) {
   DebugJS.timeStart(timerName, msg);
@@ -3543,7 +3580,7 @@ time.check = function(timerName) {
   return DebugJS.timeCheck(timerName, now);
 };
 
-var dbg = function() {};
+// ---- ---- ---- ---- ---- ---- ---- ----
 dbg.init = function(options) {
   Debug.init(options);
 };

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=900,initial-scale=1">
+<meta name="viewport" content="width=900,nitial-scale=1">
 <title>debug.js</title>
 <meta name="description" content="debug.js is an auxiliary JavaScript library for web development.">
 <!--<link rel="stylesheet" href="../foundation.css" />-->
@@ -45,6 +45,8 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 /*}                            */
 </style>
 <script>
+//time.start();
+//log.t(null, 'time test');
 log('Here is the log output example!');
 
 var a = {
@@ -106,6 +108,7 @@ window.onload = function() {
 
   var options1 = {
     'visible': true,
+    'visibleKey': 119,
     'position': 'c'
     //'position': 'n'
     //'position': 'ne'
@@ -343,7 +346,7 @@ function startStopRandomDemo() {
 <div id="title">
 debug.js
 <span style="font-size:34px;" id="title2">Easy Debugging w/o F12</span><br>
-<span style="font-size:22px;">Logging, Time Test, Element Inspection, Screen Measure, and more!</span>
+<span style="font-size:22px;">Logging, Time Test, Element Inspection, Screen Measure, and more</span>
 </div>
 </div><!--header-->
 <div class="content">
@@ -424,6 +427,12 @@ dbg.init(options);
     <td class="name">visible</td>
     <td>Default vibible status</td>
     <td>false</td>
+  </tr>
+
+  <tr>
+    <td class="name">visibleKey</td>
+    <td>Key code for the debug window vibible/hide control</td>
+    <td>113 <span class="annotation">(F2)</span></td>
   </tr>
 
   <tr>
@@ -1539,6 +1548,8 @@ dummy form for DOM Element inspection
     <option value="2">opt2</option>
     <option value="3">opt3</option>
   </select>
+  <br><br>
+  <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
 </form>
 
 <!--
