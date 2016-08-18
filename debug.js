@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608190000';
+  this.v = '201608190130';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1919,7 +1919,7 @@ DebugJS.prototype = {
     var MAX_LEN = 50;
 
     var text = el.innerText;
-    txt = text.replace(/\s{2,}/g, '').replace(/\n/g, '').replace(/\r/g, '').substr(0, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    txt = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '').substr(0, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
     if (text.length > MAX_LEN) {txt += '<span style="color:#888">...</span>';}
 
     var backgroundColor = style.backgroundColor;
@@ -1941,7 +1941,8 @@ DebugJS.prototype = {
       src = src1 + '<span style="color:#888">...</span>' + src2;
     }
 
-    var dom = '<pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;"><span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>' +
+    var dom = '<pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;"> ' +
+    '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>' +
     '<span style="float:right;margin-right:4px;">(Total: ' + document.getElementsByTagName('*').length + ')</span>\n' +
     '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
     '----------------------------------------\n' +
@@ -1956,7 +1957,7 @@ DebugJS.prototype = {
     'font     : size = ' + style.fontSize + '  family = ' + style.fontFamily + '\n' +
     'color    : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
     'bg-color : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
-    'location : top = ' + Math.round(rect.top + window.pageYOffset) + 'px / left = ' + Math.round(rect.left + window.pageXOffset) + ' px\n' +
+    'location : top = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + style.top + ') / left = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + style.left + ')\n' +
     'name     : ' + (el.name ? el.name : '') + '\n' +
     'value    : ' + (el.value ? el.value : '') + '\n' +
     'src      : ' + src + '\n' +
