@@ -108,7 +108,7 @@ window.onload = function() {
 
   var options1 = {
     'visible': true,
-    'visibleKey': 119,
+    //'visibleKey': 119,
     'position': 'c'
     //'position': 'n'
     //'position': 'ne'
@@ -1525,7 +1525,9 @@ console.timeEnd('timer3');<br>
 <br>
 
 <!-- ********************************************************************** -->
-JSON Sample for "json" command
+JSON Sample for "json" command<br>
+<div class="annotation">execute a command the command line like below.<br>$ json {"foo": "abc", "bar": 1}</div>
+
 <div id="json1" class="json">
 {"name": "John Smith", "age": 25, "city": "New York"}
 </div>
@@ -1536,21 +1538,25 @@ JSON Sample for "json" command
 
 <br>
 
-dummy form for DOM Element inspection
-<form name="f1">
-  text <input id="inputtext1" name="input1" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"><br>
-  pass <input type="password" name="pass1"><br>
-  <input type="submit" value="Submit" onsubmit="return false;">
-  <input type="button" value="BUTTON">
-  <button type="button">button</button>
-  <select name="select1" onchange="log('select1: ' + this.value);">
-    <option value="1">opt1</option>
-    <option value="2">opt2</option>
-    <option value="3">opt3</option>
-  </select>
-  <br><br>
+<div>Dummy elements for DOM Element inspection</div>
+<div style="margin-top:10px;font-size:12px;">
+  <div style="float:left;margin-right:20px;">
+    <form name="f1">
+      text <input id="inputtext1" name="input1" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"><br>
+      pass <input type="password" name="pass1"><br>
+      <input type="submit" value="Submit" onsubmit="return false;">
+      <input type="button" value="BUTTON">
+      <button type="button">button</button>
+      <select name="select1" onchange="log('select1: ' + this.value);">
+        <option value="1">opt1</option>
+        <option value="2">opt2</option>
+        <option value="3">opt3</option>
+      </select>
+    </form>
+  </div>
   <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
-</form>
+  <div style="width:400px;height:100px;background:#eef;overflow:scroll;">DIV</div>
+</div>
 
 <!--
 <table>
