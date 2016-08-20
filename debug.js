@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608192320';
+  this.v = '201608201646';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2247,16 +2247,15 @@ DebugJS.prototype = {
     if (self.scriptPanel == null) {
       var code1 = 'time.start();\\nfor (var i = 0; i < 1000000; i++) {\\n\\n}\\ntime.end();\\n';
       var code2 = 'var i = 0;\\nledTest();\\nfunction ledTest() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    dbg.call(ledTest, 500);\\n  } else {\\n    dbg.ledAllOff();\\n  }\\n  i++;\\n}\\n';
-      var code3 = '';
 
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.className = self.id + '-overlay-panel-half';
       var html = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code1 + '\';">[CODE1]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code2 + '\';">[CODE2]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.scriptEditor.value+=\'' + code3 + '\';">[CODE3]</span>';
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>' +
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>';
       self.scriptPanel.innerHTML = html;
       self.collapseMessagePanel();
       self.mainPanel.appendChild(self.scriptPanel);
@@ -2281,6 +2280,24 @@ DebugJS.prototype = {
     }
     self.updateScriptBtnPanel();
     self.scriptEditor.focus();
+  },
+
+  insertSnippet: function(code) {
+    var self = Debug;
+    var editor = self.scriptEditor;
+    if (code == null) {
+      editor.value = '';
+      editor.focus();
+    } else {
+      var buf = editor.value;
+      var posCursole = editor.selectionStart;
+      var leftBuf = buf.substr(0, posCursole);
+      var rightBuf = buf.substr(posCursole, buf.length);
+      buf = leftBuf + code + rightBuf;
+      self.scriptEditor.focus();
+      self.scriptEditor.value = buf;
+      editor.selectionStart = editor.selectionEnd = posCursole + code.length;
+    }
   },
 
   saveScriptBuf: function() {
