@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608201646';
+  this.v = '201608210207';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -49,6 +49,7 @@ var DebugJS = function() {
     'useKeyStatusInfo': true,
     'useLed': true,
     'useScreenMeasure': true,
+    'useSystemInfo': true,
     'useElementInspection': true,
     'useTextChecker': true,
     'useScriptEditor': true,
@@ -68,6 +69,8 @@ var DebugJS = function() {
   this.clockPanel = null;
   this.measureBtnPanel = null;
   this.measureBox = null;
+  this.sysInfoBtnPanel = null;
+  this.sysInfoPanel = null;
   this.elmInspectionBtnPanel = null;
   this.elmInspectionPanel = null;
   this.prevElm = null;
@@ -113,7 +116,6 @@ var DebugJS = function() {
   this.mouseClickL = DebugJS.COLOR_INACTIVE;
   this.mouseClickC = DebugJS.COLOR_INACTIVE;
   this.mouseClickR = DebugJS.COLOR_INACTIVE;
-  this.screenSizePanel = null;
   this.windowSizePanel = null;
   this.clientSizePanel = null;
   this.bodySizePanel = null;
@@ -168,7 +170,6 @@ var DebugJS = function() {
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json [-p] &lt;one-line json&gt;'},
-    {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded.'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p &lt;object&gt;'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post &lt;url&gt;'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number / string.', 'usage': 'random [-d|-s] [min] [max]'},
@@ -200,9 +201,10 @@ DebugJS.STATE_RESIZING_ALL = DebugJS.STATE_RESIZING | DebugJS.STATE_RESIZING_N |
 DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x4000;
 DebugJS.STATE_MEASURE = 0x10000;
 DebugJS.STATE_MEASURING = 0x20000;
-DebugJS.STATE_ELEMENT_INSPECTING = 0x40000;
-DebugJS.STATE_TEXT_CHECKING = 0x80000;
-DebugJS.STATE_SCRIPT = 0x100000;
+DebugJS.STATE_SYSTEM_INFO = 0x40000;
+DebugJS.STATE_ELEMENT_INSPECTING = 0x80000;
+DebugJS.STATE_TEXT_CHECKING = 0x100000;
+DebugJS.STATE_SCRIPT = 0x200000;
 DebugJS.STATE_LOG_SUSPENDING = 0x800000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x1000000;
 
@@ -215,6 +217,8 @@ DebugJS.LOG_TYPE_SYSTEM = 5;
 DebugJS.LOG_TYPE_MULTILINE = 6;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
+DebugJS.DEBUG_WIN_EXPAND_W = 960;
+DebugJS.DEBUG_WIN_EXPAND_H = 640;
 DebugJS.WINDOW_SHADOW = 10;
 DebugJS.WINDOW_BORDER = 1;
 DebugJS.WINDOW_PADDING = 1;
@@ -224,6 +228,7 @@ DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.MEASURE_BUTTON_COLOR = '#6cf';
+DebugJS.SYS_BUTTON_COLOR = '#3af';
 DebugJS.DOM_BUTTON_COLOR = '#f66';
 DebugJS.TXT_BUTTON_COLOR = '#ff0';
 DebugJS.JS_BUTTON_COLOR = '#6df';
@@ -267,6 +272,7 @@ DebugJS.FEATURES = [
   'useKeyStatusInfo',
   'useLed',
   'useScreenMeasure',
+  'useSystemInfo',
   'useElementInspection',
   'useTextChecker',
   'useScriptEditor',
@@ -462,6 +468,7 @@ DebugJS.prototype = {
       }
     }
 
+    // style settings
     var styles = {};
     styles['#' + self.id] = {
       'letter-spacing': '0'
@@ -539,6 +546,34 @@ DebugJS.prototype = {
       'padding': '4px',
       'border': 'solid 1px #333',
       'background': 'rgba(0,0,0,0.7)'
+    };
+
+    styles['.' + self.id + '-overlay-panel pre'] = {
+      'padding': '0 1px',
+      'color': '#fff',
+      'font-size': self.options.fontSize + 'px',
+      'font-family': self.options.fontFamily
+    };
+
+    styles['.' + self.id + '-separator'] = {
+      'height': (self.options.fontSize * 0.5) + 'px'
+    };
+
+    styles['.' + self.id + '-unavailable'] = {
+      'color': '#ccc'
+    };
+
+    styles['.' + self.id + '-showhide-button'] = {
+      'color': '#0a0',
+      'font-size': (self.options.fontSize * 0.8) + 'px'
+    };
+
+    styles['.' + self.id + '-showhide-button:hover'] = {
+      'cursor': 'pointer'
+    };
+
+    styles['.' + self.id + '-showhide-body'] = {
+      'display': 'none'
     };
 
     styles['.' + self.id + '-txt-text'] = {
@@ -710,7 +745,7 @@ DebugJS.prototype = {
     if (self.options.useClearButton) {
       self.clrBtnPanel = document.createElement('span');
       self.clrBtnPanel.className = this.id + '-btn';
-      self.clrBtnPanel.style.marginRight = '4px';
+      self.clrBtnPanel.style.marginRight = '3px';
       self.clrBtnPanel.onclick = new Function('Debug.clearMessage();');
       self.clrBtnPanel.innerText = '[CLR]';
       self.headPanel.appendChild(self.clrBtnPanel);
@@ -719,7 +754,6 @@ DebugJS.prototype = {
     // Clock
     if (self.options.useClock) {
       self.clockPanel = document.createElement('span');
-      self.clockPanel.style.marginRight = '2px';
       self.clockPanel.style.color = self.options.clockColor;
       self.clockPanel.style.fontSize = self.options.fontSize + 'px';
       self.headPanel.appendChild(self.clockPanel);
@@ -777,12 +811,12 @@ DebugJS.prototype = {
     if (self.options.useStopWatch) {
       self.swPanel = document.createElement('span');
       self.swPanel.style.float = 'right';
-      self.swPanel.style.marginRight = '8px';
+      self.swPanel.style.marginRight = '6px';
       self.headPanel.appendChild(self.swPanel);
 
       self.swBtnPanel = document.createElement('span');
       self.swBtnPanel.style.float = 'right';
-      self.swBtnPanel.style.marginRight = '4px';
+      self.swBtnPanel.style.marginRight = '3px';
       self.headPanel.appendChild(self.swBtnPanel);
     }
 
@@ -804,7 +838,7 @@ DebugJS.prototype = {
       self.textCheckerBtnPanel = document.createElement('span');
       self.textCheckerBtnPanel.className = this.id + '-btn';
       self.textCheckerBtnPanel.style.float = 'right';
-      self.textCheckerBtnPanel.style.marginRight = '4px';
+      self.textCheckerBtnPanel.style.marginRight = '3px';
       self.textCheckerBtnPanel.innerText = 'TXT';
       self.textCheckerBtnPanel.onclick = new Function('Debug.toggleTextCheckerMode();');
       self.textCheckerBtnPanel.onmouseover = new Function('Debug.textCheckerBtnPanel.style.color=DebugJS.TXT_BUTTON_COLOR;');
@@ -817,12 +851,25 @@ DebugJS.prototype = {
       self.elmInspectionBtnPanel = document.createElement('span');
       self.elmInspectionBtnPanel.className = this.id + '-btn';
       self.elmInspectionBtnPanel.style.float = 'right';
-      self.elmInspectionBtnPanel.style.marginRight = '4px';
+      self.elmInspectionBtnPanel.style.marginRight = '3px';
       self.elmInspectionBtnPanel.innerText = 'DOM';
       self.elmInspectionBtnPanel.onclick = new Function('Debug.toggleElmInspectionMode();');
       self.elmInspectionBtnPanel.onmouseover = new Function('Debug.elmInspectionBtnPanel.style.color=DebugJS.DOM_BUTTON_COLOR;');
       self.elmInspectionBtnPanel.onmouseout = new Function('Debug.elmInspectionBtnPanel.style.color=(Debug.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.elmInspectionBtnPanel);
+    }
+
+    // System Info Button
+    if (self.options.useSystemInfo) {
+      self.sysInfoBtnPanel = document.createElement('span');
+      self.sysInfoBtnPanel.className = this.id + '-btn';
+      self.sysInfoBtnPanel.style.float = 'right';
+      self.sysInfoBtnPanel.style.marginRight = '3px';
+      self.sysInfoBtnPanel.innerText = 'SYS';
+      self.sysInfoBtnPanel.onclick = new Function('Debug.toggleSystemInfoMode();');
+      self.sysInfoBtnPanel.onmouseover = new Function('Debug.sysInfoBtnPanel.style.color=DebugJS.SYS_BUTTON_COLOR;');
+      self.sysInfoBtnPanel.onmouseout = new Function('Debug.sysInfoBtnPanel.style.color=(Debug.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.sysInfoBtnPanel);
     }
 
     // Screen Measure Button
@@ -833,8 +880,8 @@ DebugJS.prototype = {
       self.measureBtnPanel.style.float = 'right';
       self.measureBtnPanel.style.marginTop = '1px';
       self.measureBtnPanel.style.marginRight = '6px';
-      self.measureBtnPanel.style.width = (12 * self.options.zoom) + 'px';
-      self.measureBtnPanel.style.height = (8 * self.options.zoom) + 'px';
+      self.measureBtnPanel.style.width = (10 * self.options.zoom) + 'px';
+      self.measureBtnPanel.style.height = (7 * self.options.zoom) + 'px';
       self.measureBtnPanel.innerText = ' ';
       self.measureBtnPanel.onclick = new Function('Debug.toggleMeasureMode();');
       self.measureBtnPanel.onmouseover = new Function('Debug.measureBtnPanel.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
@@ -854,10 +901,6 @@ DebugJS.prototype = {
 
     // Window Size
     if (self.options.useWindowSizeInfo) {
-      self.screenSizePanel = document.createElement('span');
-      self.screenSizePanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.screenSizePanel);
-
       self.windowSizePanel = document.createElement('span');
       self.windowSizePanel.className = this.id + '-sys-info';
       self.infoPanel.appendChild(self.windowSizePanel);
@@ -942,6 +985,10 @@ DebugJS.prototype = {
       self.updateMeasureBtnPanel();
     }
 
+    if (self.options.useSystemInfo) {
+      self.updateSysInfoBtnPanel();
+    }
+
     if (self.options.useElementInspection) {
       self.updateElmInspectionBtnPanel();
     }
@@ -976,12 +1023,7 @@ DebugJS.prototype = {
       self.updateMouseClickPanel();
     }
 
-    if (self.options.showElement) {
-      self.updateElementPanel();
-    }
-
     if (self.options.useWindowSizeInfo) {
-      self.updateScreenSizePanel();
       self.updateWindowSizePanel();
       self.updateClientSizePanel();
       self.updateBodySizePanel();
@@ -1045,11 +1087,6 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_SHOW_CLOCK) {
       setTimeout(self.updateClockPanel, 500);
     }
-  },
-
-  // Update Screen Size
-  updateScreenSizePanel: function() {
-    this.screenSizePanel.innerText = 'SCR:' + 'w=' + screen.width + ',h=' + screen.height;
   },
 
   // Update Window Size
@@ -1125,6 +1162,12 @@ DebugJS.prototype = {
   updateMeasureBtnPanel: function() {
     var self = Debug;
     self.measureBtnPanel.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE);
+  },
+
+  // Update System Info Button
+  updateSysInfoBtnPanel: function() {
+    var self = Debug;
+    self.sysInfoBtnPanel.style.color = (self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Element Inspection Button
@@ -1256,6 +1299,7 @@ DebugJS.prototype = {
     if (el.nodeName == 'TEXTAREA') return true;
     if (el == self.clrBtnPanel) return true;
     if (el == self.measureBtnPanel) return true;
+    if (el == self.sysInfoBtnPanel) return true;
     if (el == self.elmInspectionBtnPanel) return true;
     if (el == self.textCheckerBtnPanel) return true;
     if (el == self.scriptBtnPanel) return true;
@@ -1536,6 +1580,11 @@ DebugJS.prototype = {
         break;
 
       case 27: // ESC
+        if ((self.status & DebugJS.STATE_DRAGGING) || (self.status & DebugJS.STATE_RESIZING)) {
+          self.status &= ~DebugJS.STATE_DRAGGING;
+          self.endResize();
+          return;
+        }
         if (self.status & DebugJS.STATE_MEASURE) {
           self.disableMeasureMode();
           return;
@@ -1552,15 +1601,11 @@ DebugJS.prototype = {
           self.disableScriptEditor();
           return;
         }
-        if (self.status & DebugJS.STATE_RESIZING) {
-          self.endResize();
+        if (self.status & DebugJS.STATE_SYSTEM_INFO) {
+          self.disableSystemInfo();
           return;
         }
-        if (self.status & DebugJS.STATE_DRAGGING) {
-          self.status &= ~DebugJS.STATE_DRAGGING;
-        } else {
-          self.hideDebugWindow();
-        }
+        self.hideDebugWindow();
         break;
 
       case 38: // Up
@@ -1742,8 +1787,8 @@ DebugJS.prototype = {
     self.storeSizeAndPos();
     var cw = document.documentElement.clientWidth;
     var ch = document.documentElement.clientHeight;
-    var w = 900;
-    var h = 600;
+    var w = DebugJS.DEBUG_WIN_EXPAND_W;
+    var h = DebugJS.DEBUG_WIN_EXPAND_H;
     var t = ch / 2 - h / 2;
     var l = cw / 2 - w / 2;
     if (w > cw) {w = cw; l = 0;}
@@ -1753,6 +1798,7 @@ DebugJS.prototype = {
     self.debugWindow.style.width = w + 'px';
     self.debugWindow.style.height = h + 'px';
     self.resizeMainHeight();
+    self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
     self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
 
@@ -1902,6 +1948,164 @@ DebugJS.prototype = {
     self.status &= ~DebugJS.STATE_MEASURING;
   },
 
+  toggleSystemInfoMode: function() {
+    var self = Debug;
+    if (self.status & DebugJS.STATE_SYSTEM_INFO) {
+      self.disableSystemInfo();
+    } else {
+      self.enableSystemInfo();
+    }
+  },
+
+  enableSystemInfo: function() {
+    var self = Debug;
+    self.status |= DebugJS.STATE_SYSTEM_INFO;
+    if (self.sysInfoPanel == null) {
+      self.sysInfoPanel = document.createElement('div');
+      self.sysInfoPanel.className = self.id + '-overlay-panel';
+      self.mainPanel.appendChild(self.sysInfoPanel);
+    }
+    self.updateSysInfoBtnPanel();
+    self.showSystemInfo();
+  },
+
+  disableSystemInfo: function() {
+    var self = Debug;
+    if (self.sysInfoPanel != null) {
+      self.mainPanel.removeChild(self.sysInfoPanel);
+      self.sysInfoPanel = null;
+    }
+    self.status &= ~DebugJS.STATE_SYSTEM_INFO;
+    self.updateSysInfoBtnPanel();
+  },
+
+  showSystemInfo: function(e) {
+    var self = Debug;
+    var ITEM_NAME_COLOR = '#8f0';
+    var INDENT = '             ';
+
+    var screenSize = 'w=' + screen.width + ' x h=' + screen.height;
+    var language = (navigator.browserLanguage || navigator.language || navigator.userLanguage);
+    var jq = '<span class="' + self.id + '-unavailable">not loaded</span>';
+    if (typeof jQuery != 'undefined') {
+      jq = 'v' + jQuery.fn.jquery;
+    }
+
+    var links = document.getElementsByTagName('link');
+    var loadedStyles = '<span class="' + self.id + '-unavailable">no external css files</span>';
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].rel == 'stylesheet') {
+        if (i == 0) {
+          loadedStyles = links[i].href;
+        } else {
+          loadedStyles += '\n' + INDENT + links[i].href;
+        }
+      }
+    }
+
+    var scripts = document.getElementsByTagName('script');
+    var loadedScripts = '<span class="' + self.id + '-unavailable">no external script files</span>';
+    for (var i = 0; i < scripts.length; i++) {
+      if (scripts[i].src) {
+        if (i == 0) {
+          loadedScripts = scripts[i].src;
+        } else {
+          loadedScripts += '\n' + INDENT + scripts[i].src;
+        }
+      }
+    }
+
+    var onload = self.createFoldingText(window.onload, 'onload');
+    var onunload = self.createFoldingText(window.onunload, 'onunload');
+    var onmousedown = self.createFoldingText(window.onmousedown, 'onmousedown');
+    var onmousemove = self.createFoldingText(window.onmousemove, 'onmousemove');
+    var onmouseup = self.createFoldingText(window.onmousedown, 'onmouseup');
+    var onkeydown = self.createFoldingText(window.onkeydown, 'onkeydown');
+    var onkeypress = self.createFoldingText(window.onkeypress, 'onkeypress');
+    var onkeyup = self.createFoldingText(window.onkeyup, 'onkeyup');
+    var oncontextmenu = self.createFoldingText(window.oncontextmenu, 'oncontextmenu');
+    var onresize = self.createFoldingText(window.oncontextmenu, 'onresize');
+    var onscroll = self.createFoldingText(window.oncontextmenu, 'onscroll');
+    var onselect = self.createFoldingText(window.oncontextmenu, 'onselect');
+    var onselectstart = self.createFoldingText(window.oncontextmenu, 'onselectstart');
+    var onerror = self.createFoldingText(window.onerror, 'onerror');
+
+    var html = '<pre>' +
+    '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>\n\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">SCREEN SIZE</span>: ' + screenSize + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Language</span>   : ' + language + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">User Agent</span> : ' + navigator.userAgent + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">CSS</span>        : ' + loadedStyles + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">script</span>     : ' + loadedScripts + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">jQuery</span>     : ' + jq + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onload</span>     : ' + onload + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onunload</span>   : ' + onunload + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onmousedown</span>: ' + onmousedown + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onmousemove</span>: ' + onmousemove + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onmouseup</span>  : ' + onmouseup + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onkeydown</span>  : ' + onkeydown + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onkeypress</span> : ' + onkeypress + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onkeyup</span>    : ' + onkeyup + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onresize</span>   : ' + onresize + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onscroll</span>   : ' + onscroll + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onselect</span>   : ' + onselect + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onselectstart</span>: ' + onselectstart + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.oncontextmenu</span>: ' + oncontextmenu + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.onerror</span>      : ' + onerror + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Cookie</span>: ' + document.cookie + '\n' +
+    '</pre>';
+    self.sysInfoPanel.innerHTML = html;
+  },
+
+  showHideByName: function(name) {
+    var self = Debug;
+    var button = document.getElementById(self.id + '-' + name + '__button');
+    var partialBody = document.getElementById(self.id + '-' + name + '__partial-body');
+    var body = document.getElementById(self.id + '-' + name + '__body');
+    if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
+      button.innerText = '▼';
+      partialBody.style.display = 'none';
+      body.style.display = 'block';
+    } else {
+      button.innerText = '▶';
+      partialBody.style.display = 'inline';
+      body.style.display = 'none';
+    }
+  },
+
+  createFoldingText: function(obj, name) {
+    var self = Debug;
+    var MAX_LEN = 45;
+    var foldingText;
+    if (!obj) {
+      foldingText = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
+    } else {
+      foldingText = obj + '';
+      if (foldingText.indexOf('\n') >= 1) {
+        partial = self.trimDownText(foldingText, MAX_LEN);
+        if (foldingText.length > MAX_LEN) {
+          partial += '<span style="color:#ddd">...</span>';
+        }
+        foldingText = '<span class="' + self.id + '-showhide-button" id="' + self.id + '-' + name + '__button" onclick="Debug.showHideByName(\'' + name + '\')">▶</span> ' +
+        '<span id="' + self.id + '-' + name + '__partial-body">' + partial + '</span>' +
+        '<div class="' + self.id + '-showhide-body" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
+      }
+    }
+    return foldingText;
+  },
+
+  trimDownText: function(text, maxLen) {
+    return text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '').substr(0, maxLen);
+  },
+
   toggleElmInspectionMode: function() {
     var self = Debug;
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
@@ -1914,13 +2118,11 @@ DebugJS.prototype = {
   enableElmInspection: function() {
     var self = Debug;
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
-
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
       self.elmInspectionPanel.className = self.id + '-overlay-panel';
       self.mainPanel.appendChild(self.elmInspectionPanel);
     }
-
     self.updateElmInspectionBtnPanel();
     self.bodyEl.style.cursor = 'zoom-in';
   },
@@ -1958,7 +2160,7 @@ DebugJS.prototype = {
     var MAX_LEN = 50;
 
     var text = el.innerText;
-    txt = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '').substr(0, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    txt = self.trimDownText(text, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
     if (text.length > MAX_LEN) {txt += '<span style="color:#888">...</span>';}
 
     var backgroundColor = style.backgroundColor;
@@ -1980,11 +2182,11 @@ DebugJS.prototype = {
       src = src1 + '<span style="color:#888">...</span>' + src2;
     }
 
-    var dom = '<pre style="font-family:' + self.options.fontFamily + ';font-size:' + self.options.fontSize + 'px;color:#fff;"> ' +
+    var html = '<pre>' +
     '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>' +
     '<span style="float:right;margin-right:4px;">(Total: ' + document.getElementsByTagName('*').length + ')</span>\n' +
     '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
-    '------------------------------------------------------------\n' +
+    '<div class="' + self.id + '-separator"></div>' +
     'tag      : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
     'id       : ' + el.id + '\n' +
     'class    : ' + el.className + '\n' +
@@ -2001,7 +2203,7 @@ DebugJS.prototype = {
     'name     : ' + (el.name ? el.name : '') + '\n' +
     'value    : ' + (el.value ? el.value : '') + '\n' +
     'src      : ' + src + '\n' +
-    '------------------------------------------------------------\n' +
+    '<div class="' + self.id + '-separator"></div>' +
     'onclick      : ' + self.getEventHandlerString(el.onclick) + '\n' +
     'ondblclick   : ' + self.getEventHandlerString(el.ondblclick) + '\n' +
     'onmousedown  : ' + self.getEventHandlerString(el.onmousedown) + '\n' +
@@ -2010,27 +2212,28 @@ DebugJS.prototype = {
     'onmouseout   : ' + self.getEventHandlerString(el.onmouseout) + '\n' +
     'onmousemove  : ' + self.getEventHandlerString(el.onmousemove) + '\n' +
     'oncontextmenu: ' + self.getEventHandlerString(el.oncontextmenu) + '\n' +
-    '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
     'onkeydown    : ' + self.getEventHandlerString(el.onkeydown) + '\n' +
     'onkeypress   : ' + self.getEventHandlerString(el.onkeypress) + '\n' +
     'onkeyup      : ' + self.getEventHandlerString(el.onkeyup) + '\n' +
-    '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
     'onfocus      : ' + self.getEventHandlerString(el.onfocus) + '\n' +
     'onblur       : ' + self.getEventHandlerString(el.onblur) + '\n' +
     'onchange     : ' + self.getEventHandlerString(el.onchange) + '\n' +
     'oninput      : ' + self.getEventHandlerString(el.oninput) + '\n' +
     'onselect     : ' + self.getEventHandlerString(el.onselect) + '\n' +
+    'onselectstart: ' + self.getEventHandlerString(el.onselectstart) + '\n' +
     'onsubmit     : ' + self.getEventHandlerString(el.onsubmit) + '\n' +
-    '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
     'onscroll     : ' + self.getEventHandlerString(el.onscroll) + '\n' +
-    '------------------------------------------------------------\n';
+    '<div class="' + self.id + '-separator"></div>';
 
     for (data in el.dataset) {
-      dom += 'data-' + data + ': ' + el.dataset[data] + '\n';
+      html += 'data-' + data + ': ' + el.dataset[data] + '\n';
     }
 
-    dom += '</pre>';
-    self.elmInspectionPanel.innerHTML = dom;
+    html += '</pre>';
+    self.elmInspectionPanel.innerHTML = html;
 
     if (el != self.prevElm) {
       if (self.prevElm) {
@@ -2502,14 +2705,6 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.execCmdJson(args);
-    }
-  },
-
-  cmdJquery: function(args, tbl) {
-    if (typeof jQuery == 'undefined') {
-      DebugJS.log.w('jQuery is not loaded.');
-    } else {
-      DebugJS.log('jQuery v' + jQuery.fn.jquery);
     }
   },
 
@@ -3505,6 +3700,16 @@ DebugJS.httpRequest = function(url, method) {
   xhr.send(null);
 };
 
+DebugJS.errorHandler = function(e) {
+  var msg;
+  if ((e.error) && (e.error.stack)) {
+    msg = e.error.stack;
+  } else {
+    msg = e.message + ' ' + e.filename + '(' + e.lineno + ':' + e.colno + ')';
+  }
+  DebugJS.log.e(msg);
+};
+
 DebugJS.log = function(m) {
   DebugJS.log.out(m, DebugJS.LOG_TYPE_STANDARD);
 };
@@ -3684,14 +3889,13 @@ dbg.random = function(min, max) {
 dbg.randomString = function(min, max) {
   return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
 };
+
 // ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
   window.addEventListener('load', DebugJS.init, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
-    window.onerror = function(msg, file, line, col, err) {
-      DebugJS.log.e(msg + ' ' + file + '(' + line + ':' + col + ')');
-    };
+    window.addEventListener('error', DebugJS.errorHandler, true);
   }
   if (DebugJS.UNIFY_CONSOLE) {
     console.log = function(x) {log(x);};

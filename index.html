@@ -5,10 +5,20 @@
 <meta name="viewport" content="width=900,nitial-scale=1">
 <title>debug.js</title>
 <meta name="description" content="debug.js is an auxiliary JavaScript library for web development.">
-<!--<link rel="stylesheet" href="../foundation.css" />-->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro" />
-<!--<script src="../jquery-3.1.0.min.js"></script>-->
 <script src="debug.js"></script>
+
+<!--
+<link rel="stylesheet" href="../foundation.css" />
+<script src="../jquery-3.1.0.min.js"></script>
+-->
+
+<!--
+<link rel="stylesheet" href="dummy1.css" />
+<script src="dummy1.js"></script>
+<script src="dummy2.js"></script>
+<script src="dummy3.js"></script>
+-->
+
 <style>
 body {font-family:Arial, sans-serif; font-size:18px; color:#333;}
 a {color:#00f; text-decoration:none;}
@@ -37,12 +47,12 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 .eg {font-family:Consolas, monospace; line-height:1em;}
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
 .annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
-/*td {                         */
+/*td {                        */
 /*  width:100px;              */
 /*  font-size:50px !important;*/
 /*  border:solid 1px #ccc;    */
-/*  line-height:2em;           */
-/*}                            */
+/*  line-height:2em;          */
+/*}                           */
 </style>
 <script>
 //time.start();
@@ -98,6 +108,16 @@ var h = [
   }
 ];
 
+//window.onkeydown = function() {
+//  log("key down");
+//};
+//
+//window.onkeypress = function() {
+//  log("key press");
+//};
+//
+//window.onkeyup = function() {log("key up");};
+
 window.onload = function() {
   log('The window\'s load event fired.');
 
@@ -132,6 +152,7 @@ window.onload = function() {
     'lines': 23,
     'showTimeStamp': false,
     'disableAllFeatures': true,
+    //'useSystemInfo': true,
     //'useCommandLine': true,
     //'useTextChecker': true,
     //'resizable': false
@@ -684,6 +705,12 @@ dbg.init(options);
   </tr>
 
   <tr>
+    <td class="name">useSystemInfo</td>
+    <td>Enable System Info indication</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
     <td class="name">useElementInspection</td>
     <td>Enable DOM Element inspection</td>
     <td>true</td>
@@ -1074,12 +1101,6 @@ max: maximum length
     <td class="name">json</td>
     <td>JSON</td>
     <td>Parse one-line JSON.</td>
-  </tr>
-
-  <tr>
-    <td class="name">jquery</td>
-    <td></td>
-    <td>Displays what version of jQuery is loaded.</td>
   </tr>
 
   <tr>
