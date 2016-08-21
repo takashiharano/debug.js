@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608210207';
+  this.v = '201608212016';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -73,6 +73,7 @@ var DebugJS = function() {
   this.sysInfoPanel = null;
   this.elmInspectionBtnPanel = null;
   this.elmInspectionPanel = null;
+  this.elmInspectionPanelBody = null;
   this.prevElm = null;
   this.prevElmStyle = {};
   this.textCheckerBtnPanel = null;
@@ -287,7 +288,9 @@ DebugJS.prototype = {
     if (!DebugJS.ENABLE) {return false;}
     var self = Debug;
     self.bodyEl = document.body;
-    if (!self.bodyEl) {return false;}
+    if (!self.bodyEl) {
+      return false;
+    }
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
       if (self.debugWindow != null) {
@@ -470,9 +473,15 @@ DebugJS.prototype = {
 
     // style settings
     var styles = {};
-    styles['#' + self.id] = {
-      'letter-spacing': '0'
-    };
+    if (DebugJS.getBrowserType().name == 'Firefox') {
+      styles['#' + self.id] = {
+        'letter-spacing': '-0.35px',
+      };
+    } else {
+      styles['#' + self.id] = {
+        'letter-spacing': '0',
+      };
+    }
 
     styles['#' + self.id + ' td'] = {
       'width': 'initial',
@@ -550,7 +559,7 @@ DebugJS.prototype = {
 
     styles['.' + self.id + '-overlay-panel pre'] = {
       'padding': '0 1px',
-      'color': '#fff',
+      'color': self.options.fontColor,
       'font-size': self.options.fontSize + 'px',
       'font-family': self.options.fontFamily
     };
@@ -631,6 +640,7 @@ DebugJS.prototype = {
     }
     self.status |= DebugJS.STATE_INITIALIZED;
     self.printMessage();
+
     return true;
   },
 
@@ -1985,7 +1995,8 @@ DebugJS.prototype = {
     var INDENT = '             ';
 
     var screenSize = 'w=' + screen.width + ' x h=' + screen.height;
-    var language = (navigator.browserLanguage || navigator.language || navigator.userLanguage);
+    var languages = self.getLanguages(INDENT);
+    var browser = DebugJS.getBrowserType();
     var jq = '<span class="' + self.id + '-unavailable">not loaded</span>';
     if (typeof jQuery != 'undefined') {
       jq = 'v' + jQuery.fn.jquery;
@@ -2033,8 +2044,21 @@ DebugJS.prototype = {
     var html = '<pre>' +
     '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>\n\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">SCREEN SIZE</span>: ' + screenSize + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">Language</span>   : ' + language + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">User Agent</span> : ' + navigator.userAgent + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Browser</span>    : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">User Agent</span> : ' + self.decorateIfPropIsUnavailable(navigator.userAgent) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Language</span>   : ' + self.decorateIfPropIsUnavailable(navigator.language) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  browser</span>  : ' + self.decorateIfPropIsUnavailable(navigator.browserLanguage) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  user</span>     : ' + self.decorateIfPropIsUnavailable(navigator.userLanguage) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  Languages</span>: ' + languages + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">appCodeName</span>: ' + self.decorateIfPropIsUnavailable(navigator.appCodeName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">appName</span>    : ' + self.decorateIfPropIsUnavailable(navigator.appName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">appVersion</span> : ' + self.decorateIfPropIsUnavailable(navigator.appVersion) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">buildID</span>    : ' + self.decorateIfPropIsUnavailable(navigator.buildID) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">product </span>   : ' + self.decorateIfPropIsUnavailable(navigator.product) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">productSub</span> : ' + self.decorateIfPropIsUnavailable(navigator.productSub) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">vendor</span>     : ' + self.decorateIfPropIsUnavailable(navigator.vendor) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">platform</span>   : ' + self.decorateIfPropIsUnavailable(navigator.platform) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">oscpu</span>      : ' + self.decorateIfPropIsUnavailable(navigator.oscpu) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">CSS</span>        : ' + loadedStyles + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
@@ -2060,9 +2084,28 @@ DebugJS.prototype = {
     '<span style="color:' + ITEM_NAME_COLOR + '">window.oncontextmenu</span>: ' + oncontextmenu + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">window.onerror</span>      : ' + onerror + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">Cookie</span>: ' + document.cookie + '\n' +
     '</pre>';
     self.sysInfoPanel.innerHTML = html;
+  },
+
+  getLanguages: function(indent) {
+    var self = Debug;
+    var languages;
+    var navLanguages = navigator.languages;
+    if (navLanguages) {
+      for (var i = 0; i < navLanguages.length; i++) {
+        if (i == 0) {
+          languages = '[' + i + '] ' + navLanguages[i];
+        } else {
+          languages += '\n' + indent + '[' + i + '] ' + navLanguages[i];
+        }
+      }
+    } else {
+      languages = self.decorateIfPropIsUnavailable(navLanguages);
+    }
+    return languages;
   },
 
   showHideByName: function(name) {
@@ -2106,6 +2149,15 @@ DebugJS.prototype = {
     return text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '').substr(0, maxLen);
   },
 
+  decorateIfPropIsUnavailable: function(prop) {
+    var self = Debug;
+    var text = prop;
+    if (!prop) {
+      text = '<span class="' + self.id + '-unavailable">' + prop + '</span>';
+    }
+    return text;
+  },
+
   toggleElmInspectionMode: function() {
     var self = Debug;
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
@@ -2121,7 +2173,20 @@ DebugJS.prototype = {
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
       self.elmInspectionPanel.className = self.id + '-overlay-panel';
+      self.elmInspectionPanel.innerHTML = '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>';
       self.mainPanel.appendChild(self.elmInspectionPanel);
+
+      self.elmNumPanel = document.createElement('span');
+      self.elmNumPanel.style.float = 'right';
+      self.elmNumPanel.style.marginRight = '4px';
+      self.elmNumPanel.color = '#fff';
+      self.elmInspectionPanel.appendChild(self.elmNumPanel);
+      self.updateElementInfo();
+
+      self.elmInspectionPanelBody = document.createElement('div');
+      self.elmInspectionPanelBody.style.position = 'relative';
+      self.elmInspectionPanelBody.style.top = self.options.fontSize;
+      self.elmInspectionPanel.appendChild(self.elmInspectionPanelBody);
     }
     self.updateElmInspectionBtnPanel();
     self.bodyEl.style.cursor = 'zoom-in';
@@ -2145,6 +2210,8 @@ DebugJS.prototype = {
     if (self.elmInspectionPanel != null) {
       self.mainPanel.removeChild(self.elmInspectionPanel);
       self.elmInspectionPanel = null;
+      self.elmInspectionPanelBody = null;
+      self.elmNumPanel = null;
     }
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
   },
@@ -2155,85 +2222,8 @@ DebugJS.prototype = {
     var posY = e.clientY;
     if (self.isOnDebugWindow(posX, posY)) return;
     var el = document.elementFromPoint(posX, posY);
-    var style = window.getComputedStyle(el);
-    var rect = el.getBoundingClientRect();
-    var MAX_LEN = 50;
 
-    var text = el.innerText;
-    txt = self.trimDownText(text, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    if (text.length > MAX_LEN) {txt += '<span style="color:#888">...</span>';}
-
-    var backgroundColor = style.backgroundColor;
-    var bgColor16 = '';
-    if (backgroundColor != 'transparent') {
-      var bgColor10 = backgroundColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-      var bgColor16conv = DebugJS.convRGB10to16(bgColor10);
-      bgColor16 = '#' + bgColor16conv.r + bgColor16conv.g + bgColor16conv.b;
-    }
-
-    var color = style.color;
-    var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-    var color16 = DebugJS.convRGB10to16(color10);
-
-    var src = (el.src ? el.src : '');
-    if (src.length > MAX_LEN) {
-      var src1 = src.substr(0, (MAX_LEN / 2));
-      var src2 = src.slice(-(MAX_LEN / 2));
-      src = src1 + '<span style="color:#888">...</span>' + src2;
-    }
-
-    var html = '<pre>' +
-    '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>' +
-    '<span style="float:right;margin-right:4px;">(Total: ' + document.getElementsByTagName('*').length + ')</span>\n' +
-    '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
-    '<div class="' + self.id + '-separator"></div>' +
-    'tag      : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
-    'id       : ' + el.id + '\n' +
-    'class    : ' + el.className + '\n' +
-    'display  : ' + style.display + ' / z-index = ' + style.zIndex + '\n' +
-    'position : ' + style.position + ' / float = ' + style.float + ' / clear = ' + style.clear + '\n' +
-    'size     : width = ' + el.clientWidth + 'px / height = ' + el.clientHeight + 'px\n' +
-    'margin   : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + '\n' +
-    'padding  : ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
-    'font     : size = ' + style.fontSize + '  family = ' + style.fontFamily + '\n' +
-    'color    : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
-    'bg-color : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
-    'location : top = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + style.top + ') / left = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + style.left + ')\n' +
-    'overflow : ' + el.style.overflow + '\n' +
-    'name     : ' + (el.name ? el.name : '') + '\n' +
-    'value    : ' + (el.value ? el.value : '') + '\n' +
-    'src      : ' + src + '\n' +
-    '<div class="' + self.id + '-separator"></div>' +
-    'onclick      : ' + self.getEventHandlerString(el.onclick) + '\n' +
-    'ondblclick   : ' + self.getEventHandlerString(el.ondblclick) + '\n' +
-    'onmousedown  : ' + self.getEventHandlerString(el.onmousedown) + '\n' +
-    'onmouseup    : ' + self.getEventHandlerString(el.onmouseup) + '\n' +
-    'onmouseover  : ' + self.getEventHandlerString(el.onmouseover) + '\n' +
-    'onmouseout   : ' + self.getEventHandlerString(el.onmouseout) + '\n' +
-    'onmousemove  : ' + self.getEventHandlerString(el.onmousemove) + '\n' +
-    'oncontextmenu: ' + self.getEventHandlerString(el.oncontextmenu) + '\n' +
-    '<div class="' + self.id + '-separator"></div>' +
-    'onkeydown    : ' + self.getEventHandlerString(el.onkeydown) + '\n' +
-    'onkeypress   : ' + self.getEventHandlerString(el.onkeypress) + '\n' +
-    'onkeyup      : ' + self.getEventHandlerString(el.onkeyup) + '\n' +
-    '<div class="' + self.id + '-separator"></div>' +
-    'onfocus      : ' + self.getEventHandlerString(el.onfocus) + '\n' +
-    'onblur       : ' + self.getEventHandlerString(el.onblur) + '\n' +
-    'onchange     : ' + self.getEventHandlerString(el.onchange) + '\n' +
-    'oninput      : ' + self.getEventHandlerString(el.oninput) + '\n' +
-    'onselect     : ' + self.getEventHandlerString(el.onselect) + '\n' +
-    'onselectstart: ' + self.getEventHandlerString(el.onselectstart) + '\n' +
-    'onsubmit     : ' + self.getEventHandlerString(el.onsubmit) + '\n' +
-    '<div class="' + self.id + '-separator"></div>' +
-    'onscroll     : ' + self.getEventHandlerString(el.onscroll) + '\n' +
-    '<div class="' + self.id + '-separator"></div>';
-
-    for (data in el.dataset) {
-      html += 'data-' + data + ': ' + el.dataset[data] + '\n';
-    }
-
-    html += '</pre>';
-    self.elmInspectionPanel.innerHTML = html;
+    self.showElementInfo(el);
 
     if (el != self.prevElm) {
       if (self.prevElm) {
@@ -2246,6 +2236,98 @@ DebugJS.prototype = {
       el.style.opacity = 0.7;
       self.prevElm = el;
     }
+  },
+
+  showElementInfo: function(el) {
+    var self = Debug;
+    var html = '<pre>';
+    if (el) {
+      var style = window.getComputedStyle(el);
+      var rect = el.getBoundingClientRect();
+      var MAX_LEN = 50;
+
+      var text = el.innerText;
+      txt = self.trimDownText(text, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      if (text.length > MAX_LEN) {txt += '<span style="color:#888">...</span>';}
+
+      var backgroundColor = style.backgroundColor;
+      var bgColor16 = '';
+      if (backgroundColor != 'transparent') {
+        var bgColor10 = backgroundColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+        var bgColor16conv = DebugJS.convRGB10to16(bgColor10);
+        bgColor16 = '#' + bgColor16conv.r + bgColor16conv.g + bgColor16conv.b;
+      }
+
+      var color = style.color;
+      var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+      var color16 = DebugJS.convRGB10to16(color10);
+
+      var src = (el.src ? el.src : '');
+      if (src.length > MAX_LEN) {
+        var src1 = src.substr(0, (MAX_LEN / 2));
+        var src2 = src.slice(-(MAX_LEN / 2));
+        src = src1 + '<span style="color:#888">...</span>' + src2;
+      }
+
+      html += '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
+      '<div class="' + self.id + '-separator"></div>' +
+      'tag      : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
+      'id       : ' + el.id + '\n' +
+      'class    : ' + el.className + '\n' +
+      'display  : ' + style.display + ' / z-index = ' + style.zIndex + '\n' +
+      'position : ' + style.position + ' / float = ' + style.float + ' / clear = ' + style.clear + '\n' +
+      'size     : width = ' + el.clientWidth + 'px / height = ' + el.clientHeight + 'px\n' +
+      'margin   : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + '\n' +
+      'padding  : ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
+      'font     : size = ' + style.fontSize + '  family = ' + style.fontFamily + '\n' +
+      'color    : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      'bg-color : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      'location : top = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + style.top + ') / left = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + style.left + ')\n' +
+      'overflow : ' + el.style.overflow + '\n' +
+      'name     : ' + (el.name ? el.name : '') + '\n' +
+      'value    : ' + (el.value ? el.value : '') + '\n' +
+      'src      : ' + src + '\n' +
+      '<div class="' + self.id + '-separator"></div>' +
+      'onclick      : ' + self.getEventHandlerString(el.onclick) + '\n' +
+      'ondblclick   : ' + self.getEventHandlerString(el.ondblclick) + '\n' +
+      'onmousedown  : ' + self.getEventHandlerString(el.onmousedown) + '\n' +
+      'onmouseup    : ' + self.getEventHandlerString(el.onmouseup) + '\n' +
+      'onmouseover  : ' + self.getEventHandlerString(el.onmouseover) + '\n' +
+      'onmouseout   : ' + self.getEventHandlerString(el.onmouseout) + '\n' +
+      'onmousemove  : ' + self.getEventHandlerString(el.onmousemove) + '\n' +
+      'oncontextmenu: ' + self.getEventHandlerString(el.oncontextmenu) + '\n' +
+      '<div class="' + self.id + '-separator"></div>' +
+      'onkeydown    : ' + self.getEventHandlerString(el.onkeydown) + '\n' +
+      'onkeypress   : ' + self.getEventHandlerString(el.onkeypress) + '\n' +
+      'onkeyup      : ' + self.getEventHandlerString(el.onkeyup) + '\n' +
+      '<div class="' + self.id + '-separator"></div>' +
+      'onfocus      : ' + self.getEventHandlerString(el.onfocus) + '\n' +
+      'onblur       : ' + self.getEventHandlerString(el.onblur) + '\n' +
+      'onchange     : ' + self.getEventHandlerString(el.onchange) + '\n' +
+      'oninput      : ' + self.getEventHandlerString(el.oninput) + '\n' +
+      'onselect     : ' + self.getEventHandlerString(el.onselect) + '\n' +
+      'onselectstart: ' + self.getEventHandlerString(el.onselectstart) + '\n' +
+      'onsubmit     : ' + self.getEventHandlerString(el.onsubmit) + '\n' +
+      '<div class="' + self.id + '-separator"></div>' +
+      'onscroll     : ' + self.getEventHandlerString(el.onscroll) + '\n' +
+      '<div class="' + self.id + '-separator"></div>';
+
+      for (data in el.dataset) {
+        html += 'data-' + data + ': ' + el.dataset[data] + '\n';
+      }
+    }
+    html += '</pre>';
+    self.elmInspectionPanelBody.innerHTML = html;
+  },
+
+  updateElementInfo: function() {
+    var self = Debug;
+    if (!(self.status & DebugJS.STATE_ELEMENT_INSPECTING)) {
+      return;
+    }
+    var UPDATE_INTERVAL = 250;
+    self.elmNumPanel.innerText = '(Total: ' + document.getElementsByTagName('*').length + ')';
+    setTimeout(self.updateElementInfo, UPDATE_INTERVAL);
   },
 
   getEventHandlerString: function(handler) {
@@ -3700,6 +3782,100 @@ DebugJS.httpRequest = function(url, method) {
   xhr.send(null);
 };
 
+DebugJS.getBrowserType = function() {
+  var ua = navigator.userAgent;
+  var ver;
+  var browser = {'name': '', 'version': ''};
+  if (ua.indexOf('Edge') >= 1) {
+    browser.name = 'Edge';
+    ver = ua.match(/Edge\/(.*)/);
+    if (ver) {
+      browser.version = ver[1];
+    }
+    return browser;
+  }
+
+  if (ua.indexOf('OPR/') >= 1) {
+    browser.name = 'Opera';
+    ver = ua.match(/OPR\/(.*)/);
+    if (ver) {
+      browser.version = ver[1];
+    }
+    return browser;
+  }
+
+  if (ua.indexOf('Chrome') >= 1) {
+    browser.name = 'Chrome';
+    ver = ua.match(/Chrome\/(.*)\s/);
+    if (ver) {
+      browser.version = ver[1];
+    }
+    return browser;
+  }
+
+  if (ua.indexOf('Firefox') >= 1) {
+    browser.name = 'Firefox';
+    ver = ua.match(/Firefox\/(.*)/);
+    if (ver) {
+      browser.version = ver[1];
+    }
+    return browser;
+  }
+
+  if (ua.indexOf('Trident/7.') >= 1) {
+    browser.name = 'IE11';
+    return browser;
+  }
+
+  if (ua.indexOf('Trident/6.') >= 1) {
+    browser.name = 'IE10';
+    return browser;
+  }
+
+  if (ua.indexOf('Trident/5.') >= 1) {
+    browser.name = 'IE9';
+    return browser;
+  }
+
+  if (ua.indexOf('Trident/4.') >= 1) {
+    browser.name = 'IE8';
+    return browser;
+  }
+
+  return browser;
+};
+
+DebugJS.browserColoring = function(name) {
+  var str = name;
+  switch (name) {
+    case 'Chrome':
+      str = '<span style="color:#f44;">Ch</span><span style="color:#ff0;">ro</span><span style="color:#4f4;">m</span><span style="color:#6cf;">e</span>';
+      break;
+    case 'Edge':
+      str = '<span style="color:#0af;">' + name + '</span>';
+      break;
+    case 'Firefox':
+      str = '<span style="color:#e57f25;">' + name + '</span>';
+      break;
+    case 'Opera':
+      str = '<span style="color:#f44;">' + name + '</span>';
+      break;
+    case 'IE11':
+    case 'IE10':
+    case 'IE9':
+    case 'IE8':
+      str = '<span style="color:#61d5f8;">' + name + '</span>';
+      break;
+    default:
+      break;
+  }
+  return str;
+};
+
+DebugJS.loadHandler = function() {
+  DebugJS.init();
+};
+
 DebugJS.errorHandler = function(e) {
   var msg;
   if ((e.error) && (e.error.stack)) {
@@ -3756,7 +3932,7 @@ DebugJS.log.out = function(msg, type) {
 
 DebugJS.init = function() {
   if (!(Debug.status & DebugJS.STATE_INITIALIZED)) {
-    return Debug.init(null, null);
+    return Debug.init(null);
   } else {
     return true;
   }
@@ -3893,7 +4069,7 @@ dbg.randomString = function(min, max) {
 // ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
-  window.addEventListener('load', DebugJS.init, true);
+  window.addEventListener('load', DebugJS.loadHandler, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
     window.addEventListener('error', DebugJS.errorHandler, true);
   }
