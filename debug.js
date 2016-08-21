@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608212016';
+  this.v = '201608212345';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -50,14 +50,13 @@ var DebugJS = function() {
     'useLed': true,
     'useScreenMeasure': true,
     'useSystemInfo': true,
-    'useElementInspection': true,
+    'useElementInfo': true,
     'useTextChecker': true,
     'useScriptEditor': true,
     'useCommandLine': true,
     'disableAllFeatures': false,
     'target': null
   };
-
   this.DEFAULT_ELM_ID = '_debug_';
   this.id = null;
   this.bodyEl = null;
@@ -274,7 +273,7 @@ DebugJS.FEATURES = [
   'useLed',
   'useScreenMeasure',
   'useSystemInfo',
-  'useElementInspection',
+  'useElementInfo',
   'useTextChecker',
   'useScriptEditor',
   'useCommandLine'
@@ -857,7 +856,7 @@ DebugJS.prototype = {
     }
 
     // Element Inspection Button
-    if (self.options.useElementInspection) {
+    if (self.options.useElementInfo) {
       self.elmInspectionBtnPanel = document.createElement('span');
       self.elmInspectionBtnPanel.className = this.id + '-btn';
       self.elmInspectionBtnPanel.style.float = 'right';
@@ -999,7 +998,7 @@ DebugJS.prototype = {
       self.updateSysInfoBtnPanel();
     }
 
-    if (self.options.useElementInspection) {
+    if (self.options.useElementInfo) {
       self.updateElmInspectionBtnPanel();
     }
 
@@ -1738,8 +1737,15 @@ DebugJS.prototype = {
       case 2:
         self.mouseClickR = DebugJS.COLOR_ACTIVE;
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
-          dbg.el = document.elementFromPoint(posX, posY);
-          DebugJS.log.s('dbg.el has been updated.');
+          if (self.isOnDebugWindow(posX, posY)) {
+            if (dbg.el) {
+              self.showElementInfo(dbg.el);
+              self.updatePrevElm(dbg.el);
+            }
+          } else {
+            dbg.el = document.elementFromPoint(posX, posY);
+            DebugJS.log.s('The element has been captured into dbg.el');
+          }
         }
         break;
       default:
@@ -2042,7 +2048,8 @@ DebugJS.prototype = {
     var onerror = self.createFoldingText(window.onerror, 'onerror');
 
     var html = '<pre>' +
-    '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>\n\n' +
+    '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>\n' +
+    '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">SCREEN SIZE</span>: ' + screenSize + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">Browser</span>    : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">User Agent</span> : ' + self.decorateIfPropIsUnavailable(navigator.userAgent) + '\n' +
@@ -2224,18 +2231,7 @@ DebugJS.prototype = {
     var el = document.elementFromPoint(posX, posY);
 
     self.showElementInfo(el);
-
-    if (el != self.prevElm) {
-      if (self.prevElm) {
-        self.prevElm.style.border = self.prevElmStyle.border;
-        self.prevElm.style.opacity = self.prevElmStyle.opacity;
-      }
-      self.prevElmStyle.border = el.style.border;
-      self.prevElmStyle.opacity = el.style.opacity;
-      el.style.border = 'solid 1px #f00';
-      el.style.opacity = 0.7;
-      self.prevElm = el;
-    }
+    self.updatePrevElm(el);
   },
 
   showElementInfo: function(el) {
@@ -2318,6 +2314,21 @@ DebugJS.prototype = {
     }
     html += '</pre>';
     self.elmInspectionPanelBody.innerHTML = html;
+  },
+
+  updatePrevElm: function(el) {
+    var self = Debug;
+    if (el != self.prevElm) {
+      if (self.prevElm) {
+        self.prevElm.style.border = self.prevElmStyle.border;
+        self.prevElm.style.opacity = self.prevElmStyle.opacity;
+      }
+      self.prevElmStyle.border = el.style.border;
+      self.prevElmStyle.opacity = el.style.opacity;
+      el.style.border = 'solid 1px #f00';
+      el.style.opacity = 0.7;
+      self.prevElm = el;
+    }
   },
 
   updateElementInfo: function() {
