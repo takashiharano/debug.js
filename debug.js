@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608222345';
+  this.v = '201608230137';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -166,15 +166,15 @@ var DebugJS = function() {
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status.'},
-    {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get &lt;url&gt;'},
+    {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get URL'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
-    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json [-p] &lt;one-line json&gt;'},
-    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p &lt;object&gt;'},
-    {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post &lt;url&gt;'},
-    {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number / string.', 'usage': 'random [-d|-s] [min] [max]'},
-    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb &lt;color value&gt;(#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> or <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Time test.', 'usage': 'time &lt;start/split/end/list&gt; [&lt;timer name&gt;]'},
+    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json [-p] one-line-json'},
+    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p object'},
+    {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post URL'},
+    {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string.', 'usage': 'random [-d|-s] [min] [max]'},
+    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer.', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
   this.options = null;
