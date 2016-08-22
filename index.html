@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=900,nitial-scale=1">
+<meta name="viewport" content="width=900,initial-scale=1">
 <title>debug.js</title>
 <meta name="description" content="debug.js is an auxiliary JavaScript library for web development.">
 <script src="debug.js"></script>
@@ -58,65 +58,6 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 //time.start();
 //log.t(null, 'time test');
 log('Here is the log output example!');
-
-var a = {
-  'key1': 'val1',
-  'key2': '123',
-  'key3': 123,
-  'key4': {
-    'keyA': 'A',
-    'keyB': {
-      'keyB1': 'b1',
-      'keyB2': 'b2'
-    },
-    'keyC': 'C'
-   },
-   'key5': null,
-   'key6': undefined,
-   'key7': true,
-   'key8': [
-     {
-       'aaa': 111,
-       'bbb': 'test1'
-     },
-     {
-       'aaa': 222,
-       'bbb': 'test2'
-     }
-   ]
-};
-
-var b = ['1', '2', '3'];
-var c = 1;
-var d = "string";
-var e = false;
-var f = undefined;
-var g = null;
-
-var h = [
-  {
-    'key1': 'AAA',
-    'key2': 'BBB'
-  },
-  {
-    'key1': 'CCC',
-    'key2': 'DDD'
-  },
-  {
-    'key1': 'EEE',
-    'key2': 'FFF'
-  }
-];
-
-//window.onkeydown = function() {
-//  log("key down");
-//};
-//
-//window.onkeypress = function() {
-//  log("key press");
-//};
-//
-//window.onkeyup = function() {log("key up");};
 
 window.onload = function() {
   log('The window\'s load event fired.');
@@ -202,18 +143,6 @@ window.onload = function() {
 
   setTimeout(displayMessages, 1500);
   setTimeout(execDemo, 1500);
-}
-
-document.onkeydown = function(e) {
-  //log('KeyDown: keyCode = ' + e.keyCode);
-}
-
-document.onmousemove = function(e) {
-  //log('mouseMoved: x=' + e.clientX + ', y=' + e.clientY);
-};
-
-document.onclick = function(e) {
-  //log('click count: ' + event.detail);
 }
 
 var dispCount = 0;
@@ -358,6 +287,65 @@ function startStopRandomDemo() {
   var el = document.getElementById('random-demo-button');
   el.innerText = randomDemoFlag ? 'stop random demo' : 'start random demo';
 }
+
+var a = {
+  'key1': 'val1',
+  'key2': '123',
+  'key3': 123,
+  'key4': {
+    'keyA': 'A',
+    'keyB': {
+      'keyB1': 'b1',
+      'keyB2': 'b2'
+    },
+    'keyC': 'C'
+   },
+   'key5': null,
+   'key6': undefined,
+   'key7': true,
+   'key8': [
+     {
+       'aaa': 111,
+       'bbb': 'test1'
+     },
+     {
+       'aaa': 222,
+       'bbb': 'test2'
+     }
+   ]
+};
+
+var b = ['1', '2', '3'];
+var c = 1;
+var d = "string";
+var e = false;
+var f = undefined;
+var g = null;
+
+var h = [
+  {
+    'key1': 'AAA',
+    'key2': 'BBB'
+  },
+  {
+    'key1': 'CCC',
+    'key2': 'DDD'
+  },
+  {
+    'key1': 'EEE',
+    'key2': 'FFF'
+  }
+];
+
+//window.onkeydown = function() {
+//  log("key down");
+//};
+//
+//window.onkeypress = function() {
+//  log("key press");
+//};
+//
+//window.onkeyup = function() {log("key up");};
 </script>
 </head>
 <body>

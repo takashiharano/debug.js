@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608212345';
+  this.v = '201608222345';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1294,7 +1294,7 @@ DebugJS.prototype = {
     }
     self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
     self.status |= DebugJS.STATE_DRAGGING;
-    Debug.windowBody.style.cursor = 'move';
+    self.windowBody.style.cursor = 'move';
     self.prevOffsetTop = e.clientY - self.debugWindow.offsetTop;
     self.prevOffsetLeft = e.clientX - self.debugWindow.offsetLeft;
     if (!document.all) {
@@ -1459,7 +1459,7 @@ DebugJS.prototype = {
 
   toggleDraggable: function() {
     var self = Debug;
-    if (Debug.status & DebugJS.STATE_DRAGGABLE) {
+    if (self.status & DebugJS.STATE_DRAGGABLE) {
       self.disableDraggable();
     } else {
       self.enableDraggable();
@@ -1778,7 +1778,7 @@ DebugJS.prototype = {
         }
         if (self.status & DebugJS.STATE_DRAGGABLE) {
           self.status &= ~DebugJS.STATE_DRAGGING;
-          Debug.windowBody.style.cursor = 'default';
+          self.windowBody.style.cursor = 'default';
         }
         if (self.status & DebugJS.STATE_RESIZING) {
           self.endResize();
@@ -1998,7 +1998,7 @@ DebugJS.prototype = {
   showSystemInfo: function(e) {
     var self = Debug;
     var ITEM_NAME_COLOR = '#8f0';
-    var INDENT = '             ';
+    var INDENT = '              ';
 
     var screenSize = 'w=' + screen.width + ' x h=' + screen.height;
     var languages = self.getLanguages(INDENT);
@@ -2009,7 +2009,7 @@ DebugJS.prototype = {
     }
 
     var links = document.getElementsByTagName('link');
-    var loadedStyles = '<span class="' + self.id + '-unavailable">no external css files</span>';
+    var loadedStyles = '<span class="' + self.id + '-unavailable">not loaded</span>';
     for (var i = 0; i < links.length; i++) {
       if (links[i].rel == 'stylesheet') {
         if (i == 0) {
@@ -2021,7 +2021,7 @@ DebugJS.prototype = {
     }
 
     var scripts = document.getElementsByTagName('script');
-    var loadedScripts = '<span class="' + self.id + '-unavailable">no external script files</span>';
+    var loadedScripts = '<span class="' + self.id + '-unavailable">not loaded</span>';
     for (var i = 0; i < scripts.length; i++) {
       if (scripts[i].src) {
         if (i == 0) {
@@ -2032,64 +2032,84 @@ DebugJS.prototype = {
       }
     }
 
-    var onload = self.createFoldingText(window.onload, 'onload');
-    var onunload = self.createFoldingText(window.onunload, 'onunload');
-    var onmousedown = self.createFoldingText(window.onmousedown, 'onmousedown');
-    var onmousemove = self.createFoldingText(window.onmousemove, 'onmousemove');
-    var onmouseup = self.createFoldingText(window.onmousedown, 'onmouseup');
-    var onkeydown = self.createFoldingText(window.onkeydown, 'onkeydown');
-    var onkeypress = self.createFoldingText(window.onkeypress, 'onkeypress');
-    var onkeyup = self.createFoldingText(window.onkeyup, 'onkeyup');
-    var oncontextmenu = self.createFoldingText(window.oncontextmenu, 'oncontextmenu');
-    var onresize = self.createFoldingText(window.oncontextmenu, 'onresize');
-    var onscroll = self.createFoldingText(window.oncontextmenu, 'onscroll');
-    var onselect = self.createFoldingText(window.oncontextmenu, 'onselect');
-    var onselectstart = self.createFoldingText(window.oncontextmenu, 'onselectstart');
-    var onerror = self.createFoldingText(window.onerror, 'onerror');
+    var navUserAgent = self.createFoldingText(navigator.userAgent, 'navUserAgent');
+    var navAppVersion = self.createFoldingText(navigator.appVersion, 'navAppVersion');
+    var winOnload = self.createFoldingText(window.onload, 'winOnload');
+    var winOnunload = self.createFoldingText(window.onunload, 'winOnunload');
+    var winOnmousedown = self.createFoldingText(window.onmousedown, 'winOnmousedown');
+    var winOnmousemove = self.createFoldingText(window.onmousemove, 'winOnmousemove');
+    var winOnmouseup = self.createFoldingText(window.onmousedown, 'winOnmouseup');
+    var winOnkeydown = self.createFoldingText(window.onkeydown, 'winOnkeydown');
+    var winOnkeypress = self.createFoldingText(window.onkeypress, 'winOnkeypress');
+    var winOnkeyup = self.createFoldingText(window.onkeyup, 'winOnkeyup');
+    var winOncontextmenu = self.createFoldingText(window.oncontextmenu, 'winOncontextmenu');
+    var winOnresize = self.createFoldingText(window.oncontextmenu, 'winOnresize');
+    var winOnscroll = self.createFoldingText(window.oncontextmenu, 'winOnscroll');
+    var winOnselect = self.createFoldingText(window.oncontextmenu, 'winOnselect');
+    var winOnselectstart = self.createFoldingText(window.oncontextmenu, 'winOnselectstart');
+    var winOnerror = self.createFoldingText(window.onerror, 'winOnerror');
+    var docOnmousedown = self.createFoldingText(document.onmousedown, 'documentOnmousedown');
+    var docOnmousemove = self.createFoldingText(document.onmousemove, 'documentOnmousemove');
+    var docOnmouseup = self.createFoldingText(document.onmousedown, 'documentOnmouseup');
+    var docOnkeydown = self.createFoldingText(document.onkeydown, 'documentOnkeydown');
+    var docOnkeypress = self.createFoldingText(document.onkeypress, 'documentOnkeypress');
+    var docOnkeyup = self.createFoldingText(document.onkeyup, 'documentOnkeyup');
+    var docOnselectstart = self.createFoldingText(document.onselectstart, 'documentOnselectstart');
+    var docOncontextmenu = self.createFoldingText(document.oncontextmenu, 'documentOncontextmenu');
 
     var html = '<pre>' +
     '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">SCREEN SIZE</span>: ' + screenSize + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">Browser</span>    : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">User Agent</span> : ' + self.decorateIfPropIsUnavailable(navigator.userAgent) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">Language</span>   : ' + self.decorateIfPropIsUnavailable(navigator.language) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">  browser</span>  : ' + self.decorateIfPropIsUnavailable(navigator.browserLanguage) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">  user</span>     : ' + self.decorateIfPropIsUnavailable(navigator.userLanguage) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">  Languages</span>: ' + languages + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">appCodeName</span>: ' + self.decorateIfPropIsUnavailable(navigator.appCodeName) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">appName</span>    : ' + self.decorateIfPropIsUnavailable(navigator.appName) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">appVersion</span> : ' + self.decorateIfPropIsUnavailable(navigator.appVersion) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">buildID</span>    : ' + self.decorateIfPropIsUnavailable(navigator.buildID) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">product </span>   : ' + self.decorateIfPropIsUnavailable(navigator.product) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">productSub</span> : ' + self.decorateIfPropIsUnavailable(navigator.productSub) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">vendor</span>     : ' + self.decorateIfPropIsUnavailable(navigator.vendor) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">platform</span>   : ' + self.decorateIfPropIsUnavailable(navigator.platform) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">oscpu</span>      : ' + self.decorateIfPropIsUnavailable(navigator.oscpu) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">SCREEN SIZE</span> : ' + screenSize + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">User Agent</span>  : ' + navUserAgent + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Language</span>    : ' + self.decorateIfPropIsUnavailable(navigator.language) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  browser</span>   : ' + self.decorateIfPropIsUnavailable(navigator.browserLanguage) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  user</span>      : ' + self.decorateIfPropIsUnavailable(navigator.userLanguage) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  Languages</span> : ' + languages + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">CSS</span>        : ' + loadedStyles + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">jQuery</span>      : ' + jq + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">script</span>     : ' + loadedScripts + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">script</span>      : ' + loadedScripts + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">jQuery</span>     : ' + jq + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">CSS</span>         : ' + loadedStyles + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onload</span>     : ' + onload + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onunload</span>   : ' + onunload + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">navigator.</span>\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appCodeName</span>: ' + self.decorateIfPropIsUnavailable(navigator.appCodeName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appName</span>    : ' + self.decorateIfPropIsUnavailable(navigator.appName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appVersion</span> : ' + navAppVersion + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> buildID</span>    : ' + self.decorateIfPropIsUnavailable(navigator.buildID) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> product </span>   : ' + self.decorateIfPropIsUnavailable(navigator.product) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> productSub</span> : ' + self.decorateIfPropIsUnavailable(navigator.productSub) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> vendor</span>     : ' + self.decorateIfPropIsUnavailable(navigator.vendor) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> platform</span>   : ' + self.decorateIfPropIsUnavailable(navigator.platform) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> oscpu</span>      : ' + self.decorateIfPropIsUnavailable(navigator.oscpu) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onmousedown</span>: ' + onmousedown + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onmousemove</span>: ' + onmousemove + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onmouseup</span>  : ' + onmouseup + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">window.</span>\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onload</span>       : ' + winOnload + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onunload</span>     : ' + winOnunload + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onmousedown</span>  : ' + winOnmousedown + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onmousemove</span>  : ' + winOnmousemove + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onmouseup</span>    : ' + winOnmouseup + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onkeydown</span>    : ' + winOnkeydown + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onkeypress</span>   : ' + winOnkeypress + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onkeyup</span>      : ' + winOnkeyup + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onresize</span>     : ' + winOnresize + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onscroll</span>     : ' + winOnscroll + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onselect</span>     : ' + winOnselect + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onselectstart</span>: ' + winOnselectstart + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> oncontextmenu</span>: ' + winOncontextmenu + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onerror</span>      : ' + winOnerror + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onkeydown</span>  : ' + onkeydown + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onkeypress</span> : ' + onkeypress + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onkeyup</span>    : ' + onkeyup + '\n' +
-    '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onresize</span>   : ' + onresize + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onscroll</span>   : ' + onscroll + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onselect</span>   : ' + onselect + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onselectstart</span>: ' + onselectstart + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.oncontextmenu</span>: ' + oncontextmenu + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">window.onerror</span>      : ' + onerror + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">document.</span>\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onmousedown</span>  : ' + docOnmousedown + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onmousemove</span>  : ' + docOnmousemove + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onmouseup</span>    : ' + docOnmouseup + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onkeydown</span>    : ' + docOnkeydown + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onkeypress</span>   : ' + docOnkeypress + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onkeyup</span>      : ' + docOnkeyup + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onselectstart</span>: ' + docOnselectstart + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> oncontextmenu</span>: ' + docOncontextmenu + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">Cookie</span>: ' + document.cookie + '\n' +
@@ -2131,22 +2151,27 @@ DebugJS.prototype = {
     }
   },
 
-  createFoldingText: function(obj, name) {
+  createFoldingText: function(obj, name, lineMaxLen) {
     var self = Debug;
-    var MAX_LEN = 45;
+    var DEFAULT_MAX_LEN = 50;
     var foldingText;
+
+    if (lineMaxLen == undefined) {
+      lineMaxLen = DEFAULT_MAX_LEN;
+    }
+
     if (!obj) {
       foldingText = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
     } else {
       foldingText = obj + '';
-      if (foldingText.indexOf('\n') >= 1) {
-        partial = self.trimDownText(foldingText, MAX_LEN);
-        if (foldingText.length > MAX_LEN) {
-          partial += '<span style="color:#ddd">...</span>';
-        }
+      if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
+        partial = self.trimDownText(foldingText, lineMaxLen);
+        partial += '<span style="color:#ddd">...</span>';
         foldingText = '<span class="' + self.id + '-showhide-button" id="' + self.id + '-' + name + '__button" onclick="Debug.showHideByName(\'' + name + '\')">▶</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body">' + partial + '</span>' +
         '<div class="' + self.id + '-showhide-body" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
+      } else {
+        foldingText = obj;
       }
     }
     return foldingText;
@@ -2549,9 +2574,9 @@ DebugJS.prototype = {
       var html = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>' +
       '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>';
+      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>';
       self.scriptPanel.innerHTML = html;
       self.collapseMessagePanel();
       self.mainPanel.appendChild(self.scriptPanel);
@@ -3359,8 +3384,7 @@ DebugJS._objDump = function(obj, arg, toJson) {
   } else if (obj === undefined) {
     arg.dump += '<span style="color:#ccc;">undefined</span>'; arg.cnt++;
   } else if (typeof obj === 'string') {
-    var str = obj.replace(/</g, '&lt;');
-    str = str.replace(/>/g, '&gt;');
+    var str = obj.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     arg.dump += '"' + str + '"'; arg.cnt++;
   } else {
     arg.dump += obj; arg.cnt++;
@@ -3477,7 +3501,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
     g16 += g16;
     b16 += b16;
   } else {
-    return '<span style="color:' + Debug.options.logColorE + '">invalid value.</span>';
+    return '<span style="color:' + self.options.logColorE + '">invalid value.</span>';
   }
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
@@ -3492,7 +3516,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
   rgb10 = rgb10.replace(/\s{2,}/g, ' ');
   var rgb10s = rgb10.split(' ', 3);
   if ((rgb10s.length != 3) || ((rgb10s[0] < 0) || (rgb10s[0] > 255)) || ((rgb10s[1] < 0) || (rgb10s[1] > 255)) || ((rgb10s[2] < 0) || (rgb10s[2] > 255))) {
-    return '<span style="color:' + Debug.options.logColorE + '">invalid value.</span>';
+    return '<span style="color:' + self.options.logColorE + '">invalid value.</span>';
   }
   var r16 = ('0' + parseInt(rgb10s[0]).toString(16)).slice(-2);
   var g16 = ('0' + parseInt(rgb10s[1]).toString(16)).slice(-2);
@@ -3678,11 +3702,11 @@ DebugJS.timeList = function() {
   var self = Debug;
   var now = new Date();
   var l;
-  if (Object.keys(Debug.timers).length == 0) {
+  if (Object.keys(self.timers).length == 0) {
     l = '<span style="color:#ccc;">no timers</span>';
   } else {
     l = '<table>';
-    for (var key in Debug.timers) {
+    for (var key in self.timers) {
       l += '<tr><td>' + key + '</td><td><span style="color:' + self.options.timerColor + ';">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
     }
     l += '</table>';
@@ -3853,6 +3877,15 @@ DebugJS.getBrowserType = function() {
     return browser;
   }
 
+  if ((ua.indexOf('Safari/') >= 1) && (ua.indexOf('Version/') >= 1)) {
+    browser.name = 'Safari';
+    ver = ua.match(/Version\/(.*)\sSafari/);
+    if (ver) {
+      browser.version = ver[1];
+    }
+    return browser;
+  }
+
   return browser;
 };
 
@@ -3877,6 +3910,9 @@ DebugJS.browserColoring = function(name) {
     case 'IE8':
       str = '<span style="color:#61d5f8;">' + name + '</span>';
       break;
+    case 'Safari':
+      str = '<span style="color:#86c8e8;">Safa</span><span style="color:#dd5651;">r</span><span style="color:#ececec;">i</span>';
+      break;
     default:
       break;
   }
@@ -3892,7 +3928,15 @@ DebugJS.errorHandler = function(e) {
   if ((e.error) && (e.error.stack)) {
     msg = e.error.stack;
   } else {
-    msg = e.message + ' ' + e.filename + '(' + e.lineno + ':' + e.colno + ')';
+    if ((e.message == undefined) && (e.filename == undefined)) {
+      if ((e.target) && (e.target.outerHTML)) {
+        msg = 'LOAD_ERROR: ' + (e.target.outerHTML).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      } else {
+        msg = 'UNKNOWN_ERROR';
+      }
+    } else {
+      msg = e.message + ' ' + e.filename + '(' + e.lineno + ':' + e.colno + ')';
+    }
   }
   DebugJS.log.e(msg);
 };
