@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608240143';
+  this.v = '201608240740';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1742,7 +1742,7 @@ DebugJS.prototype = {
         self.mouseClickR = DebugJS.COLOR_ACTIVE;
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
           if (self.isOnDebugWindow(posX, posY)) {
-            if (dbg.el) {
+            if ((dbg.el) && (dbg.el != self.prevElm)) {
               self.showElementInfo(dbg.el);
               self.updatePrevElm(dbg.el);
             }
@@ -2280,6 +2280,7 @@ DebugJS.prototype = {
       self.elmInspectionPanelBody = null;
       self.elmNumPanel = null;
     }
+    self.updatePrevElm(null);
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
   },
 
@@ -2289,9 +2290,10 @@ DebugJS.prototype = {
     var posY = e.clientY;
     if (self.isOnDebugWindow(posX, posY)) return;
     var el = document.elementFromPoint(posX, posY);
-
-    self.showElementInfo(el);
-    self.updatePrevElm(el);
+    if (el != self.prevElm) {
+      self.showElementInfo(el);
+      self.updatePrevElm(el);
+    }
   },
 
   showElementInfo: function(el) {
@@ -2373,11 +2375,11 @@ DebugJS.prototype = {
 
   updatePrevElm: function(el) {
     var self = Debug;
-    if (el != self.prevElm) {
-      if (self.prevElm) {
-        self.prevElm.style.border = self.prevElmStyle.border;
-        self.prevElm.style.opacity = self.prevElmStyle.opacity;
-      }
+    if (self.prevElm) {
+      self.prevElm.style.border = self.prevElmStyle.border;
+      self.prevElm.style.opacity = self.prevElmStyle.opacity;
+    }
+    if (el) {
       self.prevElmStyle.border = el.style.border;
       self.prevElmStyle.opacity = el.style.opacity;
       el.style.border = 'solid 1px #f00';
