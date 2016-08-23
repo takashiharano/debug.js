@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608240000';
+  this.v = '201608240143';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1902,8 +1902,8 @@ DebugJS.prototype = {
       self.measureBox.style.background = 'rgba(0,0,0,0.1)';
       self.bodyEl.appendChild(self.measureBox);
     }
-    self.savedFunc = self.bodyEl.onselectstart;
-    self.bodyEl.onselectstart = function() {return false;};
+    self.savedFunc = document.onselectstart;
+    document.onselectstart = function() {return false;};
   },
 
   measure: function(e) {
@@ -1964,7 +1964,7 @@ DebugJS.prototype = {
       self.bodyEl.removeChild(self.measureBox);
       self.measureBox = null;
     }
-    self.bodyEl.onselectstart = self.savedFunc;
+    document.onselectstart = self.savedFunc;
     self.status &= ~DebugJS.STATE_MEASURING;
   },
 
@@ -2296,6 +2296,7 @@ DebugJS.prototype = {
 
   showElementInfo: function(el) {
     var self = Debug;
+    var OMIT_STYLE = 'color:#888';
     var html = '<pre>';
     if (el) {
       var style = window.getComputedStyle(el);
@@ -2303,7 +2304,7 @@ DebugJS.prototype = {
       var MAX_LEN = 50;
 
       var text = el.innerText;
-      txt = self.trimDownText(text, MAX_LEN, DebugJS.OMIT_LAST, 'color:#888');
+      txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
 
       var backgroundColor = style.backgroundColor;
       var bgColor16 = '';
@@ -2315,25 +2316,27 @@ DebugJS.prototype = {
       var color = style.color;
       var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
       var color16 = DebugJS.convRGB10to16(color10);
-      var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, 'color:#888') : '');
+      var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
 
       html += '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'tag      : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
       'id       : ' + el.id + '\n' +
       'class    : ' + el.className + '\n' +
-      'display  : ' + style.display + ' / z-index = ' + style.zIndex + '\n' +
+      'display  : ' + style.display + '\n' +
+      'z-index  : ' + style.zIndex + '\n' +
       'position : ' + style.position + ' / float = ' + style.float + ' / clear = ' + style.clear + '\n' +
       'size     : width = ' + el.clientWidth + 'px / height = ' + el.clientHeight + 'px\n' +
       'margin   : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + '\n' +
       'padding  : ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
+      'border   : ' + style.border + '\n' +
       'font     : size = ' + style.fontSize + '  family = ' + style.fontFamily + '\n' +
       'color    : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'bg-color : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'location : top = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + style.top + ') / left = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + style.left + ')\n' +
       'overflow : ' + el.style.overflow + '\n' +
       'name     : ' + (el.name ? el.name : '') + '\n' +
-      'value    : ' + (el.value ? el.value : '') + '\n' +
+      'value    : ' + (el.value ? self.createFoldingText(el.value, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) : '') + '\n' +
       'src      : ' + src + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'onclick      : ' + self.getEventHandlerString(el.onclick, 'elOnclick') + '\n' +
