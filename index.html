@@ -14,9 +14,20 @@
 
 <!--
 <link rel="stylesheet" href="dummy1.css" />
+<link rel="stylesheet" href="dummy2.css" />
+<link rel="stylesheet" href="dummy3.css" />
 <script src="dummy1.js"></script>
 <script src="dummy2.js"></script>
 <script src="dummy3.js"></script>
+-->
+
+<!--
+<link rel="stylesheet" href="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy1.css" />
+<link rel="stylesheet" href="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy2.css" />
+<link rel="stylesheet" href="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy3.css" />
+<script src="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy1.js"></script>
+<script src="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy2.js"></script>
+<script src="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy3.js"></script>
 -->
 
 <style>
@@ -31,6 +42,7 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 .content {position:relative; top:190px; padding:5px;}
 .caption {font-size:30px; font-weight:bold;}
 .code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px;}
+.eg1 {font-size:14px;font-style:italic;margin-bottom:-10px;}
 .emphasis {color:#eee;}
 .button {width:200px; font-size:18px; font-weight:bold; text-decoration:none; display:inline-block; text-align:center; vertical-align:middle; padding:8px 0 10px; margin:4px 4px 12px 4px; color:#fff; background:#0068cc; border-radius:5px;}
 .button-100 {width:100px;}
@@ -69,7 +81,7 @@ window.onload = function() {
 
   var options1 = {
     'visible': true,
-    //'visibleKey': 119,
+    //'keyAssign': 119,
     'position': 'c'
     //'position': 'n'
     //'position': 'ne'
@@ -361,16 +373,10 @@ debug.js
 <div class="content">
 <div class="caption">// Usage</div><br>
 
-<b>HTML</b><br>
+<div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Embed the debugger into your web page</div>
 Include the script file. <a href="https://github.com/takashiharano/debug.js"><span class="button dl-btn"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RERCMUIwOUY4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RERCMUIwOUU4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkU1MTc4QTJBOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkU1MTc4QTJCOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+jUqS1wAAApVJREFUeNq0l89rE1EQx3e3gVJoSPzZeNEWPKgHoa0HBak0iHiy/4C3WvDmoZ56qJ7txVsPQu8qlqqHIhRKJZceesmhioQEfxTEtsoSpdJg1u/ABJ7Pmc1m8zLwgWTmzcw3L+/te+tHUeQltONgCkyCi2AEDHLsJ6iBMlgHL8FeoqokoA2j4CloRMmtwTmj7erHBXPgCWhG6a3JNXKdCiDl1cidVbXZkJoXQRi5t5BrxwoY71FzU8S4JuAIqFkJ2+BFSlEh525b/hr3+k/AklDkNsf6wTT4yv46KIMNpsy+iMdMc47HNWxbsgVcUn7FmLAzzoFAWDsBx+wVP6bUpp5ewI+DOeUx0Wd9D8F70BTGNjkWtqnhmT1JQAHcUgZd8Lo3rQb1LAT8eJVUfgGvHQigGp+V2Z0iAUUl8QH47kAA1XioxIo+bRN8OG8F/oBjwv+Z1nJgX5jpdzQDw0LCjsPmrcW7I/iHScCAEDj03FtD8A0EyuChHgg4KTlJQF3wZ7WELppnBX+dBFSVpJsOBWi1qiRgSwnOgoyD5hmuJdkWCVhTgnTvW3AgYIFrSbZGh0UW/Io5Vp+DQoK7o80pztWMemZbgxeNwCNwDbw1fIfgGZjhU6xPaJgBV8BdsMw5cbZoHsenwYFxkZzl83xTSKTiviCAfCsJLysH3POfC8m8NegyGAGfLP/VmGmfSChgXroR0RSWjEFv2J/nG84cuKFMf4sTCZqXuJd4KaXFVjEG3+tw4eXbNK/YC9oXXs3O8NY8y99L4BXY5cvLY/Bb2VZ58EOJVcB18DHJq9lRsKr8inyKGVjlmh29mtHs3AHfuhCwy1vXT/Nu2GKQt+UHsGdctyX6eQyNvc+5sfX9Dl7Pe2J/BRgAl2CpwmrsHR0AAAAASUVORK5CYII=" width="14"> Download</span></a>
 <pre class="code emphasis">
 &lt;script src="debug.js"&gt;&lt;/script&gt;
-</pre>
-
-<br>
-<div class="description"><b>JavaScript</b><br>Put log messages anywhere you want.</div>
-<pre class="code emphasis">
-log(&lt;message&gt;);
 </pre>
 
 That's it!<br><br>
@@ -382,7 +388,15 @@ The debug window will be automatically generated and is draggable.<br><br>
 <tr><td></td><td>You can switch hide/show by F2 key.</td></tr>
 </table>
 <br>
-e.g.,)
+
+<div class="description">
+<div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Logging</div>
+Put log messages anywhere you want.</div>
+<pre class="code emphasis">
+log(message);
+</pre>
+
+<div class="eg1">e.g.,)</div>
 <pre class="code">
 &lt;!DOCTYPE html&gt;
 &lt;html&gt;
@@ -414,7 +428,8 @@ e.g.,)
 </pre><br>
 
 <div class="caption">// Options</div>
-If you want to change the log settings, explicitly call initialization function in advance.
+If you want to change the debugger settings, explicitly call initialization function in advance.
+<div class="eg1">e.g.,)</div>
 <pre class="code emphasis">
 var options = {
   'visible': true,
@@ -439,7 +454,7 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">visibleKey</td>
+    <td class="name">keyAssign</td>
     <td>Key code for the debug window vibible/hide control</td>
     <td>113 <span class="annotation">(F2)</span></td>
   </tr>
@@ -1564,7 +1579,7 @@ JSON Sample for "json" command<br>
     </form>
   </div>
   <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
-  <div style="width:400px;height:100px;background:#eef;overflow:scroll;">DIV</div>
+  <div style="width:400px;height:100px;background:#eef;overflow:scroll;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV</div>
 </div>
 
 <!--

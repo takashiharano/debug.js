@@ -5,11 +5,11 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608230137';
+  this.v = '201608240000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
-    'visibleKey': 113,
+    'keyAssign': 113,
     'lines': 18,
     'bufsize': 100,
     'width': 500,
@@ -170,6 +170,7 @@ var DebugJS = function() {
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json [-p] one-line-json'},
+    {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded.'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p object'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post URL'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string.', 'usage': 'random [-d|-s] [min] [max]'},
@@ -259,6 +260,9 @@ DebugJS.IND_BIT_0_COLOR = '#4cf';
 DebugJS.IND_COLOR_INACTIVE = '#777';
 DebugJS.RANDOM_TYPE_NUM = '-d';
 DebugJS.RANDOM_TYPE_STR = '-s';
+DebugJS.OMIT_LAST = 0;
+DebugJS.OMIT_MID = 1;
+DebugJS.OMIT_FIRST = 2;
 DebugJS.FEATURES = [
   'togglableShowHide',
   'useClock',
@@ -1657,7 +1661,7 @@ DebugJS.prototype = {
         }
         break;
 
-      case self.options.visibleKey:
+      case self.options.keyAssign:
         if (self.status & DebugJS.STATE_VISIBLE) {
           self.closeDebugWindow();
         } else {
@@ -1998,8 +2002,8 @@ DebugJS.prototype = {
   showSystemInfo: function(e) {
     var self = Debug;
     var ITEM_NAME_COLOR = '#8f0';
-    var INDENT = '              ';
 
+    var INDENT = '              ';
     var screenSize = 'w=' + screen.width + ' x h=' + screen.height;
     var languages = self.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
@@ -2008,14 +2012,15 @@ DebugJS.prototype = {
       jq = 'v' + jQuery.fn.jquery;
     }
 
+    var INDENT = '         ';
     var links = document.getElementsByTagName('link');
     var loadedStyles = '<span class="' + self.id + '-unavailable">not loaded</span>';
     for (var i = 0; i < links.length; i++) {
       if (links[i].rel == 'stylesheet') {
         if (i == 0) {
-          loadedStyles = links[i].href;
+          loadedStyles = self.createFoldingText(links[i].href, 'linkHref' + i, DebugJS.OMIT_MID);
         } else {
-          loadedStyles += '\n' + INDENT + links[i].href;
+          loadedStyles += '\n' + INDENT + self.createFoldingText(links[i].href, 'linkHref' + i, DebugJS.OMIT_MID);
         }
       }
     }
@@ -2025,37 +2030,39 @@ DebugJS.prototype = {
     for (var i = 0; i < scripts.length; i++) {
       if (scripts[i].src) {
         if (i == 0) {
-          loadedScripts = scripts[i].src;
+          loadedScripts = self.createFoldingText(scripts[i].src, 'scriptSrc' + i, DebugJS.OMIT_MID);
         } else {
-          loadedScripts += '\n' + INDENT + scripts[i].src;
+          loadedScripts += '\n' + INDENT + self.createFoldingText(scripts[i].src, 'scriptSrc' + i, DebugJS.OMIT_MID);
         }
       }
     }
 
-    var navUserAgent = self.createFoldingText(navigator.userAgent, 'navUserAgent');
-    var navAppVersion = self.createFoldingText(navigator.appVersion, 'navAppVersion');
-    var winOnload = self.createFoldingText(window.onload, 'winOnload');
-    var winOnunload = self.createFoldingText(window.onunload, 'winOnunload');
-    var winOnmousedown = self.createFoldingText(window.onmousedown, 'winOnmousedown');
-    var winOnmousemove = self.createFoldingText(window.onmousemove, 'winOnmousemove');
-    var winOnmouseup = self.createFoldingText(window.onmousedown, 'winOnmouseup');
-    var winOnkeydown = self.createFoldingText(window.onkeydown, 'winOnkeydown');
-    var winOnkeypress = self.createFoldingText(window.onkeypress, 'winOnkeypress');
-    var winOnkeyup = self.createFoldingText(window.onkeyup, 'winOnkeyup');
-    var winOncontextmenu = self.createFoldingText(window.oncontextmenu, 'winOncontextmenu');
-    var winOnresize = self.createFoldingText(window.oncontextmenu, 'winOnresize');
-    var winOnscroll = self.createFoldingText(window.oncontextmenu, 'winOnscroll');
-    var winOnselect = self.createFoldingText(window.oncontextmenu, 'winOnselect');
-    var winOnselectstart = self.createFoldingText(window.oncontextmenu, 'winOnselectstart');
-    var winOnerror = self.createFoldingText(window.onerror, 'winOnerror');
-    var docOnmousedown = self.createFoldingText(document.onmousedown, 'documentOnmousedown');
-    var docOnmousemove = self.createFoldingText(document.onmousemove, 'documentOnmousemove');
-    var docOnmouseup = self.createFoldingText(document.onmousedown, 'documentOnmouseup');
-    var docOnkeydown = self.createFoldingText(document.onkeydown, 'documentOnkeydown');
-    var docOnkeypress = self.createFoldingText(document.onkeypress, 'documentOnkeypress');
-    var docOnkeyup = self.createFoldingText(document.onkeyup, 'documentOnkeyup');
-    var docOnselectstart = self.createFoldingText(document.onselectstart, 'documentOnselectstart');
-    var docOncontextmenu = self.createFoldingText(document.oncontextmenu, 'documentOncontextmenu');
+    var navUserAgent = self.createFoldingText(navigator.userAgent, 'navUserAgent', DebugJS.OMIT_LAST);
+    var navAppVersion = self.createFoldingText(navigator.appVersion, 'navAppVersion', DebugJS.OMIT_LAST);
+    var winOnload = self.createFoldingText(window.onload, 'winOnload', DebugJS.OMIT_LAST);
+    var winOnunload = self.createFoldingText(window.onunload, 'winOnunload', DebugJS.OMIT_LAST);
+    var winOnclick = self.createFoldingText(window.onclick, 'winOnclick', DebugJS.OMIT_LAST);
+    var winOnmousedown = self.createFoldingText(window.onmousedown, 'winOnmousedown', DebugJS.OMIT_LAST);
+    var winOnmousemove = self.createFoldingText(window.onmousemove, 'winOnmousemove', DebugJS.OMIT_LAST);
+    var winOnmouseup = self.createFoldingText(window.onmousedown, 'winOnmouseup', DebugJS.OMIT_LAST);
+    var winOnkeydown = self.createFoldingText(window.onkeydown, 'winOnkeydown', DebugJS.OMIT_LAST);
+    var winOnkeypress = self.createFoldingText(window.onkeypress, 'winOnkeypress', DebugJS.OMIT_LAST);
+    var winOnkeyup = self.createFoldingText(window.onkeyup, 'winOnkeyup', DebugJS.OMIT_LAST);
+    var winOncontextmenu = self.createFoldingText(window.oncontextmenu, 'winOncontextmenu', DebugJS.OMIT_LAST);
+    var winOnresize = self.createFoldingText(window.oncontextmenu, 'winOnresize', DebugJS.OMIT_LAST);
+    var winOnscroll = self.createFoldingText(window.oncontextmenu, 'winOnscroll', DebugJS.OMIT_LAST);
+    var winOnselect = self.createFoldingText(window.oncontextmenu, 'winOnselect', DebugJS.OMIT_LAST);
+    var winOnselectstart = self.createFoldingText(window.oncontextmenu, 'winOnselectstart', DebugJS.OMIT_LAST);
+    var winOnerror = self.createFoldingText(window.onerror, 'winOnerror', DebugJS.OMIT_LAST);
+    var docOnclick = self.createFoldingText(document.onclick, 'documentOnclick', DebugJS.OMIT_LAST);
+    var docOnmousedown = self.createFoldingText(document.onmousedown, 'documentOnmousedown', DebugJS.OMIT_LAST);
+    var docOnmousemove = self.createFoldingText(document.onmousemove, 'documentOnmousemove', DebugJS.OMIT_LAST);
+    var docOnmouseup = self.createFoldingText(document.onmousedown, 'documentOnmouseup', DebugJS.OMIT_LAST);
+    var docOnkeydown = self.createFoldingText(document.onkeydown, 'documentOnkeydown', DebugJS.OMIT_LAST);
+    var docOnkeypress = self.createFoldingText(document.onkeypress, 'documentOnkeypress', DebugJS.OMIT_LAST);
+    var docOnkeyup = self.createFoldingText(document.onkeyup, 'documentOnkeyup', DebugJS.OMIT_LAST);
+    var docOnselectstart = self.createFoldingText(document.onselectstart, 'documentOnselectstart', DebugJS.OMIT_LAST);
+    var docOncontextmenu = self.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
     var html = '<pre>' +
     '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>\n' +
@@ -2068,26 +2075,27 @@ DebugJS.prototype = {
     '<span style="color:' + ITEM_NAME_COLOR + '">  user</span>      : ' + self.decorateIfPropIsUnavailable(navigator.userLanguage) + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">  Languages</span> : ' + languages + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">jQuery</span>      : ' + jq + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">jQuery</span> : ' + jq + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">script</span>      : ' + loadedScripts + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">script</span> : ' + loadedScripts + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">CSS</span>         : ' + loadedStyles + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">css</span>    : ' + loadedStyles + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">navigator.</span>\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> appCodeName</span>: ' + self.decorateIfPropIsUnavailable(navigator.appCodeName) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> appName</span>    : ' + self.decorateIfPropIsUnavailable(navigator.appName) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> appVersion</span> : ' + navAppVersion + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> buildID</span>    : ' + self.decorateIfPropIsUnavailable(navigator.buildID) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> product </span>   : ' + self.decorateIfPropIsUnavailable(navigator.product) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> productSub</span> : ' + self.decorateIfPropIsUnavailable(navigator.productSub) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> vendor</span>     : ' + self.decorateIfPropIsUnavailable(navigator.vendor) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> platform</span>   : ' + self.decorateIfPropIsUnavailable(navigator.platform) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> oscpu</span>      : ' + self.decorateIfPropIsUnavailable(navigator.oscpu) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + self.decorateIfPropIsUnavailable(navigator.appCodeName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appName</span>      : ' + self.decorateIfPropIsUnavailable(navigator.appName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appVersion</span>   : ' + navAppVersion + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> buildID</span>      : ' + self.decorateIfPropIsUnavailable(navigator.buildID) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> product </span>     : ' + self.decorateIfPropIsUnavailable(navigator.product) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> productSub</span>   : ' + self.decorateIfPropIsUnavailable(navigator.productSub) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> vendor</span>       : ' + self.decorateIfPropIsUnavailable(navigator.vendor) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> platform</span>     : ' + self.decorateIfPropIsUnavailable(navigator.platform) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> oscpu</span>        : ' + self.decorateIfPropIsUnavailable(navigator.oscpu) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">window.</span>\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onload</span>       : ' + winOnload + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onunload</span>     : ' + winOnunload + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onclick</span>      : ' + winOnclick + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onmousedown</span>  : ' + winOnmousedown + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onmousemove</span>  : ' + winOnmousemove + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onmouseup</span>    : ' + winOnmouseup + '\n' +
@@ -2102,6 +2110,7 @@ DebugJS.prototype = {
     '<span style="color:' + ITEM_NAME_COLOR + '"> onerror</span>      : ' + winOnerror + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">document.</span>\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> onclick</span>      : ' + docOnclick + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onmousedown</span>  : ' + docOnmousedown + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onmousemove</span>  : ' + docOnmousemove + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onmouseup</span>    : ' + docOnmouseup + '\n' +
@@ -2112,7 +2121,7 @@ DebugJS.prototype = {
     '<span style="color:' + ITEM_NAME_COLOR + '"> oncontextmenu</span>: ' + docOncontextmenu + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">Cookie</span>: ' + document.cookie + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Cookie</span>: ' + self.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID) + '\n' +
     '</pre>';
     self.sysInfoPanel.innerHTML = html;
   },
@@ -2151,22 +2160,20 @@ DebugJS.prototype = {
     }
   },
 
-  createFoldingText: function(obj, name, lineMaxLen) {
+  createFoldingText: function(obj, name, omit, lineMaxLen, style) {
     var self = Debug;
     var DEFAULT_MAX_LEN = 50;
     var foldingText;
 
-    if (lineMaxLen == undefined) {
-      lineMaxLen = DEFAULT_MAX_LEN;
-    }
+    if (lineMaxLen == undefined) lineMaxLen = DEFAULT_MAX_LEN;
+    if (!style) style = 'color:#aaa';
 
     if (!obj) {
       foldingText = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
     } else {
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
-        partial = self.trimDownText(foldingText, lineMaxLen);
-        partial += '<span style="color:#ddd">...</span>';
+        partial = self.trimDownText(foldingText, lineMaxLen, omit, style);
         foldingText = '<span class="' + self.id + '-showhide-button" id="' + self.id + '-' + name + '__button" onclick="Debug.showHideByName(\'' + name + '\')">▶</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body">' + partial + '</span>' +
         '<div class="' + self.id + '-showhide-body" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
@@ -2177,8 +2184,36 @@ DebugJS.prototype = {
     return foldingText;
   },
 
-  trimDownText: function(text, maxLen) {
-    return text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '').substr(0, maxLen);
+  trimDownText: function(text, maxLen, omit, style) {
+    var snip = '...';
+    if (style) {
+      snip = '<span style="' + style + '">...</span>';
+    }
+    var shortText = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '');
+    if (text.length > maxLen) {
+      switch (omit) {
+        case DebugJS.OMIT_FIRST:
+          shortText = DebugJS.substr(shortText, (maxLen * (-1)));
+          shortText = snip + DebugJS.tagEscape(shortText);
+          break;
+        case DebugJS.OMIT_MID:
+          var firstLen = maxLen / 2;
+          var latterLen = firstLen;
+          if ((maxLen % 2) != 0) {
+            firstLen = Math.floor(firstLen);
+            latterLen = firstLen + 1;
+          }
+          var firstText = DebugJS.substr(shortText, firstLen);
+          var latterText = DebugJS.substr(shortText, (latterLen * (-1)));
+          shortText = DebugJS.tagEscape(firstText) + snip + DebugJS.tagEscape(latterText);
+          break;
+        default:
+          shortText = DebugJS.substr(shortText, maxLen);
+          shortText = DebugJS.tagEscape(shortText) + snip;
+          break;
+      }
+    }
+    return shortText;
   },
 
   decorateIfPropIsUnavailable: function(prop) {
@@ -2268,8 +2303,7 @@ DebugJS.prototype = {
       var MAX_LEN = 50;
 
       var text = el.innerText;
-      txt = self.trimDownText(text, MAX_LEN).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      if (text.length > MAX_LEN) {txt += '<span style="color:#888">...</span>';}
+      txt = self.trimDownText(text, MAX_LEN, DebugJS.OMIT_LAST, 'color:#888');
 
       var backgroundColor = style.backgroundColor;
       var bgColor16 = '';
@@ -2278,17 +2312,10 @@ DebugJS.prototype = {
         var bgColor16conv = DebugJS.convRGB10to16(bgColor10);
         bgColor16 = '#' + bgColor16conv.r + bgColor16conv.g + bgColor16conv.b;
       }
-
       var color = style.color;
       var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
       var color16 = DebugJS.convRGB10to16(color10);
-
-      var src = (el.src ? el.src : '');
-      if (src.length > MAX_LEN) {
-        var src1 = src.substr(0, (MAX_LEN / 2));
-        var src2 = src.slice(-(MAX_LEN / 2));
-        src = src1 + '<span style="color:#888">...</span>' + src2;
-      }
+      var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, 'color:#888') : '');
 
       html += '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
@@ -2309,28 +2336,28 @@ DebugJS.prototype = {
       'value    : ' + (el.value ? el.value : '') + '\n' +
       'src      : ' + src + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'onclick      : ' + self.getEventHandlerString(el.onclick) + '\n' +
-      'ondblclick   : ' + self.getEventHandlerString(el.ondblclick) + '\n' +
-      'onmousedown  : ' + self.getEventHandlerString(el.onmousedown) + '\n' +
-      'onmouseup    : ' + self.getEventHandlerString(el.onmouseup) + '\n' +
-      'onmouseover  : ' + self.getEventHandlerString(el.onmouseover) + '\n' +
-      'onmouseout   : ' + self.getEventHandlerString(el.onmouseout) + '\n' +
-      'onmousemove  : ' + self.getEventHandlerString(el.onmousemove) + '\n' +
-      'oncontextmenu: ' + self.getEventHandlerString(el.oncontextmenu) + '\n' +
+      'onclick      : ' + self.getEventHandlerString(el.onclick, 'elOnclick') + '\n' +
+      'ondblclick   : ' + self.getEventHandlerString(el.ondblclick, 'elOnDblClick') + '\n' +
+      'onmousedown  : ' + self.getEventHandlerString(el.onmousedown, 'elOnMouseDown') + '\n' +
+      'onmouseup    : ' + self.getEventHandlerString(el.onmouseup, 'elOnMouseUp') + '\n' +
+      'onmouseover  : ' + self.getEventHandlerString(el.onmouseover, 'elOnMouseOver') + '\n' +
+      'onmouseout   : ' + self.getEventHandlerString(el.onmouseout, 'elOnMouseOut') + '\n' +
+      'onmousemove  : ' + self.getEventHandlerString(el.onmousemove, 'elOnMouseMove') + '\n' +
+      'oncontextmenu: ' + self.getEventHandlerString(el.oncontextmenu, 'elOnContextmenu') + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'onkeydown    : ' + self.getEventHandlerString(el.onkeydown) + '\n' +
-      'onkeypress   : ' + self.getEventHandlerString(el.onkeypress) + '\n' +
-      'onkeyup      : ' + self.getEventHandlerString(el.onkeyup) + '\n' +
+      'onkeydown    : ' + self.getEventHandlerString(el.onkeydown, 'elOnKeyDown') + '\n' +
+      'onkeypress   : ' + self.getEventHandlerString(el.onkeypress, 'elOnKeyPress') + '\n' +
+      'onkeyup      : ' + self.getEventHandlerString(el.onkeyup, 'elOnKeyUp') + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'onfocus      : ' + self.getEventHandlerString(el.onfocus) + '\n' +
-      'onblur       : ' + self.getEventHandlerString(el.onblur) + '\n' +
-      'onchange     : ' + self.getEventHandlerString(el.onchange) + '\n' +
-      'oninput      : ' + self.getEventHandlerString(el.oninput) + '\n' +
-      'onselect     : ' + self.getEventHandlerString(el.onselect) + '\n' +
-      'onselectstart: ' + self.getEventHandlerString(el.onselectstart) + '\n' +
-      'onsubmit     : ' + self.getEventHandlerString(el.onsubmit) + '\n' +
+      'onfocus      : ' + self.getEventHandlerString(el.onfocus, 'elOnFocus') + '\n' +
+      'onblur       : ' + self.getEventHandlerString(el.onblur, 'elOnBlur') + '\n' +
+      'onchange     : ' + self.getEventHandlerString(el.onchange, 'elOnChange') + '\n' +
+      'oninput      : ' + self.getEventHandlerString(el.oninput, 'elOnInput') + '\n' +
+      'onselect     : ' + self.getEventHandlerString(el.onselect, 'elOnSelect') + '\n' +
+      'onselectstart: ' + self.getEventHandlerString(el.onselectstart, 'elOnSelectStart') + '\n' +
+      'onsubmit     : ' + self.getEventHandlerString(el.onsubmit, 'elOnSubmit') + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'onscroll     : ' + self.getEventHandlerString(el.onscroll) + '\n' +
+      'onscroll     : ' + self.getEventHandlerString(el.onscroll, 'elOnScroll') + '\n' +
       '<div class="' + self.id + '-separator"></div>';
 
       for (data in el.dataset) {
@@ -2366,8 +2393,12 @@ DebugJS.prototype = {
     setTimeout(self.updateElementInfo, UPDATE_INTERVAL);
   },
 
-  getEventHandlerString: function(handler) {
-    return (handler ? handler.toString().replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '').replace(/^\s{1,}/, '') : '<span style="color:#aaa;">null</span>');
+  getEventHandlerString: function(handler, name) {
+    var self = Debug;
+    var MAX_LEN = 300;
+    str = (handler ? handler.toString().replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '').replace(/^\s{1,}/, '') : '<span style="color:#aaa;">null</span>');
+    str = self.createFoldingText(str, name, DebugJS.OMIT_LAST, MAX_LEN, 'color:#888');
+    return str;
   },
 
   toggleTextCheckerMode: function() {
@@ -2823,6 +2854,14 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.execCmdJson(args);
+    }
+  },
+
+  cmdJquery: function(args, tbl) {
+    if (typeof jQuery == 'undefined') {
+      DebugJS.log.w('jQuery is not loaded.');
+    } else {
+      DebugJS.log('jQuery v' + jQuery.fn.jquery);
     }
   },
 
@@ -3917,6 +3956,46 @@ DebugJS.browserColoring = function(name) {
       break;
   }
   return str;
+};
+
+DebugJS.substr = function(text, len) {
+  var textLen = text.length;
+  var count = 0;
+  var str = '';
+  if (len >= 0) {
+    for (var i = 0; i < textLen; i++) {
+      var x = encodeURIComponent(text.charAt(i));
+      if (x.length <= 3) {
+        count++;
+      } else {
+        count += 2;
+      }
+      if (count > len) {
+        break;
+      }
+      str += text.charAt(i);
+    }
+  } else {
+    len *= (-1);
+    var i;
+    for (i = (textLen - 1); i >= 0; i--) {
+      var x = encodeURIComponent(text.charAt(i));
+      if (x.length <= 3) {
+        count++;
+      } else {
+        count += 2;
+      }
+      if (count >= len) {
+        break;
+      }
+    }
+    str = text.substr(i);
+  }
+  return str;
+};
+
+DebugJS.tagEscape = function(str) {
+  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 
 DebugJS.loadHandler = function() {
