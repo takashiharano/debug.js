@@ -349,10 +349,30 @@ var h = [
   }
 ];
 
-//window.onkeydown = function() {
-//  log("key down");
+//window.onkeydown = function(e) {
+//  switch (e.keyCode) {
+//    case 76:
+//      log("Hello, World!");
+//      break;
+//    case 69:
+//      log.e("Hello, World!");
+//      break;
+//    case 87:
+//      log.w("Hello, World!");
+//      break;
+//    case 73:
+//      log.i("Hello, World!");
+//      break;
+//    case 68:
+//      log.d("Hello, World!");
+//      break;
+//    case 83:
+//      log.s("Hello, World!");
+//      break;
+//    default:
+//      break;
+//  }
 //};
-//
 //window.onkeypress = function() {
 //  log("key press");
 //};
@@ -545,7 +565,7 @@ dbg.init(options);
   <tr>
     <td class="name">logColorI</td>
     <td>Information log color</td>
-    <td>'#8ff'</td>
+    <td>'#9ef'</td>
   </tr>
 
   <tr>
@@ -569,7 +589,7 @@ dbg.init(options);
   <tr>
     <td class="name">timerColor</td>
     <td>Timer color</td>
-    <td>'#8ff'</td>
+    <td>'#9ef'</td>
   </tr>
 
   <tr>
@@ -1077,6 +1097,12 @@ max: maximum length
   </tr>
 
   <tr>
+    <td class="name">execute</td>
+    <td></td>
+    <td>Execute the JavaScript code.</td>
+  </tr>
+
+  <tr>
     <td class="name">exit</td>
     <td></td>
     <td>Close the debug window and clear all status.</td>
@@ -1098,6 +1124,12 @@ max: maximum length
     <td class="name">history</td>
     <td></td>
     <td>Displays command history.</td>
+  </tr>
+
+  <tr>
+    <td class="name">jquery</td>
+    <td></td>
+    <td>Displays what version of jQuery is loaded.</td>
   </tr>
 
   <tr>
