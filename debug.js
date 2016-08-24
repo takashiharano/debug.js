@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608240740';
+  this.v = '201608242233';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -32,7 +32,7 @@ var DebugJS = function() {
     'btnHoverColor': '#8ef',
     'promptColor': '#0cf',
     'bgColor': '0,0,0',
-    'bgOpacity': '0.7',
+    'bgOpacity': '0.65',
     'border': 'solid 1px #888',
     'showLineNums': true,
     'showTimeStamp': true,
@@ -165,6 +165,7 @@ var DebugJS = function() {
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
+    {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the code.'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status.'},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get URL'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
@@ -545,7 +546,7 @@ DebugJS.prototype = {
       'height': 'calc(100% - ' + ((self.options.fontSize + DebugJS.WINDOW_ADJUST) + DebugJS.WINDOW_SHADOW + self.options.fontSize + 10 - (overlayPanelPadding * 2)) + 'px)',
       'padding': overlayPanelPadding + 'px',
       'border': 'solid ' + overlayPanelBorder + 'px #333',
-      'background': 'rgba(0,0,0,0.6)',
+      'background': 'rgba(0,0,0,0.5)',
       'overflow': 'auto'
     };
 
@@ -2070,9 +2071,9 @@ DebugJS.prototype = {
     '<span style="color:' + ITEM_NAME_COLOR + '">SCREEN SIZE</span> : ' + screenSize + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">User Agent</span>  : ' + navUserAgent + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">Language</span>    : ' + self.decorateIfPropIsUnavailable(navigator.language) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">  browser</span>   : ' + self.decorateIfPropIsUnavailable(navigator.browserLanguage) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">  user</span>      : ' + self.decorateIfPropIsUnavailable(navigator.userLanguage) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">Language</span>    : ' + self.decorateIfObjIsUnavailable(navigator.language) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  browser</span>   : ' + self.decorateIfObjIsUnavailable(navigator.browserLanguage) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">  user</span>      : ' + self.decorateIfObjIsUnavailable(navigator.userLanguage) + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">  Languages</span> : ' + languages + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">jQuery</span> : ' + jq + '\n' +
@@ -2082,15 +2083,15 @@ DebugJS.prototype = {
     '<span style="color:' + ITEM_NAME_COLOR + '">css</span>    : ' + loadedStyles + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">navigator.</span>\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + self.decorateIfPropIsUnavailable(navigator.appCodeName) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> appName</span>      : ' + self.decorateIfPropIsUnavailable(navigator.appName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + self.decorateIfObjIsUnavailable(navigator.appCodeName) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> appName</span>      : ' + self.decorateIfObjIsUnavailable(navigator.appName) + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> appVersion</span>   : ' + navAppVersion + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> buildID</span>      : ' + self.decorateIfPropIsUnavailable(navigator.buildID) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> product </span>     : ' + self.decorateIfPropIsUnavailable(navigator.product) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> productSub</span>   : ' + self.decorateIfPropIsUnavailable(navigator.productSub) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> vendor</span>       : ' + self.decorateIfPropIsUnavailable(navigator.vendor) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> platform</span>     : ' + self.decorateIfPropIsUnavailable(navigator.platform) + '\n' +
-    '<span style="color:' + ITEM_NAME_COLOR + '"> oscpu</span>        : ' + self.decorateIfPropIsUnavailable(navigator.oscpu) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> buildID</span>      : ' + self.decorateIfObjIsUnavailable(navigator.buildID) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> product </span>     : ' + self.decorateIfObjIsUnavailable(navigator.product) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> productSub</span>   : ' + self.decorateIfObjIsUnavailable(navigator.productSub) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> vendor</span>       : ' + self.decorateIfObjIsUnavailable(navigator.vendor) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> platform</span>     : ' + self.decorateIfObjIsUnavailable(navigator.platform) + '\n' +
+    '<span style="color:' + ITEM_NAME_COLOR + '"> oscpu</span>        : ' + self.decorateIfObjIsUnavailable(navigator.oscpu) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">window.</span>\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> onload</span>       : ' + winOnload + '\n' +
@@ -2139,7 +2140,7 @@ DebugJS.prototype = {
         }
       }
     } else {
-      languages = self.decorateIfPropIsUnavailable(navLanguages);
+      languages = self.decorateIfObjIsUnavailable(navLanguages);
     }
     return languages;
   },
@@ -2216,11 +2217,11 @@ DebugJS.prototype = {
     return shortText;
   },
 
-  decorateIfPropIsUnavailable: function(prop) {
+  decorateIfObjIsUnavailable: function(obj) {
     var self = Debug;
-    var text = prop;
-    if (!prop) {
-      text = '<span class="' + self.id + '-unavailable">' + prop + '</span>';
+    var text = obj;
+    if (!obj) {
+      text = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
     }
     return text;
   },
@@ -2304,7 +2305,6 @@ DebugJS.prototype = {
       var style = window.getComputedStyle(el);
       var rect = el.getBoundingClientRect();
       var MAX_LEN = 50;
-
       var text = el.innerText;
       txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
 
@@ -2326,13 +2326,15 @@ DebugJS.prototype = {
       'id       : ' + el.id + '\n' +
       'class    : ' + el.className + '\n' +
       'display  : ' + style.display + '\n' +
+      'position : ' + style.position + '\n' +
       'z-index  : ' + style.zIndex + '\n' +
-      'position : ' + style.position + ' / float = ' + style.float + ' / clear = ' + style.clear + '\n' +
-      'size     : width = ' + el.clientWidth + 'px / height = ' + el.clientHeight + 'px\n' +
+      'float    : ' + style.float + ' / clear = ' + style.clear + '\n' +
+      'size     : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
       'margin   : ' + style.marginTop + ' ' + style.marginRight + ' ' + style.marginBottom + ' ' + style.marginLeft + '\n' +
       'padding  : ' + style.paddingTop + ' ' + style.paddingRight + ' ' + style.paddingBottom + ' ' + style.paddingLeft + '\n' +
       'border   : ' + style.border + '\n' +
-      'font     : size = ' + style.fontSize + '  family = ' + style.fontFamily + '\n' +
+      'font     : size = ' + style.fontSize + '\n' +
+      '           family = ' + style.fontFamily + '\n' +
       'color    : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'bg-color : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'location : top = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + style.top + ') / left = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + style.left + ')\n' +
@@ -2665,10 +2667,17 @@ DebugJS.prototype = {
   execScript: function() {
     var self = Debug;
     try {
-      DebugJS.log(eval(self.scriptBuf));
+      var ret = eval(self.scriptBuf);
+      self.printResult(ret);
     } catch (e) {
       DebugJS.log.e(e);
     }
+  },
+
+  printResult: function(result) {
+    var self = Debug;
+    var msg = '<span style="color:' + self.options.promptColor + ';">&gt;</span> ' + self.decorateIfObjIsUnavailable(result);
+    DebugJS.log(msg);
   },
 
   disableScriptEditor: function() {
@@ -2752,13 +2761,15 @@ DebugJS.prototype = {
   execCmd: function() {
     var self = Debug;
     var cl = self.cmdLine.value;
-    if (cl != '') {
-      self.cmdHistoryBuf.add(cl);
-    }
-    self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
     self.cmdLine.value = '';
-    DebugJS.log.s(cl);
-    self._execCmd(cl);
+    if (cl == '') {
+      DebugJS.log('');
+    } else {
+      self.cmdHistoryBuf.add(cl);
+      self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
+      DebugJS.log.s(cl);
+      self._execCmd(cl);
+    }
   },
 
   _execCmd: function(cl) {
@@ -2786,7 +2797,10 @@ DebugJS.prototype = {
     }
     if (!found) {
       try {
-        DebugJS.log(eval(cl));
+        if (cl != '') {
+          var ret = eval(cl);
+          self.printResult(ret);
+        }
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -2800,6 +2814,11 @@ DebugJS.prototype = {
 
   cmdElements: function(args, tbl) {
     DebugJS.countElements(args, true);
+  },
+
+  cmdExecute: function(args, tbl) {
+    var self = Debug;
+    self.execScript();
   },
 
   cmdExit: function(args, tbl) {
@@ -2957,8 +2976,7 @@ DebugJS.prototype = {
     } else if (op == '+') {
       ret = self.addTime(timeL, timeR);
     }
-
-    log('<span style="color:' + self.options.timerColor + ';">' + ret + '</span>');
+    self.printResult(ret);
     return true;
   },
 
@@ -3322,7 +3340,7 @@ DebugJS.objDump = function(obj, toJson) {
   }
   var ret = DebugJS._objDump(obj, arg, toJson);
   if (ret.cnt >= DebugJS.OBJDMP_MAX) {
-    log.w('The object is too large. (>=' + ret.cnt + ')');
+    DebugJS.log.w('The object is too large. (>=' + ret.cnt + ')');
   }
   ret.dump = ret.dump.replace(/: {2,}\{/g, ': {');
   ret.dump = ret.dump.replace(/\[\n {2,}\]/g, '\[\]');
