@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608260008';
+  this.v = '201608260106';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -176,6 +176,7 @@ var DebugJS = function() {
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post URL'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string.', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {'cmd': 'self', 'fnc': this.cmdSelf, 'hidden': true},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer.', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
   ];
@@ -2455,7 +2456,9 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_TEXT_CHECKING;
 
     if (self.textCheckerPanel == null) {
-      var defaultFontSize = Math.round(16 * self.options.zoom);
+      var defaultFontSize = Math.round(12 * self.options.zoom);
+      var defaultFontFamily = 'Consolas';
+      var defaultFontWeight = 400;
       var defaultFgRGB16 = '000';
       var defaultBgRGB16 = 'fff';
       var panelPadding = 2;
@@ -2464,7 +2467,6 @@ DebugJS.prototype = {
       self.mainPanel.appendChild(self.textCheckerPanel);
 
       var txtPadding = 4;
-      var fontFamily = 'sans-serif';
       self.textCheck = document.createElement('input');
       self.textCheck.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
       self.textCheck.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
@@ -2474,7 +2476,7 @@ DebugJS.prototype = {
       self.textCheck.style.setProperty('border-radius', '0', 'important');
       self.textCheck.style.setProperty('outline', 'none', 'important');
       self.textCheck.style.setProperty('font-size', defaultFontSize + 'px', 'important');
-      self.textCheck.style.setProperty('font-family', fontFamily, 'important');
+      self.textCheck.style.setProperty('font-family', defaultFontFamily, 'important');
       self.textCheck.value = 'ABCDEFG.abcdefg 12345-67890_!?';
       self.textCheckerPanel.appendChild(self.textCheck);
 
@@ -2483,8 +2485,8 @@ DebugJS.prototype = {
       var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + self.id + '-fontsize-range" class="' + self.id + '-txt-range" oninput="Debug.onChangeFontSize(true);" onchange="Debug.onChangeFontSize(true);">' +
       '<input value="' + defaultFontSize + '" id="' + self.id + '-font-size" class="' + self.id + '-txt-text" style="width:30px;text-align:right;" oninput="Debug.onChangeFontSizeTxt()">px' +
       '<br>' +
-      'font-family: <input value="' + fontFamily + '" class="' + self.id + '-txt-text" style="width:110px;" oninput="Debug.onChangeFontFamily(this)">&nbsp;&nbsp;' +
-      'font-weight: <input type="range" min="100" max="900" step="100" value="400" id="' + self.id + '-fontweight-range" class="' + self.id + '-txt-range" style="width:80px;" oninput="Debug.onChangeFontWeight();" onchange="Debug.onChangeFontWeight();"><span id="' + self.id + '-font-weight"></span> ' +
+      'font-family: <input value="' + defaultFontFamily + '" class="' + self.id + '-txt-text" style="width:110px;" oninput="Debug.onChangeFontFamily(this)">&nbsp;&nbsp;' +
+      'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + self.id + '-fontweight-range" class="' + self.id + '-txt-range" style="width:80px;" oninput="Debug.onChangeFontWeight();" onchange="Debug.onChangeFontWeight();"><span id="' + self.id + '-font-weight"></span> ' +
       '<table>' +
       '<tr><td colspan="2">FG #<input id="' + self.id + '-fg-rgb" class="' + self.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px;" oninput="Debug.onChangeFgRGB()"></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-r"></span></td></tr>' +
@@ -2639,7 +2641,7 @@ DebugJS.prototype = {
     if (self.scriptPanel == null) {
       var code1 = 'time.start();\\nfor (var i = 0; i < 1000000; i++) {\\n\\n}\\ntime.end();\\n';
       var code2 = 'var i = 0;\\nledTest();\\nfunction ledTest() {\\n  dbg.setLed(i);\\n  if (i < 255) {\\n    dbg.call(ledTest, 500);\\n  } else {\\n    dbg.ledAllOff();\\n  }\\n  i++;\\n}\\n';
-
+      var code3 = '';
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.className = self.id + '-overlay-panel-half';
       var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
@@ -2647,7 +2649,8 @@ DebugJS.prototype = {
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>';
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code3 + '\')">[CODE3]</span>';
       self.scriptPanel.innerHTML = html;
       self.collapseMessagePanel();
       self.mainPanel.appendChild(self.scriptPanel);
@@ -2889,7 +2892,9 @@ DebugJS.prototype = {
     var self = Debug;
     var str = 'Available Commands:\n<table>';
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
-      str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
+      if (!self.CMD_TBL[i].hidden) {
+        str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
+      }
     }
     str += '</table>';
     DebugJS.log.mlt(str);
@@ -2979,6 +2984,18 @@ DebugJS.prototype = {
     } else {
       return false;
     }
+  },
+
+  cmdSelf: function(args, tbl) {
+    var self = Debug;
+    var sp = self.getSelfSizePos();
+    var str = 'width : ' + sp.width + '\n' +
+    'height: ' + sp.height + '\n' +
+    'winX1 : ' + sp.winX1 + '\n' +
+    'winY1 : ' + sp.winY1 + '\n' +
+    'winX2 : ' + sp.winX2 + '\n' +
+    'winY2 : ' + sp.winY2 + '\n';
+    DebugJS.log.mlt(str);
   },
 
   cmdTimeCalc: function(args) {
