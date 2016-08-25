@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608260106';
+  this.v = '201608260747';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2646,9 +2646,9 @@ DebugJS.prototype = {
       self.scriptPanel.className = self.id + '-overlay-panel-half';
       var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="Debug.execScript();">[EXEC]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code3 + '\')">[CODE3]</span>';
       self.scriptPanel.innerHTML = html;
@@ -3082,6 +3082,7 @@ DebugJS.prototype = {
       c = true;
     }
 
+    var ctd = false;
     if (tL.hour > tR.hour) {
       hh = tL.hour - tR.hour;
       if (c) {
@@ -3093,18 +3094,20 @@ DebugJS.prototype = {
       if (c) {
         hh -= 1;
         if (hh == -1) {
+          ctd = true;
           hh = 23;
         }
       }
     } else {
       hh = 24 - tR.hour + tL.hour;
+      ctd = true;
       if (c) {
         hh -= 1;
       }
       c = true;
     }
 
-    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3);
+    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + (ctd ? ' (-1 Day)' : '');
     return ret;
   },
 
@@ -3139,18 +3142,20 @@ DebugJS.prototype = {
       c = false;
     }
 
+    var ctd = false;
     hh = tL.hour + tR.hour;
     if (c) {
       hh++;
     }
     if (hh >= 24) {
+      ctd = true;
       hh -= 24;
       c = true;
     } else {
       c = false;
     }
 
-    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3);
+    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + (ctd ? ' (+1 Day)' : '');
     return ret;
   },
 
