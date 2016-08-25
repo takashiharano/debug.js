@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608250100';
+  this.v = '201608260008';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -758,7 +758,7 @@ DebugJS.prototype = {
     // CLR Button
     if (self.options.useClearButton) {
       self.clrBtnPanel = document.createElement('span');
-      self.clrBtnPanel.className = this.id + '-btn';
+      self.clrBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.clrBtnPanel.style.marginRight = '3px';
       self.clrBtnPanel.onclick = new Function('Debug.clearMessage();');
       self.clrBtnPanel.innerText = '[CLR]';
@@ -777,7 +777,7 @@ DebugJS.prototype = {
     // X Button
     if (self.options.togglableShowHide) {
       self.closeBtnPanel = document.createElement('span');
-      self.closeBtnPanel.className = this.id + '-btn';
+      self.closeBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.closeBtnPanel.style.float = 'right';
       self.closeBtnPanel.style.marginRight = '2px';
       self.closeBtnPanel.style.color = '#888';
@@ -798,7 +798,7 @@ DebugJS.prototype = {
     // Pin Button
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
       self.pinBtnPanel = document.createElement('span');
-      self.pinBtnPanel.className = this.id + '-btn';
+      self.pinBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.pinBtnPanel.style.float = 'right';
       self.pinBtnPanel.style.marginRight = '4px';
       self.pinBtnPanel.innerText = '📌';
@@ -811,7 +811,7 @@ DebugJS.prototype = {
     // Suspend Log Button
     if (self.options.useSuspendLogButton) {
       self.suspendLogBtnPanel = document.createElement('span');
-      self.suspendLogBtnPanel.className = this.id + '-btn';
+      self.suspendLogBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.suspendLogBtnPanel.style.float = 'right';
       self.suspendLogBtnPanel.style.marginRight = '4px';
       self.suspendLogBtnPanel.innerText = '🚫';
@@ -837,7 +837,7 @@ DebugJS.prototype = {
     // Script Button
     if (self.options.useScriptEditor) {
       self.scriptBtnPanel = document.createElement('span');
-      self.scriptBtnPanel.className = this.id + '-btn';
+      self.scriptBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.scriptBtnPanel.style.float = 'right';
       self.scriptBtnPanel.style.marginRight = '4px';
       self.scriptBtnPanel.innerText = 'JS';
@@ -850,7 +850,7 @@ DebugJS.prototype = {
     // Text Check Button
     if (self.options.useTextChecker) {
       self.textCheckerBtnPanel = document.createElement('span');
-      self.textCheckerBtnPanel.className = this.id + '-btn';
+      self.textCheckerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.textCheckerBtnPanel.style.float = 'right';
       self.textCheckerBtnPanel.style.marginRight = '3px';
       self.textCheckerBtnPanel.innerText = 'TXT';
@@ -863,7 +863,7 @@ DebugJS.prototype = {
     // Element Inspection Button
     if (self.options.useElementInfo) {
       self.elmInspectionBtnPanel = document.createElement('span');
-      self.elmInspectionBtnPanel.className = this.id + '-btn';
+      self.elmInspectionBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.elmInspectionBtnPanel.style.float = 'right';
       self.elmInspectionBtnPanel.style.marginRight = '3px';
       self.elmInspectionBtnPanel.innerText = 'DOM';
@@ -876,7 +876,7 @@ DebugJS.prototype = {
     // System Info Button
     if (self.options.useSystemInfo) {
       self.sysInfoBtnPanel = document.createElement('span');
-      self.sysInfoBtnPanel.className = this.id + '-btn';
+      self.sysInfoBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.sysInfoBtnPanel.style.float = 'right';
       self.sysInfoBtnPanel.style.marginRight = '3px';
       self.sysInfoBtnPanel.innerText = 'SYS';
@@ -889,7 +889,7 @@ DebugJS.prototype = {
     // Screen Measure Button
     if (self.options.useScreenMeasure) {
       self.measureBtnPanel = document.createElement('span');
-      self.measureBtnPanel.className = this.id + '-btn';
+      self.measureBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.measureBtnPanel.style.display = 'inline-block';
       self.measureBtnPanel.style.float = 'right';
       self.measureBtnPanel.style.marginTop = '1px';
@@ -1206,8 +1206,8 @@ DebugJS.prototype = {
   updateSwBtnPanel: function() {
     var self = Debug;
     var btn = (self.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
-    var btns = '<span class="' + this.id + '-btn" onclick="Debug.resetStopWatch();">🔃</span>' +
-    '<span class="' + this.id + '-btn" onclick="Debug.startStopStopWatch();">' + btn + '</span>';
+    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="Debug.resetStopWatch();">🔃</span>' +
+    '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="Debug.startStopStopWatch();">' + btn + '</span>';
     self.swBtnPanel.innerHTML = btns;
   },
 
@@ -1243,8 +1243,8 @@ DebugJS.prototype = {
       fn = 'Debug.restoreDebugWindow()';
       btn = '❐';
     }
-    var b = '<span class="' + self.id + '-btn" style="float:right;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
+    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -1289,10 +1289,10 @@ DebugJS.prototype = {
 
   setupMove: function() {
     var self = Debug;
-    self.windowBody.onmousedown = self.startWindowMove;
+    self.windowBody.onmousedown = self.startMove;
   },
 
-  startWindowMove: function(e) {
+  startMove: function(e) {
     var self = Debug;
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) || (e.button != 0) || self.isMoveExemptedElement(e.target)) {
       return;
@@ -1311,23 +1311,11 @@ DebugJS.prototype = {
     var self = Debug;
     if (el.nodeName == 'INPUT') return true;
     if (el.nodeName == 'TEXTAREA') return true;
-    if (el == self.clrBtnPanel) return true;
-    if (el == self.measureBtnPanel) return true;
-    if (el == self.sysInfoBtnPanel) return true;
-    if (el == self.elmInspectionBtnPanel) return true;
-    if (el == self.textCheckerBtnPanel) return true;
-    if (el == self.scriptBtnPanel) return true;
-    if (el == self.swBtnPanel.childNodes[0]) return true;
-    if (el == self.swBtnPanel.childNodes[1]) return true;
-    if (el == self.suspendLogBtnPanel) return true;
-    if (el == self.pinBtnPanel) return true;
-    if (el == self.winCtrlBtnPanel.childNodes[0]) return true;
-    if (el == self.winCtrlBtnPanel.childNodes[1]) return true;
-    if (el == self.closeBtnPanel) return true;
+    if (self.hasClass(el, this.id + '-nomove')) return true;
     return false;
   },
 
-  windowMove: function(e) {
+  doMove: function(e) {
     var self = Debug;
     if (!(self.status & DebugJS.STATE_DRAGGING)) return;
     self.debugWindow.style.top = e.clientY - self.prevOffsetTop + 'px';
@@ -1354,7 +1342,7 @@ DebugJS.prototype = {
     self.updateWinCtrlBtnPanel();
   },
 
-  resize: function(e) {
+  doResize: function(e) {
     var self = Debug;
     var currentX = e.clientX;
     var currentY = e.clientY;
@@ -1767,9 +1755,9 @@ DebugJS.prototype = {
       self.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
       self.updateMousePositionPanel();
     }
-    if (self.status & DebugJS.STATE_DRAGGING) self.windowMove(e);
-    if (self.status & DebugJS.STATE_RESIZING) self.resize(e);
-    if (self.status & DebugJS.STATE_MEASURING) self.measure(e);
+    if (self.status & DebugJS.STATE_DRAGGING) self.doMove(e);
+    if (self.status & DebugJS.STATE_RESIZING) self.doResize(e);
+    if (self.status & DebugJS.STATE_MEASURING) self.doMeasure(e);
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) self.inspectElement(e);
   },
 
@@ -1907,7 +1895,7 @@ DebugJS.prototype = {
     document.onselectstart = function() {return false;};
   },
 
-  measure: function(e) {
+  doMeasure: function(e) {
     var self = Debug;
     var moveX = e.clientX - self.clickedPosX;
     var moveY = e.clientY - self.clickedPosY;
@@ -2078,9 +2066,9 @@ DebugJS.prototype = {
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">jQuery</span> : ' + jq + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + ITEM_NAME_COLOR + '">script</span> : ' + loadedScripts + '\n' +
-    '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">css</span>    : ' + loadedStyles + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">script</span> : ' + loadedScripts + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">navigator.</span>\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + self.decorateIfObjIsUnavailable(navigator.appCodeName) + '\n' +
@@ -2175,7 +2163,7 @@ DebugJS.prototype = {
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
         partial = self.trimDownText(foldingText, lineMaxLen, omit, style);
-        foldingText = '<span class="' + self.id + '-showhide-button" id="' + self.id + '-' + name + '__button" onclick="Debug.showHideByName(\'' + name + '\')">▶</span> ' +
+        foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="Debug.showHideByName(\'' + name + '\')">▶</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body">' + partial + '</span>' +
         '<div class="' + self.id + '-showhide-body" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
       } else {
@@ -2255,6 +2243,13 @@ DebugJS.prototype = {
       self.elmInspectionPanelBody.style.position = 'relative';
       self.elmInspectionPanelBody.style.top = self.options.fontSize;
       self.elmInspectionPanel.appendChild(self.elmInspectionPanelBody);
+
+      var htmlSrc = document.getElementsByTagName('html')[0].outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      htmlSrc = self.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0);
+      self.elmInspectionPanelHtml = document.createElement('div');
+      self.elmInspectionPanelHtml.style.position = 'relative';
+      self.elmInspectionPanelHtml.innerHTML = '<pre><div class="' + self.id + '-separator"></div>HTML: ' + htmlSrc + '</pre>';
+      self.elmInspectionPanel.appendChild(self.elmInspectionPanelHtml);
     }
     self.updateElmInspectionBtnPanel();
     self.bodyEl.style.cursor = 'zoom-in';
@@ -2306,19 +2301,29 @@ DebugJS.prototype = {
       var rect = el.getBoundingClientRect();
       var MAX_LEN = 50;
       var text = el.innerText;
-      txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
+      var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
+      var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
 
       var backgroundColor = computedStyle.backgroundColor;
       var bgColor16 = '';
       if (backgroundColor != 'transparent') {
         var bgColor10 = backgroundColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-        var bgColor16conv = DebugJS.convRGB10to16(bgColor10);
-        bgColor16 = '#' + bgColor16conv.r + bgColor16conv.g + bgColor16conv.b;
+        var bgColor16cnv = DebugJS.convRGB10to16(bgColor10);
+        bgColor16 = '#' + bgColor16cnv.r + bgColor16cnv.g + bgColor16cnv.b;
       }
+
       var color = computedStyle.color;
       var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-      var color16 = DebugJS.convRGB10to16(color10);
-      var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
+      var color16cnv = DebugJS.convRGB10to16(color10);
+      var color16 = '#' + color16cnv.r + color16cnv.g + color16cnv.b;
+
+      var borderColor16 = '';
+      var borderColor = computedStyle.borderColor;
+      if (borderColor) {
+        var borderColor10 = borderColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+        var borderColor16cnv = DebugJS.convRGB10to16(borderColor10);
+        borderColor16 = '#' + borderColor16cnv.r + borderColor16cnv.g + borderColor16cnv.b;
+      }
 
       var allStyles = '';
       var LEADING_INDENT = '           ';
@@ -2338,7 +2343,7 @@ DebugJS.prototype = {
       }
       allStylesFolding = self.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE);
 
-      html += '<span style="color:#8f0;">#text</span> ' + txt + '\n' +
+      html += '<span style="color:#8f0;display:inline-block;height:14px;">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'tag       : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
       'id        : ' + el.id + '\n' +
@@ -2351,12 +2356,12 @@ DebugJS.prototype = {
       'size      : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
-      'border    : ' + computedStyle.border + '\n' +
+      'border    : ' + computedStyle.border + ' ' + borderColor16 + ' <span style="background:' + borderColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'font      : size   = ' + computedStyle.fontSize + '\n' +
       '            family = ' + computedStyle.fontFamily + '\n' +
       '            weight = ' + computedStyle.fontWeight + '\n' +
       '            style  = ' + computedStyle.fontStyle + '\n' +
-      'color     : ' + color + ' #' + color16.r + color16.g + color16.b + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      'color     : ' + color + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'location  : top    = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + computedStyle.top + ')\n' +
       '            left   = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + computedStyle.left + ')\n' +
@@ -2367,6 +2372,8 @@ DebugJS.prototype = {
       '<div class="' + self.id + '-separator"></div>' +
       'name      : ' + (el.name ? el.name : '') + '\n' +
       'value     : ' + (el.value ? self.createFoldingText(el.value, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) : '') + '\n' +
+      'tabIndex  : ' + el.tabIndex + '\n' +
+      '<div class="' + self.id + '-separator"></div>' +
       'src       : ' + src + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'onclick      : ' + self.getEventHandlerString(el.onclick, 'elOnclick') + '\n' +
@@ -2635,12 +2642,12 @@ DebugJS.prototype = {
 
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.className = self.id + '-overlay-panel-half';
-      var html = '<div class="' + self.id + '-btn" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
+      var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
-      '<span class="' + self.id + '-btn" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
-      '<span class="' + self.id + '-btn" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>';
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;" onclick="Debug.execScript();">[EXEC]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>';
       self.scriptPanel.innerHTML = html;
       self.collapseMessagePanel();
       self.mainPanel.appendChild(self.scriptPanel);
@@ -2692,8 +2699,14 @@ DebugJS.prototype = {
 
   execScript: function() {
     var self = Debug;
+    self.execCode(self.scriptBuf);
+  },
+
+  execCode: function(code) {
+    if (code == '') return;
+    var self = Debug;
     try {
-      var ret = eval(self.scriptBuf);
+      var ret = eval(code);
       self.printResult(ret);
     } catch (e) {
       DebugJS.log.e(e);
@@ -2822,14 +2835,7 @@ DebugJS.prototype = {
       found = true;
     }
     if (!found) {
-      try {
-        if (cl != '') {
-          var ret = eval(cl);
-          self.printResult(ret);
-        }
-      } catch (e) {
-        DebugJS.log.e(e);
-      }
+      self.execCode(cl);
     }
   },
 
@@ -3201,6 +3207,17 @@ DebugJS.prototype = {
   cmdV: function(args, tbl) {
     var self = Debug;
     DebugJS.log(self.v);
+  },
+
+  hasClass: function(el, name) {
+    var className = el.className;
+    var names = className.split(' ');
+    for (var i = 0; i < names.length; i++) {
+      if (names[i] == name) {
+        return true;
+      }
+    }
+    return false;
   }
 };
 
