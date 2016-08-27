@@ -215,55 +215,55 @@ function execDemo() {
 
 var demoSteps = [
   {
-    'fnc': function() {dbg.ledOn(0);},
+    'fnc': function() {dbg.led.on(0);},
     'delay': 100
   },
   {
-    'fnc': function() {dbg.ledOn(1);},
+    'fnc': function() {dbg.led.on(1);},
     'delay': 100
   },
   {
-    'fnc': function() {dbg.ledOn(2);},
+    'fnc': function() {dbg.led.on(2);},
     'delay': 100
   },
   {
-    'fnc': function() {dbg.ledOn(3);},
+    'fnc': function() {dbg.led.on(3);},
     'delay': 100
   },
   {
-    'fnc': function() {dbg.ledOn(4);},
+    'fnc': function() {dbg.led.on(4);},
     'delay': 100
   },
   {
-    'fnc': function() {dbg.ledOn(5);},
+    'fnc': function() {dbg.led.on(5);},
     'delay': 100
   },
   {
-    'fnc': function() {dbg.ledOn(6);},
+    'fnc': function() {dbg.led.on(6);},
     'delay': 100
   },
   {
-    'fnc': function() {dbg.ledOn(7);},
+    'fnc': function() {dbg.led.on(7);},
     'delay': 1000
   },
   {
-    'fnc': function() {dbg.ledAllOff();},
+    'fnc': function() {dbg.led.all(false);},
     'delay': 250
   },
   {
-    'fnc': function() {dbg.ledAllOn();},
+    'fnc': function() {dbg.led.all(true);},
     'delay': 250
   },
   {
-    'fnc': function() {dbg.ledAllOff();},
+    'fnc': function() {dbg.led.all(false);},
     'delay': 250
   },
   {
-    'fnc': function() {dbg.ledAllOn();},
+    'fnc': function() {dbg.led.all(true);},
     'delay': 250
   },
   {
-    'fnc': function() {dbg.ledAllOff();},
+    'fnc': function() {dbg.led.all(false);},
     'delay': 250
   }
 ];
@@ -973,10 +973,10 @@ dbg.countElements('#id');
   </tr>
 
   <tr>
-    <td class="name">dbg.ledOn</td>
-    <td>bit position</td>
+    <td class="name">dbg.led</td>
+    <td>value</td>
     <td>
-      turn on the indicator<br>
+      Set indicator bit pattern<br>
       <table style="border: solid 0 #fff;">
         <tr>
          <td style="border:0"> </td>
@@ -1005,34 +1005,27 @@ dbg.countElements('#id');
   </tr>
 
   <tr>
-    <td class="name">dbg.ledOff</td>
+    <td class="name">dbg.led.on</td>
     <td>bit position</td>
     <td>
-      turn off the indicator<br>
+      turn on the indicator
     </td>
   </tr>
 
   <tr>
-    <td class="name">dbg.setLed</td>
-    <td>value</td>
+    <td class="name">dbg.led.off</td>
+    <td>bit position</td>
     <td>
-      Set indicator bit pattern<br>
+      turn off the indicator
     </td>
   </tr>
 
   <tr>
-    <td class="name">dbg.ledAllOn</td>
-    <td></td>
+    <td class="name">dbg.led.all</td>
+    <td>flag</td>
     <td>
-      turn on all indicator<br>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.ledAllOff</td>
-    <td></td>
-    <td>
-      turn off all indicator<br>
+      turn on/off all indicator<br>
+      flag: true = turn on / false = turn off
     </td>
   </tr>
 
@@ -1136,6 +1129,12 @@ max: maximum length
     <td class="name">json</td>
     <td>JSON</td>
     <td>Parse one-line JSON.</td>
+  </tr>
+
+  <tr>
+    <td class="name">led</td>
+    <td>bit pattern</td>
+    <td>Set a bit pattern to the indicator.</td>
   </tr>
 
   <tr>
@@ -1446,94 +1445,94 @@ dbg.exec('00:05:30.700 - 00:05:20.400');<br>
 <br>
 
 <!-- ********************************************************************** -->
-dbg.ledOn(n); / dbg.ledOff(n);
+dbg.led.on(n); / dbg.led.off(n);
 <table class="demo-table">
 <tr>
 <td>
-<span class="button button-100" onclick="dbg.ledOn(7);">On(7)</span>
+<span class="button button-100" onclick="dbg.led.on(7);">On(7)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOn(6);">On(6)</span>
+<span class="button button-100" onclick="dbg.led.on(6);">On(6)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOn(5);">On(5)</span>
+<span class="button button-100" onclick="dbg.led.on(5);">On(5)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOn(4);">On(4)</span>
+<span class="button button-100" onclick="dbg.led.on(4);">On(4)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOn(3);">On(3)</span>
+<span class="button button-100" onclick="dbg.led.on(3);">On(3)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOn(2);">On(2)</span>
+<span class="button button-100" onclick="dbg.led.on(2);">On(2)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOn(1);">On(1)</span>
+<span class="button button-100" onclick="dbg.led.on(1);">On(1)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOn(0);">On(0)</span>
+<span class="button button-100" onclick="dbg.led.on(0);">On(0)</span>
 </td>
 </tr>
 
 <tr>
 <td>
-<span class="button button-100" onclick="dbg.ledOff(7);">Off(7)</span>
+<span class="button button-100" onclick="dbg.led.off(7);">Off(7)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOff(6);">Off(6)</span>
+<span class="button button-100" onclick="dbg.led.off(6);">Off(6)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOff(5);">Off(5)</span>
+<span class="button button-100" onclick="dbg.led.off(5);">Off(5)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOff(4);">Off(4)</span>
+<span class="button button-100" onclick="dbg.led.off(4);">Off(4)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOff(3);">Off(3)</span>
+<span class="button button-100" onclick="dbg.led.off(3);">Off(3)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOff(2);">Off(2)</span>
+<span class="button button-100" onclick="dbg.led.off(2);">Off(2)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOff(1);">Off(1)</span>
+<span class="button button-100" onclick="dbg.led.off(1);">Off(1)</span>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.ledOff(0);">Off(0)</span>
+<span class="button button-100" onclick="dbg.led.off(0);">Off(0)</span>
 </td>
 </tr>
 
 <tr>
 <td colspan="2">
-dbg.setLed(n);<br>
-<span class="button" onclick="dbg.setLed(0x55);">setLed(0x55)</span>
+dbg.led(n);<br>
+<span class="button" onclick="dbg.led(0x55);">dbg.led(0x55)</span>
 </td>
 
 <td colspan="2">
-<span class="button" onclick="dbg.setLed(0xaa);">setLed(0xaa)</span>
+<span class="button" onclick="dbg.led(0xaa);">dbg.led(0xaa)</span>
 </td>
 
 <td colspan="2">
-dbg.ledAllOn();<br>
-<span class="button" onclick="dbg.ledAllOn();">dbg.ledAllOn</span>
+dbg.led.all(true);<br>
+<span class="button" onclick="dbg.led.all(true);">dbg.led.all(true)</span>
 </td>
 
 <td colspan="2">
-dbg.ledAllOff();<br>
-<span class="button" onclick="dbg.ledAllOff();">dbg.ledAllOff</span>
+dbg.led.all(false);<br>
+<span class="button" onclick="dbg.led.all(false);">dbg.led.all(false)</span>
 </td>
 </tr>
 </table>
