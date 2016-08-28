@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608271008';
+  this.v = '201608271915';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -266,6 +266,11 @@ DebugJS.RANDOM_TYPE_STR = '-s';
 DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
+DebugJS.SNIPPET = [
+'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
+'var i = 0;\nledTest();\nfunction ledTest() {\n  dbg.led(i);\n  if (i < 255) {\n    dbg.call(ledTest, 500);\n  } else {\n    dbg.led.all(false);\n  }\n  i++;\n}\n\'LED DEMO\';\n',
+'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
+];
 DebugJS.FEATURES = [
   'togglableShowHide',
   'useClock',
@@ -2641,18 +2646,15 @@ DebugJS.prototype = {
     var self = Debug;
     self.status |= DebugJS.STATE_SCRIPT;
     if (self.scriptPanel == null) {
-      var code1 = 'time.start();\\nfor (var i = 0; i < 1000000; i++) {\\n\\n}\\ntime.end();\\n';
-      var code2 = 'var i = 0;\\nledTest();\\nfunction ledTest() {\\n  dbg.led(i);\\n  if (i < 255) {\\n    dbg.call(ledTest, 500);\\n  } else {\\n    dbg.led.all(false);\\n  }\\n  i++;\\n}\\n\\\'LED DEMO\\\'';
-      var code3 = '';
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.className = self.id + '-overlay-panel-half';
       var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="Debug.execScript();">[EXEC]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(null)">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="Debug.insertSnippet(\'' + code1 + '\')">[CODE1]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code2 + '\')">[CODE2]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(\'' + code3 + '\')">[CODE3]</span>';
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet()">[CLR]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="Debug.insertSnippet(0)">[CODE1]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(1)">[CODE2]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(2)">[CODE3]</span>';
       self.scriptPanel.innerHTML = html;
       self.collapseMessagePanel();
       self.mainPanel.appendChild(self.scriptPanel);
@@ -2679,13 +2681,14 @@ DebugJS.prototype = {
     self.scriptEditor.focus();
   },
 
-  insertSnippet: function(code) {
+  insertSnippet: function(n) {
     var self = Debug;
     var editor = self.scriptEditor;
-    if (code == null) {
+    if (n == undefined) {
       editor.value = '';
       editor.focus();
     } else {
+      var code = DebugJS.SNIPPET[n];
       var buf = editor.value;
       var posCursole = editor.selectionStart;
       var leftBuf = buf.substr(0, posCursole);
