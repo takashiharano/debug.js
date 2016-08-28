@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608282130';
+  this.v = '201608290030';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -131,6 +131,8 @@ var DebugJS = function() {
   this.ledPanel = null;
   this.led = 0;
   this.mainPanel = null;
+  this.overlayBasePanel = null;
+  this.overlayPanels = [];
   this.msgPanel = null;
   this.msgPanelScrollX = 0;
   this.msgPanelScrollY = 0;
@@ -227,7 +229,7 @@ DebugJS.WINDOW_SHADOW = 10;
 DebugJS.WINDOW_BORDER = 1;
 DebugJS.WINDOW_PADDING = 1;
 DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING * 2));
-DebugJS.OVERLAY_HALF_HEIGHT = 72; //%
+DebugJS.OVERLAY_PANEL_HEIGHT = 83; //%
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.COLOR_INACTIVE = '#999';
@@ -261,6 +263,7 @@ DebugJS.IND_BIT_2_COLOR = '#6f6';
 DebugJS.IND_BIT_1_COLOR = '#0ff';
 DebugJS.IND_BIT_0_COLOR = '#4cf';
 DebugJS.IND_COLOR_INACTIVE = '#777';
+DebugJS.KEYWORD_COLOR = '#2f6';
 DebugJS.RANDOM_TYPE_NUM = '-d';
 DebugJS.RANDOM_TYPE_STR = '-s';
 DebugJS.OMIT_LAST = 0;
@@ -543,9 +546,36 @@ DebugJS.prototype = {
       'background': 'rgba(0,0,0,0)'
     };
 
+    styles['.' + self.id + '-overlay-base-panel'] = {
+      'position': 'relative',
+      'top': '0',
+      'left': '0',
+      'width': 'calc(100% - 2px)',
+      'height': DebugJS.OVERLAY_PANEL_HEIGHT + '%'
+    };
+
     var overlayPanelBorder = 1;
     var overlayPanelPadding = 2;
     styles['.' + self.id + '-overlay-panel'] = {
+      'position': 'absolute',
+      'top': '0',
+      'left': '0',
+      'width': 'calc(100% - ' + ((overlayPanelPadding) * 2) + 'px)',
+      'height': 'calc(100% - ' + ((overlayPanelPadding) * 2) + 'px)',
+      'padding': overlayPanelPadding + 'px',
+      'border': 'solid ' + overlayPanelBorder + 'px #333',
+      'background': 'rgba(0,0,0,0.5)',
+      'overflow': 'auto'
+    };
+
+    styles['.' + self.id + '-overlay-panel pre'] = {
+      'padding': '0 1px',
+      'color': self.options.fontColor,
+      'font-size': self.options.fontSize + 'px',
+      'font-family': self.options.fontFamily
+    };
+
+    styles['.' + self.id + '-overlay-panel-full'] = {
       'position': 'absolute',
       'top': (self.options.fontSize + DebugJS.WINDOW_ADJUST) + 'px',
       'left': '1px',
@@ -555,24 +585,6 @@ DebugJS.prototype = {
       'border': 'solid ' + overlayPanelBorder + 'px #333',
       'background': 'rgba(0,0,0,0.5)',
       'overflow': 'auto'
-    };
-
-    styles['.' + self.id + '-overlay-panel-half'] = {
-      'position': 'relative',
-      'top': '1px',
-      'left': '1px',
-      'width': 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + 2) + 'px)',
-      'height': 'calc(' + DebugJS.OVERLAY_HALF_HEIGHT + '% - ' + DebugJS.WINDOW_SHADOW + 'px)',
-      'padding': '4px',
-      'border': 'solid 1px #333',
-      'background': 'rgba(0,0,0,0.7)'
-    };
-
-    styles['.' + self.id + '-overlay-panel pre'] = {
-      'padding': '0 1px',
-      'color': self.options.fontColor,
-      'font-size': self.options.fontSize + 'px',
-      'font-family': self.options.fontFamily
     };
 
     styles['.' + self.id + '-separator'] = {
@@ -1573,7 +1585,7 @@ DebugJS.prototype = {
 
   collapseMessagePanel: function() {
     var self = Debug;
-    self.msgPanel.style.height = (100 - DebugJS.OVERLAY_HALF_HEIGHT) + '%';
+    self.msgPanel.style.height = (100 - DebugJS.OVERLAY_PANEL_HEIGHT) + '%';
     self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
   },
 
@@ -1747,7 +1759,7 @@ DebugJS.prototype = {
             }
           } else {
             dbg.el = document.elementFromPoint(posX, posY);
-            DebugJS.log.s('The element has been captured into dbg.el');
+            DebugJS.log.s('The element has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">dbg.el</span>');
           }
         }
         break;
@@ -1981,8 +1993,8 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_SYSTEM_INFO;
     if (self.sysInfoPanel == null) {
       self.sysInfoPanel = document.createElement('div');
-      self.sysInfoPanel.className = self.id + '-overlay-panel';
-      self.mainPanel.appendChild(self.sysInfoPanel);
+      self.sysInfoPanel.className = self.id + '-overlay-panel-full';
+      self.addOverlayPanelFull(self.sysInfoPanel);
     }
     self.updateSysInfoBtnPanel();
     self.showSystemInfo();
@@ -1991,7 +2003,7 @@ DebugJS.prototype = {
   disableSystemInfo: function() {
     var self = Debug;
     if (self.sysInfoPanel != null) {
-      self.mainPanel.removeChild(self.sysInfoPanel);
+      self.removeOverlayPanelFull(self.sysInfoPanel);
       self.sysInfoPanel = null;
     }
     self.status &= ~DebugJS.STATE_SYSTEM_INFO;
@@ -2245,7 +2257,7 @@ DebugJS.prototype = {
       self.elmInspectionPanel = document.createElement('div');
       self.elmInspectionPanel.className = self.id + '-overlay-panel';
       self.elmInspectionPanel.innerHTML = '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>';
-      self.mainPanel.appendChild(self.elmInspectionPanel);
+      self.addOverlayPanel(self.elmInspectionPanel);
 
       self.elmNumPanel = document.createElement('span');
       self.elmNumPanel.style.float = 'right';
@@ -2279,7 +2291,7 @@ DebugJS.prototype = {
       self.prevElmStyle = {};
     }
     if (self.elmInspectionPanel != null) {
-      self.mainPanel.removeChild(self.elmInspectionPanel);
+      self.removeOverlayPanel(self.elmInspectionPanel);
       self.elmInspectionPanel = null;
       self.elmInspectionPanelBody = null;
       self.elmNumPanel = null;
@@ -2470,8 +2482,8 @@ DebugJS.prototype = {
       var defaultBgRGB16 = 'fff';
       var panelPadding = 2;
       self.textCheckerPanel = document.createElement('div');
-      self.textCheckerPanel.className = self.id + '-overlay-panel';
-      self.mainPanel.appendChild(self.textCheckerPanel);
+      self.textCheckerPanel.className = self.id + '-overlay-panel-full';
+      self.addOverlayPanelFull(self.textCheckerPanel);
 
       var txtPadding = 4;
       self.textCheck = document.createElement('input');
@@ -2530,7 +2542,7 @@ DebugJS.prototype = {
       self.onChangeFgRGB();
       self.onChangeBgRGB();
     } else {
-      self.mainPanel.appendChild(self.textCheckerPanel);
+      self.addOverlayPanelFull(self.textCheckerPanel);
     }
 
     self.updateTextCheckerBtnPanel();
@@ -2627,7 +2639,7 @@ DebugJS.prototype = {
   disableTextChecker: function() {
     var self = Debug;
     if (self.textCheckerPanel != null) {
-      self.mainPanel.removeChild(self.textCheckerPanel);
+      self.removeOverlayPanelFull(self.textCheckerPanel);
     }
     self.status &= ~DebugJS.STATE_TEXT_CHECKING;
     self.updateTextCheckerBtnPanel();
@@ -2647,7 +2659,7 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_SCRIPT;
     if (self.scriptPanel == null) {
       self.scriptPanel = document.createElement('div');
-      self.scriptPanel.className = self.id + '-overlay-panel-half';
+      self.scriptPanel.className = self.id + '-overlay-panel';
       var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="Debug.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="Debug.execScript();">[EXEC]</span>' +
@@ -2656,12 +2668,11 @@ DebugJS.prototype = {
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(1)">[CODE2]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(2)">[CODE3]</span>';
       self.scriptPanel.innerHTML = html;
-      self.collapseMessagePanel();
-      self.mainPanel.appendChild(self.scriptPanel);
+      self.addOverlayPanel(self.scriptPanel);
 
       self.scriptEditor = document.createElement('textarea');
-      self.scriptEditor.style.width = 'calc(100% - 5px)';
-      self.scriptEditor.style.height = 'calc(100% - ' + (self.options.fontSize + 7) + 'px)';
+      self.scriptEditor.style.width = 'calc(100% - 6px)';
+      self.scriptEditor.style.height = 'calc(100% - ' + (self.options.fontSize + 10) + 'px)';
       self.scriptEditor.style.marginTop = '2px';
       self.scriptEditor.style.boxSizing = 'content-box';
       self.scriptEditor.style.padding = '2px';
@@ -2679,6 +2690,47 @@ DebugJS.prototype = {
     }
     self.updateScriptBtnPanel();
     self.scriptEditor.focus();
+  },
+
+  addOverlayPanel: function(panel) {
+    var self = Debug;
+    if (self.overlayBasePanel == null) {
+      self.collapseMessagePanel();
+      self.overlayBasePanel = document.createElement('div');
+      self.overlayBasePanel.className = self.id + '-overlay-base-panel';
+      //self.mainPanel.insertBefore(self.overlayBasePanel, self.msgPanel); //bottom position
+      self.mainPanel.appendChild(self.overlayBasePanel);
+    }
+    self.overlayBasePanel.appendChild(panel);
+    self.overlayPanels.push(panel);
+  },
+
+  removeOverlayPanel: function(panel) {
+    var self = Debug;
+    if (self.overlayBasePanel != null) {
+      for (var i = 0; i < self.overlayPanels.length; i++) {
+        if (self.overlayPanels[i] == panel) {
+          self.overlayPanels.splice(i, 1);
+          self.overlayBasePanel.removeChild(panel);
+          break;
+        }
+      }
+      if (self.overlayPanels.length == 0) {
+        self.mainPanel.removeChild(self.overlayBasePanel);
+        self.overlayBasePanel = null;
+        self.expandMessagePanel();
+      }
+    }
+  },
+
+  addOverlayPanelFull: function(panel) {
+    var self = Debug;
+    self.mainPanel.appendChild(panel);
+  },
+
+  removeOverlayPanelFull: function(panel) {
+    var self = Debug;
+    self.mainPanel.removeChild(panel);
   },
 
   insertSnippet: function(n) {
@@ -2736,9 +2788,8 @@ DebugJS.prototype = {
   stopScript: function() {
     var self = Debug;
     if (self.scriptPanel != null) {
-      self.mainPanel.removeChild(self.scriptPanel);
+      self.removeOverlayPanel(self.scriptPanel);
       self.scriptPanel = null;
-      self.expandMessagePanel();
     }
     self.status &= ~DebugJS.STATE_SCRIPT;
   },
