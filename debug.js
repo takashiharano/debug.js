@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608282100';
+  this.v = '201608282130';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1319,7 +1319,7 @@ DebugJS.prototype = {
     var self = Debug;
     if (el.nodeName == 'INPUT') return true;
     if (el.nodeName == 'TEXTAREA') return true;
-    if (self.hasClass(el, this.id + '-nomove')) return true;
+    if (DebugJS.hasClass(el, this.id + '-nomove')) return true;
     return false;
   },
 
@@ -1468,15 +1468,17 @@ DebugJS.prototype = {
   },
 
   enableDraggable: function() {
-    Debug.status |= DebugJS.STATE_DRAGGABLE;
-    Debug.windowBody.style.cursor = 'default';
-    Debug.updatePinBtnPanel();
+    var self = Debug;
+    self.status |= DebugJS.STATE_DRAGGABLE;
+    self.windowBody.style.cursor = 'default';
+    self.updatePinBtnPanel();
   },
 
   disableDraggable: function() {
-    Debug.status &= ~DebugJS.STATE_DRAGGABLE;
-    Debug.windowBody.style.cursor = 'auto';
-    Debug.updatePinBtnPanel();
+    var self = Debug;
+    self.status &= ~DebugJS.STATE_DRAGGABLE;
+    self.windowBody.style.cursor = 'auto';
+    self.updatePinBtnPanel();
   },
 
   startStopStopWatch: function() {
@@ -3027,187 +3029,19 @@ DebugJS.prototype = {
     if (vals.length < 2) {
       return false;
     }
-    var timeL = self.convertTimeJson(vals[0]);
-    var timeR = self.convertTimeJson(vals[1]);
+    var timeL = DebugJS.convertTimeJson(vals[0]);
+    var timeR = DebugJS.convertTimeJson(vals[1]);
     if ((timeL == null) || (timeR == null)) {
       return false;
     }
     var ret;
     if (op == '-') {
-      ret = self.subTime(timeL, timeR);
+      ret = DebugJS.subTime(timeL, timeR);
     } else if (op == '+') {
-      ret = self.addTime(timeL, timeR);
+      ret = DebugJS.addTime(timeL, timeR);
     }
     self.printResult(ret);
     return true;
-  },
-
-  subTime: function(tL, tR) {
-    var hh, mm, ss, ms;
-    var c = false;
-    if (tL.msec >= tR.msec) {
-      ms = tL.msec - tR.msec;
-    } else {
-      ms = 1000 - tR.msec + tL.msec;
-      c = true;
-    }
-    if (tL.sec > tR.sec) {
-      ss = tL.sec - tR.sec;
-      if (c) {
-        ss -= 1;
-      }
-      c = false;
-    } else if (tL.sec == tR.sec) {
-      ss = 0;
-      if (c) {
-        ss -= 1;
-        if (ss == -1) {
-          ss = 59;
-        }
-      }
-    } else {
-      ss = 60 - tR.sec + tL.sec;
-      if (c) {
-        ss -= 1;
-      }
-      c = true;
-    }
-
-    if (tL.min > tR.min) {
-      mm = tL.min - tR.min;
-      if (c) {
-        mm -= 1;
-      }
-      c = false;
-    } else if (tL.min == tR.min) {
-      mm = 0;
-      if (c) {
-        mm -= 1;
-        if (mm == -1) {
-          mm = 59;
-        }
-      }
-    } else {
-      mm = 60 - tR.min + tL.min;
-      if (c) {
-        mm -= 1;
-      }
-      c = true;
-    }
-
-    var days = 0;
-    if (tL.hour > tR.hour) {
-      hh = tL.hour - tR.hour;
-      if (c) {
-        hh -= 1;
-      }
-      c = false;
-    } else if (tL.hour == tR.hour) {
-      hh = 0;
-      if (c) {
-        hh -= 1;
-        if (hh == -1) {
-          days = -1;
-          hh = 23;
-        }
-      }
-    } else {
-      hh = tL.hour - tR.hour;
-      if (c) {
-        hh -= 1;
-      }
-      days = Math.floor(hh / 24);
-      hh -= (24 * days);
-      c = true;
-    }
-
-    var excess = '';
-    if (days < 0) {
-      excess = ' (' + days + ' Day' + ((days <= -2) ? 's' : '') + ')'
-    }
-    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
-    return ret;
-  },
-
-  addTime: function(tL, tR) {
-    var hh, mm, ss, ms;
-    var c = false;
-    ms = tR.msec + tL.msec;
-    if (ms >= 1000) {
-      ms -= 1000;
-      c = true;
-    }
-
-    ss = tL.sec + tR.sec;
-    if (c) {
-      ss++;
-    }
-    if (ss >= 60) {
-      ss -= 60;
-      c = true;
-    } else {
-      c = false;
-    }
-
-    mm = tL.min + tR.min;
-    if (c) {
-      mm++;
-    }
-    if (mm >= 60) {
-      mm -= 60;
-      c = true;
-    } else {
-      c = false;
-    }
-
-    var days = 0;
-    hh = tL.hour + tR.hour;
-    if (c) {
-      hh++;
-    }
-    if (hh >= 24) {
-      days = Math.floor(hh / 24);
-      hh -= (24 * days);
-      c = true;
-    } else {
-      c = false;
-    }
-
-    var excess = '';
-    if (days > 0) {
-      excess = ' (+' + days + ' Day' + ((days >= 2) ? 's' : '') + ')'
-    }
-    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
-    return ret;
-  },
-
-  convertTimeJson: function(t) {
-    var hour = min = sec = msec = 0;
-    var s;
-    var times = t.split(':');
-    if (times.length == 3) {
-      hour = times[0] | 0;
-      min = times[1] | 0;
-      s = times[2];
-    } else if (times.length == 2) {
-      hour = times[0] | 0;
-      min = times[1] | 0;
-      s = '0';
-    } else {
-      return null;
-    }
-    var ss = s.split('.');
-    if (ss.length == 2) {
-      sec = ss[0] | 0;
-      msec = ((ss[1] + '00').substr(0, 3)) | 0;
-    } else {
-      sec = ss | 0;
-    }
-    if ((min >= 60) || (sec >= 60)) {
-      return null;
-    }
-    var time = {'hour': hour, 'min': min, 'sec': sec, 'msec': msec};
-    return time;
   },
 
   cmdRGB: function(args, tbl) {
@@ -3251,17 +3085,6 @@ DebugJS.prototype = {
   cmdV: function(args, tbl) {
     var self = Debug;
     DebugJS.log(self.v);
-  },
-
-  hasClass: function(el, name) {
-    var className = el.className;
-    var names = className.split(' ');
-    for (var i = 0; i < names.length; i++) {
-      if (names[i] == name) {
-        return true;
-      }
-    }
-    return false;
   }
 };
 
@@ -3597,6 +3420,18 @@ DebugJS.getChildElements = function(el, list) {
   }
 };
 
+
+DebugJS.hasClass = function(el, name) {
+  var className = el.className;
+  var names = className.split(' ');
+  for (var i = 0; i < names.length; i++) {
+    if (names[i] == name) {
+      return true;
+    }
+  }
+  return false;
+};
+
 DebugJS.execCmdJson = function(json) {
   var flg = true;
   if (json.substr(0, 2) == '-p') {
@@ -3729,6 +3564,174 @@ DebugJS.formatDec = function(v10) {
     dec += v10.charAt(i);
   }
   return dec;
+};
+
+DebugJS.convertTimeJson = function(t) {
+  var hour = min = sec = msec = 0;
+  var s;
+  var times = t.split(':');
+  if (times.length == 3) {
+    hour = times[0] | 0;
+    min = times[1] | 0;
+    s = times[2];
+  } else if (times.length == 2) {
+    hour = times[0] | 0;
+    min = times[1] | 0;
+    s = '0';
+  } else {
+    return null;
+  }
+  var ss = s.split('.');
+  if (ss.length == 2) {
+    sec = ss[0] | 0;
+    msec = ((ss[1] + '00').substr(0, 3)) | 0;
+  } else {
+    sec = ss | 0;
+  }
+  if ((min >= 60) || (sec >= 60)) {
+    return null;
+  }
+  var time = {'hour': hour, 'min': min, 'sec': sec, 'msec': msec};
+  return time;
+};
+
+DebugJS.subTime = function(tL, tR) {
+  var hh, mm, ss, ms;
+  var c = false;
+  if (tL.msec >= tR.msec) {
+    ms = tL.msec - tR.msec;
+  } else {
+    ms = 1000 - tR.msec + tL.msec;
+    c = true;
+  }
+  if (tL.sec > tR.sec) {
+    ss = tL.sec - tR.sec;
+    if (c) {
+      ss -= 1;
+    }
+    c = false;
+  } else if (tL.sec == tR.sec) {
+    ss = 0;
+    if (c) {
+      ss -= 1;
+      if (ss == -1) {
+        ss = 59;
+      }
+    }
+  } else {
+    ss = 60 - tR.sec + tL.sec;
+    if (c) {
+      ss -= 1;
+    }
+    c = true;
+  }
+
+  if (tL.min > tR.min) {
+    mm = tL.min - tR.min;
+    if (c) {
+      mm -= 1;
+    }
+    c = false;
+  } else if (tL.min == tR.min) {
+    mm = 0;
+    if (c) {
+      mm -= 1;
+      if (mm == -1) {
+        mm = 59;
+      }
+    }
+  } else {
+    mm = 60 - tR.min + tL.min;
+    if (c) {
+      mm -= 1;
+    }
+    c = true;
+  }
+
+  var days = 0;
+  if (tL.hour > tR.hour) {
+    hh = tL.hour - tR.hour;
+    if (c) {
+      hh -= 1;
+    }
+    c = false;
+  } else if (tL.hour == tR.hour) {
+    hh = 0;
+    if (c) {
+      hh -= 1;
+      if (hh == -1) {
+        days = -1;
+        hh = 23;
+      }
+    }
+  } else {
+    hh = tL.hour - tR.hour;
+    if (c) {
+      hh -= 1;
+    }
+    days = Math.floor(hh / 24);
+    hh -= (24 * days);
+    c = true;
+  }
+
+  var excess = '';
+  if (days < 0) {
+    excess = ' (' + days + ' Day' + ((days <= -2) ? 's' : '') + ')'
+  }
+  var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
+  return ret;
+};
+
+DebugJS.addTime = function(tL, tR) {
+  var hh, mm, ss, ms;
+  var c = false;
+  ms = tR.msec + tL.msec;
+  if (ms >= 1000) {
+    ms -= 1000;
+    c = true;
+  }
+
+  ss = tL.sec + tR.sec;
+  if (c) {
+    ss++;
+  }
+  if (ss >= 60) {
+    ss -= 60;
+    c = true;
+  } else {
+    c = false;
+  }
+
+  mm = tL.min + tR.min;
+  if (c) {
+    mm++;
+  }
+  if (mm >= 60) {
+    mm -= 60;
+    c = true;
+  } else {
+    c = false;
+  }
+
+  var days = 0;
+  hh = tL.hour + tR.hour;
+  if (c) {
+    hh++;
+  }
+  if (hh >= 24) {
+    days = Math.floor(hh / 24);
+    hh -= (24 * days);
+    c = true;
+  } else {
+    c = false;
+  }
+
+  var excess = '';
+  if (days > 0) {
+    excess = ' (+' + days + ' Day' + ((days >= 2) ? 's' : '') + ')'
+  }
+  var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
+  return ret;
 };
 
 DebugJS.timeStart = function(timerName, msg) {
