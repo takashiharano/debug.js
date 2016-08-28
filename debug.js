@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608290126';
+  this.v = '201608290743';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -153,10 +153,18 @@ var DebugJS = function() {
   this.resizeSW = null;
   this.initWidth = 0;
   this.initHeight = 0;
-  this.resizeOrgWidth = 0;
-  this.resizeOrgHeight = 0;
-  this.orgOffsetTop = 0;
-  this.orgOffsetLeft = 0;
+  this.orgSizePos = {
+    'w': 0,
+    'h': 0,
+    't': 0,
+    'l': 0
+  };
+  this.expandModeOrg = {
+    'w': 0,
+    'h': 0,
+    't': 0,
+    'l': 0
+  };
   this.clickedPosX = 0;
   this.clickedPosY = 0;
   this.prevOffsetTop = 0;
@@ -1345,10 +1353,10 @@ DebugJS.prototype = {
   storeSizeAndPos: function() {
     var self = Debug;
     var shadow = (self.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
-    self.orgOffsetTop = self.debugWindow.offsetTop;
-    self.orgOffsetLeft = self.debugWindow.offsetLeft;
-    self.resizeOrgWidth = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
-    self.resizeOrgHeight = (self.debugWindow.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
+    self.orgSizePos.w = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
+    self.orgSizePos.h = (self.debugWindow.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
+    self.orgSizePos.t = self.debugWindow.offsetTop;
+    self.orgSizePos.l = self.debugWindow.offsetLeft;
   },
 
   startResize: function(e) {
@@ -1376,11 +1384,11 @@ DebugJS.prototype = {
 
     if (self.status & DebugJS.STATE_RESIZING_N) {
       moveY = self.clickedPosY - currentY;
-      h = self.resizeOrgHeight + moveY;
+      h = self.orgSizePos.h + moveY;
       if (h < DebugJS.DEBUG_WIN_MIN_H) {
         h = DebugJS.DEBUG_WIN_MIN_H;
       } else {
-        t = self.orgOffsetTop - moveY;
+        t = self.orgSizePos.t - moveY;
         self.debugWindow.style.top = t + 'px';
       }
       self.debugWindow.style.height = h + 'px';
@@ -1388,11 +1396,11 @@ DebugJS.prototype = {
 
     if (self.status & DebugJS.STATE_RESIZING_W) {
       moveX = self.clickedPosX - currentX;
-      w = self.resizeOrgWidth + moveX;
+      w = self.orgSizePos.w + moveX;
       if (w < DebugJS.DEBUG_WIN_MIN_W) {
         w = DebugJS.DEBUG_WIN_MIN_W;
       } else {
-        l = self.orgOffsetLeft - moveX;
+        l = self.orgSizePos.l - moveX;
         self.debugWindow.style.left = l + 'px';
       }
       self.debugWindow.style.width = w + 'px';
@@ -1400,14 +1408,14 @@ DebugJS.prototype = {
 
     if (self.status & DebugJS.STATE_RESIZING_E) {
       moveX = currentX - self.clickedPosX;
-      w = self.resizeOrgWidth + moveX;
+      w = self.orgSizePos.w + moveX;
       if (w < DebugJS.DEBUG_WIN_MIN_W) w = DebugJS.DEBUG_WIN_MIN_W;
       self.debugWindow.style.width = w + 'px';
     }
 
     if (self.status & DebugJS.STATE_RESIZING_S) {
       moveY = currentY - self.clickedPosY;
-      h = self.resizeOrgHeight + moveY;
+      h = self.orgSizePos.h + moveY;
       if (self.initHeight < DebugJS.DEBUG_WIN_MIN_H) {
         if (h < self.initHeight) {
           h = self.initHeight;
@@ -1835,10 +1843,10 @@ DebugJS.prototype = {
 
   restoreDebugWindow: function() {
     var self = Debug;
-    self.debugWindow.style.width = self.resizeOrgWidth + 'px';
-    self.debugWindow.style.height = self.resizeOrgHeight + 'px';
-    self.debugWindow.style.top = self.orgOffsetTop + 'px';
-    self.debugWindow.style.left = self.orgOffsetLeft + 'px';
+    self.debugWindow.style.width = self.orgSizePos.w + 'px';
+    self.debugWindow.style.height = self.orgSizePos.h + 'px';
+    self.debugWindow.style.top = self.orgSizePos.t + 'px';
+    self.debugWindow.style.left = self.orgSizePos.l + 'px';
     self.resizeMainHeight();
     self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
@@ -2830,19 +2838,21 @@ DebugJS.prototype = {
 
   expandHight: function(h) {
     var self = Debug;
-    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST)) {
-      self.storeSizeAndPos();
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      self.storeExpandModeOrgSizeAndPos();
       self.setSelfSizeH(h);
-      var sizePos = self.getSelfSizePos();
-      self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+      if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
+        var sizePos = self.getSelfSizePos();
+        self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+      }
     }
   },
 
   resetExpandedHeight: function() {
     var self = Debug;
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      self.debugWindow.style.width = self.resizeOrgWidth + 'px';
-      self.debugWindow.style.height = self.resizeOrgHeight + 'px';
+      self.debugWindow.style.width = self.expandModeOrg.w + 'px';
+      self.debugWindow.style.height = self.expandModeOrg.h + 'px';
       self.resizeMainHeight();
       self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
@@ -2850,6 +2860,15 @@ DebugJS.prototype = {
         self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
       }
     }
+  },
+
+  storeExpandModeOrgSizeAndPos: function() {
+    var self = Debug;
+    var shadow = (self.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
+    self.expandModeOrg.w = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
+    self.expandModeOrg.h = (self.debugWindow.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
+    self.expandModeOrg.t = self.debugWindow.offsetTop;
+    self.expandModeOrg.l = self.debugWindow.offsetLeft;
   },
 
   turnLed: function(pos, active) {
