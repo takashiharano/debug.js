@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608290030';
+  this.v = '201608290126';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1171,7 +1171,7 @@ DebugJS.prototype = {
   // Update LED
   updateLedPanel: function() {
     var self = Debug;
-    var SHADOW = 'text-shadow:0 0 5px;'
+    var SHADOW = 'text-shadow:0 0 5px;';
     var bit7Color = (self.led & DebugJS.IND_BIT_7) ? 'color:' + DebugJS.IND_BIT_7_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
     var bit6Color = (self.led & DebugJS.IND_BIT_6) ? 'color:' + DebugJS.IND_BIT_6_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
     var bit5Color = (self.led & DebugJS.IND_BIT_5) ? 'color:' + DebugJS.IND_BIT_5_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
@@ -2252,6 +2252,7 @@ DebugJS.prototype = {
 
   enableElmInspection: function() {
     var self = Debug;
+    var windowExpandHeight = 640 * self.options.zoom;
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
@@ -2270,19 +2271,14 @@ DebugJS.prototype = {
       self.elmInspectionPanelBody.style.position = 'relative';
       self.elmInspectionPanelBody.style.top = self.options.fontSize;
       self.elmInspectionPanel.appendChild(self.elmInspectionPanelBody);
+
+      self.expandHight(windowExpandHeight);
     }
     self.updateElmInspectionBtnPanel();
     self.bodyEl.style.cursor = 'zoom-in';
   },
 
   disableElmInspection: function() {
-    var self = Debug;
-    self.stopElmInspection();
-    self.updateElmInspectionBtnPanel();
-    self.bodyEl.style.cursor = 'auto';
-  },
-
-  stopElmInspection: function() {
     var self = Debug;
     if (self.prevElm) {
       self.prevElm.style.border = self.prevElmStyle.border;
@@ -2298,6 +2294,9 @@ DebugJS.prototype = {
     }
     self.updatePrevElm(null);
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
+    self.updateElmInspectionBtnPanel();
+    self.bodyEl.style.cursor = 'auto';
+    self.resetExpandedHeight();
   },
 
   inspectElement: function(e) {
@@ -2815,6 +2814,42 @@ DebugJS.prototype = {
     sizePos.winX2 = sizePos.winX1 + self.debugWindow.clientWidth + resizeBoxSize + DebugJS.WINDOW_BORDER;
     sizePos.winY2 = sizePos.winY1 + self.debugWindow.clientHeight + resizeBoxSize + DebugJS.WINDOW_BORDER;
     return sizePos;
+  },
+
+  setSelfSizeW: function(w) {
+    var self = Debug;
+    self.debugWindow.style.width = w + 'px';
+    self.resizeMainHeight();
+  },
+
+  setSelfSizeH: function(h) {
+    var self = Debug;
+    self.debugWindow.style.height = h + 'px';
+    self.resizeMainHeight();
+  },
+
+  expandHight: function(h) {
+    var self = Debug;
+    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST)) {
+      self.storeSizeAndPos();
+      self.setSelfSizeH(h);
+      var sizePos = self.getSelfSizePos();
+      self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+    }
+  },
+
+  resetExpandedHeight: function() {
+    var self = Debug;
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      self.debugWindow.style.width = self.resizeOrgWidth + 'px';
+      self.debugWindow.style.height = self.resizeOrgHeight + 'px';
+      self.resizeMainHeight();
+      self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+      if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
+        var sizePos = self.getSelfSizePos();
+        self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+      }
+    }
   },
 
   turnLed: function(pos, active) {
@@ -3727,7 +3762,7 @@ DebugJS.subTime = function(tL, tR) {
 
   var excess = '';
   if (days < 0) {
-    excess = ' (' + days + ' Day' + ((days <= -2) ? 's' : '') + ')'
+    excess = ' (' + days + ' Day' + ((days <= -2) ? 's' : '') + ')';
   }
   var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
   return ret;
@@ -3779,7 +3814,7 @@ DebugJS.addTime = function(tL, tR) {
 
   var excess = '';
   if (days > 0) {
-    excess = ' (+' + days + ' Day' + ((days >= 2) ? 's' : '') + ')'
+    excess = ' (+' + days + ' Day' + ((days >= 2) ? 's' : '') + ')';
   }
   var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
   return ret;
