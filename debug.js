@@ -2061,6 +2061,9 @@ DebugJS.prototype = {
     var docOnselectstart = self.createFoldingText(document.onselectstart, 'documentOnselectstart', DebugJS.OMIT_LAST);
     var docOncontextmenu = self.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
+    var htmlSrc = document.getElementsByTagName('html')[0].outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    htmlSrc = self.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0);
+
     var html = '<pre>' +
     '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>\n' +
     '<div class="' + self.id + '-separator"></div>' +
@@ -2119,6 +2122,8 @@ DebugJS.prototype = {
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + ITEM_NAME_COLOR + '">cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
     '<span style="color:' + ITEM_NAME_COLOR + '">Cookie</span>: ' + self.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID) + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + ITEM_NAME_COLOR + '">HTML</span>: ' + htmlSrc +
     '</pre>';
     self.sysInfoPanel.innerHTML = html;
   },
@@ -2251,13 +2256,6 @@ DebugJS.prototype = {
       self.elmInspectionPanelBody.style.position = 'relative';
       self.elmInspectionPanelBody.style.top = self.options.fontSize;
       self.elmInspectionPanel.appendChild(self.elmInspectionPanelBody);
-
-      var htmlSrc = document.getElementsByTagName('html')[0].outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      htmlSrc = self.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0);
-      self.elmInspectionPanelHtml = document.createElement('div');
-      self.elmInspectionPanelHtml.style.position = 'relative';
-      self.elmInspectionPanelHtml.innerHTML = '<pre><div class="' + self.id + '-separator"></div>HTML: ' + htmlSrc + '</pre>';
-      self.elmInspectionPanel.appendChild(self.elmInspectionPanelHtml);
     }
     self.updateElmInspectionBtnPanel();
     self.bodyEl.style.cursor = 'zoom-in';
