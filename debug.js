@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608271915';
+  this.v = '201608282100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3095,7 +3095,7 @@ DebugJS.prototype = {
       c = true;
     }
 
-    var ctd = false;
+    var days = 0;
     if (tL.hour > tR.hour) {
       hh = tL.hour - tR.hour;
       if (c) {
@@ -3107,20 +3107,25 @@ DebugJS.prototype = {
       if (c) {
         hh -= 1;
         if (hh == -1) {
-          ctd = true;
+          days = -1;
           hh = 23;
         }
       }
     } else {
-      hh = 24 - tR.hour + tL.hour;
-      ctd = true;
+      hh = tL.hour - tR.hour;
       if (c) {
         hh -= 1;
       }
+      days = Math.floor(hh / 24);
+      hh -= (24 * days);
       c = true;
     }
 
-    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + (ctd ? ' (-1 Day)' : '');
+    var excess = '';
+    if (days < 0) {
+      excess = ' (' + days + ' Day' + ((days <= -2) ? 's' : '') + ')'
+    }
+    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
     return ret;
   },
 
@@ -3155,20 +3160,24 @@ DebugJS.prototype = {
       c = false;
     }
 
-    var ctd = false;
+    var days = 0;
     hh = tL.hour + tR.hour;
     if (c) {
       hh++;
     }
     if (hh >= 24) {
-      ctd = true;
-      hh -= 24;
+      days = Math.floor(hh / 24);
+      hh -= (24 * days);
       c = true;
     } else {
       c = false;
     }
 
-    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + (ctd ? ' (+1 Day)' : '');
+    var excess = '';
+    if (days > 0) {
+      excess = ' (+' + days + ' Day' + ((days >= 2) ? 's' : '') + ')'
+    }
+    var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
     return ret;
   },
 

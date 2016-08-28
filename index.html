@@ -1434,10 +1434,93 @@ dbg.exec('rgb #fff');<br>
 dbg.exec('json {"name": "John Smith", "age": 25, "city": "New York"}');<br>
 <span class="button" onclick='dbg.exec("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}");'>dbg.exec()</span>
 </td>
+</tr>
 
+<!-- time calc + -->
+<tr>
+<td>
+dbg.exec('00:05:30.700 - 00:01:20.123');<br>
+<span class="button" onclick="dbg.exec('00:05:30.700 + 00:01:20.123');">dbg.exec()</span>
+</td>
+</tr>
+
+<!-- time calc + 1day -->
+<tr>
+<td>
+dbg.exec('10:00 + 13:59');<br>
+<span class="button" onclick="dbg.exec('10:00 + 13:59');">10:00 + 13:59</span>
+</td>
+
+<td>
+dbg.exec('10:00 + 14:00');<br>
+<span class="button" onclick="dbg.exec('10:00 + 14:00');">10:00 + 14:00</span>
+</td>
+
+<td>
+dbg.exec('10:00 + 14:01');<br>
+<span class="button" onclick="dbg.exec('10:00 + 14:01');">10:00 + 14:01</span>
+</td>
+</tr>
+
+<!-- time calc + 2days -->
+<tr>
+<td>
+dbg.exec('10:00 + 37:59');<br>
+<span class="button" onclick="dbg.exec('10:00 + 37:59');">10:00 + 37:59</span>
+</td>
+
+<td>
+dbg.exec('10:00 + 38:00');<br>
+<span class="button" onclick="dbg.exec('10:00 + 38:00');">10:00 + 38:00</span>
+</td>
+
+<td>
+dbg.exec('10:00 + 38:01');<br>
+<span class="button" onclick="dbg.exec('10:00 + 38:01');">10:00 + 38:01</span>
+</td>
+</tr>
+
+<!-- time calc - -->
+<tr>
 <td>
 dbg.exec('00:05:30.700 - 00:05:20.400');<br>
 <span class="button" onclick="dbg.exec('00:05:30.700 - 00:05:20.400');">dbg.exec()</span>
+</td>
+</tr>
+
+<!-- time calc - 1day -->
+<tr>
+<td>
+dbg.exec('10:00 - 09:59');<br>
+<span class="button" onclick="dbg.exec('10:00 - 09:59');">10:00 - 09:59</span>
+</td>
+
+<td>
+dbg.exec('10:00 - 10:00');<br>
+<span class="button" onclick="dbg.exec('10:00 - 10:00');">10:00 - 10:00</span>
+</td>
+
+<td>
+dbg.exec('10:00 - 10:01');<br>
+<span class="button" onclick="dbg.exec('10:00 - 10:01');">10:00 - 10:01</span>
+</td>
+</tr>
+
+<!-- time calc - 2days -->
+<tr>
+<td>
+dbg.exec('10:00 - 33:59');<br>
+<span class="button" onclick="dbg.exec('10:00 - 33:59');">10:00 - 33:59</span>
+</td>
+
+<td>
+dbg.exec('10:00 - 34:00');<br>
+<span class="button" onclick="dbg.exec('10:00 - 34:00');">10:00 - 34:00</span>
+</td>
+
+<td>
+dbg.exec('10:00 - 34:01');<br>
+<span class="button" onclick="dbg.exec('10:00 - 34:01');">10:00 - 34:01</span>
 </td>
 </tr>
 </table>
