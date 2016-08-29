@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608292214';
+  this.v = '201608300010';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -153,18 +153,8 @@ var DebugJS = function() {
   this.resizeSW = null;
   this.initWidth = 0;
   this.initHeight = 0;
-  this.orgSizePos = {
-    'w': 0,
-    'h': 0,
-    't': 0,
-    'l': 0
-  };
-  this.expandModeOrg = {
-    'w': 0,
-    'h': 0,
-    't': 0,
-    'l': 0
-  };
+  this.orgSizePos = {'w': 0, 'h': 0, 't': 0, 'l': 0};
+  this.expandModeOrg = {'w': 0, 'h': 0, 't': 0, 'l': 0};
   this.clickedPosX = 0;
   this.clickedPosY = 0;
   this.prevOffsetTop = 0;
@@ -280,7 +270,9 @@ DebugJS.OMIT_FIRST = 2;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 'var i = 0;\nledTest();\nfunction ledTest() {\n  dbg.led(i);\n  if (i < 255) {\n    dbg.call(ledTest, 500);\n  } else {\n    dbg.led.all(false);\n  }\n  i++;\n}\n\'LED DEMO\';\n',
-'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
+'var str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
+'',
+'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
   'togglableShowHide',
@@ -1769,7 +1761,7 @@ DebugJS.prototype = {
             }
           } else {
             dbg.el = document.elementFromPoint(posX, posY);
-            DebugJS.log.s('The element has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">dbg.el</span>');
+            DebugJS.log.s('The element &lt;' + dbg.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">dbg.el</span>');
           }
         }
         break;
@@ -2263,7 +2255,7 @@ DebugJS.prototype = {
 
   enableElmInspection: function() {
     var self = Debug;
-    var windowExpandHeight = 640 * self.options.zoom;
+    var windowExpandHeight = DebugJS.DEBUG_WIN_EXPAND_H * self.options.zoom;
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
@@ -2674,9 +2666,11 @@ DebugJS.prototype = {
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="Debug.execScript();">[EXEC]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet()">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="Debug.insertSnippet(0)">[CODE1]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(1)">[CODE2]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(2)">[CODE3]</span>';
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="Debug.insertSnippet(0)">&lt;CODE1&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(1)">&lt;CODE2&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(2)">&lt;CODE3&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(3)">&lt;CODE4&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="Debug.insertSnippet(4)">&lt;CODE5&gt;</span>';
       self.scriptPanel.innerHTML = html;
       self.addOverlayPanel(self.scriptPanel);
 
