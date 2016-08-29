@@ -334,7 +334,7 @@ var e = false;
 var f = undefined;
 var g = null;
 
-var h = [
+var object1 = [
   {
     'key1': 'AAA',
     'key2': 'BBB'
@@ -819,7 +819,10 @@ dbg.init(options);
 
   <tr>
     <td class="name">log.p</td>
-    <td>variable</td>
+    <td>
+      arg1: variable<br>
+      arg2: message string<span class="annotation">(opt)</span>
+    </td>
     <td>Output object dump</td>
   </tr>
 
@@ -1299,10 +1302,17 @@ log.s('system log');<br>
 
 <tr>
 <td>
-log.p(window.applicationCache);<br>
-<span class="button" onclick="log.p(window.applicationCache);">log.p()</span>
+log.p(object1);<br>
+<span class="button" onclick="log.p(object1);">log.p() w/o msg</span>
 </td>
 
+<td>
+log.p(a, 'a = ');<br>
+<span class="button" onclick="log.p(object1, 'object1 = ');">log.p() w/ msg</span>
+</td>
+</tr>
+
+<tr>
 <td>
 log.stack();<br>
 <span class="button" onclick="log.stack();">log.stack()</span>

@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608290743';
+  this.v = '201608292050';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -174,22 +174,22 @@ var DebugJS = function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
-    {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by tag name.'},
-    {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code.'},
-    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status.'},
-    {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method.', 'usage': 'get URL'},
-    {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list.'},
-    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history.'},
-    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON.', 'usage': 'json [-p] one-line-json'},
-    {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded.'},
-    {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator.', 'usage': 'led bit-pattern'},
-    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects.', 'usage': 'p object'},
-    {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method.', 'usage': 'post URL'},
-    {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string.', 'usage': 'random [-d|-s] [min] [max]'},
-    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC.', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName'},
+    {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
+    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status'},
+    {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method', 'usage': 'get URL'},
+    {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list'},
+    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history'},
+    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
+    {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
+    {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
+    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
+    {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
+    {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
+    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'hidden': true},
-    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer.', 'usage': 'time start|split|end|list [timer-name]'},
-    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info.'}
+    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
+    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info'}
   ];
   this.options = null;
   this.setupDefaultOptions();
@@ -1350,7 +1350,7 @@ DebugJS.prototype = {
     self.debugWindow.style.left = e.clientX - self.prevOffsetLeft + 'px';
   },
 
-  storeSizeAndPos: function() {
+  saveSizeAndPos: function() {
     var self = Debug;
     var shadow = (self.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
     self.orgSizePos.w = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
@@ -1365,7 +1365,7 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_RESIZING;
     self.clickedPosX = e.clientX;
     self.clickedPosY = e.clientY;
-    self.storeSizeAndPos();
+    self.saveSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     self.updateWinCtrlBtnPanel();
   },
@@ -1823,7 +1823,7 @@ DebugJS.prototype = {
 
   expandDebugWindow: function() {
     var self = Debug;
-    self.storeSizeAndPos();
+    self.saveSizeAndPos();
     var cw = document.documentElement.clientWidth;
     var ch = document.documentElement.clientHeight;
     var w = DebugJS.DEBUG_WIN_EXPAND_W;
@@ -1859,6 +1859,7 @@ DebugJS.prototype = {
     self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
     self.resizeMainHeight();
     self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+    self.saveExpandModeOrgSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     if (self.status & DebugJS.STATE_DRAGGABLE) {
       self.status |= DebugJS.STATE_AUTO_POSITION_ADJUST;
@@ -2690,6 +2691,7 @@ DebugJS.prototype = {
       self.scriptEditor.style.color = '#fff';
       self.scriptEditor.style.fontSize = self.options.fontSize + 'px';
       self.scriptEditor.style.fontFamily = self.options.fontFamily;
+      self.scriptEditor.style.overflow = 'auto';
       self.scriptEditor.style.resize = 'none';
       self.scriptEditor.onblur = new Function('Debug.saveScriptBuf();');
       self.scriptEditor.value = self.scriptBuf;
@@ -2839,11 +2841,25 @@ DebugJS.prototype = {
   expandHight: function(h) {
     var self = Debug;
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      self.storeExpandModeOrgSizeAndPos();
+      self.saveExpandModeOrgSizeAndPos();
+      var sizePos = self.getSelfSizePos();
+      if (sizePos.height >= h) {
+        return;
+      } else if (document.documentElement.clientHeight <= h) {
+        h = document.documentElement.clientHeight;
+      }
       self.setSelfSizeH(h);
+      sizePos = self.getSelfSizePos();
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
-        var sizePos = self.getSelfSizePos();
         self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+      } else {
+        if (sizePos.winY2 > document.documentElement.clientHeight) {
+          if (document.documentElement.clientHeight < (h + self.options.posAdjY)) {
+            self.debugWindow.style.top = 0;
+          } else {
+            self.debugWindow.style.top = (document.documentElement.clientHeight - h - self.options.posAdjY) + 'px';
+          }
+        }
       }
     }
   },
@@ -2862,7 +2878,7 @@ DebugJS.prototype = {
     }
   },
 
-  storeExpandModeOrgSizeAndPos: function() {
+  saveExpandModeOrgSizeAndPos: function() {
     var self = Debug;
     var shadow = (self.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
     self.expandModeOrg.w = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
@@ -2968,6 +2984,9 @@ DebugJS.prototype = {
 
   cmdExit: function(args, tbl) {
     var self = Debug;
+    if (self.status & DebugJS.STATE_SYSTEM_INFO) {
+      self.disableSystemInfo();
+    }
     if (self.status & DebugJS.STATE_SCRIPT) {
       self.disableScriptEditor();
       self.scriptBuf = '';
@@ -4262,9 +4281,9 @@ DebugJS.log.s = function(m) {
   DebugJS.log.out(m, DebugJS.LOG_TYPE_SYSTEM);
 };
 
-DebugJS.log.p = function(o) {
-  var m = '\n' + DebugJS.objDump(o);
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_STANDARD);
+DebugJS.log.p = function(o, m) {
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o);
+  DebugJS.log.out(str, DebugJS.LOG_TYPE_STANDARD);
 };
 
 DebugJS.log.mlt = function(m) {
@@ -4325,9 +4344,9 @@ log.t = function(n, m) {
   DebugJS.timeLog(n, m);
 };
 
-log.p = function(o) {
+log.p = function(o, m) {
   if (Debug.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.log.p(o);
+  DebugJS.log.p(o, m);
 };
 
 log.stack = function() {
@@ -4440,7 +4459,7 @@ if (DebugJS.ENABLE) {
   log.d = function(x) {};
   log.s = function(x) {};
   log.t = function(x, xx) {};
-  log.p = function(x) {};
+  log.p = function(x, xx) {};
   log.stack = function() {};
   log.clear = function() {};
   time.start = function(x, xx) {};
