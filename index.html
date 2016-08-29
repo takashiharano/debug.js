@@ -39,7 +39,7 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 #main {width:900px; margin:0 auto;}
 #header {position:fixed; width:100%; top:0; left:0; height:180px; color:#fff; z-index:1; background:#08f;}
 #title {position:absolute; width:900px; font-size:76px; top:0; bottom:0; left:0; right:0; margin:auto; height:80px; padding-left:5px; white-space:nowrap; font-family:Impact;line-height:28px;}
-.content {position:relative; top:190px; padding:5px;}
+#content {display:inline-block;position:relative; top:190px; padding:5px;}
 .caption {font-size:30px; font-weight:bold;}
 .code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px;}
 .eg1 {font-size:14px;font-style:italic;margin-bottom:-10px;}
@@ -390,7 +390,7 @@ debug.js
 <span style="font-size:22px;">Logging, Time Test, Element Inspection, Screen Measure, and more</span>
 </div>
 </div><!--header-->
-<div class="content">
+<div id="content">
 <div class="caption">// Usage</div><br>
 
 <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Embed the debugger into your web page</div>
@@ -835,10 +835,10 @@ dbg.init(options);
     <td>
       Output log w/ elapsed time
 <pre class="eg">
-log.t('timer1', foo)
+log.t('timer1', 'foo')
 -&gt; 00:00:12.345 foo
 
-log.t(null, foo)
+log.t(null, 'foo')
 -&gt; 00:00:12.345 foo
 <span class="annotation">default timer name will be used in case null is specified for the timer name.</span>
 </pre>
@@ -860,12 +860,16 @@ log.t(null, foo)
   <tr>
     <td class="name">time.start</td>
     <td>
-      arg1: timer name<br>
+      arg1: timer name<span class="annotation">(opt)<br>
       arg2: message<span class="annotation">(opt)</span>
     </td>
     <td>
      Start a timer
 <pre class="eg">
+time.start()
+-&gt; timer0: timer started
+<span class="annotation">default timer name will be used in case no arguments are specified.</span>
+
 time.start('timer1')
 -&gt; timer1: timer started
 
@@ -881,14 +885,18 @@ time.start('timer1', null)
   <tr>
     <td class="name">time.split</td>
     <td>
-      arg1: timer name<br>
+      arg1: timer name<span class="annotation">(opt)<br>
       arg2: message<span class="annotation">(opt)</span>
     </td>
     <td>
       Print elapsed time of the timer
 <pre class="eg">
+time.split()
+-&gt; timer0: 00:01:02.345 (⊿00:01:02.345)
+<span class="annotation">default timer name will be used in case no arguments are specified.</span>
+
 time.split('timer1')
--&gt; timer1: 00:01:02.345
+-&gt; timer1: 00:01:02.345 (⊿00:01:02.345)
 
 time.split('timer1')
 -&gt; timer1: 00:01:03.345 (⊿00:00:01.000)
@@ -905,12 +913,16 @@ time.split('timer1', null)
   <tr>
     <td class="name">time.end</td>
     <td>
-      arg1: timer name<br>
+      arg1: timer name<span class="annotation">(opt)<br>
       arg2: message<span class="annotation">(opt)</span>
     </td>
     <td>
       Print elapsed time of the timer and clear.
 <pre class="eg">
+time.end()
+-&gt; timer1: 00:01:02.345
+<span class="annotation">default timer name will be used in case no arguments are specified.</span>
+
 time.end('timer1')
 -&gt; timer1: 00:01:02.345
 
@@ -934,8 +946,12 @@ time.end('timer1', null)
     <td>
      Get elapsed time of the timer.
 <pre class="eg">
+time.check()
+-&gt; A string like "00:01:23.456" will be returned.
+<span class="annotation">default timer name will be used in case no arguments are specified.</span>
+
 time.check('timer1')
--&gt; 00:01:23.456
+-&gt; A string like "00:01:23.456" will be returned.
 </pre>
     </td>
   </tr>
@@ -951,6 +967,12 @@ dbg.countElements('*');
 
 dbg.countElements('#id');
 -&gt; Count the id's element
+
+dbg.countElements('.className');
+-&gt; Count elements which has the className.
+
+dbg.countElements('tagName');
+-&gt; Count elements which correspond to the tagName.
 </pre>
     </td>
   </tr>
@@ -971,7 +993,7 @@ dbg.countElements('#id');
     <td class="name">dbg.exec</td>
     <td>command</td>
     <td>
-      Execute command
+      Command execution
     </td>
   </tr>
 
@@ -1011,7 +1033,7 @@ dbg.countElements('#id');
     <td class="name">dbg.led.on</td>
     <td>bit position</td>
     <td>
-      turn on the indicator
+      Turn on the indicator
     </td>
   </tr>
 
@@ -1019,7 +1041,7 @@ dbg.countElements('#id');
     <td class="name">dbg.led.off</td>
     <td>bit position</td>
     <td>
-      turn off the indicator
+      Turn off the indicator
     </td>
   </tr>
 
@@ -1027,8 +1049,8 @@ dbg.countElements('#id');
     <td class="name">dbg.led.all</td>
     <td>flag</td>
     <td>
-      turn on/off all indicator<br>
-      flag: true = turn on / false = turn off
+      Turn on/off all indicator<br>
+      flag: true = Turn on / false = Turn off
     </td>
   </tr>
 
@@ -1089,13 +1111,13 @@ max: maximum length
   <tr>
     <td class="name">elements</td>
     <td><span class="annotation">(opt)</span> #id / .class / tagName</td>
-    <td>Count elements by tag name.</td>
+    <td>Count elements by #id / .className / tagName.</td>
   </tr>
 
   <tr>
     <td class="name">execute</td>
     <td></td>
-    <td>Execute the JavaScript code.</td>
+    <td>Execute the edited JavaScript code.</td>
   </tr>
 
   <tr>
@@ -1214,6 +1236,10 @@ $ rgb 255 255 255
     <td>Screen Measure</td>
   </tr>
   <tr>
+    <td>SYS</td>
+    <td>Show system info</td>
+  </tr>
+  <tr>
     <td>DOM</td>
     <td>DOM Element Inspection</td>
   </tr>
@@ -1223,7 +1249,7 @@ $ rgb 255 255 255
   </tr>
   <tr>
     <td>JS</td>
-    <td>JavaScript Editor</td>
+    <td>JavaScript Editor/Executor</td>
   </tr>
   <tr>
     <td>🔃</td>
@@ -1688,19 +1714,23 @@ JSON Sample for "json" command<br>
 <div style="margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
-      text <input id="inputtext1" name="input1" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"><br>
-      pass <input type="password" name="pass1"><br>
-      <input type="submit" value="Submit" onsubmit="return false;">
-      <input type="button" value="BUTTON">
-      <button type="button">button</button>
-      <select name="select1" onchange="log('select1: ' + this.value);">
-        <option value="1">opt1</option>
-        <option value="2">opt2</option>
-        <option value="3">opt3</option>
-      </select><br>
-      tabindex=1 <input id="input-tab1" name="input-tab1" tabindex="1"><br>
-      tabindex=2 <input id="input-tab3" name="input-tab3" tabindex="3"><br>
-      tabindex=3 <input id="input-tab2" name="input-tab2" tabindex="2"><br>
+      <div style="margin-bottom:5px;">text <input id="inputtext1" name="input1" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
+      <div style="margin-bottom:5px;">pass <input type="password" name="pass1"></div>
+      <div style="margin-bottom:5px;">
+        <select name="select1" style="width:200px;" onchange="log('select1: ' + this.value);">
+          <option value="1">opt1</option>
+          <option value="2">opt2</option>
+          <option value="3">opt3</option>
+        </select>
+      </div>
+      <div style="margin-bottom:5px;">tabindex=1 <input id="input-tab1" name="input-tab1" tabindex="1"></div>
+      <div style="margin-bottom:5px;">tabindex=2 <input id="input-tab3" name="input-tab3" tabindex="3"></div>
+      <div style="margin-bottom:5px;">tabindex=3 <input id="input-tab2" name="input-tab2" tabindex="2"></div>
+      <div style="margin-bottom:5px;">
+        <input type="submit" value="Submit" onsubmit="return false;">
+        <input type="button" value="BUTTON">
+        <button type="button">button</button>
+      </div>
     </form>
   </div>
   <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
