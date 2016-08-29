@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608300010';
+  this.v = '201608300145';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -181,6 +181,7 @@ var DebugJS = function() {
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info'}
   ];
+  this.cmdTblLen = this.CMD_TBL.length;
   this.options = null;
   this.setupDefaultOptions();
 };
@@ -661,6 +662,7 @@ DebugJS.prototype = {
       self.initWidth = self.debugWindow.offsetWidth - DebugJS.WINDOW_ADJUST;
       self.initHeight = self.debugWindow.offsetHeight - DebugJS.WINDOW_ADJUST;
     }
+    self.initExtention();
     self.status |= DebugJS.STATE_INITIALIZED;
     self.printMessage();
 
@@ -3025,6 +3027,9 @@ DebugJS.prototype = {
     var str = 'Available Commands:\n<table>';
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
       if (!self.CMD_TBL[i].hidden) {
+        if (i == self.cmdTblLen) {
+          str += '<tr><td colspan="2">--- extension command ---</td></tr>';
+        }
         str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
       }
     }
@@ -3211,6 +3216,17 @@ DebugJS.prototype = {
   cmdV: function(args, tbl) {
     var self = Debug;
     DebugJS.log(self.v);
+  },
+
+  initExtention: function() {
+    var self = Debug;
+    if (self.CMD_TBL.length == self.cmdTblLen) {
+      if ((DebugJS.ext) && (DebugJS.ext.CMD_TBL)) {
+        for (var i = 0; i < DebugJS.ext.CMD_TBL.length; i++) {
+          self.CMD_TBL.push(DebugJS.ext.CMD_TBL[i]);
+        }
+      }
+    }
   }
 };
 
