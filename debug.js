@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608292050';
+  this.v = '201608292214';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1179,25 +1179,27 @@ DebugJS.prototype = {
   // Update LED
   updateLedPanel: function() {
     var self = Debug;
-    var SHADOW = 'text-shadow:0 0 5px;';
-    var bit7Color = (self.led & DebugJS.IND_BIT_7) ? 'color:' + DebugJS.IND_BIT_7_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var bit6Color = (self.led & DebugJS.IND_BIT_6) ? 'color:' + DebugJS.IND_BIT_6_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var bit5Color = (self.led & DebugJS.IND_BIT_5) ? 'color:' + DebugJS.IND_BIT_5_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var bit4Color = (self.led & DebugJS.IND_BIT_4) ? 'color:' + DebugJS.IND_BIT_4_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var bit3Color = (self.led & DebugJS.IND_BIT_3) ? 'color:' + DebugJS.IND_BIT_3_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var bit2Color = (self.led & DebugJS.IND_BIT_2) ? 'color:' + DebugJS.IND_BIT_2_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var bit1Color = (self.led & DebugJS.IND_BIT_1) ? 'color:' + DebugJS.IND_BIT_1_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var bit0Color = (self.led & DebugJS.IND_BIT_0) ? 'color:' + DebugJS.IND_BIT_0_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-    var led = '' +
-    '<span style="' + bit7Color + 'margin-right:2px;">●</span>' +
-    '<span style="' + bit6Color + 'margin-right:2px;">●</span>' +
-    '<span style="' + bit5Color + 'margin-right:2px;">●</span>' +
-    '<span style="' + bit4Color + 'margin-right:2px;">●</span>' +
-    '<span style="' + bit3Color + 'margin-right:2px;">●</span>' +
-    '<span style="' + bit2Color + 'margin-right:2px;">●</span>' +
-    '<span style="' + bit1Color + 'margin-right:2px;">●</span>' +
-    '<span style="' + bit0Color + '">●</span>';
-    self.ledPanel.innerHTML = led;
+    if (self.ledPanel) {
+      var SHADOW = 'text-shadow:0 0 5px;';
+      var bit7Color = (self.led & DebugJS.IND_BIT_7) ? 'color:' + DebugJS.IND_BIT_7_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit6Color = (self.led & DebugJS.IND_BIT_6) ? 'color:' + DebugJS.IND_BIT_6_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit5Color = (self.led & DebugJS.IND_BIT_5) ? 'color:' + DebugJS.IND_BIT_5_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit4Color = (self.led & DebugJS.IND_BIT_4) ? 'color:' + DebugJS.IND_BIT_4_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit3Color = (self.led & DebugJS.IND_BIT_3) ? 'color:' + DebugJS.IND_BIT_3_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit2Color = (self.led & DebugJS.IND_BIT_2) ? 'color:' + DebugJS.IND_BIT_2_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit1Color = (self.led & DebugJS.IND_BIT_1) ? 'color:' + DebugJS.IND_BIT_1_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit0Color = (self.led & DebugJS.IND_BIT_0) ? 'color:' + DebugJS.IND_BIT_0_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var led = '' +
+      '<span style="' + bit7Color + 'margin-right:2px;">●</span>' +
+      '<span style="' + bit6Color + 'margin-right:2px;">●</span>' +
+      '<span style="' + bit5Color + 'margin-right:2px;">●</span>' +
+      '<span style="' + bit4Color + 'margin-right:2px;">●</span>' +
+      '<span style="' + bit3Color + 'margin-right:2px;">●</span>' +
+      '<span style="' + bit2Color + 'margin-right:2px;">●</span>' +
+      '<span style="' + bit1Color + 'margin-right:2px;">●</span>' +
+      '<span style="' + bit0Color + '">●</span>';
+      self.ledPanel.innerHTML = led;
+    }
   },
 
   // Update Measure Button
@@ -2926,6 +2928,12 @@ DebugJS.prototype = {
     self.updateLedPanel();
   },
 
+  setLed: function(val) {
+    var self = Debug;
+    self.led = val;
+    self.updateLedPanel();
+  },
+
   execCmd: function() {
     var self = Debug;
     var cl = self.cmdLine.value;
@@ -3004,6 +3012,7 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       self.stopStopWatch();
     }
+    self.setLed(0);
     self.resetStopWatch();
     self.closeDebugWindow();
     self.clearMessage();
@@ -3060,8 +3069,7 @@ DebugJS.prototype = {
     if (args == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      self.led = args;
-      self.updateLedPanel();
+      self.setLed(args);
     }
   },
 
@@ -4407,8 +4415,7 @@ dbg.exec = function(cmd) {
 };
 
 dbg.led = function(val) {
-  Debug.led = val;
-  Debug.updateLedPanel();
+  Debug.setLed(val);
 };
 
 dbg.led.on = function(pos) {
@@ -4421,11 +4428,10 @@ dbg.led.off = function(pos) {
 
 dbg.led.all = function(flg) {
   if (flg) {
-    Debug.led = 0xff;
+    Debug.setLed(0xff);
   } else {
-    Debug.led = 0;
+    Debug.setLed(0);
   }
-  Debug.updateLedPanel();
 };
 
 dbg.random = function(min, max) {
