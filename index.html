@@ -46,7 +46,7 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 #content {display:inline-block;position:relative; top:190px; padding:5px;}
 .caption {font-size:30px; font-weight:bold;}
 .caption2 {font-size:25px;}
-.code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; word-wrap:break-word;}
+.code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
 .eg1 {font-size:14px;font-style:italic;margin-bottom:-10px;}
 .emphasis {color:#eee;}
 .button {width:200px; font-size:18px; font-weight:bold; text-decoration:none; display:inline-block; text-align:center; vertical-align:middle; padding:8px 0 10px; margin:4px 4px 12px 4px; color:#fff; background:#0068cc; border-radius:5px;}
@@ -1716,7 +1716,7 @@ console.timeEnd('timer3');<br>
 <br>
 
 <!-- ********************************************************************** -->
-<div class="caption2">JSON Sample for "json" command</div>
+<div class="caption2">One-line JSON Sample for "json" command</div>
 <div class="desc-small">execute a command the command line like below.<br>$ json {"foo": "abc", "bar": 1}</div>
 
 <pre id="json1" class="code emphasis">
