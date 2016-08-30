@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608302114';
+  this.v = '201608302245';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3007,14 +3007,14 @@ DebugJS.prototype = {
     }
     self.setLed(0);
     self.resetStopWatch();
-    self.closeDebugWindow();
-    self.clearMessage();
     if (self.status & DebugJS.STATE_DYNAMIC) {
       if (self.options.usePinButton) {
         self.enableDraggable();
       }
       self.resetDebugWindowSizePos();
     }
+    self.closeDebugWindow();
+    self.clearMessage();
   },
 
   cmdGet: function(args, tbl) {
