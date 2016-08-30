@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608300145';
+  this.v = '20160832114';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -653,7 +653,7 @@ DebugJS.prototype = {
       // move to initial window position
       self.initWidth = self.debugWindow.offsetWidth;
       self.initHeight = self.debugWindow.offsetHeight;
-      self.resetDebugWindow();
+      self.resetDebugWindowSizePos();
 
       if (!(self.status & DebugJS.STATE_VISIBLE)) {
         self.debugWindow.style.display = 'none';
@@ -1268,7 +1268,7 @@ DebugJS.prototype = {
       btn = '❐';
     }
     var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindow();Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="Debug.resetDebugWindowSizePos();Debug.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -1848,7 +1848,7 @@ DebugJS.prototype = {
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
 
-  resetDebugWindow: function() {
+  resetDebugWindowSizePos: function() {
     var self = Debug;
     self.debugWindow.style.width = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
     self.debugWindow.style.height = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
@@ -2679,7 +2679,7 @@ DebugJS.prototype = {
       self.scriptEditor = document.createElement('textarea');
       self.scriptEditor.style.width = 'calc(100% - 6px)';
       self.scriptEditor.style.height = 'calc(100% - ' + (self.options.fontSize + 10) + 'px)';
-      self.scriptEditor.style.marginTop = '2px';
+      self.scriptEditor.style.margin = '2px 0 0 0';
       self.scriptEditor.style.boxSizing = 'content-box';
       self.scriptEditor.style.padding = '2px';
       self.scriptEditor.style.border = 'solid 1px #1883d7';
@@ -3002,9 +3002,6 @@ DebugJS.prototype = {
       self.status &= ~DebugJS.STATE_LOG_SUSPENDING;
       self.updateSuspendLogBtnPanel();
     }
-    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.enableDraggable();
-    }
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       self.stopStopWatch();
     }
@@ -3012,6 +3009,12 @@ DebugJS.prototype = {
     self.resetStopWatch();
     self.closeDebugWindow();
     self.clearMessage();
+    if (self.status & DebugJS.STATE_DYNAMIC) {
+      if (self.options.usePinButton) {
+        self.enableDraggable();
+      }
+      self.resetDebugWindowSizePos();
+    }
   },
 
   cmdGet: function(args, tbl) {
@@ -3221,9 +3224,9 @@ DebugJS.prototype = {
   initExtention: function() {
     var self = Debug;
     if (self.CMD_TBL.length == self.cmdTblLen) {
-      if ((DebugJS.ext) && (DebugJS.ext.CMD_TBL)) {
-        for (var i = 0; i < DebugJS.ext.CMD_TBL.length; i++) {
-          self.CMD_TBL.push(DebugJS.ext.CMD_TBL[i]);
+      if (DebugJS.x.CMD_TBL) {
+        for (var i = 0; i < DebugJS.x.CMD_TBL.length; i++) {
+          self.CMD_TBL.push(DebugJS.x.CMD_TBL[i]);
         }
       }
     }
@@ -4467,6 +4470,7 @@ if (DebugJS.ENABLE) {
     console.time = function(x) {time.start(x);};
     console.timeEnd = function(x) {time.end(x);};
   }
+  DebugJS.x = {};
 } else {
   log = function(x) {};
   log.e = function(x) {};
