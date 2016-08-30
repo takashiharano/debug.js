@@ -5,11 +5,16 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608302245';
+  this.v = '201608310000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
-    'keyAssign': 113,
+    'keyAssign': {
+      'key': 113,
+      'alt': false,
+      'ctrl': false,
+      'shift': false
+    },
     'lines': 18,
     'bufsize': 100,
     'width': 500,
@@ -1676,11 +1681,15 @@ DebugJS.prototype = {
         }
         break;
 
-      case self.options.keyAssign:
-        if (self.status & DebugJS.STATE_VISIBLE) {
-          self.closeDebugWindow();
-        } else {
-          self.showDebugWindow();
+      case self.options.keyAssign.key:
+        if ((e.altKey == self.options.keyAssign.alt) &&
+            (e.ctrlKey == self.options.keyAssign.ctrl) &&
+            (e.shiftKey == self.options.keyAssign.shift)) {
+          if (self.status & DebugJS.STATE_VISIBLE) {
+            self.closeDebugWindow();
+          } else {
+            self.showDebugWindow();
+          }
         }
         break;
 

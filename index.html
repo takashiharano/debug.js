@@ -45,7 +45,8 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 #title {position:absolute; width:900px; font-size:76px; top:0; bottom:0; left:0; right:0; margin:auto; height:80px; padding-left:5px; white-space:nowrap; font-family:Impact;line-height:28px;}
 #content {display:inline-block;position:relative; top:190px; padding:5px;}
 .caption {font-size:30px; font-weight:bold;}
-.code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px;}
+.caption2 {font-size:25px;}
+.code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; word-wrap:break-word;}
 .eg1 {font-size:14px;font-style:italic;margin-bottom:-10px;}
 .emphasis {color:#eee;}
 .button {width:200px; font-size:18px; font-weight:bold; text-decoration:none; display:inline-block; text-align:center; vertical-align:middle; padding:8px 0 10px; margin:4px 4px 12px 4px; color:#fff; background:#0068cc; border-radius:5px;}
@@ -60,6 +61,7 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 .desc-table .name {color:#0000a0;}
 .demo-table td {font-family:Consolas, monospace; font-size:11px; color:#0000a0; width:210px; vertical-align:bottom;}
 .demo-table-green td {color:#060;}
+.desc-small {color:#666;font-size:12px;}
 .eg {font-family:Consolas, monospace; line-height:1em;}
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
 .annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
@@ -85,7 +87,12 @@ window.onload = function() {
 
   var options1 = {
     'visible': true,
-    //'keyAssign': 119,
+    'keyAssign': {
+      'key': 113,
+      'alt': false,
+      'ctrl': false,
+      'shift': true
+    },
     'position': 'c'
     //'position': 'n'
     //'position': 'ne'
@@ -480,7 +487,14 @@ dbg.init(options);
   <tr>
     <td class="name">keyAssign</td>
     <td>Key code for the debug window vibible/hide control</td>
-    <td>113 <span class="annotation">(F2)</span></td>
+    <td>
+{<br>
+&nbsp;&nbsp;'key': 113,<span class="annotation">(F2)</span><br>
+&nbsp;&nbsp;'alt': false,<br>
+&nbsp;&nbsp;'ctrl': false,<br>
+&nbsp;&nbsp;'shift': false<br>
+}
+    </td>
   </tr>
 
   <tr>
@@ -615,6 +629,12 @@ dbg.init(options);
   </tr>
 
   <tr>
+    <td class="name">promptColor</td>
+    <td>Color code for command prompt "$"</td>
+    <td>'#0cf'</td>
+  </tr>
+
+  <tr>
     <td class="name">bgColor</td>
     <td>Background Color (rgb format)</td>
     <td>'0,0,0'</td>
@@ -623,7 +643,7 @@ dbg.init(options);
   <tr>
     <td class="name">bgOpacity</td>
     <td>Background Opacity. 0.0 (fully transparent) &lt;-&gt; 1.0 (fully opaque)</td>
-    <td>'0.7'</td>
+    <td>'0.65'</td>
   </tr>
 
   <tr>
@@ -1294,7 +1314,7 @@ $ rgb 255 255 255
 <div class="caption">// DEMO</div>
 
 <!-- ********************************************************************** -->
-log
+<div class="caption2">log</div>
 <table class="demo-table">
 <tr>
 <td>
@@ -1366,7 +1386,7 @@ log.clear();<br>
 <br>
 
 <!-- ********************************************************************** -->
-time
+<div class="caption2">time</div>
 <table class="demo-table">
 <tr>
 <td>
@@ -1434,7 +1454,7 @@ log.t('timer2', 'elapsed time of %n t=%t lap=%lt');<br>
 <br>
 
 <!-- ********************************************************************** -->
-dbg.countElements
+<div class="caption2">dbg.countElements</div>
 <table class="demo-table">
 <tr>
 <td>
@@ -1460,7 +1480,7 @@ dbg.countElements('div');<br>
 </table>
 
 <!-- ********************************************************************** -->
-dbg.exec
+<div class="caption2">dbg.exec</div>
 <table class="demo-table">
 <tr>
 <td>
@@ -1472,13 +1492,16 @@ dbg.exec('rgb #fff');<br>
 dbg.exec('json {"name": "John Smith", "age": 25, "city": "New York"}');<br>
 <span class="button" onclick='dbg.exec("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}");'>dbg.exec()</span>
 </td>
-</tr>
 
-<!-- time calc + -->
-<tr>
+<!-- time calc +- -->
 <td>
-dbg.exec('00:05:30.700 - 00:01:20.123');<br>
+dbg.exec('00:05:30.700 + 00:01:20.123');<br>
 <span class="button" onclick="dbg.exec('00:05:30.700 + 00:01:20.123');">dbg.exec()</span>
+</td>
+
+<td>
+dbg.exec('00:05:30.700 - 00:05:20.400');<br>
+<span class="button" onclick="dbg.exec('00:05:30.700 - 00:05:20.400');">dbg.exec()</span>
 </td>
 </tr>
 
@@ -1515,14 +1538,6 @@ dbg.exec('10:00 + 38:00');<br>
 <td>
 dbg.exec('10:00 + 38:01');<br>
 <span class="button" onclick="dbg.exec('10:00 + 38:01');">10:00 + 38:01</span>
-</td>
-</tr>
-
-<!-- time calc - -->
-<tr>
-<td>
-dbg.exec('00:05:30.700 - 00:05:20.400');<br>
-<span class="button" onclick="dbg.exec('00:05:30.700 - 00:05:20.400');">dbg.exec()</span>
 </td>
 </tr>
 
@@ -1566,7 +1581,7 @@ dbg.exec('10:00 - 34:01');<br>
 <br>
 
 <!-- ********************************************************************** -->
-dbg.led.on(n); / dbg.led.off(n);
+<div class="caption2">dbg.led.on(n); / dbg.led.off(n);</div>
 <table class="demo-table">
 <tr>
 <td>
@@ -1661,7 +1676,7 @@ dbg.led.all(false);<br>
 <br>
 
 <!-- ********************************************************************** -->
-console
+<div class="caption2">console</div>
 <table class="demo-table demo-table-green">
 <tr>
 <td>
@@ -1701,35 +1716,35 @@ console.timeEnd('timer3');<br>
 <br>
 
 <!-- ********************************************************************** -->
-JSON Sample for "json" command<br>
-<div class="annotation">execute a command the command line like below.<br>$ json {"foo": "abc", "bar": 1}</div>
+<div class="caption2">JSON Sample for "json" command</div>
+<div class="desc-small">execute a command the command line like below.<br>$ json {"foo": "abc", "bar": 1}</div>
 
-<div id="json1" class="json">
+<pre id="json1" class="code emphasis">
 {"name": "John Smith", "age": 25, "city": "New York"}
-</div>
+</pre>
 
-<div id="json2" class="json">
+<pre id="json2" class="code emphasis">
 {"firstName":"John","lastName":"Smith","isAlive":true,"age":25,"address":{"streetAddress":"21 2nd Street","city": "New York","state":"NY","postalCode":"10021-3100"},"phoneNumbers":[{"type":"home","number":"212 555-1234"},{"type":"office","number":"646 555-4567"},{"type":"mobile","number":"123 456-7890"}],"children":[],"spouse":null}
-</div>
+</pre>
 
 <br>
 
-<div>Dummy elements for DOM Element inspection</div>
+<div class="caption2">Dummy elements for DOM Element Inspection Test</div>
 <div style="margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
-      <div style="margin-bottom:5px;">text <input id="inputtext1" name="input1" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
-      <div style="margin-bottom:5px;">pass <input type="password" name="pass1"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text</span><input id="inputtext1" name="input1" style="width:220px;" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" name="pass1" style="width:220px;"></div>
       <div style="margin-bottom:5px;">
-        <select name="select1" style="width:200px;" onchange="log('select1: ' + this.value);">
+        <select name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">
           <option value="1">opt1</option>
           <option value="2">opt2</option>
           <option value="3">opt3</option>
         </select>
       </div>
-      <div style="margin-bottom:5px;">tabindex=1 <input id="input-tab1" name="input-tab1" tabindex="1"></div>
-      <div style="margin-bottom:5px;">tabindex=2 <input id="input-tab3" name="input-tab3" tabindex="3"></div>
-      <div style="margin-bottom:5px;">tabindex=3 <input id="input-tab2" name="input-tab2" tabindex="2"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=1</span><input id="input-tab1" name="input-tab1" style="width:180px;" tabindex="1"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=2</span><input id="input-tab3" name="input-tab3" style="width:180px;" tabindex="3"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=3</span><input id="input-tab2" name="input-tab2" style="width:180px;" tabindex="2"></div>
       <div style="margin-bottom:5px;">
         <input type="submit" value="Submit" onsubmit="return false;">
         <input type="button" value="BUTTON">
@@ -1738,7 +1753,7 @@ JSON Sample for "json" command<br>
     </form>
   </div>
   <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
-  <div style="width:400px;height:100px;background:#eef;overflow:scroll;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV</div>
+  <div style="width:400px;height:170px;border:1px solid #acf;padding:4px;background:#fdfdff;overflow:auto;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV</div>
 </div>
 
 <!--
