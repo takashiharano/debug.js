@@ -6,5 +6,5 @@ Also the library has useful functions such as stopwatch, screen measure, command
 
 **[Demo and Description](http://debugjs.net/ "debug.js demo page")**
 
-[ ![sample](http://debugjs.net/sample20160611.png) ](http://debugjs.net/ "Live demo")
+[ ![sample](http://debugjs.net/sample20160830.png) ](http://debugjs.net/ "Live demo")
 
