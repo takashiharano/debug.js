@@ -807,37 +807,37 @@ dbg.init(options);
 
   <tr>
     <td class="name">log</td>
-    <td>messag string</td>
+    <td>message string</td>
     <td>Output standard log</td>
   </tr>
 
   <tr>
     <td class="name">log.e</td>
-    <td>messag string</td>
+    <td>message string</td>
     <td>Output error log</td>
   </tr>
 
   <tr>
     <td class="name">log.w</td>
-    <td>messag string</td>
+    <td>message string</td>
     <td>Output warning log</td>
   </tr>
 
   <tr>
     <td class="name">log.i</td>
-    <td>messag string</td>
+    <td>message string</td>
     <td>Output information log</td>
   </tr>
 
   <tr>
     <td class="name">log.d</td>
-    <td>messag string</td>
+    <td>message string</td>
     <td>Output debug log</td>
   </tr>
 
   <tr>
     <td class="name">log.s</td>
-    <td>messag string</td>
+    <td>message string</td>
     <td>Output system log</td>
   </tr>
 
@@ -1730,7 +1730,7 @@ console.timeEnd('timer3');<br>
 <br>
 
 <div class="caption2">Dummy elements for DOM Element Inspection Test</div>
-<div style="margin-top:10px;font-size:12px;">
+<div style="height:220px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text</span><input id="inputtext1" name="input1" style="width:220px;" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
@@ -1742,9 +1742,9 @@ console.timeEnd('timer3');<br>
           <option value="3">opt3</option>
         </select>
       </div>
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=1</span><input id="input-tab1" name="input-tab1" style="width:180px;" tabindex="1"></div>
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=2</span><input id="input-tab3" name="input-tab3" style="width:180px;" tabindex="3"></div>
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=3</span><input id="input-tab2" name="input-tab2" style="width:180px;" tabindex="2"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=1</span><input id="input-tab1" name="input-tab1" style="width:180px;" tabindex="1" accesskey="a"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=2</span><input id="input-tab3" name="input-tab3" style="width:180px;" tabindex="3" accesskey="b"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=3</span><input id="input-tab2" name="input-tab2" style="width:180px;" tabindex="2" accesskey="c"></div>
       <div style="margin-bottom:5px;">
         <input type="submit" value="Submit" onsubmit="return false;">
         <input type="button" value="BUTTON">
@@ -1755,6 +1755,9 @@ console.timeEnd('timer3');<br>
   <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
   <div style="width:400px;height:170px;border:1px solid #acf;padding:4px;background:#fdfdff;overflow:auto;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV</div>
 </div>
+
+<div><a href="https://www.google.com/">LINK1</a></div>
+<div><a href="https://debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890">LINK2</a></div>
 
 <!--
 <table>

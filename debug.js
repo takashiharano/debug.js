@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201608310000';
+  this.v = '201609010000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -169,7 +169,7 @@ var DebugJS = function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.CMD_TBL = [
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
-    {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName'},
+    {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
     {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status'},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method', 'usage': 'get URL'},
@@ -629,6 +629,11 @@ DebugJS.prototype = {
       'width': (256 * self.options.zoom) + 'px',
       'height': (15 * self.options.zoom) + 'px',
       'padding': '0'
+    };
+
+    styles['.' + self.id + '-txt-tbl td'] = {
+      'font-size': self.options.fontSize + 'px !important',
+      'line-height': '1em !important',
     };
 
     self.applyStyles(styles);
@@ -2335,6 +2340,7 @@ DebugJS.prototype = {
       var MAX_LEN = 50;
       var text = el.innerText;
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
+      var href = (el.href ? self.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
       var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
 
       var backgroundColor = computedStyle.backgroundColor;
@@ -2406,7 +2412,9 @@ DebugJS.prototype = {
       'name      : ' + (el.name ? el.name : '') + '\n' +
       'value     : ' + (el.value ? self.createFoldingText(el.value, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) : '') + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
+      'accessKey : ' + el.accessKey + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
+      'href      : ' + href + '\n' +
       'src       : ' + src + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'onclick      : ' + self.getEventHandlerString(el.onclick, 'elOnclick') + '\n' +
@@ -2519,7 +2527,7 @@ DebugJS.prototype = {
       '<br>' +
       'font-family: <input value="' + defaultFontFamily + '" class="' + self.id + '-txt-text" style="width:110px;" oninput="Debug.onChangeFontFamily(this)">&nbsp;&nbsp;' +
       'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + self.id + '-fontweight-range" class="' + self.id + '-txt-range" style="width:80px;" oninput="Debug.onChangeFontWeight();" onchange="Debug.onChangeFontWeight();"><span id="' + self.id + '-font-weight"></span> ' +
-      '<table>' +
+      '<table class="' + self.id + '-txt-tbl">' +
       '<tr><td colspan="2">FG #<input id="' + self.id + '-fg-rgb" class="' + self.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px;" oninput="Debug.onChangeFgRGB()"></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-r" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-r"></span></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-g" class="' + self.id + '-txt-range" oninput="Debug.onChangeFgColor(true);" onchange="Debug.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-g"></span></td></tr>' +
@@ -2686,20 +2694,20 @@ DebugJS.prototype = {
       self.addOverlayPanel(self.scriptPanel);
 
       self.scriptEditor = document.createElement('textarea');
-      self.scriptEditor.style.width = 'calc(100% - 6px)';
-      self.scriptEditor.style.height = 'calc(100% - ' + (self.options.fontSize + 10) + 'px)';
-      self.scriptEditor.style.margin = '2px 0 0 0';
-      self.scriptEditor.style.boxSizing = 'content-box';
-      self.scriptEditor.style.padding = '2px';
-      self.scriptEditor.style.border = 'solid 1px #1883d7';
-      self.scriptEditor.style.borderRadius = '0';
-      self.scriptEditor.style.outline = 'none';
-      self.scriptEditor.style.background = 'transparent';
-      self.scriptEditor.style.color = '#fff';
-      self.scriptEditor.style.fontSize = self.options.fontSize + 'px';
-      self.scriptEditor.style.fontFamily = self.options.fontFamily;
-      self.scriptEditor.style.overflow = 'auto';
-      self.scriptEditor.style.resize = 'none';
+      self.scriptEditor.style.setProperty('width', 'calc(100% - 6px)', 'important');
+      self.scriptEditor.style.setProperty('height', 'calc(100% - ' + (self.options.fontSize + 10) + 'px)', 'important');
+      self.scriptEditor.style.setProperty('margin', '2px 0 0 0', 'important');
+      self.scriptEditor.style.setProperty('box-sizing', 'content-box', 'important');
+      self.scriptEditor.style.setProperty('padding', '2px', 'important');
+      self.scriptEditor.style.setProperty('border', 'solid 1px #1883d7', 'important');
+      self.scriptEditor.style.setProperty('border-radius', '0', 'important');
+      self.scriptEditor.style.setProperty('outline', 'none', 'important');
+      self.scriptEditor.style.setProperty('background', 'transparent', 'important');
+      self.scriptEditor.style.setProperty('color', '#fff', 'important');
+      self.scriptEditor.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.scriptEditor.style.setProperty('font-family', self.options.fontFamily, 'important');
+      self.scriptEditor.style.setProperty('overflow', 'auto', 'important');
+      self.scriptEditor.style.setProperty('resize', 'none', 'important');
       self.scriptEditor.onblur = new Function('Debug.saveScriptBuf();');
       self.scriptEditor.value = self.scriptBuf;
       self.scriptPanel.appendChild(self.scriptEditor);
@@ -2971,11 +2979,11 @@ DebugJS.prototype = {
       }
     }
     if (!found) {found = self.cmdRadixConv(cl);}
-    if (!found) {found = self.cmdTimeCalc(cl);}
     if ((!found) && (cl.match(/^http/))) {
       DebugJS.httpRequest(cl, 'GET');
       found = true;
     }
+    if (!found) {found = self.cmdTimeCalc(cl);}
     if (!found) {
       self.execCode(cl);
     }
@@ -2987,7 +2995,11 @@ DebugJS.prototype = {
   },
 
   cmdElements: function(args, tbl) {
-    DebugJS.countElements(args, true);
+    if ((args == '-h') || (args == '--help')) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.countElements(args, true);
+    }
   },
 
   cmdExecute: function(args, tbl) {
