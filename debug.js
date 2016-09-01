@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609020219';
+  this.v = '201609020722';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -277,7 +277,7 @@ DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 'var i = 0;\nledTest();\nfunction ledTest() {\n  dbg.led(i);\n  if (i < 255) {\n    dbg.call(ledTest, 500);\n  } else {\n    dbg.led.all(false);\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 'var str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
-'',
+'// performance check\nvar i = 0;\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  if (i < 500) {\n    dbg.call(test);\n  }\n  i++;\n}\n',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
