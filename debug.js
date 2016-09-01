@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609010000';
+  this.v = '201609020219';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -145,7 +145,7 @@ var DebugJS = function() {
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
   this.CMD_HISTORY_MAX = 20;
-  this.cmdHistoryIdx = self.CMD_HISTORY_MAX;
+  this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
   this.cmdTmp = '';
   this.timers = {};
   this.resizeN = null;
@@ -299,9 +299,6 @@ DebugJS.FEATURES = [
   'useScriptEditor',
   'useCommandLine'
 ];
-
-dbg = function() {};
-dbg.el = null;
 
 DebugJS.prototype = {
   init: function(options) {
@@ -3684,7 +3681,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
 DebugJS.convHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
   var v2 = parseInt(v16, 16).toString(2);
-  var res = 'HEX ' + v16 + '\n' +
+  var res = 'HEX ' + DebugJS.formatHex(v16) + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'BIN ' + DebugJS.formatBin(v2) + '\n';
   DebugJS.log.mlt(res);
@@ -3694,7 +3691,7 @@ DebugJS.convDEC = function(v10) {
   var v2 = parseInt(v10).toString(2);
   var v16 = parseInt(v10).toString(16);
   var res = 'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'HEX ' + v16 + '<br>' +
+  'HEX ' + DebugJS.formatHex(v16) + '<br>' +
   'BIN ' + DebugJS.formatBin(v2) + '\n';
   DebugJS.log.mlt(res);
 };
@@ -3704,7 +3701,7 @@ DebugJS.convBIN = function(v2) {
   var v16 = parseInt(v2, 2).toString(16);
   var res = 'BIN ' + DebugJS.formatBin(v2) + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'HEX ' + v16 + '\n';
+  'HEX ' + DebugJS.formatHex(v16) + '\n';
   DebugJS.log.mlt(res);
 };
 
@@ -3716,6 +3713,9 @@ DebugJS.formatBin = function(v2) {
       bin += ' ';
     }
     bin += v2.charAt(i);
+  }
+  if (len >= 9) {
+    bin += ' (' + len + ' bits)';
   }
   return bin;
 };
@@ -3731,6 +3731,15 @@ DebugJS.formatDec = function(v10) {
   }
   return dec;
 };
+
+DebugJS.formatHex = function(v16) {
+  var hex = v16.toUpperCase();
+  if (v16.length >= 2) {
+    hex = '0x' + hex;
+  }
+  return hex;
+};
+
 
 DebugJS.convertTimeJson = function(t) {
   var hour = min = sec = msec = 0;
@@ -4430,6 +4439,8 @@ time.check = function(timerName) {
 };
 
 // ---- ---- ---- ---- ---- ---- ---- ----
+dbg = {};
+
 dbg.init = function(options) {
   Debug.init(options);
 };
@@ -4472,13 +4483,15 @@ dbg.random = function(min, max) {
   return DebugJS.getRandom(DebugJS.RANDOM_TYPE_NUM, min, max);
 };
 
-dbg.randomString = function(min, max) {
+dbg.random.string = function(min, max) {
   return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
 };
 
+DebugJS.x = {};
 // ---- ---- ---- ---- ---- ---- ---- ----
 var Debug = new DebugJS();
 if (DebugJS.ENABLE) {
+  dbg.el = null;
   window.addEventListener('load', DebugJS.loadHandler, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
     window.addEventListener('error', DebugJS.errorHandler, true);
@@ -4491,7 +4504,7 @@ if (DebugJS.ENABLE) {
     console.time = function(x) {time.start(x);};
     console.timeEnd = function(x) {time.end(x);};
   }
-  DebugJS.x = {};
+  window._ = window._ || dbg;
 } else {
   log = function(x) {};
   log.e = function(x) {};

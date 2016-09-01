@@ -283,7 +283,7 @@ randomDemoFlag = false;
 function randomDemo() {
   if (!randomDemoFlag) return;
   var next = dbg.random(0, 1500);
-  var str = dbg.randomString(1, 55);
+  var str = dbg.random.string(1, 55);
   var type = dbg.random(10);
   switch (type) {
     case 1:
@@ -1094,7 +1094,7 @@ max: maximum number
   </tr>
 
   <tr>
-    <td class="name">dbg.randomString</td>
+    <td class="name">dbg.random.string</td>
     <td>
       arg1: min<span class="annotation">(opt)</span><br>
       arg2: max<span class="annotation">(opt)</span>
