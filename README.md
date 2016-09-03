@@ -6,4 +6,4 @@ The library has useful features such as logging, DOM element inspenction, screen
 
 **[Demo and Description](https://debugjs.net/ "debug.js demo page")**
 
-[ ![sample](https://debugjs.net/sample20160903.png) ](http://debugjs.net/ "debug.js")
+[ ![sample](https://debugjs.net/sample20160903.png) ](https://debugjs.net/ "debug.js")
