@@ -39,6 +39,8 @@ body {font-family:Arial, sans-serif; font-size:18px; color:#333;}
 a {color:#00f; text-decoration:none;}
 a:hover {text-decoration:underline;}
 button, input[type="button"], input[type="submit"], select {width:80px; height:30px; font-size:16px;}
+input, input[type="text"], textarea, select {font-size: 16px; padding: 3px; color: #333; vertical-align: middle; border: 1px solid #ccc; border-radius: 3px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); transition: border linear 0.1s, box-shadow linear 0.1s;}
+input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:#51a7e8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
 #wrapper {width:100%;}
 #main {width:900px; margin:0 auto;}
 #header {position:fixed; width:100%; top:0; left:0; height:180px; color:#fff; z-index:1; background:#08f;}
@@ -76,6 +78,8 @@ button, input[type="button"], input[type="submit"], select {width:80px; height:3
 //time.start();
 //log.t(null, 'time test');
 log('Here is the log output example!');
+
+var logMessageText = null;
 
 window.onload = function() {
   log('The window\'s load event fired.');
@@ -146,9 +150,9 @@ window.onload = function() {
     'lines': 10,
     'fontSize': 13,
     'fontColor': '#333',
-    'logColorW': '#ca0',
+    'logColorW': '#c65911',
     'logColorI': '#08f',
-    'logColorD': '#888',
+    'logColorD': '#909090',
     'logColorS': '#0df',
     'timerColor': '#00f',
     'btnColor': '#00f',
@@ -163,6 +167,8 @@ window.onload = function() {
     'useClearButton': true
   };
   //dbg.init(options6);
+
+  logMessageText = document.getElementById('log-message-text');
 
   setTimeout(displayMessages, 1500);
   setTimeout(execDemo, 1500);
@@ -1015,9 +1021,13 @@ dbg.countElements('tagName');
 
   <tr>
     <td class="name">dbg.exec</td>
-    <td>command</td>
     <td>
-      Command execution
+      arg1: command<br>
+      arg2: echo<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Command execution<br>
+      echo: true = print command line / false = silent
     </td>
   </tr>
 
@@ -1315,38 +1325,39 @@ $ rgb 255 255 255
 
 <!-- ********************************************************************** -->
 <div class="caption2">log</div>
+<input type="text" id="log-message-text" value="Hello, world!" style="width:400px;margin-top:3px;">
 <table class="demo-table">
 <tr>
 <td>
-log('standard log');<br>
-<span class="button" onclick="log('standard log');">log()</span>
+standard log<br>
+<span class="button" onclick="log(logMessageText.value);">log()</span>
 </td>
 
 <td>
-log.e('error log');<br>
-<span class="button" onclick="log.e('error log');">log.e()</span>
+error log<br>
+<span class="button" onclick="log.e(logMessageText.value);">log.e()</span>
 </td>
 
 <td>
-log.w('warn log');<br>
-<span class="button" onclick="log.w('warn log');">log.w()</span>
+warn log<br>
+<span class="button" onclick="log.w(logMessageText.value);">log.w()</span>
 </td>
 </tr>
 
 <tr>
 <td>
-log.i('info log');<br>
-<span class="button" onclick="log.i('info log');">log.i()</span>
+info log<br>
+<span class="button" onclick="log.i(logMessageText.value);">log.i()</span>
 </td>
 
 <td>
-log.d('debug log');<br>
-<span class="button" onclick="log.d('debug log');">log.d()</span>
+debug log<br>
+<span class="button" onclick="log.d(logMessageText.value);">log.d()</span>
 </td>
 
 <td>
-log.s('system log');<br>
-<span class="button" onclick="log.s('system log');">log.s()</span>
+system log<br>
+<span class="button" onclick="log.s(logMessageText.value);">log.s()</span>
 </td>
 </tr>
 
@@ -1358,26 +1369,28 @@ log.p(object1);<br>
 
 <td>
 log.p(a, 'a = ');<br>
-<span class="button" onclick="log.p(object1, 'object1 = ');">log.p() w/ msg</span>
+<span class="button" onclick="log.p(object1, logMessageText.value);">log.p() w/ msg</span>
 </td>
 
 <td>
-log.stack();<br>
+print stack<br>
 <span class="button" onclick="log.stack();">log.stack()</span>
 </td>
 
 <td>
-log.clear();<br>
+clear log<br>
 <span class="button" onclick="log.clear();">log.clear()</span>
 </td>
 </tr>
 
 <tr>
 <td>
+log() log.e() log.w() ...<br>
 <span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
 </td>
 
 <td>
+log with random message<br>
 <span class="button" onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">start random logs</span>
 </td>
 </tr>
@@ -1485,7 +1498,7 @@ dbg.countElements('div');<br>
 <tr>
 <td>
 dbg.exec('rgb #fff');<br>
-<span class="button" onclick="dbg.exec('rgb #fff');">dbg.exec()</span>
+<span class="button" onclick="dbg.exec('rgb #fff', true);">dbg.exec()</span>
 </td>
 
 <td>
@@ -1730,7 +1743,7 @@ console.timeEnd('timer3');<br>
 <br>
 
 <div class="caption2">Dummy elements for DOM Element Inspection Test</div>
-<div style="height:220px;margin-top:10px;font-size:12px;">
+<div style="height:225px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text</span><input id="inputtext1" name="input1" style="width:220px;" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
@@ -1756,8 +1769,10 @@ console.timeEnd('timer3');<br>
   <div style="width:400px;height:170px;border:1px solid #acf;padding:4px;background:#fdfdff;overflow:auto;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV</div>
 </div>
 
-<div><a href="https://www.google.com/">LINK1</a></div>
-<div><a href="https://debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890">LINK2</a></div>
+<div>
+<a href="https://www.google.com/">Link1</a>&nbsp;
+<a href="https://debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890">Link2</a>
+</div>
 
 <!--
 <table>
