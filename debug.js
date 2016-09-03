@@ -5,7 +5,7 @@
  * http://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609020740';
+  this.v = '201609031456';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -625,7 +625,10 @@ DebugJS.prototype = {
     styles['.' + self.id + '-txt-range'] = {
       'width': (256 * self.options.zoom) + 'px',
       'height': (15 * self.options.zoom) + 'px',
-      'padding': '0'
+      'padding': '0 !important',
+      'border': 'none !important',
+      'outline': 'none !important',
+      'box-shadow': 'none !important'
     };
 
     styles['.' + self.id + '-txt-tbl td'] = {
@@ -1004,6 +1007,7 @@ DebugJS.prototype = {
       self.cmdLine.style.setProperty('border-bottom', 'solid 1px #888', 'important');
       self.cmdLine.style.setProperty('border-radius', '0', 'important');
       self.cmdLine.style.setProperty('outline', 'none', 'important');
+      self.cmdLine.style.setProperty('box-shadow', 'none', 'important');
       self.cmdLine.style.setProperty('background', 'transparent', 'important');
       self.cmdLine.style.setProperty('color', self.options.fontColor, 'important');
       self.cmdLine.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
@@ -1282,7 +1286,7 @@ DebugJS.prototype = {
   // Log Output
   printMessage: function() {
     var self = DebugJS.self;
-    var msg = '<pre style="padding:0 3px;">' + self.getLog() + '</pre>';
+    var msg = '<pre style="padding:0 3px;">' + self.getLogMsgs() + '</pre>';
     self.msgPanel.innerHTML = msg;
     self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
   },
@@ -1544,7 +1548,7 @@ DebugJS.prototype = {
     self.updateSwPanel();
   },
 
-  getLog: function() {
+  getLogMsgs: function() {
     var self = DebugJS.self;
     var buf = self.msgBuf.getAll();
     var cnt = self.msgBuf.count();
@@ -1768,13 +1772,13 @@ DebugJS.prototype = {
         self.mouseClickR = DebugJS.COLOR_ACTIVE;
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
           if (self.isOnDebugWindow(posX, posY)) {
-            if ((dbg.el) && (dbg.el != self.prevElm)) {
-              self.showElementInfo(dbg.el);
-              self.updatePrevElm(dbg.el);
+            if ((DebugJS.el) && (DebugJS.el != self.prevElm)) {
+              self.showElementInfo(DebugJS.el);
+              self.updatePrevElm(DebugJS.el);
             }
           } else {
-            dbg.el = document.elementFromPoint(posX, posY);
-            DebugJS.log.s('The element &lt;' + dbg.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">dbg.el</span>');
+            DebugJS.el = document.elementFromPoint(posX, posY);
+            DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>');
           }
         }
         break;
@@ -2393,17 +2397,20 @@ DebugJS.prototype = {
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
       'border    : ' + computedStyle.border + ' ' + borderColor16 + ' <span style="background:' + borderColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      '<div class="' + self.id + '-separator"></div>' +
       'font      : size   = ' + computedStyle.fontSize + '\n' +
       '            family = ' + computedStyle.fontFamily + '\n' +
       '            weight = ' + computedStyle.fontWeight + '\n' +
       '            style  = ' + computedStyle.fontStyle + '\n' +
       'color     : ' + color + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      '<div class="' + self.id + '-separator"></div>' +
       'location  : top    = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + computedStyle.top + ')\n' +
       '            left   = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + computedStyle.left + ')\n' +
       '            right  = ' + Math.round(rect.right + window.pageXOffset) + 'px (' + computedStyle.right + ')\n' +
       '            bottom = ' + Math.round(rect.bottom + window.pageYOffset) + 'px (' + computedStyle.bottom + ')\n' +
       'overflow  : ' + computedStyle.overflow + '\n' +
+      '<div class="' + self.id + '-separator"></div>' +
       'all styles: ' + allStylesFolding + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'name      : ' + (el.name ? el.name : '') + '\n' +
@@ -2953,12 +2960,12 @@ DebugJS.prototype = {
     } else {
       self.cmdHistoryBuf.add(cl);
       self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
-      DebugJS.log.s(cl);
-      self._execCmd(cl);
+      self._execCmd(cl, true);
     }
   },
 
-  _execCmd: function(cl) {
+  _execCmd: function(cl, echo) {
+    if (echo) DebugJS.log.s(cl);
     var self = DebugJS.self;
     wkCL = cl.replace(/\s{2,}/g, ' ');
     var cmds = wkCL.match(/([^\s]{1,})\s(.*)/);
@@ -3348,7 +3355,7 @@ DebugJS.getCurrentDateTime = function() {
   return DebugJS.getDateTime(new Date());
 };
 
-DebugJS.time = function() {
+DebugJS.getLogTime = function() {
   var d = DebugJS.getCurrentDateTime();
   var t = d.hh + ':' + d.mi + ':' + d.ss + '.' + d.ms;
   return t;
@@ -4287,7 +4294,7 @@ DebugJS.tagEscape = function(str) {
 };
 
 DebugJS.loadHandler = function() {
-  DebugJS.init();
+  DebugJS._init();
 };
 
 DebugJS.errorHandler = function(e) {
@@ -4343,21 +4350,90 @@ DebugJS.log.mlt = function(m) {
 
 DebugJS.log.out = function(msg, type) {
   if (msg != null) {
-    var data = {'type': type, 'time': DebugJS.time(), 'msg': msg};
+    var data = {'type': type, 'time': DebugJS.getLogTime(), 'msg': msg};
     DebugJS.self.msgBuf.add(data);
   }
   if (!(DebugJS.self.status & DebugJS.STATE_INITIALIZED)) {
-    if (!DebugJS.init()) {return;}
+    if (!DebugJS._init()) {return;}
   }
   DebugJS.self.printMessage();
 };
 
-DebugJS.init = function() {
+DebugJS.time = {};
+DebugJS.time.start = function(timerName, msg) {
+  DebugJS.timeStart(timerName, msg);
+};
+
+DebugJS.time.split = function(timerName, msg) {
+  var t = DebugJS.timeSplit(timerName, false, msg);
+  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+    return t;
+  }
+  return;
+};
+
+DebugJS.time.end = function(timerName, msg) {
+  var t = DebugJS.timeEnd(timerName, msg);
+  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+    return t;
+  }
+  return;
+};
+
+DebugJS.time.check = function(timerName) {
+  var now = new Date();
+  return DebugJS.timeCheck(timerName, now);
+};
+
+
+DebugJS.call = function(fnc, delay) {
+  if (delay === undefined) delay = 0;
+  return setTimeout(fnc, delay);
+};
+
+DebugJS.exec = function(cmd, echo) {
+  if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  DebugJS.self._execCmd(cmd, echo);
+};
+
+DebugJS.led = function(val) {
+  DebugJS.self.setLed(val);
+};
+
+DebugJS.led.on = function(pos) {
+  DebugJS.self.turnLed(pos, true);
+};
+
+DebugJS.led.off = function(pos) {
+  DebugJS.self.turnLed(pos, false);
+};
+
+DebugJS.led.all = function(flg) {
+  if (flg) {
+    DebugJS.self.setLed(0xff);
+  } else {
+    DebugJS.self.setLed(0);
+  }
+};
+
+DebugJS.random = function(min, max) {
+  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_NUM, min, max);
+};
+
+DebugJS.random.string = function(min, max) {
+  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
+};
+
+DebugJS._init = function() {
   if (!(DebugJS.self.status & DebugJS.STATE_INITIALIZED)) {
     return DebugJS.self.init(null);
   } else {
     return true;
   }
+};
+
+DebugJS.init = function(options) {
+  DebugJS.self.init(options);
 };
 // ---- ---- ---- ---- ---- ---- ---- ----
 var log = function(m) {
@@ -4410,88 +4486,13 @@ log.clear = function() {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.self.clearMessage();
 };
-
 // ---- ---- ---- ---- ---- ---- ---- ----
-var time = function() {};
-time.start = function(timerName, msg) {
-  DebugJS.timeStart(timerName, msg);
-};
-
-time.split = function(timerName, msg) {
-  var t = DebugJS.timeSplit(timerName, false, msg);
-  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
-    return t;
-  }
-  return;
-};
-
-time.end = function(timerName, msg) {
-  var t = DebugJS.timeEnd(timerName, msg);
-  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
-    return t;
-  }
-  return;
-};
-
-time.check = function(timerName) {
-  var now = new Date();
-  return DebugJS.timeCheck(timerName, now);
-};
-
-// ---- ---- ---- ---- ---- ---- ---- ----
-dbg = {};
-
-dbg.init = function(options) {
-  DebugJS.self.init(options);
-};
-
-dbg.countElements = function(selector, showDetail) {
-  return DebugJS.countElements(selector, showDetail);
-};
-
-dbg.call = function(fnc, delay) {
-  if (delay === undefined) delay = 0;
-  return setTimeout(fnc, delay);
-};
-
-dbg.exec = function(cmd) {
-  if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.self._execCmd(cmd);
-};
-
-dbg.led = function(val) {
-  DebugJS.self.setLed(val);
-};
-
-dbg.led.on = function(pos) {
-  DebugJS.self.turnLed(pos, true);
-};
-
-dbg.led.off = function(pos) {
-  DebugJS.self.turnLed(pos, false);
-};
-
-dbg.led.all = function(flg) {
-  if (flg) {
-    DebugJS.self.setLed(0xff);
-  } else {
-    DebugJS.self.setLed(0);
-  }
-};
-
-dbg.random = function(min, max) {
-  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_NUM, min, max);
-};
-
-dbg.random.string = function(min, max) {
-  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
-};
-
+var dbg = dbg || DebugJS;
+var time = time || DebugJS.time;
 DebugJS.x = {};
-// ---- ---- ---- ---- ---- ---- ---- ----
 DebugJS.self = new DebugJS();
 if (DebugJS.ENABLE) {
-  dbg.el = null;
+  DebugJS.el = null;
   window.addEventListener('load', DebugJS.loadHandler, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
     window.addEventListener('error', DebugJS.errorHandler, true);
@@ -4504,7 +4505,7 @@ if (DebugJS.ENABLE) {
     console.time = function(x) {time.start(x);};
     console.timeEnd = function(x) {time.end(x);};
   }
-  window._ = window._ || dbg;
+  window._ = window._ || DebugJS;
 } else {
   log = function(x) {};
   log.e = function(x) {};
@@ -4516,18 +4517,18 @@ if (DebugJS.ENABLE) {
   log.p = function(x, xx) {};
   log.stack = function() {};
   log.clear = function() {};
-  time.start = function(x, xx) {};
-  time.split = function(x, xx) {};
-  time.end = function(x, xx) {};
-  time.check = function(x) {};
-  dbg.init = function(x) {};
-  dbg.countElements = function(x, xx) {};
-  dbg.call = function(x, xx) {};
-  dbg.exec = function(x) {};
-  dbg.led = function(x) {};
-  dbg.led.on = function(x) {};
-  dbg.led.off = function(x) {};
-  dbg.led.all = function(x) {};
-  dbg.random = function(min, max) {};
-  dbg.randomString = function(min, max) {};
+  DebugJS.time.start = function(x, xx) {};
+  DebugJS.time.split = function(x, xx) {};
+  DebugJS.time.end = function(x, xx) {};
+  DebugJS.time.check = function(x) {};
+  DebugJS.init = function(x) {};
+  DebugJS.countElements = function(x, xx) {};
+  DebugJS.call = function(x, xx) {};
+  DebugJS.exec = function(x, xx) {};
+  DebugJS.led = function(x) {};
+  DebugJS.led.on = function(x) {};
+  DebugJS.led.off = function(x) {};
+  DebugJS.led.all = function(x) {};
+  DebugJS.random = function(min, max) {};
+  DebugJS.random.string = function(min, max) {};
 }
