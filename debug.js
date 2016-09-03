@@ -2,10 +2,10 @@
  * debug.js
  * Copyright 2016 Takashi Harano
  * Released under the MIT license
- * http://debugjs.net/
+ * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609031456';
+  this.v = '201609031500';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
