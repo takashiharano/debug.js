@@ -1,10 +1,9 @@
 #debug.js
-debug.js is an auxiliary JavaScript library for web development.
+debug.js is embedded JavaScript debugger for web development.
 
-It allows you to debug easily with direct output log messages to HTML page.
-Also the library has useful functions such as stopwatch, screen measure, command-line, etc.
+It allows you to debug easily without the F12 Tools.
+The library has useful features such as logging, DOM element inspenction, screen measure, command-line, etc.
 
-**[Demo and Description](http://debugjs.net/ "debug.js demo page")**
+**[Demo and Description](https://debugjs.net/ "debug.js demo page")**
 
-[ ![sample](http://debugjs.net/sample20160830.png) ](http://debugjs.net/ "Live demo")
-
+[ ![sample](https://debugjs.net/sample20160903.png) ](http://debugjs.net/ "debug.js")
