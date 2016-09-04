@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609042036';
+  this.v = '201609042105';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -25,10 +25,10 @@ var DebugJS = function() {
     'fontSize': 12,
     'fontFamily': 'Consolas, monospace',
     'fontColor': '#fff',
-    'logColorE': '#e55',
-    'logColorW': '#fe0',
-    'logColorI': '#9ef',
     'logColorD': '#ccc',
+    'logColorI': '#9ef',
+    'logColorW': '#fe0',
+    'logColorE': '#e55',
     'logColorS': '#fff',
     'clockColor': '#8f0',
     'timerColor': '#9ef',

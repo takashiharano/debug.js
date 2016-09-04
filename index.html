@@ -151,9 +151,9 @@ window.onload = function() {
     'lines': 10,
     'fontSize': 13,
     'fontColor': '#333',
-    'logColorW': '#c65911',
-    'logColorI': '#08f',
     'logColorD': '#909090',
+    'logColorI': '#08f',
+    'logColorW': '#c65911',
     'logColorS': '#0df',
     'timerColor': '#00f',
     'btnColor': '#00f',
@@ -205,13 +205,8 @@ var messages = [
     'delay': 50
   },
   {
-    'fnc': log.e,
-    'msg': 'error log sample.',
-    'delay': 50
-  },
-  {
-    'fnc': log.w,
-    'msg': 'warning log sample.',
+    'fnc': log.d,
+    'msg': 'debug log sample.',
     'delay': 50
   },
   {
@@ -220,8 +215,13 @@ var messages = [
     'delay': 50
   },
   {
-    'fnc': log.d,
-    'msg': 'debug log sample.',
+    'fnc': log.w,
+    'msg': 'warning log sample.',
+    'delay': 50
+  },
+  {
+    'fnc': log.e,
+    'msg': 'error log sample.',
     'delay': 50
   },
   {
@@ -395,17 +395,17 @@ var object1 = [
 //    case 76:
 //      log("Hello, World!");
 //      break;
-//    case 69:
-//      log.e("Hello, World!");
-//      break;
-//    case 87:
-//      log.w("Hello, World!");
+//    case 68:
+//      log.d("Hello, World!");
 //      break;
 //    case 73:
 //      log.i("Hello, World!");
 //      break;
-//    case 68:
-//      log.d("Hello, World!");
+//    case 87:
+//      log.w("Hello, World!");
+//      break;
+//    case 69:
+//      log.e("Hello, World!");
 //      break;
 //    case 83:
 //      log.s("Hello, World!");
@@ -599,15 +599,9 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">logColorE</td>
-    <td>Error log color</td>
-    <td>'#e55'</td>
-  </tr>
-
-  <tr>
-    <td class="name">logColorW</td>
-    <td>Warning log color</td>
-    <td>'#fe0'</td>
+    <td class="name">logColorD</td>
+    <td>Debug log color</td>
+    <td>'#ccc'</td>
   </tr>
 
   <tr>
@@ -617,9 +611,15 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">logColorD</td>
-    <td>Debug log color</td>
-    <td>'#ccc'</td>
+    <td class="name">logColorW</td>
+    <td>Warning log color</td>
+    <td>'#fe0'</td>
+  </tr>
+
+  <tr>
+    <td class="name">logColorE</td>
+    <td>Error log color</td>
+    <td>'#e55'</td>
   </tr>
 
   <tr>
@@ -860,15 +860,9 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">log.e</td>
+    <td class="name">log.d</td>
     <td>message string</td>
-    <td>Output error log</td>
-  </tr>
-
-  <tr>
-    <td class="name">log.w</td>
-    <td>message string</td>
-    <td>Output warning log</td>
+    <td>Output debug log</td>
   </tr>
 
   <tr>
@@ -878,9 +872,15 @@ dbg.init(options);
   </tr>
 
   <tr>
-    <td class="name">log.d</td>
+    <td class="name">log.w</td>
     <td>message string</td>
-    <td>Output debug log</td>
+    <td>Output warning log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.e</td>
+    <td>message string</td>
+    <td>Output error log</td>
   </tr>
 
   <tr>
@@ -1398,25 +1398,25 @@ standard log<br>
 </td>
 
 <td>
-error log<br>
-<span class="button" onclick="log.e(logMessageText.value);">log.e()</span>
+debug log<br>
+<span class="button" onclick="log.d(logMessageText.value);">log.d()</span>
 </td>
 
 <td>
-warn log<br>
-<span class="button" onclick="log.w(logMessageText.value);">log.w()</span>
+info log<br>
+<span class="button" onclick="log.i(logMessageText.value);">log.i()</span>
 </td>
 </tr>
 
 <tr>
 <td>
-info log<br>
-<span class="button" onclick="log.i(logMessageText.value);">log.i()</span>
+warn log<br>
+<span class="button" onclick="log.w(logMessageText.value);">log.w()</span>
 </td>
 
 <td>
-debug log<br>
-<span class="button" onclick="log.d(logMessageText.value);">log.d()</span>
+error log<br>
+<span class="button" onclick="log.e(logMessageText.value);">log.e()</span>
 </td>
 
 <td>
@@ -1449,7 +1449,7 @@ clear log<br>
 
 <tr>
 <td>
-log() log.e() log.w() ...<br>
+log() log.d() log.i() ...<br>
 <span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
 </td>
 
