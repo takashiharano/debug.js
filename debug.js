@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609041600';
+  this.v = '201609041621';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3678,7 +3678,6 @@ DebugJS.getChildElements = function(el, list) {
   }
 };
 
-
 DebugJS.hasClass = function(el, name) {
   var className = el.className;
   var names = className.split(' ');
@@ -3861,7 +3860,6 @@ DebugJS.formatHex = function(v16, prefix, upper) {
   }
   return hex;
 };
-
 
 DebugJS.convertTimeJson = function(t) {
   var hour = min = sec = msec = 0;
@@ -4499,7 +4497,6 @@ DebugJS.time.check = function(timerName) {
   var now = new Date();
   return DebugJS.timeCheck(timerName, now);
 };
-
 
 DebugJS.call = function(fnc, delay) {
   if (delay === undefined) delay = 0;
