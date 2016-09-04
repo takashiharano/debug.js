@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609040120';
+  this.v = '201609041600';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -53,6 +53,9 @@ var DebugJS = function() {
     'useMouseStatusInfo': true,
     'useKeyStatusInfo': true,
     'useLed': true,
+    'useMsgDisplay': true,
+    'msgDisplayPos': 'right',
+    'msgDisplayBackground': 'rgba(0,0,0,0.2)',
     'useScreenMeasure': true,
     'useSystemInfo': true,
     'useElementInfo': true,
@@ -136,12 +139,14 @@ var DebugJS = function() {
   this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
   this.ledPanel = null;
   this.led = 0;
+  this.msgPanel = null;
+  this.msgString = '';
   this.mainPanel = null;
   this.overlayBasePanel = null;
   this.overlayPanels = [];
-  this.msgPanel = null;
-  this.msgPanelScrollX = 0;
-  this.msgPanelScrollY = 0;
+  this.logPanel = null;
+  this.logPanelScrollX = 0;
+  this.logPanelScrollY = 0;
   this.cmdPanel = null;
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
@@ -179,6 +184,7 @@ var DebugJS = function() {
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
+    {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
@@ -279,9 +285,9 @@ DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
-'var i = 0;\nledTest();\nfunction ledTest() {\n  dbg.led(i);\n  if (i < 255) {\n    dbg.call(ledTest, 500);\n  } else {\n    dbg.led.all(false);\n  }\n  i++;\n}\n\'LED DEMO\';\n',
-'var str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
-'// performance check\nvar i = 0;\ntime.start(\'total\');\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  i++;\n  if (i == 1000) {\n    time.end(\'total\');\n  } else {\n    dbg.call(test);\n  }\n}\n',
+'// performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
+'// LED DEMO\nvar speed = 500;\nvar i = 0;\nledTest();\nfunction ledTest() {\n  dbg.led(i);\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
+'// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
@@ -296,6 +302,7 @@ DebugJS.FEATURES = [
   'useMouseStatusInfo',
   'useKeyStatusInfo',
   'useLed',
+  'useMsgDisplay',
   'useScreenMeasure',
   'useSystemInfo',
   'useElementInfo',
@@ -678,7 +685,7 @@ DebugJS.prototype = {
     }
     self.initExtention();
     self.status |= DebugJS.STATE_INITIALIZED;
-    self.printMessage();
+    self.printLogMessage();
 
     return true;
   },
@@ -775,16 +782,17 @@ DebugJS.prototype = {
     // Main
     self.mainPanel = document.createElement('div');
     self.mainPanel.style.height = self.options.lines + '.1em';
+    self.mainPanel.style.clear = 'both';
     self.windowBody.appendChild(self.mainPanel);
 
     // Log
-    self.msgPanel = document.createElement('div');
-    self.msgPanel.style.position = 'relative';
-    self.msgPanel.style.width = '100%';
-    self.msgPanel.style.height = '100%';
-    self.msgPanel.style.padding = '0';
-    self.msgPanel.style.overflow = 'auto';
-    self.mainPanel.appendChild(self.msgPanel);
+    self.logPanel = document.createElement('div');
+    self.logPanel.style.position = 'relative';
+    self.logPanel.style.width = '100%';
+    self.logPanel.style.height = '100%';
+    self.logPanel.style.padding = '0';
+    self.logPanel.style.overflow = 'auto';
+    self.mainPanel.appendChild(self.logPanel);
 
     if (self.isAllFeaturesDisabled()) {
       return;
@@ -998,6 +1006,23 @@ DebugJS.prototype = {
       self.infoPanel.appendChild(self.keyUpPanel);
     }
 
+    // Message Display
+    if (self.options.useMsgDisplay) {
+      self.msgPanel = document.createElement('span');
+      self.msgPanel.className = this.id + '-sys-info';
+      self.msgPanel.style.float = self.options.msgDisplayPos;
+      self.msgPanel.style.marginRight = '3px';
+      self.msgPanel.style.border = '0';
+      self.msgPanel.style.padding = '1px';
+      self.msgPanel.style.background = self.options.msgDisplayBackground;
+      self.msgPanel.style.color = self.options.fontColor;
+      self.msgPanel.style.whiteSpace = 'pre-wrap';
+      self.msgPanel.style.wordBreak = 'break-all';
+      self.msgPanel.style.overflow = 'hidden';
+      self.msgPanel.style.textOverflow = 'ellipsis';
+      self.infoPanel.appendChild(self.msgPanel);
+    }
+
     // Command Line
     if (self.options.useCommandLine) {
       self.cmdPanel = document.createElement('div');
@@ -1083,6 +1108,10 @@ DebugJS.prototype = {
 
     if (self.options.useLed) {
       self.updateLedPanel();
+    }
+
+    if (self.options.useMsgDisplay) {
+      self.updateMsgPanel();
     }
   },
 
@@ -1212,6 +1241,21 @@ DebugJS.prototype = {
     }
   },
 
+  // Update Message Display
+  updateMsgPanel: function() {
+    var self = DebugJS.self;
+    var message = self.msgString;
+    if (self.msgPanel) {
+      var html = '<pre>' + message + '</pre>';
+      self.msgPanel.innerHTML = html;
+      if (message == '') {
+        self.msgPanel.style.opacity = 0;
+      } else {
+        self.msgPanel.style.opacity = 1;
+      }
+    }
+  },
+
   // Update Measure Button
   updateMeasureBtnPanel: function() {
     var self = DebugJS.self;
@@ -1289,17 +1333,17 @@ DebugJS.prototype = {
   },
 
   // Log Output
-  printMessage: function() {
+  printLogMessage: function() {
     var self = DebugJS.self;
     var msg = '<pre style="padding:0 3px;">' + self.getLogMsgs() + '</pre>';
-    self.msgPanel.innerHTML = msg;
-    self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+    self.logPanel.innerHTML = msg;
+    self.logPanel.scrollTop = self.logPanel.scrollHeight;
   },
 
   clearMessage: function() {
     var self = DebugJS.self;
     self.msgBuf.clear();
-    self.printMessage();
+    self.printLogMessage();
   },
 
   applyStyles: function(styles) {
@@ -1603,15 +1647,15 @@ DebugJS.prototype = {
     return logs;
   },
 
-  collapseMessagePanel: function() {
+  collapseLogPanel: function() {
     var self = DebugJS.self;
-    self.msgPanel.style.height = (100 - DebugJS.OVERLAY_PANEL_HEIGHT) + '%';
-    self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+    self.logPanel.style.height = (100 - DebugJS.OVERLAY_PANEL_HEIGHT) + '%';
+    self.logPanel.scrollTop = self.logPanel.scrollHeight;
   },
 
-  expandMessagePanel: function() {
+  expandLogPanel: function() {
     var self = DebugJS.self;
-    self.msgPanel.style.height = '100%';
+    self.logPanel.style.height = '100%';
   },
 
   keyhandler: function(e) {
@@ -1864,7 +1908,7 @@ DebugJS.prototype = {
     self.debugWindow.style.top = self.orgSizePos.t + 'px';
     self.debugWindow.style.left = self.orgSizePos.l + 'px';
     self.resizeMainHeight();
-    self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+    self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
 
@@ -1874,7 +1918,7 @@ DebugJS.prototype = {
     self.debugWindow.style.height = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
     self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
     self.resizeMainHeight();
-    self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+    self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.saveExpandModeOrgSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     if (self.status & DebugJS.STATE_DRAGGABLE) {
@@ -1886,8 +1930,8 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.debugWindow.style.display = 'block';
     self.status |= DebugJS.STATE_VISIBLE;
-    self.msgPanel.scrollTop = self.msgPanelScrollY;
-    self.msgPanel.scrollLeft = self.msgPanelScrollX;
+    self.logPanel.scrollTop = self.logPanelScrollY;
+    self.logPanel.scrollLeft = self.logPanelScrollX;
     var sizePos = self.getSelfSizePos();
     if ((self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) ||
        ((self.status & DebugJS.STATE_DYNAMIC) && ((sizePos.winX1 > document.documentElement.clientWidth) || (sizePos.winY1 > document.documentElement.clientHeight)))) {
@@ -1898,8 +1942,8 @@ DebugJS.prototype = {
   hideDebugWindow: function() {
     var self = DebugJS.self;
     if (!self.options.togglableShowHide) return;
-    self.msgPanelScrollX = self.msgPanel.scrollLeft;
-    self.msgPanelScrollY = self.msgPanel.scrollTop;
+    self.logPanelScrollX = self.logPanel.scrollLeft;
+    self.logPanelScrollY = self.logPanel.scrollTop;
     self.status &= ~DebugJS.STATE_DRAGGING;
     self.debugWindow.style.display = 'none';
     self.status &= ~DebugJS.STATE_VISIBLE;
@@ -2755,10 +2799,10 @@ DebugJS.prototype = {
   addOverlayPanel: function(panel) {
     var self = DebugJS.self;
     if (self.overlayBasePanel == null) {
-      self.collapseMessagePanel();
+      self.collapseLogPanel();
       self.overlayBasePanel = document.createElement('div');
       self.overlayBasePanel.className = self.id + '-overlay-base-panel';
-      //self.mainPanel.insertBefore(self.overlayBasePanel, self.msgPanel); //bottom position
+      //self.mainPanel.insertBefore(self.overlayBasePanel, self.logPanel); //bottom position
       self.mainPanel.appendChild(self.overlayBasePanel);
     }
     self.overlayBasePanel.appendChild(panel);
@@ -2778,7 +2822,7 @@ DebugJS.prototype = {
       if (self.overlayPanels.length == 0) {
         self.mainPanel.removeChild(self.overlayBasePanel);
         self.overlayBasePanel = null;
-        self.expandMessagePanel();
+        self.expandLogPanel();
       }
     }
   },
@@ -2921,7 +2965,7 @@ DebugJS.prototype = {
       self.debugWindow.style.width = self.expandModeOrg.w + 'px';
       self.debugWindow.style.height = self.expandModeOrg.h + 'px';
       self.resizeMainHeight();
-      self.msgPanel.scrollTop = self.msgPanel.scrollHeight;
+      self.logPanel.scrollTop = self.logPanel.scrollHeight;
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
         var sizePos = self.getSelfSizePos();
         self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
@@ -2981,6 +3025,12 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.led = val;
     self.updateLedPanel();
+  },
+
+  setMsg: function(msg) {
+    var self = DebugJS.self;
+    self.msgString = msg;
+    self.updateMsgPanel();
   },
 
   execCmd: function() {
@@ -3063,6 +3113,7 @@ DebugJS.prototype = {
       self.stopStopWatch();
     }
     self.setLed(0);
+    self.setMsg('');
     self.resetStopWatch();
     if (self.status & DebugJS.STATE_DYNAMIC) {
       if (self.options.usePinButton) {
@@ -3132,6 +3183,11 @@ DebugJS.prototype = {
     }
   },
 
+  cmdMsg: function(args, tbl) {
+    var self = DebugJS.self;
+    self.setMsg(args);
+  },
+
   cmdP: function(args, tbl) {
     if (args == '') {
       DebugJS.printUsage(tbl.usage);
@@ -3179,13 +3235,13 @@ DebugJS.prototype = {
 
   cmdRadixConv: function(val) {
     if (val.match(/^\-{0,1}[0-9]+$/)) {
-      DebugJS.convDEC(val);
+      DebugJS.convRadixFromDEC(val);
       return true;
     } else if (val.match(/^\-{0,1}0x[0-9A-Fa-f]+$/)) {
-      DebugJS.convHEX(val.substr(2));
+      DebugJS.convRadixFromHEX(val.substr(2));
       return true;
     } else if (val.match(/^\-{0,1}0b[0-1]+$/)) {
-      DebugJS.convBIN(val.substr(2));
+      DebugJS.convRadixFromBIN(val.substr(2));
       return true;
     } else {
       return false;
@@ -3717,31 +3773,48 @@ DebugJS.convRGB10to16 = function(rgb10) {
   return rgb;
 };
 
-DebugJS.convHEX = function(v16) {
+DebugJS.convRadixFromHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
   var v2 = parseInt(v16, 16).toString(2);
-  var res = 'HEX ' + DebugJS.formatHex(v16) + '\n' +
+  hex = DebugJS.formatHex(v16, false, true);
+  if (hex.length >= 2) {
+    hex = '0x' + hex;
+  }
+  var res = 'HEX ' + hex + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'BIN ' + DebugJS.formatBin(v2, true, true, 9) + '\n';
   DebugJS.log.mlt(res);
 };
 
-DebugJS.convDEC = function(v10) {
+DebugJS.convRadixFromDEC = function(v10) {
   var v2 = parseInt(v10).toString(2);
   var v16 = parseInt(v10).toString(16);
+  hex = DebugJS.formatHex(v16, false, true);
+  if (hex.length >= 2) {
+    hex = '0x' + hex;
+  }
   var res = 'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'HEX ' + DebugJS.formatHex(v16) + '<br>' +
+  'HEX ' + hex + '<br>' +
   'BIN ' + DebugJS.formatBin(v2, true, true, 9) + '\n';
   DebugJS.log.mlt(res);
 };
 
-DebugJS.convBIN = function(v2) {
+DebugJS.convRadixFromBIN = function(v2) {
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
+  hex = DebugJS.formatHex(v16, false, true);
+  if (hex.length >= 2) {
+    hex = '0x' + hex;
+  }
   var res = 'BIN ' + DebugJS.formatBin(v2, true, true, 9) + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'HEX ' + DebugJS.formatHex(v16) + '\n';
+  'HEX ' + hex + '\n';
   DebugJS.log.mlt(res);
+};
+
+DebugJS.convRadixDECtoHEX = function(v10) {
+  var v16 = parseInt(v10).toString(16);
+  return v16;
 };
 
 DebugJS.formatBin = function(v2, grouping, digits, n) {
@@ -3778,9 +3851,12 @@ DebugJS.formatDec = function(v10) {
   return dec;
 };
 
-DebugJS.formatHex = function(v16) {
-  var hex = v16.toUpperCase();
-  if (v16.length >= 2) {
+DebugJS.formatHex = function(v16, prefix, upper) {
+  var hex = v16;
+  if (upper) {
+    hex = v16.toUpperCase();
+  }
+  if (prefix) {
     hex = '0x' + hex;
   }
   return hex;
@@ -4395,7 +4471,7 @@ DebugJS.log.out = function(msg, type) {
   if (!(DebugJS.self.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS._init()) {return;}
   }
-  DebugJS.self.printMessage();
+  DebugJS.self.printLogMessage();
 };
 
 DebugJS.time = {};
@@ -4453,6 +4529,14 @@ DebugJS.led.all = function(flg) {
   } else {
     DebugJS.self.setLed(0);
   }
+};
+
+DebugJS.msg = function(val) {
+  DebugJS.self.setMsg(val);
+};
+
+DebugJS.msg.clear = function() {
+  DebugJS.self.setMsg('');
 };
 
 DebugJS.random = function(min, max) {

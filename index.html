@@ -80,6 +80,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 log('Here is the log output example!');
 
 var logMessageText = null;
+var msgMessageText = null;
 
 window.onload = function() {
   log('The window\'s load event fired.');
@@ -164,14 +165,23 @@ window.onload = function() {
     //'clockColor': '#00f',
     //'useClock': true,
     //'useCommandLine': true,
+    //'useWindowSizeInfo': true,
+    //'useMouseStatusInfo': true,
+    //'useKeyStatusInfo': true,
+    //'useLed': true,
+    'useMsgDisplay': true,
+    'msgDisplayPos': 'left',
+    'msgDisplayBackground': 'rgba(168,168,168,0.2)',
     'useClearButton': true
   };
   //dbg.init(options6);
 
   logMessageText = document.getElementById('log-message-text');
+  msgMessageText = document.getElementById('msg-message-text');
 
   setTimeout(displayMessages, 1500);
   setTimeout(execDemo, 1500);
+  setTimeout(msgTest, 1500);
 }
 
 var dispCount = 0;
@@ -284,6 +294,18 @@ var demoSteps = [
     'delay': 250
   }
 ];
+
+var msgTestCnt = 0;
+function msgTest() {
+  msgTestCnt++;
+  dbg.msg('Message Display Demo(cnt=' + msgTestCnt + ')');
+  if (msgTestCnt <= 500) {
+    dbg.call(msgTest, 10);
+  } else {
+    dbg.msg.clear();
+    msgTestCnt = 0;
+  }
+}
 
 randomDemoFlag = false;
 function randomDemo() {
@@ -752,6 +774,24 @@ dbg.init(options);
   </tr>
 
   <tr>
+    <td class="name">useMsgDisplay</td>
+    <td>Enable Fixed Position Message Display</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">msgDisplayPos</td>
+    <td>Display Position of the fixed position message ('left' / 'right')</td>
+    <td>'right'</td>
+  </tr>
+
+  <tr>
+    <td class="name">msgDisplayBackground</td>
+    <td>Background style of the fixed position message</td>
+    <td>'rgba(0,0,0,0.2)'</td>
+  </tr>
+
+  <tr>
     <td class="name">useScreenMeasure</td>
     <td>Enable Screen Measure</td>
     <td>true</td>
@@ -1089,6 +1129,22 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
+    <td class="name">dbg.msg</td>
+    <td>message</td>
+    <td>
+      Set a string to the message display
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.msg.clear</td>
+    <td></td>
+    <td>
+      Clear the message display
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.random</td>
     <td>
       arg1: min<span class="annotation">(opt)</span><br>
@@ -1194,6 +1250,12 @@ max: maximum length
     <td class="name">led</td>
     <td>bit pattern</td>
     <td>Set a bit pattern to the indicator.</td>
+  </tr>
+
+  <tr>
+    <td class="name">msg</td>
+    <td>message</td>
+    <td>Set a string to the message display.</td>
   </tr>
 
   <tr>
@@ -1396,7 +1458,21 @@ log with random message<br>
 </tr>
 </table>
 
-<br>
+<!-- ********************************************************************** -->
+<div class="caption2">dbg.msg</div>
+<input type="text" id="msg-message-text" value="Hello, world!" style="width:400px;margin-top:3px;">
+
+<table class="demo-table">
+<tr>
+<td>
+<span class="button" onclick="dbg.msg(msgMessageText.value);">dbg.msg()</span>
+</td>
+
+<td>
+<span class="button" onclick="dbg.msg.clear();">dbg.msg.clear()</span>
+</td>
+</tr>
+</table>
 
 <!-- ********************************************************************** -->
 <div class="caption2">time</div>
