@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609042223';
+  this.v = '201609050000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -628,6 +628,7 @@ DebugJS.prototype = {
       'border-bottom': 'solid 1px #888 !important',
       'border-radius': '0 !important',
       'outline': 'none !important',
+      'box-shadow': 'none !important',
       'background': 'transparent !important',
       'color': self.options.fontColor + ' !important',
       'font-size': self.options.fontSize + 'px !important',
