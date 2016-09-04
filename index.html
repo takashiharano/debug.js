@@ -91,7 +91,7 @@ window.onload = function() {
   var options = {
     'visible': true,
   };
-  dbg.init(options);
+  DebugJS.init(options);
 
   var options1 = {
     'visible': true,
@@ -111,13 +111,13 @@ window.onload = function() {
     //'position': 'w'
     //'position': 'nw'
   };
-  //dbg.init(options1);
+  //DebugJS.init(options1);
 
   var options2 = {
     'visible': true,
     'zoom': '1.4'
   };
-  //dbg.init(options2);
+  //DebugJS.init(options2);
 
   var options3 = {
     'visible': true,
@@ -129,13 +129,13 @@ window.onload = function() {
     //'useTextChecker': true,
     //'resizable': false
   };
-  //dbg.init(options3);
+  //DebugJS.init(options3);
 
   // If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options4 = {
     'target': 'debug'
   };
-  //dbg.init(options4);
+  //DebugJS.init(options4);
 
   var options5 = {
     'target': 'debug',
@@ -147,7 +147,7 @@ window.onload = function() {
     'disableAllFeatures': true,
     'useClearButton': true
   };
-  //dbg.init(options5);
+  //DebugJS.init(options5);
 
   var options6 = {
     'target': 'debug',
@@ -177,7 +177,7 @@ window.onload = function() {
     'msgDisplayBackground': 'rgba(168,168,168,0.2)',
     'useClearButton': true
   };
-  //dbg.init(options6);
+  //DebugJS.init(options6);
 
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
@@ -510,7 +510,7 @@ var options = {
   'showTimeStamp': false
 };
 
-dbg.init(options);
+DebugJS.init(options);
 </pre>
 
 <table class="desc-table">
@@ -1196,6 +1196,10 @@ max: maximum length
     </td>
   </tr>
 </table>
+<div style="margin-top:10px;font-size:14px;">
+"dbg" is an alias of "DebugJS". / "time" is an alias of "DebugJS.time".<br>
+debug.js will not use aliases in case that those are already defined.
+</div>
 <br>
 
 <div class="caption">// Commands</div>
