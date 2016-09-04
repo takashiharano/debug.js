@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609041621';
+  this.v = '201609042036';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -283,6 +283,7 @@ DebugJS.RANDOM_TYPE_STR = '-s';
 DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
+DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 '// performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
@@ -1883,15 +1884,22 @@ DebugJS.prototype = {
 
   expandDebugWindow: function() {
     var self = DebugJS.self;
+    var sizePos = self.getSelfSizePos();
     self.saveSizeAndPos();
-    var cw = document.documentElement.clientWidth;
-    var ch = document.documentElement.clientHeight;
+    var clientWidth = document.documentElement.clientWidth;
+    var clientHeight = document.documentElement.clientHeight;
     var w = DebugJS.DEBUG_WIN_EXPAND_W;
     var h = DebugJS.DEBUG_WIN_EXPAND_H;
-    var t = ch / 2 - h / 2;
-    var l = cw / 2 - w / 2;
-    if (w > cw) {w = cw; l = 0;}
-    if (h > ch) {h = ch; t = 0;}
+    var t = clientHeight / 2 - h / 2;
+    var l = clientWidth / 2 - w / 2;
+    if ((w > clientWidth) || (sizePos.width > DebugJS.DEBUG_WIN_EXPAND_W)) {
+      w = clientWidth;
+      l = 0;
+    }
+    if ((h > clientHeight) || (sizePos.height > DebugJS.DEBUG_WIN_EXPAND_H)) {
+      h = clientHeight;
+      t = 0;
+    }
     self.debugWindow.style.top = t + 'px';
     self.debugWindow.style.left = l + 'px';
     self.debugWindow.style.width = w + 'px';
@@ -3781,7 +3789,7 @@ DebugJS.convRadixFromHEX = function(v16) {
   }
   var res = 'HEX ' + hex + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'BIN ' + DebugJS.formatBin(v2, true, true, 9) + '\n';
+  'BIN ' + DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD) + '\n';
   DebugJS.log.mlt(res);
 };
 
@@ -3794,7 +3802,7 @@ DebugJS.convRadixFromDEC = function(v10) {
   }
   var res = 'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'HEX ' + hex + '<br>' +
-  'BIN ' + DebugJS.formatBin(v2, true, true, 9) + '\n';
+  'BIN ' + DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD) + '\n';
   DebugJS.log.mlt(res);
 };
 
@@ -3805,7 +3813,7 @@ DebugJS.convRadixFromBIN = function(v2) {
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
-  var res = 'BIN ' + DebugJS.formatBin(v2, true, true, 9) + '\n' +
+  var res = 'BIN ' + DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD) + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'HEX ' + hex + '\n';
   DebugJS.log.mlt(res);
