@@ -35,7 +35,7 @@
 -->
 
 <style>
-body {font-family:Arial, sans-serif; font-size:18px; color:#333;}
+html, body {width:100%; margin:0; font-family:Arial, sans-serif; font-size:18px; color:#333;}
 a {color:#00f; text-decoration:none;}
 a:hover {text-decoration:underline;}
 button, input[type="button"], input[type="submit"], select {width:80px; height:30px; font-size:16px;}
@@ -43,9 +43,12 @@ input, input[type="text"], textarea, select {font-size: 16px; padding: 3px; colo
 input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:#51a7e8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
 #wrapper {width:100%;}
 #main {width:900px; margin:0 auto;}
-#header {position:fixed; width:100%; top:0; left:0; height:180px; color:#fff; z-index:1; background:#08f;}
-#title {position:absolute; width:900px; font-size:76px; top:0; bottom:0; left:0; right:0; margin:auto; height:80px; padding-left:5px; white-space:nowrap; font-family:Impact;line-height:28px;}
-#content {display:inline-block;position:relative; top:190px; padding:5px;}
+#header-line {position:relative; width:100%; top:0; left:0; height:10px; color:#fff; z-index:1; background:#08f;}
+#header {position:relative; width:100%; top:10; left:0; height:310px; color:#fff; z-index:1; background:#333;}
+#title {position:absolute; width:900px; top:0; bottom:0; left:0; right:0; margin:auto; height:130px; padding-left:5px; white-space:nowrap; font-family:Impact;line-height:28px;}
+#content {display:inline-block;position:relative; top:25px; padding:5px;}
+#footer {position:relative; width:100%; bottom:; left:0; height:60px; color:#fff; z-index:1; background:#333; text-align:center;}
+
 .caption {font-size:30px; font-weight:bold;}
 .caption2 {font-size:25px;}
 .code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
@@ -423,14 +426,23 @@ var object1 = [
 </head>
 <body>
 <div id="wrapper">
-<div id="main">
+
+<div id="header-line"></div>
 <div id="header">
 <div id="title">
-debug.js
-<span style="font-size:34px;" id="title2">Easy Debugging w/o F12</span><br>
-<span style="font-size:22px;">Logging, Time Test, Element Inspection, Screen Measure, and more</span>
+<div>
+<span style="font-size:76px;">debug.js</span>
+<span style="display:inline-block;margin-left:10px;font-size:34px;" id="title2">Easy Debugging w/o F12</span>
 </div>
+<div>
+<span style="display:inline-block;font-size:22px;margin-top:25px;line-height:1.5em;">
+Debugger of JavaScript, by JavaScript, for JavaScript<br>
+Logging, Time Test, Element Inspection, Screen Measure, and more
+</span>
+</div>
+</div><!--title-->
 </div><!--header-->
+<div id="main">
 <div id="content">
 <div class="caption">// Usage</div><br>
 
@@ -440,7 +452,7 @@ Include the script file. <a href="https://github.com/takashiharano/debug.js"><sp
 &lt;script src="debug.js"&gt;&lt;/script&gt;
 </pre>
 
-That's it!<br><br>
+That's it.<br><br>
 The debug window will be automatically generated and is draggable.<br><br>
 
 <table border="0">
@@ -1323,6 +1335,73 @@ $ rgb 255 255 255
 </table>
 <br>
 
+<div class="caption">// Calculation</div>
+The debugger can perform a calculation from command-line.
+<table class="desc-table">
+  <tr>
+    <th>Calculation</th>
+    <th>Input</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">Radix conversion</td>
+    <td>
+     decimal number<br>
+     hexadecimal number<br>
+     binary number
+    </td>
+    <td>
+     Convert DEC / HEX / BIN to other radix base number.
+<pre class="eg">
+$ 128
+-&gt;
+DEC 128
+HEX 0x80
+BIN 1000 0000 (8 bits)
+
+$ 0x20
+-&gt;
+HEX 0x20
+DEC 32
+BIN 10 0000 (6 bits)
+
+$ 0b11110000
+-&gt;
+BIN 1111 0000 (8 bits)
+DEC 240
+HEX 0xF0
+</pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="name">Time calculation</td>
+    <td>
+     HH:MI:SS.sss + HH:MI:SS.sss<br>
+     HH:MI:SS.sss - HH:MI:SS.sss
+    </td>
+    <td>
+     Perform a time calculation.
+<pre class="eg">
+$ 00:05:30.700 + 00:01:20.123
+-&gt; 00:06:50.823
+
+$ 00:05:30.700 - 00:05:20.400
+-&gt; 00:00:10.300
+
+$ 10:00 + 16:00
+-&gt; 02:00:00.000 (+1 Day)
+
+$ 10:00 - 16:00
+-&gt; 18:00:00.000 (-1 Day)
+
+</pre>
+    </td>
+  </tr>
+</table>
+<br>
+
+
 <div class="caption">// Features</div>
 <table class="desc-table">
   <tr>
@@ -1389,7 +1468,7 @@ $ rgb 255 255 255
 
 <!-- ********************************************************************** -->
 <div class="caption2">log</div>
-<input type="text" id="log-message-text" value="Hello, world!" style="width:400px;margin-top:3px;">
+<input type="text" id="log-message-text" value="Hello, World!" style="width:400px;margin-top:3px;">
 <table class="demo-table">
 <tr>
 <td>
@@ -1462,7 +1541,7 @@ log with random message<br>
 
 <!-- ********************************************************************** -->
 <div class="caption2">dbg.msg</div>
-<input type="text" id="msg-message-text" value="Hello, world!" style="width:400px;margin-top:3px;">
+<input type="text" id="msg-message-text" value="Hello, message display!" style="width:400px;margin-top:3px;">
 
 <table class="demo-table">
 <tr>
@@ -1865,6 +1944,10 @@ console.timeEnd('timer3');<br>
 <br><br>
 </div><!-- content -->
 </div><!-- main -->
+
+<div id="footer">
+<span style="display:inline-block;position:relative;top:20px;">debug.js is released under the MIT license.</span>
+</div>
 </div><!-- wrapper -->
 </body>
 </html>
