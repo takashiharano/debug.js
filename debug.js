@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609042105';
+  this.v = '201609042223';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1741,7 +1741,9 @@ DebugJS.prototype = {
         if ((e.altKey == self.options.keyAssign.alt) &&
             (e.ctrlKey == self.options.keyAssign.ctrl) &&
             (e.shiftKey == self.options.keyAssign.shift)) {
-          if (self.status & DebugJS.STATE_VISIBLE) {
+          if ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow())) {
+            self.resetToOriginalPosition();
+          } else if (self.status & DebugJS.STATE_VISIBLE) {
             self.closeDebugWindow();
           } else {
             self.showDebugWindow();
@@ -1934,6 +1936,25 @@ DebugJS.prototype = {
     }
   },
 
+  isOutOfWindow: function() {
+    var self = DebugJS.self;
+    var ret = false;
+    var sizePos = self.getSelfSizePos();
+    if ((sizePos.winX1 > document.documentElement.clientWidth) || (sizePos.winY1 > document.documentElement.clientHeight)) {
+      ret = true;
+    }
+    return ret;
+  },
+
+  resetToOriginalPosition: function() {
+    var self = DebugJS.self;
+    var sizePos = self.getSelfSizePos();
+    self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+    if (self.status & DebugJS.STATE_DRAGGABLE) {
+      self.status |= DebugJS.STATE_AUTO_POSITION_ADJUST;
+    }
+  },
+
   showDebugWindow: function() {
     var self = DebugJS.self;
     self.debugWindow.style.display = 'block';
@@ -1942,7 +1963,7 @@ DebugJS.prototype = {
     self.logPanel.scrollLeft = self.logPanelScrollX;
     var sizePos = self.getSelfSizePos();
     if ((self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) ||
-       ((self.status & DebugJS.STATE_DYNAMIC) && ((sizePos.winX1 > document.documentElement.clientWidth) || (sizePos.winY1 > document.documentElement.clientHeight)))) {
+       ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow()))) {
       self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
     }
   },
