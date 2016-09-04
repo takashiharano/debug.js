@@ -296,11 +296,13 @@ var demoSteps = [
 ];
 
 var msgTestCnt = 0;
+var msgTestCntMax = 300;
+var msgTestSpeed = 10;
 function msgTest() {
   msgTestCnt++;
   dbg.msg('Message Display Demo(cnt=' + msgTestCnt + ')');
-  if (msgTestCnt <= 500) {
-    dbg.call(msgTest, 10);
+  if (msgTestCnt <= msgTestCntMax) {
+    dbg.call(msgTest, msgTestSpeed);
   } else {
     dbg.msg.clear();
     msgTestCnt = 0;
