@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609052150';
+  this.v = '201609052344';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1891,22 +1891,34 @@ DebugJS.prototype = {
     self.saveSizeAndPos();
     var clientWidth = document.documentElement.clientWidth;
     var clientHeight = document.documentElement.clientHeight;
-    var w = DebugJS.DEBUG_WIN_EXPAND_W;
-    var h = DebugJS.DEBUG_WIN_EXPAND_H;
-    var t = clientHeight / 2 - h / 2;
-    var l = clientWidth / 2 - w / 2;
-    if ((w > clientWidth) || (sizePos.width > DebugJS.DEBUG_WIN_EXPAND_W)) {
+    var w = 0;
+    var h = 0;
+    var t = 0;
+    var l = 0;
+    if ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) || (sizePos.width > DebugJS.DEBUG_WIN_EXPAND_W)) {
       w = clientWidth;
-      l = 0;
+      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.height > DebugJS.DEBUG_WIN_EXPAND_H)) {
+        h = clientHeight;
+      } else {
+        t = -1;
+      }
+    } else {
+      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.height > DebugJS.DEBUG_WIN_EXPAND_H)) {
+        h = clientHeight;
+        if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.width < DebugJS.DEBUG_WIN_EXPAND_W)) {
+          l = -1;
+        }
+      } else {
+        w = DebugJS.DEBUG_WIN_EXPAND_W;
+        h = DebugJS.DEBUG_WIN_EXPAND_H;
+        l = clientWidth / 2 - w / 2;
+        t = clientHeight / 2 - h / 2;
+      }
     }
-    if ((h > clientHeight) || (sizePos.height > DebugJS.DEBUG_WIN_EXPAND_H)) {
-      h = clientHeight;
-      t = 0;
-    }
-    self.debugWindow.style.top = t + 'px';
-    self.debugWindow.style.left = l + 'px';
-    self.debugWindow.style.width = w + 'px';
-    self.debugWindow.style.height = h + 'px';
+    if (t >= 0) self.debugWindow.style.top = t + 'px';
+    if (l >= 0) self.debugWindow.style.left = l + 'px';
+    if (w > 0) self.debugWindow.style.width = w + 'px';
+    if (h > 0) self.debugWindow.style.height = h + 'px';
     self.resizeMainHeight();
     self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
     self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
