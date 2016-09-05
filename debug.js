@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609052344';
+  this.v = '201609060000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1791,7 +1791,7 @@ DebugJS.prototype = {
     self.updateBodySizePanel();
     if ((self.status & DebugJS.STATE_VISIBLE) && (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST)) {
       var sizePos = self.getSelfSizePos();
-      self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+      self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
     }
   },
 
@@ -1895,17 +1895,17 @@ DebugJS.prototype = {
     var h = 0;
     var t = 0;
     var l = 0;
-    if ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) || (sizePos.width > DebugJS.DEBUG_WIN_EXPAND_W)) {
+    if ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) || (sizePos.w > DebugJS.DEBUG_WIN_EXPAND_W)) {
       w = clientWidth;
-      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.height > DebugJS.DEBUG_WIN_EXPAND_H)) {
+      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > DebugJS.DEBUG_WIN_EXPAND_H)) {
         h = clientHeight;
       } else {
         t = -1;
       }
     } else {
-      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.height > DebugJS.DEBUG_WIN_EXPAND_H)) {
+      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > DebugJS.DEBUG_WIN_EXPAND_H)) {
         h = clientHeight;
-        if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.width < DebugJS.DEBUG_WIN_EXPAND_W)) {
+        if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.w < DebugJS.DEBUG_WIN_EXPAND_W)) {
           l = -1;
         }
       } else {
@@ -1953,7 +1953,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var ret = false;
     var sizePos = self.getSelfSizePos();
-    if ((sizePos.winX1 > document.documentElement.clientWidth) || (sizePos.winY1 > document.documentElement.clientHeight)) {
+    if ((sizePos.x1 > document.documentElement.clientWidth) || (sizePos.y1 > document.documentElement.clientHeight)) {
       ret = true;
     }
     return ret;
@@ -1962,7 +1962,7 @@ DebugJS.prototype = {
   resetToOriginalPosition: function() {
     var self = DebugJS.self;
     var sizePos = self.getSelfSizePos();
-    self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+    self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
     if (self.status & DebugJS.STATE_DRAGGABLE) {
       self.status |= DebugJS.STATE_AUTO_POSITION_ADJUST;
     }
@@ -1977,7 +1977,7 @@ DebugJS.prototype = {
     var sizePos = self.getSelfSizePos();
     if ((self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) ||
        ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow()))) {
-      self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+      self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
     }
   },
 
@@ -2972,7 +2972,7 @@ DebugJS.prototype = {
   isOnDebugWindow: function(x, y) {
     var self = DebugJS.self;
     var sizePos = self.getSelfSizePos();
-    if (((x >= sizePos.winX1) && (x <= sizePos.winX2)) && ((y >= sizePos.winY1) && (y <= sizePos.winY2))) {
+    if (((x >= sizePos.x1) && (x <= sizePos.x2)) && ((y >= sizePos.y1) && (y <= sizePos.y2))) {
       return true;
     }
     return false;
@@ -2983,12 +2983,12 @@ DebugJS.prototype = {
     var rect = self.debugWindow.getBoundingClientRect();
     var resizeBoxSize = 6;
     var sizePos = {};
-    sizePos.width = self.debugWindow.clientWidth;
-    sizePos.height = self.debugWindow.clientHeight;
-    sizePos.winX1 = rect.left - resizeBoxSize / 2;
-    sizePos.winY1 = rect.top - resizeBoxSize / 2;
-    sizePos.winX2 = sizePos.winX1 + self.debugWindow.clientWidth + resizeBoxSize + DebugJS.WINDOW_BORDER;
-    sizePos.winY2 = sizePos.winY1 + self.debugWindow.clientHeight + resizeBoxSize + DebugJS.WINDOW_BORDER;
+    sizePos.w = self.debugWindow.clientWidth;
+    sizePos.h = self.debugWindow.clientHeight;
+    sizePos.x1 = rect.left - resizeBoxSize / 2;
+    sizePos.y1 = rect.top - resizeBoxSize / 2;
+    sizePos.x2 = sizePos.x1 + self.debugWindow.clientWidth + resizeBoxSize + DebugJS.WINDOW_BORDER;
+    sizePos.y2 = sizePos.y1 + self.debugWindow.clientHeight + resizeBoxSize + DebugJS.WINDOW_BORDER;
     return sizePos;
   },
 
@@ -3004,26 +3004,26 @@ DebugJS.prototype = {
     self.resizeMainHeight();
   },
 
-  expandHight: function(h) {
+  expandHight: function(height) {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_DYNAMIC) {
       self.saveExpandModeOrgSizeAndPos();
       var sizePos = self.getSelfSizePos();
-      if (sizePos.height >= h) {
+      if (sizePos.h >= height) {
         return;
-      } else if (document.documentElement.clientHeight <= h) {
-        h = document.documentElement.clientHeight;
+      } else if (document.documentElement.clientHeight <= height) {
+        height = document.documentElement.clientHeight;
       }
-      self.setSelfSizeH(h);
+      self.setSelfSizeH(height);
       sizePos = self.getSelfSizePos();
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
-        self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+        self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
       } else {
-        if (sizePos.winY2 > document.documentElement.clientHeight) {
-          if (document.documentElement.clientHeight < (h + self.options.posAdjY)) {
+        if (sizePos.y2 > document.documentElement.clientHeight) {
+          if (document.documentElement.clientHeight < (height + self.options.posAdjY)) {
             self.debugWindow.style.top = 0;
           } else {
-            self.debugWindow.style.top = (document.documentElement.clientHeight - h - self.options.posAdjY) + 'px';
+            self.debugWindow.style.top = (document.documentElement.clientHeight - height - self.options.posAdjY) + 'px';
           }
         }
       }
@@ -3039,7 +3039,7 @@ DebugJS.prototype = {
       self.logPanel.scrollTop = self.logPanel.scrollHeight;
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
         var sizePos = self.getSelfSizePos();
-        self.setWindowPosition(self.options.position, sizePos.width, sizePos.height);
+        self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
       }
     }
   },
@@ -3321,13 +3321,13 @@ DebugJS.prototype = {
 
   cmdSelf: function(args, tbl) {
     var self = DebugJS.self;
-    var sp = self.getSelfSizePos();
-    var str = 'width : ' + sp.width + '\n' +
-    'height: ' + sp.height + '\n' +
-    'winX1 : ' + sp.winX1 + '\n' +
-    'winY1 : ' + sp.winY1 + '\n' +
-    'winX2 : ' + sp.winX2 + '\n' +
-    'winY2 : ' + sp.winY2 + '\n';
+    var sizePos = self.getSelfSizePos();
+    var str = 'width : ' + sizePos.w + '\n' +
+    'height: ' + sizePos.h + '\n' +
+    'posX1 : ' + sizePos.x1 + '\n' +
+    'posY1 : ' + sizePos.y1 + '\n' +
+    'posX2 : ' + sizePos.x2 + '\n' +
+    'posY2 : ' + sizePos.y2 + '\n';
     DebugJS.log.mlt(str);
   },
 
