@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609050000';
+  this.v = '201609052110';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -28,7 +28,7 @@ var DebugJS = function() {
     'logColorD': '#ccc',
     'logColorI': '#9ef',
     'logColorW': '#fe0',
-    'logColorE': '#e55',
+    'logColorE': '#f66',
     'logColorS': '#fff',
     'clockColor': '#8f0',
     'timerColor': '#9ef',
@@ -225,13 +225,13 @@ DebugJS.STATE_SCRIPT = 0x200000;
 DebugJS.STATE_LOG_SUSPENDING = 0x800000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x1000000;
 
-DebugJS.LOG_TYPE_STANDARD = 0;
-DebugJS.LOG_TYPE_ERROR = 1;
-DebugJS.LOG_TYPE_WARNING = 2;
-DebugJS.LOG_TYPE_INFO = 3;
-DebugJS.LOG_TYPE_DEBUG = 4;
-DebugJS.LOG_TYPE_SYSTEM = 5;
-DebugJS.LOG_TYPE_MULTILINE = 6;
+DebugJS.LOG_TYPE_STANDARD = 0x1;
+DebugJS.LOG_TYPE_DEBUG = 0x2;
+DebugJS.LOG_TYPE_INFO = 0x4;
+DebugJS.LOG_TYPE_WARNING = 0x8;
+DebugJS.LOG_TYPE_ERROR = 0x10;
+DebugJS.LOG_TYPE_SYSTEM = 0x20;
+DebugJS.LOG_TYPE_MULTILINE = 0x40;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.DEBUG_WIN_EXPAND_W = 960;
@@ -2498,7 +2498,7 @@ DebugJS.prototype = {
       'display   : ' + computedStyle.display + '\n' +
       'position  : ' + computedStyle.position + '\n' +
       'z-index   : ' + computedStyle.zIndex + '\n' +
-      'float     : ' + computedStyle.float + ' / clear: ' + computedStyle.clear + '\n' +
+      'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
       'size      : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
