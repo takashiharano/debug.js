@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609052110';
+  this.v = '201609052150';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2463,13 +2463,42 @@ DebugJS.prototype = {
       var color16cnv = DebugJS.convRGB10to16(color10);
       var color16 = '#' + color16cnv.r + color16cnv.g + color16cnv.b;
 
-      var borderColor16 = '';
-      var borderColor = computedStyle.borderColor;
-      if (borderColor) {
-        var borderColor10 = borderColor.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-        var borderColor16cnv = DebugJS.convRGB10to16(borderColor10);
-        borderColor16 = '#' + borderColor16cnv.r + borderColor16cnv.g + borderColor16cnv.b;
+      var borderColorT16 = '';
+      var borderColorT = computedStyle.borderTopColor;
+      if (borderColorT) {
+        var borderColorT10 = borderColorT.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+        var borderColorT16cnv = DebugJS.convRGB10to16(borderColorT10);
+        borderColorT16 = '#' + borderColorT16cnv.r + borderColorT16cnv.g + borderColorT16cnv.b;
       }
+
+      var borderColorL16 = '';
+      var borderColorL = computedStyle.borderLeftColor;
+      if (borderColorL) {
+        var borderColorL10 = borderColorL.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+        var borderColorL16cnv = DebugJS.convRGB10to16(borderColorL10);
+        borderColorL16 = '#' + borderColorL16cnv.r + borderColorL16cnv.g + borderColorL16cnv.b;
+      }
+
+      var borderColorR16 = '';
+      var borderColorR = computedStyle.borderRightColor;
+      if (borderColorR) {
+        var borderColorR10 = borderColorR.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+        var borderColorR16cnv = DebugJS.convRGB10to16(borderColorR10);
+        borderColorR16 = '#' + borderColorR16cnv.r + borderColorR16cnv.g + borderColorR16cnv.b;
+      }
+
+      var borderColorB16 = '';
+      var borderColorB = computedStyle.borderBottomColor;
+      if (borderColorB) {
+        var borderColorB10 = borderColorB.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+        var borderColorB16cnv = DebugJS.convRGB10to16(borderColorB10);
+        borderColorB16 = '#' + borderColorB16cnv.r + borderColorB16cnv.g + borderColorB16cnv.b;
+      }
+
+      var borderT = 'top    = ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + computedStyle.borderTopColor + ' ' + borderColorT16 + ' <span style="background:' + borderColorT + ';width:6px;height:12px;display:inline-block;"> </span>';
+      var borderLRB = '            left   = ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + computedStyle.borderLeftColor + ' ' + borderColorL16 + ' <span style="background:' + borderColorL + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      '            right  = ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + computedStyle.borderRightColor + ' ' + borderColorR16 + ' <span style="background:' + borderColorR + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      '            bottom = ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + computedStyle.borderBottomColor + ' ' + borderColorB16 + ' <span style="background:' + borderColorB + ';width:6px;height:12px;display:inline-block;"> </span>';
 
       var allStyles = '';
       var LEADING_INDENT = '           ';
@@ -2502,13 +2531,13 @@ DebugJS.prototype = {
       'size      : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
-      'border    : ' + computedStyle.border + ' ' + borderColor16 + ' <span style="background:' + borderColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      'border    : ' + borderT + ' ' + self.createFoldingText(borderLRB, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE) +
       '<div class="' + self.id + '-separator"></div>' +
       'font      : size   = ' + computedStyle.fontSize + '\n' +
       '            family = ' + computedStyle.fontFamily + '\n' +
       '            weight = ' + computedStyle.fontWeight + '\n' +
       '            style  = ' + computedStyle.fontStyle + '\n' +
-      'color     : ' + color + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      'color     : ' + color + ' ' + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'location  : top    = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + computedStyle.top + ')\n' +
