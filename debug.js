@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609060000';
+  this.v = '201609070000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -62,6 +62,7 @@ var DebugJS = function() {
     'useTextChecker': true,
     'useScriptEditor': true,
     'useCommandLine': true,
+    'disableAllCommands': false,
     'disableAllFeatures': false,
     'target': null
   };
@@ -82,6 +83,7 @@ var DebugJS = function() {
   this.elmInspectionBtnPanel = null;
   this.elmInspectionPanel = null;
   this.elmInspectionPanelBody = null;
+  this.elmInfoShowHideStatus = {'allStyles': false, 'elBorder': false};
   this.prevElm = null;
   this.prevElmStyle = {};
   this.textCheckerBtnPanel = null;
@@ -173,14 +175,14 @@ var DebugJS = function() {
   this.savedFunc = null;
   this.status = 0;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
-  this.CMD_TBL = [
-    {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.'},
+  this.INT_CMD_TBL = [
+    {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
     {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
-    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status'},
+    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method', 'usage': 'get URL'},
-    {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list'},
-    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history'},
+    {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
@@ -189,11 +191,12 @@ var DebugJS = function() {
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {'cmd': 'self', 'fnc': this.cmdSelf, 'hidden': true},
+    {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
-    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info'}
+    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM}
   ];
-  this.cmdTblLen = this.CMD_TBL.length;
+  this.intCmdTblLen = this.INT_CMD_TBL.length;
+  this.CMD_TBL = [];
   this.options = null;
   this.setupDefaultOptions();
 };
@@ -232,6 +235,8 @@ DebugJS.LOG_TYPE_WARNING = 0x8;
 DebugJS.LOG_TYPE_ERROR = 0x10;
 DebugJS.LOG_TYPE_SYSTEM = 0x20;
 DebugJS.LOG_TYPE_MULTILINE = 0x40;
+DebugJS.CMD_ATTR_SYSTEM = 0x1;
+DebugJS.CMD_ATTR_HIDDEN = 0x2;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.DEBUG_WIN_EXPAND_W = 960;
@@ -352,6 +357,7 @@ DebugJS.prototype = {
     }
 
     self.initStatus(self.options);
+    self.initCommandTable();
 
     // Debug Window
     if (self.options.target == null) {
@@ -617,10 +623,6 @@ DebugJS.prototype = {
 
     styles['.' + self.id + '-showhide-button:hover'] = {
       'cursor': 'pointer'
-    };
-
-    styles['.' + self.id + '-showhide-body'] = {
-      'display': 'none'
     };
 
     styles['.' + self.id + '-txt-text'] = {
@@ -1115,6 +1117,21 @@ DebugJS.prototype = {
     if (self.options.useMsgDisplay) {
       self.updateMsgPanel();
     }
+  },
+
+  initCommandTable: function() {
+    var self = DebugJS.self;
+    self.CMD_TBL = [];
+    for (var i = 0; i < self.INT_CMD_TBL.length; i++) {
+      if (self.options.disableAllCommands) {
+        if (self.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_SYSTEM) {
+          self.CMD_TBL.push(self.INT_CMD_TBL[i]);
+        }
+      } else {
+        self.CMD_TBL.push(self.INT_CMD_TBL[i]);
+      }
+    }
+    self.intCmdTblLen = self.CMD_TBL.length;
   },
 
   setWindowPosition: function(pos, dbgWinWidth, dbgWinHeight) {
@@ -2307,14 +2324,20 @@ DebugJS.prototype = {
       button.innerText = '▼';
       partialBody.style.display = 'none';
       body.style.display = 'block';
+      if (self.elmInfoShowHideStatus[name] != undefined) {
+        self.elmInfoShowHideStatus[name] = true;
+      }
     } else {
       button.innerText = '▶';
       partialBody.style.display = 'inline';
       body.style.display = 'none';
+      if (self.elmInfoShowHideStatus[name] != undefined) {
+        self.elmInfoShowHideStatus[name] = false;
+      }
     }
   },
 
-  createFoldingText: function(obj, name, omit, lineMaxLen, style) {
+  createFoldingText: function(obj, name, omit, lineMaxLen, style, show) {
     var self = DebugJS.self;
     var DEFAULT_MAX_LEN = 50;
     var foldingText;
@@ -2325,12 +2348,20 @@ DebugJS.prototype = {
     if (!obj) {
       foldingText = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
     } else {
+      var btn = '▶';
+      var partDisplay = 'inline';
+      var bodyDisplay = 'none';
+      if (show) {
+        btn = '▼';
+        partDisplay = 'none';
+        bodyDisplay = 'block';
+      }
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
         partial = self.trimDownText(foldingText, lineMaxLen, omit, style);
-        foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">▶</span> ' +
-        '<span id="' + self.id + '-' + name + '__partial-body">' + partial + '</span>' +
-        '<div class="' + self.id + '-showhide-body" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
+        foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
+        '<span id="' + self.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
+        '<div style="display:' + bodyDisplay + ';" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
       } else {
         foldingText = obj;
       }
@@ -2528,7 +2559,7 @@ DebugJS.prototype = {
           }
         }
       }
-      allStylesFolding = self.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE);
+      allStylesFolding = self.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['allStyles']);
 
       html += '<span style="color:#8f0;display:inline-block;height:14px;">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
@@ -2543,7 +2574,7 @@ DebugJS.prototype = {
       'size      : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
-      'border    : ' + borderT + ' ' + self.createFoldingText(borderLRB, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE) +
+      'border    : ' + borderT + ' ' + self.createFoldingText(borderLRB, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['elBorder']) +
       '<div class="' + self.id + '-separator"></div>' +
       'font      : size   = ' + computedStyle.fontSize + '\n' +
       '            family = ' + computedStyle.fontFamily + '\n' +
@@ -3135,6 +3166,9 @@ DebugJS.prototype = {
         break;
       }
     }
+    if (self.options.disableAllCommands) {
+      return;
+    }
     if (!found) {found = self.cmdRadixConv(cl);}
     if ((!found) && (cl.match(/^http/))) {
       DebugJS.httpRequest(cl, 'GET');
@@ -3208,9 +3242,9 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var str = 'Available Commands:\n<table>';
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
-      if (!self.CMD_TBL[i].hidden) {
-        if (i == self.cmdTblLen) {
-          str += '<tr><td colspan="2">--- extension command ---</td></tr>';
+      if (!(self.CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
+        if (i == self.intCmdTblLen) {
+          str += '<tr><td colspan="2">---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
         }
         str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
       }
@@ -3407,11 +3441,9 @@ DebugJS.prototype = {
 
   initExtention: function() {
     var self = DebugJS.self;
-    if (self.CMD_TBL.length == self.cmdTblLen) {
-      if (DebugJS.x.CMD_TBL) {
-        for (var i = 0; i < DebugJS.x.CMD_TBL.length; i++) {
-          self.CMD_TBL.push(DebugJS.x.CMD_TBL[i]);
-        }
+    if (DebugJS.x.CMD_TBL) {
+      for (var i = 0; i < DebugJS.x.CMD_TBL.length; i++) {
+        self.CMD_TBL.push(DebugJS.x.CMD_TBL[i]);
       }
     }
   }

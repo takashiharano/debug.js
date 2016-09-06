@@ -101,7 +101,7 @@ window.onload = function() {
       'ctrl': false,
       'shift': true
     },
-    'position': 'c'
+    'position': 'c',
     //'position': 'n'
     //'position': 'ne'
     //'position': 'e'
@@ -110,6 +110,7 @@ window.onload = function() {
     //'position': 'sw'
     //'position': 'w'
     //'position': 'nw'
+    //'disableAllCommands': true
   };
   //DebugJS.init(options1);
 
@@ -631,7 +632,7 @@ DebugJS.init(options);
   <tr>
     <td class="name">logColorE</td>
     <td>Error log color</td>
-    <td>'#e55'</td>
+    <td>'#f66'</td>
   </tr>
 
   <tr>
@@ -839,6 +840,14 @@ DebugJS.init(options);
     <td class="name">useCommandLine</td>
     <td>Enable command-line</td>
     <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">disableAllCommands</td>
+    <td>
+      Disable all internal function commands
+    </td>
+    <td>false</td>
   </tr>
 
   <tr>
