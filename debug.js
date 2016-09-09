@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609070000';
+  this.v = '201609100119';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -176,6 +176,7 @@ var DebugJS = function() {
   this.status = 0;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
+    {'cmd': 'base64', 'fnc': this.cmdBase64, 'desc': 'Encodes/Decodes Base64 string', 'usage': 'base64 [-e|-d] string'},
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
     {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
@@ -1729,6 +1730,7 @@ DebugJS.prototype = {
             self.cmdHistoryIdx--;
           }
           self.cmdLine.value = cmds[self.cmdHistoryIdx];
+          e.preventDefault();
         }
         break;
 
@@ -3148,57 +3150,95 @@ DebugJS.prototype = {
     }
   },
 
-  _execCmd: function(cl, echo) {
-    if (echo) DebugJS.log.s(cl);
+  _execCmd: function(str, echo) {
+    if (echo) DebugJS.log.s(str);
     var self = DebugJS.self;
-    wkCL = cl.replace(/\s{2,}/g, ' ');
-    var cmds = wkCL.match(/([^\s]{1,})\s(.*)/);
-    var cmd = wkCL, args = '';
-    if (cmds != null) {
+    var wkCmd = str;
+    var cmd, arg;
+
+    var cmds = wkCmd.match(/([^\s]{1,})\s(.*)/);
+    if (cmds == null) {
+      cmd = DebugJS.omitLeadingWhiteSpace(str);
+      arg = '';
+    } else {
       cmd = cmds[1];
-      args = cmds[2];
+      arg = cmds[2];
     }
+
     var found = false;
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
       if (cmd == self.CMD_TBL[i].cmd) {
         found = true;
-        self.CMD_TBL[i].fnc(args, self.CMD_TBL[i]);
+        self.CMD_TBL[i].fnc(arg, self.CMD_TBL[i]);
         break;
       }
     }
+
     if (self.options.disableAllCommands) {
       return;
     }
-    if (!found) {found = self.cmdRadixConv(cl);}
-    if ((!found) && (cl.match(/^http/))) {
-      DebugJS.httpRequest(cl, 'GET');
+
+    if (!found) {found = self.cmdRadixConv(str);}
+    if ((!found) && (str.match(/^http/))) {
+      DebugJS.httpRequest(str, 'GET');
       found = true;
     }
-    if (!found) {found = self.cmdTimeCalc(cl);}
+    if (!found) {found = self.cmdTimeCalc(str);}
     if (!found) {
-      self.execCode(cl);
+      self.execCode(str);
     }
   },
 
-  cmdCls: function(args, tbl) {
+  cmdBase64: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg1 = DebugJS.omitLeadingWhiteSpace(arg);
+    var args = arg1.match(/(-d|-e)?\s(.*)/);
+    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
+    if ((argNoWhiteSpace == '') || (((argNoWhiteSpace == '-d') || (argNoWhiteSpace == '-e')) && (args == null))) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      try {
+        var result;
+        if (args == null) {
+          result = DebugJS.encodeBase64(arg);
+        } else if (args[1] == '-d') {
+          result = DebugJS.decodeBase64(args[2]);
+          if ((result.match(/^\s/)) || (result.match(/\s$/))) {
+            result = DebugJS.encloseString(result);
+          }
+        } else if (args[1] == '-e') {
+          result = DebugJS.encodeBase64(args[2]);
+        } else {
+          result = DebugJS.encodeBase64(arg);
+        }
+        DebugJS.log(result);
+      } catch (e) {
+        DebugJS.log.e(e);
+      }
+    }
+  },
+
+  cmdCls: function(arg, tbl) {
     var self = DebugJS.self;
     self.clearMessage();
   },
 
-  cmdElements: function(args, tbl) {
-    if ((args == '-h') || (args == '--help')) {
+  cmdElements: function(arg, tbl) {
+    arg = DebugJS.omitLeadingWhiteSpace(arg);
+    arg = DebugJS.omitTrailingWhiteSpace(arg);
+    if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.countElements(args, true);
+      DebugJS.countElements(arg, true);
     }
   },
 
-  cmdExecute: function(args, tbl) {
+  cmdExecute: function(arg, tbl) {
     var self = DebugJS.self;
     self.execScript();
   },
 
-  cmdExit: function(args, tbl) {
+  cmdExit: function(arg, tbl) {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_SYSTEM_INFO) {
       self.disableSystemInfo();
@@ -3230,15 +3270,15 @@ DebugJS.prototype = {
     self.clearMessage();
   },
 
-  cmdGet: function(args, tbl) {
-    if (args == '') {
+  cmdGet: function(arg, tbl) {
+    if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.httpRequest(args, 'GET');
+      DebugJS.httpRequest(arg, 'GET');
     }
   },
 
-  cmdHelp: function(args, tbl) {
+  cmdHelp: function(arg, tbl) {
     var self = DebugJS.self;
     var str = 'Available Commands:\n<table>';
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
@@ -3253,7 +3293,7 @@ DebugJS.prototype = {
     DebugJS.log.mlt(str);
   },
 
-  cmdHistory: function(args, tbl) {
+  cmdHistory: function(arg, tbl) {
     var self = DebugJS.self;
     var buf = self.cmdHistoryBuf.getAll();
     var str = '';
@@ -3263,15 +3303,15 @@ DebugJS.prototype = {
     DebugJS.log.mlt(str);
   },
 
-  cmdJson: function(args, tbl) {
-    if (args == '') {
+  cmdJson: function(arg, tbl) {
+    if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.execCmdJson(args);
+      DebugJS.execCmdJson(arg);
     }
   },
 
-  cmdJquery: function(args, tbl) {
+  cmdJquery: function(arg, tbl) {
     if (typeof jQuery == 'undefined') {
       DebugJS.log.w('jQuery is not loaded.');
     } else {
@@ -3279,55 +3319,57 @@ DebugJS.prototype = {
     }
   },
 
-  cmdLed: function(args, tbl) {
+  cmdLed: function(arg, tbl) {
     var self = DebugJS.self;
-    if (args == '') {
+    if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      self.setLed(args);
+      self.setLed(arg);
     }
   },
 
-  cmdMsg: function(args, tbl) {
+  cmdMsg: function(arg, tbl) {
     var self = DebugJS.self;
-    self.setMsg(args);
+    self.setMsg(arg);
   },
 
-  cmdP: function(args, tbl) {
-    if (args == '') {
+  cmdP: function(arg, tbl) {
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.execCmdP(args);
+      DebugJS.execCmdP(arg);
     }
   },
 
-  cmdPost: function(args, tbl) {
-    if (args == '') {
+  cmdPost: function(arg, tbl) {
+    if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.httpRequest(args, 'POST');
+      DebugJS.httpRequest(arg, 'POST');
     }
   },
 
-  cmdRandom: function(args, tbl) {
-    var a = args.split(' ');
-    if (a == null) {
+  cmdRandom: function(arg, tbl) {
+    arg = arg.replace(/\s{2,}/g, ' ');
+    var args = arg.split(' ');
+    if (args == null) {
       DebugJS.printUsage(tbl.usage);
     } else {
-      var type = a[0] || DebugJS.RANDOM_TYPE_NUM;
+      var type = args[0] || DebugJS.RANDOM_TYPE_NUM;
       var min, max;
 
-      if (!a[0]) {
+      if (!args[0]) {
         type = DebugJS.RANDOM_TYPE_NUM;
       } else {
-        if ((a[0] == DebugJS.RANDOM_TYPE_NUM) || (a[0] == DebugJS.RANDOM_TYPE_STR)) {
-          type = a[0];
-          min = a[1];
-          max = a[2];
-        } else if (a[0].match(/[0-9]{1,}/)) {
+        if ((args[0] == DebugJS.RANDOM_TYPE_NUM) || (args[0] == DebugJS.RANDOM_TYPE_STR)) {
+          type = args[0];
+          min = args[1];
+          max = args[2];
+        } else if (args[0].match(/[0-9]{1,}/)) {
           type = DebugJS.RANDOM_TYPE_NUM;
-          min = a[0];
-          max = a[1];
+          min = args[0];
+          max = args[1];
         } else {
           DebugJS.printUsage(tbl.usage);
         }
@@ -3339,6 +3381,8 @@ DebugJS.prototype = {
   },
 
   cmdRadixConv: function(val) {
+    val = DebugJS.omitLeadingWhiteSpace(val);
+    val = DebugJS.omitTrailingWhiteSpace(val);
     if (val.match(/^\-{0,1}[0-9]+$/)) {
       DebugJS.convRadixFromDEC(val);
       return true;
@@ -3353,7 +3397,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdSelf: function(args, tbl) {
+  cmdSelf: function(arg, tbl) {
     var self = DebugJS.self;
     var sizePos = self.getSelfSizePos();
     var str = 'width : ' + sizePos.w + '\n' +
@@ -3365,12 +3409,13 @@ DebugJS.prototype = {
     DebugJS.log.mlt(str);
   },
 
-  cmdTimeCalc: function(args) {
+  cmdTimeCalc: function(arg) {
     var self = DebugJS.self;
-    if (!args.match(/[\d :\.\+]{1,}/)) {
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (!arg.match(/[\d :\.\+]{1,}/)) {
       return false;
     }
-    var arg = args.replace(/\s/g, '');
+    var arg = arg.replace(/\s/g, '');
     var op;
     if (arg.indexOf('-') >= 0) {
       op = '-';
@@ -3396,19 +3441,23 @@ DebugJS.prototype = {
     return true;
   },
 
-  cmdRGB: function(args, tbl) {
-    if (args == '') {
+  cmdRGB: function(arg, tbl) {
+    arg = DebugJS.omitLeadingWhiteSpace(arg);
+    arg = DebugJS.omitTrailingWhiteSpace(arg);
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.convRGB(args);
+      DebugJS.convRGB(arg);
     }
   },
 
-  cmdTime: function(args, tbl) {
-    if (args == '') {
+  cmdTime: function(arg, tbl) {
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      var a = args.match(/([^\s]{1,})\s{0,}(.*)/);
+      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
       if (a == null) {
         DebugJS.printUsage(tbl.usage);
       } else {
@@ -3434,7 +3483,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdV: function(args, tbl) {
+  cmdV: function(arg, tbl) {
     var self = DebugJS.self;
     DebugJS.log(self.v);
   },
@@ -3520,6 +3569,22 @@ DebugJS.RingBuffer.prototype = {
   }
 };
 
+DebugJS.omitAllWhiteSpace = function(str) {
+  return str.replace(/\s/g, '');
+};
+
+DebugJS.omitLeadingWhiteSpace = function(str) {
+  return str.replace(/^\s{1,}/, '');
+};
+
+DebugJS.omitTrailingWhiteSpace = function(str) {
+  return str.replace(/\s+$/, '');
+};
+
+DebugJS.encloseString = function(str) {
+  return '<span style="color:#0ff;">"</span>' + str + '<span style="color:#0ff;">"</span>';
+};
+
 DebugJS.getDateTime = function(dt) {
   var yyyy = dt.getFullYear();
   var mm = dt.getMonth() + 1;
@@ -3589,11 +3654,11 @@ DebugJS.checkMetaKey = function(e) {
   return metaKey;
 };
 
-DebugJS.execCmdP = function(args) {
-  var objs = args.split(' ');
-  for (var i = 0, len = objs.length; i < len; i++) {
-    if (objs[i] == '') continue;
-    var cmd = 'DebugJS.buf="' + objs[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + objs[i] + ');DebugJS.log.mlt(DebugJS.buf);';
+DebugJS.execCmdP = function(arg) {
+  var args = arg.split(' ');
+  for (var i = 0, len = args.length; i < len; i++) {
+    if (args[i] == '') continue;
+    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
     try {
       eval(cmd);
     } catch (e) {
@@ -3962,6 +4027,30 @@ DebugJS.formatHex = function(v16, prefix, upper) {
     hex = '0x' + hex;
   }
   return hex;
+};
+
+DebugJS.encodeBase64 = function(str) {
+  var encoded = '';
+  try {
+    encoded = btoa(str);
+  } catch (e) {
+    encoded = btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+      return String.fromCharCode('0x' + p1);
+    }));
+  }
+  return encoded;
+};
+
+DebugJS.decodeBase64 = function(str) {
+  var decoded = '';
+  try {
+    decoded = decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  } catch (e) {
+    decoded = atob(str);
+  }
+  return decoded;
 };
 
 DebugJS.convertTimeJson = function(t) {

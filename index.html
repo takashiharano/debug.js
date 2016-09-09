@@ -1220,6 +1220,29 @@ debug.js will not use aliases in case that those are already defined.
   </tr>
 
   <tr>
+    <td class="name">base64</td>
+    <td>
+      arg1: type<br>
+      arg2: string
+    </td>
+    <td>
+     Encodes / Decodes Base64 string.
+<pre class="eg">
+type: -e encode<span class="annotation">(default option)</span>
+      -d decode
+
+$ base64 -e 
+-&gt; YWJjZGVmZw==
+
+$ base64 -d YWJjZGVmZw==
+-&gt; abcdefg
+</pre>
+
+    </td>
+  </tr>
+
+
+  <tr>
     <td class="name">cls</td>
     <td></td>
     <td>Clear log message.</td>
