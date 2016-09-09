@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609100119';
+  this.v = '201609100217';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -365,11 +365,25 @@ DebugJS.prototype = {
       self.id = self.DEFAULT_ELM_ID;
       self.debugWindow = document.createElement('div');
       self.debugWindow.id = self.id;
+      self.debugWindow.style.position = 'fixed';
+      self.debugWindow.style.zIndex = 0x7fffffff;
+      self.debugWindow.style.width = self.options.width + 'px';
+      self.debugWindow.style.boxShadow = DebugJS.WINDOW_SHADOW + 'px ' + DebugJS.WINDOW_SHADOW + 'px 10px rgba(0,0,0,.3)';
       self.bodyEl.appendChild(self.debugWindow);
     } else {
       self.id = options.target;
       self.debugWindow = document.getElementById(self.id);
+      self.debugWindow.style.position = 'relative';
     }
+    self.debugWindow.style.display = 'block';
+    self.debugWindow.style.padding = DebugJS.WINDOW_BORDER + 'px';
+    self.debugWindow.style.lineHeight = '1em';
+    self.debugWindow.style.boxSizing = 'content-box';
+    self.debugWindow.style.border = self.options.border;
+    self.debugWindow.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
+    self.debugWindow.style.color = self.options.fontColor;
+    self.debugWindow.style.fontSize = self.options.fontSize + 'px',
+    self.debugWindow.style.fontFamily = self.options.fontFamily;
 
     // Buffer
     if ((!self.msgBuf) || ((self.msgBuf) && (self.msgBuf.getSize() != self.options.bufsize))) {
@@ -653,27 +667,10 @@ DebugJS.prototype = {
     };
 
     self.applyStyles(styles);
-
-    self.debugWindow.style.display = 'block';
-    self.debugWindow.style.position = 'relative';
-    self.debugWindow.style.padding = DebugJS.WINDOW_BORDER + 'px';
-    self.debugWindow.style.lineHeight = '1em';
-    self.debugWindow.style.boxSizing = 'content-box';
-    self.debugWindow.style.border = self.options.border;
-    self.debugWindow.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
-    self.debugWindow.style.color = self.options.fontColor;
-    self.debugWindow.style.fontSize = self.options.fontSize + 'px',
-    self.debugWindow.style.fontFamily = self.options.fontFamily;
-
     self.initDebugWindow();
     self.setupEventHandler();
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      self.debugWindow.style.position = 'fixed';
-      self.debugWindow.style.zIndex = 0x7fffffff;
-      self.debugWindow.style.width = self.options.width + 'px';
-      self.debugWindow.style.boxShadow = DebugJS.WINDOW_SHADOW + 'px ' + DebugJS.WINDOW_SHADOW + 'px 10px rgba(0,0,0,.3)';
-
       self.setupMove();
 
       // move to initial window position
