@@ -180,6 +180,12 @@ window.onload = function() {
   };
   //DebugJS.init(options6);
 
+  var options7 = {
+    //'disableAllFeatures': true,
+    'kioskMode': true
+  };
+  //DebugJS.init(options7);
+
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
 
@@ -840,6 +846,14 @@ DebugJS.init(options);
     <td class="name">useCommandLine</td>
     <td>Enable command-line</td>
     <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">kioskMode</td>
+    <td>
+      Make the debugger window go full screen
+    </td>
+    <td>false</td>
   </tr>
 
   <tr>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609100217';
+  this.v = '201609102239';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -62,6 +62,7 @@ var DebugJS = function() {
     'useTextChecker': true,
     'useScriptEditor': true,
     'useCommandLine': true,
+    'kioskMode': false,
     'disableAllCommands': false,
     'disableAllFeatures': false,
     'target': null
@@ -219,15 +220,18 @@ DebugJS.STATE_RESIZING_E = 0x800;
 DebugJS.STATE_RESIZING_S = 0x1000;
 DebugJS.STATE_RESIZING_W = 0x2000;
 DebugJS.STATE_RESIZING_ALL = DebugJS.STATE_RESIZING | DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E | DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
-DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x4000;
-DebugJS.STATE_MEASURE = 0x10000;
-DebugJS.STATE_MEASURING = 0x20000;
-DebugJS.STATE_SYSTEM_INFO = 0x40000;
-DebugJS.STATE_ELEMENT_INSPECTING = 0x80000;
-DebugJS.STATE_TEXT_CHECKING = 0x100000;
-DebugJS.STATE_SCRIPT = 0x200000;
-DebugJS.STATE_LOG_SUSPENDING = 0x800000;
-DebugJS.STATE_AUTO_POSITION_ADJUST = 0x1000000;
+DebugJS.STATE_WINDOW_SIZE_EXPANDED = 0x10000;
+DebugJS.STATE_WINDOW_SIZE_MAX_W = 0x20000;
+DebugJS.STATE_WINDOW_SIZE_MAX_H = 0x40000;
+DebugJS.STATE_WINDOW_SIZE_MAX = DebugJS.STATE_WINDOW_SIZE_MAX_W | DebugJS.STATE_WINDOW_SIZE_MAX_H;
+DebugJS.STATE_MEASURE = 0x100000;
+DebugJS.STATE_MEASURING = 0x200000;
+DebugJS.STATE_SYSTEM_INFO = 0x400000;
+DebugJS.STATE_ELEMENT_INSPECTING = 0x800000;
+DebugJS.STATE_TEXT_CHECKING = 0x1000000;
+DebugJS.STATE_SCRIPT = 0x2000000;
+DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
+DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
 
 DebugJS.LOG_TYPE_STANDARD = 0x1;
 DebugJS.LOG_TYPE_DEBUG = 0x2;
@@ -370,6 +374,10 @@ DebugJS.prototype = {
       self.debugWindow.style.width = self.options.width + 'px';
       self.debugWindow.style.boxShadow = DebugJS.WINDOW_SHADOW + 'px ' + DebugJS.WINDOW_SHADOW + 'px 10px rgba(0,0,0,.3)';
       self.bodyEl.appendChild(self.debugWindow);
+
+      if (self.options.kioskMode) {
+        self.setupKioskMode();
+      }
     } else {
       self.id = options.target;
       self.debugWindow = document.getElementById(self.id);
@@ -671,15 +679,19 @@ DebugJS.prototype = {
     self.setupEventHandler();
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      self.setupMove();
+      if (self.options.kioskMode) {
+        self.cmdLine.focus();
+      } else {
+        self.setupMove();
 
-      // move to initial window position
-      self.initWidth = self.debugWindow.offsetWidth;
-      self.initHeight = self.debugWindow.offsetHeight;
-      self.resetDebugWindowSizePos();
+        // move to initial window position
+        self.initWidth = self.debugWindow.offsetWidth;
+        self.initHeight = self.debugWindow.offsetHeight;
+        self.resetDebugWindowSizePos();
 
-      if (!(self.status & DebugJS.STATE_VISIBLE)) {
-        self.debugWindow.style.display = 'none';
+        if (!(self.status & DebugJS.STATE_VISIBLE)) {
+          self.debugWindow.style.display = 'none';
+        }
       }
     } else {
       self.initWidth = self.debugWindow.offsetWidth - DebugJS.WINDOW_ADJUST;
@@ -743,6 +755,25 @@ DebugJS.prototype = {
     }
     if (self.options.resizable) self.status |= DebugJS.STATE_RESIZABLE;
     if (self.options.useClock) self.status |= DebugJS.STATE_SHOW_CLOCK;
+  },
+
+  setupKioskMode: function() {
+    var self = DebugJS.self;
+    self.debugWindow.style.top = 0;
+    self.debugWindow.style.left = 0;
+    self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_W;
+    self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
+    self.debugWindow.style.width = document.documentElement.clientWidth + 'px';
+    self.debugWindow.style.height = document.documentElement.clientHeight + 'px';
+
+    self.options.togglableShowHide = false;
+    self.options.usePinButton = false;
+    self.options.useWindowControlButton = false;
+    self.options.useScreenMeasure = false;
+    self.options.useElementInfo = false;
+
+    self.status |= DebugJS.STATE_VISIBLE;
+    self.status &= ~DebugJS.STATE_RESIZABLE;
   },
 
   disableAllFeatures: function() {
@@ -1340,7 +1371,7 @@ DebugJS.prototype = {
     if (!self.winCtrlBtnPanel) return;
     var fn = 'DebugJS.self.expandDebugWindow()';
     var btn = '□';
-    if (self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) {
+    if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H)) {
       fn = 'DebugJS.self.restoreDebugWindow()';
       btn = '❐';
     }
@@ -1440,6 +1471,7 @@ DebugJS.prototype = {
     self.clickedPosY = e.clientY;
     self.saveSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+    self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
     self.updateWinCtrlBtnPanel();
   },
 
@@ -1805,9 +1837,19 @@ DebugJS.prototype = {
     self.updateWindowSizePanel();
     self.updateClientSizePanel();
     self.updateBodySizePanel();
-    if ((self.status & DebugJS.STATE_VISIBLE) && (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST)) {
-      var sizePos = self.getSelfSizePos();
-      self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
+    if (self.status & DebugJS.STATE_VISIBLE) {
+      if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
+        var sizePos = self.getSelfSizePos();
+        self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
+      } else {
+        if (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) {
+          self.debugWindow.style.width = document.documentElement.clientWidth + 'px';
+        }
+        if (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H) {
+          self.debugWindow.style.height = document.documentElement.clientHeight + 'px';
+        }
+        self.resizeMainHeight();
+      }
     }
   },
 
@@ -1907,21 +1949,26 @@ DebugJS.prototype = {
     self.saveSizeAndPos();
     var clientWidth = document.documentElement.clientWidth;
     var clientHeight = document.documentElement.clientHeight;
+    var expandThresholdW = document.documentElement.clientWidth * 0.6;
+    var expandThresholdH = document.documentElement.clientHeight * 0.6;
     var w = 0;
     var h = 0;
     var t = 0;
     var l = 0;
-    if ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) || (sizePos.w > DebugJS.DEBUG_WIN_EXPAND_W)) {
+    if ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) || (sizePos.w > expandThresholdW)) {
       w = clientWidth;
-      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > DebugJS.DEBUG_WIN_EXPAND_H)) {
+      self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_W;
+      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > expandThresholdH)) {
         h = clientHeight;
+        self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
       } else {
         t = -1;
       }
     } else {
-      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > DebugJS.DEBUG_WIN_EXPAND_H)) {
+      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > expandThresholdH)) {
         h = clientHeight;
-        if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.w < DebugJS.DEBUG_WIN_EXPAND_W)) {
+        self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
+        if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.w < expandThresholdW)) {
           l = -1;
         }
       } else {
@@ -1937,7 +1984,9 @@ DebugJS.prototype = {
     if (h > 0) self.debugWindow.style.height = h + 'px';
     self.resizeMainHeight();
     self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
-    self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+    if ((w != clientWidth) && (h != clientHeight)) {
+      self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+    }
   },
 
   restoreDebugWindow: function() {
@@ -1949,6 +1998,7 @@ DebugJS.prototype = {
     self.resizeMainHeight();
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+    self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
   },
 
   resetDebugWindowSizePos: function() {
@@ -1960,6 +2010,7 @@ DebugJS.prototype = {
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.saveExpandModeOrgSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+    self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
     if (self.status & DebugJS.STATE_DRAGGABLE) {
       self.status |= DebugJS.STATE_AUTO_POSITION_ADJUST;
     }
@@ -2443,7 +2494,6 @@ DebugJS.prototype = {
       self.expandHight(windowExpandHeight);
     }
     self.updateElmInspectionBtnPanel();
-    self.bodyEl.style.cursor = 'zoom-in';
   },
 
   disableElmInspection: function() {
@@ -2463,7 +2513,6 @@ DebugJS.prototype = {
     self.updatePrevElm(null);
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
     self.updateElmInspectionBtnPanel();
-    self.bodyEl.style.cursor = 'auto';
     self.resetExpandedHeight();
   },
 
@@ -3261,7 +3310,9 @@ DebugJS.prototype = {
       if (self.options.usePinButton) {
         self.enableDraggable();
       }
-      self.resetDebugWindowSizePos();
+      if (!self.options.kioskMode) {
+        self.resetDebugWindowSizePos();
+      }
     }
     self.closeDebugWindow();
     self.clearMessage();
