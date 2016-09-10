@@ -1,14 +1,14 @@
-DebugJS.x.cmdAbc = function(args, tbl) {
+DebugJS.x.cmdAbc = function(arg, tbl) {
   DebugJS.log('Hello!');
 };
 
-DebugJS.x.cmdXyz = function(args, tbl) {
-  if (args == '') {
+DebugJS.x.cmdXyz = function(arg, tbl) {
+  if (arg == '') {
     DebugJS.printUsage(tbl.usage);
   } else {
-    var a = args.split(' ');
-    for (var i = 0; i < a.length; i++) {
-      DebugJS.log('arg' + i + ' = ' + a[i]);
+    var args = arg.split(' ');
+    for (var i = 0; i < args.length; i++) {
+      DebugJS.log('arg' + i + ' = ' + args[i]);
     }
   }
 };
