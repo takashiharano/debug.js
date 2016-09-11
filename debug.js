@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609102239';
+  this.v = '201609120021';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -169,6 +169,7 @@ var DebugJS = function() {
   this.initHeight = 0;
   this.orgSizePos = {'w': 0, 'h': 0, 't': 0, 'l': 0};
   this.expandModeOrg = {'w': 0, 'h': 0, 't': 0, 'l': 0};
+  this.windowExpandHeight = DebugJS.DEBUG_WIN_EXPAND_H * this.DEFAULT_OPTIONS.zoom;
   this.clickedPosX = 0;
   this.clickedPosY = 0;
   this.prevOffsetTop = 0;
@@ -240,8 +241,10 @@ DebugJS.LOG_TYPE_WARNING = 0x8;
 DebugJS.LOG_TYPE_ERROR = 0x10;
 DebugJS.LOG_TYPE_SYSTEM = 0x20;
 DebugJS.LOG_TYPE_MULTILINE = 0x40;
+
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
 DebugJS.CMD_ATTR_HIDDEN = 0x2;
+
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.DEBUG_WIN_EXPAND_W = 960;
@@ -294,6 +297,8 @@ DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
+DebugJS.SYSTEM_INFO_FULL_OVERLAY = false;
+DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 '// performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
@@ -697,6 +702,7 @@ DebugJS.prototype = {
       self.initWidth = self.debugWindow.offsetWidth - DebugJS.WINDOW_ADJUST;
       self.initHeight = self.debugWindow.offsetHeight - DebugJS.WINDOW_ADJUST;
     }
+    self.windowExpandHeight = DebugJS.DEBUG_WIN_EXPAND_H * self.options.zoom;
     self.initExtention();
     self.status |= DebugJS.STATE_INITIALIZED;
     self.printLogMessage();
@@ -1842,13 +1848,7 @@ DebugJS.prototype = {
         var sizePos = self.getSelfSizePos();
         self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
       } else {
-        if (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) {
-          self.debugWindow.style.width = document.documentElement.clientWidth + 'px';
-        }
-        if (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H) {
-          self.debugWindow.style.height = document.documentElement.clientHeight + 'px';
-        }
-        self.resizeMainHeight();
+        self.adjustWindowMax();
       }
     }
   },
@@ -1978,6 +1978,16 @@ DebugJS.prototype = {
         t = clientHeight / 2 - h / 2;
       }
     }
+
+    if ((sizePos.w >= DebugJS.DEBUG_WIN_EXPAND_W) && (sizePos.h >= DebugJS.DEBUG_WIN_EXPAND_H)) {
+      w = clientWidth;
+      h = clientHeight;
+      t = 0;
+      l = 0;
+      self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_W;
+      self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
+    }
+
     if (t >= 0) self.debugWindow.style.top = t + 'px';
     if (l >= 0) self.debugWindow.style.left = l + 'px';
     if (w > 0) self.debugWindow.style.width = w + 'px';
@@ -1987,6 +1997,17 @@ DebugJS.prototype = {
     if ((w != clientWidth) && (h != clientHeight)) {
       self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     }
+  },
+
+  adjustWindowMax: function() {
+    var self = DebugJS.self;
+    if (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) {
+      self.debugWindow.style.width = document.documentElement.clientWidth + 'px';
+    }
+    if (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H) {
+      self.debugWindow.style.height = document.documentElement.clientHeight + 'px';
+    }
+    self.resizeMainHeight();
   },
 
   restoreDebugWindow: function() {
@@ -2045,6 +2066,8 @@ DebugJS.prototype = {
     if ((self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) ||
        ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow()))) {
       self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
+    } else {
+      self.adjustWindowMax();
     }
   },
 
@@ -2171,9 +2194,15 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_SYSTEM_INFO;
     if (self.sysInfoPanel == null) {
       self.sysInfoPanel = document.createElement('div');
-      self.sysInfoPanel.className = self.id + '-overlay-panel-full';
       self.sysInfoPanel.innerHTML = '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>';
-      self.addOverlayPanelFull(self.sysInfoPanel);
+      if (DebugJS.SYSTEM_INFO_FULL_OVERLAY) {
+        self.sysInfoPanel.className = self.id + '-overlay-panel-full';
+        self.addOverlayPanelFull(self.sysInfoPanel);
+      } else {
+        self.sysInfoPanel.className = self.id + '-overlay-panel';
+        self.addOverlayPanel(self.sysInfoPanel);
+        self.expandHightIfNeeded(self.windowExpandHeight);
+      }
 
       self.sysTimePanel = document.createElement('div');
       self.sysTimePanel.style.marginRight = '4px';
@@ -2211,7 +2240,12 @@ DebugJS.prototype = {
   disableSystemInfo: function() {
     var self = DebugJS.self;
     if (self.sysInfoPanel != null) {
-      self.removeOverlayPanelFull(self.sysInfoPanel);
+      if (DebugJS.SYSTEM_INFO_FULL_OVERLAY) {
+        self.removeOverlayPanelFull(self.sysInfoPanel);
+      } else {
+        self.removeOverlayPanel(self.sysInfoPanel);
+        self.resetExpandedHeightIfNeeded();
+      }
       self.sysInfoPanel = null;
     }
     self.status &= ~DebugJS.STATE_SYSTEM_INFO;
@@ -2338,6 +2372,9 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> onkeyup</span>      : ' + docOnkeyup + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> onselectstart</span>: ' + docOnselectstart + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> oncontextmenu</span>: ' + docOncontextmenu + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> location</span>  : ' + self.createFoldingText(document.location, 'docLocation' + i, DebugJS.OMIT_MID) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> baseURI</span>   : ' + self.createFoldingText(document.baseURI, 'docBaseURL' + i, DebugJS.OMIT_MID) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Cookie</span>: ' + self.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID) + '\n' +
@@ -2471,13 +2508,18 @@ DebugJS.prototype = {
 
   enableElmInspection: function() {
     var self = DebugJS.self;
-    var windowExpandHeight = DebugJS.DEBUG_WIN_EXPAND_H * self.options.zoom;
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
-      self.elmInspectionPanel.className = self.id + '-overlay-panel';
       self.elmInspectionPanel.innerHTML = '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>';
-      self.addOverlayPanel(self.elmInspectionPanel);
+      if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
+        self.elmInspectionPanel.className = self.id + '-overlay-panel-full';
+        self.addOverlayPanelFull(self.elmInspectionPanel);
+      } else {
+        self.elmInspectionPanel.className = self.id + '-overlay-panel';
+        self.addOverlayPanel(self.elmInspectionPanel);
+        self.expandHightIfNeeded(self.windowExpandHeight);
+      }
 
       self.elmNumPanel = document.createElement('span');
       self.elmNumPanel.style.float = 'right';
@@ -2490,8 +2532,6 @@ DebugJS.prototype = {
       self.elmInspectionPanelBody.style.position = 'relative';
       self.elmInspectionPanelBody.style.top = self.options.fontSize;
       self.elmInspectionPanel.appendChild(self.elmInspectionPanelBody);
-
-      self.expandHight(windowExpandHeight);
     }
     self.updateElmInspectionBtnPanel();
   },
@@ -2505,7 +2545,12 @@ DebugJS.prototype = {
       self.prevElmStyle = {};
     }
     if (self.elmInspectionPanel != null) {
-      self.removeOverlayPanel(self.elmInspectionPanel);
+      if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
+        self.removeOverlayPanelFull(self.elmInspectionPanel);
+      } else {
+        self.removeOverlayPanel(self.elmInspectionPanel);
+        self.resetExpandedHeightIfNeeded();
+      }
       self.elmInspectionPanel = null;
       self.elmInspectionPanelBody = null;
       self.elmNumPanel = null;
@@ -2513,7 +2558,6 @@ DebugJS.prototype = {
     self.updatePrevElm(null);
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
     self.updateElmInspectionBtnPanel();
-    self.resetExpandedHeight();
   },
 
   inspectElement: function(e) {
@@ -3029,7 +3073,9 @@ DebugJS.prototype = {
 
   printResult: function(result) {
     var self = DebugJS.self;
-    var msg = '<span style="color:' + self.options.promptColor + ';">&gt;</span> ' + self.decorateIfObjIsUnavailable(result);
+    result = self.decorateIfObjIsUnavailable(result);
+    result = DebugJS.encloseStringIfNeeded(result);
+    var msg = '<span style="color:' + self.options.promptColor + ';">&gt;</span> ' + result;
     DebugJS.log(msg);
   },
 
@@ -3109,6 +3155,13 @@ DebugJS.prototype = {
     }
   },
 
+  expandHightIfNeeded: function(height) {
+    var self = DebugJS.self;
+    if (self.overlayPanels.length == 1) {
+      self.expandHight(height);
+    }
+  },
+
   resetExpandedHeight: function() {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_DYNAMIC) {
@@ -3120,6 +3173,13 @@ DebugJS.prototype = {
         var sizePos = self.getSelfSizePos();
         self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
       }
+    }
+  },
+
+  resetExpandedHeightIfNeeded: function() {
+    var self = DebugJS.self;
+    if (self.overlayPanels.length == 0) {
+      self.resetExpandedHeight();
     }
   },
 
@@ -3199,17 +3259,11 @@ DebugJS.prototype = {
   _execCmd: function(str, echo) {
     if (echo) DebugJS.log.s(str);
     var self = DebugJS.self;
-    var wkCmd = str;
     var cmd, arg;
 
-    var cmds = wkCmd.match(/([^\s]{1,})\s(.*)/);
-    if (cmds == null) {
-      cmd = DebugJS.omitLeadingWhiteSpace(str);
-      arg = '';
-    } else {
-      cmd = cmds[1];
-      arg = cmds[2];
-    }
+    var cmds = self.splitCmdLineInTwo(str);
+    cmd = cmds[0];
+    arg = cmds[1];
 
     var found = false;
     for (var i = 0, len = self.CMD_TBL.length; i < len; i++) {
@@ -3226,13 +3280,26 @@ DebugJS.prototype = {
 
     if (!found) {found = self.cmdRadixConv(str);}
     if ((!found) && (str.match(/^http/))) {
-      DebugJS.httpRequest(str, 'GET');
+      this.cmdGet(str);
       found = true;
     }
     if (!found) {found = self.cmdTimeCalc(str);}
     if (!found) {
       self.execCode(str);
     }
+  },
+
+  splitCmdLineInTwo: function(str) {
+    var res = [];
+    var strs = str.match(/([^\s]{1,})\s(.*)/);
+    if (strs == null) {
+      res[0] = DebugJS.omitLeadingWhiteSpace(str);
+      res[1] = '';
+    } else {
+      res[0] = strs[1];
+      res[1] = strs[2];
+    }
+    return res;
   },
 
   cmdBase64: function(arg, tbl) {
@@ -3250,14 +3317,14 @@ DebugJS.prototype = {
         } else if (args[1] == '-d') {
           result = DebugJS.decodeBase64(args[2]);
           if ((result.match(/^\s/)) || (result.match(/\s$/))) {
-            result = DebugJS.encloseString(result);
+            result = DebugJS.encloseStringIfNeeded(result);
           }
         } else if (args[1] == '-e') {
           result = DebugJS.encodeBase64(args[2]);
         } else {
           result = DebugJS.encodeBase64(arg);
         }
-        DebugJS.log(result);
+        self.printResult(result);
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -3319,11 +3386,8 @@ DebugJS.prototype = {
   },
 
   cmdGet: function(arg, tbl) {
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      DebugJS.httpRequest(arg, 'GET');
-    }
+    var self = DebugJS.self;
+    self.httpRequest(arg, tbl, 'GET');
   },
 
   cmdHelp: function(arg, tbl) {
@@ -3391,11 +3455,8 @@ DebugJS.prototype = {
   },
 
   cmdPost: function(arg, tbl) {
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      DebugJS.httpRequest(arg, 'POST');
-    }
+    var self = DebugJS.self;
+    self.httpRequest(arg, tbl, 'POST');
   },
 
   cmdRandom: function(arg, tbl) {
@@ -3536,6 +3597,19 @@ DebugJS.prototype = {
     DebugJS.log(self.v);
   },
 
+  httpRequest: function(arg, tbl, method) {
+    var self = DebugJS.self;
+    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
+    if (argNoWhiteSpace == '') {
+      DebugJS.printUsage(tbl.usage);
+    }
+    args = self.splitCmdLineInTwo(arg);
+    var url = args[0];
+    var data = args[1];
+    data = DebugJS.encodeURIString(data);
+    DebugJS.doHttpRequest(url, method, data);
+  },
+
   initExtention: function() {
     var self = DebugJS.self;
     if (DebugJS.x.CMD_TBL) {
@@ -3631,6 +3705,13 @@ DebugJS.omitTrailingWhiteSpace = function(str) {
 
 DebugJS.encloseString = function(str) {
   return '<span style="color:#0ff;">"</span>' + str + '<span style="color:#0ff;">"</span>';
+};
+
+DebugJS.encloseStringIfNeeded = function(str) {
+  if ((str.match(/^\s/)) || (str.match(/\s$/))) {
+    str = DebugJS.encloseString(str);
+  }
+  return str;
 };
 
 DebugJS.getDateTime = function(dt) {
@@ -4484,24 +4565,78 @@ DebugJS.getRandomString = function(min, max) {
   return str;
 };
 
-DebugJS.httpRequest = function(url, method) {
-  var xhr = new XMLHttpRequest();
-  xhr.open(method, url, true);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) {
-      if (xhr.status !== 200) {
-        DebugJS.log.e('cannot load: ' + xhr.status + ' ' + xhr.statusText);
-      }
-      var head = xhr.getAllResponseHeaders();
-      var txt = xhr.responseText.replace(/</g, '&lt;');
-      txt = txt.replace(/>/g, '&gt;');
-      if (head || txt) {
-        var res = '<span style="color:#5ff">' + head + '</span>' + txt;
-        DebugJS.log.mlt(res);
+DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password) {
+  if ((data == undefined) || (data == '')) data = null;
+  if (async == undefined) async = false;
+  if (user == undefined) user = '';
+  if (password == undefined) password = '';
+  if (method == 'GET') {
+    if ((data != null) && (data != '')) {
+      if (url.match(/\?/)) {
+        url += '&' + data;
+      } else {
+        url += '?' + data;
       }
     }
+  }
+
+  var xhr = new XMLHttpRequest();
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == XMLHttpRequest.DONE) {
+      DebugJS.onHttpRequestDone(xhr);
+    }
   };
-  xhr.send(null);
+
+  DebugJS.log('url : ' + DebugJS.encloseString(url));
+  DebugJS.log('data: ' + ((data == null) ? '<span style="color:#aaa;">null</span>' : DebugJS.encloseString(data)));
+
+  try {
+    xhr.open(method, url, async, user, password);
+    if (!cache) {
+      xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
+    }
+
+    //var userAgent = 'Mozilla/5.0 (' + navigator.platform + ') DebugJS/1.0';
+    //xhr.setRequestHeader('User-Agent', userAgent);
+
+    xhr.send(data);
+  } catch (e) {
+    DebugJS.log.e(e);
+    var baseURI = document.baseURI;
+    var regexp = new RegExp('^' + baseURI + '(.*?)');
+    if (!url.match(regexp)) {
+      DebugJS.log.w('Cross-Origin Request\nsource : ' + baseURI + '\nrequest: ' + url);
+    }
+  }
+};
+
+DebugJS.onHttpRequestDone = function(xhr) {
+  var statusMsg = xhr.status + ' ' + xhr.statusText;
+  if (xhr.status == 0) {
+    DebugJS.log.e('cannot load: ' + statusMsg);
+  } else if ((xhr.status >= 300) && (xhr.status <= 399)) {
+    DebugJS.log.w(statusMsg);
+  } else if ((xhr.status >= 400) && (xhr.status <= 599)) {
+    DebugJS.log.e(statusMsg);
+  } else {
+    DebugJS.log(statusMsg);
+  }
+  var head = xhr.getAllResponseHeaders();
+  var txt = xhr.responseText.replace(/</g, '&lt;');
+  txt = txt.replace(/>/g, '&gt;');
+  if (head || txt) {
+    var res = '<span style="color:#5ff">' + head + '</span>' + txt;
+    DebugJS.log.mlt(res);
+  }
+};
+
+DebugJS.encodeURIString = function(data) {
+  var encData = encodeURIComponent(data);
+  encData = encData.replace(/%20/g, '+');
+  encData = encData.replace(/%3D/gi, '=');
+  encData = encData.replace(/%26/g, '&');
+  return encData;
 };
 
 DebugJS.getBrowserType = function() {
