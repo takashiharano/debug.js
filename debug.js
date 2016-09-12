@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609120021';
+  this.v = '201609122100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4588,8 +4588,8 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
     }
   };
 
-  DebugJS.log('url : ' + DebugJS.encloseString(url));
-  DebugJS.log('data: ' + ((data == null) ? '<span style="color:#aaa;">null</span>' : DebugJS.encloseString(data)));
+  DebugJS.log('url :' + DebugJS.encloseString(url));
+  DebugJS.log('data:' + ((data == null) ? '<span style="color:#aaa;"> null</span>' : DebugJS.encloseString(data)));
 
   try {
     xhr.open(method, url, async, user, password);
