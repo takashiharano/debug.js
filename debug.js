@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609122100';
+  this.v = '201609140000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -301,8 +301,8 @@ DebugJS.SYSTEM_INFO_FULL_OVERLAY = false;
 DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
-'// performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
-'// LED DEMO\nvar speed = 500;\nvar i = 0;\nledTest();\nfunction ledTest() {\n  dbg.led(i);\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
+'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
+'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
@@ -721,31 +721,31 @@ DebugJS.prototype = {
     var self = DebugJS.self;
 
     if (!self.isAllFeaturesDisabled()) {
-      window.addEventListener('keydown', self.keyhandler, true);
+      window.addEventListener('keydown', self.keyHandler, true);
     }
 
     if ((self.status & DebugJS.STATE_DRAGGABLE) || (self.status & DebugJS.STATE_RESIZABLE) || (self.options.useMouseStatusInfo) || (self.options.useScreenMeasure)) {
-      window.addEventListener('mousedown', self.mousedownHandler, true);
-      window.addEventListener('mousemove', self.mousemoveHandler, true);
-      window.addEventListener('mouseup', self.mouseupHandler, true);
+      window.addEventListener('mousedown', self.onMouseDown, true);
+      window.addEventListener('mousemove', self.onMouseMove, true);
+      window.addEventListener('mouseup', self.onMouseUp, true);
     }
 
     if (self.options.useWindowSizeInfo) {
-      window.addEventListener('resize', self.windowResizeHandler, true);
-      self.windowResizeHandler();
+      window.addEventListener('resize', self.onResize, true);
+      self.onResize();
 
-      window.addEventListener('scroll', self.scrollHandler, true);
-      self.scrollHandler();
+      window.addEventListener('scroll', self.onScroll, true);
+      self.onScroll();
     }
 
     if (self.options.useKeyStatusInfo) {
-      window.addEventListener('keydown', self.keyDownHandler, true);
+      window.addEventListener('keydown', self.onKeyDown, true);
       self.updateKeyDownPanel();
 
-      window.addEventListener('keypress', self.keyPressHandler, true);
+      window.addEventListener('keypress', self.onKeyPress, true);
       self.updateKeyPressPanel();
 
-      window.addEventListener('keyup', self.keyUpHandler, true);
+      window.addEventListener('keyup', self.onKeyUp, true);
       self.updateKeyUpPanel();
     }
   },
@@ -1713,7 +1713,7 @@ DebugJS.prototype = {
     self.logPanel.style.height = '100%';
   },
 
-  keyhandler: function(e) {
+  keyHandler: function(e) {
     var self = DebugJS.self;
     switch (e.keyCode) {
       case 13: // Enter
@@ -1811,7 +1811,7 @@ DebugJS.prototype = {
     }
   },
 
-  keyDownHandler: function(e) {
+  onKeyDown: function(e) {
     var self = DebugJS.self;
     var metaKey = DebugJS.checkMetaKey(e);
     self.keyDownCode = e.keyCode + ' ' + metaKey;
@@ -1824,21 +1824,21 @@ DebugJS.prototype = {
     self.updateKeyUpPanel();
   },
 
-  keyPressHandler: function(e) {
+  onKeyPress: function(e) {
     var self = DebugJS.self;
     var metaKey = DebugJS.checkMetaKey(e);
     self.keyPressCode = e.keyCode + '(' + String.fromCharCode(e.keyCode) + ')' + metaKey;
     self.updateKeyPressPanel();
   },
 
-  keyUpHandler: function(e) {
+  onKeyUp: function(e) {
     var self = DebugJS.self;
     var metaKey = DebugJS.checkMetaKey(e);
     self.keyUpCode = e.keyCode + ' ' + metaKey;
     self.updateKeyUpPanel();
   },
 
-  windowResizeHandler: function() {
+  onResize: function() {
     var self = DebugJS.self;
     self.updateWindowSizePanel();
     self.updateClientSizePanel();
@@ -1853,7 +1853,7 @@ DebugJS.prototype = {
     }
   },
 
-  scrollHandler: function() {
+  onScroll: function() {
     var self = DebugJS.self;
     if (window.scrollX === undefined) {
       self.scrollPosX = document.documentElement.scrollLeft;
@@ -1865,7 +1865,7 @@ DebugJS.prototype = {
     self.updateScrollPosPanel();
   },
 
-  mousedownHandler: function(e) {
+  onMouseDown: function(e) {
     var self = DebugJS.self;
     var posX = e.clientX;
     var posY = e.clientY;
@@ -1901,7 +1901,7 @@ DebugJS.prototype = {
     }
   },
 
-  mousemoveHandler: function(e) {
+  onMouseMove: function(e) {
     var self = DebugJS.self;
     if (self.options.useMouseStatusInfo) {
       self.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
@@ -1913,7 +1913,7 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) self.inspectElement(e);
   },
 
-  mouseupHandler: function(e) {
+  onMouseUp: function(e) {
     var self = DebugJS.self;
     switch (e.button) {
       case 0:
@@ -2680,6 +2680,7 @@ DebugJS.prototype = {
       '            right  = ' + Math.round(rect.right + window.pageXOffset) + 'px (' + computedStyle.right + ')\n' +
       '            bottom = ' + Math.round(rect.bottom + window.pageYOffset) + 'px (' + computedStyle.bottom + ')\n' +
       'overflow  : ' + computedStyle.overflow + '\n' +
+      'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'all styles: ' + allStylesFolding + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
@@ -2773,8 +2774,8 @@ DebugJS.prototype = {
       var defaultFontSize = Math.round(12 * self.options.zoom);
       var defaultFontFamily = 'Consolas';
       var defaultFontWeight = 400;
-      var defaultFgRGB16 = '000';
-      var defaultBgRGB16 = 'fff';
+      var defaultFgRGB16 = 'fff';
+      var defaultBgRGB16 = '000';
       var panelPadding = 2;
       self.textCheckerPanel = document.createElement('div');
       self.textCheckerPanel.className = self.id + '-overlay-panel-full';
@@ -3708,6 +3709,7 @@ DebugJS.encloseString = function(str) {
 };
 
 DebugJS.encloseStringIfNeeded = function(str) {
+  str += '';
   if ((str.match(/^\s/)) || (str.match(/\s$/))) {
     str = DebugJS.encloseString(str);
   }
@@ -4781,11 +4783,11 @@ DebugJS.tagEscape = function(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 
-DebugJS.loadHandler = function() {
+DebugJS.onLoad = function() {
   DebugJS._init();
 };
 
-DebugJS.errorHandler = function(e) {
+DebugJS.onError = function(e) {
   var msg;
   if ((e.error) && (e.error.stack)) {
     msg = e.error.stack;
@@ -4988,9 +4990,9 @@ DebugJS.x = {};
 DebugJS.self = new DebugJS();
 if (DebugJS.ENABLE) {
   DebugJS.el = null;
-  window.addEventListener('load', DebugJS.loadHandler, true);
+  window.addEventListener('load', DebugJS.onLoad, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
-    window.addEventListener('error', DebugJS.errorHandler, true);
+    window.addEventListener('error', DebugJS.onError, true);
   }
   if (DebugJS.UNIFY_CONSOLE) {
     console.log = function(x) {log(x);};
