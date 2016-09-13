@@ -84,6 +84,8 @@ log('Here is the log output example!');
 
 var logMessageText = null;
 var msgMessageText = null;
+var base64EText = null;
+var base64DText = null;
 
 window.onload = function() {
   log('The window\'s load event fired.');
@@ -189,6 +191,8 @@ window.onload = function() {
 
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
+  base64EText = document.getElementById('base64-e-text');
+  base64DText = document.getElementById('base64-d-text');
 
   setTimeout(displayMessages, 1500);
   setTimeout(execDemo, 1500);
@@ -1105,7 +1109,7 @@ dbg.countElements('tagName');
     </td>
     <td>
       Command execution<br>
-      echo: true = print command line / false = silent
+      echo: true = print command line / false = silent<span class="annotation">(default)</span>
     </td>
   </tr>
 
@@ -1724,28 +1728,28 @@ dbg.countElements('div');<br>
 </table>
 
 <!-- ********************************************************************** -->
-<div class="caption2">dbg.exec</div>
+<div class="caption2">dbg.exec / $ Command Line</div>
 <table class="demo-table">
 <tr>
 <td>
 dbg.exec('rgb #fff');<br>
-<span class="button" onclick="dbg.exec('rgb #fff', true);">dbg.exec()</span>
+<span class="button" onclick="dbg.exec('rgb #fff', true);">rgb #fff</span>
 </td>
 
 <td>
 dbg.exec('json {"name": "John Smith", "age": 25, "city": "New York"}');<br>
-<span class="button" onclick='dbg.exec("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}");'>dbg.exec()</span>
+<span class="button" onclick='dbg.exec("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}", true);'>json {"name": ...</span>
 </td>
 
 <!-- time calc +- -->
 <td>
 dbg.exec('00:05:30.700 + 00:01:20.123');<br>
-<span class="button" onclick="dbg.exec('00:05:30.700 + 00:01:20.123');">dbg.exec()</span>
+<span class="button" onclick="dbg.exec('00:05:30.700 + 00:01:20.123', true);">00:05:30.700 + 00:01:20.123</span>
 </td>
 
 <td>
 dbg.exec('00:05:30.700 - 00:05:20.400');<br>
-<span class="button" onclick="dbg.exec('00:05:30.700 - 00:05:20.400');">dbg.exec()</span>
+<span class="button" onclick="dbg.exec('00:05:30.700 - 00:05:20.400', true);">00:05:30.700 - 00:05:20.400</span>
 </td>
 </tr>
 
@@ -1753,17 +1757,17 @@ dbg.exec('00:05:30.700 - 00:05:20.400');<br>
 <tr>
 <td>
 dbg.exec('10:00 + 13:59');<br>
-<span class="button" onclick="dbg.exec('10:00 + 13:59');">10:00 + 13:59</span>
+<span class="button" onclick="dbg.exec('10:00 + 13:59', true);">10:00 + 13:59</span>
 </td>
 
 <td>
 dbg.exec('10:00 + 14:00');<br>
-<span class="button" onclick="dbg.exec('10:00 + 14:00');">10:00 + 14:00</span>
+<span class="button" onclick="dbg.exec('10:00 + 14:00', true);">10:00 + 14:00</span>
 </td>
 
 <td>
 dbg.exec('10:00 + 14:01');<br>
-<span class="button" onclick="dbg.exec('10:00 + 14:01');">10:00 + 14:01</span>
+<span class="button" onclick="dbg.exec('10:00 + 14:01', true);">10:00 + 14:01</span>
 </td>
 </tr>
 
@@ -1771,17 +1775,17 @@ dbg.exec('10:00 + 14:01');<br>
 <tr>
 <td>
 dbg.exec('10:00 + 37:59');<br>
-<span class="button" onclick="dbg.exec('10:00 + 37:59');">10:00 + 37:59</span>
+<span class="button" onclick="dbg.exec('10:00 + 37:59', true);">10:00 + 37:59</span>
 </td>
 
 <td>
 dbg.exec('10:00 + 38:00');<br>
-<span class="button" onclick="dbg.exec('10:00 + 38:00');">10:00 + 38:00</span>
+<span class="button" onclick="dbg.exec('10:00 + 38:00', true);">10:00 + 38:00</span>
 </td>
 
 <td>
 dbg.exec('10:00 + 38:01');<br>
-<span class="button" onclick="dbg.exec('10:00 + 38:01');">10:00 + 38:01</span>
+<span class="button" onclick="dbg.exec('10:00 + 38:01', true);">10:00 + 38:01</span>
 </td>
 </tr>
 
@@ -1789,17 +1793,17 @@ dbg.exec('10:00 + 38:01');<br>
 <tr>
 <td>
 dbg.exec('10:00 - 09:59');<br>
-<span class="button" onclick="dbg.exec('10:00 - 09:59');">10:00 - 09:59</span>
+<span class="button" onclick="dbg.exec('10:00 - 09:59', true);">10:00 - 09:59</span>
 </td>
 
 <td>
 dbg.exec('10:00 - 10:00');<br>
-<span class="button" onclick="dbg.exec('10:00 - 10:00');">10:00 - 10:00</span>
+<span class="button" onclick="dbg.exec('10:00 - 10:00', true);">10:00 - 10:00</span>
 </td>
 
 <td>
 dbg.exec('10:00 - 10:01');<br>
-<span class="button" onclick="dbg.exec('10:00 - 10:01');">10:00 - 10:01</span>
+<span class="button" onclick="dbg.exec('10:00 - 10:01', true);">10:00 - 10:01</span>
 </td>
 </tr>
 
@@ -1807,17 +1811,33 @@ dbg.exec('10:00 - 10:01');<br>
 <tr>
 <td>
 dbg.exec('10:00 - 33:59');<br>
-<span class="button" onclick="dbg.exec('10:00 - 33:59');">10:00 - 33:59</span>
+<span class="button" onclick="dbg.exec('10:00 - 33:59', true);">10:00 - 33:59</span>
 </td>
 
 <td>
 dbg.exec('10:00 - 34:00');<br>
-<span class="button" onclick="dbg.exec('10:00 - 34:00');">10:00 - 34:00</span>
+<span class="button" onclick="dbg.exec('10:00 - 34:00', true);">10:00 - 34:00</span>
 </td>
 
 <td>
 dbg.exec('10:00 - 34:01');<br>
-<span class="button" onclick="dbg.exec('10:00 - 34:01');">10:00 - 34:01</span>
+<span class="button" onclick="dbg.exec('10:00 - 34:01', true);">10:00 - 34:01</span>
+</td>
+</tr>
+</table>
+
+<table class="demo-table">
+<tr>
+<td>
+<input type="text" id="base64-e-text" value="Hello, Base64!" style="width:400px;margin-top:3px;">
+dbg.exec('base64 -e xxx')<br>
+<span class="button" onclick="dbg.exec('base64 -e ' + base64EText.value, true);">base64 -e</span>
+</td>
+
+<td>
+<input type="text" id="base64-d-text" value="SGVsbG8sIEJhc2U2NCE=" style="width:400px;margin-top:3px;">
+dbg.exec('base64 -d xxx')<br>
+<span class="button" onclick="dbg.exec('base64 -d ' + base64DText.value, true);">base64 -d</span>
 </td>
 </tr>
 </table>
