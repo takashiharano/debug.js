@@ -70,6 +70,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .eg {font-family:Consolas, monospace; line-height:1em;}
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
 .annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
+.alias {font-size:12px; color:#88c; font-style:italic; margin-left:2px;}
 /*td {                        */
 /*  width:100px;              */
 /*  font-size:50px !important;*/
@@ -82,8 +83,12 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 /*}                           */
 </style>
 <script>
+DebugJS.init({'visible':true});
+//DebugJS.init({'kioskMode':true});
+
 //time.start();
-//log.t(null, 'time test');
+//log.t(null, 'init start');
+
 log('Here is the log output example!');
 
 var logMessageText = null;
@@ -93,11 +98,6 @@ var base64DText = null;
 
 window.onload = function() {
   log('The window\'s load event fired.');
-
-  var options = {
-    'visible': true,
-  };
-  DebugJS.init(options);
 
   var options1 = {
     'visible': true,
@@ -201,6 +201,8 @@ window.onload = function() {
   setTimeout(displayMessages, 1500);
   setTimeout(execDemo, 1500);
   setTimeout(msgTest, 1500);
+
+  //log.t(null, 'init completed');
 }
 
 var dispCount = 0;
@@ -1073,7 +1075,10 @@ time.check('timer1')
   </tr>
 
   <tr>
-    <td class="name">dbg.countElements</td>
+    <td class="name">
+      DebugJS.countElements<br>
+      <span class="alias">( dbg.countElements )</span>
+    </td>
     <td>element selector</td>
     <td>
       Count number of elements.
@@ -1094,7 +1099,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.call</td>
+    <td class="name">
+      DebugJS.call<br>
+      <span class="alias">( dbg.call )</span>
+    </td>
     <td>
       arg1: function<br>
       arg2: delay<span class="annotation">(opt) default: 0ms</span>
@@ -1106,7 +1114,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.exec</td>
+    <td class="name">
+      DebugJS.exec<br>
+      <span class="alias">( dbg.exec )</span>
+    </td>
     <td>
       arg1: command<br>
       arg2: echo<span class="annotation">(opt)</span>
@@ -1118,7 +1129,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.led</td>
+    <td class="name">
+      DebugJS.led<br>
+      <span class="alias">( dbg.led )</span>
+    </td>
     <td>value</td>
     <td>
       Set indicator bit pattern<br>
@@ -1150,7 +1164,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.led.on</td>
+    <td class="name">
+      DebugJS.led.on<br>
+      <span class="alias">( dbg.led.on )</span>
+    </td>
     <td>bit position</td>
     <td>
       Turn on the indicator
@@ -1158,7 +1175,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.led.off</td>
+    <td class="name">
+      DebugJS.led.off<br>
+      <span class="alias">( dbg.led.off )</span>
+    </td>
     <td>bit position</td>
     <td>
       Turn off the indicator
@@ -1166,7 +1186,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.led.all</td>
+    <td class="name">
+      DebugJS.led.all<br>
+      <span class="alias">( dbg.led.all )</span>
+    </td>
     <td>flag</td>
     <td>
       Turn on/off all indicator<br>
@@ -1175,7 +1198,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.msg</td>
+    <td class="name">
+      DebugJS.msg<br>
+      <span class="alias">( dbg.msg )</span>
+    </td>
     <td>message</td>
     <td>
       Set a string to the message display
@@ -1183,7 +1209,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.msg.clear</td>
+    <td class="name">
+      DebugJS.msg.clear<br>
+      <span class="alias">( dbg.msg.clear )</span>
+    </td>
     <td></td>
     <td>
       Clear the message display
@@ -1191,7 +1220,10 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">dbg.random</td>
+    <td class="name">
+      DebugJS.random<br>
+      <span class="alias">( dbg.random )</span>
+    </td>
     <td>
       arg1: min<span class="annotation">(opt)</span><br>
       arg2: max<span class="annotation">(opt)</span>
@@ -1206,7 +1238,10 @@ max: maximum number
   </tr>
 
   <tr>
-    <td class="name">dbg.random.string</td>
+    <td class="name">
+      DebugJS.random.string<br>
+      <span class="alias">( dbg.random.string )</span>
+    </td>
     <td>
       arg1: min<span class="annotation">(opt)</span><br>
       arg2: max<span class="annotation">(opt)</span>
@@ -1221,7 +1256,21 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">dbg.init</td>
+    <td class="name">
+      DebugJS.tagEscape<br>
+      <span class="alias">( dbg.tagEscape )</span>
+    </td>
+    <td>string</td>
+    <td>
+      Replace "&lt;" and "&gt;" to "&amp;lt;" and "&amp;gt;".
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.init<br>
+      <span class="alias">( dbg.init )</span>
+    </td>
     <td>options</td>
     <td>
       Initialize debug.js
