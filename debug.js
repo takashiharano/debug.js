@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609151950';
+  this.v = '201609152100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1219,7 +1219,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var dt = DebugJS.getCurrentDateTime();
     var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    //t += (dt.ms < 500) ? ' ' : '.';
+    //t += (dt.sss < 500) ? ' ' : '.';
     self.clockPanel.innerText = t;
     if (self.status & DebugJS.STATE_SHOW_CLOCK) {
       setTimeout(self.updateClockPanel, self.clockUpdateInterval);
@@ -3737,7 +3737,7 @@ DebugJS.getDateTime = function(dt) {
   if (ms < 10) {ms = '00' + ms;}
   else if (ms < 100) {ms = '0' + ms;}
 
-  var dateTime = {'yyyy': yyyy, 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'ms': ms, 'wday': wd};
+  var dateTime = {'yyyy': yyyy, 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'sss': ms, 'wday': wd};
   return dateTime;
 };
 
@@ -3747,7 +3747,7 @@ DebugJS.getCurrentDateTime = function() {
 
 DebugJS.getLogTime = function() {
   var d = DebugJS.getCurrentDateTime();
-  var t = d.hh + ':' + d.mi + ':' + d.ss + '.' + d.ms;
+  var t = d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
   return t;
 };
 
@@ -3887,7 +3887,17 @@ DebugJS._objDump = function(obj, arg, toJson) {
         if (toJson) {arg.dump += '"';}
         arg.dump += key;
         if (toJson) {arg.dump += '"';}
-        arg.dump += ': <span style="color:#f80;">[Date]</span> ' + obj[key];
+        var dt = DebugJS.getDateTime(obj[key]);
+        var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+        arg.dump += ': <span style="color:#f80;">[Date]</span> ' + date;
+        s++;
+        continue;
+      } else if (obj[key] instanceof ArrayBuffer) {
+        arg.dump += indent;
+        if (toJson) {arg.dump += '"';}
+        arg.dump += key;
+        if (toJson) {arg.dump += '"';}
+        arg.dump += ': <span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
         s++;
         continue;
       } else {

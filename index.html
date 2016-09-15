@@ -362,6 +362,8 @@ function startStopRandomDemo() {
   el.innerText = randomDemoFlag ? 'stop random demo' : 'start random demo';
 }
 
+var buf = new ArrayBuffer(32);
+
 var a = {
   'key1': 'val1',
   'key2': '123',
@@ -386,7 +388,9 @@ var a = {
        'aaa': 222,
        'bbb': 'test2'
      }
-   ]
+   ],
+   'key9': (new Date()),
+   'key10': buf
 };
 
 var b = ['1', '2', '3'];
