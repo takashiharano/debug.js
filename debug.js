@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609151851';
+  this.v = '201609151950';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -332,9 +332,6 @@ DebugJS.prototype = {
     if (!DebugJS.ENABLE) {return false;}
     var self = DebugJS.self;
     self.bodyEl = document.body;
-    if (!self.bodyEl) {
-      return false;
-    }
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
       if (self.debugWindow != null) {
@@ -346,8 +343,9 @@ DebugJS.prototype = {
     }
 
     self.status = 0;
-
-    self.setupDefaultOptions();
+    if ((this.options == null) || (options != null)) {
+      self.setupDefaultOptions();
+    }
     if (options) {
       for (var key1 in options) {
         for (var key2 in self.options) {
@@ -364,6 +362,10 @@ DebugJS.prototype = {
     if (self.options.zoom != 1.0) {
       self.options.fontSize = self.options.fontSize * self.options.zoom;
       self.options.width = self.options.width * self.options.zoom;
+    }
+
+    if (!self.bodyEl) {
+      return false;
     }
 
     self.initStatus(self.options);
