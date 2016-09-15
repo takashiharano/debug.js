@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609140000';
+  this.v = '201609151851';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -538,11 +538,11 @@ DebugJS.prototype = {
     var styles = {};
     if (DebugJS.getBrowserType().name == 'Firefox') {
       styles['#' + self.id] = {
-        'letter-spacing': '-0.35px',
+        'letter-spacing': '-0.35px !important'
       };
     } else {
       styles['#' + self.id] = {
-        'letter-spacing': '0',
+        'letter-spacing': '0 !important'
       };
     }
 
@@ -557,12 +557,13 @@ DebugJS.prototype = {
     };
 
     styles['#' + self.id + ' pre'] = {
-      'margin': '0',
-      'color': self.options.fontColor,
-      'font-family': self.options.fontFamily,
-      'white-space': 'pre-wrap',
-      'word-break': 'break-all',
-      'overflow': 'visible'
+      'margin': '0 !important',
+      'color': self.options.fontColor + ' !important',
+      'font-size': self.options.fontSize + 'px !important',
+      'font-family': self.options.fontFamily + ' !important',
+      'white-space': 'pre-wrap !important',
+      'word-break': 'break-all !important',
+      'overflow': 'visible !important',
     };
 
     styles['.' + self.id + '-btn'] = {
@@ -619,9 +620,9 @@ DebugJS.prototype = {
 
     styles['.' + self.id + '-overlay-panel pre'] = {
       'padding': '0 1px',
-      'color': self.options.fontColor,
-      'font-size': self.options.fontSize + 'px',
-      'font-family': self.options.fontFamily
+      'color': self.options.fontColor + ' !important',
+      'font-size': self.options.fontSize + 'px !important',
+      'font-family': self.options.fontFamily + ' !important'
     };
 
     styles['.' + self.id + '-overlay-panel-full'] = {
@@ -2539,7 +2540,7 @@ DebugJS.prototype = {
   disableElmInspection: function() {
     var self = DebugJS.self;
     if (self.prevElm) {
-      self.prevElm.style.border = self.prevElmStyle.border;
+      self.prevElm.style.outline = self.prevElmStyle.outline;
       self.prevElm.style.opacity = self.prevElmStyle.opacity;
       self.prevElm = null;
       self.prevElmStyle = {};
@@ -2727,13 +2728,13 @@ DebugJS.prototype = {
   updatePrevElm: function(el) {
     var self = DebugJS.self;
     if (self.prevElm) {
-      self.prevElm.style.border = self.prevElmStyle.border;
+      self.prevElm.style.outline = self.prevElmStyle.outline;
       self.prevElm.style.opacity = self.prevElmStyle.opacity;
     }
     if (el) {
-      self.prevElmStyle.border = el.style.border;
+      self.prevElmStyle.outline = el.style.outline;
       self.prevElmStyle.opacity = el.style.opacity;
-      el.style.border = 'solid 1px #f00';
+      el.style.outline = 'solid 1px #f00';
       el.style.opacity = 0.7;
       self.prevElm = el;
     }
