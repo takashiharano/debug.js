@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609200100';
+  this.v = '201609200730';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3214,7 +3214,7 @@ DebugJS.prototype = {
       var self = DebugJS.self;
       var total = e.total;
       var loaded = e.loaded;
-      var percentLoaded = Math.round((loaded / total) * 100);
+      var percentLoaded = (total == 0) ? 100 : Math.round((loaded / total) * 100);
       self.fileLoadProgress.style.width = 'calc(' + percentLoaded + '% - ' + (DebugJS.WINDOW_BORDER * 2) + 'px)';
       self.fileLoadProgress.textContent = percentLoaded + '%';
       self.updateFilePreview('LOADING...\n' + DebugJS.formatDec(loaded) + ' / ' + DebugJS.formatDec(total) + ' bytes');
@@ -3230,7 +3230,7 @@ DebugJS.prototype = {
   onFileLoadCompleted: function(file, e) {
     var PREVIEW_SIZE_MAX = 5 * 1024 * 1024;
     var self = DebugJS.self;
-    var contentBase64 = self.fileReader.result;
+    var contentBase64 = (self.fileReader.result == null) ? '' : self.fileReader.result;
     var selfSizePos = self.getSelfSizePos();
     var fileName = file.name;
     var fileType = file.type;
@@ -3238,11 +3238,16 @@ DebugJS.prototype = {
     var dt = DebugJS.getDateTime(file.lastModifiedDate);
     var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
     var contentPreview = '';
-    if (fileType.match(/image\//)) {
-      contentPreview = '<img src="' + contentBase64 + '" style="max-width:' + (selfSizePos.w - 25) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13)) + 'px;">\n';
-    } else if (fileType.match(/text\//)) {
-      var contents = contentBase64.split(',');
-      contentPreview = '<span style="color:#0f0">' + DebugJS.decodeBase64(contents[1]) + '</span>\n';
+
+    if (fileSize > 0) {
+      if (fileType.match(/image\//)) {
+        contentPreview = '<img src="' + contentBase64 + '" style="max-width:' + (selfSizePos.w - 25) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13)) + 'px;">\n';
+      } else if (fileType.match(/text\//)) {
+        var contents = contentBase64.split(',');
+        var decodedContent = DebugJS.decodeBase64(contents[1]);
+        decodedContent = DebugJS.tagEscape(decodedContent);
+        contentPreview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
+      }
     }
 
     var html = 'file    : ' + fileName + '\n' +
