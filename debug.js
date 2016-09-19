@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609152100';
+  this.v = '201609200100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -59,7 +59,7 @@ var DebugJS = function() {
     'useScreenMeasure': true,
     'useSystemInfo': true,
     'useElementInfo': true,
-    'useTextChecker': true,
+    'useTools': true,
     'useScriptEditor': true,
     'useCommandLine': true,
     'kioskMode': false,
@@ -87,6 +87,10 @@ var DebugJS = function() {
   this.elmInfoShowHideStatus = {'allStyles': false, 'elBorder': false};
   this.prevElm = null;
   this.prevElmStyle = {};
+  this.toolsBtnPanel = null;
+  this.toolsPanel = null;
+  this.toolsHeaderPanel = null;
+  this.toolsBodyPanel = null;
   this.textCheckerBtnPanel = null;
   this.textCheckerPanel = null;
   this.textCheck = null;
@@ -108,6 +112,16 @@ var DebugJS = function() {
   this.textCheckerLabelBgR = null;
   this.textCheckerLabelBgG = null;
   this.textCheckerLabelBgB = null;
+  this.fileLoaderBtnPanel = null;
+  this.fileLoaderPanel = null;
+  this.fileInput = null;
+  this.filePreviewWrapper = null;
+  this.filePreview = null;
+  this.fileLoadFooter = null;
+  this.fileLoadProgressBar = null;
+  this.fileLoadProgress = null;
+  this.fileLoadCancelBtn = null;
+  this.fileReader = null;
   this.scriptBtnPanel = null;
   this.scriptPanel = null;
   this.scriptEditor = null;
@@ -176,6 +190,7 @@ var DebugJS = function() {
   this.prevOffsetLeft = 0;
   this.savedFunc = null;
   this.status = 0;
+  this.toolsActiveFunction = DebugJS.TOOLS_ACTIVE_FUNCTION_NONE;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {'cmd': 'base64', 'fnc': this.cmdBase64, 'desc': 'Encodes/Decodes Base64 string', 'usage': 'base64 [-e|-d] string'},
@@ -229,10 +244,14 @@ DebugJS.STATE_MEASURE = 0x100000;
 DebugJS.STATE_MEASURING = 0x200000;
 DebugJS.STATE_SYSTEM_INFO = 0x400000;
 DebugJS.STATE_ELEMENT_INSPECTING = 0x800000;
-DebugJS.STATE_TEXT_CHECKING = 0x1000000;
+DebugJS.STATE_TOOLS = 0x1000000;
 DebugJS.STATE_SCRIPT = 0x2000000;
 DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
+
+DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
+DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT = 0x1;
+DebugJS.TOOLS_ACTIVE_FUNCTION_FILE = 0x2;
 
 DebugJS.LOG_TYPE_STANDARD = 0x1;
 DebugJS.LOG_TYPE_DEBUG = 0x2;
@@ -256,11 +275,13 @@ DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING *
 DebugJS.OVERLAY_PANEL_HEIGHT = 83; //%
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
+DebugJS.TOOLS_COLOR_ACTIVE = '#6cf';
+DebugJS.TOOLS_COLOR_INACTIVE = '#ccc';
 DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.MEASURE_BUTTON_COLOR = '#6cf';
 DebugJS.SYS_BUTTON_COLOR = '#3af';
 DebugJS.DOM_BUTTON_COLOR = '#f66';
-DebugJS.TXT_BUTTON_COLOR = '#ff0';
+DebugJS.TOOLS_BUTTON_COLOR = '#ff0';
 DebugJS.JS_BUTTON_COLOR = '#6df';
 DebugJS.PIN_BUTTON_COLOR = '#fa0';
 DebugJS.LOG_SUSPEND_BUTTON_COLOR = '#d00';
@@ -322,7 +343,7 @@ DebugJS.FEATURES = [
   'useScreenMeasure',
   'useSystemInfo',
   'useElementInfo',
-  'useTextChecker',
+  'useTools',
   'useScriptEditor',
   'useCommandLine'
 ];
@@ -639,6 +660,14 @@ DebugJS.prototype = {
       'overflow': 'auto'
     };
 
+    styles['.' + self.id + '-tools'] = {
+      'position': 'absolute',
+      'top': 0,
+      'left': 0,
+      'width': '100%',
+      'height': '100%'
+    };
+
     styles['.' + self.id + '-separator'] = {
       'height': (self.options.fontSize * 0.5) + 'px'
     };
@@ -680,6 +709,10 @@ DebugJS.prototype = {
     styles['.' + self.id + '-txt-tbl td'] = {
       'font-size': self.options.fontSize + 'px !important',
       'line-height': '1em !important',
+    };
+
+    styles['.' + self.id + '-loading'] = {
+      'opacity': '1.0 !important'
     };
 
     self.applyStyles(styles);
@@ -920,6 +953,19 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.swBtnPanel);
     }
 
+    // Tools Button
+    if (self.options.useTools) {
+      self.toolsBtnPanel = document.createElement('span');
+      self.toolsBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.toolsBtnPanel.style.float = 'right';
+      self.toolsBtnPanel.style.marginRight = '3px';
+      self.toolsBtnPanel.innerText = '🛠';
+      self.toolsBtnPanel.onclick = new Function('DebugJS.self.toggleToolsMode();');
+      self.toolsBtnPanel.onmouseover = new Function('DebugJS.self.toolsBtnPanel.style.color=DebugJS.TOOLS_BUTTON_COLOR;');
+      self.toolsBtnPanel.onmouseout = new Function('DebugJS.self.toolsBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.toolsBtnPanel);
+    }
+
     // Script Button
     if (self.options.useScriptEditor) {
       self.scriptBtnPanel = document.createElement('span');
@@ -931,19 +977,6 @@ DebugJS.prototype = {
       self.scriptBtnPanel.onmouseover = new Function('DebugJS.self.scriptBtnPanel.style.color=DebugJS.JS_BUTTON_COLOR;');
       self.scriptBtnPanel.onmouseout = new Function('DebugJS.self.scriptBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.scriptBtnPanel);
-    }
-
-    // Text Check Button
-    if (self.options.useTextChecker) {
-      self.textCheckerBtnPanel = document.createElement('span');
-      self.textCheckerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.textCheckerBtnPanel.style.float = 'right';
-      self.textCheckerBtnPanel.style.marginRight = '3px';
-      self.textCheckerBtnPanel.innerText = 'TXT';
-      self.textCheckerBtnPanel.onclick = new Function('DebugJS.self.toggleTextCheckerMode();');
-      self.textCheckerBtnPanel.onmouseover = new Function('DebugJS.self.textCheckerBtnPanel.style.color=DebugJS.TXT_BUTTON_COLOR;');
-      self.textCheckerBtnPanel.onmouseout = new Function('DebugJS.self.textCheckerBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_TEXT_CHECKING) ? DebugJS.TXT_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.textCheckerBtnPanel);
     }
 
     // Element Inspection Button
@@ -1111,8 +1144,8 @@ DebugJS.prototype = {
       self.updateElmInspectionBtnPanel();
     }
 
-    if (self.options.useTextChecker) {
-      self.updateTextCheckerBtnPanel();
+    if (self.options.useTools) {
+      self.updateToolsBtnPanel();
     }
 
     if (self.options.useScriptEditor) {
@@ -1331,10 +1364,10 @@ DebugJS.prototype = {
     self.elmInspectionBtnPanel.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update Text Checker Button
-  updateTextCheckerBtnPanel: function() {
+  // Update Tools Button
+  updateToolsBtnPanel: function() {
     var self = DebugJS.self;
-    self.textCheckerBtnPanel.style.color = (self.status & DebugJS.STATE_TEXT_CHECKING) ? DebugJS.TXT_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.toolsBtnPanel.style.color = (self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Script Button
@@ -1739,8 +1772,8 @@ DebugJS.prototype = {
           self.disableElmInspection();
           return;
         }
-        if (self.status & DebugJS.STATE_TEXT_CHECKING) {
-          self.disableTextChecker();
+        if (self.status & DebugJS.STATE_TOOLS) {
+          self.disableTools();
           return;
         }
         if (self.status & DebugJS.STATE_SCRIPT) {
@@ -2760,19 +2793,97 @@ DebugJS.prototype = {
     return str;
   },
 
-  toggleTextCheckerMode: function() {
+  toggleToolsMode: function() {
     var self = DebugJS.self;
-    if (self.status & DebugJS.STATE_TEXT_CHECKING) {
-      self.disableTextChecker();
+    if (self.status & DebugJS.STATE_TOOLS) {
+      self.disableTools();
     } else {
-      self.enableTextChecker();
+      self.enableTools();
     }
+  },
+
+  enableTools: function() {
+    var self = DebugJS.self;
+    self.status |= DebugJS.STATE_TOOLS;
+
+    if (self.toolsPanel == null) {
+      var defaultFontSize = Math.round(12 * self.options.zoom);
+      self.toolsPanel = document.createElement('div');
+      self.toolsPanel.className = self.id + '-overlay-panel-full';
+
+      self.toolsHeaderPanel = document.createElement('div');
+      self.toolsHeaderPanel.style.position = 'relative';
+      self.toolsHeaderPanel.style.height = self.options.fontSize + 'px';
+      self.toolsPanel.appendChild(self.toolsHeaderPanel);
+
+      self.toolsBodyPanel = document.createElement('div');
+      self.toolsBodyPanel.style.position = 'relative';
+      self.toolsBodyPanel.style.height = 'calc(100% - ' + self.options.fontSize + 'px)';
+      self.toolsPanel.appendChild(self.toolsBodyPanel);
+
+      self.textCheckerBtnPanel = document.createElement('span');
+      self.textCheckerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.textCheckerBtnPanel.style.marginRight = '4px';
+      self.textCheckerBtnPanel.innerText = '<TEXT>';
+      self.textCheckerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT);');
+      self.textCheckerBtnPanel.onmouseover = new Function('DebugJS.self.textCheckerBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.textCheckerBtnPanel.onmouseout = new Function('DebugJS.self.textCheckerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.textCheckerBtnPanel);
+
+      self.fileLoaderBtnPanel = document.createElement('span');
+      self.fileLoaderBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.fileLoaderBtnPanel.style.marginRight = '4px';
+      self.fileLoaderBtnPanel.innerText = '<FILE>';
+      self.fileLoaderBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_FILE);');
+      self.fileLoaderBtnPanel.onmouseover = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.fileLoaderBtnPanel.onmouseout = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.fileLoaderBtnPanel);
+
+      self.addOverlayPanelFull(self.toolsPanel);
+      self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT);
+    } else {
+      self.addOverlayPanelFull(self.toolsPanel);
+    }
+    self.updateToolsButtons();
+    self.updateToolsBtnPanel();
+  },
+
+  disableTools: function() {
+    var self = DebugJS.self;
+    if (self.toolsPanel != null) {
+      self.removeOverlayPanelFull(self.toolsPanel);
+    }
+    self.status &= ~DebugJS.STATE_TOOLS;
+    self.updateToolsBtnPanel();
+  },
+
+  updateToolsButtons: function() {
+    var self = DebugJS.self;
+    self.textCheckerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.fileLoaderBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+  },
+
+  switchToolsFunction: function(active) {
+    var self = DebugJS.self;
+    if (DebugJS.self.toolsActiveFunction == active) {
+      return;
+    }
+    if (active & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) {
+      self.enableTextChecker();
+    } else {
+      self.disableTextChecker();
+    }
+    if (active & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) {
+      self.enableFileLoader();
+    } else {
+      self.disableFileLoader();
+    }
+    self.toolsActiveFunction = active;
+    self.updateToolsButtons();
   },
 
   enableTextChecker: function() {
     var self = DebugJS.self;
-    self.status |= DebugJS.STATE_TEXT_CHECKING;
-
     if (self.textCheckerPanel == null) {
       var defaultFontSize = Math.round(12 * self.options.zoom);
       var defaultFontFamily = 'Consolas';
@@ -2781,8 +2892,8 @@ DebugJS.prototype = {
       var defaultBgRGB16 = '000';
       var panelPadding = 2;
       self.textCheckerPanel = document.createElement('div');
-      self.textCheckerPanel.className = self.id + '-overlay-panel-full';
-      self.addOverlayPanelFull(self.textCheckerPanel);
+      self.textCheckerPanel.className = self.id + '-tools';
+      self.toolsBodyPanel.appendChild(self.textCheckerPanel);
 
       var txtPadding = 4;
       self.textCheck = document.createElement('input');
@@ -2841,10 +2952,8 @@ DebugJS.prototype = {
       self.onChangeFgRGB();
       self.onChangeBgRGB();
     } else {
-      self.addOverlayPanelFull(self.textCheckerPanel);
+      self.toolsBodyPanel.appendChild(self.textCheckerPanel);
     }
-
-    self.updateTextCheckerBtnPanel();
   },
 
   onChangeFgRGB: function() {
@@ -2937,11 +3046,226 @@ DebugJS.prototype = {
 
   disableTextChecker: function() {
     var self = DebugJS.self;
-    if (self.textCheckerPanel != null) {
-      self.removeOverlayPanelFull(self.textCheckerPanel);
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) && (self.textCheckerPanel != null)) {
+      self.toolsBodyPanel.removeChild(self.textCheckerPanel);
     }
-    self.status &= ~DebugJS.STATE_TEXT_CHECKING;
-    self.updateTextCheckerBtnPanel();
+  },
+
+  enableFileLoader: function() {
+    var self = DebugJS.self;
+    if (self.fileLoaderPanel == null) {
+      self.fileLoaderPanel = document.createElement('div');
+      self.fileLoaderPanel.className = self.id + '-tools';
+      self.toolsBodyPanel.appendChild(self.fileLoaderPanel);
+
+      self.fileInput = document.createElement('input');
+      self.fileInput.type = 'file';
+      self.fileInput.style.setProperty('width', 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + DebugJS.WINDOW_SHADOW) + 'px)', 'important');
+      self.fileInput.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
+      self.fileInput.style.setProperty('margin-bottom', '4px', 'important');
+      self.fileInput.style.setProperty('padding', '1px', 'important');
+      self.fileInput.style.setProperty('border', '0', 'important');
+      self.fileInput.style.setProperty('border-radius', '0', 'important');
+      self.fileInput.style.setProperty('outline', 'none', 'important');
+      self.fileInput.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.fileInput.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
+      self.fileInput.addEventListener('change', self.handleFileSelect, false);
+      self.fileLoaderPanel.appendChild(self.fileInput);
+
+      self.filePreviewWrapper = document.createElement('div');
+      self.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + DebugJS.WINDOW_SHADOW) + 'px)', 'important');
+      self.filePreviewWrapper.style.setProperty('height', 'calc(100% - ' + ((self.options.fontSize * 4) + 10) + 'px)', 'important');
+      self.filePreviewWrapper.style.setProperty('margin-bottom', '4px', 'important');
+      self.filePreviewWrapper.style.setProperty('padding', '2px', 'important');
+      self.filePreviewWrapper.style.setProperty('border', '1px dotted #ccc', 'important');
+      self.filePreviewWrapper.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.filePreviewWrapper.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
+      self.filePreviewWrapper.style.setProperty('overflow', 'auto', 'important');
+      self.filePreviewWrapper.addEventListener('dragover', self.handleDragOver, false);
+      self.filePreviewWrapper.addEventListener('drop', self.handleFileDrop, false);
+      self.fileLoaderPanel.appendChild(self.filePreviewWrapper);
+
+      self.filePreview = document.createElement('pre');
+      self.filePreview.style.setProperty('background', 'transparent', 'important');
+      self.filePreview.style.setProperty('color', self.options.fontColor, 'important');
+      self.filePreview.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.filePreview.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
+      self.filePreviewWrapper.appendChild(self.filePreview);
+      self.filePreview.innerText = 'Drop a file here';
+
+      self.fileLoadFooter = document.createElement('div');
+      self.fileLoadFooter.style.width = 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + DebugJS.WINDOW_SHADOW) + 'px)';
+      self.fileLoadFooter.style.height = (self.options.fontSize + 3) + 'px';
+      self.fileLoadFooter.style.opacity = 0;
+      self.fileLoadFooter.style.transition = 'opacity 0.5s linear';
+      self.fileLoaderPanel.appendChild(self.fileLoadFooter);
+
+      self.fileLoadProgressBar = document.createElement('div');
+      self.fileLoadProgressBar.style.display = 'inline-block';
+      self.fileLoadProgressBar.style.width = 'calc(100% - ' + (self.options.fontSize * 5) + 'px)';
+      self.fileLoadProgressBar.style.height = 'auto';
+      self.fileLoadProgressBar.style.padding = 0;
+      self.fileLoadProgressBar.style.border = '1px solid #ccc';
+      self.fileLoadFooter.appendChild(self.fileLoadProgressBar);
+
+      self.fileLoadProgress = document.createElement('div');
+      self.fileLoadProgress.style.width = 'calc(100% - ' + (DebugJS.WINDOW_BORDER * 2) + 'px)';
+      self.fileLoadProgress.style.height = 'auto';
+      self.fileLoadProgress.style.padding = '1px';
+      self.fileLoadProgress.style.border = 'none';
+      self.fileLoadProgress.style.background = '#00f';
+      self.fileLoadProgress.style.fontSize = (self.options.fontSize * 0.8) + 'px';
+      self.fileLoadProgress.style.fontFamily = self.options.fontFamily + 'px';
+      self.fileLoadProgress.innerText = '0%';
+      self.fileLoadProgressBar.appendChild(self.fileLoadProgress);
+
+      self.fileLoadCancelBtn = document.createElement('span');
+      self.fileLoadCancelBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.fileLoadCancelBtn.style.position = 'relative';
+      self.fileLoadCancelBtn.style.top = '2px';
+      self.fileLoadCancelBtn.style.float = 'right';
+      self.fileLoadCancelBtn.onclick = new Function('DebugJS.self.cancelLoadFile();');
+      self.fileLoadCancelBtn.innerText = '[CANCEL]';
+      self.fileLoadFooter.appendChild(self.fileLoadCancelBtn);
+    } else {
+      self.toolsBodyPanel.appendChild(self.fileLoaderPanel);
+    }
+  },
+
+  disableFileLoader: function() {
+    var self = DebugJS.self;
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) && (self.fileLoaderPanel != null)) {
+      self.toolsBodyPanel.removeChild(self.fileLoaderPanel);
+    }
+  },
+
+  handleFileSelect: function(e) {
+    var self = DebugJS.self;
+    var file = e.target.files[0];
+    self.loadFile(file);
+  },
+
+  handleDragOver: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  },
+
+  handleFileDrop: function(e) {
+    var self = DebugJS.self;
+    e.stopPropagation();
+    e.preventDefault();
+    var file = e.dataTransfer.files[0];
+    self.loadFile(file);
+  },
+
+  loadFile: function(file) {
+    var self = DebugJS.self;
+
+    self.fileLoadProgress.style.width = '0%';
+    self.fileLoadProgress.textContent = '0%';
+
+    self.fileReader = new FileReader();
+    self.fileReader.onerror = self.fileLoadErrorHandler;
+    self.fileReader.onprogress = self.updateFileLoadProgress;
+    self.fileReader.onabort = self.onAbortLoadFile;
+    self.fileReader.onloadstart = self.onFileLoadStart;
+    self.fileReader.onload = (function(theFile) {
+      return function(e) {
+        self.onFileLoadCompleted(theFile, e);
+      };
+    })(file);
+
+    self.fileReader.readAsDataURL(file);
+  },
+
+  cancelLoadFile: function() {
+    var self = DebugJS.self;
+    if (self.fileReader) {
+      self.fileReader.abort();
+    }
+  },
+
+  onAbortLoadFile: function(e) {
+    var self = DebugJS.self;
+    self.updateFilePreview('File read cancelled.');
+    setTimeout(self.fileLoadFinalize, 1000);
+  },
+
+  fileLoadErrorHandler: function(e) {
+    switch (e.target.error.code) {
+      case e.target.error.NOT_FOUND_ERR:
+        self.updateFilePreview('NOT_FOUND_ERR');
+        break;
+      case e.target.error.NOT_READABLE_ERR:
+        self.updateFilePreview('NOT_READABLE_ERR');
+        break;
+      case e.target.error.ABORT_ERR:
+        self.updateFilePreview('ABORT_ERR');
+        break;
+      default:
+        self.updateFilePreview('FILE_READ_ERROR');
+        break;
+    }
+  },
+
+  updateFileLoadProgress: function(e) {
+    if (e.lengthComputable) {
+      var self = DebugJS.self;
+      var total = e.total;
+      var loaded = e.loaded;
+      var percentLoaded = Math.round((loaded / total) * 100);
+      self.fileLoadProgress.style.width = 'calc(' + percentLoaded + '% - ' + (DebugJS.WINDOW_BORDER * 2) + 'px)';
+      self.fileLoadProgress.textContent = percentLoaded + '%';
+      self.updateFilePreview('LOADING...\n' + DebugJS.formatDec(loaded) + ' / ' + DebugJS.formatDec(total) + ' bytes');
+    }
+  },
+
+  onFileLoadStart: function(e) {
+    var self = DebugJS.self;
+    DebugJS.addClass(self.fileLoadFooter, self.id + '-loading');
+    self.updateFilePreview('LOADING...');
+  },
+
+  onFileLoadCompleted: function(file, e) {
+    var PREVIEW_SIZE_MAX = 5 * 1024 * 1024;
+    var self = DebugJS.self;
+    var contentBase64 = self.fileReader.result;
+    var selfSizePos = self.getSelfSizePos();
+    var fileName = file.name;
+    var fileType = file.type;
+    var fileSize = file.size;
+    var dt = DebugJS.getDateTime(file.lastModifiedDate);
+    var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+    var contentPreview = '';
+    if (fileType.match(/image\//)) {
+      contentPreview = '<img src="' + contentBase64 + '" style="max-width:' + (selfSizePos.w - 25) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13)) + 'px;">\n';
+    } else if (fileType.match(/text\//)) {
+      var contents = contentBase64.split(',');
+      contentPreview = '<span style="color:#0f0">' + DebugJS.decodeBase64(contents[1]) + '</span>\n';
+    }
+
+    var html = 'file    : ' + fileName + '\n' +
+    'type    : ' + fileType + '\n' +
+    'size    : ' + DebugJS.formatDec(fileSize) + ' byte' + ((fileSize >= 2) ? 's' : '') + '\n' +
+    'modified: ' + fileDate + '\n' +
+    contentPreview + '\n';
+    if (fileSize <= PREVIEW_SIZE_MAX) {
+      html += contentBase64;
+    }
+    self.updateFilePreview(html);
+
+    setTimeout(self.fileLoadFinalize, 1000);
+  },
+
+  updateFilePreview: function(html) {
+    var self = DebugJS.self;
+    self.filePreview.innerHTML = html;
+  },
+
+  fileLoadFinalize: function() {
+    var self = DebugJS.self;
+    DebugJS.removeClass(self.fileLoadFooter, self.id + '-loading');
   },
 
   toggleScriptMode: function() {
@@ -3364,8 +3688,8 @@ DebugJS.prototype = {
       self.disableScriptEditor();
       self.scriptBuf = '';
     }
-    if (self.status & DebugJS.STATE_TEXT_CHECKING) {
-      self.disableTextChecker();
+    if (self.status & DebugJS.STATE_TOOLS) {
+      self.disableTools();
     }
     if (self.options.useSuspendLogButton) {
       self.status &= ~DebugJS.STATE_LOG_SUSPENDING;
@@ -4151,6 +4475,7 @@ DebugJS.formatBin = function(v2, grouping, digits, n) {
 };
 
 DebugJS.formatDec = function(v10) {
+  v10 += '';
   var len = v10.length;
   var dec = '';
   for (var i = 0; i < len; i++) {
@@ -4794,6 +5119,20 @@ DebugJS.substr = function(text, len) {
 
 DebugJS.tagEscape = function(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+};
+
+DebugJS.addClass = function(el, className) {
+  if (el.className == '') {
+    el.className = className;
+  } else {
+    el.className += ' ' + className;
+  }
+};
+
+DebugJS.removeClass = function(el, className) {
+  var regexp = new RegExp('\s*' + className, 'g');
+  var orgClassName = el.className;
+  el.className = orgClassName.replace(regexp, '');
 };
 
 DebugJS.onLoad = function() {
