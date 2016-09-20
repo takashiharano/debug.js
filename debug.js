@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609202139';
+  this.v = '201609202310';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3311,11 +3311,38 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var buf = new Uint8Array(contentArray);
     var len = ((buf.length > MAX_LEN) ? MAX_LEN : buf.length);
-    var hexDump = '<span style="background:#0f0;color:#000;">Address  : +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F</span>\n00000000 : ';
+    var hexDump = '<pre style="white-space:pre !important"><span style="background:#0f0;color:#000;">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>\n00000000 : ';
     for (var i = 0; i < len; i++) {
       var hex = ('0' + buf[i].toString(16)).slice(-2).toUpperCase();
       hexDump += hex;
       if (((i + 1) % 0x10 == 0) && ((i + 1) < len)) {
+        hexDump += '  ';
+        for (var j = ((i + 1) - 0x10); j <= i; j++) {
+          if (j <= len) {
+            var code = buf[j];
+            if ((code >= 0x20) && (code <= 0x7E)) {
+              switch (code) {
+                case 0x22:
+                  hexDump += '&quot;';
+                  break;
+                case 0x26:
+                  hexDump += '&amp;';
+                  break;
+                case 0x3C:
+                  hexDump += '&lt;';
+                  break;
+                case 0x3E:
+                  hexDump += '&gt;';
+                  break;
+                default:
+                hexDump += String.fromCharCode(code);
+                break;
+              }
+            } else {
+              hexDump += ' ';
+            }
+          }
+        }
         hexDump += '\n';
         var addr = ('0000000' + (i + 1).toString(16)).slice(-8).toUpperCase();
         hexDump += addr + ' : ';
@@ -3328,6 +3355,7 @@ DebugJS.prototype = {
     if (buf.length > MAX_LEN) {
       hexDump += '\n<span style="color:#ccc;">...</span>';
     }
+    hexDump += '</pre>';
     return hexDump;
   },
 
