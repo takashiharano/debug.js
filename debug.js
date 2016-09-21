@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609202310';
+  this.v = '201609212054';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -716,6 +716,20 @@ DebugJS.prototype = {
 
     styles['.' + self.id + '-loading'] = {
       'opacity': '1.0 !important'
+    };
+
+    styles['#' + self.id + ' label'] = {
+      'display': 'inline',
+      'margin': '0',
+      'line-height': '1em',
+      'color': self.options.fontColor,
+      'font-size': self.options.fontSize + 'px',
+      'font-weight': 'normal',
+      'font-family': self.options.fontFamily
+    };
+
+    styles['#' + self.id + ' input[type="radio"]'] = {
+      'margin': '0 3px'
     };
 
     self.applyStyles(styles);
