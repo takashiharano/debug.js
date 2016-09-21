@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609212054';
+  this.v = '201609220009';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3325,16 +3325,21 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var buf = new Uint8Array(contentArray);
     var len = ((buf.length > MAX_LEN) ? MAX_LEN : buf.length);
+    if (len % 0x10 != 0) {
+      len = (((len / 0x10) + 1) | 0) * 0x10;
+    }
     var hexDump = '<pre style="white-space:pre !important"><span style="background:#0f0;color:#000;">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>\n00000000 : ';
     for (var i = 0; i < len; i++) {
-      var hex = ('0' + buf[i].toString(16)).slice(-2).toUpperCase();
+      var hex = ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase());
       hexDump += hex;
-      if (((i + 1) % 0x10 == 0) && ((i + 1) < len)) {
+      if ((i + 1) % 0x10 == 0) {
         hexDump += '  ';
         for (var j = ((i + 1) - 0x10); j <= i; j++) {
           if (j <= len) {
             var code = buf[j];
-            if ((code >= 0x20) && (code <= 0x7E)) {
+            if (code == undefined) {
+              break;
+            } else if ((code >= 0x20) && (code <= 0x7E)) {
               switch (code) {
                 case 0x22:
                   hexDump += '&quot;';
@@ -3349,17 +3354,19 @@ DebugJS.prototype = {
                   hexDump += '&gt;';
                   break;
                 default:
-                hexDump += String.fromCharCode(code);
-                break;
+                  hexDump += String.fromCharCode(code);
+                  break;
               }
             } else {
               hexDump += ' ';
             }
           }
         }
-        hexDump += '\n';
-        var addr = ('0000000' + (i + 1).toString(16)).slice(-8).toUpperCase();
-        hexDump += addr + ' : ';
+        if ((i + 1) < len) {
+          hexDump += '\n';
+          var addr = ('0000000' + (i + 1).toString(16)).slice(-8).toUpperCase();
+          hexDump += addr + ' : ';
+        }
       } else if ((i + 1) % 8 == 0) {
         hexDump += '  ';
       } else {
@@ -3376,6 +3383,7 @@ DebugJS.prototype = {
   updateFilePreview: function(html) {
     var self = DebugJS.self;
     self.filePreview.innerHTML = html;
+    self.filePreviewWrapper.scrollTop = 0;
   },
 
   fileLoadFinalize: function() {
