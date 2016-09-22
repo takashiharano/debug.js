@@ -46,7 +46,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 #header-line {position:relative; width:100%; top:0; left:0; height:10px; color:#fff; z-index:1; background:#08f;}
 #header {position:relative; width:100%; top:10; left:0; height:310px; color:#fff; z-index:1; background:#333;}
 #title {position:absolute; width:900px; top:0; bottom:0; left:0; right:0; margin:auto; height:130px; padding-left:5px; white-space:nowrap; font-family:Impact;line-height:28px;}
-#content {display:inline-block;position:relative; top:25px; padding:5px;}
+#content {display:inline-block;position:relative; top:25px; padding:5px; margin-bottom:60px;}
 #footer {position:relative; width:100%; bottom:; left:0; height:60px; color:#fff; z-index:1; background:#333; text-align:center;}
 
 .caption {font-size:30px; font-weight:bold;}
@@ -71,6 +71,8 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
 .annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
 .alias {font-size:12px; color:#88c; font-style:italic; margin-left:2px;}
+.showhide-button {color:#0a0;}
+.showhide-button:hover {cursor:pointer;}
 /*td {                        */
 /*  width:100px;              */
 /*  font-size:50px !important;*/
@@ -360,6 +362,21 @@ function startStopRandomDemo() {
   randomDemoFlag = randomDemoFlag ? false : true;
   var el = document.getElementById('random-demo-button');
   el.innerText = randomDemoFlag ? 'stop random demo' : 'start random demo';
+}
+
+function showHideByName(name) {
+  var button = document.getElementById(name + '__button');
+  var partialBody = document.getElementById(name + '__partial-body');
+  var body = document.getElementById(name + '__body');
+  if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
+    button.innerText = '▼';
+    partialBody.style.display = 'none';
+    body.style.display = 'block';
+  } else {
+    button.innerText = '▶';
+    partialBody.style.display = 'inline';
+    body.style.display = 'none';
+  }
 }
 
 var buf = new ArrayBuffer(32);
@@ -2054,6 +2071,10 @@ console.timeEnd('timer3');<br>
 
 <br>
 
+<!-- ********************************************************************** -->
+<span id="dummy__button" class="showhide-button" onclick="showHideByName('dummy')">▶</span>
+<span id="dummy__partial-body">Dummy elements for DOM Element Inspection Test</span>
+<div id="dummy__body" style="display:none;">
 <div class="caption2">Dummy elements for DOM Element Inspection Test</div>
 <div style="height:225px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
@@ -2078,7 +2099,7 @@ console.timeEnd('timer3');<br>
     </form>
   </div>
   <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
-  <div style="width:400px;height:170px;border:1px solid #acf;padding:4px;background:#fdfdff;overflow:auto;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV<br><div style="width:800px;height:300px;">123</div></div>
+  <div style="width:400px;height:170px;border:1px solid #ccc;padding:4px;background:#fdfdff;overflow:auto;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV<br><div style="width:800px;height:300px;">123</div></div>
 </div>
 
 <div>
@@ -2095,8 +2116,8 @@ console.timeEnd('timer3');<br>
   </tr>
 </table>
 -->
+</div><!-- dummy__body -->
 
-<br><br>
 </div><!-- content -->
 </div><!-- main -->
 
