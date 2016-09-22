@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609220009';
+  this.v = '201609230747';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -125,7 +125,8 @@ var DebugJS = function() {
   this.fileLoadProgressBar = null;
   this.fileLoadProgress = null;
   this.fileLoadCancelBtn = null;
-  this.fileLoadType = DebugJS.FILE_LOAD_TYPE_BASE64;
+  this.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BASE64;
+  this.fileLoadFile = null;
   this.fileReader = null;
   this.scriptBtnPanel = null;
   this.scriptPanel = null;
@@ -256,8 +257,8 @@ DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
 DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
 DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT = 0x1;
 DebugJS.TOOLS_ACTIVE_FUNCTION_FILE = 0x2;
-DebugJS.FILE_LOAD_TYPE_BASE64 = 0;
-DebugJS.FILE_LOAD_TYPE_BIN = 1;
+DebugJS.FILE_LOAD_FORMAT_BASE64 = 0;
+DebugJS.FILE_LOAD_FORMAT_BIN = 1;
 DebugJS.LOG_TYPE_STANDARD = 0x1;
 DebugJS.LOG_TYPE_DEBUG = 0x2;
 DebugJS.LOG_TYPE_INFO = 0x4;
@@ -3098,6 +3099,7 @@ DebugJS.prototype = {
       self.fileLoadRadioB64.name = this.id + '-load-type';
       self.fileLoadRadioB64.value = 'base64';
       self.fileLoadRadioB64.checked = true;
+      self.fileLoadRadioB64.onchange = self.loadFile;
       self.fileLoadLabelB64.appendChild(self.fileLoadRadioB64);
 
       self.fileLoadLabelBin = document.createElement('label');
@@ -3108,6 +3110,7 @@ DebugJS.prototype = {
       self.fileLoadRadioBin.type = 'radio';
       self.fileLoadRadioBin.name = this.id + '-load-type';
       self.fileLoadRadioBin.value = 'binary';
+      self.fileLoadRadioBin.onchange = self.loadFile;
       self.fileLoadLabelBin.appendChild(self.fileLoadRadioBin);
 
       self.filePreviewWrapper = document.createElement('div');
@@ -3179,8 +3182,8 @@ DebugJS.prototype = {
 
   handleFileSelect: function(e) {
     var self = DebugJS.self;
-    var file = e.target.files[0];
-    self.loadFile(file);
+    self.fileLoadFile = e.target.files[0];
+    self.loadFile();
   },
 
   handleDragOver: function(e) {
@@ -3193,12 +3196,13 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     e.stopPropagation();
     e.preventDefault();
-    var file = e.dataTransfer.files[0];
-    self.loadFile(file);
+    self.fileLoadFile = e.dataTransfer.files[0];
+    self.loadFile();
   },
 
-  loadFile: function(file) {
+  loadFile: function() {
     var self = DebugJS.self;
+    var file = self.fileLoadFile;
 
     self.fileLoadProgress.style.width = '0%';
     self.fileLoadProgress.textContent = '0%';
@@ -3215,10 +3219,10 @@ DebugJS.prototype = {
     })(file);
 
     if (self.fileLoadRadioB64.checked) {
-      self.fileLoadType = DebugJS.FILE_LOAD_TYPE_BASE64;
+      self.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BASE64;
       self.fileReader.readAsDataURL(file);
     } else {
-      self.fileLoadType = DebugJS.FILE_LOAD_TYPE_BIN;
+      self.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BIN;
       self.fileReader.readAsArrayBuffer(file);
     }
   },
@@ -3281,7 +3285,7 @@ DebugJS.prototype = {
     var contentPreview = '';
 
     if (file.size > 0) {
-      if (self.fileLoadType == DebugJS.FILE_LOAD_TYPE_BASE64) {
+      if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64) {
         contentPreview = self.getContentPreview(file, content);
       } else {
         contentPreview = '\n' + self.getHexDump(file, content);
@@ -3293,7 +3297,7 @@ DebugJS.prototype = {
     'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
     'modified: ' + fileDate + '\n' +
     contentPreview + '\n';
-    if (self.fileLoadType == DebugJS.FILE_LOAD_TYPE_BASE64) {
+    if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64) {
       if (file.size <= PREVIEW_SIZE_MAX) {
         html += content;
       } else {
