@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609230747';
+  this.v = '201609241800';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -36,6 +36,7 @@ var DebugJS = function() {
     'btnColor': '#6cf',
     'btnHoverColor': '#8ef',
     'promptColor': '#0cf',
+    'promptColorE': '#f45',
     'bgColor': '0,0,0',
     'bgOpacity': '0.65',
     'border': 'solid 1px #888',
@@ -213,6 +214,7 @@ var DebugJS = function() {
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
+    {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Traverses all enumerable properties of an object and its prototype chain', 'usage': 'prop object'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
@@ -322,7 +324,7 @@ DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
-DebugJS.SYSTEM_INFO_FULL_OVERLAY = false;
+DebugJS.SYSTEM_INFO_FULL_OVERLAY = true;
 DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
@@ -1770,6 +1772,12 @@ DebugJS.prototype = {
   keyHandler: function(e) {
     var self = DebugJS.self;
     switch (e.keyCode) {
+      case 9: // Tab
+        if ((self.status & DebugJS.STATE_TOOLS) && (DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE)) {
+          self.switchFileScreen();
+        }
+        break;
+
       case 13: // Enter
         if (document.activeElement == self.cmdLine) {
           self.execCmd();
@@ -2377,9 +2385,9 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SCREEN SIZE</span> : ' + screenSize + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">User Agent</span>  : ' + navUserAgent + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Language</span>    : ' + self.decorateIfObjIsUnavailable(navigator.language) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  browser</span>   : ' + self.decorateIfObjIsUnavailable(navigator.browserLanguage) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  user</span>      : ' + self.decorateIfObjIsUnavailable(navigator.userLanguage) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Language</span>    : ' + DebugJS.decorateIfObjIsUnavailable(navigator.language) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  browser</span>   : ' + DebugJS.decorateIfObjIsUnavailable(navigator.browserLanguage) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  user</span>      : ' + DebugJS.decorateIfObjIsUnavailable(navigator.userLanguage) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  Languages</span> : ' + languages + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">jQuery</span> : ' + jq + '\n' +
@@ -2389,15 +2397,15 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">script</span> : ' + loadedScripts + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">navigator.</span>\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + self.decorateIfObjIsUnavailable(navigator.appCodeName) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appName</span>      : ' + self.decorateIfObjIsUnavailable(navigator.appName) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + DebugJS.decorateIfObjIsUnavailable(navigator.appCodeName) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appName</span>      : ' + DebugJS.decorateIfObjIsUnavailable(navigator.appName) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appVersion</span>   : ' + navAppVersion + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> buildID</span>      : ' + self.decorateIfObjIsUnavailable(navigator.buildID) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> product </span>     : ' + self.decorateIfObjIsUnavailable(navigator.product) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> productSub</span>   : ' + self.decorateIfObjIsUnavailable(navigator.productSub) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> vendor</span>       : ' + self.decorateIfObjIsUnavailable(navigator.vendor) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> platform</span>     : ' + self.decorateIfObjIsUnavailable(navigator.platform) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> oscpu</span>        : ' + self.decorateIfObjIsUnavailable(navigator.oscpu) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> buildID</span>      : ' + DebugJS.decorateIfObjIsUnavailable(navigator.buildID) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> product </span>     : ' + DebugJS.decorateIfObjIsUnavailable(navigator.product) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> productSub</span>   : ' + DebugJS.decorateIfObjIsUnavailable(navigator.productSub) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> vendor</span>       : ' + DebugJS.decorateIfObjIsUnavailable(navigator.vendor) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> platform</span>     : ' + DebugJS.decorateIfObjIsUnavailable(navigator.platform) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> oscpu</span>        : ' + DebugJS.decorateIfObjIsUnavailable(navigator.oscpu) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">window.</span>\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> onload</span>       : ' + winOnload + '\n' +
@@ -2451,7 +2459,7 @@ DebugJS.prototype = {
         }
       }
     } else {
-      languages = self.decorateIfObjIsUnavailable(navLanguages);
+      languages = DebugJS.decorateIfObjIsUnavailable(navLanguages);
     }
     return languages;
   },
@@ -2540,15 +2548,6 @@ DebugJS.prototype = {
       }
     }
     return shortText;
-  },
-
-  decorateIfObjIsUnavailable: function(obj) {
-    var self = DebugJS.self;
-    var text = obj;
-    if (!obj) {
-      text = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
-    }
-    return text;
   },
 
   toggleElmInspectionMode: function() {
@@ -3203,6 +3202,9 @@ DebugJS.prototype = {
   loadFile: function() {
     var self = DebugJS.self;
     var file = self.fileLoadFile;
+    if (!file) {
+      return;
+    }
 
     self.fileLoadProgress.style.width = '0%';
     self.fileLoadProgress.textContent = '0%';
@@ -3395,6 +3397,16 @@ DebugJS.prototype = {
     DebugJS.removeClass(self.fileLoadFooter, self.id + '-loading');
   },
 
+  switchFileScreen: function() {
+    var self = DebugJS.self;
+    if (self.fileLoadRadioB64.checked) {
+      self.fileLoadRadioBin.checked = true;
+    } else {
+      self.fileLoadRadioB64.checked = true;
+    }
+    self.loadFile();
+  },
+
   toggleScriptMode: function() {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_SCRIPT) {
@@ -3520,18 +3532,10 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     try {
       var ret = eval(code);
-      self.printResult(ret);
+      DebugJS.log.res(ret);
     } catch (e) {
       DebugJS.log.e(e);
     }
-  },
-
-  printResult: function(result) {
-    var self = DebugJS.self;
-    result = self.decorateIfObjIsUnavailable(result);
-    result = DebugJS.encloseStringIfNeeded(result);
-    var msg = '<span style="color:' + self.options.promptColor + ';">&gt;</span> ' + result;
-    DebugJS.log(msg);
   },
 
   disableScriptEditor: function() {
@@ -3779,7 +3783,7 @@ DebugJS.prototype = {
         } else {
           result = DebugJS.encodeBase64(arg);
         }
-        self.printResult(result);
+        DebugJS.log.res(result);
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -3914,6 +3918,24 @@ DebugJS.prototype = {
     self.httpRequest(arg, tbl, 'POST');
   },
 
+  cmdProp: function(arg, tbl) {
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var args = arg.split(' ');
+      for (var i = 0, len = args.length; i < len; i++) {
+        if (args[i] == '') continue;
+        var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.getPropeties(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
+        try {
+          eval(cmd);
+        } catch (e) {
+          DebugJS.log.e(e);
+        }
+      }
+    }
+  },
+
   cmdRandom: function(arg, tbl) {
     arg = arg.replace(/\s{2,}/g, ' ');
     var args = arg.split(' ');
@@ -4001,7 +4023,7 @@ DebugJS.prototype = {
     } else if (op == '+') {
       ret = DebugJS.addTime(timeL, timeR);
     }
-    self.printResult(ret);
+    DebugJS.log.res(ret);
     return true;
   },
 
@@ -4383,6 +4405,14 @@ DebugJS._objDump = function(obj, arg, toJson) {
     arg.dump += obj; arg.cnt++;
   }
   return arg;
+};
+
+DebugJS.getPropeties = function(obj) {
+  var ret = '';
+  for (var key in obj) {
+    ret += key + '\n';
+  }
+  return ret;
 };
 
 DebugJS.countElements = function(selector, showDetail) {
@@ -5244,6 +5274,15 @@ DebugJS.substr = function(text, len) {
   return str;
 };
 
+DebugJS.decorateIfObjIsUnavailable = function(obj) {
+  var self = DebugJS.self;
+  var text = obj;
+  if (!obj) {
+    text = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
+  }
+  return text;
+};
+
 DebugJS.tagEscape = function(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
@@ -5311,6 +5350,22 @@ DebugJS.log.s = function(m) {
 DebugJS.log.p = function(o, m) {
   var str = (m ? m : '') + '\n' + DebugJS.objDump(o);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_STANDARD);
+};
+
+DebugJS.log.res = function(m) {
+  var self = DebugJS.self;
+  m = DebugJS.decorateIfObjIsUnavailable(m);
+  m = DebugJS.encloseStringIfNeeded(m);
+  var msg = '<span style="color:' + self.options.promptColor + ';">&gt;</span> ' + m;
+  DebugJS.log(msg);
+};
+
+DebugJS.log.res.err = function(m) {
+  var self = DebugJS.self;
+  m = DebugJS.decorateIfObjIsUnavailable(m);
+  m = DebugJS.encloseStringIfNeeded(m);
+  var msg = '<span style="color:' + self.options.promptColorE + ';">&gt;</span> ' + m;
+  DebugJS.log(msg);
 };
 
 DebugJS.log.mlt = function(m) {
@@ -5450,6 +5505,16 @@ log.t = function(n, m) {
 log.p = function(o, m) {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.p(o, m);
+};
+
+log.res = function(m) {
+  if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  DebugJS.log.res(m);
+};
+
+log.res.err = function(m) {
+  if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  DebugJS.log.res.err(m);
 };
 
 log.stack = function() {

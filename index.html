@@ -247,11 +247,21 @@ var messages = [
     'msg': 'error log sample.',
     'delay': 50
   },
-  {
-    'fnc': log.s,
-    'msg': 'system log sample.',
-    'delay': 50
-  }
+//  {
+//    'fnc': log.s,
+//    'msg': 'system log sample.',
+//    'delay': 50
+//  },
+//  {
+//    'fnc': log.res,
+//    'msg': 'result log sample.',
+//    'delay': 50
+//  },
+//  {
+//    'fnc': log.res.err,
+//    'msg': 'error result log sample.',
+//    'delay': 50
+//  }
 ];
 
 var demoStepCount = 0;
@@ -711,8 +721,14 @@ DebugJS.init(options);
 
   <tr>
     <td class="name">promptColor</td>
-    <td>Color code for command prompt "$"</td>
+    <td>Color code for command prompt "$" and "&gt;" at the head of result log</td>
     <td>'#0cf'</td>
+  </tr>
+
+  <tr>
+    <td class="name">promptColorE</td>
+    <td>Color code for "&gt;" at the head of error result log</td>
+    <td>'#f45'</td>
   </tr>
 
   <tr>
@@ -981,6 +997,24 @@ log.t(null, 'foo')
 -&gt; 00:00:12.345 foo
 <span class="annotation">default timer name will be used in case null is specified for the timer name.</span>
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">log.res</td>
+    <td>message string</td>
+    <td>
+      Output result log<br>
+      <pre class="eg"><span style="color:#0cf;">&gt;</span> message</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">log.res.err</td>
+    <td>message string</td>
+    <td>
+      Output error result log<br>
+      <pre class="eg"><span style="color:#f45;">&gt;</span> message</pre>
     </td>
   </tr>
 
@@ -1437,6 +1471,13 @@ post https://debugjs.net/env/ abc=123&amp;xyz=987
   </tr>
 
   <tr>
+    <td class="name">prop</td>
+    <td>Object(s)</td>
+    <td>Traverses all enumerable properties of an object and its prototype chain.</td>
+  </tr>
+
+
+  <tr>
     <td class="name">random</td>
     <td>
       arg1: type<span class="annotation">(opt)</span><br>
@@ -1672,6 +1713,18 @@ log.p(a, 'a = ');<br>
 </td>
 
 <td>
+result log<br>
+<span class="button" onclick="log.res(logMessageText.value);">log.res()</span>
+</td>
+
+<td>
+error result log<br>
+<span class="button" onclick="log.res.err(logMessageText.value);">log.res.err()</span>
+</td>
+</tr>
+
+<tr>
+<td>
 print stack<br>
 <span class="button" onclick="log.stack();">log.stack()</span>
 </td>
@@ -1680,9 +1733,7 @@ print stack<br>
 clear log<br>
 <span class="button" onclick="log.clear();">log.clear()</span>
 </td>
-</tr>
 
-<tr>
 <td>
 log() log.d() log.i() ...<br>
 <span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
