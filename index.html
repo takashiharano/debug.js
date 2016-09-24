@@ -1364,10 +1364,8 @@ $ base64 -e
 $ base64 -d YWJjZGVmZw==
 -&gt; abcdefg
 </pre>
-
     </td>
   </tr>
-
 
   <tr>
     <td class="name">cls</td>
@@ -1449,8 +1447,16 @@ get https://debugjs.net/env/?abc=123&amp;xyz=987
 
   <tr>
     <td class="name">p</td>
-    <td>variable(s)</td>
-    <td>Print object dump. (recursive)</td>
+    <td>
+      arg1: recursion level limit<span class="annotation">(opt)</span><br>
+      arg2: object(s)</span>
+    </td>
+    <td>
+     Print object dump. (recursive)
+<pre class="eg">
+$ p -l&lt;n&gt; objectName
+</pre>
+    </td>
   </tr>
 
   <tr>
@@ -1471,11 +1477,10 @@ post https://debugjs.net/env/ abc=123&amp;xyz=987
   </tr>
 
   <tr>
-    <td class="name">prop</td>
+    <td class="name">keys</td>
     <td>Object(s)</td>
-    <td>Traverses all enumerable properties of an object and its prototype chain.</td>
+    <td>Displays all enumerable property keys of an object.</td>
   </tr>
-
 
   <tr>
     <td class="name">random</td>
@@ -2142,6 +2147,7 @@ console.timeEnd('timer3');<br>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=1</span><input id="input-tab1" name="input-tab1" style="width:180px;" tabindex="1" accesskey="a"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=2</span><input id="input-tab3" name="input-tab3" style="width:180px;" tabindex="3" accesskey="b"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=3</span><input id="input-tab2" name="input-tab2" style="width:180px;" tabindex="2" accesskey="c"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">file</span><input type="file" id="input-file" name="input-file" style="width:180px;"></div>
       <div style="margin-bottom:5px;">
         <input type="submit" value="Submit" onsubmit="return false;">
         <input type="button" value="BUTTON">

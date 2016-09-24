@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609241800';
+  this.v = '201609250022';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -210,11 +210,11 @@ var DebugJS = function() {
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
+    {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
-    {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Traverses all enumerable properties of an object and its prototype chain', 'usage': 'prop object'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
@@ -2521,7 +2521,7 @@ DebugJS.prototype = {
   trimDownText: function(text, maxLen, omit, style) {
     var snip = '...';
     if (style) {
-      snip = '<span style="' + style + '">...</span>';
+      snip = '<span style="' + style + '">' + snip + '</span>';
     }
     var shortText = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '');
     if (text.length > maxLen) {
@@ -3890,6 +3890,24 @@ DebugJS.prototype = {
     }
   },
 
+  cmdKeys: function(arg, tbl) {
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var args = arg.split(' ');
+      for (var i = 0, len = args.length; i < len; i++) {
+        if (args[i] == '') continue;
+        var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.getPropertyKeys(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
+        try {
+          eval(cmd);
+        } catch (e) {
+          DebugJS.log.e(e);
+        }
+      }
+    }
+  },
+
   cmdLed: function(arg, tbl) {
     var self = DebugJS.self;
     if (arg == '') {
@@ -3916,24 +3934,6 @@ DebugJS.prototype = {
   cmdPost: function(arg, tbl) {
     var self = DebugJS.self;
     self.httpRequest(arg, tbl, 'POST');
-  },
-
-  cmdProp: function(arg, tbl) {
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      var args = arg.split(' ');
-      for (var i = 0, len = args.length; i < len; i++) {
-        if (args[i] == '') continue;
-        var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.getPropeties(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
-        try {
-          eval(cmd);
-        } catch (e) {
-          DebugJS.log.e(e);
-        }
-      }
-    }
   },
 
   cmdRandom: function(arg, tbl) {
@@ -4263,9 +4263,16 @@ DebugJS.checkMetaKey = function(e) {
 
 DebugJS.execCmdP = function(arg) {
   var args = arg.split(' ');
-  for (var i = 0, len = args.length; i < len; i++) {
+  var opt = args[0].match(/-l(\d+)/);
+  var start = 0;
+  var levelLimit = 0;
+  if (opt != null) {
+    start = 1;
+    levelLimit = opt[1];
+  }
+  for (var i = start, len = args.length; i < len; i++) {
     if (args[i] == '') continue;
-    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
+    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ', false, ' + levelLimit + ');DebugJS.log.mlt(DebugJS.buf);';
     try {
       eval(cmd);
     } catch (e) {
@@ -4276,12 +4283,12 @@ DebugJS.execCmdP = function(arg) {
 
 DebugJS.INDENT_SP = ' ';
 DebugJS.OBJDMP_MAX = 1000;
-DebugJS.objDump = function(obj, toJson) {
+DebugJS.objDump = function(obj, toJson, levelLimit) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
     arg.dump += '<span style="color:#4c4;">function</span>()\n';
   }
-  var ret = DebugJS._objDump(obj, arg, toJson);
+  var ret = DebugJS._objDump(obj, arg, toJson, levelLimit);
   if (ret.cnt >= DebugJS.OBJDMP_MAX) {
     DebugJS.log.w('The object is too large. (>=' + ret.cnt + ')');
   }
@@ -4290,124 +4297,131 @@ DebugJS.objDump = function(obj, toJson) {
   return ret.dump;
 };
 
-DebugJS._objDump = function(obj, arg, toJson) {
-  if (arg.cnt >= DebugJS.OBJDMP_MAX) {
-    if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
-      arg.dump += '<span style="color:#aaa;">...</span>'; arg.cnt++;
+DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
+  try {
+    if ((levelLimit >= 1) && (arg.lv > levelLimit)) {
+      return arg;
     }
-    return arg;
-  }
-  var indent = '';
-  for (var i = 0; i < arg.lv; i++) {
-    indent += DebugJS.INDENT_SP;
-  }
-  if (obj instanceof Array) {
-    arg.cnt++;
-    if (toJson) {
-      arg.dump += '[\n';
+    if (arg.cnt >= DebugJS.OBJDMP_MAX) {
+      if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
+        arg.dump += '<span style="color:#aaa;">...</span>'; arg.cnt++;
+      }
+      return arg;
+    }
+    var indent = '';
+    for (var i = 0; i < arg.lv; i++) {
       indent += DebugJS.INDENT_SP;
-    } else {
-      arg.dump += '<span style="color:#c08;">[Array][' + obj.length + ']</span>';
     }
-    var s = 0;
-    for (var i in obj) {
-      if (s > 0) {
-        if (toJson) {
-          arg.dump += ',\n';
-        }
-      }
-      arg.lv++; indent += DebugJS.INDENT_SP;
-      if (!toJson) {
-        arg.dump += '\n' + indent + '[' + i + '] ';
-      }
-      arg = DebugJS._objDump(obj[i], arg, toJson);
-      arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
-      s++;
-    }
-    if (toJson) {
-      indent = indent.replace(DebugJS.INDENT_SP, '');
-      if (s > 0) {
-        arg.dump += '\n';
-      }
-      arg.dump += indent + ']';
-    }
-  } else if (obj instanceof Object) {
-    arg.cnt++;
-    if (typeof obj !== 'function') {
+    if (obj instanceof Array) {
+      arg.cnt++;
       if (toJson) {
-        arg.dump += indent;
+        arg.dump += '[\n';
+        indent += DebugJS.INDENT_SP;
       } else {
-        arg.dump += '<span style="color:#49f;">[Object]</span> ';
+        arg.dump += '<span style="color:#c08;">[Array][' + obj.length + ']</span>';
       }
-      arg.dump += '{\n';
-    }
-    indent += DebugJS.INDENT_SP;
-    var s = 0;
-    for (var key in obj) {
-      if (s > 0) {
+      var s = 0;
+      for (var i in obj) {
+        if (s > 0) {
+          if (toJson) {
+            arg.dump += ',\n';
+          }
+        }
+        arg.lv++; indent += DebugJS.INDENT_SP;
+        if (!toJson) {
+          arg.dump += '\n' + indent + '[' + i + '] ';
+        }
+        arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit);
+        arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
+        s++;
+      }
+      if (toJson) {
+        indent = indent.replace(DebugJS.INDENT_SP, '');
+        if (s > 0) {
+          arg.dump += '\n';
+        }
+        arg.dump += indent + ']';
+      }
+    } else if (obj instanceof Object) {
+      arg.cnt++;
+      if (typeof obj !== 'function') {
         if (toJson) {
-          arg.dump += ',';
+          arg.dump += indent;
+        } else {
+          arg.dump += '<span style="color:#49f;">[Object]</span> ';
         }
-        arg.dump += '\n';
+        arg.dump += '{\n';
       }
-      if (typeof obj[key] === 'function') {
-        arg.dump += indent + '<span style="color:#4c4;">function</span> ' + key + '()'; arg.cnt++;
-        if (Object.keys(obj[key]).length > 0) {
-          arg.dump += ' {\n';
+      indent += DebugJS.INDENT_SP;
+      var s = 0;
+      for (var key in obj) {
+        if (s > 0) {
+          if (toJson) {
+            arg.dump += ',';
+          }
+          arg.dump += '\n';
         }
-      } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
-        arg.dump += indent;
-        if (toJson) {arg.dump += '"';}
-        arg.dump += key;
-        if (toJson) {arg.dump += '"';}
-        var dt = DebugJS.getDateTime(obj[key]);
-        var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
-        arg.dump += ': <span style="color:#f80;">[Date]</span> ' + date;
+        if (typeof obj[key] === 'function') {
+          arg.dump += indent + '<span style="color:#4c4;">function</span> ' + key + '()'; arg.cnt++;
+          if (Object.keys(obj[key]).length > 0) {
+            arg.dump += ' {\n';
+          }
+        } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
+          arg.dump += indent;
+          if (toJson) {arg.dump += '"';}
+          arg.dump += key;
+          if (toJson) {arg.dump += '"';}
+          var dt = DebugJS.getDateTime(obj[key]);
+          var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+          arg.dump += ': <span style="color:#f80;">[Date]</span> ' + date;
+          s++;
+          continue;
+        } else if (obj[key] instanceof ArrayBuffer) {
+          arg.dump += indent;
+          if (toJson) {arg.dump += '"';}
+          arg.dump += key;
+          if (toJson) {arg.dump += '"';}
+          arg.dump += ': <span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
+          s++;
+          continue;
+        } else {
+          arg.dump += indent;
+          if (toJson) {arg.dump += '"';}
+          arg.dump += key;
+          if (toJson) {arg.dump += '"';}
+          arg.dump += ': ';
+        }
+        arg.lv++;
+        arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit);
+        arg.lv--;
+        if (typeof obj[key] === 'function') {
+          if (Object.keys(obj[key]).length > 0) {
+            arg.dump += '\n' + indent + '}';
+          }
+        }
         s++;
-        continue;
-      } else if (obj[key] instanceof ArrayBuffer) {
-        arg.dump += indent;
-        if (toJson) {arg.dump += '"';}
-        arg.dump += key;
-        if (toJson) {arg.dump += '"';}
-        arg.dump += ': <span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
-        s++;
-        continue;
-      } else {
-        arg.dump += indent;
-        if (toJson) {arg.dump += '"';}
-        arg.dump += key;
-        if (toJson) {arg.dump += '"';}
-        arg.dump += ': ';
       }
-      arg.lv++;
-      arg = DebugJS._objDump(obj[key], arg, toJson);
-      arg.lv--;
-      if (typeof obj[key] === 'function') {
-        if (Object.keys(obj[key]).length > 0) {
-          arg.dump += '\n' + indent + '}';
-        }
+      indent = indent.replace(DebugJS.INDENT_SP, '');
+      if (typeof obj !== 'function') {
+        arg.dump += '\n' + indent + '}';
       }
-      s++;
+    } else if (obj === null) {
+      arg.dump += '<span style="color:#ccc;">null</span>'; arg.cnt++;
+    } else if (obj === undefined) {
+      arg.dump += '<span style="color:#ccc;">undefined</span>'; arg.cnt++;
+    } else if (typeof obj === 'string') {
+      var str = obj.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      arg.dump += '"' + str + '"'; arg.cnt++;
+    } else {
+      arg.dump += obj; arg.cnt++;
     }
-    indent = indent.replace(DebugJS.INDENT_SP, '');
-    if (typeof obj !== 'function') {
-      arg.dump += '\n' + indent + '}';
-    }
-  } else if (obj === null) {
-    arg.dump += '<span style="color:#ccc;">null</span>'; arg.cnt++;
-  } else if (obj === undefined) {
-    arg.dump += '<span style="color:#ccc;">undefined</span>'; arg.cnt++;
-  } else if (typeof obj === 'string') {
-    var str = obj.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    arg.dump += '"' + str + '"'; arg.cnt++;
-  } else {
-    arg.dump += obj; arg.cnt++;
+  } catch (e) {
+    arg.dump += '<span style="color:#f66;">parse error: ' + e + '</span>'; arg.cnt++;
   }
   return arg;
 };
 
-DebugJS.getPropeties = function(obj) {
+DebugJS.getPropertyKeys = function(obj) {
   var ret = '';
   for (var key in obj) {
     ret += key + '\n';
