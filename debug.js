@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609251715';
+  this.v = '201609252222';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4266,13 +4266,19 @@ DebugJS.execCmdP = function(arg) {
   var opt = args[0].match(/-l(\d+)/);
   var start = 0;
   var levelLimit = 0;
+  var noMaxLimit = false;
   if (opt != null) {
     start = 1;
     levelLimit = opt[1];
+  } else {
+    if (args[0] == '-a') {
+      start = 1;
+      noMaxLimit = true;
+    }
   }
   for (var i = start, len = args.length; i < len; i++) {
     if (args[i] == '') continue;
-    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ', false, ' + levelLimit + ');DebugJS.log.mlt(DebugJS.buf);';
+    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ', false, ' + levelLimit + ', ' + noMaxLimit + ');DebugJS.log.mlt(DebugJS.buf);';
     try {
       eval(cmd);
     } catch (e) {
@@ -4283,13 +4289,13 @@ DebugJS.execCmdP = function(arg) {
 
 DebugJS.INDENT_SP = ' ';
 DebugJS.OBJDMP_MAX = 1000;
-DebugJS.objDump = function(obj, toJson, levelLimit) {
+DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
     arg.dump += '<span style="color:#4c4;">function</span>()\n';
   }
-  var ret = DebugJS._objDump(obj, arg, toJson, levelLimit);
-  if (ret.cnt >= DebugJS.OBJDMP_MAX) {
+  var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit);
+  if ((!noMaxLimit) && (ret.cnt >= DebugJS.OBJDMP_MAX)) {
     DebugJS.log.w('The object is too large. (>=' + ret.cnt + ')');
   }
   ret.dump = ret.dump.replace(/: {2,}\{/g, ': {');
@@ -4297,12 +4303,12 @@ DebugJS.objDump = function(obj, toJson, levelLimit) {
   return ret.dump;
 };
 
-DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
+DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
   try {
     if ((levelLimit >= 1) && (arg.lv > levelLimit)) {
       return arg;
     }
-    if (arg.cnt >= DebugJS.OBJDMP_MAX) {
+    if ((!noMaxLimit) && (arg.cnt >= DebugJS.OBJDMP_MAX)) {
       if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
         arg.dump += '<span style="color:#aaa;">...</span>'; arg.cnt++;
       }
@@ -4335,7 +4341,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
           if (!toJson) {
             arg.dump += '\n' + indent + '[' + i + '] ';
           }
-          arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit);
+          arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit, noMaxLimit);
           arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
           sibling++;
         }
@@ -4412,7 +4418,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
             arg.dump += ': ';
           }
           arg.lv++;
-          arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit);
+          arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, noMaxLimit);
           arg.lv--;
           if (typeof obj[key] === 'function') {
             if ((levelLimit == 0) || ((levelLimit >= 1) && ((arg.lv + 1) < levelLimit))) {
@@ -5399,7 +5405,7 @@ DebugJS.log.s = function(m) {
 };
 
 DebugJS.log.p = function(o, m) {
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, 0);
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, 0, false);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_STANDARD);
 };
 

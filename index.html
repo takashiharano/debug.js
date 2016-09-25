@@ -260,7 +260,12 @@ var messages = [
 //    'fnc': log.res.err,
 //    'msg': 'error result log sample.',
 //    'delay': 50
-//  }
+//  },
+  {
+    'fnc': log,
+    'msg': '-------------------------------',
+    'delay': 50
+  },
 ];
 
 var demoStepCount = 0;
@@ -1453,7 +1458,14 @@ get https://debugjs.net/env/?abc=123&amp;xyz=987
     <td>
      Print object dump. (recursive)
 <pre class="eg">
+$ p objectName
+-&gt; dump all properties w/ limit (1000)
+
 $ p -l&lt;n&gt; objectName
+-&gt; dump properties w/ recursion level limit
+
+$ p -a objectName
+-&gt; dump all properties w/o limit (may be out of memory)
 </pre>
     </td>
   </tr>
