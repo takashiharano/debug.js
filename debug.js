@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609251435';
+  this.v = '201609251715';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4976,20 +4976,23 @@ DebugJS.timeEnd = function(timerName, msg) {
   return DebugJS.timeSplit(timerName, true, msg);
 };
 
-DebugJS.timeLog = function(timerName, msg) {
+DebugJS.timeLog = function(msg, timerName) {
   var now = new Date();
   var self = DebugJS.self;
 
-  if (timerName === null) {
+  if (!timerName) {
     timerName = DebugJS.DEFAULT_TIMER_NAME;
   }
 
-  if (!self.timers[timerName]) {
-    DebugJS.log.w(timerName + ': timer undefined');
-    return;
+  var t;
+  if (self.timers[timerName]) {
+    t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
+  } else {
+    self.timers[timerName] = {};
+    self.timers[timerName].start = (new Date());
+    t = '00:00:00.000';
   }
 
-  var t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
   var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
 
   var dtLap = '';
@@ -5545,9 +5548,9 @@ log.s = function(m) {
   DebugJS.log.s(m);
 };
 
-log.t = function(n, m) {
+log.t = function(m, n) {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.timeLog(n, m);
+  DebugJS.timeLog(m, n);
 };
 
 log.p = function(o, m) {

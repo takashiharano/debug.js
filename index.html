@@ -88,8 +88,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 DebugJS.init({'visible':true});
 //DebugJS.init({'kioskMode':true});
 
-//time.start();
-//log.t(null, 'init start');
+//log.t('init start');
 
 log('Here is the log output example!');
 
@@ -204,7 +203,7 @@ window.onload = function() {
   setTimeout(execDemo, 1500);
   setTimeout(msgTest, 1500);
 
-  //log.t(null, 'init completed');
+  //log.t('init completed');
 }
 
 var dispCount = 0;
@@ -984,18 +983,18 @@ DebugJS.init(options);
   <tr>
     <td class="name">log.t</td>
     <td>
-      arg1: timer name<br>
-      arg2: message string
+      arg1: message string<br>
+      arg2: timer name<span class="annotation">(opt)</span>
     </td>
     <td>
       Output log w/ elapsed time
 <pre class="eg">
-log.t('timer1', 'foo')
+log.t('foo', 'timer1')
 -&gt; 00:00:12.345 foo
 
-log.t(null, 'foo')
+log.t('foo')
 -&gt; 00:00:12.345 foo
-<span class="annotation">default timer name will be used in case null is specified for the timer name.</span>
+<span class="annotation">default timer name will be used in case no name is given to the timer name.</span>
 </pre>
     </td>
   </tr>
@@ -1449,7 +1448,7 @@ get https://debugjs.net/env/?abc=123&amp;xyz=987
     <td class="name">p</td>
     <td>
       arg1: recursion level limit<span class="annotation">(opt)</span><br>
-      arg2: object(s)</span>
+      arg2: object(s)
     </td>
     <td>
      Print object dump. (recursive)
@@ -1786,6 +1785,10 @@ time.end();<br>
 <span class="button" onclick="time.end();">time.end()</span>
 </td>
 
+<td>
+log w/ timing measurement<br>
+<span class="button" onclick="log.t(logMessageText.value);">log.t()</span>
+</td>
 </tr>
 
 <tr>
@@ -1805,8 +1808,8 @@ time.end('timer1');<br>
 </td>
 
 <td>
-log.t('timer1', 'elapsed time of %n');<br>
-<span class="button" onclick="log.t('timer1', 'elapsed time of %n');">log.t() 1</span>
+log.t('elapsed time of %n', 'timer1');<br>
+<span class="button" onclick="log.t('elapsed time of %n', 'timer1');">log.t() 1</span>
 </td>
 </tr>
 
@@ -1827,8 +1830,8 @@ time.eEnd('timer2', '%n: split=%t/lap=%lt');<br>
 </td>
 
 <td>
-log.t('timer2', 'elapsed time of %n t=%t lap=%lt');<br>
-<span class="button" onclick="log.t('timer2', 'n=%n t=%t lap=%lt');">log.t() 2</span>
+log.t('elapsed time of %n t=%t lap=%lt', 'timer2');<br>
+<span class="button" onclick="log.t('n=%n t=%t lap=%lt', 'timer2');">log.t() 2</span>
 </td>
 </tr>
 </table>
