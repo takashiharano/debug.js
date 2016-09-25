@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609250022';
+  this.v = '201609251358';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4320,27 +4320,29 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
       } else {
         arg.dump += '<span style="color:#c08;">[Array][' + obj.length + ']</span>';
       }
-      var s = 0;
-      for (var i in obj) {
-        if (s > 0) {
-          if (toJson) {
-            arg.dump += ',\n';
+      if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
+        var sibling = 0;
+        for (var i in obj) {
+          if (sibling > 0) {
+            if (toJson) {
+              arg.dump += ',\n';
+            }
           }
+          arg.lv++; indent += DebugJS.INDENT_SP;
+          if (!toJson) {
+            arg.dump += '\n' + indent + '[' + i + '] ';
+          }
+          arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit);
+          arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
+          sibling++;
         }
-        arg.lv++; indent += DebugJS.INDENT_SP;
-        if (!toJson) {
-          arg.dump += '\n' + indent + '[' + i + '] ';
+        if (toJson) {
+          indent = indent.replace(DebugJS.INDENT_SP, '');
+          if (sibling > 0) {
+            arg.dump += '\n';
+          }
+          arg.dump += indent + ']';
         }
-        arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit);
-        arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
-        s++;
-      }
-      if (toJson) {
-        indent = indent.replace(DebugJS.INDENT_SP, '');
-        if (s > 0) {
-          arg.dump += '\n';
-        }
-        arg.dump += indent + ']';
       }
     } else if (obj instanceof Object) {
       arg.cnt++;
@@ -4350,60 +4352,75 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
         } else {
           arg.dump += '<span style="color:#49f;">[Object]</span> ';
         }
-        arg.dump += '{\n';
+        if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
+          arg.dump += '{\n';
+        }
       }
-      indent += DebugJS.INDENT_SP;
-      var s = 0;
-      for (var key in obj) {
-        if (s > 0) {
-          if (toJson) {
-            arg.dump += ',';
+
+      if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
+        indent += DebugJS.INDENT_SP;
+        var sibling = 0;
+        for (var key in obj) {
+          if (sibling > 0) {
+            if (toJson) {
+              arg.dump += ',';
+            }
+            arg.dump += '\n';
           }
-          arg.dump += '\n';
-        }
-        if (typeof obj[key] === 'function') {
-          arg.dump += indent + '<span style="color:#4c4;">function</span> ' + key + '()'; arg.cnt++;
-          if (Object.keys(obj[key]).length > 0) {
-            arg.dump += ' {\n';
+
+          if (typeof obj[key] === 'function') {
+            arg.dump += indent + '<span style="color:#4c4;">function</span>';
+            if (obj[key].toString().match(/\[native code\]/)) {
+              arg.dump += ' [native]';
+            }
+            arg.dump += ' ' + key + '()';
+            arg.cnt++;
+            if ((levelLimit == 0) || ((levelLimit >= 1) && ((arg.lv + 1) < levelLimit))) {
+              if (Object.keys(obj[key]).length > 0) {
+                arg.dump += ' {\n';
+              }
+            }
+          } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
+            arg.dump += indent;
+            if (toJson) {arg.dump += '"';}
+            arg.dump += key;
+            if (toJson) {arg.dump += '"';}
+            var dt = DebugJS.getDateTime(obj[key]);
+            var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+            arg.dump += ': <span style="color:#f80;">[Date]</span> ' + date;
+            sibling++;
+            continue;
+          } else if (obj[key] instanceof ArrayBuffer) {
+            arg.dump += indent;
+            if (toJson) {arg.dump += '"';}
+            arg.dump += key;
+            if (toJson) {arg.dump += '"';}
+            arg.dump += ': <span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
+            sibling++;
+            continue;
+          } else {
+            arg.dump += indent;
+            if (toJson) {arg.dump += '"';}
+            arg.dump += key;
+            if (toJson) {arg.dump += '"';}
+            arg.dump += ': ';
           }
-        } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
-          arg.dump += indent;
-          if (toJson) {arg.dump += '"';}
-          arg.dump += key;
-          if (toJson) {arg.dump += '"';}
-          var dt = DebugJS.getDateTime(obj[key]);
-          var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
-          arg.dump += ': <span style="color:#f80;">[Date]</span> ' + date;
-          s++;
-          continue;
-        } else if (obj[key] instanceof ArrayBuffer) {
-          arg.dump += indent;
-          if (toJson) {arg.dump += '"';}
-          arg.dump += key;
-          if (toJson) {arg.dump += '"';}
-          arg.dump += ': <span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
-          s++;
-          continue;
-        } else {
-          arg.dump += indent;
-          if (toJson) {arg.dump += '"';}
-          arg.dump += key;
-          if (toJson) {arg.dump += '"';}
-          arg.dump += ': ';
-        }
-        arg.lv++;
-        arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit);
-        arg.lv--;
-        if (typeof obj[key] === 'function') {
-          if (Object.keys(obj[key]).length > 0) {
-            arg.dump += '\n' + indent + '}';
+          arg.lv++;
+          arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit);
+          arg.lv--;
+          if (typeof obj[key] === 'function') {
+            if ((levelLimit == 0) || ((levelLimit >= 1) && ((arg.lv + 1) < levelLimit))) {
+              if (Object.keys(obj[key]).length > 0) {
+                arg.dump += '\n' + indent + '}';
+              }
+            }
           }
+          sibling++;
         }
-        s++;
-      }
-      indent = indent.replace(DebugJS.INDENT_SP, '');
-      if (typeof obj !== 'function') {
-        arg.dump += '\n' + indent + '}';
+        indent = indent.replace(DebugJS.INDENT_SP, '');
+        if (typeof obj !== 'function') {
+          arg.dump += '\n' + indent + '}';
+        }
       }
     } else if (obj === null) {
       arg.dump += '<span style="color:#ccc;">null</span>'; arg.cnt++;
@@ -4504,7 +4521,8 @@ DebugJS.execCmdJson = function(json) {
   }
   try {
     var j = JSON.parse(json);
-    var jsn = DebugJS.objDump(j, flg);
+    var levelLimit = 0;
+    var jsn = DebugJS.objDump(j, flg, levelLimit);
     DebugJS.log.mlt(jsn);
   } catch (e) {
     DebugJS.log.e('JSON format error.');
