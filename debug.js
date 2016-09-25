@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609251358';
+  this.v = '201609251435';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4315,7 +4315,10 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
     if (obj instanceof Array) {
       arg.cnt++;
       if (toJson) {
-        arg.dump += '[\n';
+        arg.dump += '[';
+        if (obj.length > 0) {
+          arg.dump += '\n';
+        }
         indent += DebugJS.INDENT_SP;
       } else {
         arg.dump += '<span style="color:#c08;">[Array][' + obj.length + ']</span>';
@@ -4341,7 +4344,10 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
           if (sibling > 0) {
             arg.dump += '\n';
           }
-          arg.dump += indent + ']';
+          if (obj.length > 0) {
+            arg.dump += indent;
+          }
+          arg.dump += ']';
         }
       }
     } else if (obj instanceof Object) {
@@ -4423,9 +4429,19 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit) {
         }
       }
     } else if (obj === null) {
-      arg.dump += '<span style="color:#ccc;">null</span>'; arg.cnt++;
+      if (toJson) {
+        arg.dump += 'null';
+      } else {
+        arg.dump += '<span style="color:#ccc;">null</span>';
+      }
+      arg.cnt++;
     } else if (obj === undefined) {
-      arg.dump += '<span style="color:#ccc;">undefined</span>'; arg.cnt++;
+      if (toJson) {
+        arg.dump += 'undefined';
+      } else {
+        arg.dump += '<span style="color:#ccc;">undefined</span>';
+      }
+      arg.cnt++;
     } else if (typeof obj === 'string') {
       var str = obj.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       arg.dump += '"' + str + '"'; arg.cnt++;
@@ -5380,7 +5396,7 @@ DebugJS.log.s = function(m) {
 };
 
 DebugJS.log.p = function(o, m) {
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o);
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, 0);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_STANDARD);
 };
 
