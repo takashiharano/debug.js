@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609252222';
+  this.v = '201609272350';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -116,18 +116,18 @@ var DebugJS = function() {
   this.fileLoaderBtnPanel = null;
   this.fileLoaderPanel = null;
   this.fileInput = null;
-  this.fileLoadLabelB64 = null;
-  this.fileLoadRadioB64 = null;
-  this.fileLoadLabelBin = null;
-  this.fileLoadRadioBin = null;
+  this.fileLoaderLabelB64 = null;
+  this.fileLoaderRadioB64 = null;
+  this.fileLoaderLabelBin = null;
+  this.fileLoaderRadioBin = null;
   this.filePreviewWrapper = null;
   this.filePreview = null;
-  this.fileLoadFooter = null;
+  this.fileLoaderFooter = null;
   this.fileLoadProgressBar = null;
   this.fileLoadProgress = null;
   this.fileLoadCancelBtn = null;
   this.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BASE64;
-  this.fileLoadFile = null;
+  this.fileLoaderFile = null;
   this.fileReader = null;
   this.scriptBtnPanel = null;
   this.scriptPanel = null;
@@ -1594,6 +1594,7 @@ DebugJS.prototype = {
     }
 
     self.resizeMainHeight();
+    self.resizeImgPreview();
   },
 
   endResize: function() {
@@ -2055,6 +2056,7 @@ DebugJS.prototype = {
     if (w > 0) self.debugWindow.style.width = w + 'px';
     if (h > 0) self.debugWindow.style.height = h + 'px';
     self.resizeMainHeight();
+    self.resizeImgPreview();
     self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
     if ((w != clientWidth) && (h != clientHeight)) {
       self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
@@ -2070,6 +2072,7 @@ DebugJS.prototype = {
       self.debugWindow.style.height = document.documentElement.clientHeight + 'px';
     }
     self.resizeMainHeight();
+    self.resizeImgPreview();
   },
 
   restoreDebugWindow: function() {
@@ -2079,6 +2082,7 @@ DebugJS.prototype = {
     self.debugWindow.style.top = self.orgSizePos.t + 'px';
     self.debugWindow.style.left = self.orgSizePos.l + 'px';
     self.resizeMainHeight();
+    self.resizeImgPreview();
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
@@ -2090,6 +2094,7 @@ DebugJS.prototype = {
     self.debugWindow.style.height = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
     self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
     self.resizeMainHeight();
+    self.resizeImgPreview();
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.saveExpandModeOrgSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
@@ -3089,28 +3094,28 @@ DebugJS.prototype = {
       self.fileInput.addEventListener('change', self.handleFileSelect, false);
       self.fileLoaderPanel.appendChild(self.fileInput);
 
-      self.fileLoadLabelB64 = document.createElement('label');
-      self.fileLoadLabelB64.innerText = 'Base64';
-      self.fileLoadLabelB64.style.marginLeft = '10px';
-      self.fileLoaderPanel.appendChild(self.fileLoadLabelB64);
-      self.fileLoadRadioB64 = document.createElement('input');
-      self.fileLoadRadioB64.type = 'radio';
-      self.fileLoadRadioB64.name = this.id + '-load-type';
-      self.fileLoadRadioB64.value = 'base64';
-      self.fileLoadRadioB64.checked = true;
-      self.fileLoadRadioB64.onchange = self.loadFile;
-      self.fileLoadLabelB64.appendChild(self.fileLoadRadioB64);
+      self.fileLoaderLabelB64 = document.createElement('label');
+      self.fileLoaderLabelB64.innerText = 'Base64';
+      self.fileLoaderLabelB64.style.marginLeft = '10px';
+      self.fileLoaderPanel.appendChild(self.fileLoaderLabelB64);
+      self.fileLoaderRadioB64 = document.createElement('input');
+      self.fileLoaderRadioB64.type = 'radio';
+      self.fileLoaderRadioB64.name = this.id + '-load-type';
+      self.fileLoaderRadioB64.value = 'base64';
+      self.fileLoaderRadioB64.checked = true;
+      self.fileLoaderRadioB64.onchange = self.loadFile;
+      self.fileLoaderLabelB64.appendChild(self.fileLoaderRadioB64);
 
-      self.fileLoadLabelBin = document.createElement('label');
-      self.fileLoadLabelBin.innerText = 'Binary';
-      self.fileLoadLabelBin.style.marginLeft = '10px';
-      self.fileLoaderPanel.appendChild(self.fileLoadLabelBin);
-      self.fileLoadRadioBin = document.createElement('input');
-      self.fileLoadRadioBin.type = 'radio';
-      self.fileLoadRadioBin.name = this.id + '-load-type';
-      self.fileLoadRadioBin.value = 'binary';
-      self.fileLoadRadioBin.onchange = self.loadFile;
-      self.fileLoadLabelBin.appendChild(self.fileLoadRadioBin);
+      self.fileLoaderLabelBin = document.createElement('label');
+      self.fileLoaderLabelBin.innerText = 'Binary';
+      self.fileLoaderLabelBin.style.marginLeft = '10px';
+      self.fileLoaderPanel.appendChild(self.fileLoaderLabelBin);
+      self.fileLoaderRadioBin = document.createElement('input');
+      self.fileLoaderRadioBin.type = 'radio';
+      self.fileLoaderRadioBin.name = this.id + '-load-type';
+      self.fileLoaderRadioBin.value = 'binary';
+      self.fileLoaderRadioBin.onchange = self.loadFile;
+      self.fileLoaderLabelBin.appendChild(self.fileLoaderRadioBin);
 
       self.filePreviewWrapper = document.createElement('div');
       self.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + 2) + 'px)', 'important');
@@ -3133,12 +3138,12 @@ DebugJS.prototype = {
       self.filePreviewWrapper.appendChild(self.filePreview);
       self.filePreview.innerText = 'Drop a file here';
 
-      self.fileLoadFooter = document.createElement('div');
-      self.fileLoadFooter.style.width = 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + DebugJS.WINDOW_SHADOW) + 'px)';
-      self.fileLoadFooter.style.height = (self.options.fontSize + 3) + 'px';
-      self.fileLoadFooter.style.opacity = 0;
-      self.fileLoadFooter.style.transition = 'opacity 0.5s linear';
-      self.fileLoaderPanel.appendChild(self.fileLoadFooter);
+      self.fileLoaderFooter = document.createElement('div');
+      self.fileLoaderFooter.style.width = 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + DebugJS.WINDOW_SHADOW) + 'px)';
+      self.fileLoaderFooter.style.height = (self.options.fontSize + 3) + 'px';
+      self.fileLoaderFooter.style.opacity = 0;
+      self.fileLoaderFooter.style.transition = 'opacity 0.5s linear';
+      self.fileLoaderPanel.appendChild(self.fileLoaderFooter);
 
       self.fileLoadProgressBar = document.createElement('div');
       self.fileLoadProgressBar.style.display = 'inline-block';
@@ -3146,7 +3151,7 @@ DebugJS.prototype = {
       self.fileLoadProgressBar.style.height = 'auto';
       self.fileLoadProgressBar.style.padding = 0;
       self.fileLoadProgressBar.style.border = '1px solid #ccc';
-      self.fileLoadFooter.appendChild(self.fileLoadProgressBar);
+      self.fileLoaderFooter.appendChild(self.fileLoadProgressBar);
 
       self.fileLoadProgress = document.createElement('div');
       self.fileLoadProgress.style.width = 'calc(100% - ' + (DebugJS.WINDOW_BORDER * 2) + 'px)';
@@ -3166,7 +3171,7 @@ DebugJS.prototype = {
       self.fileLoadCancelBtn.style.float = 'right';
       self.fileLoadCancelBtn.onclick = new Function('DebugJS.self.cancelLoadFile();');
       self.fileLoadCancelBtn.innerText = '[CANCEL]';
-      self.fileLoadFooter.appendChild(self.fileLoadCancelBtn);
+      self.fileLoaderFooter.appendChild(self.fileLoadCancelBtn);
     } else {
       self.toolsBodyPanel.appendChild(self.fileLoaderPanel);
     }
@@ -3181,7 +3186,7 @@ DebugJS.prototype = {
 
   handleFileSelect: function(e) {
     var self = DebugJS.self;
-    self.fileLoadFile = e.target.files[0];
+    self.fileLoaderFile = e.target.files[0];
     self.loadFile();
   },
 
@@ -3195,13 +3200,13 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     e.stopPropagation();
     e.preventDefault();
-    self.fileLoadFile = e.dataTransfer.files[0];
+    self.fileLoaderFile = e.dataTransfer.files[0];
     self.loadFile();
   },
 
   loadFile: function() {
     var self = DebugJS.self;
-    var file = self.fileLoadFile;
+    var file = self.fileLoaderFile;
     if (!file) {
       return;
     }
@@ -3220,7 +3225,7 @@ DebugJS.prototype = {
       };
     })(file);
 
-    if (self.fileLoadRadioB64.checked) {
+    if (self.fileLoaderRadioB64.checked) {
       self.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BASE64;
       self.fileReader.readAsDataURL(file);
     } else {
@@ -3274,7 +3279,7 @@ DebugJS.prototype = {
 
   onFileLoadStart: function(e) {
     var self = DebugJS.self;
-    DebugJS.addClass(self.fileLoadFooter, self.id + '-loading');
+    DebugJS.addClass(self.fileLoaderFooter, self.id + '-loading');
     self.updateFilePreview('LOADING...');
   },
 
@@ -3316,7 +3321,7 @@ DebugJS.prototype = {
     var contentPreview = '';
     if (file.type.match(/image\//)) {
       var selfSizePos = self.getSelfSizePos();
-      contentPreview = '<img src="' + contentBase64 + '" style="max-width:' + (selfSizePos.w - 25) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13)) + 'px;">\n';
+      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 25) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13)) + 'px;">\n';
     } else if (file.type.match(/text\//)) {
       var contents = contentBase64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
@@ -3324,6 +3329,24 @@ DebugJS.prototype = {
       contentPreview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
     }
     return contentPreview;
+  },
+
+  resizeImgPreview: function() {
+    var self = DebugJS.self;
+    if ((!(self.status & DebugJS.STATE_TOOLS)) ||
+        (!(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE)) ||
+        (!(self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64))) {
+      return;
+    }
+    var imgPreview = document.getElementById(self.id + '-img-preview');
+    if (imgPreview == null) return;
+    var selfSizePos = self.getSelfSizePos();
+    var maxW = (selfSizePos.w - 25);
+    if (maxW < 100) maxW = 100;
+    var maxH = (selfSizePos.h - (self.options.fontSize * 13));
+    if (maxH < 100) maxH = 100;
+    imgPreview.style.maxWidth = maxW + 'px';
+    imgPreview.style.maxHeight = maxH + 'px';
   },
 
   getHexDump: function(file, contentArray) {
@@ -3394,15 +3417,15 @@ DebugJS.prototype = {
 
   fileLoadFinalize: function() {
     var self = DebugJS.self;
-    DebugJS.removeClass(self.fileLoadFooter, self.id + '-loading');
+    DebugJS.removeClass(self.fileLoaderFooter, self.id + '-loading');
   },
 
   switchFileScreen: function() {
     var self = DebugJS.self;
-    if (self.fileLoadRadioB64.checked) {
-      self.fileLoadRadioBin.checked = true;
+    if (self.fileLoaderRadioB64.checked) {
+      self.fileLoaderRadioBin.checked = true;
     } else {
-      self.fileLoadRadioB64.checked = true;
+      self.fileLoaderRadioB64.checked = true;
     }
     self.loadFile();
   },
@@ -3580,12 +3603,14 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.debugWindow.style.width = w + 'px';
     self.resizeMainHeight();
+    self.resizeImgPreview();
   },
 
   setSelfSizeH: function(h) {
     var self = DebugJS.self;
     self.debugWindow.style.height = h + 'px';
     self.resizeMainHeight();
+    self.resizeImgPreview();
   },
 
   expandHight: function(height) {
@@ -3627,6 +3652,7 @@ DebugJS.prototype = {
       self.debugWindow.style.width = self.expandModeOrg.w + 'px';
       self.debugWindow.style.height = self.expandModeOrg.h + 'px';
       self.resizeMainHeight();
+      self.resizeImgPreview();
       self.logPanel.scrollTop = self.logPanel.scrollHeight;
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
         var sizePos = self.getSelfSizePos();
