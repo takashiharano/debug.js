@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609272350';
+  this.v = '201609281945';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3321,7 +3321,7 @@ DebugJS.prototype = {
     var contentPreview = '';
     if (file.type.match(/image\//)) {
       var selfSizePos = self.getSelfSizePos();
-      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 25) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13)) + 'px;">\n';
+      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13) - 8) + 'px;">\n';
     } else if (file.type.match(/text\//)) {
       var contents = contentBase64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
@@ -3341,9 +3341,9 @@ DebugJS.prototype = {
     var imgPreview = document.getElementById(self.id + '-img-preview');
     if (imgPreview == null) return;
     var selfSizePos = self.getSelfSizePos();
-    var maxW = (selfSizePos.w - 25);
+    var maxW = (selfSizePos.w - 32);
     if (maxW < 100) maxW = 100;
-    var maxH = (selfSizePos.h - (self.options.fontSize * 13));
+    var maxH = (selfSizePos.h - (self.options.fontSize * 13) - 8);
     if (maxH < 100) maxH = 100;
     imgPreview.style.maxWidth = maxW + 'px';
     imgPreview.style.maxHeight = maxH + 'px';
