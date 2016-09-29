@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609281945';
+  this.v = '201609300000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -413,7 +413,7 @@ DebugJS.prototype = {
         self.setupKioskMode();
       }
     } else {
-      self.id = options.target;
+      self.id = self.options.target;
       self.debugWindow = document.getElementById(self.id);
       self.debugWindow.style.position = 'relative';
     }
