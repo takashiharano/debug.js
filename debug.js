@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201609300000';
+  this.v = '201610041850';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4316,6 +4316,9 @@ DebugJS.execCmdP = function(arg) {
 DebugJS.INDENT_SP = ' ';
 DebugJS.OBJDMP_MAX = 1000;
 DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
+  if (levelLimit == undefined) {
+    levelLimit = 0;
+  }
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
     arg.dump += '<span style="color:#4c4;">function</span>()\n';
@@ -5430,8 +5433,8 @@ DebugJS.log.s = function(m) {
   DebugJS.log.out(m, DebugJS.LOG_TYPE_SYSTEM);
 };
 
-DebugJS.log.p = function(o, m) {
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, 0, false);
+DebugJS.log.p = function(o, l, m) {
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_STANDARD);
 };
 
@@ -5585,9 +5588,9 @@ log.t = function(m, n) {
   DebugJS.timeLog(m, n);
 };
 
-log.p = function(o, m) {
+log.p = function(o, l, m) {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.log.p(o, m);
+  DebugJS.log.p(o, l, m);
 };
 
 log.res = function(m) {
@@ -5638,7 +5641,7 @@ if (DebugJS.ENABLE) {
   log.d = function(x) {};
   log.s = function(x) {};
   log.t = function(x, xx) {};
-  log.p = function(x, xx) {};
+  log.p = function(x, xx, xxx) {};
   log.stack = function() {};
   log.clear = function() {};
   DebugJS.time.start = function(x, xx) {};
