@@ -497,7 +497,7 @@ The debug window will be automatically generated and is draggable.<br><br>
 <table border="0">
 <tr>
 <td><span style="color:#e90;">⚠</span></td><td>The debug window is hidden by default setting.</td></tr>
-<tr><td></td><td>You can switch hide/show by F2 key.</td></tr>
+<tr><td></td><td>You can switch show/hide by F2 key.</td></tr>
 </table>
 <br>
 
@@ -567,7 +567,7 @@ DebugJS.init(options);
 
   <tr>
     <td class="name">keyAssign</td>
-    <td>Key code for the debug window vibible/hide control</td>
+    <td>Key code for the debug window show/hide control</td>
     <td>
 {<br>
 &nbsp;&nbsp;'key': 113,<span class="annotation">(F2)</span><br>
@@ -1531,7 +1531,7 @@ $ rgb 255 255 255
 </table>
 <br>
 
-<div class="caption">// Calculation</div>
+<div class="caption">// Calculation / Conversion</div>
 The debugger can perform the following calculation/conversion on the command-line.
 <table class="desc-table">
   <tr>
@@ -1570,6 +1570,7 @@ HEX 0xF0
 </pre>
     </td>
   </tr>
+
   <tr>
     <td class="name">Time calculation</td>
     <td>
@@ -1590,7 +1591,23 @@ $ 10:00 + 16:00
 
 $ 10:00 - 16:00
 -&gt; 18:00:00.000 (-1 Day)
+</pre>
+    </td>
+  </tr>
 
+  <tr>
+    <td class="name">Unicode</td>
+    <td>
+     U+XXXX ...
+    </td>
+    <td>
+     Displays the character(s) of the code point which specified by the argument.
+<pre class="eg">
+$ U+0041
+-&gt; A
+
+$ U+6F22 U+5B57
+-&gt; 漢字
 </pre>
     </td>
   </tr>
@@ -1629,7 +1646,7 @@ $ 10:00 - 16:00
     <td>JavaScript Editor/Executor</td>
   </tr>
   <tr>
-    <td>🔃</td>
+    <td><!--🔃-->⟳</td>
     <td>Reset stopwatch</td>
   </tr>
   <tr>

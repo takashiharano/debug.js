@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201610041850';
+  this.v = '201610122350';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -328,7 +328,7 @@ DebugJS.SYSTEM_INFO_FULL_OVERLAY = true;
 DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
-'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\ntime.start();\ntime.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
+'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
 '// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
@@ -1400,7 +1400,7 @@ DebugJS.prototype = {
   updateSwBtnPanel: function() {
     var self = DebugJS.self;
     var btn = (self.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
-    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.resetStopWatch();">🔃</span>' +
+    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.resetStopWatch();">⟳</span>' +
     '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.startStopStopWatch();">' + btn + '</span>';
     self.swBtnPanel.innerHTML = btns;
   },
@@ -3763,12 +3763,24 @@ DebugJS.prototype = {
       return;
     }
 
-    if (!found) {found = self.cmdRadixConv(str);}
+    if (!found) {
+      found = self.cmdRadixConv(str);
+    }
+
+    if (!found) {
+      found = self.cmdTimeCalc(str);
+    }
+
+    if ((!found) && (str.match(/^U\+/i))) {
+      this.cmdUnicode(str);
+      return;
+    }
+
     if ((!found) && (str.match(/^http/))) {
       this.cmdGet(str);
-      found = true;
+      return;
     }
-    if (!found) {found = self.cmdTimeCalc(str);}
+
     if (!found) {
       self.execCode(str);
     }
@@ -4051,6 +4063,16 @@ DebugJS.prototype = {
     }
     DebugJS.log.res(ret);
     return true;
+  },
+
+  cmdUnicode: function(arg) {
+    var str = '';
+    var args = arg.split(' ');
+    for (var i = 0, len = args.length; i < len; i++) {
+      if (args[i] == '') continue;
+      str += '&#x' + args[i].substr(2);
+    }
+    DebugJS.log.res(str);
   },
 
   cmdRGB: function(arg, tbl) {
