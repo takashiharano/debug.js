@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201610122350';
+  this.v = '201610170055';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -133,6 +133,12 @@ var DebugJS = function() {
   this.scriptPanel = null;
   this.scriptEditor = null;
   this.scriptBuf = '';
+  this.htmlPreviewerBtnPanel = null;
+  this.htmlPreviewerBasePanel = null;
+  this.htmlPreviewerPrevPanel = null;
+  this.htmlPreviewEditorPanel = null;
+  this.htmlPreviewEditor = null;
+  this.htmlPreviewBuf = '';
   this.swBtnPanel = null;
   this.swPanel = null;
   this.swStartTime = 0;
@@ -259,6 +265,7 @@ DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
 DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
 DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT = 0x1;
 DebugJS.TOOLS_ACTIVE_FUNCTION_FILE = 0x2;
+DebugJS.TOOLS_ACTIVE_FUNCTION_HTML = 0x4;
 DebugJS.FILE_LOAD_FORMAT_BASE64 = 0;
 DebugJS.FILE_LOAD_FORMAT_BIN = 1;
 DebugJS.LOG_TYPE_STANDARD = 0x1;
@@ -332,6 +339,13 @@ DebugJS.SNIPPET = [
 '// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
+];
+DebugJS.HTML_SNIPPET = [
+'<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
+'<div style="width:100%; height:100%; background:#000; color:#fff;">\n\n</div>\n',
+'',
+'',
+''
 ];
 DebugJS.FEATURES = [
   'togglableShowHide',
@@ -733,6 +747,23 @@ DebugJS.prototype = {
 
     styles['#' + self.id + ' input[type="radio"]'] = {
       'margin': '0 3px'
+    };
+
+    styles['.' + self.id + '-editor'] = {
+      'width': 'calc(100% - 6px) !important',
+      'height': 'calc(100% - ' + (self.options.fontSize + 10) + 'px) !important',
+      'margin': '2px 0 0 0 !important',
+      'box-sizing': 'content-box !important',
+      'padding': '2px !important',
+      'border': 'solid 1px #1883d7 !important',
+      'border-radius': '0 !important',
+      'outline': 'none !important',
+      'background': 'transparent !important',
+      'color': '#fff !important',
+      'font-size': self.options.fontSize + 'px !important',
+      'font-family': self.options.fontFamily + ' !important',
+      'overflow': 'auto !important',
+      'resize': 'none !important'
     };
 
     self.applyStyles(styles);
@@ -2861,6 +2892,15 @@ DebugJS.prototype = {
       self.fileLoaderBtnPanel.onmouseout = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
       self.toolsHeaderPanel.appendChild(self.fileLoaderBtnPanel);
 
+      self.htmlPreviewerBtnPanel = document.createElement('span');
+      self.htmlPreviewerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.htmlPreviewerBtnPanel.style.marginRight = '4px';
+      self.htmlPreviewerBtnPanel.innerText = '<HTML>';
+      self.htmlPreviewerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_HTML);');
+      self.htmlPreviewerBtnPanel.onmouseover = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.htmlPreviewerBtnPanel.onmouseout = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.htmlPreviewerBtnPanel);
+
       self.addOverlayPanelFull(self.toolsPanel);
       self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT);
     } else {
@@ -2883,6 +2923,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.textCheckerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.fileLoaderBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.htmlPreviewerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
   },
 
   switchToolsFunction: function(active) {
@@ -2899,6 +2940,11 @@ DebugJS.prototype = {
       self.enableFileLoader();
     } else {
       self.disableFileLoader();
+    }
+    if (active & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) {
+      self.enableHtmlEditor();
+    } else {
+      self.disableHtmlEditor();
     }
     self.toolsActiveFunction = active;
     self.updateToolsButtons();
@@ -3430,6 +3476,79 @@ DebugJS.prototype = {
     self.loadFile();
   },
 
+  enableHtmlEditor: function() {
+    var self = DebugJS.self;
+    if (self.htmlPreviewerBasePanel == null) {
+      self.htmlPreviewerBasePanel = document.createElement('div');
+      self.htmlPreviewerBasePanel.className = self.id + '-tools';
+      self.toolsBodyPanel.appendChild(self.htmlPreviewerBasePanel);
+
+      self.htmlPreviewerPrevPanel = document.createElement('div');
+      self.htmlPreviewerPrevPanel.style.height = '50%';
+      self.htmlPreviewerPrevPanel.innerHTML = 'HTML PREVIEWER';
+      self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewerPrevPanel);
+
+      self.htmlPreviewEditorPanel = document.createElement('div');
+      var html = '<span style="color:#ccc;">HTML Editor</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.drawHtml();">[DRAW]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet()">[CLR]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="DebugJS.self.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(2)">&lt;CODE3&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(3)">&lt;CODE4&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(4)">&lt;CODE5&gt;</span>';
+      self.htmlPreviewEditorPanel.innerHTML = html;
+      self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditorPanel);
+
+      self.htmlPreviewEditor = document.createElement('textarea');
+      self.htmlPreviewEditor.className = self.id + '-editor';
+      self.htmlPreviewEditor.style.setProperty('height', 'calc(50% - ' + (self.options.fontSize + 10) + 'px)', 'important');
+      self.htmlPreviewEditor.onblur = new Function('DebugJS.self.saveHtmlBuf();');
+      self.htmlPreviewEditor.value = self.htmlPreviewBuf;
+      self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditor);
+
+    } else {
+      self.toolsBodyPanel.appendChild(self.htmlPreviewerBasePanel);
+      self.htmlPreviewEditor.focus();
+    }
+  },
+
+  insertHtmlSnippet: function(n) {
+    var self = DebugJS.self;
+    var editor = self.htmlPreviewEditor;
+    if (n == undefined) {
+      editor.value = '';
+      editor.focus();
+    } else {
+      var code = DebugJS.HTML_SNIPPET[n];
+      var buf = editor.value;
+      var posCursole = editor.selectionStart;
+      var leftBuf = buf.substr(0, posCursole);
+      var rightBuf = buf.substr(posCursole, buf.length);
+      buf = leftBuf + code + rightBuf;
+      self.htmlPreviewEditor.focus();
+      self.htmlPreviewEditor.value = buf;
+      editor.selectionStart = editor.selectionEnd = posCursole + code.length;
+    }
+  },
+
+  saveHtmlBuf: function() {
+    var self = DebugJS.self;
+    self.htmlPreviewBuf = self.htmlPreviewEditor.value;
+  },
+
+  drawHtml: function() {
+    var self = DebugJS.self;
+    self.htmlPreviewerPrevPanel.innerHTML = self.htmlPreviewBuf;
+  },
+
+  disableHtmlEditor: function() {
+    var self = DebugJS.self;
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) && (self.htmlPreviewerBasePanel != null)) {
+      self.toolsBodyPanel.removeChild(self.htmlPreviewerBasePanel);
+    }
+  },
+
   toggleScriptMode: function() {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_SCRIPT) {
@@ -3458,20 +3577,7 @@ DebugJS.prototype = {
       self.addOverlayPanel(self.scriptPanel);
 
       self.scriptEditor = document.createElement('textarea');
-      self.scriptEditor.style.setProperty('width', 'calc(100% - 6px)', 'important');
-      self.scriptEditor.style.setProperty('height', 'calc(100% - ' + (self.options.fontSize + 10) + 'px)', 'important');
-      self.scriptEditor.style.setProperty('margin', '2px 0 0 0', 'important');
-      self.scriptEditor.style.setProperty('box-sizing', 'content-box', 'important');
-      self.scriptEditor.style.setProperty('padding', '2px', 'important');
-      self.scriptEditor.style.setProperty('border', 'solid 1px #1883d7', 'important');
-      self.scriptEditor.style.setProperty('border-radius', '0', 'important');
-      self.scriptEditor.style.setProperty('outline', 'none', 'important');
-      self.scriptEditor.style.setProperty('background', 'transparent', 'important');
-      self.scriptEditor.style.setProperty('color', '#fff', 'important');
-      self.scriptEditor.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
-      self.scriptEditor.style.setProperty('font-family', self.options.fontFamily, 'important');
-      self.scriptEditor.style.setProperty('overflow', 'auto', 'important');
-      self.scriptEditor.style.setProperty('resize', 'none', 'important');
+      self.scriptEditor.className = self.id + '-editor';
       self.scriptEditor.onblur = new Function('DebugJS.self.saveScriptBuf();');
       self.scriptEditor.value = self.scriptBuf;
       self.scriptPanel.appendChild(self.scriptEditor);
