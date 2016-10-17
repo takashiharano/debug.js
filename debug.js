@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201610170055';
+  this.v = '201610172016';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -338,14 +338,14 @@ DebugJS.SNIPPET = [
 '// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
 '// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
-'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
+''
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
 '<div style="width:100%; height:100%; background:#000; color:#fff;">\n\n</div>\n',
 '',
 '',
-''
+'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
   'togglableShowHide',
@@ -3506,11 +3506,10 @@ DebugJS.prototype = {
       self.htmlPreviewEditor.onblur = new Function('DebugJS.self.saveHtmlBuf();');
       self.htmlPreviewEditor.value = self.htmlPreviewBuf;
       self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditor);
-
     } else {
       self.toolsBodyPanel.appendChild(self.htmlPreviewerBasePanel);
-      self.htmlPreviewEditor.focus();
     }
+    self.htmlPreviewEditor.focus();
   },
 
   insertHtmlSnippet: function(n) {
