@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201610172016';
+  this.v = '201610272312';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2600,7 +2600,7 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
-      self.elmInspectionPanel.innerHTML = '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">&lt;ELEMENT INFO&gt;</span>';
+      self.elmInspectionPanel.innerHTML = '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showPrevElem();">&lt;&lt;</span> <span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">ELEMENT INFO</span> <span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showNextElem();">&gt;&gt;</span>';
       if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
         self.elmInspectionPanel.className = self.id + '-overlay-panel-full';
         self.addOverlayPanelFull(self.elmInspectionPanel);
@@ -2665,11 +2665,15 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var OMIT_STYLE = 'color:#888';
     var html = '<pre>';
-    if (el) {
+    if (el && el.tagName) {
+      DebugJS.dom = el;
       var computedStyle = window.getComputedStyle(el);
       var rect = el.getBoundingClientRect();
       var MAX_LEN = 50;
-      var text = el.innerText;
+      var text = '';
+      if (el.tagName != 'HTML') {
+        text = el.innerText;
+      }
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
       var href = (el.href ? self.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
       var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
@@ -2813,17 +2817,59 @@ DebugJS.prototype = {
     self.elmInspectionPanelBody.innerHTML = html;
   },
 
+  showPrevElem: function() {
+    var self = DebugJS.self;
+
+    var el = self.prevElm.previousElementSibling;
+    if (el == null) {
+      el = self.prevElm.parentNode;
+    } else {
+      if (el.childElementCount > 0) {
+        el = el.lastElementChild;
+      }
+    }
+
+    if (el != null) {
+      self.showElementInfo(el);
+      self.updatePrevElm(el);
+    }
+  },
+
+  showNextElem: function() {
+    var self = DebugJS.self;
+
+    var el = self.prevElm.firstElementChild;
+    if (el == null) {
+      el = self.prevElm.nextElementSibling;
+      if (el == null) {
+        var parentNode = self.prevElm.parentNode;
+        if (parentNode != null) {
+          el = parentNode.nextElementSibling;
+        }
+      }
+    }
+
+    if (el != null) {
+      self.showElementInfo(el);
+      self.updatePrevElm(el);
+    }
+  },
+
   updatePrevElm: function(el) {
     var self = DebugJS.self;
     if (self.prevElm) {
-      self.prevElm.style.outline = self.prevElmStyle.outline;
-      self.prevElm.style.opacity = self.prevElmStyle.opacity;
+      try {
+        self.prevElm.style.outline = self.prevElmStyle.outline;
+        self.prevElm.style.opacity = self.prevElmStyle.opacity;
+      } catch (e) {}
     }
     if (el) {
-      self.prevElmStyle.outline = el.style.outline;
-      self.prevElmStyle.opacity = el.style.opacity;
-      el.style.outline = 'solid 1px #f00';
-      el.style.opacity = 0.7;
+      try {
+        self.prevElmStyle.outline = el.style.outline;
+        self.prevElmStyle.opacity = el.style.opacity;
+        el.style.outline = 'solid 1px #f00';
+        el.style.opacity = 0.7;
+      } catch (e) {}
       self.prevElm = el;
     }
   },
