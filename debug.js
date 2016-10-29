@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201610272312';
+  this.v = '201610291455';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -86,8 +86,8 @@ var DebugJS = function() {
   this.elmInspectionPanel = null;
   this.elmInspectionPanelBody = null;
   this.elmInfoShowHideStatus = {'allStyles': false, 'elBorder': false};
-  this.prevElm = null;
-  this.prevElmStyle = {};
+  this.targetElm = null;
+  this.targetElmStyle = {};
   this.toolsBtnPanel = null;
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
@@ -333,6 +333,7 @@ DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SYSTEM_INFO_FULL_OVERLAY = true;
 DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
+DebugJS._ENABLE = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 '// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
@@ -1977,13 +1978,13 @@ DebugJS.prototype = {
         self.mouseClickR = DebugJS.COLOR_ACTIVE;
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
           if (self.isOnDebugWindow(posX, posY)) {
-            if ((DebugJS.el) && (DebugJS.el != self.prevElm)) {
+            if ((DebugJS.el) && (DebugJS.el != self.targetElm)) {
               self.showElementInfo(DebugJS.el);
-              self.updatePrevElm(DebugJS.el);
+              self.updateTargetElm(DebugJS.el);
             }
           } else {
-            DebugJS.el = document.elementFromPoint(posX, posY);
-            DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>');
+            var pointedElm = document.elementFromPoint(posX, posY);
+            self.captureElm(pointedElm);
           }
         }
         break;
@@ -2600,7 +2601,9 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
-      self.elmInspectionPanel.innerHTML = '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showPrevElem();">&lt;&lt;</span> <span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">ELEMENT INFO</span> <span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showNextElem();">&gt;&gt;</span>';
+      self.elmInspectionPanel.innerHTML = '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showPrevElem();">&lt;&lt;</span> ' +
+                                          '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">ELEMENT INFO</span> ' +
+                                          '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showNextElem();">&gt;&gt;</span>';
       if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
         self.elmInspectionPanel.className = self.id + '-overlay-panel-full';
         self.addOverlayPanelFull(self.elmInspectionPanel);
@@ -2627,11 +2630,11 @@ DebugJS.prototype = {
 
   disableElmInspection: function() {
     var self = DebugJS.self;
-    if (self.prevElm) {
-      self.prevElm.style.outline = self.prevElmStyle.outline;
-      self.prevElm.style.opacity = self.prevElmStyle.opacity;
-      self.prevElm = null;
-      self.prevElmStyle = {};
+    if (self.targetElm) {
+      self.targetElm.style.outline = self.targetElmStyle.outline;
+      self.targetElm.style.opacity = self.targetElmStyle.opacity;
+      self.targetElm = null;
+      self.targetElmStyle = {};
     }
     if (self.elmInspectionPanel != null) {
       if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
@@ -2644,7 +2647,7 @@ DebugJS.prototype = {
       self.elmInspectionPanelBody = null;
       self.elmNumPanel = null;
     }
-    self.updatePrevElm(null);
+    self.updateTargetElm(null);
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
     self.updateElmInspectionBtnPanel();
   },
@@ -2655,9 +2658,9 @@ DebugJS.prototype = {
     var posY = e.clientY;
     if (self.isOnDebugWindow(posX, posY)) return;
     var el = document.elementFromPoint(posX, posY);
-    if (el != self.prevElm) {
+    if (el != self.targetElm) {
       self.showElementInfo(el);
-      self.updatePrevElm(el);
+      self.updateTargetElm(el);
     }
   },
 
@@ -2671,7 +2674,7 @@ DebugJS.prototype = {
       var rect = el.getBoundingClientRect();
       var MAX_LEN = 50;
       var text = '';
-      if (el.tagName != 'HTML') {
+      if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
         text = el.innerText;
       }
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
@@ -2748,6 +2751,7 @@ DebugJS.prototype = {
 
       html += '<span style="color:#8f0;display:inline-block;height:14px;">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
+      'object    : ' + Object.prototype.toString.call(el) + '\n' +
       'tag       : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
       'id        : ' + el.id + '\n' +
       'class     : ' + el.className + '\n' +
@@ -2781,6 +2785,7 @@ DebugJS.prototype = {
       'value     : ' + (el.value ? self.createFoldingText(el.value, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) : '') + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
+      'disabled  : ' + DebugJS.decorateIfObjIsUnavailable(el.disabled, true) + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'href      : ' + href + '\n' +
       'src       : ' + src + '\n' +
@@ -2820,57 +2825,69 @@ DebugJS.prototype = {
   showPrevElem: function() {
     var self = DebugJS.self;
 
-    var el = self.prevElm.previousElementSibling;
+    var el = self.targetElm.previousElementSibling;
     if (el == null) {
-      el = self.prevElm.parentNode;
+      el = self.targetElm.parentNode;
     } else {
       if (el.childElementCount > 0) {
-        el = el.lastElementChild;
+        var lastChild = el.lastElementChild;
+        while (lastChild.childElementCount > 0) {
+          lastChild = lastChild.lastElementChild;
+        }
+        el = lastChild;
       }
     }
 
-    if (el != null) {
-      self.showElementInfo(el);
-      self.updatePrevElm(el);
+    if (el) {
+      if (!(el instanceof HTMLDocument)) {
+        self.showElementInfo(el);
+        self.updateTargetElm(el);
+      }
     }
   },
 
   showNextElem: function() {
     var self = DebugJS.self;
 
-    var el = self.prevElm.firstElementChild;
+    var el = self.targetElm.firstElementChild;
     if (el == null) {
-      el = self.prevElm.nextElementSibling;
+      el = self.targetElm.nextElementSibling;
       if (el == null) {
-        var parentNode = self.prevElm.parentNode;
-        if (parentNode != null) {
-          el = parentNode.nextElementSibling;
+        var parentNode = self.targetElm.parentNode;
+        if (parentNode) {
+          do {
+            el = parentNode.nextElementSibling;
+            if (el != null) {
+              break;
+            }
+            parentNode = parentNode.parentNode;
+          } while ((parentNode != null) && (parentNode.tagName != 'HTML'));
         }
       }
     }
 
-    if (el != null) {
+    if (el) {
       self.showElementInfo(el);
-      self.updatePrevElm(el);
+      self.updateTargetElm(el);
     }
   },
 
-  updatePrevElm: function(el) {
+  updateTargetElm: function(el) {
     var self = DebugJS.self;
-    if (self.prevElm) {
+    if (self.targetElm) {
       try {
-        self.prevElm.style.outline = self.prevElmStyle.outline;
-        self.prevElm.style.opacity = self.prevElmStyle.opacity;
+        self.targetElm.style.outline = self.targetElmStyle.outline;
+        self.targetElm.style.opacity = self.targetElmStyle.opacity;
       } catch (e) {}
     }
     if (el) {
       try {
-        self.prevElmStyle.outline = el.style.outline;
-        self.prevElmStyle.opacity = el.style.opacity;
+        self.targetElmStyle.outline = el.style.outline;
+        self.targetElmStyle.opacity = el.style.opacity;
         el.style.outline = 'solid 1px #f00';
         el.style.opacity = 0.7;
       } catch (e) {}
-      self.prevElm = el;
+      self.targetElm = el;
     }
   },
 
@@ -2880,8 +2897,19 @@ DebugJS.prototype = {
       return;
     }
     var UPDATE_INTERVAL = 250;
-    self.elmNumPanel.innerText = '(Total: ' + document.getElementsByTagName('*').length + ')';
+    self.elmNumPanel.innerHTML = '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.exportTargetElm();">_</span> ' +
+                                 '(Total: ' + document.getElementsByTagName('*').length + ')';
     setTimeout(self.updateElementInfo, UPDATE_INTERVAL);
+  },
+
+  exportTargetElm: function() {
+    DebugJS.self.captureElm(DebugJS.self.targetElm);
+  },
+
+  captureElm: function(elm) {
+    DebugJS.el = elm;
+    if (DebugJS._ENABLE) _ = DebugJS.el;
+    DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el' + (DebugJS._ENABLE ? ' (_)' : '') + '</span>');
   },
 
   getEventHandlerString: function(handler, name) {
@@ -5533,10 +5561,10 @@ DebugJS.substr = function(text, len) {
   return str;
 };
 
-DebugJS.decorateIfObjIsUnavailable = function(obj) {
+DebugJS.decorateIfObjIsUnavailable = function(obj, exceptFalse) {
   var self = DebugJS.self;
   var text = obj;
-  if (!obj) {
+  if ((exceptFalse && ((obj == undefined) || (obj == null))) || ((!exceptFalse) && (!obj))) {
     text = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
   }
   return text;
@@ -5805,7 +5833,7 @@ if (DebugJS.ENABLE) {
     console.time = function(x) {time.start(x);};
     console.timeEnd = function(x) {time.end(x);};
   }
-  window._ = window._ || DebugJS;
+  if (!window._) DebugJS._ENABLE = true;
 } else {
   log = function(x) {};
   log.e = function(x) {};
