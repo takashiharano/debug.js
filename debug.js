@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201610291455';
+  this.v = '201611022203';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -950,13 +950,15 @@ DebugJS.prototype = {
       self.closeBtnPanel = document.createElement('span');
       self.closeBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.closeBtnPanel.style.float = 'right';
+      self.closeBtnPanel.style.position = 'relative';
+      self.closeBtnPanel.style.top = '-1px';
       self.closeBtnPanel.style.marginRight = '2px';
       self.closeBtnPanel.style.color = '#888';
-      self.closeBtnPanel.style.fontSize = (22 * self.options.zoom) + 'px';
+      self.closeBtnPanel.style.fontSize = (18 * self.options.zoom) + 'px';
       self.closeBtnPanel.onmouseover = new Function('this.style.color=\'#d88\';');
       self.closeBtnPanel.onmouseout = new Function('this.style.color=\'#888\';');
       self.closeBtnPanel.onclick = new Function('DebugJS.self.closeDebugWindow();');
-      self.closeBtnPanel.innerText = '×';
+      self.closeBtnPanel.innerText = 'x';
       self.headPanel.appendChild(self.closeBtnPanel);
     }
 
@@ -971,8 +973,8 @@ DebugJS.prototype = {
       self.pinBtnPanel = document.createElement('span');
       self.pinBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.pinBtnPanel.style.float = 'right';
-      self.pinBtnPanel.style.marginRight = '4px';
-      self.pinBtnPanel.innerText = '📌';
+      self.pinBtnPanel.style.marginRight = '1px';
+      self.pinBtnPanel.innerHTML = '&#x1F4CC;';
       self.pinBtnPanel.onclick = new Function('DebugJS.self.toggleDraggable();');
       self.pinBtnPanel.onmouseover = new Function('DebugJS.self.pinBtnPanel.style.color=DebugJS.PIN_BUTTON_COLOR;');
       self.pinBtnPanel.onmouseout = new Function('DebugJS.self.pinBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;');
@@ -984,8 +986,8 @@ DebugJS.prototype = {
       self.suspendLogBtnPanel = document.createElement('span');
       self.suspendLogBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.suspendLogBtnPanel.style.float = 'right';
-      self.suspendLogBtnPanel.style.marginRight = '4px';
-      self.suspendLogBtnPanel.innerText = '🚫';
+      self.suspendLogBtnPanel.style.marginRight = '2px';
+      self.suspendLogBtnPanel.innerHTML = '&#x1F6AB;';
       self.suspendLogBtnPanel.onclick = new Function('DebugJS.self.toggleLogSuspend();');
       self.suspendLogBtnPanel.onmouseover = new Function('DebugJS.self.suspendLogBtnPanel.style.color=DebugJS.LOG_SUSPEND_BUTTON_COLOR;');
       self.suspendLogBtnPanel.onmouseout = new Function('DebugJS.self.suspendLogBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
@@ -996,7 +998,7 @@ DebugJS.prototype = {
     if (self.options.useStopWatch) {
       self.swPanel = document.createElement('span');
       self.swPanel.style.float = 'right';
-      self.swPanel.style.marginRight = '6px';
+      self.swPanel.style.marginRight = '4px';
       self.headPanel.appendChild(self.swPanel);
 
       self.swBtnPanel = document.createElement('span');
@@ -1011,7 +1013,7 @@ DebugJS.prototype = {
       self.toolsBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.toolsBtnPanel.style.float = 'right';
       self.toolsBtnPanel.style.marginRight = '3px';
-      self.toolsBtnPanel.innerText = '🛠';
+      self.toolsBtnPanel.innerText = 'TOOL';
       self.toolsBtnPanel.onclick = new Function('DebugJS.self.toggleToolsMode();');
       self.toolsBtnPanel.onmouseover = new Function('DebugJS.self.toolsBtnPanel.style.color=DebugJS.TOOLS_BUTTON_COLOR;');
       self.toolsBtnPanel.onmouseout = new Function('DebugJS.self.toolsBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
@@ -1361,6 +1363,7 @@ DebugJS.prototype = {
   updateLedPanel: function() {
     var self = DebugJS.self;
     if (self.ledPanel) {
+      var LED = '&#x25CF;';
       var SHADOW = 'text-shadow:0 0 5px;';
       var bit7Color = (self.led & DebugJS.IND_BIT_7) ? 'color:' + DebugJS.IND_BIT_7_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
       var bit6Color = (self.led & DebugJS.IND_BIT_6) ? 'color:' + DebugJS.IND_BIT_6_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
@@ -1371,14 +1374,14 @@ DebugJS.prototype = {
       var bit1Color = (self.led & DebugJS.IND_BIT_1) ? 'color:' + DebugJS.IND_BIT_1_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
       var bit0Color = (self.led & DebugJS.IND_BIT_0) ? 'color:' + DebugJS.IND_BIT_0_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
       var led = '' +
-      '<span style="' + bit7Color + 'margin-right:2px;">●</span>' +
-      '<span style="' + bit6Color + 'margin-right:2px;">●</span>' +
-      '<span style="' + bit5Color + 'margin-right:2px;">●</span>' +
-      '<span style="' + bit4Color + 'margin-right:2px;">●</span>' +
-      '<span style="' + bit3Color + 'margin-right:2px;">●</span>' +
-      '<span style="' + bit2Color + 'margin-right:2px;">●</span>' +
-      '<span style="' + bit1Color + 'margin-right:2px;">●</span>' +
-      '<span style="' + bit0Color + '">●</span>';
+      '<span style="' + bit7Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit6Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit5Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit4Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit3Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit2Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit1Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit0Color + '">' + LED + '</span>';
       self.ledPanel.innerHTML = led;
     }
   },
@@ -1432,7 +1435,7 @@ DebugJS.prototype = {
   updateSwBtnPanel: function() {
     var self = DebugJS.self;
     var btn = (self.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
-    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.resetStopWatch();">⟳</span>' +
+    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" style="margin-right:2px;" onclick="DebugJS.self.resetStopWatch();">0</span>' +
     '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.startStopStopWatch();">' + btn + '</span>';
     self.swBtnPanel.innerHTML = btns;
   },
@@ -1464,13 +1467,13 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     if (!self.winCtrlBtnPanel) return;
     var fn = 'DebugJS.self.expandDebugWindow()';
-    var btn = '□';
+    var btn = '&#x25A1;';
     if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H)) {
       fn = 'DebugJS.self.restoreDebugWindow()';
-      btn = '❐';
+      btn = '&#x2750;';
     }
-    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:2px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">－</span>';
+    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-3px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -3637,7 +3640,7 @@ DebugJS.prototype = {
     if (self.scriptPanel == null) {
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.className = self.id + '-overlay-panel';
-      var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-2px;float:right;font-size:' + (22 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">×</div>' +
+      var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-1px;float:right;font-size:' + (18 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">x</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.execScript();">[EXEC]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet()">[CLR]</span>' +
