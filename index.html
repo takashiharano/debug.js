@@ -200,23 +200,48 @@ window.onload = function() {
   base64EText = document.getElementById('base64-e-text');
   base64DText = document.getElementById('base64-d-text');
 
-  setTimeout(displayMessages, 1500);
-  setTimeout(execDemo, 1500);
-  setTimeout(msgTest, 1500);
+  setTimeout(displayDemoMessages, 1500);
+  //setTimeout(ledDemo, 1500);
+  //setTimeout(msgDemo, 1500);
 
   //log.t('init completed');
 }
 
-var dispCount = 0;
-function displayMessages() {
-  if (dispCount >= messages.length) return;
-  var msgData = messages[dispCount];
-  dispCount++;
+var demoDispCount = 0;
+function displayDemoMessages() {
+  if (demoDispCount >= demoMessages.length) return;
+  var msgData = demoMessages[demoDispCount];
+  demoDispCount++;
   msgData.fnc(msgData.msg);
-  setTimeout(displayMessages, msgData.delay);
+  setTimeout(displayDemoMessages, msgData.delay);
 }
 
-var messages = [
+var demoMessages = [
+  {
+    'fnc': log,
+    'msg': 'This window is draggable.',
+    'delay': 250
+  },
+  {
+    'fnc': log,
+    'msg': 'You can switch show/hide by F2 key.',
+    'delay': 250
+  },
+];
+
+var sampleDispCount = 0;
+function displaySampleMessages() {
+  if (sampleDispCount >= sampleMessages.length) {
+    sampleDispCount = 0;
+    return;
+  }
+  var msgData = sampleMessages[sampleDispCount];
+  sampleDispCount++;
+  msgData.fnc(msgData.msg);
+  setTimeout(displaySampleMessages, msgData.delay);
+}
+
+var sampleMessages = [
   {
     'fnc': log,
     'msg': '-------------------------------',
@@ -269,16 +294,19 @@ var messages = [
   },
 ];
 
-var demoStepCount = 0;
-function execDemo() {
-  if (demoStepCount >= demoSteps.length) return;
-  var step = demoSteps[demoStepCount];
-  demoStepCount++;
+var ledDemoStepCount = 0;
+function ledDemo() {
+  if (ledDemoStepCount >= ledDemoSteps.length) {
+    ledDemoStepCount = 0;
+    return;
+  }
+  var step = ledDemoSteps[ledDemoStepCount];
+  ledDemoStepCount++;
   step.fnc();
-  setTimeout(execDemo, step.delay);
+  setTimeout(ledDemo, step.delay);
 }
 
-var demoSteps = [
+var ledDemoSteps = [
   {
     'fnc': function() {dbg.led.on(0);},
     'delay': 100
@@ -333,17 +361,17 @@ var demoSteps = [
   }
 ];
 
-var msgTestCnt = 0;
-var msgTestCntMax = 300;
-var msgTestSpeed = 10;
-function msgTest() {
-  msgTestCnt++;
-  dbg.msg('Message Display Demo(cnt=' + msgTestCnt + ')');
-  if (msgTestCnt <= msgTestCntMax) {
-    dbg.call(msgTest, msgTestSpeed);
+var msgDemoCnt = 0;
+var msgDemoCntMax = 300;
+var msgDemoSpeed = 10;
+function msgDemo() {
+  msgDemoCnt++;
+  dbg.msg('Message Display Demo(cnt=' + msgDemoCnt + ')');
+  if (msgDemoCnt <= msgDemoCntMax) {
+    dbg.call(msgDemo, msgDemoSpeed);
   } else {
     dbg.msg.clear();
-    msgTestCnt = 0;
+    msgDemoCnt = 0;
   }
 }
 
@@ -491,7 +519,7 @@ Include the script file. <a href="https://github.com/takashiharano/debug.js"><sp
 &lt;script src="debug.js"&gt;&lt;/script&gt;
 </pre>
 
-That's it.<br><br>
+That's it!<br><br>
 The debug window will be automatically generated and is draggable.<br><br>
 
 <table border="0">
@@ -1791,7 +1819,7 @@ clear log<br>
 <tr>
 <td>
 log() log.d() log.i() ...<br>
-<span class="button" onclick="dispCount=0;displayMessages();">a series of logs</span>
+<span class="button" onclick="displaySampleMessages();">a series of logs</span>
 </td>
 
 <td>
@@ -1813,6 +1841,10 @@ log with random message<br>
 
 <td>
 <span class="button" onclick="dbg.msg.clear();">dbg.msg.clear()</span>
+</td>
+
+<td>
+<span class="button" onclick="msgDemo();">demo</span>
 </td>
 </tr>
 </table>
@@ -2123,6 +2155,14 @@ dbg.led.all(false);<br>
 <span class="button" onclick="dbg.led.all(false);">dbg.led.all(false)</span>
 </td>
 </tr>
+
+<!--
+<tr>
+<td colspan="2">
+<span class="button" onclick="ledDemo();">demo</span>
+</td>
+</tr>
+-->
 </table>
 
 <br>
