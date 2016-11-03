@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611022203';
+  this.v = '201611031551';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -225,6 +225,7 @@ var DebugJS = function() {
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
+    {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM}
   ];
   this.intCmdTblLen = this.INT_CMD_TBL.length;
@@ -3954,7 +3955,7 @@ DebugJS.prototype = {
     }
 
     if ((!found) && (str.match(/^U\+/i))) {
-      this.cmdUnicode(str);
+      this.cmdUnicode('-d ' + str);
       return;
     }
 
@@ -3995,9 +3996,7 @@ DebugJS.prototype = {
           result = DebugJS.encodeBase64(arg);
         } else if (args[1] == '-d') {
           result = DebugJS.decodeBase64(args[2]);
-          if ((result.match(/^\s/)) || (result.match(/\s$/))) {
-            result = DebugJS.encloseStringIfNeeded(result);
-          }
+          result = DebugJS.encloseStringIfNeeded(result);
         } else if (args[1] == '-e') {
           result = DebugJS.encodeBase64(args[2]);
         } else {
@@ -4247,14 +4246,31 @@ DebugJS.prototype = {
     return true;
   },
 
-  cmdUnicode: function(arg) {
-    var str = '';
-    var args = arg.split(' ');
-    for (var i = 0, len = args.length; i < len; i++) {
-      if (args[i] == '') continue;
-      str += '&#x' + args[i].substr(2);
+  cmdUnicode: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg1 = DebugJS.omitLeadingWhiteSpace(arg);
+    var args = arg1.match(/(-d|-e)?\s(.*)/);
+    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
+    if ((argNoWhiteSpace == '') || (((argNoWhiteSpace == '-d') || (argNoWhiteSpace == '-e')) && (args == null))) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      try {
+        var result;
+        if (args == null) {
+          result = DebugJS.encodeUnicode(arg);
+        } else if (args[1] == '-d') {
+          result = DebugJS.decodeUnicode(args[2]);
+          result = DebugJS.encloseStringIfNeeded(result);
+        } else if (args[1] == '-e') {
+          result = DebugJS.encodeUnicode(args[2]);
+        } else {
+          result = DebugJS.encodeUnicode(arg);
+        }
+        DebugJS.log.res(result);
+      } catch (e) {
+        DebugJS.log.e(e);
+      }
     }
-    DebugJS.log.res(str);
   },
 
   cmdRGB: function(arg, tbl) {
@@ -4891,8 +4907,11 @@ DebugJS.convRadixFromBIN = function(v2) {
   DebugJS.log.mlt(res);
 };
 
-DebugJS.convRadixDECtoHEX = function(v10) {
+DebugJS.convRadixDECtoHEX = function(v10, upper) {
   var v16 = parseInt(v10).toString(16);
+  if (upper) {
+    v16 = v16.toUpperCase();
+  }
   return v16;
 };
 
@@ -4964,6 +4983,35 @@ DebugJS.decodeBase64 = function(str) {
     decoded = atob(str);
   }
   return decoded;
+};
+
+DebugJS.decodeUnicode = function(arg) {
+  var str = '';
+  var args = arg.split(' ');
+  for (var i = 0, len = args.length; i < len; i++) {
+    if (args[i] == '') continue;
+    var codePoint = args[i].replace(/^U\+/i, '');
+    if (codePoint == '20') {
+      str += ' ';
+    } else if (codePoint == '3000') {
+      str += '　';
+    } else {
+      str += '&#x' + codePoint;
+    }
+  }
+  return str;
+};
+
+DebugJS.encodeUnicode = function(str) {
+  var code = '';
+  for (var i = 0, len = str.length; i < len; i++) {
+    var point = str.charCodeAt(i);
+    if (i > 0) {
+      code += ' ';
+    }
+    code += 'U+' + DebugJS.convRadixDECtoHEX(point, true);
+  }
+  return code;
 };
 
 DebugJS.convertTimeJson = function(t) {

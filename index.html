@@ -1349,7 +1349,7 @@ debug.js will not use aliases in case that those are already defined.
 type: -e encode<span class="annotation">(default option)</span>
       -d decode
 
-$ base64 -e 
+$ base64 -e abcdefg
 -&gt; YWJjZGVmZw==
 
 $ base64 -d YWJjZGVmZw==
@@ -1524,6 +1524,27 @@ $ rgb 255 255 255
   </tr>
 
   <tr>
+    <td class="name">unicode</td>
+    <td>
+      arg1: type<br>
+      arg2: string
+    </td>
+    <td>
+     Displays unicode code point(s) from text string / Decodes unicode string from code point(s).
+<pre class="eg">
+type: -e encode<span class="annotation">(default option)</span>
+      -d decode
+
+$ unicode -e abc
+-&gt; U+41 U+42 U+43
+
+$ unicode -d 41 42 43
+-&gt; ABC
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">v</td>
     <td></td>
     <td>Displays version info.</td>
@@ -1609,6 +1630,7 @@ $ U+0041
 $ U+6F22 U+5B57
 -&gt; 漢字
 </pre>
+<span class="annotation">This is an alias of the unicode command.</span>
     </td>
   </tr>
 </table>
