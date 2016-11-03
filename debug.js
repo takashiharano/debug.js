@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611031551';
+  this.v = '201611032030';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3984,29 +3984,7 @@ DebugJS.prototype = {
 
   cmdBase64: function(arg, tbl) {
     var self = DebugJS.self;
-    arg1 = DebugJS.omitLeadingWhiteSpace(arg);
-    var args = arg1.match(/(-d|-e)?\s(.*)/);
-    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
-    if ((argNoWhiteSpace == '') || (((argNoWhiteSpace == '-d') || (argNoWhiteSpace == '-e')) && (args == null))) {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      try {
-        var result;
-        if (args == null) {
-          result = DebugJS.encodeBase64(arg);
-        } else if (args[1] == '-d') {
-          result = DebugJS.decodeBase64(args[2]);
-          result = DebugJS.encloseStringIfNeeded(result);
-        } else if (args[1] == '-e') {
-          result = DebugJS.encodeBase64(args[2]);
-        } else {
-          result = DebugJS.encodeBase64(arg);
-        }
-        DebugJS.log.res(result);
-      } catch (e) {
-        DebugJS.log.e(e);
-      }
-    }
+    self.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
   },
 
   cmdCls: function(arg, tbl) {
@@ -4248,29 +4226,7 @@ DebugJS.prototype = {
 
   cmdUnicode: function(arg, tbl) {
     var self = DebugJS.self;
-    arg1 = DebugJS.omitLeadingWhiteSpace(arg);
-    var args = arg1.match(/(-d|-e)?\s(.*)/);
-    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
-    if ((argNoWhiteSpace == '') || (((argNoWhiteSpace == '-d') || (argNoWhiteSpace == '-e')) && (args == null))) {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      try {
-        var result;
-        if (args == null) {
-          result = DebugJS.encodeUnicode(arg);
-        } else if (args[1] == '-d') {
-          result = DebugJS.decodeUnicode(args[2]);
-          result = DebugJS.encloseStringIfNeeded(result);
-        } else if (args[1] == '-e') {
-          result = DebugJS.encodeUnicode(args[2]);
-        } else {
-          result = DebugJS.encodeUnicode(arg);
-        }
-        DebugJS.log.res(result);
-      } catch (e) {
-        DebugJS.log.e(e);
-      }
-    }
+    self.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
   },
 
   cmdRGB: function(arg, tbl) {
@@ -4318,6 +4274,32 @@ DebugJS.prototype = {
   cmdV: function(arg, tbl) {
     var self = DebugJS.self;
     DebugJS.log(self.v);
+  },
+
+  execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc) {
+    arg1 = DebugJS.omitLeadingWhiteSpace(arg);
+    var args = arg1.match(/(-d|-e)?\s(.*)/);
+    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
+    if ((argNoWhiteSpace == '') || (((argNoWhiteSpace == '-d') || (argNoWhiteSpace == '-e')) && (args == null))) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      try {
+        var result;
+        if (args == null) {
+          result = encodeFunc(arg);
+        } else if (args[1] == '-d') {
+          result = decodeFunc(args[2]);
+          result = DebugJS.encloseStringIfNeeded(result);
+        } else if (args[1] == '-e') {
+          result = encodeFunc(args[2]);
+        } else {
+          result = encodeFunc(arg);
+        }
+        DebugJS.log.res(result);
+      } catch (e) {
+        DebugJS.log.e(e);
+      }
+    }
   },
 
   httpRequest: function(arg, tbl, method) {
