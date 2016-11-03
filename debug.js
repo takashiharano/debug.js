@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611032030';
+  this.v = '201611032353';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5622,6 +5622,7 @@ DebugJS.removeClass = function(el, className) {
 };
 
 DebugJS.onLoad = function() {
+  if (!window._) DebugJS._ENABLE = true;
   DebugJS._init();
 };
 
@@ -5866,7 +5867,6 @@ if (DebugJS.ENABLE) {
     console.time = function(x) {time.start(x);};
     console.timeEnd = function(x) {time.end(x);};
   }
-  if (!window._) DebugJS._ENABLE = true;
 } else {
   log = function(x) {};
   log.e = function(x) {};
