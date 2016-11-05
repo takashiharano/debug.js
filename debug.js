@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611032353';
+  this.v = '201611052005';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4414,7 +4414,7 @@ DebugJS.encloseString = function(str) {
 
 DebugJS.encloseStringIfNeeded = function(str) {
   str += '';
-  if ((str.match(/^\s/)) || (str.match(/\s$/))) {
+  if ((str.match(/^\s|^&#x3000/)) || (str.match(/\s$|&#x3000$/))) {
     str = DebugJS.encloseString(str);
   }
   return str;
@@ -4975,8 +4975,6 @@ DebugJS.decodeUnicode = function(arg) {
     var codePoint = args[i].replace(/^U\+/i, '');
     if (codePoint == '20') {
       str += ' ';
-    } else if (codePoint == '3000') {
-      str += '　';
     } else {
       str += '&#x' + codePoint;
     }
