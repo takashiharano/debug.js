@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611052005';
+  this.v = '201611072234';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -139,6 +139,10 @@ var DebugJS = function() {
   this.htmlPreviewEditorPanel = null;
   this.htmlPreviewEditor = null;
   this.htmlPreviewBuf = '';
+  this.memoBtnPanel = null;
+  this.memoBasePanel = null;
+  this.memoEditorPanel = null;
+  this.memoEditor = null;
   this.swBtnPanel = null;
   this.swPanel = null;
   this.swStartTime = 0;
@@ -267,6 +271,7 @@ DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
 DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT = 0x1;
 DebugJS.TOOLS_ACTIVE_FUNCTION_FILE = 0x2;
 DebugJS.TOOLS_ACTIVE_FUNCTION_HTML = 0x4;
+DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO = 0x8;
 DebugJS.FILE_LOAD_FORMAT_BASE64 = 0;
 DebugJS.FILE_LOAD_FORMAT_BIN = 1;
 DebugJS.LOG_TYPE_STANDARD = 0x1;
@@ -621,6 +626,16 @@ DebugJS.prototype = {
       'text-decoration': 'none',
       'text-shadow': '0 0 3px',
       'cursor': 'pointer'
+    };
+
+    styles['.' + self.id + '-btn-disabled'] = {
+      'opacity': 0.5
+    };
+
+    styles['.' + self.id + '-btn-disabled:hover'] = {
+      'color': self.options.btnColor,
+      'text-shadow': 'none',
+      'cursor': 'auto'
     };
 
     styles['.' + self.id + '-sys-info'] = {
@@ -2979,6 +2994,15 @@ DebugJS.prototype = {
       self.htmlPreviewerBtnPanel.onmouseout = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
       self.toolsHeaderPanel.appendChild(self.htmlPreviewerBtnPanel);
 
+      self.memoBtnPanel = document.createElement('span');
+      self.memoBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.memoBtnPanel.style.marginRight = '4px';
+      self.memoBtnPanel.innerText = '<MEMO>';
+      self.memoBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO);');
+      self.memoBtnPanel.onmouseover = new Function('DebugJS.self.memoBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.memoBtnPanel.onmouseout = new Function('DebugJS.self.memoBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.memoBtnPanel);
+
       self.addOverlayPanelFull(self.toolsPanel);
       self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT);
     } else {
@@ -3002,29 +3026,35 @@ DebugJS.prototype = {
     self.textCheckerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.fileLoaderBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.htmlPreviewerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.memoBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
   },
 
-  switchToolsFunction: function(active) {
+  switchToolsFunction: function(kind) {
     var self = DebugJS.self;
-    if (DebugJS.self.toolsActiveFunction == active) {
+    if (DebugJS.self.toolsActiveFunction == kind) {
       return;
     }
-    if (active & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) {
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) {
       self.enableTextChecker();
     } else {
       self.disableTextChecker();
     }
-    if (active & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) {
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) {
       self.enableFileLoader();
     } else {
       self.disableFileLoader();
     }
-    if (active & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) {
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) {
       self.enableHtmlEditor();
     } else {
       self.disableHtmlEditor();
     }
-    self.toolsActiveFunction = active;
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) {
+      self.enableMemoEditor();
+    } else {
+      self.disableMemoEditor();
+    }
+    self.toolsActiveFunction = kind;
     self.updateToolsButtons();
   },
 
@@ -3568,7 +3598,7 @@ DebugJS.prototype = {
 
       self.htmlPreviewEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc;">HTML Editor</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.drawHtml();">[DRAW]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.drawHtml();DebugJS.self.htmlPreviewEditor.focus();">[DRAW]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet()">[CLR]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="DebugJS.self.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
@@ -3623,6 +3653,65 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) && (self.htmlPreviewerBasePanel != null)) {
       self.toolsBodyPanel.removeChild(self.htmlPreviewerBasePanel);
+    }
+  },
+
+  enableMemoEditor: function() {
+    var self = DebugJS.self;
+    if (self.memoBasePanel == null) {
+      self.memoBasePanel = document.createElement('div');
+      self.memoBasePanel.className = self.id + '-tools';
+      self.toolsBodyPanel.appendChild(self.memoBasePanel);
+
+      self.memoEditorPanel = document.createElement('div');
+      var html = '<span style="color:#ccc;">Memo</span>';
+      if (typeof window.localStorage != 'undefined') {
+        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
+      } else {
+        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px;">[SAVE]</span>' +
+        '<span style="float:right;margin-right:4px;color:#caa">Save function (localStorage) is not available.</span>';
+      }
+      self.memoEditorPanel.innerHTML = html;
+      self.memoBasePanel.appendChild(self.memoEditorPanel);
+
+      self.memoEditor = document.createElement('textarea');
+      self.memoEditor.className = self.id + '-editor';
+      self.memoEditor.style.setProperty('height', 'calc(100% - ' + (self.options.fontSize + 10) + 'px)', 'important');
+      self.memoBasePanel.appendChild(self.memoEditor);
+
+      if (typeof window.localStorage != 'undefined') {
+        self.loadMemo();
+      }
+    } else {
+      self.toolsBodyPanel.appendChild(self.memoBasePanel);
+    }
+    self.memoEditor.focus();
+  },
+
+  loadMemo: function() {
+    var self = DebugJS.self;
+    var memo = localStorage.getItem('DebugJS-memo');
+    if (memo == null) {
+      memo = '';
+    }
+    self.memoEditor.value = memo;
+  },
+
+  saveMemo: function() {
+    var self = DebugJS.self;
+    var memo = self.memoEditor.value;
+    if (memo != '') {
+      localStorage.setItem('DebugJS-memo', self.memoEditor.value);
+    } else {
+      localStorage.removeItem('DebugJS-memo');
+    }
+    DebugJS.log.s('Saved.');
+  },
+
+  disableMemoEditor: function() {
+    var self = DebugJS.self;
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) && (self.memoBasePanel != null)) {
+      self.toolsBodyPanel.removeChild(self.memoBasePanel);
     }
   },
 
