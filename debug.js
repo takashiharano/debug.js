@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611072234';
+  this.v = '201611072310';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2928,7 +2928,7 @@ DebugJS.prototype = {
   captureElm: function(elm) {
     DebugJS.el = elm;
     if (DebugJS._ENABLE) _ = DebugJS.el;
-    DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el' + (DebugJS._ENABLE ? ' (_)' : '') + '</span>');
+    DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._ENABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
   },
 
   getEventHandlerString: function(handler, name) {
