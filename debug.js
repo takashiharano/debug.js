@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611082146';
+  this.v = '201611082243';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2846,6 +2846,9 @@ DebugJS.prototype = {
     var self = DebugJS.self;
 
     var el = self.targetElm.previousElementSibling;
+    if ((el != null) && (el.id == self.id)) {
+      el = self.targetElm.previousElementSibling;
+    }
     if (el == null) {
       el = self.targetElm.parentNode;
     } else {
@@ -2870,14 +2873,14 @@ DebugJS.prototype = {
     var self = DebugJS.self;
 
     var el = self.targetElm.firstElementChild;
-    if (el == null) {
+    if ((el == null) || ((el != null) && (el.id == self.id))) {
       el = self.targetElm.nextElementSibling;
       if (el == null) {
         var parentNode = self.targetElm.parentNode;
         if (parentNode) {
           do {
             el = parentNode.nextElementSibling;
-            if (el != null) {
+            if ((el != null) && (el.id != self.id)) {
               break;
             }
             parentNode = parentNode.parentNode;
