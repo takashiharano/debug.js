@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611072310';
+  this.v = '201611082146';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -339,7 +339,8 @@ DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SYSTEM_INFO_FULL_OVERLAY = true;
 DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
-DebugJS._ENABLE = false;
+DebugJS.LS_AVAILABLE = false;
+DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 '// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
@@ -1489,7 +1490,7 @@ DebugJS.prototype = {
       btn = '&#x2750;';
     }
     var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-3px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -2927,8 +2928,8 @@ DebugJS.prototype = {
 
   captureElm: function(elm) {
     DebugJS.el = elm;
-    if (DebugJS._ENABLE) _ = DebugJS.el;
-    DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._ENABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
+    if (DebugJS._AVAILABLE) _ = DebugJS.el;
+    DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
   },
 
   getEventHandlerString: function(handler, name) {
@@ -3665,7 +3666,7 @@ DebugJS.prototype = {
 
       self.memoEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc;">Memo</span>';
-      if (typeof window.localStorage != 'undefined') {
+      if (DebugJS.LS_AVAILABLE) {
         html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
       } else {
         html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px;">[SAVE]</span>' +
@@ -3679,7 +3680,7 @@ DebugJS.prototype = {
       self.memoEditor.style.setProperty('height', 'calc(100% - ' + (self.options.fontSize + 10) + 'px)', 'important');
       self.memoBasePanel.appendChild(self.memoEditor);
 
-      if (typeof window.localStorage != 'undefined') {
+      if (DebugJS.LS_AVAILABLE) {
         self.loadMemo();
       }
     } else {
@@ -5709,7 +5710,10 @@ DebugJS.removeClass = function(el, className) {
 };
 
 DebugJS.onLoad = function() {
-  if (!window._) DebugJS._ENABLE = true;
+  if (!window._) DebugJS._AVAILABLE = true;
+  if (typeof window.localStorage != 'undefined') {
+    DebugJS.LS_AVAILABLE = true;
+  }
   DebugJS._init();
 };
 
