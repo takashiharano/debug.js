@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611082243';
+  this.v = '201611092105';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2383,6 +2383,25 @@ DebugJS.prototype = {
       jq = 'v' + jQuery.fn.jquery;
     }
 
+    var metaTags = document.getElementsByTagName('meta');
+    var charset;
+    for (var i = 0; i < metaTags.length; i++) {
+      charset = metaTags[i].getAttribute('charset');
+      if (charset) {
+        break;
+      } else {
+        charset = metaTags[i].getAttribute('content');
+        if (charset) {
+          var content = charset.match(/charset=(.*)/);
+          if (content != null) {
+            charset = content[1];
+          }
+          break;
+        }
+      }
+    }
+    if (charset == null) charset = '';
+
     var INDENT = '         ';
     var links = document.getElementsByTagName('link');
     var loadedStyles = '<span class="' + self.id + '-unavailable">not loaded</span>';
@@ -2446,6 +2465,8 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  browser</span>   : ' + DebugJS.decorateIfObjIsUnavailable(navigator.browserLanguage) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  user</span>      : ' + DebugJS.decorateIfObjIsUnavailable(navigator.userLanguage) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  Languages</span> : ' + languages + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">charset</span>: ' + charset + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">jQuery</span> : ' + jq + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
@@ -2695,7 +2716,11 @@ DebugJS.prototype = {
       var MAX_LEN = 50;
       var text = '';
       if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
-        text = el.innerText;
+        if (el.tagName == 'META') {
+          text = DebugJS.tagEscape(el.outerHTML);
+        } else {
+          text = el.innerText;
+        }
       }
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
       var href = (el.href ? self.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
