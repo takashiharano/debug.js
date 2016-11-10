@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611102010';
+  this.v = '201611110034';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -784,6 +784,10 @@ DebugJS.prototype = {
       'font-family': self.options.fontFamily + ' !important',
       'overflow': 'auto !important',
       'resize': 'none !important'
+    };
+
+    styles['.' + self.id + '-ctrlchar'] = {
+      'background': 'rgba(192,192,192,0.5) !important'
     };
 
     self.applyStyles(styles);
@@ -4875,23 +4879,14 @@ DebugJS.getChildElements = function(el, list) {
   }
 };
 
-DebugJS.hasClass = function(el, name) {
-  var className = el.className;
-  var names = className.split(' ');
-  for (var i = 0; i < names.length; i++) {
-    if (names[i] == name) {
-      return true;
-    }
-  }
-  return false;
-};
-
 DebugJS.execCmdJson = function(json) {
+  var self = DebugJS.self;
   var flg = true;
   if (json.substr(0, 2) == '-p') {
     json = json.substr(3);
     flg = false;
   }
+json = '{"name": "John\nSmith", "ag\r\ne": 25, "c\rity": "New\tYork"}';
   try {
     var j = JSON.parse(json);
     var levelLimit = 0;
@@ -4899,6 +4894,11 @@ DebugJS.execCmdJson = function(json) {
     DebugJS.log.mlt(jsn);
   } catch (e) {
     DebugJS.log.e('JSON format error.');
+    json = json.replace(/\t/g, '<span class="' + self.id + '-ctrlchar">\\t</span>');
+    json = json.replace(/\r\n/g, '<span class="' + self.id + '-ctrlchar">\\r\\n</span>');
+    json = json.replace(/[^\\]\r/g, '<span class="' + self.id + '-ctrlchar">\\r</span>');
+    json = json.replace(/[^\\]\n/g, '<span class="' + self.id + '-ctrlchar">\\n</span>');
+    DebugJS.log.e(json);
   }
 };
 
@@ -5734,9 +5734,23 @@ DebugJS.addClass = function(el, className) {
 };
 
 DebugJS.removeClass = function(el, className) {
-  var regexp = new RegExp('\s*' + className, 'g');
   var orgClassName = el.className;
-  el.className = orgClassName.replace(regexp, '');
+  var regexp = new RegExp('\\s*' + className, 'g');
+  var newClassName = orgClassName.replace(regexp, '');
+  newClassName = newClassName.replace(/\s+$/, '');
+  newClassName = newClassName.replace(/^\s+/, '');
+  el.className = newClassName;
+};
+
+DebugJS.hasClass = function(el, name) {
+  var className = el.className;
+  var names = className.split(' ');
+  for (var i = 0; i < names.length; i++) {
+    if (names[i] == name) {
+      return true;
+    }
+  }
+  return false;
 };
 
 DebugJS.onLoad = function() {
