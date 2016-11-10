@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611110040';
+  this.v = '201611110053';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1922,7 +1922,7 @@ DebugJS.prototype = {
           } else if (self.status & DebugJS.STATE_VISIBLE) {
             self.closeDebugWindow();
           } else {
-            self.showDebugWindow();
+            self.showDebugWindow(false);
           }
         }
         break;
@@ -2181,7 +2181,7 @@ DebugJS.prototype = {
     }
   },
 
-  showDebugWindow: function() {
+  showDebugWindow: function(scroll) {
     var self = DebugJS.self;
     self.debugWindow.style.display = 'block';
     self.status |= DebugJS.STATE_VISIBLE;
@@ -2193,6 +2193,9 @@ DebugJS.prototype = {
       self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
     } else {
       self.adjustWindowMax();
+    }
+    if (scroll) {
+      self.logPanel.scrollTop = self.logPanel.scrollHeight;
     }
   },
 
@@ -5780,7 +5783,7 @@ DebugJS.onError = function(e) {
 
   if ((self.options.popupOnError) && !(self.status & DebugJS.STATE_VISIBLE)) {
     self.hasError = true;
-    self.showDebugWindow();
+    self.showDebugWindow(true);
   }
 };
 
