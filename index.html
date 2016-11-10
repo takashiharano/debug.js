@@ -39,7 +39,9 @@
 html, body {width:100%; margin:0; font-family:Arial, sans-serif; font-size:18px; color:#333;}
 a {color:#00f; text-decoration:none;}
 a:hover {text-decoration:underline;}
-button, input[type="button"], input[type="submit"], select {width:80px; height:30px; font-size:16px;}
+select {width:80px; height:30px; font-size:16px;}
+button, input[type="button"], input[type="submit"] {width:200px; height:40px; border:none; border-radius:5px; outline:none; font-size:16px; font-weight:bold; margin:4px 4px 12px 4px; color:#fff; background:#0068cc;}
+button:hover, input[type="button"]:hover, input[type="submit"]:hover {cursor:pointer; background:#00a8ff;}
 input, input[type="text"], textarea, select {font-size: 16px; padding: 3px; color: #333; vertical-align: middle; border: 1px solid #ccc; border-radius: 3px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); transition: border linear 0.1s, box-shadow linear 0.1s;}
 input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:#51a7e8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
 #header-line {width:100%; height:10px; color:#fff; background:#08f;}
@@ -59,12 +61,13 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
 .eg1 {font-size:14px;font-style:italic;margin-bottom:-10px;}
 .emphasis {color:#eee;}
-.button {width:200px; font-size:18px; font-weight:bold; text-decoration:none; display:inline-block; text-align:center; vertical-align:middle; padding:8px 0 10px; margin:4px 4px 12px 4px; color:#fff; background:#0068cc; border-radius:5px;}
-.button-100 {width:100px;}
-.dl-btn {position:relative; top:-4px; width:100px; margin:0; padding:4px 0; font-size:14px;}
+.button-100 {width:100px !important;}
+.dl-btn {position:relative; top:-4px; width:100px; height:25px; margin:0; padding:4px 0; font-size:14px;}
 .button:hover {cursor:pointer; background:#00a8ff; text-decoration:none;}
 .button-green {background:#00cc68;}
 .button-green:hover {background:#00ffa8;}
+.button-red {background:#aa6868;}
+.button-red:hover {background:#d88;}
 .desc-table {font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse; width:760px;}
 .desc-table th {background-color:#eee; border:solid 1px #444; padding:4px 6px;}
 .desc-table td {border:solid 1px #444; padding:4px 6px; vertical-align:top;}
@@ -91,6 +94,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 </style>
 <script>
 DebugJS.init({'visible':true});
+
 //DebugJS.init({'kioskMode':true});
 //DebugJS.init({'target':'debug'});
 
@@ -427,6 +431,10 @@ function showHideByName(name) {
   }
 }
 
+function errorDemo() {
+  fakeError
+}
+
 var buf = new ArrayBuffer(32);
 
 var a = {
@@ -513,7 +521,7 @@ var g = null;
 <div class="caption">// Usage</div><br>
 
 <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Embed the debugger into your web page</div>
-Include the script file. <a href="https://github.com/takashiharano/debug.js"><span class="button dl-btn"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RERCMUIwOUY4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RERCMUIwOUU4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkU1MTc4QTJBOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkU1MTc4QTJCOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+jUqS1wAAApVJREFUeNq0l89rE1EQx3e3gVJoSPzZeNEWPKgHoa0HBak0iHiy/4C3WvDmoZ56qJ7txVsPQu8qlqqHIhRKJZceesmhioQEfxTEtsoSpdJg1u/ABJ7Pmc1m8zLwgWTmzcw3L+/te+tHUeQltONgCkyCi2AEDHLsJ6iBMlgHL8FeoqokoA2j4CloRMmtwTmj7erHBXPgCWhG6a3JNXKdCiDl1cidVbXZkJoXQRi5t5BrxwoY71FzU8S4JuAIqFkJ2+BFSlEh525b/hr3+k/AklDkNsf6wTT4yv46KIMNpsy+iMdMc47HNWxbsgVcUn7FmLAzzoFAWDsBx+wVP6bUpp5ewI+DOeUx0Wd9D8F70BTGNjkWtqnhmT1JQAHcUgZd8Lo3rQb1LAT8eJVUfgGvHQigGp+V2Z0iAUUl8QH47kAA1XioxIo+bRN8OG8F/oBjwv+Z1nJgX5jpdzQDw0LCjsPmrcW7I/iHScCAEDj03FtD8A0EyuChHgg4KTlJQF3wZ7WELppnBX+dBFSVpJsOBWi1qiRgSwnOgoyD5hmuJdkWCVhTgnTvW3AgYIFrSbZGh0UW/Io5Vp+DQoK7o80pztWMemZbgxeNwCNwDbw1fIfgGZjhU6xPaJgBV8BdsMw5cbZoHsenwYFxkZzl83xTSKTiviCAfCsJLysH3POfC8m8NegyGAGfLP/VmGmfSChgXroR0RSWjEFv2J/nG84cuKFMf4sTCZqXuJd4KaXFVjEG3+tw4eXbNK/YC9oXXs3O8NY8y99L4BXY5cvLY/Bb2VZ58EOJVcB18DHJq9lRsKr8inyKGVjlmh29mtHs3AHfuhCwy1vXT/Nu2GKQt+UHsGdctyX6eQyNvc+5sfX9Dl7Pe2J/BRgAl2CpwmrsHR0AAAAASUVORK5CYII=" width="14"> Download</span></a>
+Include the script file. <a href="https://github.com/takashiharano/debug.js"><button class="dl-btn"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RERCMUIwOUY4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RERCMUIwOUU4NkNFMTFFM0FBNTJFRTMzNTJEMUJDNDYiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkU1MTc4QTJBOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkU1MTc4QTJCOTlBMDExRTI5QTE1QkMxMDQ2QTg5MDREIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+jUqS1wAAApVJREFUeNq0l89rE1EQx3e3gVJoSPzZeNEWPKgHoa0HBak0iHiy/4C3WvDmoZ56qJ7txVsPQu8qlqqHIhRKJZceesmhioQEfxTEtsoSpdJg1u/ABJ7Pmc1m8zLwgWTmzcw3L+/te+tHUeQltONgCkyCi2AEDHLsJ6iBMlgHL8FeoqokoA2j4CloRMmtwTmj7erHBXPgCWhG6a3JNXKdCiDl1cidVbXZkJoXQRi5t5BrxwoY71FzU8S4JuAIqFkJ2+BFSlEh525b/hr3+k/AklDkNsf6wTT4yv46KIMNpsy+iMdMc47HNWxbsgVcUn7FmLAzzoFAWDsBx+wVP6bUpp5ewI+DOeUx0Wd9D8F70BTGNjkWtqnhmT1JQAHcUgZd8Lo3rQb1LAT8eJVUfgGvHQigGp+V2Z0iAUUl8QH47kAA1XioxIo+bRN8OG8F/oBjwv+Z1nJgX5jpdzQDw0LCjsPmrcW7I/iHScCAEDj03FtD8A0EyuChHgg4KTlJQF3wZ7WELppnBX+dBFSVpJsOBWi1qiRgSwnOgoyD5hmuJdkWCVhTgnTvW3AgYIFrSbZGh0UW/Io5Vp+DQoK7o80pztWMemZbgxeNwCNwDbw1fIfgGZjhU6xPaJgBV8BdsMw5cbZoHsenwYFxkZzl83xTSKTiviCAfCsJLysH3POfC8m8NegyGAGfLP/VmGmfSChgXroR0RSWjEFv2J/nG84cuKFMf4sTCZqXuJd4KaXFVjEG3+tw4eXbNK/YC9oXXs3O8NY8y99L4BXY5cvLY/Bb2VZ58EOJVcB18DHJq9lRsKr8inyKGVjlmh29mtHs3AHfuhCwy1vXT/Nu2GKQt+UHsGdctyX6eQyNvc+5sfX9Dl7Pe2J/BRgAl2CpwmrsHR0AAAAASUVORK5CYII=" width="14"> Download</button></a>
 <pre class="code emphasis">
 &lt;script src="debug.js"&gt;&lt;/script&gt;
 </pre>
@@ -603,6 +611,12 @@ DebugJS.init(options);
 &nbsp;&nbsp;'shift': false<br>
 }
     </td>
+  </tr>
+
+  <tr>
+    <td class="name">popupOnError</td>
+    <td>Popup the debug window when a JavaScript runtime error occurs</td>
+    <td>true</td>
   </tr>
 
   <tr>
@@ -1741,90 +1755,94 @@ $ U+6F22 U+5B57
 <tr>
 <td>
 standard log<br>
-<span class="button" onclick="log(logMessageText.value);">log()</span>
+<button onclick="log(logMessageText.value);">log()</button>
 </td>
 
 <td>
 debug log<br>
-<span class="button" onclick="log.d(logMessageText.value);">log.d()</span>
+<button onclick="log.d(logMessageText.value);">log.d()</button>
 </td>
 
 <td>
 info log<br>
-<span class="button" onclick="log.i(logMessageText.value);">log.i()</span>
+<button onclick="log.i(logMessageText.value);">log.i()</button>
 </td>
 </tr>
 
 <tr>
 <td>
 warn log<br>
-<span class="button" onclick="log.w(logMessageText.value);">log.w()</span>
+<button onclick="log.w(logMessageText.value);">log.w()</button>
 </td>
 
 <td>
 error log<br>
-<span class="button" onclick="log.e(logMessageText.value);">log.e()</span>
+<button onclick="log.e(logMessageText.value);">log.e()</button>
 </td>
 
 <td>
 system log<br>
-<span class="button" onclick="log.s(logMessageText.value);">log.s()</span>
+<button onclick="log.s(logMessageText.value);">log.s()</button>
 </td>
 </tr>
 
 <tr>
 <td>
 log.p(a);<br>
-<span class="button" onclick="log.p(a);">log.p() w/o msg</span>
+<button onclick="log.p(a);">log.p() w/o msg</button>
 </td>
 
 <td>
 log.p(a, 0, msg);<br>
-<span class="button" onclick="log.p(a, 0, logMessageText.value);">log.p() w/ msg</span>
+<button onclick="log.p(a, 0, logMessageText.value);">log.p() w/ msg</button>
 </td>
 
 <td>
 log.p(a, 1);<br>
-<span class="button" onclick="log.p(a, 1);">log.p() lv1</span>
+<button onclick="log.p(a, 1);">log.p() lv1</button>
 </td>
 
 <td>
 log.p(a, 2);<br>
-<span class="button" onclick="log.p(a, 2);">log.p() lv2</span>
+<button onclick="log.p(a, 2);">log.p() lv2</button>
 </td>
 </tr>
 
 <tr>
 <td>
 result log<br>
-<span class="button" onclick="log.res(logMessageText.value);">log.res()</span>
+<button onclick="log.res(logMessageText.value);">log.res()</button>
 </td>
 
 <td>
 error result log<br>
-<span class="button" onclick="log.res.err(logMessageText.value);">log.res.err()</span>
+<button onclick="log.res.err(logMessageText.value);">log.res.err()</button>
 </td>
 
 <td>
 print stack<br>
-<span class="button" onclick="log.stack();">log.stack()</span>
+<button onclick="log.stack();">log.stack()</button>
 </td>
 
 <td>
 clear log<br>
-<span class="button" onclick="log.clear();">log.clear()</span>
+<button onclick="log.clear();">log.clear()</button>
 </td>
 </tr>
 
 <tr>
 <td>
 log() log.d() log.i() ...<br>
-<span class="button" onclick="displaySampleMessages();">a series of logs</span>
+<button onclick="displaySampleMessages();">a series of logs</button>
 </td>
 
 <td>
 log with random message<br>
-<span class="button" onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">start random logs</span>
+<button onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">start random logs</button>
+</td>
+
+<td>
+<button class="button-red" onclick="errorDemo();">Script Error</button>
 </td>
 </tr>
 </table>
@@ -1836,15 +1854,15 @@ log with random message<br>
 <table class="demo-table">
 <tr>
 <td>
-<span class="button" onclick="dbg.msg(msgMessageText.value);">dbg.msg()</span>
+<button onclick="dbg.msg(msgMessageText.value);">dbg.msg()</button>
 </td>
 
 <td>
-<span class="button" onclick="dbg.msg.clear();">dbg.msg.clear()</span>
+<button onclick="dbg.msg.clear();">dbg.msg.clear()</button>
 </td>
 
 <td>
-<span class="button" onclick="msgDemo();">demo</span>
+<button onclick="msgDemo();">demo</button>
 </td>
 </tr>
 </table>
@@ -1855,66 +1873,66 @@ log with random message<br>
 <tr>
 <td>
 time.start();<br>
-<span class="button" onclick="time.start();">time.start()</span>
+<button onclick="time.start();">time.start()</button>
 </td>
 
 <td>
 time.split();<br>
-<span class="button" onclick="time.split();">time.split()</span>
+<button onclick="time.split();">time.split()</button>
 </td>
 
 <td>
 time.end();<br>
-<span class="button" onclick="time.end();">time.end()</span>
+<button onclick="time.end();">time.end()</button>
 </td>
 
 <td>
 log w/ timing measurement<br>
-<span class="button" onclick="log.t(logMessageText.value);">log.t()</span>
+<button onclick="log.t(logMessageText.value);">log.t()</button>
 </td>
 </tr>
 
 <tr>
 <td>
 time.start('timer1');<br>
-<span class="button" onclick="time.start('timer1');">time.start() 1</span>
+<button onclick="time.start('timer1');">time.start() 1</button>
 </td>
 
 <td>
 time.split('timer1');<br>
-<span class="button" onclick="time.split('timer1');">time.split() 1</span>
+<button onclick="time.split('timer1');">time.split() 1</button>
 </td>
 
 <td>
 time.end('timer1');<br>
-<span class="button" onclick="time.end('timer1');">time.end() 1</span>
+<button onclick="time.end('timer1');">time.end() 1</button>
 </td>
 
 <td>
 log.t('elapsed time of %n', 'timer1');<br>
-<span class="button" onclick="log.t('elapsed time of %n', 'timer1');">log.t() 1</span>
+<button onclick="log.t('elapsed time of %n', 'timer1');">log.t() 1</button>
 </td>
 </tr>
 
 <tr>
 <td>
 time.start('timer2', '%t start [Timer Name = %n]');<br>
-<span class="button" onclick="time.start('timer2', '%t start [Timer Name = %n]');">time.start() 2</span>
+<button onclick="time.start('timer2', '%t start [Timer Name = %n]');">time.start() 2</button>
 </td>
 
 <td>
 time.split('timer2', '%n: split=%t/lap=%lt');<br>
-<span class="button" onclick="time.split('timer2', '%t %n: lap=%lt');">time.split() 2</span>
+<button onclick="time.split('timer2', '%t %n: lap=%lt');">time.split() 2</button>
 </td>
 
 <td>
 time.eEnd('timer2', '%n: split=%t/lap=%lt');<br>
-<span class="button" onclick="time.end('timer2', '%t %n: lap=%lt');">time.end() 2</span>
+<button onclick="time.end('timer2', '%t %n: lap=%lt');">time.end() 2</button>
 </td>
 
 <td>
 log.t('elapsed time of %n t=%t lap=%lt', 'timer2');<br>
-<span class="button" onclick="log.t('n=%n t=%t lap=%lt', 'timer2');">log.t() 2</span>
+<button onclick="log.t('n=%n t=%t lap=%lt', 'timer2');">log.t() 2</button>
 </td>
 </tr>
 </table>
@@ -1927,22 +1945,22 @@ log.t('elapsed time of %n t=%t lap=%lt', 'timer2');<br>
 <tr>
 <td>
 dbg.countElements('*');<br>
-<span class="button" onclick="log(dbg.countElements('*'));">dbg.countElements</span>
+<button onclick="log(dbg.countElements('*'));">dbg.countElements</button>
 </td>
 
 <td>
 dbg.countElements('*', true);<br>
-<span class="button" onclick="log(dbg.countElements('*', true));">dbg.countElements</span>
+<button onclick="log(dbg.countElements('*', true));">dbg.countElements</button>
 </td>
 
 <td>
 dbg.countElements('#title');<br>
-<span class="button" onclick="log(dbg.countElements('#title'));">dbg.countElements</span>
+<button onclick="log(dbg.countElements('#title'));">dbg.countElements</button>
 </td>
 
 <td>
 dbg.countElements('div');<br>
-<span class="button" onclick="log(dbg.countElements('div'));">dbg.countElements</span>
+<button onclick="log(dbg.countElements('div'));">dbg.countElements</button>
 </td>
 </tr>
 </table>
@@ -1953,23 +1971,23 @@ dbg.countElements('div');<br>
 <tr>
 <td>
 dbg.exec('rgb #fff');<br>
-<span class="button" onclick="dbg.exec('rgb #fff', true);">rgb #fff</span>
+<button onclick="dbg.exec('rgb #fff', true);">rgb #fff</button>
 </td>
 
 <td>
 dbg.exec('json {"name": "John Smith", "age": 25, "city": "New York"}');<br>
-<span class="button" onclick='dbg.exec("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}", true);'>json {"name": ...</span>
+<button onclick='dbg.exec("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}", true);'>json {"name": ...</button>
 </td>
 
 <!-- time calc +- -->
 <td>
 dbg.exec('00:05:30.700 + 00:01:20.123');<br>
-<span class="button" onclick="dbg.exec('00:05:30.700 + 00:01:20.123', true);">00:05:30.700 + 00:01:20.123</span>
+<button onclick="dbg.exec('00:05:30.700 + 00:01:20.123', true);">00:05:30.700 + 00:01:20.123</button>
 </td>
 
 <td>
 dbg.exec('00:05:30.700 - 00:05:20.400');<br>
-<span class="button" onclick="dbg.exec('00:05:30.700 - 00:05:20.400', true);">00:05:30.700 - 00:05:20.400</span>
+<button onclick="dbg.exec('00:05:30.700 - 00:05:20.400', true);">00:05:30.700 - 00:05:20.400</button>
 </td>
 </tr>
 
@@ -1977,17 +1995,17 @@ dbg.exec('00:05:30.700 - 00:05:20.400');<br>
 <tr>
 <td>
 dbg.exec('10:00 + 13:59');<br>
-<span class="button" onclick="dbg.exec('10:00 + 13:59', true);">10:00 + 13:59</span>
+<button onclick="dbg.exec('10:00 + 13:59', true);">10:00 + 13:59</button>
 </td>
 
 <td>
 dbg.exec('10:00 + 14:00');<br>
-<span class="button" onclick="dbg.exec('10:00 + 14:00', true);">10:00 + 14:00</span>
+<button onclick="dbg.exec('10:00 + 14:00', true);">10:00 + 14:00</button>
 </td>
 
 <td>
 dbg.exec('10:00 + 14:01');<br>
-<span class="button" onclick="dbg.exec('10:00 + 14:01', true);">10:00 + 14:01</span>
+<button onclick="dbg.exec('10:00 + 14:01', true);">10:00 + 14:01</button>
 </td>
 </tr>
 
@@ -1995,17 +2013,17 @@ dbg.exec('10:00 + 14:01');<br>
 <tr>
 <td>
 dbg.exec('10:00 + 37:59');<br>
-<span class="button" onclick="dbg.exec('10:00 + 37:59', true);">10:00 + 37:59</span>
+<button onclick="dbg.exec('10:00 + 37:59', true);">10:00 + 37:59</button>
 </td>
 
 <td>
 dbg.exec('10:00 + 38:00');<br>
-<span class="button" onclick="dbg.exec('10:00 + 38:00', true);">10:00 + 38:00</span>
+<button onclick="dbg.exec('10:00 + 38:00', true);">10:00 + 38:00</button>
 </td>
 
 <td>
 dbg.exec('10:00 + 38:01');<br>
-<span class="button" onclick="dbg.exec('10:00 + 38:01', true);">10:00 + 38:01</span>
+<button onclick="dbg.exec('10:00 + 38:01', true);">10:00 + 38:01</button>
 </td>
 </tr>
 
@@ -2013,17 +2031,17 @@ dbg.exec('10:00 + 38:01');<br>
 <tr>
 <td>
 dbg.exec('10:00 - 09:59');<br>
-<span class="button" onclick="dbg.exec('10:00 - 09:59', true);">10:00 - 09:59</span>
+<button onclick="dbg.exec('10:00 - 09:59', true);">10:00 - 09:59</button>
 </td>
 
 <td>
 dbg.exec('10:00 - 10:00');<br>
-<span class="button" onclick="dbg.exec('10:00 - 10:00', true);">10:00 - 10:00</span>
+<button onclick="dbg.exec('10:00 - 10:00', true);">10:00 - 10:00</button>
 </td>
 
 <td>
 dbg.exec('10:00 - 10:01');<br>
-<span class="button" onclick="dbg.exec('10:00 - 10:01', true);">10:00 - 10:01</span>
+<button onclick="dbg.exec('10:00 - 10:01', true);">10:00 - 10:01</button>
 </td>
 </tr>
 
@@ -2031,17 +2049,17 @@ dbg.exec('10:00 - 10:01');<br>
 <tr>
 <td>
 dbg.exec('10:00 - 33:59');<br>
-<span class="button" onclick="dbg.exec('10:00 - 33:59', true);">10:00 - 33:59</span>
+<button onclick="dbg.exec('10:00 - 33:59', true);">10:00 - 33:59</button>
 </td>
 
 <td>
 dbg.exec('10:00 - 34:00');<br>
-<span class="button" onclick="dbg.exec('10:00 - 34:00', true);">10:00 - 34:00</span>
+<button onclick="dbg.exec('10:00 - 34:00', true);">10:00 - 34:00</button>
 </td>
 
 <td>
 dbg.exec('10:00 - 34:01');<br>
-<span class="button" onclick="dbg.exec('10:00 - 34:01', true);">10:00 - 34:01</span>
+<button onclick="dbg.exec('10:00 - 34:01', true);">10:00 - 34:01</button>
 </td>
 </tr>
 </table>
@@ -2051,13 +2069,13 @@ dbg.exec('10:00 - 34:01');<br>
 <td>
 <input type="text" id="base64-e-text" value="Hello, Base64!" style="width:400px;margin-top:3px;">
 dbg.exec('base64 -e xxx')<br>
-<span class="button" onclick="dbg.exec('base64 -e ' + base64EText.value, true);">base64 -e</span>
+<button onclick="dbg.exec('base64 -e ' + base64EText.value, true);">base64 -e</button>
 </td>
 
 <td>
 <input type="text" id="base64-d-text" value="SGVsbG8sIEJhc2U2NCE=" style="width:400px;margin-top:3px;">
 dbg.exec('base64 -d xxx')<br>
-<span class="button" onclick="dbg.exec('base64 -d ' + base64DText.value, true);">base64 -d</span>
+<button onclick="dbg.exec('base64 -d ' + base64DText.value, true);">base64 -d</button>
 </td>
 </tr>
 </table>
@@ -2069,97 +2087,97 @@ dbg.exec('base64 -d xxx')<br>
 <table class="demo-table">
 <tr>
 <td>
-<span class="button button-100" onclick="dbg.led.on(7);">On(7)</span>
+<button class="button-100" onclick="dbg.led.on(7);">On(7)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.on(6);">On(6)</span>
+<button class="button-100" onclick="dbg.led.on(6);">On(6)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.on(5);">On(5)</span>
+<button class="button-100" onclick="dbg.led.on(5);">On(5)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.on(4);">On(4)</span>
+<button class="button-100" onclick="dbg.led.on(4);">On(4)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.on(3);">On(3)</span>
+<button class="button-100" onclick="dbg.led.on(3);">On(3)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.on(2);">On(2)</span>
+<button class="button-100" onclick="dbg.led.on(2);">On(2)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.on(1);">On(1)</span>
+<button class="button-100" onclick="dbg.led.on(1);">On(1)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.on(0);">On(0)</span>
+<button class="button-100" onclick="dbg.led.on(0);">On(0)</button>
 </td>
 </tr>
 
 <tr>
 <td>
-<span class="button button-100" onclick="dbg.led.off(7);">Off(7)</span>
+<button class="button-100" onclick="dbg.led.off(7);">Off(7)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.off(6);">Off(6)</span>
+<button class="button-100" onclick="dbg.led.off(6);">Off(6)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.off(5);">Off(5)</span>
+<button class="button-100" onclick="dbg.led.off(5);">Off(5)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.off(4);">Off(4)</span>
+<button class="button-100" onclick="dbg.led.off(4);">Off(4)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.off(3);">Off(3)</span>
+<button class="button-100" onclick="dbg.led.off(3);">Off(3)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.off(2);">Off(2)</span>
+<button class="button-100" onclick="dbg.led.off(2);">Off(2)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.off(1);">Off(1)</span>
+<button class="button-100" onclick="dbg.led.off(1);">Off(1)</button>
 </td>
 
 <td>
-<span class="button button-100" onclick="dbg.led.off(0);">Off(0)</span>
+<button class="button-100" onclick="dbg.led.off(0);">Off(0)</button>
 </td>
 </tr>
 
 <tr>
 <td colspan="2">
 dbg.led(n);<br>
-<span class="button" onclick="dbg.led(0x55);">dbg.led(0x55)</span>
+<button onclick="dbg.led(0x55);">dbg.led(0x55)</button>
 </td>
 
 <td colspan="2">
-<span class="button" onclick="dbg.led(0xaa);">dbg.led(0xaa)</span>
+<button onclick="dbg.led(0xaa);">dbg.led(0xaa)</button>
 </td>
 
 <td colspan="2">
 dbg.led.all(true);<br>
-<span class="button" onclick="dbg.led.all(true);">dbg.led.all(true)</span>
+<button onclick="dbg.led.all(true);">dbg.led.all(true)</button>
 </td>
 
 <td colspan="2">
 dbg.led.all(false);<br>
-<span class="button" onclick="dbg.led.all(false);">dbg.led.all(false)</span>
+<button onclick="dbg.led.all(false);">dbg.led.all(false)</button>
 </td>
 </tr>
 
 <!--
 <tr>
 <td colspan="2">
-<span class="button" onclick="ledDemo();">demo</span>
+<button onclick="ledDemo();">demo</button>
 </td>
 </tr>
 -->
@@ -2173,34 +2191,34 @@ dbg.led.all(false);<br>
 <tr>
 <td>
 console.log('hello');<br>
-<span class="button button-green" onclick="console.log('hello');">console.log()</span>
+<button class="button-green" onclick="console.log('hello');">console.log()</button>
 </td>
 
 <td>
 console.error('hello');<br>
-<span class="button button-green" onclick="console.error('hello');">console.error()</span>
+<button class="button-green" onclick="console.error('hello');">console.error()</button>
 </td>
 
 <td>
 console.warn('hello');<br>
-<span class="button button-green" onclick="console.warn('hello');">console.warn()</span>
+<button class="button-green" onclick="console.warn('hello');">console.warn()</button>
 </td>
 
 <td>
 console.info('hello');<br>
-<span class="button button-green" onclick="console.info('hello');">console.info()</span>
+<button class="button-green" onclick="console.info('hello');">console.info()</button>
 </td>
 </tr>
 
 <tr>
 <td>
 console.time('timer3');<br>
-<span class="button button-green" onclick="console.time('timer3');">console.time()</span>
+<button class="button-green" onclick="console.time('timer3');">console.time()</button>
 </td>
 
 <td>
 console.timeEnd('timer3');<br>
-<span class="button button-green" onclick="console.timeEnd('timer3');" style="width:210px;">console.timeEnd()</span>
+<button class="button-green" onclick="console.timeEnd('timer3');" style="width:210px;">console.timeEnd()</button>
 </td>
 </tr>
 </table>
@@ -2243,9 +2261,9 @@ console.timeEnd('timer3');<br>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=3</span><input id="input-tab2" name="input-tab2" style="width:180px;" tabindex="2" accesskey="c" disabled></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">file</span><input type="file" id="input-file" name="input-file" style="width:180px;"></div>
       <div style="margin-bottom:5px;">
-        <input type="submit" value="Submit" onsubmit="return false;">
-        <input type="button" value="BUTTON">
-        <button type="button">button</button>
+        <input type="submit" class="button-100" value="Submit" onsubmit="return false;">
+        <input type="button" class="button-100" value="BUTTON">
+        <button type="button" class="button-100">button</button>
       </div>
     </form>
   </div>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611092105';
+  this.v = '201611102010';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -15,6 +15,7 @@ var DebugJS = function() {
       'ctrl': false,
       'shift': false
     },
+    'popupOnError': true,
     'lines': 18,
     'bufsize': 100,
     'width': 500,
@@ -235,6 +236,7 @@ var DebugJS = function() {
   this.intCmdTblLen = this.INT_CMD_TBL.length;
   this.CMD_TBL = [];
   this.options = null;
+  this.hasError = false;
   this.setupDefaultOptions();
 };
 DebugJS.ENABLE = true;
@@ -861,7 +863,7 @@ DebugJS.prototype = {
       self.status |= DebugJS.STATE_DYNAMIC;
       self.status |= DebugJS.STATE_DRAGGABLE;
     }
-    if ((self.options.visible) || (self.options.target != null)) {
+    if ((self.options.visible) || (self.options.target != null) || ((self.options.popupOnError) && (self.hasError))) {
       self.status |= DebugJS.STATE_VISIBLE;
     }
     if (self.options.resizable) self.status |= DebugJS.STATE_RESIZABLE;
@@ -5746,6 +5748,7 @@ DebugJS.onLoad = function() {
 };
 
 DebugJS.onError = function(e) {
+  var self = DebugJS.self;
   var msg;
   if ((e.error) && (e.error.stack)) {
     msg = e.error.stack;
@@ -5761,6 +5764,11 @@ DebugJS.onError = function(e) {
     }
   }
   DebugJS.log.e(msg);
+
+  if ((self.options.popupOnError) && !(self.status & DebugJS.STATE_VISIBLE)) {
+    self.hasError = true;
+    self.showDebugWindow();
+  }
 };
 
 DebugJS.log = function(m) {
