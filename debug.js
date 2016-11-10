@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611110034';
+  this.v = '201611110040';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4886,7 +4886,6 @@ DebugJS.execCmdJson = function(json) {
     json = json.substr(3);
     flg = false;
   }
-json = '{"name": "John\nSmith", "ag\r\ne": 25, "c\rity": "New\tYork"}';
   try {
     var j = JSON.parse(json);
     var levelLimit = 0;
