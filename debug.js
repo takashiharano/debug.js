@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611110053';
+  this.v = '201611111938';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2404,8 +2404,8 @@ DebugJS.prototype = {
           var content = charset.match(/charset=(.*)/);
           if (content != null) {
             charset = content[1];
+            break;
           }
-          break;
         }
       }
     }
