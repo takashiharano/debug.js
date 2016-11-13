@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611111938';
+  this.v = '201611140107';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -78,17 +78,26 @@ var DebugJS = function() {
   this.headPanel = null;
   this.infoPanel = null;
   this.clockPanel = null;
-  this.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+  this.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_M;
   this.measureBtnPanel = null;
   this.measureBox = null;
   this.sysInfoBtnPanel = null;
   this.sysInfoPanel = null;
   this.elmInspectionBtnPanel = null;
   this.elmInspectionPanel = null;
-  this.elmInspectionPanelBody = null;
+  this.elmSelectBtnPanel = null;
+  this.elmHighlightBtnPanel = null;
+  this.elmExportBtnPanel = null;
+  this.elmUpdateInputLabel = null;
+  this.elmUpdateInputLabel2 = null;
+  this.elmUpdateInput = null;
+  this.elmNumPanel = null;
+  this.elmInfoBodyPanel = null;
+  this.elmInfoStatus = DebugJS.ELMINFO_STATE_SELECT | DebugJS.ELMINFO_STATE_HIGHLIGHT;
+  this.elementUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+  this.elementUpdateTimerId = 0;
   this.elmInfoShowHideStatus = {'allStyles': false, 'elBorder': false};
   this.targetElm = null;
-  this.targetElmStyle = {};
   this.toolsBtnPanel = null;
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
@@ -269,6 +278,8 @@ DebugJS.STATE_TOOLS = 0x1000000;
 DebugJS.STATE_SCRIPT = 0x2000000;
 DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
+DebugJS.ELMINFO_STATE_SELECT = 0x1;
+DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
 DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
 DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT = 0x1;
 DebugJS.TOOLS_ACTIVE_FUNCTION_FILE = 0x2;
@@ -312,7 +323,8 @@ DebugJS.COLOR_B = '#6bf';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.UPDATE_INTERVAL_H = 21;
-DebugJS.UPDATE_INTERVAL_L = 500;
+DebugJS.UPDATE_INTERVAL_M = 500;
+DebugJS.UPDATE_INTERVAL_L = 1000;
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
 DebugJS.IND_BIT_7 = 0x80;
 DebugJS.IND_BIT_6 = 0x40;
@@ -341,6 +353,7 @@ DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SYSTEM_INFO_FULL_OVERLAY = true;
 DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
+DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX = '-elmhl';
 DebugJS.LS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
@@ -790,6 +803,11 @@ DebugJS.prototype = {
       'background': 'rgba(192,192,192,0.5) !important'
     };
 
+    styles['.' + self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX] = {
+      'outline': 'solid 1px #f00 !important',
+      'opacity': '0.7 !important'
+    };
+
     self.applyStyles(styles);
     self.initDebugWindow();
     self.setupEventHandler();
@@ -964,7 +982,7 @@ DebugJS.prototype = {
       self.clockPanel.style.color = self.options.clockColor;
       self.clockPanel.style.fontSize = self.options.fontSize + 'px';
       self.headPanel.appendChild(self.clockPanel);
-      self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+      self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_M;
     }
 
     // -- R to L
@@ -2378,7 +2396,7 @@ DebugJS.prototype = {
     }
     self.status &= ~DebugJS.STATE_SYSTEM_INFO;
     self.updateSysInfoBtnPanel();
-    self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+    self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_M;
   },
 
   showSystemInfo: function(e) {
@@ -2663,28 +2681,77 @@ DebugJS.prototype = {
         self.expandHightIfNeeded(self.windowExpandHeight);
       }
 
+      self.elmSelectBtnPanel = document.createElement('span');
+      self.elmSelectBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmSelectBtnPanel.style.marginLeft = '8px';
+      self.elmSelectBtnPanel.style.marginRight = '4px';
+      self.elmSelectBtnPanel.onclick = new Function('DebugJS.self.toggleElmSelectMode();');
+      self.elmSelectBtnPanel.innerText = 'SELECT';
+      self.elmInspectionPanel.appendChild(self.elmSelectBtnPanel);
+
+      self.elmHighlightBtnPanel = document.createElement('span');
+      self.elmHighlightBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmHighlightBtnPanel.style.marginLeft = '4px';
+      self.elmHighlightBtnPanel.style.marginRight = '4px';
+      self.elmHighlightBtnPanel.onclick = new Function('DebugJS.self.toggleElmHighlightMode();');
+      self.elmHighlightBtnPanel.innerText = 'HIGHLIGHT';
+      self.elmInspectionPanel.appendChild(self.elmHighlightBtnPanel);
+
+      var UPDATE_COLOR = '#ccc';
+      self.elmUpdateInputLabel = document.createElement('span');
+      self.elmUpdateInputLabel.style.marginLeft = '4px';
+      self.elmUpdateInputLabel.style.marginRight = '0px';
+      self.elmUpdateInputLabel.style.color = UPDATE_COLOR;
+      self.elmUpdateInputLabel.innerText = 'Update:';
+      self.elmInspectionPanel.appendChild(self.elmUpdateInputLabel);
+
+      self.elmUpdateInput = document.createElement('input');
+      self.elmUpdateInput.className = self.id + '-txt-text';
+      self.elmUpdateInput.style.setProperty('width', '30px', 'important');
+      self.elmUpdateInput.style.setProperty('margin', '0', 'important');
+      self.elmUpdateInput.style.setProperty('margin-right', '2px', 'important');
+      self.elmUpdateInput.style.setProperty('padding', '0', 'important');
+      self.elmUpdateInput.style.setProperty('text-align', 'right', 'important');
+      self.elmUpdateInput.style.setProperty('color', UPDATE_COLOR, 'important');
+      self.elmUpdateInput.oninput = new Function('DebugJS.self.updateElementUpdateInterval();');
+      self.elmUpdateInput.value = self.elementUpdateInterval;
+      self.elmInspectionPanel.appendChild(self.elmUpdateInput);
+
+      self.elmUpdateInputLabel2 = document.createElement('span');
+      self.elmUpdateInputLabel2.style.color = UPDATE_COLOR;
+      self.elmUpdateInputLabel2.innerText = 'ms';
+      self.elmInspectionPanel.appendChild(self.elmUpdateInputLabel2);
+
       self.elmNumPanel = document.createElement('span');
       self.elmNumPanel.style.float = 'right';
       self.elmNumPanel.style.marginRight = '4px';
-      self.elmNumPanel.color = '#fff';
       self.elmInspectionPanel.appendChild(self.elmNumPanel);
       self.updateElementInfo();
 
-      self.elmInspectionPanelBody = document.createElement('div');
-      self.elmInspectionPanelBody.style.position = 'relative';
-      self.elmInspectionPanelBody.style.top = self.options.fontSize;
-      self.elmInspectionPanel.appendChild(self.elmInspectionPanelBody);
+      self.elmExportBtnPanel = document.createElement('span');
+      self.elmExportBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmExportBtnPanel.style.float = 'right';
+      self.elmExportBtnPanel.style.marginRight = '4px';
+      self.elmExportBtnPanel.style.color = DebugJS.COLOR_INACTIVE;
+      self.elmExportBtnPanel.onclick = new Function('DebugJS.self.exportTargetElm();');
+      self.elmExportBtnPanel.innerText = 'EXPORT';
+      self.elmInspectionPanel.appendChild(self.elmExportBtnPanel);
+
+      self.elmInfoBodyPanel = document.createElement('div');
+      self.elmInfoBodyPanel.style.position = 'relative';
+      self.elmInfoBodyPanel.style.top = self.options.fontSize;
+      self.elmInspectionPanel.appendChild(self.elmInfoBodyPanel);
     }
     self.updateElmInspectionBtnPanel();
+    self.updateElmSelectBtnPanel();
+    self.updateElmHighlightBtnPanel();
   },
 
   disableElmInspection: function() {
     var self = DebugJS.self;
     if (self.targetElm) {
-      self.targetElm.style.outline = self.targetElmStyle.outline;
-      self.targetElm.style.opacity = self.targetElmStyle.opacity;
+      DebugJS.removeClass(self.targetElm, self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX);
       self.targetElm = null;
-      self.targetElmStyle = {};
     }
     if (self.elmInspectionPanel != null) {
       if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
@@ -2694,7 +2761,7 @@ DebugJS.prototype = {
         self.resetExpandedHeightIfNeeded();
       }
       self.elmInspectionPanel = null;
-      self.elmInspectionPanelBody = null;
+      self.elmInfoBodyPanel = null;
       self.elmNumPanel = null;
     }
     self.updateTargetElm(null);
@@ -2704,6 +2771,9 @@ DebugJS.prototype = {
 
   inspectElement: function(e) {
     var self = DebugJS.self;
+    if (!(self.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT)) {
+      return;
+    }
     var posX = e.clientX;
     var posY = e.clientY;
     if (self.isOnDebugWindow(posX, posY)) return;
@@ -2715,8 +2785,10 @@ DebugJS.prototype = {
   },
 
   showElementInfo: function(el) {
+    if (!el) return;
     var self = DebugJS.self;
     var OMIT_STYLE = 'color:#888';
+    var OMIT_STYLE2 = 'color:#666';
     var html = '<pre>';
     if (el && el.tagName) {
       DebugJS.dom = el;
@@ -2732,6 +2804,9 @@ DebugJS.prototype = {
         }
       }
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
+      var className = el.className;
+      className = className.replace(self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX + '</span>');
+
       var href = (el.href ? self.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
       var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
 
@@ -2808,7 +2883,7 @@ DebugJS.prototype = {
       'object    : ' + Object.prototype.toString.call(el) + '\n' +
       'tag       : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
       'id        : ' + el.id + '\n' +
-      'class     : ' + el.className + '\n' +
+      'class     : ' + className + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'display   : ' + computedStyle.display + '\n' +
       'position  : ' + computedStyle.position + '\n' +
@@ -2873,7 +2948,7 @@ DebugJS.prototype = {
       }
     }
     html += '</pre>';
-    self.elmInspectionPanelBody.innerHTML = html;
+    self.elmInfoBodyPanel.innerHTML = html;
   },
 
   showPrevElem: function() {
@@ -2931,20 +3006,22 @@ DebugJS.prototype = {
 
   updateTargetElm: function(el) {
     var self = DebugJS.self;
-    if (self.targetElm) {
-      try {
-        self.targetElm.style.outline = self.targetElmStyle.outline;
-        self.targetElm.style.opacity = self.targetElmStyle.opacity;
-      } catch (e) {}
+    if (self.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) {
+      self.highlightElement(self.targetElm, el);
     }
     if (el) {
-      try {
-        self.targetElmStyle.outline = el.style.outline;
-        self.targetElmStyle.opacity = el.style.opacity;
-        el.style.outline = 'solid 1px #f00';
-        el.style.opacity = 0.7;
-      } catch (e) {}
       self.targetElm = el;
+      self.elmExportBtnPanel.style.color = self.options.btnColor;
+    }
+  },
+
+  highlightElement: function(removeTarget, setTarget) {
+    var self = DebugJS.self;
+    if (removeTarget) {
+      DebugJS.removeClass(removeTarget, self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX);
+    }
+    if (setTarget) {
+      DebugJS.addClass(setTarget, self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX);
     }
   },
 
@@ -2953,20 +3030,68 @@ DebugJS.prototype = {
     if (!(self.status & DebugJS.STATE_ELEMENT_INSPECTING)) {
       return;
     }
-    var UPDATE_INTERVAL = 250;
-    self.elmNumPanel.innerHTML = '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.exportTargetElm();">_</span> ' +
-                                 '(Total: ' + document.getElementsByTagName('*').length + ')';
-    setTimeout(self.updateElementInfo, UPDATE_INTERVAL);
+    self.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
+    if (self.elementUpdateInterval > 0) {
+      self.showElementInfo(self.targetElm);
+    }
+    self.elementUpdateTimerId = setTimeout(self.updateElementInfo, self.elementUpdateInterval);
+  },
+
+  updateElementUpdateInterval: function() {
+    var self = DebugJS.self;
+    var interval = self.elmUpdateInput.value;
+    if (interval == '') {
+      interval = 0;
+    }
+    if (isFinite(interval)) {
+      self.elementUpdateInterval = interval;
+      clearTimeout(self.elementUpdateTimerId);
+      self.elementUpdateTimerId = setTimeout(self.updateElementInfo, self.elementUpdateInterval);
+    }
+  },
+
+  toggleElmSelectMode: function() {
+    var self = DebugJS.self;
+    if (self.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) {
+      self.elmInfoStatus &= ~DebugJS.ELMINFO_STATE_SELECT;
+    } else {
+      self.elmInfoStatus |= DebugJS.ELMINFO_STATE_SELECT;
+    }
+    self.updateElmSelectBtnPanel();
+  },
+
+  updateElmSelectBtnPanel: function() {
+    var self = DebugJS.self;
+    self.elmSelectBtnPanel.style.color = (self.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? self.options.btnColor : DebugJS.COLOR_INACTIVE;
+  },
+
+  toggleElmHighlightMode: function() {
+    var self = DebugJS.self;
+    if (self.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) {
+      self.elmInfoStatus &= ~DebugJS.ELMINFO_STATE_HIGHLIGHT;
+      self.highlightElement(self.targetElm, null);
+    } else {
+      self.elmInfoStatus |= DebugJS.ELMINFO_STATE_HIGHLIGHT;
+      self.highlightElement(null, self.targetElm);
+    }
+    self.updateElmHighlightBtnPanel();
+  },
+
+  updateElmHighlightBtnPanel: function() {
+    var self = DebugJS.self;
+    self.elmHighlightBtnPanel.style.color = (self.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? self.options.btnColor : DebugJS.COLOR_INACTIVE;
   },
 
   exportTargetElm: function() {
-    DebugJS.self.captureElm(DebugJS.self.targetElm);
+    if (DebugJS.self.targetElm) {
+      DebugJS.self.captureElm(DebugJS.self.targetElm);
+    }
   },
 
   captureElm: function(elm) {
     DebugJS.el = elm;
     if (DebugJS._AVAILABLE) _ = DebugJS.el;
-    DebugJS.log.s('The element &lt;' + DebugJS.el.tagName + '&gt; has been captured into <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
+    DebugJS.log.s('&lt;' + DebugJS.el.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
   },
 
   getEventHandlerString: function(handler, name) {
