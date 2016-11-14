@@ -1466,6 +1466,12 @@ get https://debugjs.net/env/?abc=123&amp;xyz=987
   </tr>
 
   <tr>
+    <td class="name">keys</td>
+    <td>Object(s)</td>
+    <td>Displays all enumerable property keys of an object.</td>
+  </tr>
+
+  <tr>
     <td class="name">led</td>
     <td>bit pattern</td>
     <td>Set a bit pattern to the indicator.</td>
@@ -1516,9 +1522,11 @@ post https://debugjs.net/env/ abc=123&amp;xyz=987
   </tr>
 
   <tr>
-    <td class="name">keys</td>
-    <td>Object(s)</td>
-    <td>Displays all enumerable property keys of an object.</td>
+    <td class="name">props</td>
+    <td></td>
+    <td>
+      Displays property list.
+    </td>
   </tr>
 
   <tr>
@@ -1552,6 +1560,18 @@ $ rgb #fff
 
 $ rgb 255 255 255
 -&gt; #fff</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">set</td>
+    <td>
+      arg1: property-name<br>
+      arg2: value</span>
+    </td>
+    <td>
+      Set a property value.<br>
+      <span class="annotation">See also "props" command.</span>
     </td>
   </tr>
 

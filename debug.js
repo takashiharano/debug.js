@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611140107';
+  this.v = '201611150100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -235,9 +235,11 @@ var DebugJS = function() {
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
+    {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
+    {'cmd': 'set', 'fnc': this.cmdSet, 'desc': 'Set a property value', 'usage': 'set property-name value'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM}
@@ -246,6 +248,10 @@ var DebugJS = function() {
   this.CMD_TBL = [];
   this.options = null;
   this.hasError = false;
+  this.properties = {
+    'esc': {'value': 'enable', 'restriction': /^enable$|^disable$/},
+    'dumplimit': {'value': 1000, 'restriction': /^[0-9]+$/}
+  };
   this.setupDefaultOptions();
 };
 DebugJS.ENABLE = true;
@@ -353,7 +359,7 @@ DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SYSTEM_INFO_FULL_OVERLAY = true;
 DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
-DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX = '-elmhl';
+DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
 DebugJS.LS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
@@ -1862,30 +1868,33 @@ DebugJS.prototype = {
         break;
 
       case 27: // ESC
+        if (self.properties.esc.value == 'disable') {
+          break;
+        }
         if ((self.status & DebugJS.STATE_DRAGGING) || (self.status & DebugJS.STATE_RESIZING)) {
           self.status &= ~DebugJS.STATE_DRAGGING;
           self.endResize();
-          return;
+          break;
         }
         if (self.status & DebugJS.STATE_MEASURE) {
           self.disableMeasureMode();
-          return;
+          break;
         }
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
           self.disableElmInspection();
-          return;
+          break;
         }
         if (self.status & DebugJS.STATE_TOOLS) {
           self.disableTools();
-          return;
+          break;
         }
         if (self.status & DebugJS.STATE_SCRIPT) {
           self.disableScriptEditor();
-          return;
+          break;
         }
         if (self.status & DebugJS.STATE_SYSTEM_INFO) {
           self.disableSystemInfo();
-          return;
+          break;
         }
         self.hideDebugWindow();
         break;
@@ -2863,7 +2872,7 @@ DebugJS.prototype = {
       var allStyles = '';
       var LEADING_INDENT = '           ';
       var MIN_KEY_LEN = 20;
-      for (key in computedStyle) {
+      for (var key in computedStyle) {
         if (!(key.match(/^\d.*/))) {
           if (typeof computedStyle[key] != 'function') {
             var indent = '';
@@ -2943,7 +2952,7 @@ DebugJS.prototype = {
       'onscroll     : ' + self.getEventHandlerString(el.onscroll, 'elOnScroll') + '\n' +
       '<div class="' + self.id + '-separator"></div>';
 
-      for (data in el.dataset) {
+      for (var data in el.dataset) {
         html += 'data-' + data + ': ' + el.dataset[data] + '\n';
       }
     }
@@ -4385,6 +4394,16 @@ DebugJS.prototype = {
     self.httpRequest(arg, tbl, 'POST');
   },
 
+  cmdProps: function(arg, tbl) {
+    var self = DebugJS.self;
+    var str = 'Available properties:\n<table>';
+    for (var key in self.properties) {
+      str += '<tr><td>' + key + '</td><td>' + self.properties[key].value + '</td></tr>';
+    }
+    str += '</table>';
+    DebugJS.log.mlt(str);
+  },
+
   cmdRandom: function(arg, tbl) {
     arg = arg.replace(/\s{2,}/g, ' ');
     var args = arg.split(' ');
@@ -4442,6 +4461,30 @@ DebugJS.prototype = {
     'posX2 : ' + sizePos.x2 + '\n' +
     'posY2 : ' + sizePos.y2 + '\n';
     DebugJS.log.mlt(str);
+  },
+
+  cmdSet: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg = DebugJS.omitLeadingWhiteSpace(arg);
+    var args = arg.match(/([^\s]{1,})\s(.*)/);
+    if (args == null) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var name = args[1];
+      var value = args[2];
+      if (self.properties[name] != undefined) {
+        if (self.properties[name].restriction != undefined) {
+          if (!value.match(self.properties[name].restriction)) {
+            DebugJS.log.e(value + ' is invalid.');
+            return;
+          }
+        }
+        self.properties[name].value = value;
+        DebugJS.log.res(value);
+      } else {
+        DebugJS.log.e(name + ' is invalid property name.');
+      }
+    }
   },
 
   cmdTimeCalc: function(arg) {
@@ -4529,7 +4572,7 @@ DebugJS.prototype = {
   },
 
   execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc) {
-    arg1 = DebugJS.omitLeadingWhiteSpace(arg);
+    var arg1 = DebugJS.omitLeadingWhiteSpace(arg);
     var args = arg1.match(/(-d|-e)?\s(.*)/);
     var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
     if ((argNoWhiteSpace == '') || (((argNoWhiteSpace == '-d') || (argNoWhiteSpace == '-e')) && (args == null))) {
@@ -4768,7 +4811,6 @@ DebugJS.execCmdP = function(arg) {
 };
 
 DebugJS.INDENT_SP = ' ';
-DebugJS.OBJDMP_MAX = 1000;
 DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
   if (levelLimit == undefined) {
     levelLimit = 0;
@@ -4778,7 +4820,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
     arg.dump += '<span style="color:#4c4;">function</span>()\n';
   }
   var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit);
-  if ((!noMaxLimit) && (ret.cnt >= DebugJS.OBJDMP_MAX)) {
+  if ((!noMaxLimit) && (ret.cnt >= DebugJS.self.properties.dumplimit.value)) {
     DebugJS.log.w('The object is too large. (>=' + ret.cnt + ')');
   }
   ret.dump = ret.dump.replace(/: {2,}\{/g, ': {');
@@ -4791,7 +4833,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
     if ((levelLimit >= 1) && (arg.lv > levelLimit)) {
       return arg;
     }
-    if ((!noMaxLimit) && (arg.cnt >= DebugJS.OBJDMP_MAX)) {
+    if ((!noMaxLimit) && (arg.cnt >= DebugJS.self.properties.dumplimit.value)) {
       if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
         arg.dump += '<span style="color:#aaa;">...</span>'; arg.cnt++;
       }
@@ -5842,7 +5884,7 @@ DebugJS.substr = function(text, len) {
 DebugJS.decorateIfObjIsUnavailable = function(obj, exceptFalse) {
   var self = DebugJS.self;
   var text = obj;
-  if ((exceptFalse && ((obj == undefined) || (obj == null))) || ((!exceptFalse) && (!obj))) {
+  if ((exceptFalse && ((obj == undefined) || (obj == null))) || ((!exceptFalse) && (obj != 0) && (!obj))) {
     text = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
   }
   return text;
@@ -5908,7 +5950,9 @@ DebugJS.onError = function(e) {
 
   if ((self.options.popupOnError) && !(self.status & DebugJS.STATE_VISIBLE)) {
     self.hasError = true;
-    self.showDebugWindow(true);
+    if (self.debugWindow) {
+      self.showDebugWindow(true);
+    }
   }
 };
 
