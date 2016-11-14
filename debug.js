@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611150100';
+  this.v = '201611150744';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -78,7 +78,7 @@ var DebugJS = function() {
   this.headPanel = null;
   this.infoPanel = null;
   this.clockPanel = null;
-  this.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_M;
+  this.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
   this.measureBtnPanel = null;
   this.measureBox = null;
   this.sysInfoBtnPanel = null;
@@ -94,7 +94,7 @@ var DebugJS = function() {
   this.elmNumPanel = null;
   this.elmInfoBodyPanel = null;
   this.elmInfoStatus = DebugJS.ELMINFO_STATE_SELECT | DebugJS.ELMINFO_STATE_HIGHLIGHT;
-  this.elementUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+  this.elementUpdateInterval = 0;
   this.elementUpdateTimerId = 0;
   this.elmInfoShowHideStatus = {'allStyles': false, 'elBorder': false};
   this.targetElm = null;
@@ -329,8 +329,7 @@ DebugJS.COLOR_B = '#6bf';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.UPDATE_INTERVAL_H = 21;
-DebugJS.UPDATE_INTERVAL_M = 500;
-DebugJS.UPDATE_INTERVAL_L = 1000;
+DebugJS.UPDATE_INTERVAL_L = 500;
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
 DebugJS.IND_BIT_7 = 0x80;
 DebugJS.IND_BIT_6 = 0x40;
@@ -988,7 +987,7 @@ DebugJS.prototype = {
       self.clockPanel.style.color = self.options.clockColor;
       self.clockPanel.style.fontSize = self.options.fontSize + 'px';
       self.headPanel.appendChild(self.clockPanel);
-      self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_M;
+      self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
     }
 
     // -- R to L
@@ -2405,7 +2404,7 @@ DebugJS.prototype = {
     }
     self.status &= ~DebugJS.STATE_SYSTEM_INFO;
     self.updateSysInfoBtnPanel();
-    self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_M;
+    self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
   },
 
   showSystemInfo: function(e) {
@@ -2909,6 +2908,7 @@ DebugJS.prototype = {
       '            style  = ' + computedStyle.fontStyle + '\n' +
       'color     : ' + color + ' ' + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      'opacity   : ' + computedStyle.opacity + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'location  : top    = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + computedStyle.top + ')\n' +
       '            left   = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + computedStyle.left + ')\n' +
@@ -2958,6 +2958,8 @@ DebugJS.prototype = {
     }
     html += '</pre>';
     self.elmInfoBodyPanel.innerHTML = html;
+
+    self.showAllElmNum();
   },
 
   showPrevElem: function() {
@@ -3039,11 +3041,16 @@ DebugJS.prototype = {
     if (!(self.status & DebugJS.STATE_ELEMENT_INSPECTING)) {
       return;
     }
-    self.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
+    self.showAllElmNum();
+    self.showElementInfo(self.targetElm);
     if (self.elementUpdateInterval > 0) {
-      self.showElementInfo(self.targetElm);
+      self.elementUpdateTimerId = setTimeout(self.updateElementInfo, self.elementUpdateInterval);
     }
-    self.elementUpdateTimerId = setTimeout(self.updateElementInfo, self.elementUpdateInterval);
+  },
+
+  showAllElmNum: function() {
+    var self = DebugJS.self;
+    self.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
   },
 
   updateElementUpdateInterval: function() {
