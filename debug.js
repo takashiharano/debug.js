@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611150744';
+  this.v = '201611152030';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -235,6 +235,7 @@ var DebugJS = function() {
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
+    {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Displays a property value', 'usage': 'prop property-name'},
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
@@ -4401,6 +4402,21 @@ DebugJS.prototype = {
     self.httpRequest(arg, tbl, 'POST');
   },
 
+  cmdProp: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg = DebugJS.omitLeadingWhiteSpace(arg);
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var name = arg;
+      if (self.properties[name] != undefined) {
+        DebugJS.log.res(self.properties[name].value);
+      } else {
+        DebugJS.log.e(name + ' is invalid property name.');
+      }
+    }
+  },
+
   cmdProps: function(arg, tbl) {
     var self = DebugJS.self;
     var str = 'Available properties:\n<table>';
@@ -5929,6 +5945,12 @@ DebugJS.hasClass = function(el, name) {
   return false;
 };
 
+DebugJS.export = function(o) {
+  DebugJS.obj = o;
+  if (DebugJS._AVAILABLE) _ = DebugJS.obj;
+  DebugJS.log.s('An object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.obj</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
+};
+
 DebugJS.onLoad = function() {
   if (!window._) DebugJS._AVAILABLE = true;
   if (typeof window.localStorage != 'undefined') {
@@ -6174,6 +6196,7 @@ DebugJS.x = {};
 DebugJS.self = new DebugJS();
 if (DebugJS.ENABLE) {
   DebugJS.el = null;
+  DebugJS.obj = null;
   window.addEventListener('load', DebugJS.onLoad, true);
   if (DebugJS.CATCH_ALL_ERRORS) {
     window.addEventListener('error', DebugJS.onError, true);

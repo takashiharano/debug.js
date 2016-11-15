@@ -431,6 +431,11 @@ function showHideByName(name) {
   }
 }
 
+function test() {
+  var val1 = 100;
+  dbg.export(val1);
+}
+
 function errorDemo() {
   fakeError
 }
@@ -1217,6 +1222,26 @@ dbg.countElements('tagName');
 
   <tr>
     <td class="name">
+      DebugJS.export<br>
+      <span class="alias">( dbg.export )</span>
+    </td>
+    <td>
+      object
+    </td>
+    <td>
+      Export an object to DebugJS.obj<br>
+<pre class="eg">
+function foo() {
+  var val1 = 100;
+  dbg.export(obj);
+}
+<span class="annotation">-&gt; You can watch the value of val1 from the command-line.</span>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.led<br>
       <span class="alias">( dbg.led )</span>
     </td>
@@ -1518,6 +1543,14 @@ post https://debugjs.net/env/ abc=123&amp;xyz=987
 &gt; url      : https://debugjs.net/env/
 &gt; send data: abc=123&amp;xyz=987
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">prop</td>
+    <td>property-name</td>
+    <td>
+      Displays a property value.
     </td>
   </tr>
 
