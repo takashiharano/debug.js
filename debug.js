@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611152030';
+  this.v = '201611152222';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -87,6 +87,7 @@ var DebugJS = function() {
   this.elmInspectionPanel = null;
   this.elmSelectBtnPanel = null;
   this.elmHighlightBtnPanel = null;
+  this.elmUpdateBtnPanel = null;
   this.elmExportBtnPanel = null;
   this.elmUpdateInputLabel = null;
   this.elmUpdateInputLabel2 = null;
@@ -2706,12 +2707,19 @@ DebugJS.prototype = {
       self.elmHighlightBtnPanel.innerText = 'HIGHLIGHT';
       self.elmInspectionPanel.appendChild(self.elmHighlightBtnPanel);
 
+      self.elmUpdateBtnPanel = document.createElement('span');
+      self.elmUpdateBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmUpdateBtnPanel.style.marginLeft = '4px';
+      self.elmUpdateBtnPanel.style.color = DebugJS.COLOR_INACTIVE;
+      self.elmUpdateBtnPanel.onclick = new Function('DebugJS.self.updateElementInfo();');
+      self.elmUpdateBtnPanel.innerText = 'UPDATE';
+      self.elmInspectionPanel.appendChild(self.elmUpdateBtnPanel);
+
       var UPDATE_COLOR = '#ccc';
       self.elmUpdateInputLabel = document.createElement('span');
-      self.elmUpdateInputLabel.style.marginLeft = '4px';
       self.elmUpdateInputLabel.style.marginRight = '0px';
       self.elmUpdateInputLabel.style.color = UPDATE_COLOR;
-      self.elmUpdateInputLabel.innerText = 'Update:';
+      self.elmUpdateInputLabel.innerText = ':';
       self.elmInspectionPanel.appendChild(self.elmUpdateInputLabel);
 
       self.elmUpdateInput = document.createElement('input');
@@ -2722,7 +2730,7 @@ DebugJS.prototype = {
       self.elmUpdateInput.style.setProperty('padding', '0', 'important');
       self.elmUpdateInput.style.setProperty('text-align', 'right', 'important');
       self.elmUpdateInput.style.setProperty('color', UPDATE_COLOR, 'important');
-      self.elmUpdateInput.oninput = new Function('DebugJS.self.updateElementUpdateInterval();');
+      self.elmUpdateInput.oninput = new Function('DebugJS.self.onchangeElementUpdateInterval();');
       self.elmUpdateInput.value = self.elementUpdateInterval;
       self.elmInspectionPanel.appendChild(self.elmUpdateInput);
 
@@ -2735,7 +2743,7 @@ DebugJS.prototype = {
       self.elmNumPanel.style.float = 'right';
       self.elmNumPanel.style.marginRight = '4px';
       self.elmInspectionPanel.appendChild(self.elmNumPanel);
-      self.updateElementInfo();
+      self.updateElementInfoInterval();
 
       self.elmExportBtnPanel = document.createElement('span');
       self.elmExportBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
@@ -3023,6 +3031,7 @@ DebugJS.prototype = {
     }
     if (el) {
       self.targetElm = el;
+      self.elmUpdateBtnPanel.style.color = self.options.btnColor;
       self.elmExportBtnPanel.style.color = self.options.btnColor;
     }
   },
@@ -3039,14 +3048,8 @@ DebugJS.prototype = {
 
   updateElementInfo: function() {
     var self = DebugJS.self;
-    if (!(self.status & DebugJS.STATE_ELEMENT_INSPECTING)) {
-      return;
-    }
     self.showAllElmNum();
     self.showElementInfo(self.targetElm);
-    if (self.elementUpdateInterval > 0) {
-      self.elementUpdateTimerId = setTimeout(self.updateElementInfo, self.elementUpdateInterval);
-    }
   },
 
   showAllElmNum: function() {
@@ -3054,7 +3057,7 @@ DebugJS.prototype = {
     self.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
   },
 
-  updateElementUpdateInterval: function() {
+  onchangeElementUpdateInterval: function() {
     var self = DebugJS.self;
     var interval = self.elmUpdateInput.value;
     if (interval == '') {
@@ -3063,7 +3066,18 @@ DebugJS.prototype = {
     if (isFinite(interval)) {
       self.elementUpdateInterval = interval;
       clearTimeout(self.elementUpdateTimerId);
-      self.elementUpdateTimerId = setTimeout(self.updateElementInfo, self.elementUpdateInterval);
+      self.elementUpdateTimerId = setTimeout(self.updateElementInfoInterval, self.elementUpdateInterval);
+    }
+  },
+
+  updateElementInfoInterval: function() {
+    var self = DebugJS.self;
+    if (!(self.status & DebugJS.STATE_ELEMENT_INSPECTING)) {
+      return;
+    }
+    self.updateElementInfo();
+    if (self.elementUpdateInterval > 0) {
+      self.elementUpdateTimerId = setTimeout(self.updateElementInfoInterval, self.elementUpdateInterval);
     }
   },
 
