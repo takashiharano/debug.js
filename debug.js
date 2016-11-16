@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611152222';
+  this.v = '201611170108';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2290,22 +2290,28 @@ DebugJS.prototype = {
     self.measureBox.style.width = moveX + 'px';
     self.measureBox.style.height = moveY + 'px';
 
-    var w = 210;
-    var h = 40;
-    var sizeY = (moveY / 2) - (h / 2);
-    var sizeX = (moveX / 2) - (w / 2);
+    var sizeW = 210;
+    var sizeH = 40;
+    var sizeY = (moveY / 2) - (sizeH / 2);
+    var sizeX = (moveX / 2) - (sizeW / 2);
     var originY = 'top';
     var originX = 'left';
-    if (moveX < w) {
+    if (moveX < sizeW) {
       sizeX = 0;
-      if ((moveY < h) || (moveY > self.clickedPosY)) {
-        if (self.clickedPosY < h) {
+      if ((moveY < sizeH) || (moveY > self.clickedPosY)) {
+        if (self.clickedPosY < sizeH) {
           sizeY = moveY;
         } else {
-          sizeY = h * (-1);
+          sizeY = sizeH * (-1);
         }
       } else {
-        sizeY = h * (-1);
+        sizeY = sizeH * (-1);
+      }
+    }
+
+    if (e.clientY < sizeH) {
+      if (self.clickedPosY > sizeH) {
+        sizeY = (moveY / 2) - (sizeH / 2);
       }
     }
 
@@ -4358,7 +4364,13 @@ DebugJS.prototype = {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.execCmdJson(arg);
+      var json = DebugJS.omitLeadingWhiteSpace(arg);
+      var flg = true;
+      if (json.substr(0, 2) == '-p') {
+        json = json.substr(3);
+        flg = false;
+      }
+      DebugJS.execCmdJson(json, flg);
     }
   },
 
@@ -5086,13 +5098,8 @@ DebugJS.getChildElements = function(el, list) {
   }
 };
 
-DebugJS.execCmdJson = function(json) {
+DebugJS.execCmdJson = function(json, flg) {
   var self = DebugJS.self;
-  var flg = true;
-  if (json.substr(0, 2) == '-p') {
-    json = json.substr(3);
-    flg = false;
-  }
   try {
     var j = JSON.parse(json);
     var levelLimit = 0;
