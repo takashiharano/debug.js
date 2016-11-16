@@ -1487,7 +1487,19 @@ get https://debugjs.net/env/?abc=123&amp;xyz=987
   <tr>
     <td class="name">json</td>
     <td>JSON</td>
-    <td>Parse one-line JSON.</td>
+    <td>
+     Parse one-line JSON.
+<pre class="eg">
+$ json {"name": "John Smith", "age": 25, "city": "New York"}
+-&gt; Convert JSON strings to a Friendly Readable Format like below.
+
+{
+ "name": "John Smith",
+ "age": 25,
+ "city": "New York"
+}
+</pre>
+    </td>
   </tr>
 
   <tr>
@@ -1689,7 +1701,7 @@ HEX 0xF0
   <tr>
     <td class="name">Time calculation</td>
     <td>
-     HH:MI:SS.sss + HH:MI:SS.sss<br>
+     HH:MI:SS.sss + HH:MI:SS.sss<br><br>
      HH:MI:SS.sss - HH:MI:SS.sss
     </td>
     <td>
