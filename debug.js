@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611172125';
+  this.v = '201611172327';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2635,7 +2635,7 @@ DebugJS.prototype = {
       }
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
-        partial = DebugJS.trimDownText(foldingText, lineMaxLen, omit, style);
+        partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omit, style);
         foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisplay + ';" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
@@ -4191,7 +4191,8 @@ DebugJS.prototype = {
   _execCmd: function(str, echo) {
     if (echo) {
       var ECHO_MAX_LEN = 256;
-      var echoStr = DebugJS.trimDownText(str, ECHO_MAX_LEN, DebugJS.OMIT_LAST);
+      var echoStr = DebugJS.trimDownText(str, ECHO_MAX_LEN);
+      echoStr = DebugJS.tagEscape(echoStr);
       DebugJS.log.s(echoStr);
     }
     var self = DebugJS.self;
@@ -4345,9 +4346,15 @@ DebugJS.prototype = {
     } else {
       var json = DebugJS.omitLeadingWhiteSpace(arg);
       var flg = true;
-      if (json.substr(0, 2) == '-p') {
-        json = json.substr(3);
-        flg = false;
+      if (json.substr(0, 1) == '-') {
+        var opt = json.match(/^-(.[^\s]*)\s/);
+        if ((opt != null) && (opt[1] == 'p')) {
+          json = json.substr(3);
+          flg = false;
+        } else {
+          DebugJS.printUsage(tbl.usage);
+          return;
+        }
       }
       DebugJS.execCmdJson(json, flg);
     }
@@ -5078,7 +5085,6 @@ DebugJS.getChildElements = function(el, list) {
 };
 
 DebugJS.execCmdJson = function(json, flg) {
-  var self = DebugJS.self;
   try {
     var j = JSON.parse(json);
     var levelLimit = 0;
@@ -5086,45 +5092,50 @@ DebugJS.execCmdJson = function(json, flg) {
     DebugJS.log.mlt(jsn);
   } catch (e) {
     DebugJS.log.e('JSON format error.');
-    var wkJson = json.split('\\');
-    var cnt = 0;
-    json = '';
-    for (var i = 0; i < wkJson.length; i++) {
-      if (wkJson[i] == '') {
-        cnt++;
-      } else {
-        if (i == 0) {
-          json += wkJson[i];
-          continue;
+    var detail = DebugJS.checkJson(json);
+    DebugJS.log.e(detail);
+  }
+};
+
+DebugJS.checkJson = function(json) {
+  var self = DebugJS.self;
+  var wkJson = json.split('\\');
+  var cnt = 0;
+  var result = '';
+  for (var i = 0; i < wkJson.length; i++) {
+    if (wkJson[i] == '') {
+      cnt++;
+    } else {
+      if (i == 0) {
+        result += wkJson[i];
+        continue;
+      }
+      if (cnt >= 1) {
+        result += '\\';
+        for (var j = 0; j < (cnt - 1); j++) {
+          result += '\\';
         }
-        if (cnt >= 1) {
-          json += '\\';
-          for (var j = 0; j < (cnt - 1); j++) {
-            json += '\\';
-          }
-          if (cnt % 2 == 0) {
-            json += '<span class="' + self.id + '-ctrlchar">\\</span>';
-          } else {
-            json += '\\';
-          }
-          json += wkJson[i];
-          cnt = 0;
+        if (cnt % 2 == 0) {
+          result += '<span class="' + self.id + '-ctrlchar">\\</span>';
         } else {
-          if (wkJson[i].match(/^n|^r|^t/)) {
-            json += '\\' + wkJson[i];
-          } else {
-            json += '<span class="' + self.id + '-ctrlchar">\\</span>' + wkJson[i];
-          }
+          result += '\\';
+        }
+        result += wkJson[i];
+        cnt = 0;
+      } else {
+        if (wkJson[i].match(/^n|^r|^t|^b/)) {
+          result += '\\' + wkJson[i];
+        } else {
+          result += '<span class="' + self.id + '-ctrlchar">\\</span>' + wkJson[i];
         }
       }
     }
-
-    json = json.replace(/\t/g, '<span class="' + self.id + '-ctrlchar">\\t</span>');
-    json = json.replace(/\r\n/g, '<span class="' + self.id + '-ctrlchar">\\r\\n</span>');
-    json = json.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-ctrlchar">\\r</span>');
-    json = json.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-ctrlchar">\\n</span>');
-    DebugJS.log.e(json);
   }
+  result = result.replace(/\t/g, '<span class="' + self.id + '-ctrlchar">\\t</span>');
+  result = result.replace(/\r\n/g, '<span class="' + self.id + '-ctrlchar">\\r\\n</span>');
+  result = result.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-ctrlchar">\\r</span>');
+  result = result.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-ctrlchar">\\n</span>');
+  return result;
 };
 
 DebugJS.digits = function(x) {
@@ -5937,17 +5948,26 @@ DebugJS.substr = function(text, len) {
   return str;
 };
 
-DebugJS.trimDownText = function(text, maxLen, omitpart, style) {
+DebugJS.trimDownText = function(text, maxLen) {
+  var snip = '...';
+  var str = text;
+  if (text.length > maxLen) {
+    str = DebugJS.substr(str, maxLen) + snip;
+  }
+  return str;
+};
+
+DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
   var snip = '...';
   if (style) {
     snip = '<span style="' + style + '">' + snip + '</span>';
   }
-  var shortText = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '');
+  var str = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '');
   if (text.length > maxLen) {
     switch (omitpart) {
       case DebugJS.OMIT_FIRST:
-        shortText = DebugJS.substr(shortText, (maxLen * (-1)));
-        shortText = snip + DebugJS.tagEscape(shortText);
+        str = DebugJS.substr(str, (maxLen * (-1)));
+        str = snip + DebugJS.tagEscape(str);
         break;
       case DebugJS.OMIT_MID:
         var firstLen = maxLen / 2;
@@ -5956,17 +5976,17 @@ DebugJS.trimDownText = function(text, maxLen, omitpart, style) {
           firstLen = Math.floor(firstLen);
           latterLen = firstLen + 1;
         }
-        var firstText = DebugJS.substr(shortText, firstLen);
-        var latterText = DebugJS.substr(shortText, (latterLen * (-1)));
-        shortText = DebugJS.tagEscape(firstText) + snip + DebugJS.tagEscape(latterText);
+        var firstText = DebugJS.substr(str, firstLen);
+        var latterText = DebugJS.substr(str, (latterLen * (-1)));
+        str = DebugJS.tagEscape(firstText) + snip + DebugJS.tagEscape(latterText);
         break;
       default:
-        shortText = DebugJS.substr(shortText, maxLen);
-        shortText = DebugJS.tagEscape(shortText) + snip;
+        str = DebugJS.substr(str, maxLen);
+        str = DebugJS.tagEscape(str) + snip;
         break;
     }
   }
-  return shortText;
+  return str;
 };
 
 DebugJS.decorateIfObjIsUnavailable = function(obj, exceptFalse) {
