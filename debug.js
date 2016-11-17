@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611170108';
+  this.v = '201611172125';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2276,59 +2276,66 @@ DebugJS.prototype = {
 
   doMeasure: function(e) {
     var self = DebugJS.self;
-    var moveX = e.clientX - self.clickedPosX;
-    var moveY = e.clientY - self.clickedPosY;
+    var currentPosX = e.clientX;
+    var currentPosY = e.clientY;
+    var deltaX = currentPosX - self.clickedPosX;
+    var deltaY = currentPosY - self.clickedPosY;
+    var clientWidth = document.documentElement.clientWidth;
 
-    if (moveX < 0) {
-      self.measureBox.style.left = e.clientX + 'px';
-      moveX *= -1;
+    if (deltaX < 0) {
+      self.measureBox.style.left = currentPosX + 'px';
+      deltaX *= -1;
     }
-    if (moveY < 0) {
-      self.measureBox.style.top = e.clientY + 'px';
-      moveY *= -1;
+    if (deltaY < 0) {
+      self.measureBox.style.top = currentPosY + 'px';
+      deltaY *= -1;
     }
-    self.measureBox.style.width = moveX + 'px';
-    self.measureBox.style.height = moveY + 'px';
+    self.measureBox.style.width = deltaX + 'px';
+    self.measureBox.style.height = deltaY + 'px';
 
-    var sizeW = 210;
-    var sizeH = 40;
-    var sizeY = (moveY / 2) - (sizeH / 2);
-    var sizeX = (moveX / 2) - (sizeW / 2);
+    var sizeLabelW = 210;
+    var sizeLabelH = 40;
+    var sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
+    var sizeLabelX = (deltaX / 2) - (sizeLabelW / 2);
     var originY = 'top';
     var originX = 'left';
-    if (moveX < sizeW) {
-      sizeX = 0;
-      if ((moveY < sizeH) || (moveY > self.clickedPosY)) {
-        if (self.clickedPosY < sizeH) {
-          sizeY = moveY;
+    if (deltaX < sizeLabelW) {
+      sizeLabelX = 0;
+      if ((deltaY < sizeLabelH) || (deltaY > self.clickedPosY)) {
+        if (self.clickedPosY < sizeLabelH) {
+          sizeLabelY = deltaY;
         } else {
-          sizeY = sizeH * (-1);
+          sizeLabelY = sizeLabelH * (-1);
         }
       } else {
-        sizeY = sizeH * (-1);
+        sizeLabelY = sizeLabelH * (-1);
       }
     }
 
-    if (e.clientY < sizeH) {
-      if (self.clickedPosY > sizeH) {
-        sizeY = (moveY / 2) - (sizeH / 2);
+    if (currentPosY < sizeLabelH) {
+      if (self.clickedPosY > sizeLabelH) {
+        sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
       }
+    }
+
+    if (((self.clickedPosX + sizeLabelW) > clientWidth) && ((currentPosX + sizeLabelW) > clientWidth)) {
+      sizeLabelX = (sizeLabelW - (clientWidth - self.clickedPosX)) * (-1);
     }
 
     var endPointY = 'bottom';
     var endPointX = 'right';
-    if (e.clientX < self.clickedPosX) {
+    if (currentPosX < self.clickedPosX) {
       originX = 'right';
       endPointX = 'left';
     }
-    if (e.clientY < self.clickedPosY) {
+    if (currentPosY < self.clickedPosY) {
       originY = 'bottom';
       endPointY = 'top';
     }
-    var size = '<span style="font-family:' + self.options.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeY + 'px;left:' + sizeX + 'px;">W=' + moveX + ' H=' + moveY + '</span>';
+    var size = '<span style="font-family:' + self.options.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px;">W=' + deltaX + ' H=' + deltaY + '</span>';
     var origin = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.clickedPosX + ',y=' + self.clickedPosY + '</span>';
     var endPoint = '';
-    //endPoint = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + e.clientX + ',y=' + e.clientY + '</span>';
+    //endPoint = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + currentPosX + ',y=' + currentPosY + '</span>';
     self.measureBox.innerHTML = origin + size + endPoint;
   },
 
@@ -2628,7 +2635,7 @@ DebugJS.prototype = {
       }
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
-        partial = self.trimDownText(foldingText, lineMaxLen, omit, style);
+        partial = DebugJS.trimDownText(foldingText, lineMaxLen, omit, style);
         foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisplay + ';" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
@@ -2637,38 +2644,6 @@ DebugJS.prototype = {
       }
     }
     return foldingText;
-  },
-
-  trimDownText: function(text, maxLen, omit, style) {
-    var snip = '...';
-    if (style) {
-      snip = '<span style="' + style + '">' + snip + '</span>';
-    }
-    var shortText = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '');
-    if (text.length > maxLen) {
-      switch (omit) {
-        case DebugJS.OMIT_FIRST:
-          shortText = DebugJS.substr(shortText, (maxLen * (-1)));
-          shortText = snip + DebugJS.tagEscape(shortText);
-          break;
-        case DebugJS.OMIT_MID:
-          var firstLen = maxLen / 2;
-          var latterLen = firstLen;
-          if ((maxLen % 2) != 0) {
-            firstLen = Math.floor(firstLen);
-            latterLen = firstLen + 1;
-          }
-          var firstText = DebugJS.substr(shortText, firstLen);
-          var latterText = DebugJS.substr(shortText, (latterLen * (-1)));
-          shortText = DebugJS.tagEscape(firstText) + snip + DebugJS.tagEscape(latterText);
-          break;
-        default:
-          shortText = DebugJS.substr(shortText, maxLen);
-          shortText = DebugJS.tagEscape(shortText) + snip;
-          break;
-      }
-    }
-    return shortText;
   },
 
   toggleElmInspectionMode: function() {
@@ -4214,7 +4189,11 @@ DebugJS.prototype = {
   },
 
   _execCmd: function(str, echo) {
-    if (echo) DebugJS.log.s(str);
+    if (echo) {
+      var ECHO_MAX_LEN = 256;
+      var echoStr = DebugJS.trimDownText(str, ECHO_MAX_LEN, DebugJS.OMIT_LAST);
+      DebugJS.log.s(echoStr);
+    }
     var self = DebugJS.self;
     var cmd, arg;
 
@@ -5107,10 +5086,43 @@ DebugJS.execCmdJson = function(json, flg) {
     DebugJS.log.mlt(jsn);
   } catch (e) {
     DebugJS.log.e('JSON format error.');
+    var wkJson = json.split('\\');
+    var cnt = 0;
+    json = '';
+    for (var i = 0; i < wkJson.length; i++) {
+      if (wkJson[i] == '') {
+        cnt++;
+      } else {
+        if (i == 0) {
+          json += wkJson[i];
+          continue;
+        }
+        if (cnt >= 1) {
+          json += '\\';
+          for (var j = 0; j < (cnt - 1); j++) {
+            json += '\\';
+          }
+          if (cnt % 2 == 0) {
+            json += '<span class="' + self.id + '-ctrlchar">\\</span>';
+          } else {
+            json += '\\';
+          }
+          json += wkJson[i];
+          cnt = 0;
+        } else {
+          if (wkJson[i].match(/^n|^r|^t/)) {
+            json += '\\' + wkJson[i];
+          } else {
+            json += '<span class="' + self.id + '-ctrlchar">\\</span>' + wkJson[i];
+          }
+        }
+      }
+    }
+
     json = json.replace(/\t/g, '<span class="' + self.id + '-ctrlchar">\\t</span>');
     json = json.replace(/\r\n/g, '<span class="' + self.id + '-ctrlchar">\\r\\n</span>');
-    json = json.replace(/[^\\]\r/g, '<span class="' + self.id + '-ctrlchar">\\r</span>');
-    json = json.replace(/[^\\]\n/g, '<span class="' + self.id + '-ctrlchar">\\n</span>');
+    json = json.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-ctrlchar">\\r</span>');
+    json = json.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-ctrlchar">\\n</span>');
     DebugJS.log.e(json);
   }
 };
@@ -5923,6 +5935,38 @@ DebugJS.substr = function(text, len) {
     str = text.substr(i);
   }
   return str;
+};
+
+DebugJS.trimDownText = function(text, maxLen, omitpart, style) {
+  var snip = '...';
+  if (style) {
+    snip = '<span style="' + style + '">' + snip + '</span>';
+  }
+  var shortText = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '');
+  if (text.length > maxLen) {
+    switch (omitpart) {
+      case DebugJS.OMIT_FIRST:
+        shortText = DebugJS.substr(shortText, (maxLen * (-1)));
+        shortText = snip + DebugJS.tagEscape(shortText);
+        break;
+      case DebugJS.OMIT_MID:
+        var firstLen = maxLen / 2;
+        var latterLen = firstLen;
+        if ((maxLen % 2) != 0) {
+          firstLen = Math.floor(firstLen);
+          latterLen = firstLen + 1;
+        }
+        var firstText = DebugJS.substr(shortText, firstLen);
+        var latterText = DebugJS.substr(shortText, (latterLen * (-1)));
+        shortText = DebugJS.tagEscape(firstText) + snip + DebugJS.tagEscape(latterText);
+        break;
+      default:
+        shortText = DebugJS.substr(shortText, maxLen);
+        shortText = DebugJS.tagEscape(shortText) + snip;
+        break;
+    }
+  }
+  return shortText;
 };
 
 DebugJS.decorateIfObjIsUnavailable = function(obj, exceptFalse) {
