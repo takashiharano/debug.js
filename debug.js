@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611172327';
+  this.v = '201611180056';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5123,7 +5123,7 @@ DebugJS.checkJson = function(json) {
         result += wkJson[i];
         cnt = 0;
       } else {
-        if (wkJson[i].match(/^n|^r|^t|^b/)) {
+        if (wkJson[i].match(/^n|^r|^t|^b|^"/)) {
           result += '\\' + wkJson[i];
         } else {
           result += '<span class="' + self.id + '-ctrlchar">\\</span>' + wkJson[i];
