@@ -68,7 +68,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .button-green:hover {background:#00ffa8;}
 .button-red {background:#aa6868;}
 .button-red:hover {background:#d88;}
-.desc-table {font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse; width:760px;}
+.desc-table {font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse; width:850px;}
 .desc-table th {background-color:#eee; border:solid 1px #444; padding:4px 6px;}
 .desc-table td {border:solid 1px #444; padding:4px 6px; vertical-align:top;}
 .desc-table .name {color:#0000a0;}
@@ -1509,6 +1509,16 @@ $ json {"name": "John Smith", "age": 25, "city": "New York"}
   </tr>
 
   <tr>
+    <td class="name">laptime</td>
+    <td></td>
+    <td>
+      Lap time test <span class="annotation">togglable</span><br>
+      Start the stopwatch and print the measurement time by clicking left mouse button.<br>
+      The stopwatch will be reset with each clicking.
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">led</td>
     <td>bit pattern</td>
     <td>Set a bit pattern to the indicator.</td>
@@ -1618,6 +1628,14 @@ $ rgb 255 255 255
       Set a property value.<br>
       <span class="annotation">See also "props" command.</span>
     </td>
+  </tr>
+
+  <tr>
+    <td class="name">stopwatch</td>
+    <td>
+      start / stop / reset
+    </td>
+    <td>Manipulate the stopwatch.</td>
   </tr>
 
   <tr>

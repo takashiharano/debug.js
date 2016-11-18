@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611180056';
+  this.v = '201611190040';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -232,6 +232,7 @@ var DebugJS = function() {
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
+    {'cmd': 'laptime', 'fnc': this.cmdLaptime, 'desc': 'Lap time test'},
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
@@ -242,6 +243,7 @@ var DebugJS = function() {
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
     {'cmd': 'set', 'fnc': this.cmdSet, 'desc': 'Set a property value', 'usage': 'set property-name value'},
+    {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM}
@@ -286,6 +288,7 @@ DebugJS.STATE_TOOLS = 0x1000000;
 DebugJS.STATE_SCRIPT = 0x2000000;
 DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
+DebugJS.STATE_STOPWATCH_LAPTIME = 0x20000000;
 DebugJS.ELMINFO_STATE_SELECT = 0x1;
 DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
 DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
@@ -1492,7 +1495,11 @@ DebugJS.prototype = {
   updateSwPanel: function() {
     var self = DebugJS.self;
     self.updateStopWatch();
-    self.swPanel.innerText = self.swElapsedTimeDisp;
+    if (self.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+      self.swPanel.innerHTML = '<span style="color:' + self.options.timerColor + ';">' + self.swElapsedTimeDisp + '</span>';
+    } else {
+      self.swPanel.innerHTML = self.swElapsedTimeDisp;
+    }
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       setTimeout(self.updateSwPanel, DebugJS.UPDATE_INTERVAL_H);
     }
@@ -1773,15 +1780,11 @@ DebugJS.prototype = {
   stopStopWatch: function() {
     var self = DebugJS.self;
     self.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
+    if (self.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+      self.status &= ~DebugJS.STATE_STOPWATCH_LAPTIME;
+      self.resetStopWatch();
+    }
     self.updateSwBtnPanel();
-  },
-
-  updateStopWatch: function() {
-    if (!(DebugJS.self.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
-    var self = DebugJS.self;
-    var swCurrentTime = (new Date()).getTime();
-    self.swElapsedTime = swCurrentTime - self.swStartTime;
-    self.swElapsedTimeDisp = DebugJS.getTimerStr(self.swElapsedTime);
   },
 
   resetStopWatch: function() {
@@ -1790,6 +1793,14 @@ DebugJS.prototype = {
     self.swElapsedTime = 0;
     self.swElapsedTimeDisp = DebugJS.getTimerStr(self.swElapsedTime);
     self.updateSwPanel();
+  },
+
+  updateStopWatch: function() {
+    if (!(DebugJS.self.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
+    var self = DebugJS.self;
+    var swCurrentTime = (new Date()).getTime();
+    self.swElapsedTime = swCurrentTime - self.swStartTime;
+    self.swElapsedTimeDisp = DebugJS.getTimerStr(self.swElapsedTime);
   },
 
   getLogMsgs: function() {
@@ -2023,6 +2034,10 @@ DebugJS.prototype = {
         self.mouseClickL = DebugJS.COLOR_ACTIVE;
         if (self.status & DebugJS.STATE_MEASURE) {
           self.startMeasure(e);
+        }
+        if (self.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+          DebugJS.log('<span style="color:' + self.options.timerColor + ';">' + self.swElapsedTimeDisp + '</span>');
+          self.resetStopWatch();
         }
         break;
       case 1:
@@ -4295,9 +4310,9 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       self.stopStopWatch();
     }
+    self.resetStopWatch();
     self.setLed(0);
     self.setMsg('');
-    self.resetStopWatch();
     if (self.status & DebugJS.STATE_DYNAMIC) {
       if (self.options.usePinButton) {
         self.enableDraggable();
@@ -4383,6 +4398,20 @@ DebugJS.prototype = {
           DebugJS.log.e(e);
         }
       }
+    }
+  },
+
+  cmdLaptime: function(arg, tbl) {
+    var self = DebugJS.self;
+    if (self.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+      self.stopStopWatch();
+    } else {
+      if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+        self.stopStopWatch();
+        self.resetStopWatch();
+      }
+      self.status |= DebugJS.STATE_STOPWATCH_LAPTIME;
+      self.startStopWatch();
     }
   },
 
@@ -4486,6 +4515,17 @@ DebugJS.prototype = {
     }
   },
 
+  cmdRGB: function(arg, tbl) {
+    arg = DebugJS.omitLeadingWhiteSpace(arg);
+    arg = DebugJS.omitTrailingWhiteSpace(arg);
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.convRGB(arg);
+    }
+  },
+
   cmdSelf: function(arg, tbl) {
     var self = DebugJS.self;
     var sizePos = self.getSelfSizePos();
@@ -4554,22 +4594,6 @@ DebugJS.prototype = {
     return true;
   },
 
-  cmdUnicode: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
-  },
-
-  cmdRGB: function(arg, tbl) {
-    arg = DebugJS.omitLeadingWhiteSpace(arg);
-    arg = DebugJS.omitTrailingWhiteSpace(arg);
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      DebugJS.convRGB(arg);
-    }
-  },
-
   cmdTime: function(arg, tbl) {
     arg = arg.replace(/\s{2,}/g, ' ');
     if (arg == '') {
@@ -4599,6 +4623,39 @@ DebugJS.prototype = {
         }
       }
     }
+  },
+
+  cmdStopwatch: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
+      if (a == null) {
+        DebugJS.printUsage(tbl.usage);
+      } else {
+        switch (a[1]) {
+          case 'start':
+            self.startStopWatch();
+            break;
+          case 'stop':
+            self.stopStopWatch();
+            break;
+          case 'reset':
+            self.resetStopWatch();
+            break;
+          default:
+            DebugJS.printUsage(tbl.usage);
+            break;
+        }
+      }
+    }
+  },
+
+  cmdUnicode: function(arg, tbl) {
+    var self = DebugJS.self;
+    self.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
   },
 
   cmdV: function(arg, tbl) {
@@ -5962,7 +6019,7 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
   if (style) {
     snip = '<span style="' + style + '">' + snip + '</span>';
   }
-  var str = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, '');
+  var str = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, ' ');
   if (text.length > maxLen) {
     switch (omitpart) {
       case DebugJS.OMIT_FIRST:
