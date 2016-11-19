@@ -933,6 +933,18 @@ DebugJS.init(options);
   </tr>
 
   <tr>
+    <td class="name">saveCmdHistory</td>
+    <td>Save command-line history to Window.localStorage</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
+    <td class="name">cmdHistoryMax</td>
+    <td>Max num of command-line history</td>
+    <td>true</td>
+  </tr>
+
+  <tr>
     <td class="name">kioskMode</td>
     <td>
       Make the debugger window go full screen
@@ -1474,8 +1486,12 @@ get https://debugjs.net/env/?abc=123&amp;xyz=987
 
   <tr>
     <td class="name">history</td>
-    <td></td>
-    <td>Displays command history.</td>
+    <td>option<span class="annotation">(opt)</span></td>
+    <td>
+      Displays command history.<br><br>
+      Option:<br>
+      -c Clear the history list.
+    </td>
   </tr>
 
   <tr>

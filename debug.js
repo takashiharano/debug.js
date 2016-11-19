@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611190040';
+  this.v = '201611191343';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -64,6 +64,8 @@ var DebugJS = function() {
     'useTools': true,
     'useScriptEditor': true,
     'useCommandLine': true,
+    'saveCmdHistory': true,
+    'cmdHistoryMax': 20,
     'kioskMode': false,
     'disableAllCommands': false,
     'disableAllFeatures': false,
@@ -195,7 +197,7 @@ var DebugJS = function() {
   this.cmdPanel = null;
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
-  this.CMD_HISTORY_MAX = 20;
+  this.CMD_HISTORY_MAX = this.DEFAULT_OPTIONS.cmdHistoryMax;
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
   this.cmdTmp = '';
   this.timers = {};
@@ -228,7 +230,7 @@ var DebugJS = function() {
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method', 'usage': 'get URL'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
@@ -307,6 +309,7 @@ DebugJS.LOG_TYPE_SYSTEM = 0x20;
 DebugJS.LOG_TYPE_MULTILINE = 0x40;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
 DebugJS.CMD_ATTR_HIDDEN = 0x2;
+DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.DEBUG_WIN_EXPAND_W = 960;
@@ -1223,7 +1226,7 @@ DebugJS.prototype = {
       self.cmdLine.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
       self.cmdLine.style.setProperty('font-family', self.options.fontFamily, 'important');
       self.cmdPanel.appendChild(self.cmdLine);
-      self.cmdHistoryBuf = new DebugJS.RingBuffer(self.CMD_HISTORY_MAX);
+      self.initHistory();
     }
   },
 
@@ -4197,16 +4200,14 @@ DebugJS.prototype = {
     if (cl == '') {
       DebugJS.log('');
     } else {
-      self.cmdHistoryBuf.add(cl);
-      self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
+      self.saveHistory(cl);
       self._execCmd(cl, true);
     }
   },
 
   _execCmd: function(str, echo) {
     if (echo) {
-      var ECHO_MAX_LEN = 256;
-      var echoStr = DebugJS.trimDownText(str, ECHO_MAX_LEN);
+      var echoStr = DebugJS.trimDownText(str, DebugJS.CMD_ECHO_MAX_LEN);
       echoStr = DebugJS.tagEscape(echoStr);
       DebugJS.log.s(echoStr);
     }
@@ -4347,12 +4348,75 @@ DebugJS.prototype = {
 
   cmdHistory: function(arg, tbl) {
     var self = DebugJS.self;
-    var buf = self.cmdHistoryBuf.getAll();
-    var str = '';
-    for (var i = 0, len = (buf.length - 1); i < len; i++) {
-      str += buf[i] + '\n';
+    var arg = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
+    switch (arg) {
+      case '':
+        self.showHistory();
+        break;
+      case '-c':
+        self.clearHistory();
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+        break;
     }
+  },
+
+  initHistory: function() {
+    var self = DebugJS.self;
+    self.CMD_HISTORY_MAX = self.options.cmdHistoryMax;
+    self.cmdHistoryBuf = new DebugJS.RingBuffer(self.CMD_HISTORY_MAX);
+    if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
+      self.loadHistory();
+    }
+  },
+
+  showHistory: function() {
+    var self = DebugJS.self;
+    var buf = self.cmdHistoryBuf.getAll();
+    var str = '<table>';
+    for (var i = 0, len = buf.length; i < len; i++) {
+      var cmd = DebugJS.trimDownText(buf[i], DebugJS.CMD_ECHO_MAX_LEN);
+      str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap;">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
+    }
+    str += '</table>';
     DebugJS.log.mlt(str);
+  },
+
+  saveHistory: function(cmd) {
+    var self = DebugJS.self;
+    self.cmdHistoryBuf.add(cmd);
+    self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
+    if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
+      var buf = self.cmdHistoryBuf.getAll();
+      var cmds = '';
+      for (var i = 0, len = buf.length; i < len; i++) {
+        cmds += buf[i] + '\n';
+      }
+      localStorage.setItem('DebugJS-history', cmds);
+    }
+  },
+
+  loadHistory: function() {
+    var self = DebugJS.self;
+    if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
+      var buf = localStorage.getItem('DebugJS-history');
+      if (buf != null) {
+        var cmds = buf.split('\n');
+        for (var i = 0, len = (cmds.length - 1); i < len; i++) {
+          self.cmdHistoryBuf.add(cmds[i]);
+          self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
+        }
+      }
+    }
+  },
+
+  clearHistory: function() {
+    var self = DebugJS.self;
+    self.cmdHistoryBuf.clear();
+    if (DebugJS.LS_AVAILABLE) {
+      localStorage.removeItem('DebugJS-history');
+    }
   },
 
   cmdJson: function(arg, tbl) {
@@ -4793,6 +4857,12 @@ DebugJS.omitLeadingWhiteSpace = function(str) {
 
 DebugJS.omitTrailingWhiteSpace = function(str) {
   return str.replace(/\s+$/, '');
+};
+
+DebugJS.omitLeadingAndTrailingWhiteSpace = function(str) {
+  str = str.replace(/^\s{1,}/, '');
+  str = str.replace(/\s+$/, '');
+  return str;
 };
 
 DebugJS.encloseString = function(str) {
