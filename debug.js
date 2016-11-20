@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611202158';
+  this.v = '201611210010';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -248,7 +248,8 @@ var DebugJS = function() {
     {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
-    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM}
+    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC}
   ];
   this.intCmdTblLen = this.INT_CMD_TBL.length;
   this.CMD_TBL = [];
@@ -309,6 +310,7 @@ DebugJS.LOG_TYPE_SYSTEM = 0x20;
 DebugJS.LOG_TYPE_MULTILINE = 0x40;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
 DebugJS.CMD_ATTR_HIDDEN = 0x2;
+DebugJS.CMD_ATTR_DYNAMIC = 0x4;
 DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
@@ -1307,7 +1309,9 @@ DebugJS.prototype = {
           self.CMD_TBL.push(self.INT_CMD_TBL[i]);
         }
       } else {
-        self.CMD_TBL.push(self.INT_CMD_TBL[i]);
+        if (!(!(self.status & DebugJS.STATE_DYNAMIC) && (self.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC))) {
+          self.CMD_TBL.push(self.INT_CMD_TBL[i]);
+        }
       }
     }
     self.intCmdTblLen = self.CMD_TBL.length;
@@ -1524,7 +1528,7 @@ DebugJS.prototype = {
   updateWinCtrlBtnPanel: function() {
     var self = DebugJS.self;
     if (!self.winCtrlBtnPanel) return;
-    var fn = 'DebugJS.self.expandDebugWindow()';
+    var fn = 'DebugJS.self.expandDebugWindow(false)';
     var btn = '&#x25A1;';
     if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H)) {
       fn = 'DebugJS.self.restoreDebugWindow()';
@@ -2110,7 +2114,7 @@ DebugJS.prototype = {
     }
   },
 
-  expandDebugWindow: function() {
+  expandDebugWindow: function(fixed) {
     var self = DebugJS.self;
     var sizePos = self.getSelfSizePos();
     self.saveSizeAndPos();
@@ -2122,49 +2126,74 @@ DebugJS.prototype = {
     var h = 0;
     var t = 0;
     var l = 0;
-    if ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) || (sizePos.w > expandThresholdW)) {
-      w = clientWidth;
-      self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_W;
-      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > expandThresholdH)) {
-        h = clientHeight;
-        self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
-      } else {
-        t = -1;
-      }
+
+    if (fixed) {
+      w = ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) ? clientWidth : DebugJS.DEBUG_WIN_EXPAND_W);
+      h = ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) ? clientHeight : DebugJS.DEBUG_WIN_EXPAND_H);
+      l = clientWidth / 2 - w / 2;
+      t = clientHeight / 2 - h / 2;
     } else {
-      if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > expandThresholdH)) {
-        h = clientHeight;
-        self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
-        if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.w < expandThresholdW)) {
-          l = -1;
+      if ((DebugJS.DEBUG_WIN_EXPAND_W > clientWidth) || (sizePos.w > expandThresholdW)) {
+        w = clientWidth;
+        self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_W;
+        if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > expandThresholdH)) {
+          h = clientHeight;
+          self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
+        } else {
+          t = -1;
         }
       } else {
-        w = DebugJS.DEBUG_WIN_EXPAND_W;
-        h = DebugJS.DEBUG_WIN_EXPAND_H;
-        l = clientWidth / 2 - w / 2;
-        t = clientHeight / 2 - h / 2;
+        if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > expandThresholdH)) {
+          h = clientHeight;
+          self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
+          if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.w < expandThresholdW)) {
+            l = -1;
+          }
+        } else {
+          w = DebugJS.DEBUG_WIN_EXPAND_W;
+          h = DebugJS.DEBUG_WIN_EXPAND_H;
+          l = clientWidth / 2 - w / 2;
+          t = clientHeight / 2 - h / 2;
+        }
       }
     }
 
-    if ((sizePos.w >= DebugJS.DEBUG_WIN_EXPAND_W) && (sizePos.h >= DebugJS.DEBUG_WIN_EXPAND_H)) {
-      w = clientWidth;
-      h = clientHeight;
-      t = 0;
-      l = 0;
-      self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_W;
-      self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
+    if ((!fixed) && (sizePos.w >= DebugJS.DEBUG_WIN_EXPAND_W) && (sizePos.h >= DebugJS.DEBUG_WIN_EXPAND_H)) {
+      self.setDebugWindowFull();
+    } else {
+      self.setDebugWindowPos(t, l);
+      self.setDebugWindowSize(w, h);
+      self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     }
+  },
 
+  setDebugWindowFull: function() {
+    var self = DebugJS.self;
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.clientHeight;
+    var t = 0;
+    var l = 0;
+    self.setDebugWindowPos(t, l);
+    self.setDebugWindowSize(w, h);
+    self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_W;
+    self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
+  },
+
+  setDebugWindowPos: function(t, l) {
+    var self = DebugJS.self;
     if (t >= 0) self.debugWindow.style.top = t + 'px';
     if (l >= 0) self.debugWindow.style.left = l + 'px';
+  },
+
+  setDebugWindowSize: function(w, h) {
+    var self = DebugJS.self;
+    var clientWidth = document.documentElement.clientWidth;
+    var clientHeight = document.documentElement.clientHeight;
     if (w > 0) self.debugWindow.style.width = w + 'px';
     if (h > 0) self.debugWindow.style.height = h + 'px';
     self.resizeMainHeight();
     self.resizeImgPreview();
     self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
-    if ((w != clientWidth) && (h != clientHeight)) {
-      self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
-    }
   },
 
   adjustWindowMax: function() {
@@ -2181,12 +2210,12 @@ DebugJS.prototype = {
 
   restoreDebugWindow: function() {
     var self = DebugJS.self;
-    self.debugWindow.style.width = self.orgSizePos.w + 'px';
-    self.debugWindow.style.height = self.orgSizePos.h + 'px';
-    self.debugWindow.style.top = self.orgSizePos.t + 'px';
-    self.debugWindow.style.left = self.orgSizePos.l + 'px';
-    self.resizeMainHeight();
-    self.resizeImgPreview();
+    var w = self.orgSizePos.w;
+    var h = self.orgSizePos.h;
+    var t = self.orgSizePos.t;
+    var l = self.orgSizePos.l;
+    self.setDebugWindowSize(w, h);
+    self.setDebugWindowPos(t, l);
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
@@ -2194,11 +2223,10 @@ DebugJS.prototype = {
 
   resetDebugWindowSizePos: function() {
     var self = DebugJS.self;
-    self.debugWindow.style.width = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
-    self.debugWindow.style.height = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER) + 'px';
+    var w = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
+    var h = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
     self.setWindowPosition(self.options.position, self.initWidth, self.initHeight);
-    self.resizeMainHeight();
-    self.resizeImgPreview();
+    self.setDebugWindowSize(w, h);
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.saveExpandModeOrgSizeAndPos();
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
@@ -4727,6 +4755,60 @@ DebugJS.prototype = {
   cmdV: function(arg, tbl) {
     var self = DebugJS.self;
     DebugJS.log(self.v);
+  },
+
+  cmdWin: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
+      if (a == null) {
+        DebugJS.printUsage(tbl.usage);
+      } else {
+        switch (a[1]) {
+          case 'min':
+            self.setDebugWindowSize(DebugJS.DEBUG_WIN_MIN_W, DebugJS.DEBUG_WIN_MIN_H);
+            self.updateWinCtrlBtnPanel();
+            self.logPanel.scrollTop = self.logPanel.scrollHeight;
+            break;
+          case 'normal':
+            var w = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
+            var h = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
+            self.setDebugWindowSize(w, h);
+            self.updateWinCtrlBtnPanel();
+            self.logPanel.scrollTop = self.logPanel.scrollHeight;
+            break;
+          case 'max':
+            self.expandDebugWindow(true);
+            self.updateWinCtrlBtnPanel();
+            break;
+          case 'full':
+            self.saveSizeAndPos();
+            self.setDebugWindowFull();
+            self.updateWinCtrlBtnPanel();
+            break;
+          case 'expand':
+            self.expandDebugWindow(false);
+            self.updateWinCtrlBtnPanel();
+            break;
+          case 'restore':
+            if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H)) {
+              self.restoreDebugWindow();
+              self.updateWinCtrlBtnPanel();
+            }
+            break;
+          case 'reset':
+            self.resetDebugWindowSizePos();
+            self.updateWinCtrlBtnPanel();
+            break;
+          default:
+            DebugJS.printUsage(tbl.usage);
+            break;
+        }
+      }
+    }
   },
 
   execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc) {
