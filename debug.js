@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611191343';
+  this.v = '201611201407';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -99,7 +99,7 @@ var DebugJS = function() {
   this.elmInfoStatus = DebugJS.ELMINFO_STATE_SELECT | DebugJS.ELMINFO_STATE_HIGHLIGHT;
   this.elementUpdateInterval = 0;
   this.elementUpdateTimerId = 0;
-  this.elmInfoShowHideStatus = {'allStyles': false, 'elBorder': false};
+  this.elmInfoShowHideStatus = {'text':false, 'allStyles': false, 'elBorder': false};
   this.targetElm = null;
   this.toolsBtnPanel = null;
   this.toolsPanel = null;
@@ -2442,7 +2442,7 @@ DebugJS.prototype = {
 
   showSystemInfo: function(e) {
     var self = DebugJS.self;
-    var INDENT = '              ';
+    var INDENT = '                  ';
     var screenSize = 'w=' + screen.width + ' x h=' + screen.height;
     var languages = self.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
@@ -2528,11 +2528,13 @@ DebugJS.prototype = {
     var html = '<pre>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SCREEN SIZE</span> : ' + screenSize + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">User Agent</span>  : ' + navUserAgent + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Language</span>    : ' + DebugJS.decorateIfObjIsUnavailable(navigator.language) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  browser</span>   : ' + DebugJS.decorateIfObjIsUnavailable(navigator.browserLanguage) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  user</span>      : ' + DebugJS.decorateIfObjIsUnavailable(navigator.userLanguage) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">  Languages</span> : ' + languages + '\n' +
+    '<div class="' + self.id + '-separator"></div>' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">navigator.</span>\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> userAgent</span>  : ' + navUserAgent + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> language</span>       : ' + DebugJS.decorateIfObjIsUnavailable(navigator.language) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> browserLanguage</span>: ' + DebugJS.decorateIfObjIsUnavailable(navigator.browserLanguage) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> userLanguage</span>   : ' + DebugJS.decorateIfObjIsUnavailable(navigator.userLanguage) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> languages</span>      : ' + languages + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">charset</span>: ' + charset + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
@@ -2819,7 +2821,7 @@ DebugJS.prototype = {
           text = el.innerText;
         }
       }
-      var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE);
+      var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, self.elmInfoShowHideStatus['text']);
       var className = el.className;
       className = className.replace(self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX + '</span>');
 
