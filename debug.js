@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611210010';
+  this.v = '201611210715';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4769,6 +4769,8 @@ DebugJS.prototype = {
       } else {
         switch (a[1]) {
           case 'min':
+            self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+            self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
             self.setDebugWindowSize(DebugJS.DEBUG_WIN_MIN_W, DebugJS.DEBUG_WIN_MIN_H);
             self.updateWinCtrlBtnPanel();
             self.logPanel.scrollTop = self.logPanel.scrollHeight;
