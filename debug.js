@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611201407';
+  this.v = '201611202158';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -99,7 +99,7 @@ var DebugJS = function() {
   this.elmInfoStatus = DebugJS.ELMINFO_STATE_SELECT | DebugJS.ELMINFO_STATE_HIGHLIGHT;
   this.elementUpdateInterval = 0;
   this.elementUpdateTimerId = 0;
-  this.elmInfoShowHideStatus = {'text':false, 'allStyles': false, 'elBorder': false};
+  this.elmInfoShowHideStatus = {'text': false, 'allStyles': false, 'elBorder': false};
   this.targetElm = null;
   this.toolsBtnPanel = null;
   this.toolsPanel = null;
@@ -5228,6 +5228,7 @@ DebugJS.execCmdJson = function(json, flg) {
 
 DebugJS.checkJson = function(json) {
   var self = DebugJS.self;
+  json = DebugJS.omitLeadingAndTrailingWhiteSpace(json);
   var wkJson = json.split('\\');
   var cnt = 0;
   var result = '';
@@ -5264,6 +5265,13 @@ DebugJS.checkJson = function(json) {
   result = result.replace(/\r\n/g, '<span class="' + self.id + '-ctrlchar">\\r\\n</span>');
   result = result.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-ctrlchar">\\r</span>');
   result = result.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-ctrlchar">\\n</span>');
+  if (!result.match(/^{/)) {
+    result = '<span class="' + self.id + '-ctrlchar"> </span>' + result;
+  }
+  result = result.replace(/}([^}]+)$/, '}<span class="' + self.id + '-ctrlchar">$1</span>');
+  if (!result.match(/}$/)) {
+    result = result + '<span class="' + self.id + '-ctrlchar"> </span>';
+  }
   return result;
 };
 
