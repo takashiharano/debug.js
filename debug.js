@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611220024';
+  this.v = '201611220111';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -65,7 +65,7 @@ var DebugJS = function() {
     'useScriptEditor': true,
     'useCommandLine': true,
     'saveCmdHistory': true,
-    'cmdHistoryMax': 20,
+    'cmdHistoryMax': 100,
     'kioskMode': false,
     'disableAllCommands': false,
     'disableAllFeatures': false,
