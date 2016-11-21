@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611210715';
+  this.v = '201611212128';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -316,6 +316,7 @@ DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.DEBUG_WIN_EXPAND_W = 960;
 DebugJS.DEBUG_WIN_EXPAND_H = 640;
+DebugJS.DEBUG_WIN_POS_NONE = -9999;
 DebugJS.WINDOW_SHADOW = 10;
 DebugJS.WINDOW_BORDER = 1;
 DebugJS.WINDOW_PADDING = 1;
@@ -1613,15 +1614,6 @@ DebugJS.prototype = {
     self.debugWindow.style.left = e.clientX - self.prevOffsetLeft + 'px';
   },
 
-  saveSizeAndPos: function() {
-    var self = DebugJS.self;
-    var shadow = (self.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
-    self.orgSizePos.w = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
-    self.orgSizePos.h = (self.debugWindow.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
-    self.orgSizePos.t = self.debugWindow.offsetTop;
-    self.orgSizePos.l = self.debugWindow.offsetLeft;
-  },
-
   startResize: function(e) {
     if (e.button != 0) return;
     var self = DebugJS.self;
@@ -2140,14 +2132,14 @@ DebugJS.prototype = {
           h = clientHeight;
           self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
         } else {
-          t = -1;
+          t = DebugJS.DEBUG_WIN_POS_NONE;
         }
       } else {
         if ((DebugJS.DEBUG_WIN_EXPAND_H > clientHeight) || (sizePos.h > expandThresholdH)) {
           h = clientHeight;
           self.status |= DebugJS.STATE_WINDOW_SIZE_MAX_H;
           if ((DebugJS.DEBUG_WIN_EXPAND_W < clientWidth) && (sizePos.w < expandThresholdW)) {
-            l = -1;
+            l = DebugJS.DEBUG_WIN_POS_NONE;
           }
         } else {
           w = DebugJS.DEBUG_WIN_EXPAND_W;
@@ -2181,8 +2173,8 @@ DebugJS.prototype = {
 
   setDebugWindowPos: function(t, l) {
     var self = DebugJS.self;
-    if (t >= 0) self.debugWindow.style.top = t + 'px';
-    if (l >= 0) self.debugWindow.style.left = l + 'px';
+    if (t > DebugJS.DEBUG_WIN_POS_NONE) self.debugWindow.style.top = t + 'px';
+    if (l > DebugJS.DEBUG_WIN_POS_NONE) self.debugWindow.style.left = l + 'px';
   },
 
   setDebugWindowSize: function(w, h) {
@@ -2206,6 +2198,31 @@ DebugJS.prototype = {
     }
     self.resizeMainHeight();
     self.resizeImgPreview();
+  },
+
+  saveSizeAndPos: function() {
+    var self = DebugJS.self;
+    self.saveSize();
+    self.savePos();
+  },
+
+  saveSize: function() {
+    var self = DebugJS.self;
+    var shadow = (self.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
+    self.orgSizePos.w = (self.debugWindow.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
+    self.orgSizePos.h = (self.debugWindow.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
+  },
+
+  savePos: function() {
+    var self = DebugJS.self;
+    self.orgSizePos.t = self.debugWindow.offsetTop;
+    self.orgSizePos.l = self.debugWindow.offsetLeft;
+  },
+
+  savePosNone: function() {
+    var self = DebugJS.self;
+    self.orgSizePos.t = DebugJS.DEBUG_WIN_POS_NONE;
+    self.orgSizePos.l = DebugJS.DEBUG_WIN_POS_NONE;
   },
 
   restoreDebugWindow: function() {
@@ -4769,11 +4786,13 @@ DebugJS.prototype = {
       } else {
         switch (a[1]) {
           case 'min':
-            self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
             self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
+            self.saveSize();
+            self.savePosNone();
             self.setDebugWindowSize(DebugJS.DEBUG_WIN_MIN_W, DebugJS.DEBUG_WIN_MIN_H);
-            self.updateWinCtrlBtnPanel();
             self.logPanel.scrollTop = self.logPanel.scrollHeight;
+            self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+            self.updateWinCtrlBtnPanel();
             break;
           case 'normal':
             var w = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
