@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611212128';
+  this.v = '201611220024';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -238,6 +238,7 @@ var DebugJS = function() {
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
+    {'cmd': 'pos', 'fnc': this.cmdPos, 'desc': 'Set the debugger window position', 'usage': 'pos n|ne|e|se|s|sw|w|nw|c', 'attr': DebugJS.CMD_ATTR_DYNAMIC},
     {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
     {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Displays a property value', 'usage': 'prop property-name'},
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
@@ -2257,7 +2258,10 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var ret = false;
     var sizePos = self.getSelfSizePos();
-    if ((sizePos.x1 > document.documentElement.clientWidth) || (sizePos.y1 > document.documentElement.clientHeight)) {
+    if ((sizePos.x1 > document.documentElement.clientWidth) ||
+        (sizePos.y1 > document.documentElement.clientHeight) ||
+        (sizePos.x2 < 0) ||
+        (sizePos.y2 < 0)) {
       ret = true;
     }
     return ret;
@@ -4549,6 +4553,38 @@ DebugJS.prototype = {
     }
   },
 
+  cmdPos: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
+      if (a == null) {
+        DebugJS.printUsage(tbl.usage);
+      } else {
+        var pos = a[1];
+        switch (pos) {
+          case 'n':
+          case 'ne':
+          case 'e':
+          case 'se':
+          case 's':
+          case 'sw':
+          case 'w':
+          case 'nw':
+          case 'c':
+            var sizePos = self.getSelfSizePos();
+            self.setWindowPosition(pos, sizePos.w, sizePos.h);
+            break;
+          default:
+            DebugJS.printUsage(tbl.usage);
+            break;
+        }
+      }
+    }
+  },
+
   cmdPost: function(arg, tbl) {
     var self = DebugJS.self;
     self.httpRequest(arg, tbl, 'POST');
@@ -4798,6 +4834,8 @@ DebugJS.prototype = {
             var w = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
             var h = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
             self.setDebugWindowSize(w, h);
+            self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+            self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
             self.updateWinCtrlBtnPanel();
             self.logPanel.scrollTop = self.logPanel.scrollHeight;
             break;
