@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611220111';
+  this.v = '201611230023';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4251,6 +4251,28 @@ DebugJS.prototype = {
     if (cl == '') {
       DebugJS.log('');
     } else {
+      if (cl.substr(0, 2) == '!!') {
+        var event = self.getLastHistory();
+        if (event == '') {
+          DebugJS.log.w('!!: event not found');
+          return;
+        }
+        cl = event + cl.substr(2);
+      } else if (cl.substr(0, 1) == '!') {
+        var str = cl.substr(1).match(/(\d*)(.*)/);
+        var num = str[1];
+        var arg = str[2];
+        if (num != '') {
+          var event = self.getHistory((num | 0) - 1);
+          if (event == '') {
+            DebugJS.log.w('!' + num + ': event not found');
+            return;
+          }
+          cl = event + arg;
+        } else if (arg != '') {
+          cl = '!' + arg;
+        }
+      }
       self.saveHistory(cl);
       self._execCmd(cl, true);
     }
@@ -4264,7 +4286,6 @@ DebugJS.prototype = {
     }
     var self = DebugJS.self;
     var cmd, arg;
-
     var cmds = self.splitCmdLineInTwo(str);
     cmd = cmds[0];
     arg = cmds[1];
@@ -4460,6 +4481,20 @@ DebugJS.prototype = {
         }
       }
     }
+  },
+
+  getHistory: function(idx) {
+    var self = DebugJS.self;
+    var cmds = self.cmdHistoryBuf.getAll();
+    var cmd = cmds[idx];
+    return ((cmd == undefined) ? '' : cmd);
+  },
+
+  getLastHistory: function() {
+    var self = DebugJS.self;
+    var cmds = self.cmdHistoryBuf.getAll();
+    var cmd = cmds[cmds.length - 1];
+    return ((cmd == undefined) ? '' : cmd);
   },
 
   clearHistory: function() {
