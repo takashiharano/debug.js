@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611230023';
+  this.v = '201611231700';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -219,6 +219,10 @@ var DebugJS = function() {
   this.prevOffsetTop = 0;
   this.prevOffsetLeft = 0;
   this.savedFunc = null;
+  this.computedFontSize = this.DEFAULT_OPTIONS.fontSize;
+  this.computedWidth = this.DEFAULT_OPTIONS.width;
+  this.computedMinWidth = DebugJS.DEBUG_WIN_MIN_W;
+  this.computedMinHeight = DebugJS.DEBUG_WIN_MIN_H;
   this.status = 0;
   this.toolsActiveFunction = DebugJS.TOOLS_ACTIVE_FUNCTION_NONE;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
@@ -250,7 +254,8 @@ var DebugJS = function() {
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC}
+    {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC},
+    {'cmd': 'zoom', 'fnc': this.cmdZoom, 'desc': 'Zoom the debugger window', 'usage': 'zoom ratio', 'attr': DebugJS.CMD_ATTR_DYNAMIC}
   ];
   this.intCmdTblLen = this.INT_CMD_TBL.length;
   this.CMD_TBL = [];
@@ -409,7 +414,7 @@ DebugJS.FEATURES = [
 ];
 
 DebugJS.prototype = {
-  init: function(options) {
+  init: function(options, keep) {
     if (!DebugJS.ENABLE) {return false;}
     var self = DebugJS.self;
     self.bodyEl = document.body;
@@ -423,8 +428,11 @@ DebugJS.prototype = {
       }
     }
 
-    self.status = 0;
-    if ((this.options == null) || (options != null)) {
+    if (!keep) {
+      self.status = 0;
+    }
+
+    if ((this.options == null) || ((options != null) && (!keep))) {
       self.setupDefaultOptions();
     }
     if (options) {
@@ -440,10 +448,11 @@ DebugJS.prototype = {
         }
       }
     }
-    if (self.options.zoom != 1.0) {
-      self.options.fontSize = self.options.fontSize * self.options.zoom;
-      self.options.width = self.options.width * self.options.zoom;
-    }
+
+    self.computedMinWidth = DebugJS.DEBUG_WIN_MIN_W * self.options.zoom;
+    self.computedMinHeight = DebugJS.DEBUG_WIN_MIN_H * self.options.zoom;
+    self.computedFontSize = self.options.fontSize * self.options.zoom;
+    self.computedWidth = self.options.width * self.options.zoom;
 
     if (!self.bodyEl) {
       return false;
@@ -459,7 +468,7 @@ DebugJS.prototype = {
       self.debugWindow.id = self.id;
       self.debugWindow.style.position = 'fixed';
       self.debugWindow.style.zIndex = 0x7fffffff;
-      self.debugWindow.style.width = self.options.width + 'px';
+      self.debugWindow.style.width = self.computedWidth + 'px';
       self.debugWindow.style.boxShadow = DebugJS.WINDOW_SHADOW + 'px ' + DebugJS.WINDOW_SHADOW + 'px 10px rgba(0,0,0,.3)';
       self.bodyEl.appendChild(self.debugWindow);
 
@@ -478,7 +487,7 @@ DebugJS.prototype = {
     self.debugWindow.style.border = self.options.border;
     self.debugWindow.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
     self.debugWindow.style.color = self.options.fontColor;
-    self.debugWindow.style.fontSize = self.options.fontSize + 'px',
+    self.debugWindow.style.fontSize = self.computedFontSize + 'px',
     self.debugWindow.style.fontFamily = self.options.fontFamily;
 
     // Buffer
@@ -635,14 +644,14 @@ DebugJS.prototype = {
       'border': 'initial',
       'background': 'initial',
       'color': self.options.fontColor,
-      'font-size': self.options.fontSize + 'px',
+      'font-size': self.computedFontSize + 'px',
       'font-family': self.options.fontFamily
     };
 
     styles['#' + self.id + ' pre'] = {
       'margin': '0 !important',
       'color': self.options.fontColor + ' !important',
-      'font-size': self.options.fontSize + 'px !important',
+      'font-size': self.computedFontSize + 'px !important',
       'font-family': self.options.fontFamily + ' !important',
       'white-space': 'pre-wrap !important',
       'word-break': 'break-all !important',
@@ -714,16 +723,16 @@ DebugJS.prototype = {
     styles['.' + self.id + '-overlay-panel pre'] = {
       'padding': '0 1px',
       'color': self.options.fontColor + ' !important',
-      'font-size': self.options.fontSize + 'px !important',
+      'font-size': self.computedFontSize + 'px !important',
       'font-family': self.options.fontFamily + ' !important'
     };
 
     styles['.' + self.id + '-overlay-panel-full'] = {
       'position': 'absolute',
-      'top': (self.options.fontSize + DebugJS.WINDOW_ADJUST) + 'px',
+      'top': (self.computedFontSize + DebugJS.WINDOW_ADJUST) + 'px',
       'left': '1px',
       'width': 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + DebugJS.WINDOW_ADJUST - ((overlayPanelPadding * 2) + (overlayPanelBorder * 2))) + 'px)',
-      'height': 'calc(100% - ' + ((self.options.fontSize + DebugJS.WINDOW_ADJUST) + DebugJS.WINDOW_SHADOW + self.options.fontSize + 10 - (overlayPanelPadding * 2)) + 'px)',
+      'height': 'calc(100% - ' + ((self.computedFontSize + DebugJS.WINDOW_ADJUST) + DebugJS.WINDOW_SHADOW + self.computedFontSize + 10 - (overlayPanelPadding * 2)) + 'px)',
       'padding': overlayPanelPadding + 'px',
       'border': 'solid ' + overlayPanelBorder + 'px #333',
       'background': 'rgba(0,0,0,0.5)',
@@ -739,7 +748,7 @@ DebugJS.prototype = {
     };
 
     styles['.' + self.id + '-separator'] = {
-      'height': (self.options.fontSize * 0.5) + 'px'
+      'height': (self.computedFontSize * 0.5) + 'px'
     };
 
     styles['.' + self.id + '-unavailable'] = {
@@ -748,7 +757,7 @@ DebugJS.prototype = {
 
     styles['.' + self.id + '-showhide-button'] = {
       'color': '#0a0',
-      'font-size': (self.options.fontSize * 0.8) + 'px'
+      'font-size': (self.computedFontSize * 0.8) + 'px'
     };
 
     styles['.' + self.id + '-showhide-button:hover'] = {
@@ -763,7 +772,7 @@ DebugJS.prototype = {
       'box-shadow': 'none !important',
       'background': 'transparent !important',
       'color': self.options.fontColor + ' !important',
-      'font-size': self.options.fontSize + 'px !important',
+      'font-size': self.computedFontSize + 'px !important',
       'font-family': self.options.fontFamily + ' !important'
     };
 
@@ -777,7 +786,7 @@ DebugJS.prototype = {
     };
 
     styles['.' + self.id + '-txt-tbl td'] = {
-      'font-size': self.options.fontSize + 'px !important',
+      'font-size': self.computedFontSize + 'px !important',
       'line-height': '1em !important',
     };
 
@@ -790,7 +799,7 @@ DebugJS.prototype = {
       'margin': '0',
       'line-height': '1em',
       'color': self.options.fontColor,
-      'font-size': self.options.fontSize + 'px',
+      'font-size': self.computedFontSize + 'px',
       'font-weight': 'normal',
       'font-family': self.options.fontFamily
     };
@@ -801,7 +810,7 @@ DebugJS.prototype = {
 
     styles['.' + self.id + '-editor'] = {
       'width': 'calc(100% - 6px) !important',
-      'height': 'calc(100% - ' + (self.options.fontSize + 10) + 'px) !important',
+      'height': 'calc(100% - ' + (self.computedFontSize + 10) + 'px) !important',
       'margin': '2px 0 0 0 !important',
       'box-sizing': 'content-box !important',
       'padding': '2px !important',
@@ -810,7 +819,7 @@ DebugJS.prototype = {
       'outline': 'none !important',
       'background': 'transparent !important',
       'color': '#fff !important',
-      'font-size': self.options.fontSize + 'px !important',
+      'font-size': self.computedFontSize + 'px !important',
       'font-family': self.options.fontFamily + ' !important',
       'overflow': 'auto !important',
       'resize': 'none !important'
@@ -997,7 +1006,7 @@ DebugJS.prototype = {
     if (self.options.useClock) {
       self.clockPanel = document.createElement('span');
       self.clockPanel.style.color = self.options.clockColor;
-      self.clockPanel.style.fontSize = self.options.fontSize + 'px';
+      self.clockPanel.style.fontSize = self.computedFontSize + 'px';
       self.headPanel.appendChild(self.clockPanel);
       self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
     }
@@ -1217,7 +1226,7 @@ DebugJS.prototype = {
       self.windowBody.appendChild(self.cmdPanel);
       self.cmdPanel.innerHTML = '<span style="color:' + self.options.promptColor + ';">$</span>';
       self.cmdLine = document.createElement('input');
-      self.cmdLine.style.setProperty('width', 'calc(100% - ' + self.options.fontSize + 'px)', 'important');
+      self.cmdLine.style.setProperty('width', 'calc(100% - ' + self.computedFontSize + 'px)', 'important');
       self.cmdLine.style.setProperty('margin-left', '2px', 'important');
       self.cmdLine.style.setProperty('padding', '1px', 'important');
       self.cmdLine.style.setProperty('border', '0', 'important');
@@ -1227,7 +1236,7 @@ DebugJS.prototype = {
       self.cmdLine.style.setProperty('box-shadow', 'none', 'important');
       self.cmdLine.style.setProperty('background', 'transparent', 'important');
       self.cmdLine.style.setProperty('color', self.options.fontColor, 'important');
-      self.cmdLine.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.cmdLine.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
       self.cmdLine.style.setProperty('font-family', self.options.fontFamily, 'important');
       self.cmdPanel.appendChild(self.cmdLine);
       self.initHistory();
@@ -1642,8 +1651,8 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING_N) {
       moveY = self.clickedPosY - currentY;
       h = self.orgSizePos.h + moveY;
-      if (h < DebugJS.DEBUG_WIN_MIN_H) {
-        h = DebugJS.DEBUG_WIN_MIN_H;
+      if (h < self.computedMinHeight) {
+        h = self.computedMinHeight;
       } else {
         t = self.orgSizePos.t - moveY;
         self.debugWindow.style.top = t + 'px';
@@ -1654,8 +1663,8 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING_W) {
       moveX = self.clickedPosX - currentX;
       w = self.orgSizePos.w + moveX;
-      if (w < DebugJS.DEBUG_WIN_MIN_W) {
-        w = DebugJS.DEBUG_WIN_MIN_W;
+      if (w < self.computedMinWidth) {
+        w = self.computedMinWidth;
       } else {
         l = self.orgSizePos.l - moveX;
         self.debugWindow.style.left = l + 'px';
@@ -1666,19 +1675,19 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING_E) {
       moveX = currentX - self.clickedPosX;
       w = self.orgSizePos.w + moveX;
-      if (w < DebugJS.DEBUG_WIN_MIN_W) w = DebugJS.DEBUG_WIN_MIN_W;
+      if (w < self.computedMinWidth) w = self.computedMinWidth;
       self.debugWindow.style.width = w + 'px';
     }
 
     if (self.status & DebugJS.STATE_RESIZING_S) {
       moveY = currentY - self.clickedPosY;
       h = self.orgSizePos.h + moveY;
-      if (self.initHeight < DebugJS.DEBUG_WIN_MIN_H) {
+      if (self.initHeight < self.computedMinHeight) {
         if (h < self.initHeight) {
           h = self.initHeight;
         }
-      } else if (h < DebugJS.DEBUG_WIN_MIN_H) {
-        h = DebugJS.DEBUG_WIN_MIN_H;
+      } else if (h < self.computedMinHeight) {
+        h = self.computedMinHeight;
       }
       self.debugWindow.style.height = h + 'px';
     }
@@ -1842,7 +1851,7 @@ DebugJS.prototype = {
           line += '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px;">' + msg + '</span>';
           break;
         case DebugJS.LOG_TYPE_MULTILINE:
-          line += '<span style="display:inline-block;margin:' + Math.round(self.options.fontSize * 0.5) + 'px 0;">' + msg + '</span>';
+          line += '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0;">' + msg + '</span>';
           break;
         default:
           line += msg;
@@ -1862,6 +1871,29 @@ DebugJS.prototype = {
   expandLogPanel: function() {
     var self = DebugJS.self;
     self.logPanel.style.height = '100%';
+  },
+
+  closeFeatures: function() {
+    var self = DebugJS.self;
+    if ((self.status & DebugJS.STATE_DRAGGING) || (self.status & DebugJS.STATE_RESIZING)) {
+      self.status &= ~DebugJS.STATE_DRAGGING;
+      self.endResize();
+    }
+    if (self.status & DebugJS.STATE_MEASURE) {
+      self.disableMeasureMode();
+    }
+    if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
+      self.disableElmInspection();
+    }
+    if (self.status & DebugJS.STATE_TOOLS) {
+      self.disableTools();
+    }
+    if (self.status & DebugJS.STATE_SCRIPT) {
+      self.disableScriptEditor();
+    }
+    if (self.status & DebugJS.STATE_SYSTEM_INFO) {
+      self.disableSystemInfo();
+    }
   },
 
   keyHandler: function(e) {
@@ -1941,6 +1973,13 @@ DebugJS.prototype = {
           } else {
             self.cmdLine.value = cmds[self.cmdHistoryIdx];
           }
+        }
+        break;
+
+      case 67: // C
+        if ((e.ctrlKey) && (document.activeElement == self.cmdLine)) {
+          DebugJS.log.s(self.cmdLine.value + '^C');
+          self.cmdLine.value = '';
         }
         break;
 
@@ -2448,7 +2487,7 @@ DebugJS.prototype = {
 
       self.sysInfoPanelBody = document.createElement('div');
       self.sysInfoPanelBody.style.position = 'relative';
-      self.sysInfoPanelBody.style.top = self.options.fontSize;
+      self.sysInfoPanelBody.style.top = self.computedFontSize;
       self.sysInfoPanel.appendChild(self.sysInfoPanelBody);
     }
     self.updateSysInfoBtnPanel();
@@ -2806,7 +2845,7 @@ DebugJS.prototype = {
 
       self.elmInfoBodyPanel = document.createElement('div');
       self.elmInfoBodyPanel.style.position = 'relative';
-      self.elmInfoBodyPanel.style.top = self.options.fontSize;
+      self.elmInfoBodyPanel.style.top = self.computedFontSize;
       self.elmInspectionPanel.appendChild(self.elmInfoBodyPanel);
     }
     self.updateElmInspectionBtnPanel();
@@ -3203,12 +3242,12 @@ DebugJS.prototype = {
 
       self.toolsHeaderPanel = document.createElement('div');
       self.toolsHeaderPanel.style.position = 'relative';
-      self.toolsHeaderPanel.style.height = self.options.fontSize + 'px';
+      self.toolsHeaderPanel.style.height = self.computedFontSize + 'px';
       self.toolsPanel.appendChild(self.toolsHeaderPanel);
 
       self.toolsBodyPanel = document.createElement('div');
       self.toolsBodyPanel.style.position = 'relative';
-      self.toolsBodyPanel.style.height = 'calc(100% - ' + self.options.fontSize + 'px)';
+      self.toolsBodyPanel.style.height = 'calc(100% - ' + self.computedFontSize + 'px)';
       self.toolsPanel.appendChild(self.toolsBodyPanel);
 
       self.textCheckerBtnPanel = document.createElement('span');
@@ -3480,14 +3519,14 @@ DebugJS.prototype = {
 
       self.fileInput = document.createElement('input');
       self.fileInput.type = 'file';
-      self.fileInput.style.setProperty('width', 'calc(100% - ' + (self.options.fontSize * 12) + 'px)', 'important');
+      self.fileInput.style.setProperty('width', 'calc(100% - ' + (self.computedFontSize * 12) + 'px)', 'important');
       self.fileInput.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
       self.fileInput.style.setProperty('margin-bottom', '4px', 'important');
       self.fileInput.style.setProperty('padding', '1px', 'important');
       self.fileInput.style.setProperty('border', '0', 'important');
       self.fileInput.style.setProperty('border-radius', '0', 'important');
       self.fileInput.style.setProperty('outline', 'none', 'important');
-      self.fileInput.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.fileInput.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
       self.fileInput.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
       self.fileInput.addEventListener('change', self.handleFileSelect, false);
       self.fileLoaderPanel.appendChild(self.fileInput);
@@ -3517,11 +3556,11 @@ DebugJS.prototype = {
 
       self.filePreviewWrapper = document.createElement('div');
       self.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + 2) + 'px)', 'important');
-      self.filePreviewWrapper.style.setProperty('height', 'calc(100% - ' + ((self.options.fontSize * 4) + 10) + 'px)', 'important');
+      self.filePreviewWrapper.style.setProperty('height', 'calc(100% - ' + ((self.computedFontSize * 4) + 10) + 'px)', 'important');
       self.filePreviewWrapper.style.setProperty('margin-bottom', '4px', 'important');
       self.filePreviewWrapper.style.setProperty('padding', '2px', 'important');
       self.filePreviewWrapper.style.setProperty('border', '1px dotted #ccc', 'important');
-      self.filePreviewWrapper.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.filePreviewWrapper.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
       self.filePreviewWrapper.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
       self.filePreviewWrapper.style.setProperty('overflow', 'auto', 'important');
       self.filePreviewWrapper.addEventListener('dragover', self.handleDragOver, false);
@@ -3531,21 +3570,21 @@ DebugJS.prototype = {
       self.filePreview = document.createElement('pre');
       self.filePreview.style.setProperty('background', 'transparent', 'important');
       self.filePreview.style.setProperty('color', self.options.fontColor, 'important');
-      self.filePreview.style.setProperty('font-size', self.options.fontSize + 'px', 'important');
+      self.filePreview.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
       self.filePreview.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
       self.filePreviewWrapper.appendChild(self.filePreview);
       self.filePreview.innerText = 'Drop a file here';
 
       self.fileLoaderFooter = document.createElement('div');
       self.fileLoaderFooter.style.width = 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + DebugJS.WINDOW_SHADOW) + 'px)';
-      self.fileLoaderFooter.style.height = (self.options.fontSize + 3) + 'px';
+      self.fileLoaderFooter.style.height = (self.computedFontSize + 3) + 'px';
       self.fileLoaderFooter.style.opacity = 0;
       self.fileLoaderFooter.style.transition = 'opacity 0.5s linear';
       self.fileLoaderPanel.appendChild(self.fileLoaderFooter);
 
       self.fileLoadProgressBar = document.createElement('div');
       self.fileLoadProgressBar.style.display = 'inline-block';
-      self.fileLoadProgressBar.style.width = 'calc(100% - ' + (self.options.fontSize * 5) + 'px)';
+      self.fileLoadProgressBar.style.width = 'calc(100% - ' + (self.computedFontSize * 5) + 'px)';
       self.fileLoadProgressBar.style.height = 'auto';
       self.fileLoadProgressBar.style.padding = 0;
       self.fileLoadProgressBar.style.border = '1px solid #ccc';
@@ -3557,7 +3596,7 @@ DebugJS.prototype = {
       self.fileLoadProgress.style.padding = '1px';
       self.fileLoadProgress.style.border = 'none';
       self.fileLoadProgress.style.background = '#00f';
-      self.fileLoadProgress.style.fontSize = (self.options.fontSize * 0.8) + 'px';
+      self.fileLoadProgress.style.fontSize = (self.computedFontSize * 0.8) + 'px';
       self.fileLoadProgress.style.fontFamily = self.options.fontFamily + 'px';
       self.fileLoadProgress.innerText = '0%';
       self.fileLoadProgressBar.appendChild(self.fileLoadProgress);
@@ -3719,7 +3758,7 @@ DebugJS.prototype = {
     var contentPreview = '';
     if (file.type.match(/image\//)) {
       var selfSizePos = self.getSelfSizePos();
-      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.options.fontSize * 13) - 8) + 'px;">\n';
+      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.computedFontSize * 13) - 8) + 'px;">\n';
     } else if (file.type.match(/text\//)) {
       var contents = contentBase64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
@@ -3741,7 +3780,7 @@ DebugJS.prototype = {
     var selfSizePos = self.getSelfSizePos();
     var maxW = (selfSizePos.w - 32);
     if (maxW < 100) maxW = 100;
-    var maxH = (selfSizePos.h - (self.options.fontSize * 13) - 8);
+    var maxH = (selfSizePos.h - (self.computedFontSize * 13) - 8);
     if (maxH < 100) maxH = 100;
     imgPreview.style.maxWidth = maxW + 'px';
     imgPreview.style.maxHeight = maxH + 'px';
@@ -3854,7 +3893,7 @@ DebugJS.prototype = {
 
       self.htmlPreviewEditor = document.createElement('textarea');
       self.htmlPreviewEditor.className = self.id + '-editor';
-      self.htmlPreviewEditor.style.setProperty('height', 'calc(50% - ' + (self.options.fontSize + 10) + 'px)', 'important');
+      self.htmlPreviewEditor.style.setProperty('height', 'calc(50% - ' + (self.computedFontSize + 10) + 'px)', 'important');
       self.htmlPreviewEditor.onblur = new Function('DebugJS.self.saveHtmlBuf();');
       self.htmlPreviewEditor.value = self.htmlPreviewBuf;
       self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditor);
@@ -3920,7 +3959,7 @@ DebugJS.prototype = {
 
       self.memoEditor = document.createElement('textarea');
       self.memoEditor.className = self.id + '-editor';
-      self.memoEditor.style.setProperty('height', 'calc(100% - ' + (self.options.fontSize + 10) + 'px)', 'important');
+      self.memoEditor.style.setProperty('height', 'calc(100% - ' + (self.computedFontSize + 10) + 'px)', 'important');
       self.memoBasePanel.appendChild(self.memoEditor);
 
       if (DebugJS.LS_AVAILABLE) {
@@ -4436,8 +4475,10 @@ DebugJS.prototype = {
 
   initHistory: function() {
     var self = DebugJS.self;
-    self.CMD_HISTORY_MAX = self.options.cmdHistoryMax;
-    self.cmdHistoryBuf = new DebugJS.RingBuffer(self.CMD_HISTORY_MAX);
+    if (self.cmdHistoryBuf == null) {
+      self.CMD_HISTORY_MAX = self.options.cmdHistoryMax;
+      self.cmdHistoryBuf = new DebugJS.RingBuffer(self.CMD_HISTORY_MAX);
+    }
     if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
       self.loadHistory();
     }
@@ -4857,49 +4898,86 @@ DebugJS.prototype = {
       } else {
         switch (a[1]) {
           case 'min':
-            self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
-            self.saveSize();
-            self.savePosNone();
-            self.setDebugWindowSize(DebugJS.DEBUG_WIN_MIN_W, DebugJS.DEBUG_WIN_MIN_H);
-            self.logPanel.scrollTop = self.logPanel.scrollHeight;
-            self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
-            self.updateWinCtrlBtnPanel();
-            break;
           case 'normal':
-            var w = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
-            var h = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
-            self.setDebugWindowSize(w, h);
-            self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
-            self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
-            self.updateWinCtrlBtnPanel();
-            self.logPanel.scrollTop = self.logPanel.scrollHeight;
-            break;
           case 'max':
-            self.expandDebugWindow(true);
-            self.updateWinCtrlBtnPanel();
-            break;
           case 'full':
-            self.saveSizeAndPos();
-            self.setDebugWindowFull();
-            self.updateWinCtrlBtnPanel();
-            break;
           case 'expand':
-            self.expandDebugWindow(false);
-            self.updateWinCtrlBtnPanel();
-            break;
           case 'restore':
-            if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H)) {
-              self.restoreDebugWindow();
-              self.updateWinCtrlBtnPanel();
-            }
-            break;
           case 'reset':
-            self.resetDebugWindowSizePos();
-            self.updateWinCtrlBtnPanel();
+            self.setWindowSize(a[1]);
             break;
           default:
             DebugJS.printUsage(tbl.usage);
             break;
+        }
+      }
+    }
+  },
+
+  setWindowSize: function(opt) {
+    var self = DebugJS.self;
+    switch (opt) {
+      case 'min':
+        self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
+        self.saveSize();
+        self.savePosNone();
+        self.setDebugWindowSize(self.computedMinWidth, self.computedMinHeight);
+        self.logPanel.scrollTop = self.logPanel.scrollHeight;
+        self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+        self.updateWinCtrlBtnPanel();
+        break;
+      case 'normal':
+        var w = (self.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
+        var h = (self.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
+        self.setDebugWindowSize(w, h);
+        self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+        self.status &= ~DebugJS.STATE_WINDOW_SIZE_MAX;
+        self.updateWinCtrlBtnPanel();
+        self.logPanel.scrollTop = self.logPanel.scrollHeight;
+        break;
+      case 'max':
+        self.expandDebugWindow(true);
+        self.updateWinCtrlBtnPanel();
+        break;
+      case 'full':
+        self.saveSizeAndPos();
+        self.setDebugWindowFull();
+        self.updateWinCtrlBtnPanel();
+        break;
+      case 'expand':
+        self.expandDebugWindow(false);
+        self.updateWinCtrlBtnPanel();
+        break;
+      case 'restore':
+        if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_MAX_H)) {
+          self.restoreDebugWindow();
+          self.updateWinCtrlBtnPanel();
+        }
+        break;
+      case 'reset':
+        self.resetDebugWindowSizePos();
+        self.updateWinCtrlBtnPanel();
+        break;
+      default:
+       break;
+    }
+  },
+
+  cmdZoom: function(arg, tbl) {
+    var self = DebugJS.self;
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
+      if (a == null) {
+        DebugJS.printUsage(tbl.usage);
+      } else {
+        var zoom = a[1];
+        if (zoom != self.options.zoom) {
+          self.closeFeatures();
+          self.setWindowSize('normal');
+          self.init({'zoom': zoom}, true);
         }
       }
     }
