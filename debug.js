@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611232145';
+  this.v = '201611240001';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2913,9 +2913,9 @@ DebugJS.prototype = {
       var text = '';
       if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
         if (el.tagName == 'META') {
-          text = DebugJS.tagEscape(el.outerHTML);
+          text = DebugJS.escapeTag(el.outerHTML);
         } else {
-          text = el.innerText;
+          text = DebugJS.escapeTag(el.innerText);
         }
       }
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, self.elmInfoShowHideStatus['text']);
@@ -3771,7 +3771,7 @@ DebugJS.prototype = {
     } else if (file.type.match(/text\//)) {
       var contents = contentBase64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
-      decodedContent = DebugJS.tagEscape(decodedContent);
+      decodedContent = DebugJS.escapeTag(decodedContent);
       contentPreview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
     }
     return contentPreview;
@@ -4329,7 +4329,7 @@ DebugJS.prototype = {
   _execCmd: function(str, echo) {
     if (echo) {
       var echoStr = DebugJS.trimDownText(str, DebugJS.CMD_ECHO_MAX_LEN);
-      echoStr = DebugJS.tagEscape(echoStr);
+      echoStr = DebugJS.escapeTag(echoStr);
       DebugJS.log.s(echoStr);
     }
     var self = DebugJS.self;
@@ -6160,8 +6160,10 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
     }
   };
 
-  DebugJS.log('url :' + DebugJS.encloseString(url));
-  DebugJS.log('data:' + ((data == null) ? '<span style="color:#aaa;"> null</span>' : DebugJS.encloseString(data)));
+  var req = 'Sending a ' + method + ' request.\n' +
+  'URL : ' + url + '\n' +
+  'Body: ' + ((data == null) ? '<span style="color:#ccc;">null</span>' : data);
+  DebugJS.log(req);
 
   try {
     xhr.open(method, url, async, user, password);
@@ -6368,7 +6370,7 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
     switch (omitpart) {
       case DebugJS.OMIT_FIRST:
         str = DebugJS.substr(str, (maxLen * (-1)));
-        str = snip + DebugJS.tagEscape(str);
+        str = snip + DebugJS.escapeTag(str);
         break;
       case DebugJS.OMIT_MID:
         var firstLen = maxLen / 2;
@@ -6379,11 +6381,11 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
         }
         var firstText = DebugJS.substr(str, firstLen);
         var latterText = DebugJS.substr(str, (latterLen * (-1)));
-        str = DebugJS.tagEscape(firstText) + snip + DebugJS.tagEscape(latterText);
+        str = DebugJS.escapeTag(firstText) + snip + DebugJS.escapeTag(latterText);
         break;
       default:
         str = DebugJS.substr(str, maxLen);
-        str = DebugJS.tagEscape(str) + snip;
+        str = DebugJS.escapeTag(str) + snip;
         break;
     }
   }
@@ -6399,7 +6401,7 @@ DebugJS.decorateIfObjIsUnavailable = function(obj, exceptFalse) {
   return text;
 };
 
-DebugJS.tagEscape = function(str) {
+DebugJS.escapeTag = function(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 
