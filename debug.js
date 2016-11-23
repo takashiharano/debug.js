@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611240001';
+  this.v = '201611240045';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2731,7 +2731,7 @@ DebugJS.prototype = {
     }
   },
 
-  createFoldingText: function(obj, name, omit, lineMaxLen, style, show) {
+  createFoldingText: function(obj, name, omitpart, lineMaxLen, style, show) {
     var self = DebugJS.self;
     var DEFAULT_MAX_LEN = 50;
     var foldingText;
@@ -2752,7 +2752,7 @@ DebugJS.prototype = {
       }
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
-        partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omit, style);
+        partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omitpart, style);
         foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisplay + ';" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
@@ -2987,7 +2987,7 @@ DebugJS.prototype = {
                 indent += ' ';
               }
             }
-            allStyles += key + indent + ': ' + computedStyle[key] + '\n';
+            allStyles += ' ' + key + indent + ': ' + computedStyle[key] + '\n';
           }
         }
       }
@@ -3024,7 +3024,7 @@ DebugJS.prototype = {
       'overflow  : ' + computedStyle.overflow + '\n' +
       'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'all styles: ' + allStylesFolding + '\n' +
+      'All Styles: getComputedStyle() ' + allStylesFolding + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'name      : ' + (el.name ? el.name : '') + '\n' +
       'value     : ' + (el.value ? self.createFoldingText(el.value, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) : '') + '\n' +
