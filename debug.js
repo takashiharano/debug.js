@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611250100';
+  this.v = '201611250740';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -228,7 +228,7 @@ var DebugJS = function() {
   this.computedMinWidth = DebugJS.DEBUG_WIN_MIN_W;
   this.computedMinHeight = DebugJS.DEBUG_WIN_MIN_H;
   this.status = 0;
-  this.toolsActiveFunction = DebugJS.TOOLS_ACTIVE_FUNCTION_NONE;
+  this.toolsActiveFunction = DebugJS.TOOLS_ACTIVE_FUNC_NONE;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {'cmd': 'base64', 'fnc': this.cmdBase64, 'desc': 'Encodes/Decodes Base64 string', 'usage': 'base64 [-e|-d] string'},
@@ -310,11 +310,11 @@ DebugJS.ERR_STATE_NONE = 0;
 DebugJS.ERR_STATE_SCRIPT = 0x1;
 DebugJS.ERR_STATE_LOAD = 0x2;
 DebugJS.ERR_STATE_LOG = 0x4;
-DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
-DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT = 0x1;
-DebugJS.TOOLS_ACTIVE_FUNCTION_FILE = 0x2;
-DebugJS.TOOLS_ACTIVE_FUNCTION_HTML = 0x4;
-DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO = 0x8;
+DebugJS.TOOLS_ACTIVE_FUNC_NONE = 0x0;
+DebugJS.TOOLS_ACTIVE_FUNC_TEXT = 0x1;
+DebugJS.TOOLS_ACTIVE_FUNC_FILE = 0x2;
+DebugJS.TOOLS_ACTIVE_FUNC_HTML = 0x4;
+DebugJS.TOOLS_ACTIVE_FUNC_MEMO = 0x8;
 DebugJS.FILE_LOAD_FORMAT_BASE64 = 0;
 DebugJS.FILE_LOAD_FORMAT_BIN = 1;
 DebugJS.LOG_TYPE_STANDARD = 0x1;
@@ -1924,7 +1924,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     switch (e.keyCode) {
       case 9: // Tab
-        if ((self.status & DebugJS.STATE_TOOLS) && (DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE)) {
+        if ((self.status & DebugJS.STATE_TOOLS) && (DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE)) {
           self.switchFileScreen();
         }
         break;
@@ -2656,9 +2656,9 @@ DebugJS.prototype = {
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">navigator.</span>\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> userAgent</span>  : ' + navUserAgent + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> language</span>       : ' + DebugJS.decorateIfObjIsUnavailable(navigator.language) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> browserLanguage</span>: ' + DebugJS.decorateIfObjIsUnavailable(navigator.browserLanguage) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> userLanguage</span>   : ' + DebugJS.decorateIfObjIsUnavailable(navigator.userLanguage) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> language</span>       : ' + DebugJS.setStyleIfObjNotAvailable(navigator.language) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> browserLanguage</span>: ' + DebugJS.setStyleIfObjNotAvailable(navigator.browserLanguage) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> userLanguage</span>   : ' + DebugJS.setStyleIfObjNotAvailable(navigator.userLanguage) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> languages</span>      : ' + languages + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">charset</span>: ' + charset + '\n' +
@@ -2670,15 +2670,15 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">script</span> : ' + loadedScripts + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">navigator.</span>\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + DebugJS.decorateIfObjIsUnavailable(navigator.appCodeName) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appName</span>      : ' + DebugJS.decorateIfObjIsUnavailable(navigator.appName) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appCodeName</span>  : ' + DebugJS.setStyleIfObjNotAvailable(navigator.appCodeName) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appName</span>      : ' + DebugJS.setStyleIfObjNotAvailable(navigator.appName) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> appVersion</span>   : ' + navAppVersion + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> buildID</span>      : ' + DebugJS.decorateIfObjIsUnavailable(navigator.buildID) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> product </span>     : ' + DebugJS.decorateIfObjIsUnavailable(navigator.product) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> productSub</span>   : ' + DebugJS.decorateIfObjIsUnavailable(navigator.productSub) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> vendor</span>       : ' + DebugJS.decorateIfObjIsUnavailable(navigator.vendor) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> platform</span>     : ' + DebugJS.decorateIfObjIsUnavailable(navigator.platform) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> oscpu</span>        : ' + DebugJS.decorateIfObjIsUnavailable(navigator.oscpu) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> buildID</span>      : ' + DebugJS.setStyleIfObjNotAvailable(navigator.buildID) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> product </span>     : ' + DebugJS.setStyleIfObjNotAvailable(navigator.product) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> productSub</span>   : ' + DebugJS.setStyleIfObjNotAvailable(navigator.productSub) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> vendor</span>       : ' + DebugJS.setStyleIfObjNotAvailable(navigator.vendor) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> platform</span>     : ' + DebugJS.setStyleIfObjNotAvailable(navigator.platform) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> oscpu</span>        : ' + DebugJS.setStyleIfObjNotAvailable(navigator.oscpu) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">window.</span>\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> onload</span>       : ' + winOnload + '\n' +
@@ -2732,7 +2732,7 @@ DebugJS.prototype = {
         }
       }
     } else {
-      languages = DebugJS.decorateIfObjIsUnavailable(navLanguages);
+      languages = DebugJS.setStyleIfObjNotAvailable(navLanguages);
     }
     return languages;
   },
@@ -3058,7 +3058,7 @@ DebugJS.prototype = {
       'value     : ' + (el.value ? self.createFoldingText(el.value, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) : '') + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
-      'disabled  : ' + DebugJS.decorateIfObjIsUnavailable(el.disabled, true) + '\n' +
+      'disabled  : ' + DebugJS.setStyleIfObjNotAvailable(el.disabled, true) + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'href      : ' + href + '\n' +
       'src       : ' + src + '\n' +
@@ -3291,40 +3291,40 @@ DebugJS.prototype = {
       self.textCheckerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.textCheckerBtnPanel.style.marginRight = '4px';
       self.textCheckerBtnPanel.innerText = '<TEXT>';
-      self.textCheckerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT);');
+      self.textCheckerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_TEXT);');
       self.textCheckerBtnPanel.onmouseover = new Function('DebugJS.self.textCheckerBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.textCheckerBtnPanel.onmouseout = new Function('DebugJS.self.textCheckerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.textCheckerBtnPanel.onmouseout = new Function('DebugJS.self.textCheckerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
       self.toolsHeaderPanel.appendChild(self.textCheckerBtnPanel);
 
       self.fileLoaderBtnPanel = document.createElement('span');
       self.fileLoaderBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.fileLoaderBtnPanel.style.marginRight = '4px';
       self.fileLoaderBtnPanel.innerText = '<FILE>';
-      self.fileLoaderBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_FILE);');
+      self.fileLoaderBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_FILE);');
       self.fileLoaderBtnPanel.onmouseover = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.fileLoaderBtnPanel.onmouseout = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.fileLoaderBtnPanel.onmouseout = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
       self.toolsHeaderPanel.appendChild(self.fileLoaderBtnPanel);
 
       self.htmlPreviewerBtnPanel = document.createElement('span');
       self.htmlPreviewerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.htmlPreviewerBtnPanel.style.marginRight = '4px';
       self.htmlPreviewerBtnPanel.innerText = '<HTML>';
-      self.htmlPreviewerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_HTML);');
+      self.htmlPreviewerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_HTML);');
       self.htmlPreviewerBtnPanel.onmouseover = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.htmlPreviewerBtnPanel.onmouseout = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.htmlPreviewerBtnPanel.onmouseout = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
       self.toolsHeaderPanel.appendChild(self.htmlPreviewerBtnPanel);
 
       self.memoBtnPanel = document.createElement('span');
       self.memoBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
       self.memoBtnPanel.style.marginRight = '4px';
       self.memoBtnPanel.innerText = '<MEMO>';
-      self.memoBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO);');
+      self.memoBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_MEMO);');
       self.memoBtnPanel.onmouseover = new Function('DebugJS.self.memoBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.memoBtnPanel.onmouseout = new Function('DebugJS.self.memoBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.memoBtnPanel.onmouseout = new Function('DebugJS.self.memoBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
       self.toolsHeaderPanel.appendChild(self.memoBtnPanel);
 
       self.addOverlayPanelFull(self.toolsPanel);
-      self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT);
+      self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_TEXT);
     } else {
       self.addOverlayPanelFull(self.toolsPanel);
     }
@@ -3343,10 +3343,10 @@ DebugJS.prototype = {
 
   updateToolsButtons: function() {
     var self = DebugJS.self;
-    self.textCheckerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    self.fileLoaderBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    self.htmlPreviewerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    self.memoBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.textCheckerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.fileLoaderBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.htmlPreviewerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.memoBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
   },
 
   switchToolsFunction: function(kind) {
@@ -3354,22 +3354,22 @@ DebugJS.prototype = {
     if (DebugJS.self.toolsActiveFunction == kind) {
       return;
     }
-    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) {
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) {
       self.enableTextChecker();
     } else {
       self.disableTextChecker();
     }
-    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) {
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNC_FILE) {
       self.enableFileLoader();
     } else {
       self.disableFileLoader();
     }
-    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) {
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNC_HTML) {
       self.enableHtmlEditor();
     } else {
       self.disableHtmlEditor();
     }
-    if (kind & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) {
+    if (kind & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) {
       self.enableMemoEditor();
     } else {
       self.disableMemoEditor();
@@ -3542,7 +3542,7 @@ DebugJS.prototype = {
 
   disableTextChecker: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT) && (self.textCheckerPanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) && (self.textCheckerPanel != null)) {
       self.toolsBodyPanel.removeChild(self.textCheckerPanel);
     }
   },
@@ -3653,7 +3653,7 @@ DebugJS.prototype = {
 
   disableFileLoader: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE) && (self.fileLoaderPanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) && (self.fileLoaderPanel != null)) {
       self.toolsBodyPanel.removeChild(self.fileLoaderPanel);
     }
   },
@@ -3808,7 +3808,7 @@ DebugJS.prototype = {
   resizeImgPreview: function() {
     var self = DebugJS.self;
     if ((!(self.status & DebugJS.STATE_TOOLS)) ||
-        (!(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_FILE)) ||
+        (!(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE)) ||
         (!(self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64))) {
       return;
     }
@@ -3971,7 +3971,7 @@ DebugJS.prototype = {
 
   disableHtmlEditor: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_HTML) && (self.htmlPreviewerBasePanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) && (self.htmlPreviewerBasePanel != null)) {
       self.toolsBodyPanel.removeChild(self.htmlPreviewerBasePanel);
     }
   },
@@ -4030,7 +4030,7 @@ DebugJS.prototype = {
 
   disableMemoEditor: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNCTION_MEMO) && (self.memoBasePanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) && (self.memoBasePanel != null)) {
       self.toolsBodyPanel.removeChild(self.memoBasePanel);
     }
   },
@@ -6428,10 +6428,10 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
   return str;
 };
 
-DebugJS.decorateIfObjIsUnavailable = function(obj, exceptFalse) {
+DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
   var self = DebugJS.self;
   var text = obj;
-  if ((exceptFalse && ((obj == undefined) || (obj == null))) || ((!exceptFalse) && (obj != 0) && (!obj))) {
+  if ((exceptFalse && ((obj == undefined) || (obj == null))) || ((!exceptFalse) && (obj !== 0) && (!obj))) {
     text = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
   }
   return text;
@@ -6537,7 +6537,7 @@ DebugJS.log.p = function(o, l, m) {
 
 DebugJS.log.res = function(m) {
   var self = DebugJS.self;
-  m = DebugJS.decorateIfObjIsUnavailable(m);
+  m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encloseStringIfNeeded(m);
   var msg = '<span style="color:' + self.options.promptColor + ';">&gt;</span> ' + m;
   DebugJS.log(msg);
@@ -6545,7 +6545,7 @@ DebugJS.log.res = function(m) {
 
 DebugJS.log.res.err = function(m) {
   var self = DebugJS.self;
-  m = DebugJS.decorateIfObjIsUnavailable(m);
+  m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encloseStringIfNeeded(m);
   var msg = '<span style="color:' + self.options.promptColorE + ';">&gt;</span> ' + m;
   DebugJS.log(msg);
