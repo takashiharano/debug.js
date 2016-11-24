@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611240045';
+  this.v = '201611242122';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4351,6 +4351,11 @@ DebugJS.prototype = {
       return;
     }
 
+    if ((!found) && (str.match(/^http/))) {
+      this.cmdGet(str);
+      return;
+    }
+
     if (!found) {
       found = self.cmdRadixConv(str);
     }
@@ -4361,11 +4366,6 @@ DebugJS.prototype = {
 
     if ((!found) && (str.match(/^U\+/i))) {
       this.cmdUnicode('-d ' + str);
-      return;
-    }
-
-    if ((!found) && (str.match(/^http/))) {
-      this.cmdGet(str);
       return;
     }
 
