@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611242122';
+  this.v = '201611250100';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -15,7 +15,11 @@ var DebugJS = function() {
       'ctrl': false,
       'shift': false
     },
-    'popupOnError': true,
+    'popupOnError': {
+      'scriptError': true,
+      'loadError': true,
+      'errorLog': false
+    },
     'lines': 18,
     'bufsize': 100,
     'width': 500,
@@ -260,7 +264,7 @@ var DebugJS = function() {
   this.intCmdTblLen = this.INT_CMD_TBL.length;
   this.CMD_TBL = [];
   this.options = null;
-  this.hasError = false;
+  this.errStatus = DebugJS.ERR_STATE_NONE;
   this.properties = {
     'esc': {'value': 'enable', 'restriction': /^enable$|^disable$/},
     'dumplimit': {'value': 1000, 'restriction': /^[0-9]+$/}
@@ -302,6 +306,10 @@ DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
 DebugJS.STATE_STOPWATCH_LAPTIME = 0x20000000;
 DebugJS.ELMINFO_STATE_SELECT = 0x1;
 DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
+DebugJS.ERR_STATE_NONE = 0;
+DebugJS.ERR_STATE_SCRIPT = 0x1;
+DebugJS.ERR_STATE_LOAD = 0x2;
+DebugJS.ERR_STATE_LOG = 0x4;
 DebugJS.TOOLS_ACTIVE_FUNCTION_NONE = 0x0;
 DebugJS.TOOLS_ACTIVE_FUNCTION_TEXT = 0x1;
 DebugJS.TOOLS_ACTIVE_FUNCTION_FILE = 0x2;
@@ -921,8 +929,15 @@ DebugJS.prototype = {
       self.status |= DebugJS.STATE_DYNAMIC;
       self.status |= DebugJS.STATE_DRAGGABLE;
     }
-    if ((self.options.visible) || (self.options.target != null) || ((self.options.popupOnError) && (self.hasError))) {
+    if ((self.options.visible) || (self.options.target != null)) {
       self.status |= DebugJS.STATE_VISIBLE;
+    } else if (self.errStatus) {
+      if (((self.options.popupOnError.scriptError) && (self.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
+          ((self.options.popupOnError.loadError) && (self.errStatus & DebugJS.ERR_STATE_LOAD)) ||
+          ((self.options.popupOnError.errorLog) && (self.errStatus & DebugJS.ERR_STATE_LOG))) {
+        self.status |= DebugJS.STATE_VISIBLE;
+        self.errStatus = DebugJS.ERR_STATE_NONE;
+      }
     }
     if (self.options.resizable) self.status |= DebugJS.STATE_RESIZABLE;
     if (self.options.useClock) self.status |= DebugJS.STATE_SHOW_CLOCK;
@@ -2009,7 +2024,7 @@ DebugJS.prototype = {
           } else if (self.status & DebugJS.STATE_VISIBLE) {
             self.closeDebugWindow();
           } else {
-            self.showDebugWindow(false);
+            self.showDebugWindow();
           }
         }
         break;
@@ -2324,7 +2339,7 @@ DebugJS.prototype = {
     }
   },
 
-  showDebugWindow: function(scroll) {
+  showDebugWindow: function() {
     var self = DebugJS.self;
     self.debugWindow.style.display = 'block';
     self.status |= DebugJS.STATE_VISIBLE;
@@ -2337,14 +2352,27 @@ DebugJS.prototype = {
     } else {
       self.adjustWindowMax();
     }
-    if (scroll) {
-      self.logPanel.scrollTop = self.logPanel.scrollHeight;
+    self.logPanel.scrollTop = self.logPanel.scrollHeight;
+  },
+
+  showDebugWindowOnError: function() {
+    var self = DebugJS.self;
+    if ((self.errStatus) && !(self.status & DebugJS.STATE_VISIBLE)) {
+      if (self.debugWindow) {
+        if (((self.options.popupOnError.scriptError) && (self.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
+            ((self.options.popupOnError.loadError) && (self.errStatus & DebugJS.ERR_STATE_LOAD)) ||
+            ((self.options.popupOnError.errorLog) && (self.errStatus & DebugJS.ERR_STATE_LOG))) {
+          self.showDebugWindow();
+          self.errStatus = DebugJS.ERR_STATE_NONE;
+        }
+      }
     }
   },
 
   hideDebugWindow: function() {
     var self = DebugJS.self;
     if (!self.options.togglableShowHide) return;
+    self.errStatus = DebugJS.ERR_STATE_NONE;
     self.logPanelScrollX = self.logPanel.scrollLeft;
     self.logPanelScrollY = self.logPanel.scrollTop;
     self.status &= ~DebugJS.STATE_DRAGGING;
@@ -4592,7 +4620,7 @@ DebugJS.prototype = {
       var args = arg.split(' ');
       for (var i = 0, len = args.length; i < len; i++) {
         if (args[i] == '') continue;
-        var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.getPropertyKeys(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
+        var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.getKeysStr(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
         try {
           eval(cmd);
         } catch (e) {
@@ -5413,12 +5441,20 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
   return arg;
 };
 
-DebugJS.getPropertyKeys = function(obj) {
-  var ret = '';
+DebugJS.getKeys = function(obj) {
+  var keys = [];
   for (var key in obj) {
-    ret += key + '\n';
+    keys.push(key);
   }
-  return ret;
+  return keys;
+};
+
+DebugJS.getKeysStr = function(obj) {
+  var keys = '';
+  for (var key in obj) {
+    keys += key + '\n';
+  }
+  return keys;
 };
 
 DebugJS.countElements = function(selector, showDetail) {
@@ -6450,11 +6486,14 @@ DebugJS.onLoad = function() {
 DebugJS.onError = function(e) {
   var self = DebugJS.self;
   var msg;
+  self.errStatus |= DebugJS.ERR_STATE_SCRIPT;
   if ((e.error) && (e.error.stack)) {
     msg = e.error.stack;
   } else {
     if ((e.message == undefined) && (e.filename == undefined)) {
       if ((e.target) && (e.target.outerHTML)) {
+        self.errStatus |= DebugJS.ERR_STATE_LOAD;
+        self.errStatus &= ~DebugJS.ERR_STATE_SCRIPT;
         msg = 'LOAD_ERROR: ' + (e.target.outerHTML).replace(/</g, '&lt;').replace(/>/g, '&gt;');
       } else {
         msg = 'UNKNOWN_ERROR';
@@ -6464,13 +6503,7 @@ DebugJS.onError = function(e) {
     }
   }
   DebugJS.log.e(msg);
-
-  if ((self.options.popupOnError) && !(self.status & DebugJS.STATE_VISIBLE)) {
-    self.hasError = true;
-    if (self.debugWindow) {
-      self.showDebugWindow(true);
-    }
-  }
+  self.showDebugWindowOnError();
 };
 
 DebugJS.log = function(m) {
@@ -6624,7 +6657,10 @@ var log = function(m) {
 
 log.e = function(m) {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  var self = DebugJS.self;
   DebugJS.log.e(m);
+  self.errStatus |= DebugJS.ERR_STATE_LOG;
+  self.showDebugWindowOnError();
 };
 
 log.w = function(m) {

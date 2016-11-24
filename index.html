@@ -99,7 +99,6 @@ DebugJS.init({'visible':true});
 //DebugJS.init({'target':'debug'});
 
 //log.t('init start');
-
 log('Here is the log output example!');
 
 var logMessageText = null;
@@ -206,6 +205,7 @@ window.onload = function() {
 
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
+  consoleMessageText = document.getElementById('console-message-text');
   base64EText = document.getElementById('base64-e-text');
   base64DText = document.getElementById('base64-d-text');
 
@@ -620,8 +620,20 @@ DebugJS.init(options);
 
   <tr>
     <td class="name">popupOnError</td>
-    <td>Popup the debug window when a JavaScript runtime error occurs</td>
-    <td>true</td>
+    <td>
+      Popup the debug window when the following error occurs<br><br>
+      scriptError: a JavaScript runtime error<br>
+      loadError: .css / .js file load error<br>
+      errorLog: log.e() has been called<br>
+      <br>
+    </td>
+    <td>
+{<br>
+&nbsp;&nbsp;'scriptError': true,<br>
+&nbsp;&nbsp;'loadError': true,<br>
+&nbsp;&nbsp;'errorLog': false<br>
+}<br>
+    </td>
   </tr>
 
   <tr>
@@ -1248,6 +1260,27 @@ function foo() {
   dbg.export(obj);
 }
 <span class="annotation">-&gt; You can watch the value of val1 from the command-line.</span>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.getKeys<br>
+      <span class="alias">( dbg.getKeys )</span>
+    </td>
+    <td>object</td>
+    <td>
+      Returns property key name array of the object<br>
+<pre class="eg">
+var obj = {
+  'key1': 'A',
+  'key2': 'B',
+  'key3': 'C',
+};
+
+dbg.getKeys(obj);
+-&gt; ['key1', 'key2', 'key3']
 </pre>
     </td>
   </tr>
@@ -2328,26 +2361,23 @@ dbg.led.all(false);<br>
 
 <!-- ********************************************************************** -->
 <div class="caption2">console</div>
+<input type="text" id="console-message-text" value="Hello, console!" style="width:400px;margin-top:3px;">
 <table class="demo-table demo-table-green">
 <tr>
 <td>
-console.log('hello');<br>
-<button class="button-green" onclick="console.log('hello');">console.log()</button>
+<button class="button-green" onclick="console.log(consoleMessageText.value);">console.log()</button>
 </td>
 
 <td>
-console.error('hello');<br>
-<button class="button-green" onclick="console.error('hello');">console.error()</button>
+<button class="button-green" onclick="console.error(consoleMessageText.value);">console.error()</button>
 </td>
 
 <td>
-console.warn('hello');<br>
-<button class="button-green" onclick="console.warn('hello');">console.warn()</button>
+<button class="button-green" onclick="console.warn(consoleMessageText.value);">console.warn()</button>
 </td>
 
 <td>
-console.info('hello');<br>
-<button class="button-green" onclick="console.info('hello');">console.info()</button>
+<button class="button-green" onclick="console.info(consoleMessageText.value);">console.info()</button>
 </td>
 </tr>
 
