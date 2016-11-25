@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611250740';
+  this.v = '201611252130';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -383,9 +383,9 @@ DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
-DebugJS.SYSTEM_INFO_FULL_OVERLAY = true;
-DebugJS.ELEMENT_INFO_FULL_OVERLAY = false;
-DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
+DebugJS.SYS_INFO_FULL_OVERLAY = true;
+DebugJS.ELM_INFO_FULL_OVERLAY = false;
+DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
 DebugJS.LS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
@@ -840,7 +840,7 @@ DebugJS.prototype = {
       'background': 'rgba(192,192,192,0.5) !important'
     };
 
-    styles['.' + self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX] = {
+    styles['.' + self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX] = {
       'outline': 'solid 1px #f00 !important',
       'opacity': '0.7 !important'
     };
@@ -2507,7 +2507,7 @@ DebugJS.prototype = {
     if (self.sysInfoPanel == null) {
       self.sysInfoPanel = document.createElement('div');
       self.sysInfoPanel.innerHTML = '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>';
-      if (DebugJS.SYSTEM_INFO_FULL_OVERLAY) {
+      if (DebugJS.SYS_INFO_FULL_OVERLAY) {
         self.sysInfoPanel.className = self.id + '-overlay-panel-full';
         self.addOverlayPanelFull(self.sysInfoPanel);
       } else {
@@ -2552,7 +2552,7 @@ DebugJS.prototype = {
   disableSystemInfo: function() {
     var self = DebugJS.self;
     if (self.sysInfoPanel != null) {
-      if (DebugJS.SYSTEM_INFO_FULL_OVERLAY) {
+      if (DebugJS.SYS_INFO_FULL_OVERLAY) {
         self.removeOverlayPanelFull(self.sysInfoPanel);
       } else {
         self.removeOverlayPanel(self.sysInfoPanel);
@@ -2808,7 +2808,7 @@ DebugJS.prototype = {
       self.elmInspectionPanel.innerHTML = '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showPrevElem();">&lt;&lt;</span> ' +
                                           '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">ELEMENT INFO</span> ' +
                                           '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showNextElem();">&gt;&gt;</span>';
-      if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
+      if (DebugJS.ELM_INFO_FULL_OVERLAY) {
         self.elmInspectionPanel.className = self.id + '-overlay-panel-full';
         self.addOverlayPanelFull(self.elmInspectionPanel);
       } else {
@@ -2893,11 +2893,11 @@ DebugJS.prototype = {
   disableElmInspection: function() {
     var self = DebugJS.self;
     if (self.targetElm) {
-      DebugJS.removeClass(self.targetElm, self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX);
+      DebugJS.removeClass(self.targetElm, self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX);
       self.targetElm = null;
     }
     if (self.elmInspectionPanel != null) {
-      if (DebugJS.ELEMENT_INFO_FULL_OVERLAY) {
+      if (DebugJS.ELM_INFO_FULL_OVERLAY) {
         self.removeOverlayPanelFull(self.elmInspectionPanel);
       } else {
         self.removeOverlayPanel(self.elmInspectionPanel);
@@ -2948,7 +2948,7 @@ DebugJS.prototype = {
       }
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, self.elmInfoShowHideStatus['text']);
       var className = el.className;
-      className = className.replace(self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX + '</span>');
+      className = className.replace(self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX + '</span>');
 
       var href = (el.href ? self.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
       var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
@@ -3165,10 +3165,10 @@ DebugJS.prototype = {
   highlightElement: function(removeTarget, setTarget) {
     var self = DebugJS.self;
     if (removeTarget) {
-      DebugJS.removeClass(removeTarget, self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX);
+      DebugJS.removeClass(removeTarget, self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX);
     }
     if (setTarget) {
-      DebugJS.addClass(setTarget, self.id + DebugJS.ELEMENT_HIGHLISGHT_CLASS_SUFFIX);
+      DebugJS.addClass(setTarget, self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX);
     }
   },
 
