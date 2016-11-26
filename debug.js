@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611262114';
+  this.v = '201611262359';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -424,10 +424,10 @@ DebugJS.FEATURES = [
 ];
 
 DebugJS.prototype = {
-  init: function(options, cause) {
+  init: function(options, restoreOption) {
     if (!DebugJS.ENABLE) {return false;}
     var self = DebugJS.self;
-    var keepStatus = ((cause == DebugJS.INIT_CAUSE_ZOOM) ? true : false);
+    var keepStatus = (((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) ? true : false);
     self.bodyEl = document.body;
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
@@ -861,7 +861,7 @@ DebugJS.prototype = {
         self.resetDebugWindowSizePos();
         self.updateWinCtrlBtnPanel();
 
-        if (cause == DebugJS.INIT_CAUSE_ZOOM) {
+        if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
           if (self.cmdLine) {
             self.cmdLine.focus();
           }
@@ -877,8 +877,9 @@ DebugJS.prototype = {
     }
     self.windowExpandHeight = DebugJS.DEBUG_WIN_EXPAND_H * self.options.zoom;
     self.initExtention();
-    if (cause == DebugJS.INIT_CAUSE_ZOOM) {
+    if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       self.resetStylesOnZoom();
+      self.reopenFeatures(restoreOption.status);
     }
     self.status |= DebugJS.STATE_INITIALIZED;
     self.printLogMessage();
@@ -1357,6 +1358,25 @@ DebugJS.prototype = {
     }
   },
 
+  reopenFeatures: function(status) {
+    var self = DebugJS.self;
+    if (status & DebugJS.STATE_MEASURE) {
+      self.enableMeasureMode(true);
+    }
+    if (status & DebugJS.STATE_SYSTEM_INFO) {
+      self.enableSystemInfo();
+    }
+    if (status & DebugJS.STATE_ELEMENT_INSPECTING) {
+      self.enableElmInspection();
+    }
+    if (status & DebugJS.STATE_SCRIPT) {
+      self.enableScriptEditor();
+    }
+    if (status & DebugJS.STATE_TOOLS) {
+      self.enableTools();
+    }
+  },
+
   initCommandTable: function() {
     var self = DebugJS.self;
     self.CMD_TBL = [];
@@ -1776,18 +1796,18 @@ DebugJS.prototype = {
     }
   },
 
-  enableMeasureMode: function() {
+  enableMeasureMode: function(silent) {
     var self = DebugJS.self;
-    DebugJS.log.s('Screen Measure ON.');
+    if (!silent) DebugJS.log.s('Screen Measure ON.');
     self.status |= DebugJS.STATE_MEASURE;
     self.updateMeasureBtnPanel();
   },
 
-  disableMeasureMode: function() {
+  disableMeasureMode: function(silent) {
     var self = DebugJS.self;
     self.stopMeasure();
     self.status &= ~DebugJS.STATE_MEASURE;
-    DebugJS.log.s('Screen Measure OFF.');
+    if (!silent) DebugJS.log.s('Screen Measure OFF.');
     self.updateMeasureBtnPanel();
   },
 
@@ -1926,7 +1946,7 @@ DebugJS.prototype = {
       self.endResize();
     }
     if (self.status & DebugJS.STATE_MEASURE) {
-      self.disableMeasureMode();
+      self.disableMeasureMode(true);
     }
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
       self.disableElmInspection();
@@ -5039,9 +5059,13 @@ DebugJS.prototype = {
       } else {
         var zoom = a[1];
         if (zoom != self.options.zoom) {
+          var restoreOption = {
+            'cause': DebugJS.INIT_CAUSE_ZOOM,
+            'status': self.status
+          };
           self.closeFeatures();
           self.setWindowSize('normal');
-          self.init({'zoom': zoom}, DebugJS.INIT_CAUSE_ZOOM);
+          self.init({'zoom': zoom}, restoreOption);
         }
       }
     }
@@ -6669,14 +6693,14 @@ DebugJS.random.string = function(min, max) {
 
 DebugJS._init = function() {
   if (!(DebugJS.self.status & DebugJS.STATE_INITIALIZED)) {
-    return DebugJS.self.init(null, DebugJS.INIT_CAUSE_NONE);
+    return DebugJS.self.init(null, null);
   } else {
     return true;
   }
 };
 
 DebugJS.init = function(options) {
-  DebugJS.self.init(options, DebugJS.INIT_CAUSE_NONE);
+  DebugJS.self.init(options, null);
 };
 // ---- ---- ---- ---- ---- ---- ---- ----
 var log = function(m) {
