@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611252130';
+  this.v = '201611261410';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4356,8 +4356,9 @@ DebugJS.prototype = {
 
   _execCmd: function(str, echo) {
     if (echo) {
-      var echoStr = DebugJS.trimDownText(str, DebugJS.CMD_ECHO_MAX_LEN);
+      var echoStr = str;
       echoStr = DebugJS.escapeTag(echoStr);
+      echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa;');
       DebugJS.log.s(echoStr);
     }
     var self = DebugJS.self;
@@ -4527,7 +4528,9 @@ DebugJS.prototype = {
     var buf = self.cmdHistoryBuf.getAll();
     var str = '<table>';
     for (var i = 0, len = buf.length; i < len; i++) {
-      var cmd = DebugJS.trimDownText(buf[i], DebugJS.CMD_ECHO_MAX_LEN);
+      var cmd = buf[i];
+      cmd = DebugJS.escapeTag(cmd);
+      cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa;');
       str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap;">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
     str += '</table>';
@@ -6387,8 +6390,11 @@ DebugJS.substr = function(text, len) {
   return str;
 };
 
-DebugJS.trimDownText = function(text, maxLen) {
+DebugJS.trimDownText = function(text, maxLen, style) {
   var snip = '...';
+  if (style) {
+    snip = '<span style="' + style + '">' + snip + '</span>';
+  }
   var str = text;
   if (text.length > maxLen) {
     str = DebugJS.substr(str, maxLen) + snip;
