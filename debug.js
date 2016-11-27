@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611262359';
+  this.v = '201611271925';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2785,14 +2785,14 @@ DebugJS.prototype = {
     var partialBody = document.getElementById(self.id + '-' + name + '__partial-body');
     var body = document.getElementById(self.id + '-' + name + '__body');
     if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
-      button.innerText = '▼';
+      button.innerHTML = '&#x25bc;';
       partialBody.style.display = 'none';
       body.style.display = 'block';
       if (self.elmInfoShowHideStatus[name] != undefined) {
         self.elmInfoShowHideStatus[name] = true;
       }
     } else {
-      button.innerText = '▶';
+      button.innerHTML = '&#x25b6;';
       partialBody.style.display = 'inline';
       body.style.display = 'none';
       if (self.elmInfoShowHideStatus[name] != undefined) {
@@ -2812,11 +2812,11 @@ DebugJS.prototype = {
     if (!obj) {
       foldingText = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
     } else {
-      var btn = '▶';
+      var btn = '&#x25b6;';
       var partDisplay = 'inline';
       var bodyDisplay = 'none';
       if (show) {
-        btn = '▼';
+        btn = '&#x25bc;';
         partDisplay = 'none';
         bodyDisplay = 'block';
       }
