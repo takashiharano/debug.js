@@ -41,7 +41,7 @@ a {color:#00f; text-decoration:none;}
 a:hover {text-decoration:underline;}
 select {width:80px; height:30px; font-size:16px;}
 button, input[type="button"], input[type="submit"] {width:200px; height:40px; border:none; border-radius:4px; outline:none; font-size:16px; font-weight:bold; margin:4px 4px 12px 4px; color:#fff; background:#0068cc;}
-button:hover, input[type="button"]:hover, input[type="submit"]:hover {cursor:pointer; background:#00a8ff;}
+button:hover, input[type="button"]:hover, input[type="submit"]:hover {cursor:pointer; background:#00a8ff; color:#fff; transition:all 0.2s ease;}
 input, input[type="text"], textarea, select {font-size: 16px; padding: 3px; color: #333; vertical-align: middle; border: 1px solid #ccc; border-radius: 3px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); transition: border linear 0.1s, box-shadow linear 0.1s;}
 input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:#51a7e8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
 #header-line {width:100%; height:10px; color:#fff; background:#08f;}
@@ -63,8 +63,8 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .emphasis {color:#eee;}
 .button-100 {width:100px !important;}
 .dl-button {position:relative; width:100px; height:25px; margin:0; font-size:14px;}
-.demo-button {position:relative; width:74px; height:22px; margin:0; font-size:14px; background:#04a; color:#ccc}
-.inactive-button {background:#057;color:#aaa;}
+.demo-button {position:relative; width:74px; height:22px; margin:0; font-size:14px; background:#04a; color:#aaa}
+.reset-button {width:46px; height:18px; font-size:10px; font-qweight:normal;}
 .button:hover {cursor:pointer; background:#00a8ff; text-decoration:none;}
 .button-green {background:#00cc68;}
 .button-green:hover {background:#00ffa8;}
@@ -108,7 +108,12 @@ var msgMessageText = null;
 var base64EText = null;
 var base64DText = null;
 
+//window.addEventListener('load', init, true);
 window.onload = function() {
+  init();
+}
+
+function init() {
   log('The window\'s load event fired.');
 
   var options1 = {
@@ -255,11 +260,6 @@ function displaySampleMessages() {
 var sampleMessages = [
   {
     'fnc': log,
-    'msg': '-------------------------------',
-    'delay': 50
-  },
-  {
-    'fnc': log,
     'msg': 'standard log sample.',
     'delay': 50
   },
@@ -298,11 +298,6 @@ var sampleMessages = [
 //    'msg': 'error result log sample.',
 //    'delay': 50
 //  },
-  {
-    'fnc': log,
-    'msg': '-------------------------------',
-    'delay': 50
-  },
 ];
 
 var ledDemoStepCount = 0;
@@ -612,7 +607,7 @@ If you want to change the debugger settings, explicitly call for initialization 
       'zoom': 1.4,
       'position': 'ne'
     };
-    DebugJS.init(options);</span> <button class="demo-button" onclick="DebugJS.init({'visible':true,'zoom':1.4,'position':'ne'});">DEMO</button> <button class="demo-button inactive-button" onclick="DebugJS.init(DebugJS.self.DEFAULT_OPTIONS);DebugJS.init({'visible':true});">RESET</button>
+    DebugJS.init(options);</span> <button class="demo-button" onclick="DebugJS.init({'visible':true,'zoom':1.4,'position':'ne'});">DEMO</button> <button class="demo-button reset-button" onclick="DebugJS.init(DebugJS.self.DEFAULT_OPTIONS);DebugJS.init({'visible':true});">RESET</button>
 
     function foo() {
       log('button was clicked');
