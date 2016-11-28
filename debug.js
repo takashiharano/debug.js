@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611271925';
+  this.v = '201611290000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -196,8 +196,6 @@ var DebugJS = function() {
   this.overlayBasePanel = null;
   this.overlayPanels = [];
   this.logPanel = null;
-  this.logPanelScrollX = 0;
-  this.logPanelScrollY = 0;
   this.cmdPanel = null;
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
@@ -303,7 +301,8 @@ DebugJS.STATE_TOOLS = 0x1000000;
 DebugJS.STATE_SCRIPT = 0x2000000;
 DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
-DebugJS.STATE_STOPWATCH_LAPTIME = 0x20000000;
+DebugJS.STATE_NEED_TO_SCROLL = 0x20000000;
+DebugJS.STATE_STOPWATCH_LAPTIME = 0x40000000;
 DebugJS.ELMINFO_STATE_SELECT = 0x1;
 DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
 DebugJS.ERR_STATE_NONE = 0;
@@ -1622,6 +1621,9 @@ DebugJS.prototype = {
     var msg = '<pre style="padding:0 3px;">' + self.getLogMsgs() + '</pre>';
     self.logPanel.innerHTML = msg;
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
+    if (!(self.status & DebugJS.STATE_VISIBLE)) {
+      self.status |= DebugJS.STATE_NEED_TO_SCROLL;
+    }
   },
 
   clearMessage: function() {
@@ -1724,6 +1726,9 @@ DebugJS.prototype = {
         self.dbgWin.style.top = t + 'px';
       }
       self.dbgWin.style.height = h + 'px';
+      if (self.logPanel.scrollTop != 0) {
+        self.logPanel.scrollTop = self.logPanel.scrollHeight;
+      }
     }
 
     if (self.status & DebugJS.STATE_RESIZING_W) {
@@ -1756,6 +1761,9 @@ DebugJS.prototype = {
         h = self.computedMinHeight;
       }
       self.dbgWin.style.height = h + 'px';
+      if (self.logPanel.scrollTop != 0) {
+        self.logPanel.scrollTop = self.logPanel.scrollHeight;
+      }
     }
 
     self.resizeMainHeight();
@@ -2385,8 +2393,6 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.dbgWin.style.display = 'block';
     self.status |= DebugJS.STATE_VISIBLE;
-    self.logPanel.scrollTop = self.logPanelScrollY;
-    self.logPanel.scrollLeft = self.logPanelScrollX;
     var sizePos = self.getSelfSizePos();
     if ((self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) ||
        ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow()))) {
@@ -2394,7 +2400,10 @@ DebugJS.prototype = {
     } else {
       self.adjustWindowMax();
     }
-    self.logPanel.scrollTop = self.logPanel.scrollHeight;
+    if (self.status & DebugJS.STATE_NEED_TO_SCROLL) {
+      self.logPanel.scrollTop = self.logPanel.scrollHeight;
+      self.status &= ~DebugJS.STATE_NEED_TO_SCROLL;
+    }
   },
 
   showDebugWindowOnError: function() {
@@ -2415,8 +2424,6 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     if (!self.options.togglableShowHide) return;
     self.errStatus = DebugJS.ERR_STATE_NONE;
-    self.logPanelScrollX = self.logPanel.scrollLeft;
-    self.logPanelScrollY = self.logPanel.scrollTop;
     self.status &= ~DebugJS.STATE_DRAGGING;
     self.dbgWin.style.display = 'none';
     self.status &= ~DebugJS.STATE_VISIBLE;
