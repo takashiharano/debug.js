@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611290000';
+  this.v = '201611300000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -20,8 +20,8 @@ var DebugJS = function() {
       'loadError': true,
       'errorLog': false
     },
-    'lines': 18,
-    'bufsize': 100,
+    'lines': 17,
+    'bufsize': 500,
     'width': 500,
     'zoom': 1,
     'position': 'se',
@@ -67,6 +67,7 @@ var DebugJS = function() {
     'useElementInfo': true,
     'useTools': true,
     'useScriptEditor': true,
+    'useLogFilter': true,
     'useCommandLine': true,
     'saveCmdHistory': true,
     'cmdHistoryMax': 100,
@@ -195,7 +196,15 @@ var DebugJS = function() {
   this.mainPanel = null;
   this.overlayBasePanel = null;
   this.overlayPanels = [];
+  this.logFilterPanel = null;
+  this.filterBtnAll = null;
+  this.filterBtnStd = null;
+  this.filterBtnDbg = null;
+  this.filterBtnInf = null;
+  this.filterBtnWrn = null;
+  this.filterBtnErr = null;
   this.logPanel = null;
+  this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
   this.cmdLine = null;
   this.cmdHistoryBuf = null;
@@ -226,6 +235,7 @@ var DebugJS = function() {
   this.computedMinWidth = DebugJS.DEBUG_WIN_MIN_W;
   this.computedMinHeight = DebugJS.DEBUG_WIN_MIN_H;
   this.status = 0;
+  this.logFilter = DebugJS.LOG_FILTER_ALL;
   this.toolsActiveFunction = DebugJS.TOOLS_ACTIVE_FUNC_NONE;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
@@ -303,6 +313,19 @@ DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
 DebugJS.STATE_NEED_TO_SCROLL = 0x20000000;
 DebugJS.STATE_STOPWATCH_LAPTIME = 0x40000000;
+DebugJS.LOG_FILTER_STD = 0x1;
+DebugJS.LOG_FILTER_DBG = 0x2;
+DebugJS.LOG_FILTER_INF = 0x4;
+DebugJS.LOG_FILTER_WRN = 0x8;
+DebugJS.LOG_FILTER_ERR = 0x10;
+DebugJS.LOG_FILTER_ALL = DebugJS.LOG_FILTER_STD | DebugJS.LOG_FILTER_DBG | DebugJS.LOG_FILTER_INF | DebugJS.LOG_FILTER_WRN | DebugJS.LOG_FILTER_ERR;
+DebugJS.LOG_TYPE_STD = 0x1;
+DebugJS.LOG_TYPE_DBG = 0x2;
+DebugJS.LOG_TYPE_INF = 0x4;
+DebugJS.LOG_TYPE_WRN = 0x8;
+DebugJS.LOG_TYPE_ERR = 0x10;
+DebugJS.LOG_TYPE_SYS = 0x20;
+DebugJS.LOG_TYPE_MLT = 0x40;
 DebugJS.ELMINFO_STATE_SELECT = 0x1;
 DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
 DebugJS.ERR_STATE_NONE = 0;
@@ -316,13 +339,6 @@ DebugJS.TOOLS_ACTIVE_FUNC_HTML = 0x4;
 DebugJS.TOOLS_ACTIVE_FUNC_MEMO = 0x8;
 DebugJS.FILE_LOAD_FORMAT_BASE64 = 0;
 DebugJS.FILE_LOAD_FORMAT_BIN = 1;
-DebugJS.LOG_TYPE_STANDARD = 0x1;
-DebugJS.LOG_TYPE_DEBUG = 0x2;
-DebugJS.LOG_TYPE_INFO = 0x4;
-DebugJS.LOG_TYPE_WARNING = 0x8;
-DebugJS.LOG_TYPE_ERROR = 0x10;
-DebugJS.LOG_TYPE_SYSTEM = 0x20;
-DebugJS.LOG_TYPE_MULTILINE = 0x40;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
 DebugJS.CMD_ATTR_HIDDEN = 0x2;
 DebugJS.CMD_ATTR_DYNAMIC = 0x4;
@@ -419,6 +435,7 @@ DebugJS.FEATURES = [
   'useElementInfo',
   'useTools',
   'useScriptEditor',
+  'useLogFilter',
   'useCommandLine'
 ];
 
@@ -996,21 +1013,34 @@ DebugJS.prototype = {
 
       // Info Panel
       self.infoPanel = document.createElement('div');
-      self.infoPanel.style.padding = '0 2px 4px 2px';
+      self.infoPanel.style.padding = '0 2px 1px 2px';
       self.windowBody.appendChild(self.infoPanel);
     }
 
     // Main
     self.mainPanel = document.createElement('div');
-    self.mainPanel.style.height = self.options.lines + '.1em';
+    if (self.options.useLogFilter) {
+      self.mainPanel.style.height = (self.options.lines + 1) + '.1em';
+    } else {
+      self.mainPanel.style.height = self.options.lines + '.1em';
+    }
     self.mainPanel.style.clear = 'both';
     self.windowBody.appendChild(self.mainPanel);
 
+    // Log Filter
+    if (self.options.useLogFilter) {
+      self.createLogFilter();
+    }
+
     // Log
+    if (self.options.useLogFilter) {
+      self.logPanelHeightAdjust = ' - 1em';
+    } else {
+      self.logPanelHeightAdjust = '';
+    }
     self.logPanel = document.createElement('div');
-    self.logPanel.style.position = 'relative';
     self.logPanel.style.width = '100%';
-    self.logPanel.style.height = '100%';
+    self.logPanel.style.height = 'calc(100%' + self.logPanelHeightAdjust + ')';
     self.logPanel.style.padding = '0';
     self.logPanel.style.overflow = 'auto';
     self.mainPanel.appendChild(self.logPanel);
@@ -1276,6 +1306,10 @@ DebugJS.prototype = {
       return;
     }
 
+    if (self.options.useLogFilter) {
+      self.updateLogFilterButtons();
+    }
+
     if (self.status & DebugJS.STATE_SHOW_CLOCK) {
       self.updateClockPanel();
     }
@@ -1336,6 +1370,69 @@ DebugJS.prototype = {
     if (self.options.useMsgDisplay) {
       self.updateMsgPanel();
     }
+  },
+
+  createLogFilter: function() {
+    var self = DebugJS.self;
+    var marginLeft = '4px';
+    self.logFilterPanel = document.createElement('div');
+    self.logFilterPanel.style.position = 'relative';
+    self.logFilterPanel.style.height = self.computedFontSize + 'px';
+    self.mainPanel.appendChild(self.logFilterPanel);
+
+    self.filterBtnAll = document.createElement('span');
+    self.filterBtnAll.className = this.id + '-btn ' + this.id + '-nomove';
+    self.filterBtnAll.style.marginLeft = '2px';
+    self.filterBtnAll.innerText = '[ALL]';
+    self.filterBtnAll.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_ALL);');
+    self.filterBtnAll.onmouseover = new Function('DebugJS.self.filterBtnAll.style.color=DebugJS.self.options.btnColor;');
+    self.filterBtnAll.onmouseout = DebugJS.self.updateLogFilterButtons;
+    self.logFilterPanel.appendChild(self.filterBtnAll);
+
+    self.filterBtnStd = document.createElement('span');
+    self.filterBtnStd.className = this.id + '-btn ' + this.id + '-nomove';
+    self.filterBtnStd.style.marginLeft = marginLeft;
+    self.filterBtnStd.innerText = '[STD]';
+    self.filterBtnStd.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_STD);');
+    self.filterBtnStd.onmouseover = new Function('DebugJS.self.filterBtnStd.style.color=DebugJS.self.options.fontColor;');
+    self.filterBtnStd.onmouseout = DebugJS.self.updateLogFilterButtons;
+    self.logFilterPanel.appendChild(self.filterBtnStd);
+
+    self.filterBtnDbg = document.createElement('span');
+    self.filterBtnDbg.className = this.id + '-btn ' + this.id + '-nomove';
+    self.filterBtnDbg.style.marginLeft = marginLeft;
+    self.filterBtnDbg.innerText = '[DBG]';
+    self.filterBtnDbg.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_DBG);');
+    self.filterBtnDbg.onmouseover = new Function('DebugJS.self.filterBtnDbg.style.color=DebugJS.self.options.logColorD;');
+    self.filterBtnDbg.onmouseout = DebugJS.self.updateLogFilterButtons;
+    self.logFilterPanel.appendChild(self.filterBtnDbg);
+
+    self.filterBtnInf = document.createElement('span');
+    self.filterBtnInf.className = this.id + '-btn ' + this.id + '-nomove';
+    self.filterBtnInf.style.marginLeft = marginLeft;
+    self.filterBtnInf.innerText = '[INF]';
+    self.filterBtnInf.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_INF);');
+    self.filterBtnInf.onmouseover = new Function('DebugJS.self.filterBtnInf.style.color=DebugJS.self.options.logColorI;');
+    self.filterBtnInf.onmouseout = DebugJS.self.updateLogFilterButtons;
+    self.logFilterPanel.appendChild(self.filterBtnInf);
+
+    self.filterBtnWrn = document.createElement('span');
+    self.filterBtnWrn.className = this.id + '-btn ' + this.id + '-nomove';
+    self.filterBtnWrn.style.marginLeft = marginLeft;
+    self.filterBtnWrn.innerText = '[WRN]';
+    self.filterBtnWrn.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_WRN);');
+    self.filterBtnWrn.onmouseover = new Function('DebugJS.self.filterBtnWrn.style.color=DebugJS.self.options.logColorW;');
+    self.filterBtnWrn.onmouseout = DebugJS.self.updateLogFilterButtons;
+    self.logFilterPanel.appendChild(self.filterBtnWrn);
+
+    self.filterBtnErr = document.createElement('span');
+    self.filterBtnErr.className = this.id + '-btn ' + this.id + '-nomove';
+    self.filterBtnErr.style.marginLeft = marginLeft;
+    self.filterBtnErr.innerText = '[ERR]';
+    self.filterBtnErr.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_ERR);');
+    self.filterBtnErr.onmouseover = new Function('DebugJS.self.filterBtnErr.style.color=DebugJS.self.options.logColorE;');
+    self.filterBtnErr.onmouseout = DebugJS.self.updateLogFilterButtons;
+    self.logFilterPanel.appendChild(self.filterBtnErr);
   },
 
   resetStylesOnZoom: function() {
@@ -1632,6 +1729,35 @@ DebugJS.prototype = {
     self.printLogMessage();
   },
 
+  toggleLogFilter: function(filter) {
+    var self = DebugJS.self;
+    if (filter == DebugJS.LOG_FILTER_ALL) {
+      if (self.logFilter == DebugJS.LOG_FILTER_ALL) {
+        self.logFilter = 0;
+      } else {
+        self.logFilter = DebugJS.LOG_FILTER_ALL;
+      }
+    } else {
+      if (self.logFilter & filter) {
+        self.logFilter &= ~filter;
+      } else {
+        self.logFilter |= filter;
+      }
+    }
+    self.updateLogFilterButtons();
+    self.printLogMessage();
+  },
+
+  updateLogFilterButtons: function() {
+    var self = DebugJS.self;
+    self.filterBtnAll.style.color = (self.logFilter == DebugJS.LOG_FILTER_ALL) ? DebugJS.self.options.btnColor : DebugJS.COLOR_INACTIVE;
+    self.filterBtnStd.style.color = (self.logFilter & DebugJS.LOG_FILTER_STD) ? DebugJS.self.options.fontColor : DebugJS.COLOR_INACTIVE;
+    self.filterBtnDbg.style.color = (self.logFilter & DebugJS.LOG_FILTER_DBG) ? DebugJS.self.options.logColorD : DebugJS.COLOR_INACTIVE;
+    self.filterBtnInf.style.color = (self.logFilter & DebugJS.LOG_FILTER_INF) ? DebugJS.self.options.logColorI : DebugJS.COLOR_INACTIVE;
+    self.filterBtnWrn.style.color = (self.logFilter & DebugJS.LOG_FILTER_WRN) ? DebugJS.self.options.logColorW : DebugJS.COLOR_INACTIVE;
+    self.filterBtnErr.style.color = (self.logFilter & DebugJS.LOG_FILTER_ERR) ? DebugJS.self.options.logColorE : DebugJS.COLOR_INACTIVE;
+  },
+
   applyStyles: function(styles) {
     var self = DebugJS.self;
     if (self.styleEl != null) {
@@ -1897,54 +2023,53 @@ DebugJS.prototype = {
       lineCnt++;
       if (buf[i] == undefined) break;
       var line = '';
-      var lineNum;
-      if ((self.options.showLineNums) && (buf[i].type != DebugJS.LOG_TYPE_MULTILINE)) {
+      var lineNum = '';
+      if ((self.options.showLineNums) && (buf[i].type != DebugJS.LOG_TYPE_MLT)) {
         var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var lineNumPadding = '';
         for (var j = 0; j < diffDigits; j++) {
           lineNumPadding = lineNumPadding + '0';
         }
-        lineNum = lineNumPadding + lineCnt;
-        line += lineNum + ': ';
+        lineNum = lineNumPadding + lineCnt + ': ';
       }
-      var msg = (((self.options.showTimeStamp) && (buf[i].type != DebugJS.LOG_TYPE_MULTILINE)) ? (buf[i].time + ' ' + buf[i].msg) : buf[i].msg);
+      var msg = (((self.options.showTimeStamp) && (buf[i].type != DebugJS.LOG_TYPE_MLT)) ? (buf[i].time + ' ' + buf[i].msg) : buf[i].msg);
       switch (buf[i].type) {
-        case DebugJS.LOG_TYPE_ERROR:
-          line += '<span style="color:' + self.options.logColorE + '">' + msg + '</span>';
+        case DebugJS.LOG_TYPE_ERR:
+          if (self.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + self.options.logColorE + '">' + msg + '</span>\n';
           break;
-        case DebugJS.LOG_TYPE_WARNING:
-          line += '<span style="color:' + self.options.logColorW + '">' + msg + '</span>';
+        case DebugJS.LOG_TYPE_WRN:
+          if (self.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + self.options.logColorW + '">' + msg + '</span>\n';
           break;
-        case DebugJS.LOG_TYPE_INFO:
-          line += '<span style="color:' + self.options.logColorI + '">' + msg + '</span>';
+        case DebugJS.LOG_TYPE_INF:
+          if (self.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + self.options.logColorI + '">' + msg + '</span>\n';
           break;
-        case DebugJS.LOG_TYPE_DEBUG:
-          line += '<span style="color:' + self.options.logColorD + '">' + msg + '</span>';
+        case DebugJS.LOG_TYPE_DBG:
+          if (self.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + self.options.logColorD + '">' + msg + '</span>\n';
           break;
-        case DebugJS.LOG_TYPE_SYSTEM:
-          line += '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px;">' + msg + '</span>';
+        case DebugJS.LOG_TYPE_SYS:
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px;">' + msg + '</span>\n';
           break;
-        case DebugJS.LOG_TYPE_MULTILINE:
-          line += '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0;">' + msg + '</span>';
+        case DebugJS.LOG_TYPE_MLT:
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0;">' + msg + '</span>\n';
           break;
         default:
-          line += msg;
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + msg + '\n';
           break;
       }
-      logs += line + '\n';
+      logs += line;
     }
     return logs;
   },
 
   collapseLogPanel: function() {
     var self = DebugJS.self;
-    self.logPanel.style.height = (100 - DebugJS.OVERLAY_PANEL_HEIGHT) + '%';
+    self.logPanel.style.height = 'calc(' + (100 - DebugJS.OVERLAY_PANEL_HEIGHT) + '%' + self.logPanelHeightAdjust + ')';
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
   },
 
   expandLogPanel: function() {
     var self = DebugJS.self;
-    self.logPanel.style.height = '100%';
+    self.logPanel.style.height = 'calc(100%' + self.logPanelHeightAdjust + ')';
   },
 
   closeFeatures: function() {
@@ -4524,6 +4649,8 @@ DebugJS.prototype = {
     }
     self.closeDebugWindow();
     self.clearMessage();
+    self.logFilter = DebugJS.LOG_FILTER_ALL;
+    self.updateLogFilterButtons();
   },
 
   cmdGet: function(arg, tbl) {
@@ -6567,32 +6694,32 @@ DebugJS.onError = function(e) {
 };
 
 DebugJS.log = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_STANDARD);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_STD);
 };
 
 DebugJS.log.e = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_ERROR);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_ERR);
 };
 
 DebugJS.log.w = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_WARNING);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_WRN);
 };
 
 DebugJS.log.i = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_INFO);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_INF);
 };
 
 DebugJS.log.d = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_DEBUG);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_DBG);
 };
 
 DebugJS.log.s = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_SYSTEM);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_SYS);
 };
 
 DebugJS.log.p = function(o, l, m) {
   var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false);
-  DebugJS.log.out(str, DebugJS.LOG_TYPE_STANDARD);
+  DebugJS.log.out(str, DebugJS.LOG_TYPE_STD);
 };
 
 DebugJS.log.res = function(m) {
@@ -6612,7 +6739,7 @@ DebugJS.log.res.err = function(m) {
 };
 
 DebugJS.log.mlt = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_MULTILINE);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_MLT);
 };
 
 DebugJS.log.out = function(msg, type) {
