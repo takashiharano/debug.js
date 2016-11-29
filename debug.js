@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611300000';
+  this.v = '201611300740';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -352,7 +352,7 @@ DebugJS.WINDOW_SHADOW = 10;
 DebugJS.WINDOW_BORDER = 1;
 DebugJS.WINDOW_PADDING = 1;
 DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING * 2));
-DebugJS.OVERLAY_PANEL_HEIGHT = 83; //%
+DebugJS.OVERLAY_PANEL_HEIGHT = 77; //%
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.TOOLS_COLOR_ACTIVE = '#6cf';
