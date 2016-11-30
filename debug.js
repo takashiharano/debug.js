@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611300740';
+  this.v = '201611301953';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -21,7 +21,7 @@ var DebugJS = function() {
       'errorLog': false
     },
     'lines': 17,
-    'bufsize': 500,
+    'bufsize': 300,
     'width': 500,
     'zoom': 1,
     'position': 'se',
@@ -405,10 +405,10 @@ DebugJS.LS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
-'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n',
+'',
 '// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
-''
+'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
@@ -5267,12 +5267,10 @@ DebugJS.RingBuffer.prototype = {
     var newIdx = (this.cnt % this.buffer.length);
     this.buffer[newIdx] = data;
     this.cnt++;
-    return;
   },
 
   set: function(index, data) {
     this.buffer[index] = data;
-    return;
   },
 
   get: function(index) {
@@ -5301,7 +5299,6 @@ DebugJS.RingBuffer.prototype = {
         pos++;
       }
     }
-
     return allBuf;
   },
 
@@ -6247,7 +6244,6 @@ DebugJS.timeLog = function(msg, timerName) {
 
   var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   DebugJS.log(str);
-  return;
 };
 
 DebugJS.timeCheck = function(timerName, now) {
@@ -6694,7 +6690,11 @@ DebugJS.onError = function(e) {
 };
 
 DebugJS.log = function(m) {
-  DebugJS.log.out(m, DebugJS.LOG_TYPE_STD);
+  if (m instanceof Object) {
+    DebugJS.log.p(m, 0);
+  } else {
+    DebugJS.log.out(m, DebugJS.LOG_TYPE_STD);
+  }
 };
 
 DebugJS.log.e = function(m) {
