@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611301953';
+  this.v = '201611302330';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -86,16 +86,16 @@ var DebugJS = function() {
   this.infoPanel = null;
   this.clockPanel = null;
   this.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
-  this.measureBtnPanel = null;
+  this.measureBtn = null;
   this.measureBox = null;
-  this.sysInfoBtnPanel = null;
+  this.sysInfoBtn = null;
   this.sysInfoPanel = null;
-  this.elmInspectionBtnPanel = null;
+  this.elmInspectionBtn = null;
   this.elmInspectionPanel = null;
-  this.elmSelectBtnPanel = null;
-  this.elmHighlightBtnPanel = null;
-  this.elmUpdateBtnPanel = null;
-  this.elmExportBtnPanel = null;
+  this.elmSelectBtn = null;
+  this.elmHighlightBtn = null;
+  this.elmUpdateBtn = null;
+  this.elmExportBtn = null;
   this.elmUpdateInputLabel = null;
   this.elmUpdateInputLabel2 = null;
   this.elmUpdateInput = null;
@@ -106,11 +106,11 @@ var DebugJS = function() {
   this.elementUpdateTimerId = 0;
   this.elmInfoShowHideStatus = {'text': false, 'allStyles': false, 'elBorder': false};
   this.targetElm = null;
-  this.toolsBtnPanel = null;
+  this.toolsBtn = null;
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
   this.toolsBodyPanel = null;
-  this.textCheckerBtnPanel = null;
+  this.textCheckerBtn = null;
   this.textCheckerPanel = null;
   this.textCheck = null;
   this.textCheckFontSizeRange = null;
@@ -131,7 +131,7 @@ var DebugJS = function() {
   this.textCheckerLabelBgR = null;
   this.textCheckerLabelBgG = null;
   this.textCheckerLabelBgB = null;
-  this.fileLoaderBtnPanel = null;
+  this.fileLoaderBtn = null;
   this.fileLoaderPanel = null;
   this.fileInput = null;
   this.fileLoaderLabelB64 = null;
@@ -147,17 +147,17 @@ var DebugJS = function() {
   this.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BASE64;
   this.fileLoaderFile = null;
   this.fileReader = null;
-  this.scriptBtnPanel = null;
+  this.scriptBtn = null;
   this.scriptPanel = null;
   this.scriptEditor = null;
   this.scriptBuf = '';
-  this.htmlPreviewerBtnPanel = null;
+  this.htmlPreviewerBtn = null;
   this.htmlPreviewerBasePanel = null;
   this.htmlPreviewerPrevPanel = null;
   this.htmlPreviewEditorPanel = null;
   this.htmlPreviewEditor = null;
   this.htmlPreviewBuf = '';
-  this.memoBtnPanel = null;
+  this.memoBtn = null;
   this.memoBasePanel = null;
   this.memoEditorPanel = null;
   this.memoEditor = null;
@@ -166,11 +166,11 @@ var DebugJS = function() {
   this.swStartTime = 0;
   this.swElapsedTime = 0;
   this.swElapsedTimeDisp = '00:00:00.000';
-  this.clrBtnPanel = null;
-  this.suspendLogBtnPanel = null;
-  this.pinBtnPanel = null;
+  this.clearBtn = null;
+  this.suspendLogBtn = null;
+  this.pinBtn = null;
   this.winCtrlBtnPanel = null;
-  this.closeBtnPanel = null;
+  this.closeBtn = null;
   this.mousePositionPanel = null;
   this.mousePos = 'x=-,y=-';
   this.mouseClickPanel = null;
@@ -1051,12 +1051,12 @@ DebugJS.prototype = {
 
     // CLR Button
     if (self.options.useClearButton) {
-      self.clrBtnPanel = document.createElement('span');
-      self.clrBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.clrBtnPanel.style.marginRight = '3px';
-      self.clrBtnPanel.onclick = new Function('DebugJS.self.clearMessage();');
-      self.clrBtnPanel.innerText = '[CLR]';
-      self.headPanel.appendChild(self.clrBtnPanel);
+      self.clearBtn = document.createElement('span');
+      self.clearBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.clearBtn.style.marginRight = '3px';
+      self.clearBtn.onclick = new Function('DebugJS.self.clearMessage();');
+      self.clearBtn.innerText = '[CLR]';
+      self.headPanel.appendChild(self.clearBtn);
     }
 
     // Clock
@@ -1071,19 +1071,19 @@ DebugJS.prototype = {
     // -- R to L
     // X Button
     if (self.options.togglableShowHide) {
-      self.closeBtnPanel = document.createElement('span');
-      self.closeBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.closeBtnPanel.style.float = 'right';
-      self.closeBtnPanel.style.position = 'relative';
-      self.closeBtnPanel.style.top = '-1px';
-      self.closeBtnPanel.style.marginRight = '2px';
-      self.closeBtnPanel.style.color = '#888';
-      self.closeBtnPanel.style.fontSize = (18 * self.options.zoom) + 'px';
-      self.closeBtnPanel.onmouseover = new Function('this.style.color=\'#d88\';');
-      self.closeBtnPanel.onmouseout = new Function('this.style.color=\'#888\';');
-      self.closeBtnPanel.onclick = new Function('DebugJS.self.closeDebugWindow();');
-      self.closeBtnPanel.innerText = 'x';
-      self.headPanel.appendChild(self.closeBtnPanel);
+      self.closeBtn = document.createElement('span');
+      self.closeBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.closeBtn.style.float = 'right';
+      self.closeBtn.style.position = 'relative';
+      self.closeBtn.style.top = '-1px';
+      self.closeBtn.style.marginRight = '2px';
+      self.closeBtn.style.color = '#888';
+      self.closeBtn.style.fontSize = (18 * self.options.zoom) + 'px';
+      self.closeBtn.onmouseover = new Function('this.style.color=\'#d88\';');
+      self.closeBtn.onmouseout = new Function('this.style.color=\'#888\';');
+      self.closeBtn.onclick = new Function('DebugJS.self.closeDebugWindow();');
+      self.closeBtn.innerText = 'x';
+      self.headPanel.appendChild(self.closeBtn);
     }
 
     // Window Control Button
@@ -1094,28 +1094,28 @@ DebugJS.prototype = {
 
     // Pin Button
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.pinBtnPanel = document.createElement('span');
-      self.pinBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.pinBtnPanel.style.float = 'right';
-      self.pinBtnPanel.style.marginRight = '1px';
-      self.pinBtnPanel.innerHTML = '&#x1F4CC;';
-      self.pinBtnPanel.onclick = new Function('DebugJS.self.toggleDraggable();');
-      self.pinBtnPanel.onmouseover = new Function('DebugJS.self.pinBtnPanel.style.color=DebugJS.PIN_BUTTON_COLOR;');
-      self.pinBtnPanel.onmouseout = new Function('DebugJS.self.pinBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;');
-      self.headPanel.appendChild(self.pinBtnPanel);
+      self.pinBtn = document.createElement('span');
+      self.pinBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.pinBtn.style.float = 'right';
+      self.pinBtn.style.marginRight = '1px';
+      self.pinBtn.innerHTML = '&#x1F4CC;';
+      self.pinBtn.onclick = new Function('DebugJS.self.toggleDraggable();');
+      self.pinBtn.onmouseover = new Function('DebugJS.self.pinBtn.style.color=DebugJS.PIN_BUTTON_COLOR;');
+      self.pinBtn.onmouseout = new Function('DebugJS.self.pinBtn.style.color=(DebugJS.self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;');
+      self.headPanel.appendChild(self.pinBtn);
     }
 
     // Suspend Log Button
     if (self.options.useSuspendLogButton) {
-      self.suspendLogBtnPanel = document.createElement('span');
-      self.suspendLogBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.suspendLogBtnPanel.style.float = 'right';
-      self.suspendLogBtnPanel.style.marginRight = '2px';
-      self.suspendLogBtnPanel.innerHTML = '&#x1F6AB;';
-      self.suspendLogBtnPanel.onclick = new Function('DebugJS.self.toggleLogSuspend();');
-      self.suspendLogBtnPanel.onmouseover = new Function('DebugJS.self.suspendLogBtnPanel.style.color=DebugJS.LOG_SUSPEND_BUTTON_COLOR;');
-      self.suspendLogBtnPanel.onmouseout = new Function('DebugJS.self.suspendLogBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.suspendLogBtnPanel);
+      self.suspendLogBtn = document.createElement('span');
+      self.suspendLogBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.suspendLogBtn.style.float = 'right';
+      self.suspendLogBtn.style.marginRight = '2px';
+      self.suspendLogBtn.innerHTML = '&#x1F6AB;';
+      self.suspendLogBtn.onclick = new Function('DebugJS.self.toggleLogSuspend();');
+      self.suspendLogBtn.onmouseover = new Function('DebugJS.self.suspendLogBtn.style.color=DebugJS.LOG_SUSPEND_BUTTON_COLOR;');
+      self.suspendLogBtn.onmouseout = new Function('DebugJS.self.suspendLogBtn.style.color=(DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.suspendLogBtn);
     }
 
     // Stopwatch
@@ -1133,71 +1133,71 @@ DebugJS.prototype = {
 
     // Tools Button
     if (self.options.useTools) {
-      self.toolsBtnPanel = document.createElement('span');
-      self.toolsBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.toolsBtnPanel.style.float = 'right';
-      self.toolsBtnPanel.style.marginRight = '3px';
-      self.toolsBtnPanel.innerText = 'TOOL';
-      self.toolsBtnPanel.onclick = new Function('DebugJS.self.toggleToolsMode();');
-      self.toolsBtnPanel.onmouseover = new Function('DebugJS.self.toolsBtnPanel.style.color=DebugJS.TOOLS_BUTTON_COLOR;');
-      self.toolsBtnPanel.onmouseout = new Function('DebugJS.self.toolsBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.toolsBtnPanel);
+      self.toolsBtn = document.createElement('span');
+      self.toolsBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.toolsBtn.style.float = 'right';
+      self.toolsBtn.style.marginRight = '3px';
+      self.toolsBtn.innerText = 'TOOL';
+      self.toolsBtn.onclick = new Function('DebugJS.self.toggleToolsMode();');
+      self.toolsBtn.onmouseover = new Function('DebugJS.self.toolsBtn.style.color=DebugJS.TOOLS_BUTTON_COLOR;');
+      self.toolsBtn.onmouseout = new Function('DebugJS.self.toolsBtn.style.color=(DebugJS.self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.toolsBtn);
     }
 
     // Script Button
     if (self.options.useScriptEditor) {
-      self.scriptBtnPanel = document.createElement('span');
-      self.scriptBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.scriptBtnPanel.style.float = 'right';
-      self.scriptBtnPanel.style.marginRight = '4px';
-      self.scriptBtnPanel.innerText = 'JS';
-      self.scriptBtnPanel.onclick = new Function('DebugJS.self.toggleScriptMode();');
-      self.scriptBtnPanel.onmouseover = new Function('DebugJS.self.scriptBtnPanel.style.color=DebugJS.JS_BUTTON_COLOR;');
-      self.scriptBtnPanel.onmouseout = new Function('DebugJS.self.scriptBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.scriptBtnPanel);
+      self.scriptBtn = document.createElement('span');
+      self.scriptBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.scriptBtn.style.float = 'right';
+      self.scriptBtn.style.marginRight = '4px';
+      self.scriptBtn.innerText = 'JS';
+      self.scriptBtn.onclick = new Function('DebugJS.self.toggleScriptMode();');
+      self.scriptBtn.onmouseover = new Function('DebugJS.self.scriptBtn.style.color=DebugJS.JS_BUTTON_COLOR;');
+      self.scriptBtn.onmouseout = new Function('DebugJS.self.scriptBtn.style.color=(DebugJS.self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.scriptBtn);
     }
 
     // Element Inspection Button
     if (self.options.useElementInfo) {
-      self.elmInspectionBtnPanel = document.createElement('span');
-      self.elmInspectionBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmInspectionBtnPanel.style.float = 'right';
-      self.elmInspectionBtnPanel.style.marginRight = '3px';
-      self.elmInspectionBtnPanel.innerText = 'DOM';
-      self.elmInspectionBtnPanel.onclick = new Function('DebugJS.self.toggleElmInspectionMode();');
-      self.elmInspectionBtnPanel.onmouseover = new Function('DebugJS.self.elmInspectionBtnPanel.style.color=DebugJS.DOM_BUTTON_COLOR;');
-      self.elmInspectionBtnPanel.onmouseout = new Function('DebugJS.self.elmInspectionBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.elmInspectionBtnPanel);
+      self.elmInspectionBtn = document.createElement('span');
+      self.elmInspectionBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmInspectionBtn.style.float = 'right';
+      self.elmInspectionBtn.style.marginRight = '3px';
+      self.elmInspectionBtn.innerText = 'DOM';
+      self.elmInspectionBtn.onclick = new Function('DebugJS.self.toggleElmInspectionMode();');
+      self.elmInspectionBtn.onmouseover = new Function('DebugJS.self.elmInspectionBtn.style.color=DebugJS.DOM_BUTTON_COLOR;');
+      self.elmInspectionBtn.onmouseout = new Function('DebugJS.self.elmInspectionBtn.style.color=(DebugJS.self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.elmInspectionBtn);
     }
 
     // System Info Button
     if (self.options.useSystemInfo) {
-      self.sysInfoBtnPanel = document.createElement('span');
-      self.sysInfoBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.sysInfoBtnPanel.style.float = 'right';
-      self.sysInfoBtnPanel.style.marginRight = '3px';
-      self.sysInfoBtnPanel.innerText = 'SYS';
-      self.sysInfoBtnPanel.onclick = new Function('DebugJS.self.toggleSystemInfoMode();');
-      self.sysInfoBtnPanel.onmouseover = new Function('DebugJS.self.sysInfoBtnPanel.style.color=DebugJS.SYS_BUTTON_COLOR;');
-      self.sysInfoBtnPanel.onmouseout = new Function('DebugJS.self.sysInfoBtnPanel.style.color=(DebugJS.self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.sysInfoBtnPanel);
+      self.sysInfoBtn = document.createElement('span');
+      self.sysInfoBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.sysInfoBtn.style.float = 'right';
+      self.sysInfoBtn.style.marginRight = '3px';
+      self.sysInfoBtn.innerText = 'SYS';
+      self.sysInfoBtn.onclick = new Function('DebugJS.self.toggleSystemInfoMode();');
+      self.sysInfoBtn.onmouseover = new Function('DebugJS.self.sysInfoBtn.style.color=DebugJS.SYS_BUTTON_COLOR;');
+      self.sysInfoBtn.onmouseout = new Function('DebugJS.self.sysInfoBtn.style.color=(DebugJS.self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.sysInfoBtn);
     }
 
     // Screen Measure Button
     if (self.options.useScreenMeasure) {
-      self.measureBtnPanel = document.createElement('span');
-      self.measureBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.measureBtnPanel.style.display = 'inline-block';
-      self.measureBtnPanel.style.float = 'right';
-      self.measureBtnPanel.style.marginTop = '1px';
-      self.measureBtnPanel.style.marginRight = '6px';
-      self.measureBtnPanel.style.width = (10 * self.options.zoom) + 'px';
-      self.measureBtnPanel.style.height = (7 * self.options.zoom) + 'px';
-      self.measureBtnPanel.innerText = ' ';
-      self.measureBtnPanel.onclick = new Function('DebugJS.self.toggleMeasureMode();');
-      self.measureBtnPanel.onmouseover = new Function('DebugJS.self.measureBtnPanel.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
-      self.measureBtnPanel.onmouseout = new Function('DebugJS.self.measureBtnPanel.style.borderColor=(DebugJS.self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.measureBtnPanel);
+      self.measureBtn = document.createElement('span');
+      self.measureBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.measureBtn.style.display = 'inline-block';
+      self.measureBtn.style.float = 'right';
+      self.measureBtn.style.marginTop = '1px';
+      self.measureBtn.style.marginRight = '6px';
+      self.measureBtn.style.width = (10 * self.options.zoom) + 'px';
+      self.measureBtn.style.height = (7 * self.options.zoom) + 'px';
+      self.measureBtn.innerText = ' ';
+      self.measureBtn.onclick = new Function('DebugJS.self.toggleMeasureMode();');
+      self.measureBtn.onmouseover = new Function('DebugJS.self.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
+      self.measureBtn.onmouseout = new Function('DebugJS.self.measureBtn.style.borderColor=(DebugJS.self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.measureBtn);
     }
     // -- R to L
 
@@ -1315,23 +1315,23 @@ DebugJS.prototype = {
     }
 
     if (self.options.useScreenMeasure) {
-      self.updateMeasureBtnPanel();
+      self.updateMeasureBtn();
     }
 
     if (self.options.useSystemInfo) {
-      self.updateSysInfoBtnPanel();
+      self.updateSysInfoBtn();
     }
 
     if (self.options.useElementInfo) {
-      self.updateElmInspectionBtnPanel();
+      self.updateElmInspectionBtn();
     }
 
     if (self.options.useTools) {
-      self.updateToolsBtnPanel();
+      self.updateToolsBtn();
     }
 
     if (self.options.useScriptEditor) {
-      self.updateScriptBtnPanel();
+      self.updateScriptBtn();
     }
 
     if (self.options.useStopWatch) {
@@ -1340,11 +1340,11 @@ DebugJS.prototype = {
     }
 
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.updatePinBtnPanel();
+      self.updatePinBtn();
     }
 
     if (self.options.useSuspendLogButton) {
-      self.updateSuspendLogBtnPanel();
+      self.updateSuspendLogBtn();
     }
 
     if ((self.status & DebugJS.STATE_RESIZABLE) && (self.options.useWindowControlButton)) {
@@ -1633,33 +1633,33 @@ DebugJS.prototype = {
   },
 
   // Update Measure Button
-  updateMeasureBtnPanel: function() {
+  updateMeasureBtn: function() {
     var self = DebugJS.self;
-    self.measureBtnPanel.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE);
+    self.measureBtn.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   // Update System Info Button
-  updateSysInfoBtnPanel: function() {
+  updateSysInfoBtn: function() {
     var self = DebugJS.self;
-    self.sysInfoBtnPanel.style.color = (self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.sysInfoBtn.style.color = (self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Element Inspection Button
-  updateElmInspectionBtnPanel: function() {
+  updateElmInspectionBtn: function() {
     var self = DebugJS.self;
-    self.elmInspectionBtnPanel.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.elmInspectionBtn.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Tools Button
-  updateToolsBtnPanel: function() {
+  updateToolsBtn: function() {
     var self = DebugJS.self;
-    self.toolsBtnPanel.style.color = (self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.toolsBtn.style.color = (self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Script Button
-  updateScriptBtnPanel: function() {
+  updateScriptBtn: function() {
     var self = DebugJS.self;
-    self.scriptBtnPanel.style.color = (self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.scriptBtn.style.color = (self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Stop Watch Button
@@ -1686,15 +1686,15 @@ DebugJS.prototype = {
   },
 
   // Update Suspend Log Button
-  updateSuspendLogBtnPanel: function() {
+  updateSuspendLogBtn: function() {
     var self = DebugJS.self;
-    self.suspendLogBtnPanel.style.color = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.suspendLogBtn.style.color = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Pin Button
-  updatePinBtnPanel: function() {
+  updatePinBtn: function() {
     var self = DebugJS.self;
-    self.pinBtnPanel.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;
+    self.pinBtn.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;
   },
 
   // Window Control Button
@@ -1918,7 +1918,7 @@ DebugJS.prototype = {
     } else {
       self.status |= DebugJS.STATE_LOG_SUSPENDING;
     }
-    self.updateSuspendLogBtnPanel();
+    self.updateSuspendLogBtn();
   },
 
   toggleMeasureMode: function() {
@@ -1934,7 +1934,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     if (!silent) DebugJS.log.s('Screen Measure ON.');
     self.status |= DebugJS.STATE_MEASURE;
-    self.updateMeasureBtnPanel();
+    self.updateMeasureBtn();
   },
 
   disableMeasureMode: function(silent) {
@@ -1942,7 +1942,7 @@ DebugJS.prototype = {
     self.stopMeasure();
     self.status &= ~DebugJS.STATE_MEASURE;
     if (!silent) DebugJS.log.s('Screen Measure OFF.');
-    self.updateMeasureBtnPanel();
+    self.updateMeasureBtn();
   },
 
   toggleDraggable: function() {
@@ -1958,14 +1958,14 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.status |= DebugJS.STATE_DRAGGABLE;
     self.windowBody.style.cursor = 'default';
-    self.updatePinBtnPanel();
+    self.updatePinBtn();
   },
 
   disableDraggable: function() {
     var self = DebugJS.self;
     self.status &= ~DebugJS.STATE_DRAGGABLE;
     self.windowBody.style.cursor = 'auto';
-    self.updatePinBtnPanel();
+    self.updatePinBtn();
   },
 
   startStopStopWatch: function() {
@@ -2701,7 +2701,7 @@ DebugJS.prototype = {
       self.sysInfoPanelBody.style.top = self.computedFontSize;
       self.sysInfoPanel.appendChild(self.sysInfoPanelBody);
     }
-    self.updateSysInfoBtnPanel();
+    self.updateSysInfoBtn();
     self.showSystemInfo();
     self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_H;
   },
@@ -2735,7 +2735,7 @@ DebugJS.prototype = {
       self.sysInfoPanel = null;
     }
     self.status &= ~DebugJS.STATE_SYSTEM_INFO;
-    self.updateSysInfoBtnPanel();
+    self.updateSysInfoBtn();
     self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
   },
 
@@ -2991,29 +2991,29 @@ DebugJS.prototype = {
         self.expandHightIfNeeded(self.windowExpandHeight);
       }
 
-      self.elmSelectBtnPanel = document.createElement('span');
-      self.elmSelectBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmSelectBtnPanel.style.marginLeft = '8px';
-      self.elmSelectBtnPanel.style.marginRight = '4px';
-      self.elmSelectBtnPanel.onclick = new Function('DebugJS.self.toggleElmSelectMode();');
-      self.elmSelectBtnPanel.innerText = 'SELECT';
-      self.elmInspectionPanel.appendChild(self.elmSelectBtnPanel);
+      self.elmSelectBtn = document.createElement('span');
+      self.elmSelectBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmSelectBtn.style.marginLeft = '8px';
+      self.elmSelectBtn.style.marginRight = '4px';
+      self.elmSelectBtn.onclick = new Function('DebugJS.self.toggleElmSelectMode();');
+      self.elmSelectBtn.innerText = 'SELECT';
+      self.elmInspectionPanel.appendChild(self.elmSelectBtn);
 
-      self.elmHighlightBtnPanel = document.createElement('span');
-      self.elmHighlightBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmHighlightBtnPanel.style.marginLeft = '4px';
-      self.elmHighlightBtnPanel.style.marginRight = '4px';
-      self.elmHighlightBtnPanel.onclick = new Function('DebugJS.self.toggleElmHighlightMode();');
-      self.elmHighlightBtnPanel.innerText = 'HIGHLIGHT';
-      self.elmInspectionPanel.appendChild(self.elmHighlightBtnPanel);
+      self.elmHighlightBtn = document.createElement('span');
+      self.elmHighlightBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmHighlightBtn.style.marginLeft = '4px';
+      self.elmHighlightBtn.style.marginRight = '4px';
+      self.elmHighlightBtn.onclick = new Function('DebugJS.self.toggleElmHighlightMode();');
+      self.elmHighlightBtn.innerText = 'HIGHLIGHT';
+      self.elmInspectionPanel.appendChild(self.elmHighlightBtn);
 
-      self.elmUpdateBtnPanel = document.createElement('span');
-      self.elmUpdateBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmUpdateBtnPanel.style.marginLeft = '4px';
-      self.elmUpdateBtnPanel.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmUpdateBtnPanel.onclick = new Function('DebugJS.self.updateElementInfo();');
-      self.elmUpdateBtnPanel.innerText = 'UPDATE';
-      self.elmInspectionPanel.appendChild(self.elmUpdateBtnPanel);
+      self.elmUpdateBtn = document.createElement('span');
+      self.elmUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmUpdateBtn.style.marginLeft = '4px';
+      self.elmUpdateBtn.style.color = DebugJS.COLOR_INACTIVE;
+      self.elmUpdateBtn.onclick = new Function('DebugJS.self.updateElementInfo();');
+      self.elmUpdateBtn.innerText = 'UPDATE';
+      self.elmInspectionPanel.appendChild(self.elmUpdateBtn);
 
       var UPDATE_COLOR = '#ccc';
       self.elmUpdateInputLabel = document.createElement('span');
@@ -3045,23 +3045,23 @@ DebugJS.prototype = {
       self.elmInspectionPanel.appendChild(self.elmNumPanel);
       self.updateElementInfoInterval();
 
-      self.elmExportBtnPanel = document.createElement('span');
-      self.elmExportBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmExportBtnPanel.style.float = 'right';
-      self.elmExportBtnPanel.style.marginRight = '4px';
-      self.elmExportBtnPanel.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmExportBtnPanel.onclick = new Function('DebugJS.self.exportTargetElm();');
-      self.elmExportBtnPanel.innerText = 'EXPORT';
-      self.elmInspectionPanel.appendChild(self.elmExportBtnPanel);
+      self.elmExportBtn = document.createElement('span');
+      self.elmExportBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmExportBtn.style.float = 'right';
+      self.elmExportBtn.style.marginRight = '4px';
+      self.elmExportBtn.style.color = DebugJS.COLOR_INACTIVE;
+      self.elmExportBtn.onclick = new Function('DebugJS.self.exportTargetElm();');
+      self.elmExportBtn.innerText = 'EXPORT';
+      self.elmInspectionPanel.appendChild(self.elmExportBtn);
 
       self.elmInfoBodyPanel = document.createElement('div');
       self.elmInfoBodyPanel.style.position = 'relative';
       self.elmInfoBodyPanel.style.top = self.computedFontSize;
       self.elmInspectionPanel.appendChild(self.elmInfoBodyPanel);
     }
-    self.updateElmInspectionBtnPanel();
-    self.updateElmSelectBtnPanel();
-    self.updateElmHighlightBtnPanel();
+    self.updateElmInspectionBtn();
+    self.updateElmSelectBtn();
+    self.updateElmHighlightBtn();
   },
 
   disableElmInspection: function() {
@@ -3083,7 +3083,7 @@ DebugJS.prototype = {
     }
     self.updateTargetElm(null);
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
-    self.updateElmInspectionBtnPanel();
+    self.updateElmInspectionBtn();
   },
 
   inspectElement: function(e) {
@@ -3331,8 +3331,8 @@ DebugJS.prototype = {
     }
     if (el) {
       self.targetElm = el;
-      self.elmUpdateBtnPanel.style.color = self.options.btnColor;
-      self.elmExportBtnPanel.style.color = self.options.btnColor;
+      self.elmUpdateBtn.style.color = self.options.btnColor;
+      self.elmExportBtn.style.color = self.options.btnColor;
     }
   },
 
@@ -3388,12 +3388,12 @@ DebugJS.prototype = {
     } else {
       self.elmInfoStatus |= DebugJS.ELMINFO_STATE_SELECT;
     }
-    self.updateElmSelectBtnPanel();
+    self.updateElmSelectBtn();
   },
 
-  updateElmSelectBtnPanel: function() {
+  updateElmSelectBtn: function() {
     var self = DebugJS.self;
-    self.elmSelectBtnPanel.style.color = (self.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? self.options.btnColor : DebugJS.COLOR_INACTIVE;
+    self.elmSelectBtn.style.color = (self.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? self.options.btnColor : DebugJS.COLOR_INACTIVE;
   },
 
   toggleElmHighlightMode: function() {
@@ -3405,12 +3405,12 @@ DebugJS.prototype = {
       self.elmInfoStatus |= DebugJS.ELMINFO_STATE_HIGHLIGHT;
       self.highlightElement(null, self.targetElm);
     }
-    self.updateElmHighlightBtnPanel();
+    self.updateElmHighlightBtn();
   },
 
-  updateElmHighlightBtnPanel: function() {
+  updateElmHighlightBtn: function() {
     var self = DebugJS.self;
-    self.elmHighlightBtnPanel.style.color = (self.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? self.options.btnColor : DebugJS.COLOR_INACTIVE;
+    self.elmHighlightBtn.style.color = (self.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? self.options.btnColor : DebugJS.COLOR_INACTIVE;
   },
 
   exportTargetElm: function() {
@@ -3461,41 +3461,41 @@ DebugJS.prototype = {
       self.toolsBodyPanel.style.height = 'calc(100% - ' + self.computedFontSize + 'px)';
       self.toolsPanel.appendChild(self.toolsBodyPanel);
 
-      self.textCheckerBtnPanel = document.createElement('span');
-      self.textCheckerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.textCheckerBtnPanel.style.marginRight = '4px';
-      self.textCheckerBtnPanel.innerText = '<TEXT>';
-      self.textCheckerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_TEXT);');
-      self.textCheckerBtnPanel.onmouseover = new Function('DebugJS.self.textCheckerBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.textCheckerBtnPanel.onmouseout = new Function('DebugJS.self.textCheckerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.textCheckerBtnPanel);
+      self.textCheckerBtn = document.createElement('span');
+      self.textCheckerBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.textCheckerBtn.style.marginRight = '4px';
+      self.textCheckerBtn.innerText = '<TEXT>';
+      self.textCheckerBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_TEXT);');
+      self.textCheckerBtn.onmouseover = new Function('DebugJS.self.textCheckerBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.textCheckerBtn.onmouseout = new Function('DebugJS.self.textCheckerBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.textCheckerBtn);
 
-      self.fileLoaderBtnPanel = document.createElement('span');
-      self.fileLoaderBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.fileLoaderBtnPanel.style.marginRight = '4px';
-      self.fileLoaderBtnPanel.innerText = '<FILE>';
-      self.fileLoaderBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_FILE);');
-      self.fileLoaderBtnPanel.onmouseover = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.fileLoaderBtnPanel.onmouseout = new Function('DebugJS.self.fileLoaderBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.fileLoaderBtnPanel);
+      self.fileLoaderBtn = document.createElement('span');
+      self.fileLoaderBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.fileLoaderBtn.style.marginRight = '4px';
+      self.fileLoaderBtn.innerText = '<FILE>';
+      self.fileLoaderBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_FILE);');
+      self.fileLoaderBtn.onmouseover = new Function('DebugJS.self.fileLoaderBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.fileLoaderBtn.onmouseout = new Function('DebugJS.self.fileLoaderBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.fileLoaderBtn);
 
-      self.htmlPreviewerBtnPanel = document.createElement('span');
-      self.htmlPreviewerBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.htmlPreviewerBtnPanel.style.marginRight = '4px';
-      self.htmlPreviewerBtnPanel.innerText = '<HTML>';
-      self.htmlPreviewerBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_HTML);');
-      self.htmlPreviewerBtnPanel.onmouseover = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.htmlPreviewerBtnPanel.onmouseout = new Function('DebugJS.self.htmlPreviewerBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.htmlPreviewerBtnPanel);
+      self.htmlPreviewerBtn = document.createElement('span');
+      self.htmlPreviewerBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.htmlPreviewerBtn.style.marginRight = '4px';
+      self.htmlPreviewerBtn.innerText = '<HTML>';
+      self.htmlPreviewerBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_HTML);');
+      self.htmlPreviewerBtn.onmouseover = new Function('DebugJS.self.htmlPreviewerBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.htmlPreviewerBtn.onmouseout = new Function('DebugJS.self.htmlPreviewerBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.htmlPreviewerBtn);
 
-      self.memoBtnPanel = document.createElement('span');
-      self.memoBtnPanel.className = this.id + '-btn ' + this.id + '-nomove';
-      self.memoBtnPanel.style.marginRight = '4px';
-      self.memoBtnPanel.innerText = '<MEMO>';
-      self.memoBtnPanel.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_MEMO);');
-      self.memoBtnPanel.onmouseover = new Function('DebugJS.self.memoBtnPanel.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.memoBtnPanel.onmouseout = new Function('DebugJS.self.memoBtnPanel.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.memoBtnPanel);
+      self.memoBtn = document.createElement('span');
+      self.memoBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.memoBtn.style.marginRight = '4px';
+      self.memoBtn.innerText = '<MEMO>';
+      self.memoBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_MEMO);');
+      self.memoBtn.onmouseover = new Function('DebugJS.self.memoBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+      self.memoBtn.onmouseout = new Function('DebugJS.self.memoBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+      self.toolsHeaderPanel.appendChild(self.memoBtn);
 
       self.addOverlayPanelFull(self.toolsPanel);
       self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_TEXT);
@@ -3504,7 +3504,7 @@ DebugJS.prototype = {
       self.resizeImgPreview();
     }
     self.updateToolsButtons();
-    self.updateToolsBtnPanel();
+    self.updateToolsBtn();
   },
 
   disableTools: function() {
@@ -3513,15 +3513,15 @@ DebugJS.prototype = {
       self.removeOverlayPanelFull(self.toolsPanel);
     }
     self.status &= ~DebugJS.STATE_TOOLS;
-    self.updateToolsBtnPanel();
+    self.updateToolsBtn();
   },
 
   updateToolsButtons: function() {
     var self = DebugJS.self;
-    self.textCheckerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    self.fileLoaderBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    self.htmlPreviewerBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    self.memoBtnPanel.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.textCheckerBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.fileLoaderBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.htmlPreviewerBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.memoBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
   },
 
   switchToolsFunction: function(kind) {
@@ -4243,7 +4243,7 @@ DebugJS.prototype = {
       self.scriptEditor.value = self.scriptBuf;
       self.scriptPanel.appendChild(self.scriptEditor);
     }
-    self.updateScriptBtnPanel();
+    self.updateScriptBtn();
     self.scriptEditor.focus();
   },
 
@@ -4331,7 +4331,7 @@ DebugJS.prototype = {
   disableScriptEditor: function() {
     var self = DebugJS.self;
     self.stopScript();
-    self.updateScriptBtnPanel();
+    self.updateScriptBtn();
   },
 
   stopScript: function() {
@@ -4630,7 +4630,7 @@ DebugJS.prototype = {
     }
     if (self.options.useSuspendLogButton) {
       self.status &= ~DebugJS.STATE_LOG_SUSPENDING;
-      self.updateSuspendLogBtnPanel();
+      self.updateSuspendLogBtn();
     }
     if (self.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       self.stopStopWatch();
