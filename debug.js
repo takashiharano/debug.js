@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201611302330';
+  this.v = '201612010015';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -92,6 +92,9 @@ var DebugJS = function() {
   this.sysInfoPanel = null;
   this.elmInspectionBtn = null;
   this.elmInspectionPanel = null;
+  this.elmPrevBtn = null;
+  this.elmTitle = null;
+  this.elmNextBtn = null;
   this.elmSelectBtn = null;
   this.elmHighlightBtn = null;
   this.elmUpdateBtn = null;
@@ -1054,7 +1057,7 @@ DebugJS.prototype = {
       self.clearBtn = document.createElement('span');
       self.clearBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.clearBtn.style.marginRight = '3px';
-      self.clearBtn.onclick = new Function('DebugJS.self.clearMessage();');
+      self.clearBtn.onclick = DebugJS.self.clearMessage;
       self.clearBtn.innerText = '[CLR]';
       self.headPanel.appendChild(self.clearBtn);
     }
@@ -1099,7 +1102,7 @@ DebugJS.prototype = {
       self.pinBtn.style.float = 'right';
       self.pinBtn.style.marginRight = '1px';
       self.pinBtn.innerHTML = '&#x1F4CC;';
-      self.pinBtn.onclick = new Function('DebugJS.self.toggleDraggable();');
+      self.pinBtn.onclick = DebugJS.self.toggleDraggable;
       self.pinBtn.onmouseover = new Function('DebugJS.self.pinBtn.style.color=DebugJS.PIN_BUTTON_COLOR;');
       self.pinBtn.onmouseout = new Function('DebugJS.self.pinBtn.style.color=(DebugJS.self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;');
       self.headPanel.appendChild(self.pinBtn);
@@ -1112,7 +1115,7 @@ DebugJS.prototype = {
       self.suspendLogBtn.style.float = 'right';
       self.suspendLogBtn.style.marginRight = '2px';
       self.suspendLogBtn.innerHTML = '&#x1F6AB;';
-      self.suspendLogBtn.onclick = new Function('DebugJS.self.toggleLogSuspend();');
+      self.suspendLogBtn.onclick = DebugJS.self.toggleLogSuspend;
       self.suspendLogBtn.onmouseover = new Function('DebugJS.self.suspendLogBtn.style.color=DebugJS.LOG_SUSPEND_BUTTON_COLOR;');
       self.suspendLogBtn.onmouseout = new Function('DebugJS.self.suspendLogBtn.style.color=(DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.suspendLogBtn);
@@ -1138,7 +1141,7 @@ DebugJS.prototype = {
       self.toolsBtn.style.float = 'right';
       self.toolsBtn.style.marginRight = '3px';
       self.toolsBtn.innerText = 'TOOL';
-      self.toolsBtn.onclick = new Function('DebugJS.self.toggleToolsMode();');
+      self.toolsBtn.onclick = DebugJS.self.toggleToolsMode;
       self.toolsBtn.onmouseover = new Function('DebugJS.self.toolsBtn.style.color=DebugJS.TOOLS_BUTTON_COLOR;');
       self.toolsBtn.onmouseout = new Function('DebugJS.self.toolsBtn.style.color=(DebugJS.self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.toolsBtn);
@@ -1151,7 +1154,7 @@ DebugJS.prototype = {
       self.scriptBtn.style.float = 'right';
       self.scriptBtn.style.marginRight = '4px';
       self.scriptBtn.innerText = 'JS';
-      self.scriptBtn.onclick = new Function('DebugJS.self.toggleScriptMode();');
+      self.scriptBtn.onclick = DebugJS.self.toggleScriptMode;
       self.scriptBtn.onmouseover = new Function('DebugJS.self.scriptBtn.style.color=DebugJS.JS_BUTTON_COLOR;');
       self.scriptBtn.onmouseout = new Function('DebugJS.self.scriptBtn.style.color=(DebugJS.self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.scriptBtn);
@@ -1164,7 +1167,7 @@ DebugJS.prototype = {
       self.elmInspectionBtn.style.float = 'right';
       self.elmInspectionBtn.style.marginRight = '3px';
       self.elmInspectionBtn.innerText = 'DOM';
-      self.elmInspectionBtn.onclick = new Function('DebugJS.self.toggleElmInspectionMode();');
+      self.elmInspectionBtn.onclick = DebugJS.self.toggleElmInspectionMode;
       self.elmInspectionBtn.onmouseover = new Function('DebugJS.self.elmInspectionBtn.style.color=DebugJS.DOM_BUTTON_COLOR;');
       self.elmInspectionBtn.onmouseout = new Function('DebugJS.self.elmInspectionBtn.style.color=(DebugJS.self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.elmInspectionBtn);
@@ -1177,7 +1180,7 @@ DebugJS.prototype = {
       self.sysInfoBtn.style.float = 'right';
       self.sysInfoBtn.style.marginRight = '3px';
       self.sysInfoBtn.innerText = 'SYS';
-      self.sysInfoBtn.onclick = new Function('DebugJS.self.toggleSystemInfoMode();');
+      self.sysInfoBtn.onclick = DebugJS.self.toggleSystemInfoMode;
       self.sysInfoBtn.onmouseover = new Function('DebugJS.self.sysInfoBtn.style.color=DebugJS.SYS_BUTTON_COLOR;');
       self.sysInfoBtn.onmouseout = new Function('DebugJS.self.sysInfoBtn.style.color=(DebugJS.self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.sysInfoBtn);
@@ -1194,7 +1197,7 @@ DebugJS.prototype = {
       self.measureBtn.style.width = (10 * self.options.zoom) + 'px';
       self.measureBtn.style.height = (7 * self.options.zoom) + 'px';
       self.measureBtn.innerText = ' ';
-      self.measureBtn.onclick = new Function('DebugJS.self.toggleMeasureMode();');
+      self.measureBtn.onclick = DebugJS.self.toggleMeasureMode;
       self.measureBtn.onmouseover = new Function('DebugJS.self.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
       self.measureBtn.onmouseout = new Function('DebugJS.self.measureBtn.style.borderColor=(DebugJS.self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.measureBtn);
@@ -2979,9 +2982,6 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
     if (self.elmInspectionPanel == null) {
       self.elmInspectionPanel = document.createElement('div');
-      self.elmInspectionPanel.innerHTML = '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showPrevElem();">&lt;&lt;</span> ' +
-                                          '<span style="color:' + DebugJS.DOM_BUTTON_COLOR + '">ELEMENT INFO</span> ' +
-                                          '<span class="' + self.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.showNextElem();">&gt;&gt;</span>';
       if (DebugJS.ELM_INFO_FULL_OVERLAY) {
         self.elmInspectionPanel.className = self.id + '-overlay-panel-full';
         self.addOverlayPanelFull(self.elmInspectionPanel);
@@ -2991,11 +2991,32 @@ DebugJS.prototype = {
         self.expandHightIfNeeded(self.windowExpandHeight);
       }
 
+      self.elmPrevBtn = document.createElement('span');
+      self.elmPrevBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmPrevBtn.style.color = DebugJS.COLOR_INACTIVE;
+      self.elmPrevBtn.onclick = DebugJS.self.showPrevElem;
+      self.elmPrevBtn.innerText = '<<';
+      self.elmInspectionPanel.appendChild(self.elmPrevBtn);
+
+      self.elmTitle = document.createElement('span');
+      self.elmTitle.style.marginLeft = '4px';
+      self.elmTitle.style.marginRight = '4px';
+      self.elmTitle.style.color = DebugJS.DOM_BUTTON_COLOR;
+      self.elmTitle.innerText = 'ELEMENT INFO';
+      self.elmInspectionPanel.appendChild(self.elmTitle);
+
+      self.elmNextBtn = document.createElement('span');
+      self.elmNextBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmNextBtn.style.color = DebugJS.COLOR_INACTIVE;
+      self.elmNextBtn.onclick = DebugJS.self.showNextElem;
+      self.elmNextBtn.innerText = '>>';
+      self.elmInspectionPanel.appendChild(self.elmNextBtn);
+
       self.elmSelectBtn = document.createElement('span');
       self.elmSelectBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.elmSelectBtn.style.marginLeft = '8px';
       self.elmSelectBtn.style.marginRight = '4px';
-      self.elmSelectBtn.onclick = new Function('DebugJS.self.toggleElmSelectMode();');
+      self.elmSelectBtn.onclick = DebugJS.self.toggleElmSelectMode;
       self.elmSelectBtn.innerText = 'SELECT';
       self.elmInspectionPanel.appendChild(self.elmSelectBtn);
 
@@ -3003,7 +3024,7 @@ DebugJS.prototype = {
       self.elmHighlightBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.elmHighlightBtn.style.marginLeft = '4px';
       self.elmHighlightBtn.style.marginRight = '4px';
-      self.elmHighlightBtn.onclick = new Function('DebugJS.self.toggleElmHighlightMode();');
+      self.elmHighlightBtn.onclick = DebugJS.self.toggleElmHighlightMode;
       self.elmHighlightBtn.innerText = 'HIGHLIGHT';
       self.elmInspectionPanel.appendChild(self.elmHighlightBtn);
 
@@ -3011,7 +3032,7 @@ DebugJS.prototype = {
       self.elmUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.elmUpdateBtn.style.marginLeft = '4px';
       self.elmUpdateBtn.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmUpdateBtn.onclick = new Function('DebugJS.self.updateElementInfo();');
+      self.elmUpdateBtn.onclick = DebugJS.self.updateElementInfo;
       self.elmUpdateBtn.innerText = 'UPDATE';
       self.elmInspectionPanel.appendChild(self.elmUpdateBtn);
 
@@ -3030,7 +3051,7 @@ DebugJS.prototype = {
       self.elmUpdateInput.style.setProperty('padding', '0', 'important');
       self.elmUpdateInput.style.setProperty('text-align', 'right', 'important');
       self.elmUpdateInput.style.setProperty('color', UPDATE_COLOR, 'important');
-      self.elmUpdateInput.oninput = new Function('DebugJS.self.onchangeElementUpdateInterval();');
+      self.elmUpdateInput.oninput = DebugJS.self.onchangeElementUpdateInterval;
       self.elmUpdateInput.value = self.elementUpdateInterval;
       self.elmInspectionPanel.appendChild(self.elmUpdateInput);
 
@@ -3050,7 +3071,7 @@ DebugJS.prototype = {
       self.elmExportBtn.style.float = 'right';
       self.elmExportBtn.style.marginRight = '4px';
       self.elmExportBtn.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmExportBtn.onclick = new Function('DebugJS.self.exportTargetElm();');
+      self.elmExportBtn.onclick = DebugJS.self.exportTargetElm;
       self.elmExportBtn.innerText = 'EXPORT';
       self.elmInspectionPanel.appendChild(self.elmExportBtn);
 
@@ -3273,7 +3294,7 @@ DebugJS.prototype = {
 
   showPrevElem: function() {
     var self = DebugJS.self;
-
+    if (!self.targetElm) return;
     var el = self.targetElm.previousElementSibling;
     if ((el != null) && (el.id == self.id)) {
       el = self.targetElm.previousElementSibling;
@@ -3300,7 +3321,7 @@ DebugJS.prototype = {
 
   showNextElem: function() {
     var self = DebugJS.self;
-
+    if (!self.targetElm) return;
     var el = self.targetElm.firstElementChild;
     if ((el == null) || ((el != null) && (el.id == self.id))) {
       el = self.targetElm.nextElementSibling;
@@ -3331,6 +3352,8 @@ DebugJS.prototype = {
     }
     if (el) {
       self.targetElm = el;
+      self.elmPrevBtn.style.color = self.options.btnColor;
+      self.elmNextBtn.style.color = self.options.btnColor;
       self.elmUpdateBtn.style.color = self.options.btnColor;
       self.elmExportBtn.style.color = self.options.btnColor;
     }
@@ -3818,7 +3841,7 @@ DebugJS.prototype = {
       self.fileLoadCancelBtn.style.position = 'relative';
       self.fileLoadCancelBtn.style.top = '2px';
       self.fileLoadCancelBtn.style.float = 'right';
-      self.fileLoadCancelBtn.onclick = new Function('DebugJS.self.cancelLoadFile();');
+      self.fileLoadCancelBtn.onclick = DebugJS.self.cancelLoadFile;
       self.fileLoadCancelBtn.innerText = '[CANCEL]';
       self.fileLoaderFooter.appendChild(self.fileLoadCancelBtn);
     } else {
@@ -4106,7 +4129,7 @@ DebugJS.prototype = {
       self.htmlPreviewEditor = document.createElement('textarea');
       self.htmlPreviewEditor.className = self.id + '-editor';
       self.htmlPreviewEditor.style.setProperty('height', 'calc(50% - ' + (self.computedFontSize + 10) + 'px)', 'important');
-      self.htmlPreviewEditor.onblur = new Function('DebugJS.self.saveHtmlBuf();');
+      self.htmlPreviewEditor.onblur = DebugJS.self.saveHtmlBuf;
       self.htmlPreviewEditor.value = self.htmlPreviewBuf;
       self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditor);
     } else {
@@ -4239,7 +4262,7 @@ DebugJS.prototype = {
 
       self.scriptEditor = document.createElement('textarea');
       self.scriptEditor.className = self.id + '-editor';
-      self.scriptEditor.onblur = new Function('DebugJS.self.saveScriptBuf();');
+      self.scriptEditor.onblur = DebugJS.self.saveScriptBuf;
       self.scriptEditor.value = self.scriptBuf;
       self.scriptPanel.appendChild(self.scriptEditor);
     }
