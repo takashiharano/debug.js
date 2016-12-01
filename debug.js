@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201612010015';
+  this.v = '201612020134';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -65,6 +65,7 @@ var DebugJS = function() {
     'useScreenMeasure': true,
     'useSystemInfo': true,
     'useElementInfo': true,
+    'useHtmlSrc': true,
     'useTools': true,
     'useScriptEditor': true,
     'useLogFilter': true,
@@ -90,8 +91,9 @@ var DebugJS = function() {
   this.measureBox = null;
   this.sysInfoBtn = null;
   this.sysInfoPanel = null;
-  this.elmInspectionBtn = null;
-  this.elmInspectionPanel = null;
+  this.elmInfoBtn = null;
+  this.elmInfoPanel = null;
+  this.elmInfoHeaderPanel = null;
   this.elmPrevBtn = null;
   this.elmTitle = null;
   this.elmNextBtn = null;
@@ -105,10 +107,19 @@ var DebugJS = function() {
   this.elmNumPanel = null;
   this.elmInfoBodyPanel = null;
   this.elmInfoStatus = DebugJS.ELMINFO_STATE_SELECT | DebugJS.ELMINFO_STATE_HIGHLIGHT;
-  this.elementUpdateInterval = 0;
-  this.elementUpdateTimerId = 0;
-  this.elmInfoShowHideStatus = {'text': false, 'allStyles': false, 'elBorder': false};
+  this.elmUpdateInterval = 0;
+  this.elmUpdateTimerId = 0;
+  this.elmInfoShowHideStatus = {'text': false, 'allStyles': false, 'elBorder': false, 'htmlSrc': false};
   this.targetElm = null;
+  this.htmlSrcBtn = null;
+  this.htmlSrcPanel = null;
+  this.htmlSrcHeaderPanel = null;
+  this.htmlSrcUpdateInputLabel = null;
+  this.htmlSrcUpdateInputLabel2 = null;
+  this.htmlSrcUpdateInput = null;
+  this.htmlSrcBodyPanel = null;
+  this.htmlSrcUpdateInterval = 0;
+  this.htmlSrcUpdateTimerId = 0;
   this.toolsBtn = null;
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
@@ -199,7 +210,7 @@ var DebugJS = function() {
   this.mainPanel = null;
   this.overlayBasePanel = null;
   this.overlayPanels = [];
-  this.logFilterPanel = null;
+  this.logHeaderPanel = null;
   this.filterBtnAll = null;
   this.filterBtnStd = null;
   this.filterBtnDbg = null;
@@ -312,6 +323,7 @@ DebugJS.STATE_SYSTEM_INFO = 0x400000;
 DebugJS.STATE_ELEMENT_INSPECTING = 0x800000;
 DebugJS.STATE_TOOLS = 0x1000000;
 DebugJS.STATE_SCRIPT = 0x2000000;
+DebugJS.STATE_HTML_SRC = 0x4000000;
 DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
 DebugJS.STATE_AUTO_POSITION_ADJUST = 0x10000000;
 DebugJS.STATE_NEED_TO_SCROLL = 0x20000000;
@@ -363,7 +375,8 @@ DebugJS.TOOLS_COLOR_INACTIVE = '#ccc';
 DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.MEASURE_BUTTON_COLOR = '#6cf';
 DebugJS.SYS_BUTTON_COLOR = '#3af';
-DebugJS.DOM_BUTTON_COLOR = '#f66';
+DebugJS.DOM_BUTTON_COLOR = '#f63';
+DebugJS.HTML_BUTTON_COLOR = '#8f8';
 DebugJS.TOOLS_BUTTON_COLOR = '#ff0';
 DebugJS.JS_BUTTON_COLOR = '#6df';
 DebugJS.PIN_BUTTON_COLOR = '#fa0';
@@ -404,6 +417,7 @@ DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
+DebugJS.HTML_SRC_FULL_OVERLAY = true;
 DebugJS.LS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
@@ -436,6 +450,7 @@ DebugJS.FEATURES = [
   'useScreenMeasure',
   'useSystemInfo',
   'useElementInfo',
+  'useHtmlSrc',
   'useTools',
   'useScriptEditor',
   'useLogFilter',
@@ -1030,6 +1045,23 @@ DebugJS.prototype = {
     self.mainPanel.style.clear = 'both';
     self.windowBody.appendChild(self.mainPanel);
 
+    // Log Header Panel
+    if ((self.options.useClearButton) || (self.options.useLogFilter)) {
+      self.logHeaderPanel = document.createElement('div');
+      self.logHeaderPanel.style.position = 'relative';
+      self.logHeaderPanel.style.height = self.computedFontSize + 'px';
+      self.mainPanel.appendChild(self.logHeaderPanel);
+    }
+
+    // CLR Button
+    if (self.options.useClearButton) {
+      self.clearBtn = document.createElement('span');
+      self.clearBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.clearBtn.onclick = DebugJS.self.clearMessage;
+      self.clearBtn.innerText = '[CLR]';
+      self.headPanel.appendChild(self.clearBtn);
+    }
+
     // Log Filter
     if (self.options.useLogFilter) {
       self.createLogFilter();
@@ -1052,19 +1084,10 @@ DebugJS.prototype = {
       return;
     }
 
-    // CLR Button
-    if (self.options.useClearButton) {
-      self.clearBtn = document.createElement('span');
-      self.clearBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.clearBtn.style.marginRight = '3px';
-      self.clearBtn.onclick = DebugJS.self.clearMessage;
-      self.clearBtn.innerText = '[CLR]';
-      self.headPanel.appendChild(self.clearBtn);
-    }
-
     // Clock
     if (self.options.useClock) {
       self.clockPanel = document.createElement('span');
+      self.clockPanel.style.marginLeft = '2px';
       self.clockPanel.style.color = self.options.clockColor;
       self.clockPanel.style.fontSize = self.computedFontSize + 'px';
       self.headPanel.appendChild(self.clockPanel);
@@ -1100,7 +1123,8 @@ DebugJS.prototype = {
       self.pinBtn = document.createElement('span');
       self.pinBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.pinBtn.style.float = 'right';
-      self.pinBtn.style.marginRight = '1px';
+      self.pinBtn.style.marginLeft = '2px';
+      self.pinBtn.style.fontSize = '11px';
       self.pinBtn.innerHTML = '&#x1F4CC;';
       self.pinBtn.onclick = DebugJS.self.toggleDraggable;
       self.pinBtn.onmouseover = new Function('DebugJS.self.pinBtn.style.color=DebugJS.PIN_BUTTON_COLOR;');
@@ -1113,7 +1137,8 @@ DebugJS.prototype = {
       self.suspendLogBtn = document.createElement('span');
       self.suspendLogBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.suspendLogBtn.style.float = 'right';
-      self.suspendLogBtn.style.marginRight = '2px';
+      self.suspendLogBtn.style.marginLeft = '4px';
+      self.suspendLogBtn.style.fontSize = '11px';
       self.suspendLogBtn.innerHTML = '&#x1F6AB;';
       self.suspendLogBtn.onclick = DebugJS.self.toggleLogSuspend;
       self.suspendLogBtn.onmouseover = new Function('DebugJS.self.suspendLogBtn.style.color=DebugJS.LOG_SUSPEND_BUTTON_COLOR;');
@@ -1125,12 +1150,12 @@ DebugJS.prototype = {
     if (self.options.useStopWatch) {
       self.swPanel = document.createElement('span');
       self.swPanel.style.float = 'right';
-      self.swPanel.style.marginRight = '4px';
+      self.swPanel.style.marginLeft = '3px';
       self.headPanel.appendChild(self.swPanel);
 
       self.swBtnPanel = document.createElement('span');
       self.swBtnPanel.style.float = 'right';
-      self.swBtnPanel.style.marginRight = '3px';
+      self.swBtnPanel.style.marginLeft = '4px';
       self.headPanel.appendChild(self.swBtnPanel);
     }
 
@@ -1139,8 +1164,8 @@ DebugJS.prototype = {
       self.toolsBtn = document.createElement('span');
       self.toolsBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.toolsBtn.style.float = 'right';
-      self.toolsBtn.style.marginRight = '3px';
-      self.toolsBtn.innerText = 'TOOL';
+      self.toolsBtn.style.marginLeft = '2px';
+      self.toolsBtn.innerText = 'TL';
       self.toolsBtn.onclick = DebugJS.self.toggleToolsMode;
       self.toolsBtn.onmouseover = new Function('DebugJS.self.toolsBtn.style.color=DebugJS.TOOLS_BUTTON_COLOR;');
       self.toolsBtn.onmouseout = new Function('DebugJS.self.toolsBtn.style.color=(DebugJS.self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
@@ -1152,7 +1177,7 @@ DebugJS.prototype = {
       self.scriptBtn = document.createElement('span');
       self.scriptBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.scriptBtn.style.float = 'right';
-      self.scriptBtn.style.marginRight = '4px';
+      self.scriptBtn.style.marginLeft = '2px';
       self.scriptBtn.innerText = 'JS';
       self.scriptBtn.onclick = DebugJS.self.toggleScriptMode;
       self.scriptBtn.onmouseover = new Function('DebugJS.self.scriptBtn.style.color=DebugJS.JS_BUTTON_COLOR;');
@@ -1160,17 +1185,30 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.scriptBtn);
     }
 
-    // Element Inspection Button
+    // HTML Src Button
+    if (self.options.useHtmlSrc) {
+      self.htmlSrcBtn = document.createElement('span');
+      self.htmlSrcBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.htmlSrcBtn.style.float = 'right';
+      self.htmlSrcBtn.style.marginLeft = '3px';
+      self.htmlSrcBtn.innerText = 'HTM';
+      self.htmlSrcBtn.onclick = DebugJS.self.toggleHtmlSrcMode;
+      self.htmlSrcBtn.onmouseover = new Function('DebugJS.self.htmlSrcBtn.style.color=DebugJS.HTML_BUTTON_COLOR;');
+      self.htmlSrcBtn.onmouseout = new Function('DebugJS.self.htmlSrcBtn.style.color=(DebugJS.self.status & DebugJS.STATE_HTML_SRC) ? DebugJS.HTML_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.htmlSrcBtn);
+    }
+
+    // Element Info Button
     if (self.options.useElementInfo) {
-      self.elmInspectionBtn = document.createElement('span');
-      self.elmInspectionBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmInspectionBtn.style.float = 'right';
-      self.elmInspectionBtn.style.marginRight = '3px';
-      self.elmInspectionBtn.innerText = 'DOM';
-      self.elmInspectionBtn.onclick = DebugJS.self.toggleElmInspectionMode;
-      self.elmInspectionBtn.onmouseover = new Function('DebugJS.self.elmInspectionBtn.style.color=DebugJS.DOM_BUTTON_COLOR;');
-      self.elmInspectionBtn.onmouseout = new Function('DebugJS.self.elmInspectionBtn.style.color=(DebugJS.self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.elmInspectionBtn);
+      self.elmInfoBtn = document.createElement('span');
+      self.elmInfoBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmInfoBtn.style.float = 'right';
+      self.elmInfoBtn.style.marginLeft = '3px';
+      self.elmInfoBtn.innerText = 'DOM';
+      self.elmInfoBtn.onclick = DebugJS.self.toggleElmInfoMode;
+      self.elmInfoBtn.onmouseover = new Function('DebugJS.self.elmInfoBtn.style.color=DebugJS.DOM_BUTTON_COLOR;');
+      self.elmInfoBtn.onmouseout = new Function('DebugJS.self.elmInfoBtn.style.color=(DebugJS.self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.elmInfoBtn);
     }
 
     // System Info Button
@@ -1178,7 +1216,7 @@ DebugJS.prototype = {
       self.sysInfoBtn = document.createElement('span');
       self.sysInfoBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.sysInfoBtn.style.float = 'right';
-      self.sysInfoBtn.style.marginRight = '3px';
+      self.sysInfoBtn.style.marginLeft = '3px';
       self.sysInfoBtn.innerText = 'SYS';
       self.sysInfoBtn.onclick = DebugJS.self.toggleSystemInfoMode;
       self.sysInfoBtn.onmouseover = new Function('DebugJS.self.sysInfoBtn.style.color=DebugJS.SYS_BUTTON_COLOR;');
@@ -1193,7 +1231,7 @@ DebugJS.prototype = {
       self.measureBtn.style.display = 'inline-block';
       self.measureBtn.style.float = 'right';
       self.measureBtn.style.marginTop = '1px';
-      self.measureBtn.style.marginRight = '6px';
+      self.measureBtn.style.marginLeft = '3px';
       self.measureBtn.style.width = (10 * self.options.zoom) + 'px';
       self.measureBtn.style.height = (7 * self.options.zoom) + 'px';
       self.measureBtn.innerText = ' ';
@@ -1326,7 +1364,11 @@ DebugJS.prototype = {
     }
 
     if (self.options.useElementInfo) {
-      self.updateElmInspectionBtn();
+      self.updateElmInfoBtn();
+    }
+
+    if (self.options.useHtmlSrc) {
+      self.updateHtmlSrcBtn();
     }
 
     if (self.options.useTools) {
@@ -1377,65 +1419,25 @@ DebugJS.prototype = {
 
   createLogFilter: function() {
     var self = DebugJS.self;
-    var marginLeft = '4px';
-    self.logFilterPanel = document.createElement('div');
-    self.logFilterPanel.style.position = 'relative';
-    self.logFilterPanel.style.height = self.computedFontSize + 'px';
-    self.mainPanel.appendChild(self.logFilterPanel);
+    self.filterBtnAll = self.createLogFilterButton('ALL', 'DebugJS.LOG_FILTER_ALL', 'filterBtnAll', 'DebugJS.self.options.btnColor');
+    self.filterBtnStd = self.createLogFilterButton('STD', 'DebugJS.LOG_FILTER_STD', 'filterBtnStd', 'DebugJS.self.options.fontColor');
+    self.filterBtnDbg = self.createLogFilterButton('DBG', 'DebugJS.LOG_FILTER_DBG', 'filterBtnDbg', 'DebugJS.self.options.logColorD');
+    self.filterBtnInf = self.createLogFilterButton('INF', 'DebugJS.LOG_FILTER_INF', 'filterBtnInf', 'DebugJS.self.options.logColorI');
+    self.filterBtnWrn = self.createLogFilterButton('WRN', 'DebugJS.LOG_FILTER_WRN', 'filterBtnWrn', 'DebugJS.self.options.logColorW');
+    self.filterBtnErr = self.createLogFilterButton('ERR', 'DebugJS.LOG_FILTER_ERR', 'filterBtnErr', 'DebugJS.self.options.logColorE');
+  },
 
-    self.filterBtnAll = document.createElement('span');
-    self.filterBtnAll.className = this.id + '-btn ' + this.id + '-nomove';
-    self.filterBtnAll.style.marginLeft = '2px';
-    self.filterBtnAll.innerText = '[ALL]';
-    self.filterBtnAll.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_ALL);');
-    self.filterBtnAll.onmouseover = new Function('DebugJS.self.filterBtnAll.style.color=DebugJS.self.options.btnColor;');
-    self.filterBtnAll.onmouseout = DebugJS.self.updateLogFilterButtons;
-    self.logFilterPanel.appendChild(self.filterBtnAll);
-
-    self.filterBtnStd = document.createElement('span');
-    self.filterBtnStd.className = this.id + '-btn ' + this.id + '-nomove';
-    self.filterBtnStd.style.marginLeft = marginLeft;
-    self.filterBtnStd.innerText = '[STD]';
-    self.filterBtnStd.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_STD);');
-    self.filterBtnStd.onmouseover = new Function('DebugJS.self.filterBtnStd.style.color=DebugJS.self.options.fontColor;');
-    self.filterBtnStd.onmouseout = DebugJS.self.updateLogFilterButtons;
-    self.logFilterPanel.appendChild(self.filterBtnStd);
-
-    self.filterBtnDbg = document.createElement('span');
-    self.filterBtnDbg.className = this.id + '-btn ' + this.id + '-nomove';
-    self.filterBtnDbg.style.marginLeft = marginLeft;
-    self.filterBtnDbg.innerText = '[DBG]';
-    self.filterBtnDbg.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_DBG);');
-    self.filterBtnDbg.onmouseover = new Function('DebugJS.self.filterBtnDbg.style.color=DebugJS.self.options.logColorD;');
-    self.filterBtnDbg.onmouseout = DebugJS.self.updateLogFilterButtons;
-    self.logFilterPanel.appendChild(self.filterBtnDbg);
-
-    self.filterBtnInf = document.createElement('span');
-    self.filterBtnInf.className = this.id + '-btn ' + this.id + '-nomove';
-    self.filterBtnInf.style.marginLeft = marginLeft;
-    self.filterBtnInf.innerText = '[INF]';
-    self.filterBtnInf.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_INF);');
-    self.filterBtnInf.onmouseover = new Function('DebugJS.self.filterBtnInf.style.color=DebugJS.self.options.logColorI;');
-    self.filterBtnInf.onmouseout = DebugJS.self.updateLogFilterButtons;
-    self.logFilterPanel.appendChild(self.filterBtnInf);
-
-    self.filterBtnWrn = document.createElement('span');
-    self.filterBtnWrn.className = this.id + '-btn ' + this.id + '-nomove';
-    self.filterBtnWrn.style.marginLeft = marginLeft;
-    self.filterBtnWrn.innerText = '[WRN]';
-    self.filterBtnWrn.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_WRN);');
-    self.filterBtnWrn.onmouseover = new Function('DebugJS.self.filterBtnWrn.style.color=DebugJS.self.options.logColorW;');
-    self.filterBtnWrn.onmouseout = DebugJS.self.updateLogFilterButtons;
-    self.logFilterPanel.appendChild(self.filterBtnWrn);
-
-    self.filterBtnErr = document.createElement('span');
-    self.filterBtnErr.className = this.id + '-btn ' + this.id + '-nomove';
-    self.filterBtnErr.style.marginLeft = marginLeft;
-    self.filterBtnErr.innerText = '[ERR]';
-    self.filterBtnErr.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_ERR);');
-    self.filterBtnErr.onmouseover = new Function('DebugJS.self.filterBtnErr.style.color=DebugJS.self.options.logColorE;');
-    self.filterBtnErr.onmouseout = DebugJS.self.updateLogFilterButtons;
-    self.logFilterPanel.appendChild(self.filterBtnErr);
+  createLogFilterButton: function(label, filter, btnobj, color) {
+    var self = DebugJS.self;
+    btn = document.createElement('span');
+    btn.className = this.id + '-btn ' + this.id + '-nomove';
+    btn.style.marginLeft = '2px';
+    btn.innerText = '[' + label + ']';
+    btn.onclick = new Function('DebugJS.self.toggleLogFilter(' + filter + ');');
+    btn.onmouseover = new Function('DebugJS.self.' + btnobj + '.style.color=' + color + ';');
+    btn.onmouseout = DebugJS.self.updateLogFilterButtons;
+    self.logHeaderPanel.appendChild(btn);
+    return btn;
   },
 
   resetStylesOnZoom: function() {
@@ -1466,7 +1468,7 @@ DebugJS.prototype = {
       self.enableSystemInfo();
     }
     if (status & DebugJS.STATE_ELEMENT_INSPECTING) {
-      self.enableElmInspection();
+      self.enableElmInfo();
     }
     if (status & DebugJS.STATE_SCRIPT) {
       self.enableScriptEditor();
@@ -1647,10 +1649,16 @@ DebugJS.prototype = {
     self.sysInfoBtn.style.color = (self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update Element Inspection Button
-  updateElmInspectionBtn: function() {
+  // Update Element Info Button
+  updateElmInfoBtn: function() {
     var self = DebugJS.self;
-    self.elmInspectionBtn.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.elmInfoBtn.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+  },
+
+  // Update HTML Src Button
+  updateHtmlSrcBtn: function() {
+    var self = DebugJS.self;
+    self.htmlSrcBtn.style.color = (self.status & DebugJS.STATE_HTML_SRC) ? DebugJS.HTML_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
   // Update Tools Button
@@ -2085,7 +2093,7 @@ DebugJS.prototype = {
       self.disableMeasureMode(true);
     }
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
-      self.disableElmInspection();
+      self.disableElmInfo();
     }
     if (self.status & DebugJS.STATE_TOOLS) {
       self.disableTools();
@@ -2126,8 +2134,12 @@ DebugJS.prototype = {
           self.disableMeasureMode();
           break;
         }
+        if (self.status & DebugJS.STATE_HTML_SRC) {
+          self.disableHtmlSrc();
+          break;
+        }
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
-          self.disableElmInspection();
+          self.disableElmInfo();
           break;
         }
         if (self.status & DebugJS.STATE_TOOLS) {
@@ -2563,7 +2575,7 @@ DebugJS.prototype = {
       self.disableMeasureMode();
     }
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
-      self.disableElmInspection();
+      self.disableElmInfo();
     }
     self.hideDebugWindow();
   },
@@ -2700,7 +2712,6 @@ DebugJS.prototype = {
       self.updateSystemTime();
 
       self.sysInfoPanelBody = document.createElement('div');
-      self.sysInfoPanelBody.style.position = 'relative';
       self.sysInfoPanelBody.style.top = self.computedFontSize;
       self.sysInfoPanel.appendChild(self.sysInfoPanelBody);
     }
@@ -2824,9 +2835,6 @@ DebugJS.prototype = {
     var docOnselectstart = self.createFoldingText(document.onselectstart, 'documentOnselectstart', DebugJS.OMIT_LAST);
     var docOncontextmenu = self.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
-    var htmlSrc = document.getElementsByTagName('html')[0].outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    htmlSrc = self.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0);
-
     var html = '<pre>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SCREEN SIZE</span> : ' + screenSize + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
@@ -2891,7 +2899,6 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Cookie</span>: ' + self.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID) + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">HTML</span>: ' + htmlSrc +
     '</pre>';
     self.sysInfoPanelBody.innerHTML = html;
   },
@@ -2968,49 +2975,52 @@ DebugJS.prototype = {
     return foldingText;
   },
 
-  toggleElmInspectionMode: function() {
+  toggleElmInfoMode: function() {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
-      self.disableElmInspection();
+      self.disableElmInfo();
     } else {
-      self.enableElmInspection();
+      self.enableElmInfo();
     }
   },
 
-  enableElmInspection: function() {
+  enableElmInfo: function() {
     var self = DebugJS.self;
     self.status |= DebugJS.STATE_ELEMENT_INSPECTING;
-    if (self.elmInspectionPanel == null) {
-      self.elmInspectionPanel = document.createElement('div');
+    if (self.elmInfoPanel == null) {
+      self.elmInfoPanel = document.createElement('div');
       if (DebugJS.ELM_INFO_FULL_OVERLAY) {
-        self.elmInspectionPanel.className = self.id + '-overlay-panel-full';
-        self.addOverlayPanelFull(self.elmInspectionPanel);
+        self.elmInfoPanel.className = self.id + '-overlay-panel-full';
+        self.addOverlayPanelFull(self.elmInfoPanel);
       } else {
-        self.elmInspectionPanel.className = self.id + '-overlay-panel';
-        self.addOverlayPanel(self.elmInspectionPanel);
+        self.elmInfoPanel.className = self.id + '-overlay-panel';
+        self.addOverlayPanel(self.elmInfoPanel);
         self.expandHightIfNeeded(self.windowExpandHeight);
       }
+
+      self.elmInfoHeaderPanel = document.createElement('div');
+      self.elmInfoPanel.appendChild(self.elmInfoHeaderPanel);
 
       self.elmPrevBtn = document.createElement('span');
       self.elmPrevBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.elmPrevBtn.style.color = DebugJS.COLOR_INACTIVE;
       self.elmPrevBtn.onclick = DebugJS.self.showPrevElem;
       self.elmPrevBtn.innerText = '<<';
-      self.elmInspectionPanel.appendChild(self.elmPrevBtn);
+      self.elmInfoHeaderPanel.appendChild(self.elmPrevBtn);
 
       self.elmTitle = document.createElement('span');
       self.elmTitle.style.marginLeft = '4px';
       self.elmTitle.style.marginRight = '4px';
       self.elmTitle.style.color = DebugJS.DOM_BUTTON_COLOR;
       self.elmTitle.innerText = 'ELEMENT INFO';
-      self.elmInspectionPanel.appendChild(self.elmTitle);
+      self.elmInfoHeaderPanel.appendChild(self.elmTitle);
 
       self.elmNextBtn = document.createElement('span');
       self.elmNextBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.elmNextBtn.style.color = DebugJS.COLOR_INACTIVE;
       self.elmNextBtn.onclick = DebugJS.self.showNextElem;
       self.elmNextBtn.innerText = '>>';
-      self.elmInspectionPanel.appendChild(self.elmNextBtn);
+      self.elmInfoHeaderPanel.appendChild(self.elmNextBtn);
 
       self.elmSelectBtn = document.createElement('span');
       self.elmSelectBtn.className = this.id + '-btn ' + this.id + '-nomove';
@@ -3018,7 +3028,7 @@ DebugJS.prototype = {
       self.elmSelectBtn.style.marginRight = '4px';
       self.elmSelectBtn.onclick = DebugJS.self.toggleElmSelectMode;
       self.elmSelectBtn.innerText = 'SELECT';
-      self.elmInspectionPanel.appendChild(self.elmSelectBtn);
+      self.elmInfoHeaderPanel.appendChild(self.elmSelectBtn);
 
       self.elmHighlightBtn = document.createElement('span');
       self.elmHighlightBtn.className = this.id + '-btn ' + this.id + '-nomove';
@@ -3026,7 +3036,7 @@ DebugJS.prototype = {
       self.elmHighlightBtn.style.marginRight = '4px';
       self.elmHighlightBtn.onclick = DebugJS.self.toggleElmHighlightMode;
       self.elmHighlightBtn.innerText = 'HIGHLIGHT';
-      self.elmInspectionPanel.appendChild(self.elmHighlightBtn);
+      self.elmInfoHeaderPanel.appendChild(self.elmHighlightBtn);
 
       self.elmUpdateBtn = document.createElement('span');
       self.elmUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
@@ -3034,14 +3044,14 @@ DebugJS.prototype = {
       self.elmUpdateBtn.style.color = DebugJS.COLOR_INACTIVE;
       self.elmUpdateBtn.onclick = DebugJS.self.updateElementInfo;
       self.elmUpdateBtn.innerText = 'UPDATE';
-      self.elmInspectionPanel.appendChild(self.elmUpdateBtn);
+      self.elmInfoHeaderPanel.appendChild(self.elmUpdateBtn);
 
       var UPDATE_COLOR = '#ccc';
       self.elmUpdateInputLabel = document.createElement('span');
       self.elmUpdateInputLabel.style.marginRight = '0px';
       self.elmUpdateInputLabel.style.color = UPDATE_COLOR;
       self.elmUpdateInputLabel.innerText = ':';
-      self.elmInspectionPanel.appendChild(self.elmUpdateInputLabel);
+      self.elmInfoHeaderPanel.appendChild(self.elmUpdateInputLabel);
 
       self.elmUpdateInput = document.createElement('input');
       self.elmUpdateInput.className = self.id + '-txt-text';
@@ -3051,19 +3061,19 @@ DebugJS.prototype = {
       self.elmUpdateInput.style.setProperty('padding', '0', 'important');
       self.elmUpdateInput.style.setProperty('text-align', 'right', 'important');
       self.elmUpdateInput.style.setProperty('color', UPDATE_COLOR, 'important');
-      self.elmUpdateInput.oninput = DebugJS.self.onchangeElementUpdateInterval;
-      self.elmUpdateInput.value = self.elementUpdateInterval;
-      self.elmInspectionPanel.appendChild(self.elmUpdateInput);
+      self.elmUpdateInput.oninput = DebugJS.self.onchangeElmUpdateInterval;
+      self.elmUpdateInput.value = self.elmUpdateInterval;
+      self.elmInfoHeaderPanel.appendChild(self.elmUpdateInput);
 
       self.elmUpdateInputLabel2 = document.createElement('span');
       self.elmUpdateInputLabel2.style.color = UPDATE_COLOR;
       self.elmUpdateInputLabel2.innerText = 'ms';
-      self.elmInspectionPanel.appendChild(self.elmUpdateInputLabel2);
+      self.elmInfoHeaderPanel.appendChild(self.elmUpdateInputLabel2);
 
       self.elmNumPanel = document.createElement('span');
       self.elmNumPanel.style.float = 'right';
       self.elmNumPanel.style.marginRight = '4px';
-      self.elmInspectionPanel.appendChild(self.elmNumPanel);
+      self.elmInfoHeaderPanel.appendChild(self.elmNumPanel);
       self.updateElementInfoInterval();
 
       self.elmExportBtn = document.createElement('span');
@@ -3073,38 +3083,38 @@ DebugJS.prototype = {
       self.elmExportBtn.style.color = DebugJS.COLOR_INACTIVE;
       self.elmExportBtn.onclick = DebugJS.self.exportTargetElm;
       self.elmExportBtn.innerText = 'EXPORT';
-      self.elmInspectionPanel.appendChild(self.elmExportBtn);
+      self.elmInfoHeaderPanel.appendChild(self.elmExportBtn);
 
       self.elmInfoBodyPanel = document.createElement('div');
-      self.elmInfoBodyPanel.style.position = 'relative';
-      self.elmInfoBodyPanel.style.top = self.computedFontSize;
-      self.elmInspectionPanel.appendChild(self.elmInfoBodyPanel);
+      self.elmInfoBodyPanel.style.height = 'calc(100% - 1.3em)';
+      self.elmInfoBodyPanel.style.overflow = 'auto';
+      self.elmInfoPanel.appendChild(self.elmInfoBodyPanel);
     }
-    self.updateElmInspectionBtn();
+    self.updateElmInfoBtn();
     self.updateElmSelectBtn();
     self.updateElmHighlightBtn();
   },
 
-  disableElmInspection: function() {
+  disableElmInfo: function() {
     var self = DebugJS.self;
     if (self.targetElm) {
       DebugJS.removeClass(self.targetElm, self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX);
       self.targetElm = null;
     }
-    if (self.elmInspectionPanel != null) {
+    if (self.elmInfoPanel != null) {
       if (DebugJS.ELM_INFO_FULL_OVERLAY) {
-        self.removeOverlayPanelFull(self.elmInspectionPanel);
+        self.removeOverlayPanelFull(self.elmInfoPanel);
       } else {
-        self.removeOverlayPanel(self.elmInspectionPanel);
+        self.removeOverlayPanel(self.elmInfoPanel);
         self.resetExpandedHeightIfNeeded();
       }
-      self.elmInspectionPanel = null;
+      self.elmInfoPanel = null;
       self.elmInfoBodyPanel = null;
       self.elmNumPanel = null;
     }
     self.updateTargetElm(null);
     self.status &= ~DebugJS.STATE_ELEMENT_INSPECTING;
-    self.updateElmInspectionBtn();
+    self.updateElmInfoBtn();
   },
 
   inspectElement: function(e) {
@@ -3285,6 +3295,10 @@ DebugJS.prototype = {
       for (var data in el.dataset) {
         html += 'data-' + data + ': ' + el.dataset[data] + '\n';
       }
+
+      var htmlSrc = el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      htmlSrc = self.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['htmlSrc']);
+      html += 'HTML: ' + htmlSrc;
     }
     html += '</pre>';
     self.elmInfoBodyPanel.innerHTML = html;
@@ -3380,16 +3394,16 @@ DebugJS.prototype = {
     self.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
   },
 
-  onchangeElementUpdateInterval: function() {
+  onchangeElmUpdateInterval: function() {
     var self = DebugJS.self;
     var interval = self.elmUpdateInput.value;
     if (interval == '') {
       interval = 0;
     }
     if (isFinite(interval)) {
-      self.elementUpdateInterval = interval;
-      clearTimeout(self.elementUpdateTimerId);
-      self.elementUpdateTimerId = setTimeout(self.updateElementInfoInterval, self.elementUpdateInterval);
+      self.elmUpdateInterval = interval;
+      clearTimeout(self.elmUpdateTimerId);
+      self.elmUpdateTimerId = setTimeout(self.updateElementInfoInterval, self.elmUpdateInterval);
     }
   },
 
@@ -3399,8 +3413,8 @@ DebugJS.prototype = {
       return;
     }
     self.updateElementInfo();
-    if (self.elementUpdateInterval > 0) {
-      self.elementUpdateTimerId = setTimeout(self.updateElementInfoInterval, self.elementUpdateInterval);
+    if (self.elmUpdateInterval > 0) {
+      self.elmUpdateTimerId = setTimeout(self.updateElementInfoInterval, self.elmUpdateInterval);
     }
   },
 
@@ -3454,6 +3468,123 @@ DebugJS.prototype = {
     str = (handler ? handler.toString().replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '').replace(/^\s{1,}/, '') : '<span style="color:#aaa;">null</span>');
     str = self.createFoldingText(str, name, DebugJS.OMIT_LAST, MAX_LEN, 'color:#888');
     return str;
+  },
+
+  toggleHtmlSrcMode: function() {
+    var self = DebugJS.self;
+    if (self.status & DebugJS.STATE_HTML_SRC) {
+      self.disableHtmlSrc();
+    } else {
+      self.enableHtmlSrc();
+    }
+  },
+
+  enableHtmlSrc: function() {
+    var self = DebugJS.self;
+    self.status |= DebugJS.STATE_HTML_SRC;
+    if (self.htmlSrcPanel == null) {
+      self.htmlSrcPanel = document.createElement('div');
+      if (DebugJS.HTML_SRC_FULL_OVERLAY) {
+        self.htmlSrcPanel.className = self.id + '-overlay-panel-full';
+        self.addOverlayPanelFull(self.htmlSrcPanel);
+      } else {
+        self.htmlSrcPanel.className = self.id + '-overlay-panel';
+        self.addOverlayPanel(self.htmlSrcPanel);
+        self.expandHightIfNeeded(self.windowExpandHeight);
+      }
+
+      self.htmlSrcHeaderPanel = document.createElement('div');
+      self.htmlSrcPanel.appendChild(self.htmlSrcHeaderPanel);
+
+      self.htmlSrcUpdateBtn = document.createElement('span');
+      self.htmlSrcUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.htmlSrcUpdateBtn.style.marginLeft = '4px';
+      self.htmlSrcUpdateBtn.style.color = self.options.btnColor;
+      self.htmlSrcUpdateBtn.onclick = DebugJS.self.showHtmlSrc;
+      self.htmlSrcUpdateBtn.innerText = 'UPDATE';
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateBtn);
+
+      var UPDATE_COLOR = '#fff';
+      self.htmlSrcUpdateInputLabel = document.createElement('span');
+      self.htmlSrcUpdateInputLabel.style.marginRight = '0px';
+      self.htmlSrcUpdateInputLabel.style.color = UPDATE_COLOR;
+      self.htmlSrcUpdateInputLabel.innerText = ':';
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel);
+
+      self.htmlSrcUpdateInput = document.createElement('input');
+      self.htmlSrcUpdateInput.className = self.id + '-txt-text';
+      self.htmlSrcUpdateInput.style.setProperty('width', '50px', 'important');
+      self.htmlSrcUpdateInput.style.setProperty('margin', '0', 'important');
+      self.htmlSrcUpdateInput.style.setProperty('margin-right', '2px', 'important');
+      self.htmlSrcUpdateInput.style.setProperty('padding', '0', 'important');
+      self.htmlSrcUpdateInput.style.setProperty('text-align', 'right', 'important');
+      self.htmlSrcUpdateInput.style.setProperty('color', UPDATE_COLOR, 'important');
+      self.htmlSrcUpdateInput.oninput = DebugJS.self.onchangeHtmlSrcUpdateInterval;
+      self.htmlSrcUpdateInput.value = self.htmlSrcUpdateInterval;
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInput);
+
+      self.htmlSrcUpdateInputLabel2 = document.createElement('span');
+      self.htmlSrcUpdateInputLabel2.style.color = UPDATE_COLOR;
+      self.htmlSrcUpdateInputLabel2.innerText = 'ms';
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel2);
+
+      self.htmlSrcBodyPanel = document.createElement('div');
+      self.htmlSrcBodyPanel.style.height = 'calc(100% - 1.3em)';
+      self.htmlSrcBodyPanel.style.overflow = 'auto';
+      self.htmlSrcPanel.appendChild(self.htmlSrcBodyPanel);
+
+      self.htmlSrcBody = document.createElement('pre');
+      self.htmlSrcBodyPanel.appendChild(self.htmlSrcBody);
+    }
+    self.updateHtmlSrcBtn();
+    self.showHtmlSrc();
+  },
+
+  disableHtmlSrc: function() {
+    var self = DebugJS.self;
+    if (self.htmlSrcPanel != null) {
+      if (DebugJS.HTML_SRC_FULL_OVERLAY) {
+        self.removeOverlayPanelFull(self.htmlSrcPanel);
+      } else {
+        self.removeOverlayPanel(self.htmlSrcPanel);
+        self.resetExpandedHeightIfNeeded();
+      }
+      self.htmlSrcPanel = null;
+    }
+    self.status &= ~DebugJS.STATE_HTML_SRC;
+    self.updateHtmlSrcBtn();
+  },
+
+  showHtmlSrc: function() {
+    var self = DebugJS.self;
+    self.htmlSrcBodyPanel.removeChild(self.htmlSrcBody);
+    var html = document.getElementsByTagName('html')[0].outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    self.htmlSrcBodyPanel.appendChild(self.htmlSrcBody);
+    self.htmlSrcBody.innerHTML = html;
+  },
+
+  onchangeHtmlSrcUpdateInterval: function() {
+    var self = DebugJS.self;
+    var interval = self.htmlSrcUpdateInput.value;
+    if (interval == '') {
+      interval = 0;
+    }
+    if (isFinite(interval)) {
+      self.htmlSrcUpdateInterval = interval;
+      clearTimeout(self.htmlSrcUpdateTimerId);
+      self.htmlSrcUpdateTimerId = setTimeout(self.updateHtmlSrcInterval, self.htmlSrcUpdateInterval);
+    }
+  },
+
+  updateHtmlSrcInterval: function() {
+    var self = DebugJS.self;
+    if (!(self.status & DebugJS.STATE_HTML_SRC)) {
+      return;
+    }
+    self.showHtmlSrc();
+    if (self.htmlSrcUpdateInterval > 0) {
+      self.elmUpdateTimerId = setTimeout(self.updateHtmlSrcInterval, self.htmlSrcUpdateInterval);
+    }
   },
 
   toggleToolsMode: function() {
@@ -4184,9 +4315,9 @@ DebugJS.prototype = {
       self.memoEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc;">Memo</span>';
       if (DebugJS.LS_AVAILABLE) {
-        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
+        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">&lt;SAVE&gt;</span>';
       } else {
-        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px;">[SAVE]</span>' +
+        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px;">&lt;SAVE&gt;</span>' +
         '<span style="float:right;margin-right:4px;color:#caa">Save function (localStorage) is not available.</span>';
       }
       self.memoEditorPanel.innerHTML = html;
@@ -4228,7 +4359,8 @@ DebugJS.prototype = {
 
   disableMemoEditor: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) && (self.memoBasePanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) &&
+        (self.memoBasePanel != null)) {
       self.toolsBodyPanel.removeChild(self.memoBasePanel);
     }
   },
@@ -4248,15 +4380,20 @@ DebugJS.prototype = {
     if (self.scriptPanel == null) {
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.className = self.id + '-overlay-panel';
-      var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" style="position:relative;top:-1px;float:right;font-size:' + (18 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.disableScriptEditor();" onmouseover="this.style.color=\'#d88\';" onmouseout="this.style.color=\'#888\';">x</div>' +
+      var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" ' +
+      'style="position:relative;top:-1px;float:right;' +
+      'font-size:' + (18 * self.options.zoom) + 'px;color:#888;" ' +
+      'onclick="DebugJS.self.disableScriptEditor();" ' +
+      'onmouseover="this.style.color=\'#d88\';" ' +
+      'onmouseout="this.style.color=\'#888\';">x</div>' +
       '<span style="color:#ccc;">Script Editor</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.execScript();">[EXEC]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet()">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="DebugJS.self.insertSnippet(0)">&lt;CODE1&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(1)">&lt;CODE2&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(2)">&lt;CODE3&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(3)">&lt;CODE4&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(4)">&lt;CODE5&gt;</span>';
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="DebugJS.self.insertSnippet(0)">{CODE1}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(1)">{CODE2}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(2)">{CODE3}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(3)">{CODE4}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(4)">{CODE5}</span>';
       self.scriptPanel.innerHTML = html;
       self.addOverlayPanel(self.scriptPanel);
 
