@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = function() {
-  this.v = '201612020134';
+  this.v = '201612020732';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3496,24 +3496,22 @@ DebugJS.prototype = {
       self.htmlSrcHeaderPanel = document.createElement('div');
       self.htmlSrcPanel.appendChild(self.htmlSrcHeaderPanel);
 
-      self.htmlSrcUpdateBtn = document.createElement('span');
-      self.htmlSrcUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.htmlSrcUpdateBtn.style.marginLeft = '4px';
-      self.htmlSrcUpdateBtn.style.color = self.options.btnColor;
-      self.htmlSrcUpdateBtn.onclick = DebugJS.self.showHtmlSrc;
-      self.htmlSrcUpdateBtn.innerText = 'UPDATE';
-      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateBtn);
+      self.htmlSrcTitle = document.createElement('span');
+      self.htmlSrcTitle.style.color = DebugJS.HTML_BUTTON_COLOR;
+      self.htmlSrcTitle.innerText = 'HTML SOURCE';
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcTitle);
 
       var UPDATE_COLOR = '#fff';
-      self.htmlSrcUpdateInputLabel = document.createElement('span');
-      self.htmlSrcUpdateInputLabel.style.marginRight = '0px';
-      self.htmlSrcUpdateInputLabel.style.color = UPDATE_COLOR;
-      self.htmlSrcUpdateInputLabel.innerText = ':';
-      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel);
+      self.htmlSrcUpdateInputLabel2 = document.createElement('span');
+      self.htmlSrcUpdateInputLabel2.style.float = 'right';
+      self.htmlSrcUpdateInputLabel2.style.color = UPDATE_COLOR;
+      self.htmlSrcUpdateInputLabel2.innerText = 'ms';
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel2);
 
       self.htmlSrcUpdateInput = document.createElement('input');
       self.htmlSrcUpdateInput.className = self.id + '-txt-text';
       self.htmlSrcUpdateInput.style.setProperty('width', '50px', 'important');
+      self.htmlSrcUpdateInput.style.float = 'right';
       self.htmlSrcUpdateInput.style.setProperty('margin', '0', 'important');
       self.htmlSrcUpdateInput.style.setProperty('margin-right', '2px', 'important');
       self.htmlSrcUpdateInput.style.setProperty('padding', '0', 'important');
@@ -3523,12 +3521,23 @@ DebugJS.prototype = {
       self.htmlSrcUpdateInput.value = self.htmlSrcUpdateInterval;
       self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInput);
 
-      self.htmlSrcUpdateInputLabel2 = document.createElement('span');
-      self.htmlSrcUpdateInputLabel2.style.color = UPDATE_COLOR;
-      self.htmlSrcUpdateInputLabel2.innerText = 'ms';
-      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel2);
+      self.htmlSrcUpdateInputLabel = document.createElement('span');
+      self.htmlSrcUpdateInputLabel.style.float = 'right';
+      self.htmlSrcUpdateInputLabel.style.color = UPDATE_COLOR;
+      self.htmlSrcUpdateInputLabel.innerText = ':';
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel);
+
+      self.htmlSrcUpdateBtn = document.createElement('span');
+      self.htmlSrcUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.htmlSrcUpdateBtn.style.float = 'right';
+      self.htmlSrcUpdateBtn.style.marginLeft = '4px';
+      self.htmlSrcUpdateBtn.style.color = self.options.btnColor;
+      self.htmlSrcUpdateBtn.onclick = DebugJS.self.showHtmlSrc;
+      self.htmlSrcUpdateBtn.innerText = 'UPDATE';
+      self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateBtn);
 
       self.htmlSrcBodyPanel = document.createElement('div');
+      self.htmlSrcBodyPanel.style.width = '100%';
       self.htmlSrcBodyPanel.style.height = 'calc(100% - 1.3em)';
       self.htmlSrcBodyPanel.style.overflow = 'auto';
       self.htmlSrcPanel.appendChild(self.htmlSrcBodyPanel);
@@ -4315,9 +4324,9 @@ DebugJS.prototype = {
       self.memoEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc;">Memo</span>';
       if (DebugJS.LS_AVAILABLE) {
-        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">&lt;SAVE&gt;</span>';
+        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
       } else {
-        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px;">&lt;SAVE&gt;</span>' +
+        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px;">[SAVE]</span>' +
         '<span style="float:right;margin-right:4px;color:#caa">Save function (localStorage) is not available.</span>';
       }
       self.memoEditorPanel.innerHTML = html;
