@@ -4,8 +4,8 @@
  * Released under the MIT license
  * https://debugjs.net/
  */
-var DebugJS = function() {
-  this.v = '201612020732';
+var DebugJS = DebugJS || function() {
+  this.v = '201612022140';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1046,7 +1046,7 @@ DebugJS.prototype = {
     self.windowBody.appendChild(self.mainPanel);
 
     // Log Header Panel
-    if ((self.options.useClearButton) || (self.options.useLogFilter)) {
+    if (self.options.useLogFilter) {
       self.logHeaderPanel = document.createElement('div');
       self.logHeaderPanel.style.position = 'relative';
       self.logHeaderPanel.style.height = self.computedFontSize + 'px';
@@ -1185,19 +1185,6 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.scriptBtn);
     }
 
-    // HTML Src Button
-    if (self.options.useHtmlSrc) {
-      self.htmlSrcBtn = document.createElement('span');
-      self.htmlSrcBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.htmlSrcBtn.style.float = 'right';
-      self.htmlSrcBtn.style.marginLeft = '3px';
-      self.htmlSrcBtn.innerText = 'HTM';
-      self.htmlSrcBtn.onclick = DebugJS.self.toggleHtmlSrcMode;
-      self.htmlSrcBtn.onmouseover = new Function('DebugJS.self.htmlSrcBtn.style.color=DebugJS.HTML_BUTTON_COLOR;');
-      self.htmlSrcBtn.onmouseout = new Function('DebugJS.self.htmlSrcBtn.style.color=(DebugJS.self.status & DebugJS.STATE_HTML_SRC) ? DebugJS.HTML_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.htmlSrcBtn);
-    }
-
     // Element Info Button
     if (self.options.useElementInfo) {
       self.elmInfoBtn = document.createElement('span');
@@ -1209,6 +1196,19 @@ DebugJS.prototype = {
       self.elmInfoBtn.onmouseover = new Function('DebugJS.self.elmInfoBtn.style.color=DebugJS.DOM_BUTTON_COLOR;');
       self.elmInfoBtn.onmouseout = new Function('DebugJS.self.elmInfoBtn.style.color=(DebugJS.self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(self.elmInfoBtn);
+    }
+
+    // HTML Src Button
+    if (self.options.useHtmlSrc) {
+      self.htmlSrcBtn = document.createElement('span');
+      self.htmlSrcBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.htmlSrcBtn.style.float = 'right';
+      self.htmlSrcBtn.style.marginLeft = '3px';
+      self.htmlSrcBtn.innerText = 'HTM';
+      self.htmlSrcBtn.onclick = DebugJS.self.toggleHtmlSrcMode;
+      self.htmlSrcBtn.onmouseover = new Function('DebugJS.self.htmlSrcBtn.style.color=DebugJS.HTML_BUTTON_COLOR;');
+      self.htmlSrcBtn.onmouseout = new Function('DebugJS.self.htmlSrcBtn.style.color=(DebugJS.self.status & DebugJS.STATE_HTML_SRC) ? DebugJS.HTML_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(self.htmlSrcBtn);
     }
 
     // System Info Button
@@ -7072,8 +7072,8 @@ log.clear = function() {
 // ---- ---- ---- ---- ---- ---- ---- ----
 var dbg = dbg || DebugJS;
 var time = time || DebugJS.time;
-DebugJS.x = {};
-DebugJS.self = new DebugJS();
+DebugJS.x = DebugJS.x || {};
+DebugJS.self = DebugJS.self || new DebugJS();
 if (DebugJS.ENABLE) {
   DebugJS.el = null;
   DebugJS.obj = null;
