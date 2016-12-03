@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612022140';
+  this.v = '201612031425';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -64,8 +64,8 @@ var DebugJS = DebugJS || function() {
     'msgDisplayBackground': 'rgba(0,0,0,0.2)',
     'useScreenMeasure': true,
     'useSystemInfo': true,
-    'useElementInfo': true,
     'useHtmlSrc': true,
+    'useElementInfo': true,
     'useTools': true,
     'useScriptEditor': true,
     'useLogFilter': true,
@@ -91,6 +91,15 @@ var DebugJS = DebugJS || function() {
   this.measureBox = null;
   this.sysInfoBtn = null;
   this.sysInfoPanel = null;
+  this.htmlSrcBtn = null;
+  this.htmlSrcPanel = null;
+  this.htmlSrcHeaderPanel = null;
+  this.htmlSrcUpdateInputLabel = null;
+  this.htmlSrcUpdateInputLabel2 = null;
+  this.htmlSrcUpdateInput = null;
+  this.htmlSrcBodyPanel = null;
+  this.htmlSrcUpdateInterval = 0;
+  this.htmlSrcUpdateTimerId = 0;
   this.elmInfoBtn = null;
   this.elmInfoPanel = null;
   this.elmInfoHeaderPanel = null;
@@ -111,15 +120,6 @@ var DebugJS = DebugJS || function() {
   this.elmUpdateTimerId = 0;
   this.elmInfoShowHideStatus = {'text': false, 'allStyles': false, 'elBorder': false, 'htmlSrc': false};
   this.targetElm = null;
-  this.htmlSrcBtn = null;
-  this.htmlSrcPanel = null;
-  this.htmlSrcHeaderPanel = null;
-  this.htmlSrcUpdateInputLabel = null;
-  this.htmlSrcUpdateInputLabel2 = null;
-  this.htmlSrcUpdateInput = null;
-  this.htmlSrcBodyPanel = null;
-  this.htmlSrcUpdateInterval = 0;
-  this.htmlSrcUpdateTimerId = 0;
   this.toolsBtn = null;
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
@@ -217,6 +217,9 @@ var DebugJS = DebugJS || function() {
   this.filterBtnInf = null;
   this.filterBtnWrn = null;
   this.filterBtnErr = null;
+  this.filterInputLabel = null;
+  this.filterInput = null;
+  this.filterText = '';
   this.logPanel = null;
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
@@ -239,6 +242,7 @@ var DebugJS = DebugJS || function() {
   this.orgSizePos = {'w': 0, 'h': 0, 't': 0, 'l': 0};
   this.expandModeOrg = {'w': 0, 'h': 0, 't': 0, 'l': 0};
   this.windowExpandHeight = DebugJS.DEBUG_WIN_EXPAND_H * this.DEFAULT_OPTIONS.zoom;
+  this.windowExpandCnt = 0;
   this.clickedPosX = 0;
   this.clickedPosY = 0;
   this.prevOffsetTop = 0;
@@ -375,8 +379,8 @@ DebugJS.TOOLS_COLOR_INACTIVE = '#ccc';
 DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.MEASURE_BUTTON_COLOR = '#6cf';
 DebugJS.SYS_BUTTON_COLOR = '#3af';
-DebugJS.DOM_BUTTON_COLOR = '#f63';
 DebugJS.HTML_BUTTON_COLOR = '#8f8';
+DebugJS.DOM_BUTTON_COLOR = '#f63';
 DebugJS.TOOLS_BUTTON_COLOR = '#ff0';
 DebugJS.JS_BUTTON_COLOR = '#6df';
 DebugJS.PIN_BUTTON_COLOR = '#fa0';
@@ -415,9 +419,9 @@ DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
+DebugJS.HTML_SRC_FULL_OVERLAY = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
-DebugJS.HTML_SRC_FULL_OVERLAY = true;
 DebugJS.LS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
@@ -870,7 +874,7 @@ DebugJS.prototype = {
       'resize': 'none !important'
     };
 
-    styles['.' + self.id + '-ctrlchar'] = {
+    styles['.' + self.id + '-txt-hl'] = {
       'background': 'rgba(192,192,192,0.5) !important'
     };
 
@@ -1050,6 +1054,7 @@ DebugJS.prototype = {
       self.logHeaderPanel = document.createElement('div');
       self.logHeaderPanel.style.position = 'relative';
       self.logHeaderPanel.style.height = self.computedFontSize + 'px';
+      self.logHeaderPanel.style.marginBottom = '2px';
       self.mainPanel.appendChild(self.logHeaderPanel);
     }
 
@@ -1120,30 +1125,12 @@ DebugJS.prototype = {
 
     // Pin Button
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.pinBtn = document.createElement('span');
-      self.pinBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.pinBtn.style.float = 'right';
-      self.pinBtn.style.marginLeft = '2px';
-      self.pinBtn.style.fontSize = '11px';
-      self.pinBtn.innerHTML = '&#x1F4CC;';
-      self.pinBtn.onclick = DebugJS.self.toggleDraggable;
-      self.pinBtn.onmouseover = new Function('DebugJS.self.pinBtn.style.color=DebugJS.PIN_BUTTON_COLOR;');
-      self.pinBtn.onmouseout = new Function('DebugJS.self.pinBtn.style.color=(DebugJS.self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;');
-      self.headPanel.appendChild(self.pinBtn);
+      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', '2px', '11px', DebugJS.self.toggleDraggable, 'DebugJS.STATE_DRAGGABLE', 'DebugJS.PIN_BUTTON_COLOR', true);
     }
 
     // Suspend Log Button
     if (self.options.useSuspendLogButton) {
-      self.suspendLogBtn = document.createElement('span');
-      self.suspendLogBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.suspendLogBtn.style.float = 'right';
-      self.suspendLogBtn.style.marginLeft = '4px';
-      self.suspendLogBtn.style.fontSize = '11px';
-      self.suspendLogBtn.innerHTML = '&#x1F6AB;';
-      self.suspendLogBtn.onclick = DebugJS.self.toggleLogSuspend;
-      self.suspendLogBtn.onmouseover = new Function('DebugJS.self.suspendLogBtn.style.color=DebugJS.LOG_SUSPEND_BUTTON_COLOR;');
-      self.suspendLogBtn.onmouseout = new Function('DebugJS.self.suspendLogBtn.style.color=(DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.suspendLogBtn);
+      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', '4px', '11px', DebugJS.self.toggleLogSuspend, 'DebugJS.STATE_LOG_SUSPENDING', 'DebugJS.LOG_SUSPEND_BUTTON_COLOR', false);
     }
 
     // Stopwatch
@@ -1161,67 +1148,27 @@ DebugJS.prototype = {
 
     // Tools Button
     if (self.options.useTools) {
-      self.toolsBtn = document.createElement('span');
-      self.toolsBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.toolsBtn.style.float = 'right';
-      self.toolsBtn.style.marginLeft = '2px';
-      self.toolsBtn.innerText = 'TL';
-      self.toolsBtn.onclick = DebugJS.self.toggleToolsMode;
-      self.toolsBtn.onmouseover = new Function('DebugJS.self.toolsBtn.style.color=DebugJS.TOOLS_BUTTON_COLOR;');
-      self.toolsBtn.onmouseout = new Function('DebugJS.self.toolsBtn.style.color=(DebugJS.self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.toolsBtn);
+      self.toolsBtn = self.createHeaderButton('toolsBtn', 'TL', '2px', null, DebugJS.self.toggleToolsMode, 'DebugJS.STATE_TOOLS', 'DebugJS.TOOLS_BUTTON_COLOR', false);
     }
 
     // Script Button
     if (self.options.useScriptEditor) {
-      self.scriptBtn = document.createElement('span');
-      self.scriptBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.scriptBtn.style.float = 'right';
-      self.scriptBtn.style.marginLeft = '2px';
-      self.scriptBtn.innerText = 'JS';
-      self.scriptBtn.onclick = DebugJS.self.toggleScriptMode;
-      self.scriptBtn.onmouseover = new Function('DebugJS.self.scriptBtn.style.color=DebugJS.JS_BUTTON_COLOR;');
-      self.scriptBtn.onmouseout = new Function('DebugJS.self.scriptBtn.style.color=(DebugJS.self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.scriptBtn);
+      self.scriptBtn = self.createHeaderButton('scriptBtn', 'JS', '2px', null, DebugJS.self.toggleScriptMode, 'DebugJS.STATE_SCRIPT', 'DebugJS.JS_BUTTON_COLOR', false);
     }
 
     // Element Info Button
     if (self.options.useElementInfo) {
-      self.elmInfoBtn = document.createElement('span');
-      self.elmInfoBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmInfoBtn.style.float = 'right';
-      self.elmInfoBtn.style.marginLeft = '3px';
-      self.elmInfoBtn.innerText = 'DOM';
-      self.elmInfoBtn.onclick = DebugJS.self.toggleElmInfoMode;
-      self.elmInfoBtn.onmouseover = new Function('DebugJS.self.elmInfoBtn.style.color=DebugJS.DOM_BUTTON_COLOR;');
-      self.elmInfoBtn.onmouseout = new Function('DebugJS.self.elmInfoBtn.style.color=(DebugJS.self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.elmInfoBtn);
+      self.elmInfoBtn = self.createHeaderButton('elmInfoBtn', 'DOM', '3px', null, DebugJS.self.toggleElmInfoMode, 'DebugJS.STATE_ELEMENT_INSPECTING', 'DebugJS.DOM_BUTTON_COLOR', false);
     }
 
     // HTML Src Button
     if (self.options.useHtmlSrc) {
-      self.htmlSrcBtn = document.createElement('span');
-      self.htmlSrcBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.htmlSrcBtn.style.float = 'right';
-      self.htmlSrcBtn.style.marginLeft = '3px';
-      self.htmlSrcBtn.innerText = 'HTM';
-      self.htmlSrcBtn.onclick = DebugJS.self.toggleHtmlSrcMode;
-      self.htmlSrcBtn.onmouseover = new Function('DebugJS.self.htmlSrcBtn.style.color=DebugJS.HTML_BUTTON_COLOR;');
-      self.htmlSrcBtn.onmouseout = new Function('DebugJS.self.htmlSrcBtn.style.color=(DebugJS.self.status & DebugJS.STATE_HTML_SRC) ? DebugJS.HTML_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.htmlSrcBtn);
+      self.htmlSrcBtn = self.createHeaderButton('htmlSrcBtn', 'HTM', '3px', null, DebugJS.self.toggleHtmlSrcMode, 'DebugJS.STATE_HTML_SRC', 'DebugJS.HTML_BUTTON_COLOR', false);
     }
 
     // System Info Button
     if (self.options.useSystemInfo) {
-      self.sysInfoBtn = document.createElement('span');
-      self.sysInfoBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.sysInfoBtn.style.float = 'right';
-      self.sysInfoBtn.style.marginLeft = '3px';
-      self.sysInfoBtn.innerText = 'SYS';
-      self.sysInfoBtn.onclick = DebugJS.self.toggleSystemInfoMode;
-      self.sysInfoBtn.onmouseover = new Function('DebugJS.self.sysInfoBtn.style.color=DebugJS.SYS_BUTTON_COLOR;');
-      self.sysInfoBtn.onmouseout = new Function('DebugJS.self.sysInfoBtn.style.color=(DebugJS.self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.sysInfoBtn);
+      self.sysInfoBtn = self.createHeaderButton('sysInfoBtn', 'SYS', '3px', null, DebugJS.self.toggleSystemInfoMode, 'DebugJS.STATE_SYSTEM_INFO', 'DebugJS.SYS_BUTTON_COLOR', false);
     }
 
     // Screen Measure Button
@@ -1343,78 +1290,71 @@ DebugJS.prototype = {
 
   initDebugWindow: function() {
     var self = DebugJS.self;
-    if (self.isAllFeaturesDisabled()) {
-      return;
-    }
-
-    if (self.options.useLogFilter) {
-      self.updateLogFilterButtons();
-    }
-
-    if (self.status & DebugJS.STATE_SHOW_CLOCK) {
-      self.updateClockPanel();
-    }
-
-    if (self.options.useScreenMeasure) {
-      self.updateMeasureBtn();
-    }
-
-    if (self.options.useSystemInfo) {
-      self.updateSysInfoBtn();
-    }
-
-    if (self.options.useElementInfo) {
-      self.updateElmInfoBtn();
-    }
-
-    if (self.options.useHtmlSrc) {
-      self.updateHtmlSrcBtn();
-    }
-
-    if (self.options.useTools) {
-      self.updateToolsBtn();
-    }
-
-    if (self.options.useScriptEditor) {
-      self.updateScriptBtn();
-    }
-
+    if (self.isAllFeaturesDisabled()) return;
+    if (self.options.useLogFilter) self.updateLogFilterButtons();
+    if (self.status & DebugJS.STATE_SHOW_CLOCK) self.updateClockPanel();
+    if (self.options.useScreenMeasure) self.updateMeasureBtn();
+    if (self.options.useSystemInfo) self.updateSysInfoBtn();
+    if (self.options.useElementInfo) self.updateElmInfoBtn();
+    if (self.options.useHtmlSrc) self.updateHtmlSrcBtn();
+    if (self.options.useTools) self.updateToolsBtn();
+    if (self.options.useScriptEditor) self.updateScriptBtn();
     if (self.options.useStopWatch) {
       self.updateSwBtnPanel();
       self.updateSwPanel();
     }
-
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
       self.updatePinBtn();
     }
-
-    if (self.options.useSuspendLogButton) {
-      self.updateSuspendLogBtn();
-    }
-
+    if (self.options.useSuspendLogButton) self.updateSuspendLogBtn();
     if ((self.status & DebugJS.STATE_RESIZABLE) && (self.options.useWindowControlButton)) {
       self.updateWinCtrlBtnPanel();
     }
-
     if (self.options.useMouseStatusInfo) {
       self.updateMousePositionPanel();
       self.updateMouseClickPanel();
     }
-
     if (self.options.useWindowSizeInfo) {
       self.updateWindowSizePanel();
       self.updateClientSizePanel();
       self.updateBodySizePanel();
       self.updateScrollPosPanel();
     }
+    if (self.options.useLed) self.updateLedPanel();
+    if (self.options.useMsgDisplay) self.updateMsgPanel();
+  },
 
-    if (self.options.useLed) {
-      self.updateLedPanel();
+  createHeaderButton: function(btnobj, label, marginLeft, fontSize, handler, status, activeColor, reverse) {
+    var self = DebugJS.self;
+    var btn = document.createElement('span');
+    btn.className = this.id + '-btn ' + this.id + '-nomove';
+    btn.style.float = 'right';
+    btn.style.marginLeft = marginLeft;
+    if (fontSize) btn.style.fontSize = fontSize;
+    btn.innerHTML = label;
+    btn.onclick = handler;
+    btn.onmouseover = new Function('DebugJS.self.' + btnobj + '.style.color=' + activeColor + ';');
+    if (reverse) {
+      btn.onmouseout = new Function('DebugJS.self.' + btnobj + '.style.color=(DebugJS.self.status & ' + status + ') ? DebugJS.COLOR_INACTIVE : ' + activeColor + ';');
+    } else {
+      btn.onmouseout = new Function('DebugJS.self.' + btnobj + '.style.color=(DebugJS.self.status & ' + status + ') ? ' + activeColor + ' : DebugJS.COLOR_INACTIVE;');
     }
+    self.headPanel.appendChild(btn);
+    return btn;
+  },
 
-    if (self.options.useMsgDisplay) {
-      self.updateMsgPanel();
-    }
+  createTextInput: function(width, textAlign, color, value, inputHandler) {
+    var self = DebugJS.self;
+    var textInput = document.createElement('input');
+    textInput.className = self.id + '-txt-text';
+    textInput.style.setProperty('width', width, 'important');
+    textInput.style.setProperty('margin', '0', 'important');
+    textInput.style.setProperty('padding', '0', 'important');
+    if (textAlign) textInput.style.setProperty('text-align', textAlign, 'important');
+    textInput.style.setProperty('color', color, 'important');
+    textInput.value = value;
+    textInput.oninput = inputHandler;
+    return textInput;
   },
 
   createLogFilter: function() {
@@ -1425,6 +1365,19 @@ DebugJS.prototype = {
     self.filterBtnInf = self.createLogFilterButton('INF', 'DebugJS.LOG_FILTER_INF', 'filterBtnInf', 'DebugJS.self.options.logColorI');
     self.filterBtnWrn = self.createLogFilterButton('WRN', 'DebugJS.LOG_FILTER_WRN', 'filterBtnWrn', 'DebugJS.self.options.logColorW');
     self.filterBtnErr = self.createLogFilterButton('ERR', 'DebugJS.LOG_FILTER_ERR', 'filterBtnErr', 'DebugJS.self.options.logColorE');
+
+    self.filterInputLabel = document.createElement('span');
+    self.filterInputLabel.style.marginLeft = '4px';
+    self.filterInputLabel.style.color = self.options.sysInfoColor;
+    self.filterInputLabel.innerText = 'Filter:';
+    self.logHeaderPanel.appendChild(self.filterInputLabel);
+
+    var filterWidth = 'calc(100% - 23em)';
+    self.filterInput = self.createTextInput(filterWidth, null, self.options.sysInfoColor, self.filterText, DebugJS.self.onchangeLogFilter);
+    self.filterInput.style.setProperty('position', 'relative', 'important');
+    self.filterInput.style.setProperty('top', '-2px', 'important');
+    self.filterInput.style.setProperty('margin-left', '2px', 'important');
+    self.logHeaderPanel.appendChild(self.filterInput);
   },
 
   createLogFilterButton: function(label, filter, btnobj, color) {
@@ -1726,8 +1679,9 @@ DebugJS.prototype = {
   // Log Output
   printLogMessage: function() {
     var self = DebugJS.self;
-    var msg = '<pre style="padding:0 3px;">' + self.getLogMsgs() + '</pre>';
-    self.logPanel.innerHTML = msg;
+    var msg = self.getLogMsgs();
+    var html = '<pre style="padding:0 3px;">' + msg + '</pre>';
+    self.logPanel.innerHTML = html;
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     if (!(self.status & DebugJS.STATE_VISIBLE)) {
       self.status |= DebugJS.STATE_NEED_TO_SCROLL;
@@ -1767,6 +1721,12 @@ DebugJS.prototype = {
     self.filterBtnInf.style.color = (self.logFilter & DebugJS.LOG_FILTER_INF) ? DebugJS.self.options.logColorI : DebugJS.COLOR_INACTIVE;
     self.filterBtnWrn.style.color = (self.logFilter & DebugJS.LOG_FILTER_WRN) ? DebugJS.self.options.logColorW : DebugJS.COLOR_INACTIVE;
     self.filterBtnErr.style.color = (self.logFilter & DebugJS.LOG_FILTER_ERR) ? DebugJS.self.options.logColorE : DebugJS.COLOR_INACTIVE;
+  },
+
+  onchangeLogFilter: function() {
+    var self = DebugJS.self;
+    self.filterText = self.filterInput.value;
+    self.printLogMessage();
   },
 
   applyStyles: function(styles) {
@@ -2032,10 +1992,25 @@ DebugJS.prototype = {
     var logs = '';
     for (var i = 0; i < len; i++) {
       lineCnt++;
-      if (buf[i] == undefined) break;
+      var data = buf[i];
+      if (data == undefined) break;
+      var msg = data.msg;
+      var filter = self.filterText;
+      if (filter != '') {
+        try {
+          var pos = msg.indexOf(filter);
+          if (pos != -1) {
+            var key = msg.substr(pos, filter.length);
+            var hl = '<span class="' + self.id + '-txt-hl">' + key + '</span>';
+            msg = msg.replace(key, hl, 'ig');
+          } else {
+            continue;
+          }
+        } catch (e) {}
+      }
       var line = '';
       var lineNum = '';
-      if ((self.options.showLineNums) && (buf[i].type != DebugJS.LOG_TYPE_MLT)) {
+      if ((self.options.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
         var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var lineNumPadding = '';
         for (var j = 0; j < diffDigits; j++) {
@@ -2043,28 +2018,28 @@ DebugJS.prototype = {
         }
         lineNum = lineNumPadding + lineCnt + ': ';
       }
-      var msg = (((self.options.showTimeStamp) && (buf[i].type != DebugJS.LOG_TYPE_MLT)) ? (buf[i].time + ' ' + buf[i].msg) : buf[i].msg);
-      switch (buf[i].type) {
+      var m = (((self.options.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
+      switch (data.type) {
         case DebugJS.LOG_TYPE_ERR:
-          if (self.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + self.options.logColorE + '">' + msg + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + self.options.logColorE + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_WRN:
-          if (self.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + self.options.logColorW + '">' + msg + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + self.options.logColorW + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_INF:
-          if (self.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + self.options.logColorI + '">' + msg + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + self.options.logColorI + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_DBG:
-          if (self.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + self.options.logColorD + '">' + msg + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + self.options.logColorD + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_SYS:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px;">' + msg + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px;">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_MLT:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0;">' + msg + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0;">' + m + '</span>\n';
           break;
         default:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + msg + '\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + m + '\n';
           break;
       }
       logs += line;
@@ -3053,19 +3028,11 @@ DebugJS.prototype = {
       self.elmUpdateInputLabel.innerText = ':';
       self.elmInfoHeaderPanel.appendChild(self.elmUpdateInputLabel);
 
-      self.elmUpdateInput = document.createElement('input');
-      self.elmUpdateInput.className = self.id + '-txt-text';
-      self.elmUpdateInput.style.setProperty('width', '30px', 'important');
-      self.elmUpdateInput.style.setProperty('margin', '0', 'important');
-      self.elmUpdateInput.style.setProperty('margin-right', '2px', 'important');
-      self.elmUpdateInput.style.setProperty('padding', '0', 'important');
-      self.elmUpdateInput.style.setProperty('text-align', 'right', 'important');
-      self.elmUpdateInput.style.setProperty('color', UPDATE_COLOR, 'important');
-      self.elmUpdateInput.oninput = DebugJS.self.onchangeElmUpdateInterval;
-      self.elmUpdateInput.value = self.elmUpdateInterval;
+      self.elmUpdateInput = self.createTextInput('30px', 'right', UPDATE_COLOR, self.elmUpdateInterval, DebugJS.self.onchangeElmUpdateInterval);
       self.elmInfoHeaderPanel.appendChild(self.elmUpdateInput);
 
       self.elmUpdateInputLabel2 = document.createElement('span');
+      self.elmUpdateInputLabel2.style.marginLeft = '2px';
       self.elmUpdateInputLabel2.style.color = UPDATE_COLOR;
       self.elmUpdateInputLabel2.innerText = 'ms';
       self.elmInfoHeaderPanel.appendChild(self.elmUpdateInputLabel2);
@@ -3490,8 +3457,8 @@ DebugJS.prototype = {
       } else {
         self.htmlSrcPanel.className = self.id + '-overlay-panel';
         self.addOverlayPanel(self.htmlSrcPanel);
-        self.expandHightIfNeeded(self.windowExpandHeight);
       }
+      self.expandHightIfNeeded(self.windowExpandHeight);
 
       self.htmlSrcHeaderPanel = document.createElement('div');
       self.htmlSrcPanel.appendChild(self.htmlSrcHeaderPanel);
@@ -3504,21 +3471,13 @@ DebugJS.prototype = {
       var UPDATE_COLOR = '#fff';
       self.htmlSrcUpdateInputLabel2 = document.createElement('span');
       self.htmlSrcUpdateInputLabel2.style.float = 'right';
+      self.htmlSrcUpdateInputLabel2.style.marginLeft = '2px';
       self.htmlSrcUpdateInputLabel2.style.color = UPDATE_COLOR;
       self.htmlSrcUpdateInputLabel2.innerText = 'ms';
       self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel2);
 
-      self.htmlSrcUpdateInput = document.createElement('input');
-      self.htmlSrcUpdateInput.className = self.id + '-txt-text';
-      self.htmlSrcUpdateInput.style.setProperty('width', '50px', 'important');
+      self.htmlSrcUpdateInput = self.createTextInput('50px', 'right', UPDATE_COLOR, self.htmlSrcUpdateInterval, DebugJS.self.onchangeHtmlSrcUpdateInterval);
       self.htmlSrcUpdateInput.style.float = 'right';
-      self.htmlSrcUpdateInput.style.setProperty('margin', '0', 'important');
-      self.htmlSrcUpdateInput.style.setProperty('margin-right', '2px', 'important');
-      self.htmlSrcUpdateInput.style.setProperty('padding', '0', 'important');
-      self.htmlSrcUpdateInput.style.setProperty('text-align', 'right', 'important');
-      self.htmlSrcUpdateInput.style.setProperty('color', UPDATE_COLOR, 'important');
-      self.htmlSrcUpdateInput.oninput = DebugJS.self.onchangeHtmlSrcUpdateInterval;
-      self.htmlSrcUpdateInput.value = self.htmlSrcUpdateInterval;
       self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInput);
 
       self.htmlSrcUpdateInputLabel = document.createElement('span');
@@ -3556,8 +3515,8 @@ DebugJS.prototype = {
         self.removeOverlayPanelFull(self.htmlSrcPanel);
       } else {
         self.removeOverlayPanel(self.htmlSrcPanel);
-        self.resetExpandedHeightIfNeeded();
       }
+      self.resetExpandedHeightIfNeeded();
       self.htmlSrcPanel = null;
     }
     self.status &= ~DebugJS.STATE_HTML_SRC;
@@ -4552,6 +4511,7 @@ DebugJS.prototype = {
   expandHight: function(height) {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_DYNAMIC) {
+
       self.saveExpandModeOrgSizeAndPos();
       var sizePos = self.getSelfSizePos();
       if (sizePos.h >= height) {
@@ -4577,9 +4537,10 @@ DebugJS.prototype = {
 
   expandHightIfNeeded: function(height) {
     var self = DebugJS.self;
-    if (self.overlayPanels.length == 1) {
+    if (self.windowExpandCnt == 0) {
       self.expandHight(height);
     }
+    self.windowExpandCnt++;
   },
 
   resetExpandedHeight: function() {
@@ -4599,7 +4560,8 @@ DebugJS.prototype = {
 
   resetExpandedHeightIfNeeded: function() {
     var self = DebugJS.self;
-    if (self.overlayPanels.length == 0) {
+    self.windowExpandCnt--;
+    if (self.windowExpandCnt == 0) {
       self.resetExpandedHeight();
     }
   },
@@ -5896,7 +5858,7 @@ DebugJS.checkJson = function(json) {
           result += '\\';
         }
         if (cnt % 2 == 0) {
-          result += '<span class="' + self.id + '-ctrlchar">\\</span>';
+          result += '<span class="' + self.id + '-txt-hl">\\</span>';
         } else {
           result += '\\';
         }
@@ -5906,21 +5868,21 @@ DebugJS.checkJson = function(json) {
         if (wkJson[i].match(/^n|^r|^t|^b|^"/)) {
           result += '\\' + wkJson[i];
         } else {
-          result += '<span class="' + self.id + '-ctrlchar">\\</span>' + wkJson[i];
+          result += '<span class="' + self.id + '-txt-hl">\\</span>' + wkJson[i];
         }
       }
     }
   }
-  result = result.replace(/\t/g, '<span class="' + self.id + '-ctrlchar">\\t</span>');
-  result = result.replace(/\r\n/g, '<span class="' + self.id + '-ctrlchar">\\r\\n</span>');
-  result = result.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-ctrlchar">\\r</span>');
-  result = result.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-ctrlchar">\\n</span>');
+  result = result.replace(/\t/g, '<span class="' + self.id + '-txt-hl">\\t</span>');
+  result = result.replace(/\r\n/g, '<span class="' + self.id + '-txt-hl">\\r\\n</span>');
+  result = result.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-txt-hl">\\r</span>');
+  result = result.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-txt-hl">\\n</span>');
   if (!result.match(/^{/)) {
-    result = '<span class="' + self.id + '-ctrlchar"> </span>' + result;
+    result = '<span class="' + self.id + '-txt-hl"> </span>' + result;
   }
-  result = result.replace(/}([^}]+)$/, '}<span class="' + self.id + '-ctrlchar">$1</span>');
+  result = result.replace(/}([^}]+)$/, '}<span class="' + self.id + '-txt-hl">$1</span>');
   if (!result.match(/}$/)) {
-    result = result + '<span class="' + self.id + '-ctrlchar"> </span>';
+    result = result + '<span class="' + self.id + '-txt-hl"> </span>';
   }
   return result;
 };
