@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612031425';
+  this.v = '201612040002';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1025,7 +1025,9 @@ DebugJS.prototype = {
     // Window Body
     self.windowBody = document.createElement('div');
     self.dbgWin.appendChild(self.windowBody);
-    if (self.status & DebugJS.STATE_DRAGGABLE) self.windowBody.style.cursor = 'default';
+    if (self.status & DebugJS.STATE_DRAGGABLE) {
+      self.windowBody.style.cursor = 'default';
+    }
 
     if (!self.isAllFeaturesDisabled()) {
       // Head Panel
@@ -1118,7 +1120,9 @@ DebugJS.prototype = {
     }
 
     // Window Control Button
-    if ((self.status & DebugJS.STATE_DYNAMIC) && (self.status & DebugJS.STATE_RESIZABLE) && (self.options.useWindowControlButton)) {
+    if ((self.status & DebugJS.STATE_DYNAMIC) &&
+        (self.status & DebugJS.STATE_RESIZABLE) &&
+        (self.options.useWindowControlButton)) {
       self.winCtrlBtnPanel = document.createElement('span');
       self.headPanel.appendChild(self.winCtrlBtnPanel);
     }
@@ -1789,6 +1793,12 @@ DebugJS.prototype = {
     self.dbgWin.style.left = e.clientX - self.prevOffsetLeft + 'px';
   },
 
+  endMove: function() {
+    var self = DebugJS.self;
+    self.status &= ~DebugJS.STATE_DRAGGING;
+    self.windowBody.style.cursor = 'default';
+  },
+
   startResize: function(e) {
     if (e.button != 0) return;
     var self = DebugJS.self;
@@ -2314,8 +2324,7 @@ DebugJS.prototype = {
           self.stopMeasure();
         }
         if (self.status & DebugJS.STATE_DRAGGABLE) {
-          self.status &= ~DebugJS.STATE_DRAGGING;
-          self.windowBody.style.cursor = 'default';
+          self.endMove();
         }
         if (self.status & DebugJS.STATE_RESIZING) {
           self.endResize();
