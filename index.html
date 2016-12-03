@@ -97,7 +97,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 <script>
 DebugJS.init({'visible':true});
 
-//DebugJS.init({'kioskMode':true});
+//DebugJS.init({'kioskMode':true,'zoom':2});
 //DebugJS.init({'target':'debug'});
 
 //log.t('init start');
@@ -155,13 +155,7 @@ function init() {
   };
   //DebugJS.init(options3);
 
-  // If you want to output the logs to a designated area, pass the element id to 'target' option.
   var options4 = {
-    'target': 'debug'
-  };
-  //DebugJS.init(options4);
-
-  var options5 = {
     'target': 'debug',
     'lines': 10,
     'bufsize': 10,
@@ -171,9 +165,9 @@ function init() {
     'disableAllFeatures': true,
     'useClearButton': true
   };
-  //DebugJS.init(options5);
+  //DebugJS.init(options4);
 
-  var options6 = {
+  var options5 = {
     'target': 'debug',
     'lines': 10,
     'fontSize': 13,
@@ -196,19 +190,13 @@ function init() {
     //'useMouseStatusInfo': true,
     //'useKeyStatusInfo': true,
     //'useLed': true,
+    //'useLogFilter': true,
     'useMsgDisplay': true,
     'msgDisplayPos': 'left',
     'msgDisplayBackground': 'rgba(168,168,168,0.2)',
     'useClearButton': true
   };
-  //DebugJS.init(options6);
-
-  var options7 = {
-    'zoom': 2,
-    //'disableAllFeatures': true,
-    'kioskMode': true
-  };
-  //DebugJS.init(options7);
+  //DebugJS.init(options5);
 
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');

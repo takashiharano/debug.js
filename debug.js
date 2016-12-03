@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612040002';
+  this.v = '201612040043';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -997,6 +997,7 @@ DebugJS.prototype = {
     self.options.usePinButton = false;
     self.options.useWindowControlButton = false;
     self.options.useScreenMeasure = false;
+    self.options.useHtmlSrc = false;
     self.options.useElementInfo = false;
 
     self.status |= DebugJS.STATE_VISIBLE;
@@ -1423,6 +1424,9 @@ DebugJS.prototype = {
     }
     if (status & DebugJS.STATE_SYSTEM_INFO) {
       self.enableSystemInfo();
+    }
+    if (status & DebugJS.STATE_HTML_SRC) {
+      self.enableHtmlSrc();
     }
     if (status & DebugJS.STATE_ELEMENT_INSPECTING) {
       self.enableElmInfo();
@@ -2085,6 +2089,9 @@ DebugJS.prototype = {
     }
     if (self.status & DebugJS.STATE_SCRIPT) {
       self.disableScriptEditor();
+    }
+    if (self.status & DebugJS.STATE_HTML_SRC) {
+      self.disableHtmlSrc();
     }
     if (self.status & DebugJS.STATE_SYSTEM_INFO) {
       self.disableSystemInfo();
@@ -4758,16 +4765,7 @@ DebugJS.prototype = {
 
   cmdExit: function(arg, tbl) {
     var self = DebugJS.self;
-    if (self.status & DebugJS.STATE_SYSTEM_INFO) {
-      self.disableSystemInfo();
-    }
-    if (self.status & DebugJS.STATE_SCRIPT) {
-      self.disableScriptEditor();
-      self.scriptBuf = '';
-    }
-    if (self.status & DebugJS.STATE_TOOLS) {
-      self.disableTools();
-    }
+    self.closeFeatures();
     if (self.options.useSuspendLogButton) {
       self.status &= ~DebugJS.STATE_LOG_SUSPENDING;
       self.updateSuspendLogBtn();
@@ -4787,6 +4785,9 @@ DebugJS.prototype = {
         self.updateWinCtrlBtnPanel();
       }
     }
+    self.scriptBuf = '';
+    self.filterText = '';
+    if (self.filterInput) self.filterInput.value = '';
     self.closeDebugWindow();
     self.clearMessage();
     self.logFilter = DebugJS.LOG_FILTER_ALL;
