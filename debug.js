@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612040043';
+  this.v = '201612041325';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1259,7 +1259,7 @@ DebugJS.prototype = {
       self.msgPanel.style.float = self.options.msgDisplayPos;
       self.msgPanel.style.marginRight = '3px';
       self.msgPanel.style.border = '0';
-      self.msgPanel.style.padding = '1px';
+      self.msgPanel.style.padding = '0 1px';
       self.msgPanel.style.background = self.options.msgDisplayBackground;
       self.msgPanel.style.color = self.options.fontColor;
       self.msgPanel.style.whiteSpace = 'pre-wrap';
