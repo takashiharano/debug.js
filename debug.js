@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612042009';
+  this.v = '201612042215';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3281,7 +3281,7 @@ DebugJS.prototype = {
 
       var htmlSrc = el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       htmlSrc = self.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['htmlSrc']);
-      html += 'HTML: ' + htmlSrc;
+      html += 'outerHTML: ' + htmlSrc;
     }
     html += '</pre>';
     self.elmInfoBodyPanel.innerHTML = html;
