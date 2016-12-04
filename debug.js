@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612041325';
+  this.v = '201612042009';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1130,12 +1130,12 @@ DebugJS.prototype = {
 
     // Pin Button
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', '2px', '11px', DebugJS.self.toggleDraggable, 'DebugJS.STATE_DRAGGABLE', 'DebugJS.PIN_BUTTON_COLOR', true);
+      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', '2px', (11 * self.options.zoom) + 'px', DebugJS.self.toggleDraggable, 'DebugJS.STATE_DRAGGABLE', 'DebugJS.PIN_BUTTON_COLOR', true);
     }
 
     // Suspend Log Button
     if (self.options.useSuspendLogButton) {
-      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', '4px', '11px', DebugJS.self.toggleLogSuspend, 'DebugJS.STATE_LOG_SUSPENDING', 'DebugJS.LOG_SUSPEND_BUTTON_COLOR', false);
+      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', '4px', (11 * self.options.zoom) + 'px', DebugJS.self.toggleLogSuspend, 'DebugJS.STATE_LOG_SUSPENDING', 'DebugJS.LOG_SUSPEND_BUTTON_COLOR', false);
     }
 
     // Stopwatch
@@ -1182,7 +1182,7 @@ DebugJS.prototype = {
       self.measureBtn.className = this.id + '-btn ' + this.id + '-nomove';
       self.measureBtn.style.display = 'inline-block';
       self.measureBtn.style.float = 'right';
-      self.measureBtn.style.marginTop = '1px';
+      self.measureBtn.style.marginTop = ((self.options.zoom <= 1) ? 1 : (2 * self.options.zoom)) + 'px';
       self.measureBtn.style.marginLeft = '3px';
       self.measureBtn.style.width = (10 * self.options.zoom) + 'px';
       self.measureBtn.style.height = (7 * self.options.zoom) + 'px';
