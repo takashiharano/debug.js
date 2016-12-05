@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612042215';
+  this.v = '201612052028';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1711,10 +1711,14 @@ DebugJS.prototype = {
         self.logFilter = DebugJS.LOG_FILTER_ALL;
       }
     } else {
-      if (self.logFilter & filter) {
-        self.logFilter &= ~filter;
+      if (self.logFilter == DebugJS.LOG_FILTER_ALL) {
+        self.logFilter = filter;
       } else {
-        self.logFilter |= filter;
+        if (self.logFilter & filter) {
+          self.logFilter &= ~filter;
+        } else {
+          self.logFilter |= filter;
+        }
       }
     }
     self.updateLogFilterButtons();
