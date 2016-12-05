@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612052207';
+  this.v = '201612060107';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1130,12 +1130,12 @@ DebugJS.prototype = {
 
     // Pin Button
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', '2px', (11 * self.options.zoom) + 'px', DebugJS.self.toggleDraggable, 'DebugJS.STATE_DRAGGABLE', 'DebugJS.PIN_BUTTON_COLOR', true);
+      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', '2px', (11 * self.options.zoom) + 'px', DebugJS.self.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BUTTON_COLOR', true);
     }
 
     // Suspend Log Button
     if (self.options.useSuspendLogButton) {
-      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', '4px', (11 * self.options.zoom) + 'px', DebugJS.self.toggleLogSuspend, 'DebugJS.STATE_LOG_SUSPENDING', 'DebugJS.LOG_SUSPEND_BUTTON_COLOR', false);
+      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', '4px', (11 * self.options.zoom) + 'px', DebugJS.self.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BUTTON_COLOR', false);
     }
 
     // Stopwatch
@@ -1153,27 +1153,27 @@ DebugJS.prototype = {
 
     // Tools Button
     if (self.options.useTools) {
-      self.toolsBtn = self.createHeaderButton('toolsBtn', 'TL', '2px', null, DebugJS.self.toggleToolsMode, 'DebugJS.STATE_TOOLS', 'DebugJS.TOOLS_BUTTON_COLOR', false);
+      self.toolsBtn = self.createHeaderButton('toolsBtn', 'TL', '2px', null, DebugJS.self.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BUTTON_COLOR', false);
     }
 
     // Script Button
     if (self.options.useScriptEditor) {
-      self.scriptBtn = self.createHeaderButton('scriptBtn', 'JS', '2px', null, DebugJS.self.toggleScriptMode, 'DebugJS.STATE_SCRIPT', 'DebugJS.JS_BUTTON_COLOR', false);
+      self.scriptBtn = self.createHeaderButton('scriptBtn', 'JS', '2px', null, DebugJS.self.toggleScriptMode, 'STATE_SCRIPT', 'JS_BUTTON_COLOR', false);
     }
 
     // Element Info Button
     if (self.options.useElementInfo) {
-      self.elmInfoBtn = self.createHeaderButton('elmInfoBtn', 'DOM', '3px', null, DebugJS.self.toggleElmInfoMode, 'DebugJS.STATE_ELEMENT_INSPECTING', 'DebugJS.DOM_BUTTON_COLOR', false);
+      self.elmInfoBtn = self.createHeaderButton('elmInfoBtn', 'DOM', '3px', null, DebugJS.self.toggleElmInfoMode, 'STATE_ELEMENT_INSPECTING', 'DOM_BUTTON_COLOR', false);
     }
 
     // HTML Src Button
     if (self.options.useHtmlSrc) {
-      self.htmlSrcBtn = self.createHeaderButton('htmlSrcBtn', 'HTM', '3px', null, DebugJS.self.toggleHtmlSrcMode, 'DebugJS.STATE_HTML_SRC', 'DebugJS.HTML_BUTTON_COLOR', false);
+      self.htmlSrcBtn = self.createHeaderButton('htmlSrcBtn', 'HTM', '3px', null, DebugJS.self.toggleHtmlSrcMode, 'STATE_HTML_SRC', 'HTML_BUTTON_COLOR', false);
     }
 
     // System Info Button
     if (self.options.useSystemInfo) {
-      self.sysInfoBtn = self.createHeaderButton('sysInfoBtn', 'SYS', '3px', null, DebugJS.self.toggleSystemInfoMode, 'DebugJS.STATE_SYSTEM_INFO', 'DebugJS.SYS_BUTTON_COLOR', false);
+      self.sysInfoBtn = self.createHeaderButton('sysInfoBtn', 'SYS', '3px', null, DebugJS.self.toggleSystemInfoMode, 'STATE_SYSTEM_INFO', 'SYS_BUTTON_COLOR', false);
     }
 
     // Screen Measure Button
@@ -1338,11 +1338,11 @@ DebugJS.prototype = {
     if (fontSize) btn.style.fontSize = fontSize;
     btn.innerHTML = label;
     btn.onclick = handler;
-    btn.onmouseover = new Function('DebugJS.self.' + btnobj + '.style.color=' + activeColor + ';');
+    btn.onmouseover = new Function('DebugJS.self.' + btnobj + '.style.color=DebugJS.' + activeColor + ';');
     if (reverse) {
-      btn.onmouseout = new Function('DebugJS.self.' + btnobj + '.style.color=(DebugJS.self.status & ' + status + ') ? DebugJS.COLOR_INACTIVE : ' + activeColor + ';');
+      btn.onmouseout = new Function('DebugJS.self.' + btnobj + '.style.color=(DebugJS.self.status & DebugJS.' + status + ') ? DebugJS.COLOR_INACTIVE : DebugJS.' + activeColor + ';');
     } else {
-      btn.onmouseout = new Function('DebugJS.self.' + btnobj + '.style.color=(DebugJS.self.status & ' + status + ') ? ' + activeColor + ' : DebugJS.COLOR_INACTIVE;');
+      btn.onmouseout = new Function('DebugJS.self.' + btnobj + '.style.color=(DebugJS.self.status & DebugJS.' + status + ') ? DebugJS.' + activeColor + ' : DebugJS.COLOR_INACTIVE;');
     }
     self.headPanel.appendChild(btn);
     return btn;
@@ -1364,12 +1364,12 @@ DebugJS.prototype = {
 
   createLogFilter: function() {
     var self = DebugJS.self;
-    self.filterBtnAll = self.createLogFilterButton('ALL', 'DebugJS.LOG_FILTER_ALL', 'filterBtnAll', 'DebugJS.self.options.btnColor');
-    self.filterBtnStd = self.createLogFilterButton('STD', 'DebugJS.LOG_FILTER_STD', 'filterBtnStd', 'DebugJS.self.options.fontColor');
-    self.filterBtnDbg = self.createLogFilterButton('DBG', 'DebugJS.LOG_FILTER_DBG', 'filterBtnDbg', 'DebugJS.self.options.logColorD');
-    self.filterBtnInf = self.createLogFilterButton('INF', 'DebugJS.LOG_FILTER_INF', 'filterBtnInf', 'DebugJS.self.options.logColorI');
-    self.filterBtnWrn = self.createLogFilterButton('WRN', 'DebugJS.LOG_FILTER_WRN', 'filterBtnWrn', 'DebugJS.self.options.logColorW');
-    self.filterBtnErr = self.createLogFilterButton('ERR', 'DebugJS.LOG_FILTER_ERR', 'filterBtnErr', 'DebugJS.self.options.logColorE');
+    self.filterBtnAll = self.createLogFilterButton('ALL', 'ALL', 'filterBtnAll', 'btnColor');
+    self.filterBtnStd = self.createLogFilterButton('STD', 'STD', 'filterBtnStd', 'fontColor');
+    self.filterBtnDbg = self.createLogFilterButton('DBG', 'DBG', 'filterBtnDbg', 'logColorD');
+    self.filterBtnInf = self.createLogFilterButton('INF', 'INF', 'filterBtnInf', 'logColorI');
+    self.filterBtnWrn = self.createLogFilterButton('WRN', 'WRN', 'filterBtnWrn', 'logColorW');
+    self.filterBtnErr = self.createLogFilterButton('ERR', 'ERR', 'filterBtnErr', 'logColorE');
 
     self.filterInputLabel = document.createElement('span');
     self.filterInputLabel.style.marginLeft = '4px';
@@ -1391,8 +1391,8 @@ DebugJS.prototype = {
     btn.className = this.id + '-btn ' + this.id + '-nomove';
     btn.style.marginLeft = '2px';
     btn.innerText = '[' + label + ']';
-    btn.onclick = new Function('DebugJS.self.toggleLogFilter(' + filter + ');');
-    btn.onmouseover = new Function('DebugJS.self.' + btnobj + '.style.color=' + color + ';');
+    btn.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_' + filter + ');');
+    btn.onmouseover = new Function('DebugJS.self.' + btnobj + '.style.color=DebugJS.self.options.' + color + ';');
     btn.onmouseout = DebugJS.self.updateLogFilterButtons;
     self.logHeaderPanel.appendChild(btn);
     return btn;
@@ -3603,41 +3603,10 @@ DebugJS.prototype = {
       self.toolsBodyPanel.style.height = 'calc(100% - ' + self.computedFontSize + 'px)';
       self.toolsPanel.appendChild(self.toolsBodyPanel);
 
-      self.textCheckerBtn = document.createElement('span');
-      self.textCheckerBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.textCheckerBtn.style.marginRight = '4px';
-      self.textCheckerBtn.innerText = '<TEXT>';
-      self.textCheckerBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_TEXT);');
-      self.textCheckerBtn.onmouseover = new Function('DebugJS.self.textCheckerBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.textCheckerBtn.onmouseout = new Function('DebugJS.self.textCheckerBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.textCheckerBtn);
-
-      self.fileLoaderBtn = document.createElement('span');
-      self.fileLoaderBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.fileLoaderBtn.style.marginRight = '4px';
-      self.fileLoaderBtn.innerText = '<FILE>';
-      self.fileLoaderBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_FILE);');
-      self.fileLoaderBtn.onmouseover = new Function('DebugJS.self.fileLoaderBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.fileLoaderBtn.onmouseout = new Function('DebugJS.self.fileLoaderBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.fileLoaderBtn);
-
-      self.htmlPreviewerBtn = document.createElement('span');
-      self.htmlPreviewerBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.htmlPreviewerBtn.style.marginRight = '4px';
-      self.htmlPreviewerBtn.innerText = '<HTML>';
-      self.htmlPreviewerBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_HTML);');
-      self.htmlPreviewerBtn.onmouseover = new Function('DebugJS.self.htmlPreviewerBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.htmlPreviewerBtn.onmouseout = new Function('DebugJS.self.htmlPreviewerBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.htmlPreviewerBtn);
-
-      self.memoBtn = document.createElement('span');
-      self.memoBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.memoBtn.style.marginRight = '4px';
-      self.memoBtn.innerText = '<MEMO>';
-      self.memoBtn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_MEMO);');
-      self.memoBtn.onmouseover = new Function('DebugJS.self.memoBtn.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-      self.memoBtn.onmouseout = new Function('DebugJS.self.memoBtn.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
-      self.toolsHeaderPanel.appendChild(self.memoBtn);
+      self.textCheckerBtn = self.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FUNC_TEXT', 'textCheckerBtn');
+      self.fileLoaderBtn = self.createToolsHeaderButton('FILE', 'TOOLS_ACTIVE_FUNC_FILE', 'fileLoaderBtn');
+      self.htmlPreviewerBtn = self.createToolsHeaderButton('HTML', 'TOOLS_ACTIVE_FUNC_HTML', 'htmlPreviewerBtn');
+      self.memoBtn = self.createToolsHeaderButton('MEMO', 'TOOLS_ACTIVE_FUNC_MEMO', 'memoBtn');
 
       self.addOverlayPanelFull(self.toolsPanel);
       self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FUNC_TEXT);
@@ -3647,6 +3616,19 @@ DebugJS.prototype = {
     }
     self.updateToolsButtons();
     self.updateToolsBtn();
+  },
+
+  createToolsHeaderButton: function(label, state, btnobj) {
+    var self = DebugJS.self;
+    var btn = document.createElement('span');
+    btn.className = this.id + '-btn ' + this.id + '-nomove';
+    btn.style.marginRight = '4px';
+    btn.innerText = '<' + label + '>';
+    btn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.' + state + ');');
+    btn.onmouseover = new Function('DebugJS.self.' + btnobj + '.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
+    btn.onmouseout = new Function('DebugJS.self.' + btnobj + '.style.color=(DebugJS.self.toolsActiveFunction & DebugJS.' + state + ') ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+    self.toolsHeaderPanel.appendChild(btn);
+    return btn;
   },
 
   disableTools: function() {
@@ -5971,7 +5953,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
-  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
+  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
   var rgb = {'r': r10, 'g': g10, 'b': b10, 'rgb': rgb10};
   return rgb;
 };
@@ -5991,7 +5973,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
     g16 = g16.substring(0, 1);
     b16 = b16.substring(0, 1);
   }
-  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:#' + r16 + g16 + b16 + ';width:' + (8 * self.options.zoom) + 'px;height:' + (8 * self.options.zoom) + 'px;margin-top:2px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
+  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:#' + r16 + g16 + b16 + ';width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   var rgb = {'r': r16, 'g': g16, 'b': b16, 'rgb': rgb16};
   return rgb;
 };
