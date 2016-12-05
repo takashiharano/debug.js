@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612052028';
+  this.v = '201612052207';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5665,7 +5665,9 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
       }
     } else if (obj instanceof Object) {
       arg.cnt++;
-      if (typeof obj !== 'function') {
+      if ((typeof obj !== 'function') &&
+          (Object.prototype.toString.call(obj) !== '[object Date]') &&
+          !(obj instanceof ArrayBuffer)) {
         if (toJson) {
           arg.dump += indent;
         } else {
@@ -5686,7 +5688,6 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             }
             arg.dump += '\n';
           }
-
           if (typeof obj[key] === 'function') {
             arg.dump += indent + '<span style="color:#4c4;">function</span>';
             if (obj[key].toString().match(/\[native code\]/)) {
@@ -5724,9 +5725,16 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             if (toJson) {arg.dump += '"';}
             arg.dump += ': ';
           }
-          arg.lv++;
-          arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, noMaxLimit);
-          arg.lv--;
+          var hasChildren = false;
+          for (var cKey in obj[key]) {
+            hasChildren = true;
+            break;
+          }
+          if ((typeof obj[key] !== 'function') || (hasChildren)) {
+            arg.lv++;
+            arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, noMaxLimit);
+            arg.lv--;
+          }
           if (typeof obj[key] === 'function') {
             if ((levelLimit == 0) || ((levelLimit >= 1) && ((arg.lv + 1) < levelLimit))) {
               if (Object.keys(obj[key]).length > 0) {
@@ -5736,8 +5744,27 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
           }
           sibling++;
         }
+        if (sibling == 0) {
+          if (typeof obj === 'function') {
+            arg.dump += '<span style="color:#4c4;">function</span>()';
+            if (obj.toString().match(/\[native code\]/)) {
+              arg.dump += ' [native]';
+            }
+          } else if (Object.prototype.toString.call(obj) === '[object Date]') {
+            var dt = DebugJS.getDateTime(obj);
+            var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+            arg.dump += '<span style="color:#f80;">[Date]</span> ' + date;
+          } else if (obj instanceof ArrayBuffer) {
+            arg.dump += '<span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
+          } else {
+            arg.dump += indent + obj;
+          }
+          arg.cnt++;
+        }
         indent = indent.replace(DebugJS.INDENT_SP, '');
-        if (typeof obj !== 'function') {
+        if ((typeof obj !== 'function') &&
+            (Object.prototype.toString.call(obj) !== '[object Date]') &&
+            !(obj instanceof ArrayBuffer)) {
           arg.dump += '\n' + indent + '}';
         }
       }
