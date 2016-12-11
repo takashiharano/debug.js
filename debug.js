@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612060107';
+  this.v = '201612112350';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3452,7 +3452,16 @@ DebugJS.prototype = {
   getEventHandlerString: function(handler, name) {
     var self = DebugJS.self;
     var MAX_LEN = 300;
-    str = (handler ? handler.toString().replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '').replace(/^\s{1,}/, '') : '<span style="color:#aaa;">null</span>');
+    var str = '';
+    if (handler) {
+      str = handler.toString();
+      str = str.replace(/\n/g, '');
+      str = str.replace(/[^.]{1,}\{/, '');
+      str = str.replace(/\}$/, '');
+      str = str.replace(/^\s{1,}/, '');
+    } else {
+      str = '<span style="color:#aaa;">null</span>';
+    }
     str = self.createFoldingText(str, name, DebugJS.OMIT_LAST, MAX_LEN, 'color:#888');
     return str;
   },
@@ -4671,7 +4680,7 @@ DebugJS.prototype = {
     }
     var self = DebugJS.self;
     var cmd, arg;
-    var cmds = self.splitCmdLineInTwo(str);
+    var cmds = DebugJS.splitCmdLineInTwo(str);
     cmd = cmds[0];
     arg = cmds[1];
 
@@ -4688,7 +4697,7 @@ DebugJS.prototype = {
       return;
     }
 
-    if ((!found) && (str.match(/^http/))) {
+    if ((!found) && (str.match(/^\s*http/))) {
       this.cmdGet(str);
       return;
     }
@@ -4701,7 +4710,7 @@ DebugJS.prototype = {
       found = self.cmdTimeCalc(str);
     }
 
-    if ((!found) && (str.match(/^U\+/i))) {
+    if ((!found) && (str.match(/^\s*U\+/i))) {
       this.cmdUnicode('-d ' + str);
       return;
     }
@@ -4709,19 +4718,6 @@ DebugJS.prototype = {
     if (!found) {
       self.execCode(str);
     }
-  },
-
-  splitCmdLineInTwo: function(str) {
-    var res = [];
-    var strs = str.match(/([^\s]{1,})\s(.*)/);
-    if (strs == null) {
-      res[0] = DebugJS.omitLeadingWhiteSpace(str);
-      res[1] = '';
-    } else {
-      res[0] = strs[1];
-      res[1] = strs[2];
-    }
-    return res;
   },
 
   cmdBase64: function(arg, tbl) {
@@ -4735,8 +4731,7 @@ DebugJS.prototype = {
   },
 
   cmdElements: function(arg, tbl) {
-    arg = DebugJS.omitLeadingWhiteSpace(arg);
-    arg = DebugJS.omitTrailingWhiteSpace(arg);
+    arg = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
     if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -4802,17 +4797,17 @@ DebugJS.prototype = {
 
   cmdHistory: function(arg, tbl) {
     var self = DebugJS.self;
-    var arg = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
-    switch (arg) {
-      case '':
+    var args = DebugJS.parseArgs(arg);
+    try {
+      if ((args.opt == '') && (args.data == '')) {
         self.showHistory();
-        break;
-      case '-c':
+      } else if (args.opt == 'c') {
         self.clearHistory();
-        break;
-      default:
+      } else {
         DebugJS.printUsage(tbl.usage);
-        break;
+      }
+    } catch (e) {
+      DebugJS.log.e(e);
     }
   },
 
@@ -4976,33 +4971,24 @@ DebugJS.prototype = {
 
   cmdPos: function(arg, tbl) {
     var self = DebugJS.self;
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
-      if (a == null) {
+    var args = DebugJS.parseArgs(arg);
+    var pos = args.data;
+    switch (pos) {
+      case 'n':
+      case 'ne':
+      case 'e':
+      case 'se':
+      case 's':
+      case 'sw':
+      case 'w':
+      case 'nw':
+      case 'c':
+        var sizePos = self.getSelfSizePos();
+        self.setWindowPosition(pos, sizePos.w, sizePos.h);
+        break;
+      default:
         DebugJS.printUsage(tbl.usage);
-      } else {
-        var pos = a[1];
-        switch (pos) {
-          case 'n':
-          case 'ne':
-          case 'e':
-          case 'se':
-          case 's':
-          case 'sw':
-          case 'w':
-          case 'nw':
-          case 'c':
-            var sizePos = self.getSelfSizePos();
-            self.setWindowPosition(pos, sizePos.w, sizePos.h);
-            break;
-          default:
-            DebugJS.printUsage(tbl.usage);
-            break;
-        }
-      }
+        break;
     }
   },
 
@@ -5037,38 +5023,30 @@ DebugJS.prototype = {
   },
 
   cmdRandom: function(arg, tbl) {
-    arg = arg.replace(/\s{2,}/g, ' ');
-    var args = arg.split(' ');
-    if (args == null) {
-      DebugJS.printUsage(tbl.usage);
+    var args = DebugJS.splitArgs(arg);
+    var type = args[0] || DebugJS.RANDOM_TYPE_NUM;
+    var min, max;
+    if (args[0] == '') {
+      type = DebugJS.RANDOM_TYPE_NUM;
     } else {
-      var type = args[0] || DebugJS.RANDOM_TYPE_NUM;
-      var min, max;
-
-      if (!args[0]) {
+      if ((args[0] == DebugJS.RANDOM_TYPE_NUM) || (args[0] == DebugJS.RANDOM_TYPE_STR)) {
+        type = args[0];
+        min = args[1];
+        max = args[2];
+      } else if (args[0].match(/[0-9]{1,}/)) {
         type = DebugJS.RANDOM_TYPE_NUM;
+        min = args[0];
+        max = args[1];
       } else {
-        if ((args[0] == DebugJS.RANDOM_TYPE_NUM) || (args[0] == DebugJS.RANDOM_TYPE_STR)) {
-          type = args[0];
-          min = args[1];
-          max = args[2];
-        } else if (args[0].match(/[0-9]{1,}/)) {
-          type = DebugJS.RANDOM_TYPE_NUM;
-          min = args[0];
-          max = args[1];
-        } else {
-          DebugJS.printUsage(tbl.usage);
-        }
+        DebugJS.printUsage(tbl.usage);
       }
-
-      var random = DebugJS.getRandom(type, min, max);
-      DebugJS.log(random);
     }
+    var random = DebugJS.getRandom(type, min, max);
+    DebugJS.log(random);
   },
 
   cmdRadixConv: function(val) {
-    val = DebugJS.omitLeadingWhiteSpace(val);
-    val = DebugJS.omitTrailingWhiteSpace(val);
+    val = DebugJS.omitLeadingAndTrailingWhiteSpace(val);
     if (val.match(/^\-{0,1}[0-9]+$/)) {
       DebugJS.convRadixFromDEC(val);
       return true;
@@ -5084,8 +5062,7 @@ DebugJS.prototype = {
   },
 
   cmdRGB: function(arg, tbl) {
-    arg = DebugJS.omitLeadingWhiteSpace(arg);
-    arg = DebugJS.omitTrailingWhiteSpace(arg);
+    arg = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
     arg = arg.replace(/\s{2,}/g, ' ');
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
@@ -5108,42 +5085,41 @@ DebugJS.prototype = {
 
   cmdSet: function(arg, tbl) {
     var self = DebugJS.self;
-    arg = DebugJS.omitLeadingWhiteSpace(arg);
-    var args = arg.match(/([^\s]{1,})\s(.*)/);
-    if (args == null) {
+    var args = DebugJS.splitArgs(arg);
+    var name = args[0];
+    var value = ((args[1] == undefined) ? '' : args[1]);
+    if ((name == '') || (value == '')) {
       DebugJS.printUsage(tbl.usage);
-    } else {
-      var name = args[1];
-      var value = args[2];
-      if (self.properties[name] != undefined) {
-        if (self.properties[name].restriction != undefined) {
-          if (!value.match(self.properties[name].restriction)) {
-            DebugJS.log.e(value + ' is invalid.');
-            return;
-          }
+      return;
+    }
+    if (self.properties[name] != undefined) {
+      if (self.properties[name].restriction != undefined) {
+        if (!value.match(self.properties[name].restriction)) {
+          DebugJS.log.e(value + ' is invalid.');
+          return;
         }
-        self.properties[name].value = value;
-        DebugJS.log.res(value);
-      } else {
-        DebugJS.log.e(name + ' is invalid property name.');
       }
+      self.properties[name].value = value;
+      DebugJS.log.res(value);
+    } else {
+      DebugJS.log.e(name + ' is invalid property name.');
     }
   },
 
   cmdTimeCalc: function(arg) {
     var self = DebugJS.self;
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (!arg.match(/[\d :\.\+]{1,}/)) {
+    var wkArg = arg.replace(/\s{2,}/g, ' ');
+    if (!wkArg.match(/[\d :\.\+]{1,}/)) {
       return false;
     }
-    var arg = arg.replace(/\s/g, '');
+    wkArg = wkArg.replace(/\s/g, '');
     var op;
-    if (arg.indexOf('-') >= 0) {
+    if (wkArg.indexOf('-') >= 0) {
       op = '-';
-    } else if (arg.indexOf('+') >= 0) {
+    } else if (wkArg.indexOf('+') >= 0) {
       op = '+';
     }
-    var vals = arg.split(op);
+    var vals = wkArg.split(op);
     if (vals.length < 2) {
       return false;
     }
@@ -5163,61 +5139,45 @@ DebugJS.prototype = {
   },
 
   cmdTime: function(arg, tbl) {
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
-      if (a == null) {
+    var args = DebugJS.splitArgs(arg);
+    var operation = args[0];
+    var timerName = args[1];
+    if (timerName == undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
+    switch (operation) {
+      case 'start':
+        DebugJS.timeStart(timerName);
+        break;
+      case 'split':
+        DebugJS.timeSplit(timerName, false);
+        break;
+      case 'end':
+        DebugJS.timeEnd(timerName);
+        break;
+      case 'list':
+        DebugJS.timeList();
+        break;
+      default:
         DebugJS.printUsage(tbl.usage);
-      } else {
-        if (a[2] == '') a[2] = DebugJS.DEFAULT_TIMER_NAME;
-        switch (a[1]) {
-          case 'start':
-            DebugJS.timeStart(a[2]);
-            break;
-          case 'split':
-            DebugJS.timeSplit(a[2], false);
-            break;
-          case 'end':
-            DebugJS.timeEnd(a[2]);
-            break;
-          case 'list':
-            DebugJS.timeList();
-            break;
-          default:
-            DebugJS.printUsage(tbl.usage);
-            break;
-        }
-      }
+        break;
     }
   },
 
   cmdStopwatch: function(arg, tbl) {
     var self = DebugJS.self;
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
-      if (a == null) {
+    var args = DebugJS.splitArgs(arg);
+    switch (args[0]) {
+      case 'start':
+        self.startStopWatch();
+        break;
+      case 'stop':
+        self.stopStopWatch();
+        break;
+      case 'reset':
+        self.resetStopWatch();
+        break;
+      default:
         DebugJS.printUsage(tbl.usage);
-      } else {
-        switch (a[1]) {
-          case 'start':
-            self.startStopWatch();
-            break;
-          case 'stop':
-            self.stopStopWatch();
-            break;
-          case 'reset':
-            self.resetStopWatch();
-            break;
-          default:
-            DebugJS.printUsage(tbl.usage);
-            break;
-        }
-      }
+        break;
     }
   },
 
@@ -5233,29 +5193,21 @@ DebugJS.prototype = {
 
   cmdWin: function(arg, tbl) {
     var self = DebugJS.self;
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
-      if (a == null) {
+    var args = DebugJS.parseArgs(arg);
+    var size = args.data;
+    switch (size) {
+      case 'min':
+      case 'normal':
+      case 'max':
+      case 'full':
+      case 'expand':
+      case 'restore':
+      case 'reset':
+        self.setWindowSize(size);
+        break;
+      default:
         DebugJS.printUsage(tbl.usage);
-      } else {
-        switch (a[1]) {
-          case 'min':
-          case 'normal':
-          case 'max':
-          case 'full':
-          case 'expand':
-          case 'restore':
-          case 'reset':
-            self.setWindowSize(a[1]);
-            break;
-          default:
-            DebugJS.printUsage(tbl.usage);
-            break;
-        }
-      }
+        break;
     }
   },
 
@@ -5310,48 +5262,44 @@ DebugJS.prototype = {
 
   cmdZoom: function(arg, tbl) {
     var self = DebugJS.self;
-    arg = arg.replace(/\s{2,}/g, ' ');
-    if (arg == '') {
+    var args = DebugJS.parseArgs(arg);
+    var zoom = args.data;
+    if (zoom == '') {
       DebugJS.printUsage(tbl.usage);
-    } else {
-      var a = arg.match(/([^\s]{1,})\s{0,}(.*)/);
-      if (a == null) {
-        DebugJS.printUsage(tbl.usage);
-      } else {
-        var zoom = a[1];
-        if (zoom != self.options.zoom) {
-          var restoreOption = {
-            'cause': DebugJS.INIT_CAUSE_ZOOM,
-            'status': self.status
-          };
-          self.closeFeatures();
-          self.setWindowSize('normal');
-          self.init({'zoom': zoom}, restoreOption);
-        }
-      }
+    } else if (zoom != self.options.zoom) {
+      var restoreOption = {
+        'cause': DebugJS.INIT_CAUSE_ZOOM,
+        'status': self.status
+      };
+      self.closeFeatures();
+      self.setWindowSize('normal');
+      self.init({'zoom': zoom}, restoreOption);
     }
   },
 
   execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc) {
-    var arg1 = DebugJS.omitLeadingWhiteSpace(arg);
-    var args = arg1.match(/(-d|-e)?\s(.*)/);
-    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
-    if ((argNoWhiteSpace == '') || (((argNoWhiteSpace == '-d') || (argNoWhiteSpace == '-e')) && (args == null))) {
+    var args = DebugJS.parseArgs(arg);
+    var result = '';
+    if (args.data == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
       try {
-        var result;
-        if (args == null) {
-          result = encodeFunc(arg);
-        } else if (args[1] == '-d') {
-          result = decodeFunc(args[2]);
-          result = DebugJS.encloseStringIfNeeded(result);
-        } else if (args[1] == '-e') {
-          result = encodeFunc(args[2]);
-        } else {
-          result = encodeFunc(arg);
+        switch (args.opt) {
+          case 'd':
+            result = decodeFunc(args.dataRaw);
+            result = DebugJS.encloseStringIfNeeded(result);
+            break;
+          case '':
+          case 'e':
+            result = encodeFunc(args.dataRaw);
+            break;
+          default:
+            DebugJS.printUsage(tbl.usage);
+            break;
         }
-        DebugJS.log.res(result);
+        if (result != '') {
+          DebugJS.log.res(result);
+        }
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -5364,7 +5312,7 @@ DebugJS.prototype = {
     if (argNoWhiteSpace == '') {
       DebugJS.printUsage(tbl.usage);
     }
-    args = self.splitCmdLineInTwo(arg);
+    args = DebugJS.splitCmdLineInTwo(arg);
     var url = args[0];
     var data = args[1];
     data = DebugJS.encodeURIString(data);
@@ -5447,6 +5395,41 @@ DebugJS.RingBuffer.prototype = {
   getSize: function() {
     return this.buffer.length;
   }
+};
+
+DebugJS.splitCmdLineInTwo = function(str) {
+  var res = [];
+  var strs = str.match(/([^\s]{1,})\s(.*)/);
+  if (strs == null) {
+    res[0] = DebugJS.omitLeadingWhiteSpace(str);
+    res[1] = '';
+  } else {
+    res[0] = strs[1];
+    res[1] = strs[2];
+  }
+  return res;
+};
+
+DebugJS.splitArgs = function(arg) {
+  var wkArg = arg.replace(/\s{2,}/g, ' ');
+  wkArg = wkArg.replace(/^\s/, '');
+  var args = wkArg.split(' ');
+  return args;
+};
+
+DebugJS.parseArgs = function(arg) {
+  var args = {'opt': '', 'data': '', 'dataRaw': ''};
+  var wkArgs = DebugJS.omitLeadingWhiteSpace(arg);
+  wkArgs = wkArgs.match(/-{1}(.)?\s{0,1}(.*)/);
+  if (wkArgs == null) {
+    args.dataRaw = arg;
+    args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
+  } else {
+    args.opt = wkArgs[1];
+    args.dataRaw = wkArgs[2];
+    args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(wkArgs[2]);
+  }
+  return args;
 };
 
 DebugJS.omitAllWhiteSpace = function(str) {
