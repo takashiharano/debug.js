@@ -1495,6 +1495,27 @@ $ base64 -d YWJjZGVmZw==
   </tr>
 
   <tr>
+    <td class="name">bin</td>
+    <td>
+      arg1: num<br>
+      arg2: digit<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Convert a number to binary.
+<pre class="eg">
+$ bin 128
+-&gt; 0000 0000 0000 0000 0000 0000 1000 0000 (32 bits)
+
+$ bin 128 8
+-&gt; 1000 0000 (8 bits)
+
+$ bin (1 + 2) 8
+-&gt; 0000 0011 (8 bits)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">cls</td>
     <td></td>
     <td>Clear log message.</td>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612130029';
+  this.v = '201612130229';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -258,6 +258,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {'cmd': 'base64', 'fnc': this.cmdBase64, 'desc': 'Encodes/Decodes Base64 string', 'usage': 'base64 [-e|-d] string'},
+    {'cmd': 'bin', 'fnc': this.cmdBin, 'desc': 'Convert a number to binary', 'usage': 'bin num digit'},
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
     {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
@@ -301,6 +302,7 @@ DebugJS.ENABLE = true;
 DebugJS.CATCH_ALL_ERRORS = true;
 DebugJS.MERGE_CONSOLE = true;
 
+DebugJS.DEFAULT_UNIT = 32;
 DebugJS.INIT_CAUSE_NONE = 0;
 DebugJS.INIT_CAUSE_ZOOM = 1;
 DebugJS.STATE_INITIALIZED = 0x1;
@@ -4729,6 +4731,51 @@ DebugJS.prototype = {
     self.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
   },
 
+  cmdBin: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    if (args[0] == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var argLen = args.length;
+    var unit = DebugJS.DEFAULT_UNIT;
+    var exp = args[0];
+    if (argLen == 2) {
+      unit = args[1];
+    } else if (argLen >= 3) {
+      if (args[0].match(/^\(/)) {
+        var expLen;
+        if (args[argLen - 2].match(/\)$/)) {
+          unit = args[argLen - 1];
+          expLen = argLen - 1;
+        } else if (args[argLen - 1].match(/\)$/)) {
+          expLen = argLen;
+        } else {
+          DebugJS.log.e('invalid value');
+          return;
+        }
+        exp = '';
+        for (var i = 0; i < expLen; i++) {
+          exp += ((i >= 1) ? ' ' : '') + args[i];
+        }
+      } else {
+        DebugJS.log.e('invalid value');
+        return;
+      }
+    }
+    try {
+      var val = eval(exp);
+      v2 = '';
+      for (var i = (unit - 1); i >= 0; i--) {
+        v2 += (val & 1 << i) ? '1' : '0';
+      }
+      v2 = DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD);
+      DebugJS.log(v2);
+    } catch (e) {
+      DebugJS.log.e('invalid value');
+    }
+  },
+
   cmdCls: function(arg, tbl) {
     var self = DebugJS.self;
     self.clearMessage();
@@ -5418,6 +5465,9 @@ DebugJS.splitArgs = function(arg) {
   var wkArg = arg.replace(/\s{2,}/g, ' ');
   wkArg = wkArg.replace(/^\s/, '');
   var args = wkArg.split(' ');
+  if ((args.length >= 2) && (args[args.length - 1] == '')) {
+    args.pop();
+  }
   return args;
 };
 
@@ -5979,12 +6029,12 @@ DebugJS.convRadixFromHEX = function(v16) {
 };
 
 DebugJS.convRadixFromDEC = function(v10) {
-  var unit = 32;
+  var unit = DebugJS.DEFAULT_UNIT;
   var v2 = parseInt(v10).toString(2);
   var v16 = parseInt(v10).toString(16);
   if (v10 < 0) {
     v2 = '';
-    for (var i = 31; i >= 0; i--) {
+    for (var i = (unit - 1); i >= 0; i--) {
       v2 += (v10 & 1 << i) ? '1' : '0';
     }
     v16 = parseInt(v2, 2).toString(16);
