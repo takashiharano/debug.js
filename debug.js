@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612122344';
+  this.v = '201612130029';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4627,8 +4627,12 @@ DebugJS.prototype = {
 
   setLed: function(val) {
     var self = DebugJS.self;
-    self.led = val;
-    self.updateLedPanel();
+    try {
+      self.led = eval(val);
+      self.updateLedPanel();
+    } catch (e) {
+      DebugJS.log.e('invalid value');
+    }
   },
 
   setMsg: function(msg) {
@@ -5053,7 +5057,7 @@ DebugJS.prototype = {
     } else if (val.match(/^\-{0,1}0x[0-9A-Fa-f]+$/)) {
       DebugJS.convRadixFromHEX(val.substr(2));
       return true;
-    } else if (val.match(/^\-{0,1}0b[0-1]+$/)) {
+    } else if (val.match(/^\-{0,1}0b[01\s]+$/)) {
       DebugJS.convRadixFromBIN(val.substr(2));
       return true;
     } else {
@@ -5975,8 +5979,16 @@ DebugJS.convRadixFromHEX = function(v16) {
 };
 
 DebugJS.convRadixFromDEC = function(v10) {
+  var unit = 32;
   var v2 = parseInt(v10).toString(2);
   var v16 = parseInt(v10).toString(16);
+  if (v10 < 0) {
+    v2 = '';
+    for (var i = 31; i >= 0; i--) {
+      v2 += (v10 & 1 << i) ? '1' : '0';
+    }
+    v16 = parseInt(v2, 2).toString(16);
+  }
   hex = DebugJS.formatHex(v16, false, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
@@ -5988,6 +6000,7 @@ DebugJS.convRadixFromDEC = function(v10) {
 };
 
 DebugJS.convRadixFromBIN = function(v2) {
+  v2 = v2.replace(/\s/g, '');
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
   hex = DebugJS.formatHex(v16, false, true);
