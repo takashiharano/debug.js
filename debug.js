@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612112350';
+  this.v = '201612122344';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -299,7 +299,7 @@ var DebugJS = DebugJS || function() {
 };
 DebugJS.ENABLE = true;
 DebugJS.CATCH_ALL_ERRORS = true;
-DebugJS.UNIFY_CONSOLE = false;
+DebugJS.MERGE_CONSOLE = true;
 
 DebugJS.INIT_CAUSE_NONE = 0;
 DebugJS.INIT_CAUSE_ZOOM = 1;
@@ -7049,7 +7049,7 @@ if (DebugJS.ENABLE) {
   if (DebugJS.CATCH_ALL_ERRORS) {
     window.addEventListener('error', DebugJS.onError, true);
   }
-  if (DebugJS.UNIFY_CONSOLE) {
+  if (DebugJS.MERGE_CONSOLE) {
     console.log = function(x) {log(x);};
     console.info = function(x) {log.i(x);};
     console.warn = function(x) {log.w(x);};
