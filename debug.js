@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612130229';
+  this.v = '201612140022';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -259,12 +259,13 @@ var DebugJS = DebugJS || function() {
   this.INT_CMD_TBL = [
     {'cmd': 'base64', 'fnc': this.cmdBase64, 'desc': 'Encodes/Decodes Base64 string', 'usage': 'base64 [-e|-d] string'},
     {'cmd': 'bin', 'fnc': this.cmdBin, 'desc': 'Convert a number to binary', 'usage': 'bin num digit'},
-    {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message.', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
     {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method', 'usage': 'get URL'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'hex', 'fnc': this.cmdHex, 'desc': 'Convert a number to hexadecimal', 'usage': 'hex num digit'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
@@ -4732,41 +4733,18 @@ DebugJS.prototype = {
   },
 
   cmdBin: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    if (args[0] == '') {
-      DebugJS.printUsage(tbl.usage);
+    var self = DebugJS.self;
+    var data = self.radixCmd(arg, tbl);
+    if (data == null) {
       return;
     }
-    var argLen = args.length;
-    var unit = DebugJS.DEFAULT_UNIT;
-    var exp = args[0];
-    if (argLen == 2) {
-      unit = args[1];
-    } else if (argLen >= 3) {
-      if (args[0].match(/^\(/)) {
-        var expLen;
-        if (args[argLen - 2].match(/\)$/)) {
-          unit = args[argLen - 1];
-          expLen = argLen - 1;
-        } else if (args[argLen - 1].match(/\)$/)) {
-          expLen = argLen;
-        } else {
-          DebugJS.log.e('invalid value');
-          return;
-        }
-        exp = '';
-        for (var i = 0; i < expLen; i++) {
-          exp += ((i >= 1) ? ' ' : '') + args[i];
-        }
-      } else {
-        DebugJS.log.e('invalid value');
-        return;
-      }
-    }
     try {
-      var val = eval(exp);
-      v2 = '';
-      for (var i = (unit - 1); i >= 0; i--) {
+      if (data.digit == 0) {
+        data.digit = DebugJS.DEFAULT_UNIT;
+      }
+      var val = eval(data.exp);
+      var v2 = '';
+      for (var i = (data.digit - 1); i >= 0; i--) {
         v2 += (val & 1 << i) ? '1' : '0';
       }
       v2 = DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD);
@@ -4844,6 +4822,84 @@ DebugJS.prototype = {
     }
     str += '</table>';
     DebugJS.log.mlt(str);
+  },
+
+  cmdHex: function(arg, tbl) {
+    var self = DebugJS.self;
+    var data = self.radixCmd(arg, tbl);
+    if (data == null) {
+      return;
+    }
+    try {
+      if (data.digit == 0) {
+        data.digit = DebugJS.DEFAULT_UNIT / 4;
+      }
+      var v2 = '';
+      var v16 = '';
+      var val = eval(data.exp);
+      if (val < 0) {
+        for (var i = (DebugJS.DEFAULT_UNIT - 1); i >= 0; i--) {
+          v2 += (val & 1 << i) ? '1' : '0';
+        }
+        v16 = parseInt(v2, 2).toString(16);
+      } else {
+        v16 = parseInt(val).toString(16);
+      }
+      var hex = DebugJS.formatHex(v16, false, true);
+      if (hex.length > data.digit) {
+        hex = hex.slice(data.digit * -1);
+      } else if (hex.length < data.digit) {
+        var padding = data.digit - hex.length;
+        var zero = '';
+        for (var i = 0; i < padding; i++) {
+          zero += '0';
+        }
+        hex = zero + hex;
+      }
+      hex = '0x' + hex;
+      DebugJS.log(hex);
+    } catch (e) {
+      DebugJS.log.e('invalid value');
+    }
+  },
+
+  radixCmd: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    if (args[0] == '') {
+      DebugJS.printUsage(tbl.usage);
+      return null;
+    }
+    var argLen = args.length;
+    var digit = 0;
+    var exp = args[0];
+    if (argLen == 2) {
+      digit = args[1];
+    } else if (argLen >= 3) {
+      if (args[0].match(/^\(/)) {
+        var expLen;
+        if (args[argLen - 2].match(/\)$/)) {
+          digit = args[argLen - 1];
+          expLen = argLen - 1;
+        } else if (args[argLen - 1].match(/\)$/)) {
+          expLen = argLen;
+        } else {
+          DebugJS.log.e('invalid value');
+          return null;
+        }
+        exp = '';
+        for (var i = 0; i < expLen; i++) {
+          exp += ((i >= 1) ? ' ' : '') + args[i];
+        }
+      } else {
+        DebugJS.log.e('invalid value');
+        return null;
+      }
+    }
+    var data = {
+      'exp': exp,
+      'digit': digit
+    };
+    return data;
   },
 
   cmdHistory: function(arg, tbl) {
@@ -6018,7 +6074,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
 DebugJS.convRadixFromHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
   var v2 = parseInt(v16, 16).toString(2);
-  hex = DebugJS.formatHex(v16, false, true);
+  var hex = DebugJS.formatHex(v16, false, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -6039,7 +6095,7 @@ DebugJS.convRadixFromDEC = function(v10) {
     }
     v16 = parseInt(v2, 2).toString(16);
   }
-  hex = DebugJS.formatHex(v16, false, true);
+  var hex = DebugJS.formatHex(v16, false, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -6053,7 +6109,7 @@ DebugJS.convRadixFromBIN = function(v2) {
   v2 = v2.replace(/\s/g, '');
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
-  hex = DebugJS.formatHex(v16, false, true);
+  var hex = DebugJS.formatHex(v16, false, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
