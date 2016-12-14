@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612150051';
+  this.v = '201612150741';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4766,7 +4766,11 @@ DebugJS.prototype = {
         v2 += (val & 1 << i) ? '1' : '0';
       }
       var ret = v2;
-      ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, data.digit);
+      var hldigit = v2len;
+      if ((data.digit > 0) && (v2len > data.digit)) {
+        hldigit = data.digit;
+      }
+      ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, hldigit);
       DebugJS.log(ret);
     } catch (e) {
       DebugJS.log.e('invalid value');
