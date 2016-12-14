@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '2016121421252';
+  this.v = '201612142201';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3863,7 +3863,8 @@ DebugJS.prototype = {
 
   disableTextChecker: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) && (self.textCheckerPanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_TEXT) &&
+        (self.textCheckerPanel != null)) {
       self.toolsBodyPanel.removeChild(self.textCheckerPanel);
     }
   },
@@ -3974,7 +3975,8 @@ DebugJS.prototype = {
 
   disableFileLoader: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) && (self.fileLoaderPanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_FILE) &&
+        (self.fileLoaderPanel != null)) {
       self.toolsBodyPanel.removeChild(self.fileLoaderPanel);
     }
   },
@@ -4292,7 +4294,8 @@ DebugJS.prototype = {
 
   disableHtmlEditor: function() {
     var self = DebugJS.self;
-    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) && (self.htmlPreviewerBasePanel != null)) {
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FUNC_HTML) &&
+        (self.htmlPreviewerBasePanel != null)) {
       self.toolsBodyPanel.removeChild(self.htmlPreviewerBasePanel);
     }
   },
@@ -4535,24 +4538,25 @@ DebugJS.prototype = {
   expandHight: function(height) {
     var self = DebugJS.self;
     if (self.status & DebugJS.STATE_DYNAMIC) {
-
       self.saveExpandModeOrgSizeAndPos();
+      var clientHeight = document.documentElement.clientHeight;
       var sizePos = self.getSelfSizePos();
       if (sizePos.h >= height) {
         return;
-      } else if (document.documentElement.clientHeight <= height) {
-        height = document.documentElement.clientHeight;
+      } else if (clientHeight <= height) {
+        height = clientHeight;
       }
       self.setSelfSizeH(height);
       sizePos = self.getSelfSizePos();
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
         self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
       } else {
-        if (sizePos.y2 > document.documentElement.clientHeight) {
-          if (document.documentElement.clientHeight < (height + self.options.posAdjY)) {
+        if (sizePos.y2 > clientHeight) {
+          if (clientHeight < (height + self.options.posAdjY)) {
             self.dbgWin.style.top = 0;
           } else {
-            self.dbgWin.style.top = (document.documentElement.clientHeight - height - self.options.posAdjY) + 'px';
+            var top = clientHeight - height - self.options.posAdjY;
+            self.dbgWin.style.top = top + 'px';
           }
         }
       }
@@ -4841,9 +4845,6 @@ DebugJS.prototype = {
       return;
     }
     try {
-      if (data.digit == 0) {
-        data.digit = DebugJS.DEFAULT_UNIT / 4;
-      }
       var v2 = '';
       var v16 = '';
       var val = eval(data.exp);
@@ -4856,18 +4857,23 @@ DebugJS.prototype = {
         v16 = parseInt(val).toString(16);
       }
       var hex = DebugJS.formatHex(v16, false, true);
-      if (hex.length > data.digit) {
-        hex = hex.slice(data.digit * -1);
-      } else if (hex.length < data.digit) {
-        var padding = data.digit - hex.length;
-        var zero = '';
-        for (var i = 0; i < padding; i++) {
-          zero += '0';
+      var ret = hex;
+      if (data.digit > 0) {
+        if (hex.length > data.digit) {
+          ret = hex.slice(data.digit * -1);
+          var omit = hex.substr(0, hex.length - data.digit);
+          ret = '<span style="color:#888;">' + omit + '</span>' + ret;
+        } else if (hex.length < data.digit) {
+          var padding = data.digit - hex.length;
+          var zero = '';
+          for (var i = 0; i < padding; i++) {
+            zero += ((val < 0) ? 'F' : '0');
+          }
+          ret = zero + hex;
         }
-        hex = zero + hex;
       }
-      hex = '0x' + hex;
-      DebugJS.log(hex);
+      ret = '0x' + ret;
+      DebugJS.log(ret);
     } catch (e) {
       DebugJS.log.e('invalid value');
     }
