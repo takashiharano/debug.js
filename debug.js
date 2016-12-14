@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612140022';
+  this.v = '2016121421252';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -921,6 +921,7 @@ DebugJS.prototype = {
     if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       self.resetStylesOnZoom();
       self.reopenFeatures(restoreOption.status);
+      self.restoreDbgWinSize(restoreOption.status);
     }
     self.status |= DebugJS.STATE_INITIALIZED;
     self.printLogMessage();
@@ -1439,6 +1440,15 @@ DebugJS.prototype = {
     }
     if (status & DebugJS.STATE_TOOLS) {
       self.enableTools();
+    }
+  },
+
+  restoreDbgWinSize: function(status) {
+    var self = DebugJS.self;
+    if (status & DebugJS.STATE_WINDOW_SIZE_FULL_WH) {
+      self.setWindowSize('full');
+    } else if (status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) {
+      self.setWindowSize('expand');
     }
   },
 
