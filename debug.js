@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612142201';
+  this.v = '201612150051';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -420,7 +420,7 @@ DebugJS.RANDOM_TYPE_STR = '-s';
 DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
-DebugJS.FORMAT_BIN_DIGITS_THRESHOLD = 5;
+DebugJS.DISP_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_FULL_OVERLAY = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
@@ -2735,7 +2735,7 @@ DebugJS.prototype = {
     }
     var UPDATE_INTERVAL = DebugJS.UPDATE_INTERVAL_H;
     var sysTime = (new Date()).getTime();
-    var sysTimeBin = DebugJS.formatBin(parseInt(sysTime).toString(2), false, true);
+    var sysTimeBin = DebugJS.formatBin(parseInt(sysTime).toString(2), false, 1);
 
     var html = '<pre>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + sysTime + '\n' +
@@ -4753,16 +4753,21 @@ DebugJS.prototype = {
       return;
     }
     try {
-      if (data.digit == 0) {
-        data.digit = DebugJS.DEFAULT_UNIT;
+      var digit = data.digit;
+      if (digit == 0) {
+        digit = DebugJS.DEFAULT_UNIT;
       }
       var val = eval(data.exp);
-      var v2 = '';
-      for (var i = (data.digit - 1); i >= 0; i--) {
+      var v2 = parseInt(val).toString(2);
+      var v2len = v2.length;
+      var loop = ((digit > v2len) ? digit : v2len);
+      v2 = '';
+      for (var i = (loop - 1); i >= 0; i--) {
         v2 += (val & 1 << i) ? '1' : '0';
       }
-      v2 = DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD);
-      DebugJS.log(v2);
+      var ret = v2;
+      ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, data.digit);
+      DebugJS.log(ret);
     } catch (e) {
       DebugJS.log.e('invalid value');
     }
@@ -4913,7 +4918,7 @@ DebugJS.prototype = {
     }
     var data = {
       'exp': exp,
-      'digit': digit
+      'digit': (digit | 0)
     };
     return data;
   },
@@ -6096,7 +6101,7 @@ DebugJS.convRadixFromHEX = function(v16) {
   }
   var res = 'HEX ' + hex + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'BIN ' + DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD) + '\n';
+  'BIN ' + DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD) + '\n';
   DebugJS.log.mlt(res);
 };
 
@@ -6117,7 +6122,7 @@ DebugJS.convRadixFromDEC = function(v10) {
   }
   var res = 'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'HEX ' + hex + '<br>' +
-  'BIN ' + DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD) + '\n';
+  'BIN ' + DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD) + '\n';
   DebugJS.log.mlt(res);
 };
 
@@ -6129,7 +6134,7 @@ DebugJS.convRadixFromBIN = function(v2) {
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
-  var res = 'BIN ' + DebugJS.formatBin(v2, true, true, DebugJS.FORMAT_BIN_DIGITS_THRESHOLD) + '\n' +
+  var res = 'BIN ' + DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD) + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'HEX ' + hex + '\n';
   DebugJS.log.mlt(res);
@@ -6143,21 +6148,26 @@ DebugJS.convRadixDECtoHEX = function(v10, upper) {
   return v16;
 };
 
-DebugJS.formatBin = function(v2, grouping, digits, n) {
+DebugJS.formatBin = function(v2, grouping, n, digit) {
   var len = v2.length;
   var bin = '';
   if (grouping) {
+    if ((digit > 0) && (len > digit)) {
+      bin += '<span style="color:#888;">';
+    }
     for (var i = 0; i < len; i++) {
       if ((i != 0) && ((len - i) % 4 == 0)) {
         bin += ' ';
       }
       bin += v2.charAt(i);
+      if ((digit > 0) && ((len - i) == (digit + 1))) {
+        bin += '</span>';
+      }
     }
   } else {
     bin = v2;
   }
-  if (digits) {
-    if (!n) n = 0;
+  if (n) {;
     if (len >= n) {
       bin += ' (' + len + ' bits)';
     }
