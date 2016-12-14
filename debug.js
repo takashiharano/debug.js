@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612150741';
+  this.v = '201612150749';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4767,7 +4767,9 @@ DebugJS.prototype = {
       }
       var ret = v2;
       var hldigit = v2len;
-      if ((data.digit > 0) && (v2len > data.digit)) {
+      if (val < 0) {
+        hldigit = digit;
+      } else if ((data.digit > 0) && (v2len > data.digit)) {
         hldigit = data.digit;
       }
       ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, hldigit);
