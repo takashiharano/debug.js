@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612150749';
+  this.v = '201612152342';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -18,15 +18,15 @@ var DebugJS = DebugJS || function() {
     'popupOnError': {
       'scriptError': true,
       'loadError': true,
-      'errorLog': false
+      'errorLog': true
     },
     'lines': 17,
     'bufsize': 300,
     'width': 500,
     'zoom': 1,
     'position': 'se',
-    'posAdjX': 20,
-    'posAdjY': 20,
+    'adjPosX': 20,
+    'adjPosY': 20,
     'fontSize': 12,
     'fontFamily': 'Consolas, monospace',
     'fontColor': '#fff',
@@ -1445,10 +1445,12 @@ DebugJS.prototype = {
 
   restoreDbgWinSize: function(status) {
     var self = DebugJS.self;
-    if (status & DebugJS.STATE_WINDOW_SIZE_FULL_WH) {
+    if ((status & DebugJS.STATE_WINDOW_SIZE_FULL_WH) == DebugJS.STATE_WINDOW_SIZE_FULL_WH) {
       self.setWindowSize('full');
     } else if (status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) {
-      self.setWindowSize('expand');
+      if (!(status & DebugJS.STATE_WINDOW_SIZE_FULL_W) && !(status & DebugJS.STATE_WINDOW_SIZE_FULL_H)) {
+        self.setWindowSize('max');
+      }
     }
   },
 
@@ -1473,40 +1475,40 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     switch (pos) {
       case 'se':
-        self.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-        self.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
+        self.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.adjPosY) + 'px';
+        self.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.adjPosX) + 'px';
         break;
       case 'ne':
-        self.dbgWin.style.top = self.options.posAdjY + 'px';
-        self.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
+        self.dbgWin.style.top = self.options.adjPosY + 'px';
+        self.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.adjPosX) + 'px';
         break;
       case 'c':
         self.dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
         self.dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'sw':
-        self.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
-        self.dbgWin.style.left = self.options.posAdjX + 'px';
+        self.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.adjPosY) + 'px';
+        self.dbgWin.style.left = self.options.adjPosX + 'px';
         break;
       case 'n':
-        self.dbgWin.style.top = self.options.posAdjY + 'px';
+        self.dbgWin.style.top = self.options.adjPosY + 'px';
         self.dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'e':
         self.dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-        self.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.posAdjX) + 'px';
+        self.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - self.options.adjPosX) + 'px';
         break;
       case 's':
-        self.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.posAdjY) + 'px';
+        self.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - self.options.adjPosY) + 'px';
         self.dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'w':
         self.dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-        self.dbgWin.style.left = self.options.posAdjX + 'px';
+        self.dbgWin.style.left = self.options.adjPosX + 'px';
         break;
       default:
-        self.dbgWin.style.top = self.options.posAdjY + 'px';
-        self.dbgWin.style.left = self.options.posAdjX + 'px';
+        self.dbgWin.style.top = self.options.adjPosY + 'px';
+        self.dbgWin.style.left = self.options.adjPosX + 'px';
         break;
     }
   },
@@ -4552,10 +4554,10 @@ DebugJS.prototype = {
         self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
       } else {
         if (sizePos.y2 > clientHeight) {
-          if (clientHeight < (height + self.options.posAdjY)) {
+          if (clientHeight < (height + self.options.adjPosY)) {
             self.dbgWin.style.top = 0;
           } else {
-            var top = clientHeight - height - self.options.posAdjY;
+            var top = clientHeight - height - self.options.adjPosY;
             self.dbgWin.style.top = top + 'px';
           }
         }
