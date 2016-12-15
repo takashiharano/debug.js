@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612152342';
+  this.v = '201612160021';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4769,12 +4769,14 @@ DebugJS.prototype = {
       }
       var ret = v2;
       var hldigit = v2len;
+      var overflow = false;
       if (val < 0) {
         hldigit = digit;
       } else if ((data.digit > 0) && (v2len > data.digit)) {
+        overflow = true;
         hldigit = data.digit;
       }
-      ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, hldigit);
+      ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, hldigit, overflow);
       DebugJS.log(ret);
     } catch (e) {
       DebugJS.log.e('invalid value');
@@ -6156,11 +6158,11 @@ DebugJS.convRadixDECtoHEX = function(v10, upper) {
   return v16;
 };
 
-DebugJS.formatBin = function(v2, grouping, n, digit) {
+DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
   var len = v2.length;
   var bin = '';
   if (grouping) {
-    if ((digit > 0) && (len > digit)) {
+    if ((highlight > 0) && (len > highlight)) {
       bin += '<span style="color:#888;">';
     }
     for (var i = 0; i < len; i++) {
@@ -6168,7 +6170,7 @@ DebugJS.formatBin = function(v2, grouping, n, digit) {
         bin += ' ';
       }
       bin += v2.charAt(i);
-      if ((digit > 0) && ((len - i) == (digit + 1))) {
+      if ((highlight > 0) && ((len - i) == (highlight + 1))) {
         bin += '</span>';
       }
     }
@@ -6177,7 +6179,11 @@ DebugJS.formatBin = function(v2, grouping, n, digit) {
   }
   if (n) {;
     if (len >= n) {
-      bin += ' (' + len + ' bits)';
+      var digits = len;
+      if (overflow == false) {
+        digits = highlight;
+      }
+      bin += ' (' + digits + ' bits)';
     }
   }
   return bin;
