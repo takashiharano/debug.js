@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612160021';
+  this.v = '201612200037';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3157,8 +3157,8 @@ DebugJS.prototype = {
       var className = el.className;
       className = className.replace(self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX + '</span>');
 
-      var href = (el.href ? self.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
-      var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : '');
+      var href = (el.href ? self.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNotAvailable(el.href));
+      var src = (el.src ? self.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNotAvailable(el.src));
 
       var backgroundColor = computedStyle.backgroundColor;
       var bgColor16 = '';
@@ -3227,6 +3227,8 @@ DebugJS.prototype = {
         }
       }
       allStylesFolding = self.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['allStyles']);
+      var name = (el.name == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.name) : DebugJS.escapeTag(el.name);
+      var val = (el.value == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.value) : DebugJS.escapeTag(el.value);
 
       html += '<span style="color:#8f0;display:inline-block;height:14px;">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
@@ -3261,8 +3263,8 @@ DebugJS.prototype = {
       '<div class="' + self.id + '-separator"></div>' +
       'All Styles: getComputedStyle() ' + allStylesFolding + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'name      : ' + (el.name ? el.name : '') + '\n' +
-      'value     : ' + (el.value ? self.createFoldingText(el.value, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) : '') + '\n' +
+      'name      : ' + name + '\n' +
+      'value     : ' + self.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
       'disabled  : ' + DebugJS.setStyleIfObjNotAvailable(el.disabled, true) + '\n' +
