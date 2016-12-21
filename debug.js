@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612200037';
+  this.v = '201612211952';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3228,7 +3228,7 @@ DebugJS.prototype = {
       }
       allStylesFolding = self.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['allStyles']);
       var name = (el.name == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.name) : DebugJS.escapeTag(el.name);
-      var val = (el.value == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.value) : DebugJS.escapeTag(el.value);
+      var val = (el.value == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.value) : DebugJS.escapeSpclChr(el.value);
 
       html += '<span style="color:#8f0;display:inline-block;height:14px;">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
@@ -6920,6 +6920,14 @@ DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
 
 DebugJS.escapeTag = function(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+};
+
+DebugJS.escapeSpclChr = function(str) {
+  var txt = str;
+  txt = txt.replace(/&/g, '&amp;');
+  txt = txt.replace(/</g, '&lt;');
+  txt = txt.replace(/>/g, '&gt;');
+  return txt;
 };
 
 DebugJS.addClass = function(el, className) {
