@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612211952';
+  this.v = '201612252025';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -266,7 +266,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method', 'usage': 'get URL'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'hex', 'fnc': this.cmdHex, 'desc': 'Convert a number to hexadecimal', 'usage': 'hex num digit'},
-    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c] [-d offset] [n]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
@@ -4943,6 +4943,8 @@ DebugJS.prototype = {
         self.showHistory();
       } else if (args.opt == 'c') {
         self.clearHistory();
+      } else if (args.opt == 'd') {
+        self.delHistory(args.data);
       } else {
         DebugJS.printUsage(tbl.usage);
       }
@@ -5016,6 +5018,23 @@ DebugJS.prototype = {
     var cmds = self.cmdHistoryBuf.getAll();
     var cmd = cmds[cmds.length - 1];
     return ((cmd == undefined) ? '' : cmd);
+  },
+
+  delHistory: function(idx) {
+    var self = DebugJS.self;
+    var cmds = self.cmdHistoryBuf.getAll();
+    self.clearHistory();
+    for (var i = 0; i < cmds.length; i++) {
+      if (cmds.length < self.options.cmdHistoryMax) {
+        if (i != (idx - 1)) {
+          self.saveHistory(cmds[i]);
+        }
+      } else if (cmds.length >= self.options.cmdHistoryMax) {
+        if (i != (idx - 2)) {
+          self.saveHistory(cmds[i]);
+        }
+      }
+    }
   },
 
   clearHistory: function() {
