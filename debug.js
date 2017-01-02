@@ -1,11 +1,11 @@
 /*!
  * debug.js
- * Copyright 2016 Takashi Harano
+ * Copyright 2017 Takashi Harano
  * Released under the MIT license
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201612252025';
+  this.v = '201701021700';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -917,7 +917,7 @@ DebugJS.prototype = {
       self.initHeight = self.dbgWin.offsetHeight - DebugJS.WINDOW_ADJUST;
     }
     self.windowExpandHeight = DebugJS.DEBUG_WIN_EXPAND_H * self.options.zoom;
-    self.initExtention();
+    self.initExtension();
     if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       self.resetStylesOnZoom();
       self.reopenFeatures(restoreOption.status);
@@ -5478,12 +5478,22 @@ DebugJS.prototype = {
     DebugJS.doHttpRequest(url, method, data);
   },
 
-  initExtention: function() {
+  initExtension: function() {
     var self = DebugJS.self;
     if (DebugJS.x.CMD_TBL) {
-      for (var i = 0; i < DebugJS.x.CMD_TBL.length; i++) {
-        self.CMD_TBL.push(DebugJS.x.CMD_TBL[i]);
+      self.addCmdTbl(DebugJS.x.CMD_TBL);
+    }
+    for (var key in DebugJS.x) {
+      if (DebugJS.x[key].CMD_TBL) {
+        self.addCmdTbl(DebugJS.x[key].CMD_TBL);
       }
+    }
+  },
+
+  addCmdTbl: function(table) {
+    var self = DebugJS.self;
+    for (var i = 0; i < table.length; i++) {
+      self.CMD_TBL.push(table[i]);
     }
   }
 };
