@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701021700';
+  this.v = '201701032156';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -7200,11 +7200,6 @@ log.d = function(m) {
   DebugJS.log.d(m);
 };
 
-log.s = function(m) {
-  if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.log.s(m);
-};
-
 log.t = function(m, n) {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.timeLog(m, n);
@@ -7261,7 +7256,6 @@ if (DebugJS.ENABLE) {
   log.w = function(x) {};
   log.i = function(x) {};
   log.d = function(x) {};
-  log.s = function(x) {};
   log.t = function(x, xx) {};
   log.p = function(x, xx, xxx) {};
   log.stack = function() {};

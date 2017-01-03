@@ -272,11 +272,6 @@ var sampleMessages = [
     'delay': 50
   },
 //  {
-//    'fnc': log.s,
-//    'msg': 'system log sample.',
-//    'delay': 50
-//  },
-//  {
 //    'fnc': log.res,
 //    'msg': 'result log sample.',
 //    'delay': 50
@@ -494,9 +489,6 @@ var h = {
 //      break;
 //    case 69:
 //      log.e("Hello, World!");
-//      break;
-//    case 83:
-//      log.s("Hello, World!");
 //      break;
 //    default:
 //      break;
@@ -1049,12 +1041,6 @@ If you want to change the debugger settings, explicitly call for initialization 
     <td class="name">log.e</td>
     <td>message string</td>
     <td>Output error log</td>
-  </tr>
-
-  <tr>
-    <td class="name">log.s</td>
-    <td>message string</td>
-    <td>Output system log</td>
   </tr>
 
   <tr>
@@ -2019,11 +2005,6 @@ warn log<br>
 <td>
 error log<br>
 <button onclick="log.e(logMessageText.value);">log.e()</button>
-</td>
-
-<td>
-system log<br>
-<button onclick="log.s(logMessageText.value);">log.s()</button>
 </td>
 </tr>
 
