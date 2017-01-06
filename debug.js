@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701032156';
+  this.v = '201701062330';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2740,7 +2740,7 @@ DebugJS.prototype = {
     var sysTimeBin = DebugJS.formatBin(parseInt(sysTime).toString(2), false, 1);
 
     var html = '<pre>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + sysTime + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : (new Date()).getTime() = ' + sysTime + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin +
     '</pre>';
     self.sysTimePanel.innerHTML = html;
@@ -3261,7 +3261,7 @@ DebugJS.prototype = {
       'overflow  : ' + computedStyle.overflow + '\n' +
       'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'All Styles: getComputedStyle() ' + allStylesFolding + '\n' +
+      'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'name      : ' + name + '\n' +
       'value     : ' + self.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
@@ -4668,32 +4668,32 @@ DebugJS.prototype = {
     self.cmdLine.value = '';
     if (cl == '') {
       DebugJS.log('');
-    } else {
-      if (cl.substr(0, 2) == '!!') {
-        var event = self.getLastHistory();
+      return;
+    }
+    if (cl.substr(0, 2) == '!!') {
+      var event = self.getLastHistory();
+      if (event == '') {
+        DebugJS.log.w('!!: event not found');
+        return;
+      }
+      cl = event + cl.substr(2);
+    } else if (cl.substr(0, 1) == '!') {
+      var str = cl.substr(1).match(/(\d*)(.*)/);
+      var num = str[1];
+      var arg = str[2];
+      if (num != '') {
+        var event = self.getHistory((num | 0) - 1);
         if (event == '') {
-          DebugJS.log.w('!!: event not found');
+          DebugJS.log.w('!' + num + ': event not found');
           return;
         }
-        cl = event + cl.substr(2);
-      } else if (cl.substr(0, 1) == '!') {
-        var str = cl.substr(1).match(/(\d*)(.*)/);
-        var num = str[1];
-        var arg = str[2];
-        if (num != '') {
-          var event = self.getHistory((num | 0) - 1);
-          if (event == '') {
-            DebugJS.log.w('!' + num + ': event not found');
-            return;
-          }
-          cl = event + arg;
-        } else if (arg != '') {
-          cl = '!' + arg;
-        }
+        cl = event + arg;
+      } else if (arg != '') {
+        cl = '!' + arg;
       }
-      self.saveHistory(cl);
-      self._execCmd(cl, true);
     }
+    self.saveHistory(cl);
+    self._execCmd(cl, true);
   },
 
   _execCmd: function(str, echo) {
@@ -4757,28 +4757,7 @@ DebugJS.prototype = {
       return;
     }
     try {
-      var digit = data.digit;
-      if (digit == 0) {
-        digit = DebugJS.DEFAULT_UNIT;
-      }
-      var val = eval(data.exp);
-      var v2 = parseInt(val).toString(2);
-      var v2len = v2.length;
-      var loop = ((digit > v2len) ? digit : v2len);
-      v2 = '';
-      for (var i = (loop - 1); i >= 0; i--) {
-        v2 += (val & 1 << i) ? '1' : '0';
-      }
-      var ret = v2;
-      var hldigit = v2len;
-      var overflow = false;
-      if (val < 0) {
-        hldigit = digit;
-      } else if ((data.digit > 0) && (v2len > data.digit)) {
-        overflow = true;
-        hldigit = data.digit;
-      }
-      ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, hldigit, overflow);
+      ret = DebugJS.convertBin(data);
       DebugJS.log(ret);
     } catch (e) {
       DebugJS.log.e('invalid value');
@@ -5566,6 +5545,7 @@ DebugJS.RingBuffer.prototype = {
   }
 };
 
+// " 1  2 3  4 " -> [0]="1" [1]=" 2 3  4 "
 DebugJS.splitCmdLineInTwo = function(str) {
   var res = [];
   var strs = str.match(/([^\s]{1,})\s(.*)/);
@@ -5579,6 +5559,7 @@ DebugJS.splitCmdLineInTwo = function(str) {
   return res;
 };
 
+// " 1  2 3  4 " -> [0]="1" [1]="2" [2]="3" [3]="4"
 DebugJS.splitArgs = function(arg) {
   var wkArg = arg.replace(/\s{2,}/g, ' ');
   wkArg = wkArg.replace(/^\s/, '');
@@ -5589,6 +5570,15 @@ DebugJS.splitArgs = function(arg) {
   return args;
 };
 
+// " 1  2 3  4 "
+// opt: ""
+// data: "1  2 3  4"
+// dataRaw: " 1  2 3  4 "
+//
+// " -a  1  2 3  4 "
+// opt: "a"
+// data: "1  2 3  4"
+// dataRaw: " 1  2 3  4 "
 DebugJS.parseArgs = function(arg) {
   var args = {'opt': '', 'data': '', 'dataRaw': ''};
   var wkArgs = DebugJS.omitLeadingWhiteSpace(arg);
@@ -6135,27 +6125,34 @@ DebugJS.convRGB10to16 = function(rgb10) {
 
 DebugJS.convRadixFromHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
-  var v2 = parseInt(v16, 16).toString(2);
+  var bin = DebugJS.convertBin({'exp': v10, 'digit': DebugJS.DEFAULT_UNIT});
+  if (v10 > 0xffffffff) {
+    var v2 = parseInt(v10).toString(2);
+    bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
+  }
   var hex = DebugJS.formatHex(v16, false, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
   var res = 'HEX ' + hex + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'BIN ' + DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD) + '\n';
+  'BIN ' + bin + '\n';
   DebugJS.log.mlt(res);
 };
 
 DebugJS.convRadixFromDEC = function(v10) {
   var unit = DebugJS.DEFAULT_UNIT;
-  var v2 = parseInt(v10).toString(2);
+  var bin = DebugJS.convertBin({'exp': v10, 'digit': DebugJS.DEFAULT_UNIT});
   var v16 = parseInt(v10).toString(16);
   if (v10 < 0) {
-    v2 = '';
+    var v2 = '';
     for (var i = (unit - 1); i >= 0; i--) {
       v2 += (v10 & 1 << i) ? '1' : '0';
     }
     v16 = parseInt(v2, 2).toString(16);
+  } else if (v10 > 0xffffffff) {
+    var v2 = parseInt(v10).toString(2);
+    bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
   }
   var hex = DebugJS.formatHex(v16, false, true);
   if (hex.length >= 2) {
@@ -6163,7 +6160,7 @@ DebugJS.convRadixFromDEC = function(v10) {
   }
   var res = 'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'HEX ' + hex + '<br>' +
-  'BIN ' + DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD) + '\n';
+  'BIN ' + bin + '\n';
   DebugJS.log.mlt(res);
 };
 
@@ -6171,11 +6168,16 @@ DebugJS.convRadixFromBIN = function(v2) {
   v2 = v2.replace(/\s/g, '');
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
+  var bin = DebugJS.convertBin({'exp': v10, 'digit': DebugJS.DEFAULT_UNIT});
+  if (v10 > 0xffffffff) {
+    v2 = parseInt(v10).toString(2);
+    bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
+  }
   var hex = DebugJS.formatHex(v16, false, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
-  var res = 'BIN ' + DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD) + '\n' +
+  var res = 'BIN ' + bin + '\n' +
   'DEC ' + DebugJS.formatDec(v10) + '\n' +
   'HEX ' + hex + '\n';
   DebugJS.log.mlt(res);
@@ -6187,6 +6189,32 @@ DebugJS.convRadixDECtoHEX = function(v10, upper) {
     v16 = v16.toUpperCase();
   }
   return v16;
+};
+
+DebugJS.convertBin = function(data) {
+  var digit = data.digit;
+  if (digit == 0) {
+    digit = DebugJS.DEFAULT_UNIT;
+  }
+  var val = eval(data.exp);
+  var v2 = parseInt(val).toString(2);
+  var v2len = v2.length;
+  var loop = ((digit > v2len) ? digit : v2len);
+  v2 = '';
+  for (var i = (loop - 1); i >= 0; i--) {
+    v2 += (val & 1 << i) ? '1' : '0';
+  }
+  var ret = v2;
+  var hldigit = v2len;
+  var overflow = false;
+  if (val < 0) {
+    hldigit = digit;
+  } else if ((data.digit > 0) && (v2len > data.digit)) {
+    overflow = true;
+    hldigit = data.digit;
+  }
+  ret = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD, hldigit, overflow);
+  return ret;
 };
 
 DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
@@ -6226,7 +6254,9 @@ DebugJS.formatDec = function(v10) {
   var dec = '';
   for (var i = 0; i < len; i++) {
     if ((i != 0) && ((len - i) % 3 == 0)) {
-      dec += ',';
+      if (!((i == 1) && (v10.charAt(0) == '-'))) {
+        dec += ',';
+      }
     }
     dec += v10.charAt(i);
   }
