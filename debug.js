@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701062330';
+  this.v = '201701090110';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -391,7 +391,7 @@ DebugJS.LOG_SUSPEND_BUTTON_COLOR = '#d00';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
-DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + ';">SCA</span>';
+DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + '">SCA</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
@@ -435,8 +435,8 @@ DebugJS.SNIPPET = [
 '// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
-'<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
-'<div style="width:100%; height:100%; background:#000; color:#fff;">\n\n</div>\n',
+'<div style="width:100%; height:100%; background:#fff; color:#000">\n\n</div>\n',
+'<div style="width:100%; height:100%; background:#000; color:#fff">\n\n</div>\n',
 '',
 '',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
@@ -1278,7 +1278,7 @@ DebugJS.prototype = {
       self.cmdPanel = document.createElement('div');
       self.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
       self.windowBody.appendChild(self.cmdPanel);
-      self.cmdPanel.innerHTML = '<span style="color:' + self.options.promptColor + ';">$</span>';
+      self.cmdPanel.innerHTML = '<span style="color:' + self.options.promptColor + '">$</span>';
       self.cmdLine = document.createElement('input');
       self.cmdLine.style.setProperty('width', 'calc(100% - ' + self.computedFontSize + 'px)', 'important');
       self.cmdLine.style.setProperty('margin-left', '2px', 'important');
@@ -1552,7 +1552,7 @@ DebugJS.prototype = {
 
   // Update Mouse Click
   updateMouseClickPanel: function() {
-    var mouseClick = '<span style="color:' + this.mouseClickL + ';">L</span><span style="color:' + this.mouseClickC + ';">C</span><span style="color:' + this.mouseClickR + ';">R</span>';
+    var mouseClick = '<span style="color:' + this.mouseClickL + '">L</span><span style="color:' + this.mouseClickC + '">C</span><span style="color:' + this.mouseClickR + '">R</span>';
     this.mouseClickPanel.innerHTML = 'CLICK:' + mouseClick;
   },
 
@@ -1586,13 +1586,13 @@ DebugJS.prototype = {
       var bit1Color = (self.led & DebugJS.IND_BIT_1) ? 'color:' + DebugJS.IND_BIT_1_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
       var bit0Color = (self.led & DebugJS.IND_BIT_0) ? 'color:' + DebugJS.IND_BIT_0_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
       var led = '' +
-      '<span style="' + bit7Color + 'margin-right:2px;">' + LED + '</span>' +
-      '<span style="' + bit6Color + 'margin-right:2px;">' + LED + '</span>' +
-      '<span style="' + bit5Color + 'margin-right:2px;">' + LED + '</span>' +
-      '<span style="' + bit4Color + 'margin-right:2px;">' + LED + '</span>' +
-      '<span style="' + bit3Color + 'margin-right:2px;">' + LED + '</span>' +
-      '<span style="' + bit2Color + 'margin-right:2px;">' + LED + '</span>' +
-      '<span style="' + bit1Color + 'margin-right:2px;">' + LED + '</span>' +
+      '<span style="' + bit7Color + 'margin-right:2px">' + LED + '</span>' +
+      '<span style="' + bit6Color + 'margin-right:2px">' + LED + '</span>' +
+      '<span style="' + bit5Color + 'margin-right:2px">' + LED + '</span>' +
+      '<span style="' + bit4Color + 'margin-right:2px">' + LED + '</span>' +
+      '<span style="' + bit3Color + 'margin-right:2px">' + LED + '</span>' +
+      '<span style="' + bit2Color + 'margin-right:2px">' + LED + '</span>' +
+      '<span style="' + bit1Color + 'margin-right:2px">' + LED + '</span>' +
       '<span style="' + bit0Color + '">' + LED + '</span>';
       self.ledPanel.innerHTML = led;
     }
@@ -1653,7 +1653,7 @@ DebugJS.prototype = {
   updateSwBtnPanel: function() {
     var self = DebugJS.self;
     var btn = (self.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
-    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" style="margin-right:2px;" onclick="DebugJS.self.resetStopWatch();">0</span>' +
+    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" style="margin-right:2px" onclick="DebugJS.self.resetStopWatch();">0</span>' +
     '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.startStopStopWatch();">' + btn + '</span>';
     self.swBtnPanel.innerHTML = btns;
   },
@@ -1663,7 +1663,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.updateStopWatch();
     if (self.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
-      self.swPanel.innerHTML = '<span style="color:' + self.options.timerColor + ';">' + self.swElapsedTimeDisp + '</span>';
+      self.swPanel.innerHTML = '<span style="color:' + self.options.timerColor + '">' + self.swElapsedTimeDisp + '</span>';
     } else {
       self.swPanel.innerHTML = self.swElapsedTimeDisp;
     }
@@ -1694,8 +1694,8 @@ DebugJS.prototype = {
       fn = 'DebugJS.self.restoreDebugWindow()';
       btn = '&#x2750;';
     }
-    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888;" onclick="' + fn + ';DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888;" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
+    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + ';DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -1703,7 +1703,7 @@ DebugJS.prototype = {
   printLogMessage: function() {
     var self = DebugJS.self;
     var msg = self.getLogMsgs();
-    var html = '<pre style="padding:0 3px;">' + msg + '</pre>';
+    var html = '<pre style="padding:0 3px">' + msg + '</pre>';
     self.logPanel.innerHTML = html;
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     if (!(self.status & DebugJS.STATE_VISIBLE)) {
@@ -2066,10 +2066,10 @@ DebugJS.prototype = {
           if (self.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + self.options.logColorD + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_SYS:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px;">' + m + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_MLT:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0;">' + m + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
           break;
         default:
           if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + m + '\n';
@@ -2300,7 +2300,7 @@ DebugJS.prototype = {
           self.startMeasure(e);
         }
         if (self.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
-          DebugJS.log('<span style="color:' + self.options.timerColor + ';">' + self.swElapsedTimeDisp + '</span>');
+          DebugJS.log('<span style="color:' + self.options.timerColor + '">' + self.swElapsedTimeDisp + '</span>');
           self.resetStopWatch();
         }
         break;
@@ -2674,10 +2674,10 @@ DebugJS.prototype = {
       originY = 'bottom';
       endPointY = 'top';
     }
-    var size = '<span style="font-family:' + self.options.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px;">W=' + deltaX + ' H=' + deltaY + '</span>';
-    var origin = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px;">x=' + self.clickedPosX + ',y=' + self.clickedPosY + '</span>';
+    var size = '<span style="font-family:' + self.options.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + deltaX + ' H=' + deltaY + '</span>';
+    var origin = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px">x=' + self.clickedPosX + ',y=' + self.clickedPosY + '</span>';
     var endPoint = '';
-    //endPoint = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px;">x=' + currentPosX + ',y=' + currentPosY + '</span>';
+    //endPoint = '<span style="font-family:' + self.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px">x=' + currentPosX + ',y=' + currentPosY + '</span>';
     self.measureBox.innerHTML = origin + size + endPoint;
   },
 
@@ -2977,7 +2977,7 @@ DebugJS.prototype = {
         partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omitpart, style);
         foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
-        '<div style="display:' + bodyDisplay + ';" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
+        '<div style="display:' + bodyDisplay + '" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
       } else {
         foldingText = obj;
       }
@@ -3205,10 +3205,10 @@ DebugJS.prototype = {
         borderColorB16 = '#' + borderColorB16cnv.r + borderColorB16cnv.g + borderColorB16cnv.b;
       }
 
-      var borderT = 'top    = ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + computedStyle.borderTopColor + ' ' + borderColorT16 + ' <span style="background:' + borderColorT + ';width:6px;height:12px;display:inline-block;"> </span>';
-      var borderLRB = '            left   = ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + computedStyle.borderLeftColor + ' ' + borderColorL16 + ' <span style="background:' + borderColorL + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
-      '            right  = ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + computedStyle.borderRightColor + ' ' + borderColorR16 + ' <span style="background:' + borderColorR + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
-      '            bottom = ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + computedStyle.borderBottomColor + ' ' + borderColorB16 + ' <span style="background:' + borderColorB + ';width:6px;height:12px;display:inline-block;"> </span>';
+      var borderT = 'top    = ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + computedStyle.borderTopColor + ' ' + borderColorT16 + ' <span style="background:' + borderColorT + ';width:6px;height:12px;display:inline-block"> </span>';
+      var borderLRB = '            left   = ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + computedStyle.borderLeftColor + ' ' + borderColorL16 + ' <span style="background:' + borderColorL + ';width:6px;height:12px;display:inline-block"> </span>\n' +
+      '            right  = ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + computedStyle.borderRightColor + ' ' + borderColorR16 + ' <span style="background:' + borderColorR + ';width:6px;height:12px;display:inline-block"> </span>\n' +
+      '            bottom = ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + computedStyle.borderBottomColor + ' ' + borderColorB16 + ' <span style="background:' + borderColorB + ';width:6px;height:12px;display:inline-block"> </span>';
 
       var allStyles = '';
       var LEADING_INDENT = '           ';
@@ -3230,7 +3230,7 @@ DebugJS.prototype = {
       var name = (el.name == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.name) : DebugJS.escapeTag(el.name);
       var val = (el.value == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.value) : DebugJS.escapeSpclChr(el.value);
 
-      html += '<span style="color:#8f0;display:inline-block;height:14px;">#text</span> ' + txt + '\n' +
+      html += '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'object    : ' + Object.prototype.toString.call(el) + '\n' +
       'tag       : &lt;' + el.tagName + (el.type ? ' type="' + el.type + '"' : '') + '&gt;\n' +
@@ -3250,8 +3250,8 @@ DebugJS.prototype = {
       '            family = ' + computedStyle.fontFamily + '\n' +
       '            weight = ' + computedStyle.fontWeight + '\n' +
       '            style  = ' + computedStyle.fontStyle + '\n' +
-      'color     : ' + color + ' ' + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
-      'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block;"> </span>\n' +
+      'color     : ' + color + ' ' + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block"> </span>\n' +
+      'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block"> </span>\n' +
       'opacity   : ' + computedStyle.opacity + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'location  : top    = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + computedStyle.top + ')\n' +
@@ -3477,7 +3477,7 @@ DebugJS.prototype = {
       str = str.replace(/\}$/, '');
       str = str.replace(/^\s{1,}/, '');
     } else {
-      str = '<span style="color:#aaa;">null</span>';
+      str = '<span style="color:#aaa">null</span>';
     }
     str = self.createFoldingText(str, name, DebugJS.OMIT_LAST, MAX_LEN, 'color:#888');
     return str;
@@ -3733,16 +3733,16 @@ DebugJS.prototype = {
       self.textCheckCtrl = document.createElement('div');
       self.textCheckerPanel.appendChild(self.textCheckCtrl);
       var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + self.id + '-fontsize-range" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeFontSize(true);" onchange="DebugJS.self.onChangeFontSize(true);">' +
-      '<input value="' + defaultFontSize + '" id="' + self.id + '-font-size" class="' + self.id + '-txt-text" style="width:30px;text-align:right;" oninput="DebugJS.self.onChangeFontSizeTxt()">px' +
+      '<input value="' + defaultFontSize + '" id="' + self.id + '-font-size" class="' + self.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.self.onChangeFontSizeTxt()">px' +
       '<br>' +
-      'font-family: <input value="' + defaultFontFamily + '" class="' + self.id + '-txt-text" style="width:110px;" oninput="DebugJS.self.onChangeFontFamily(this)">&nbsp;&nbsp;' +
-      'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + self.id + '-fontweight-range" class="' + self.id + '-txt-range" style="width:80px;" oninput="DebugJS.self.onChangeFontWeight();" onchange="DebugJS.self.onChangeFontWeight();"><span id="' + self.id + '-font-weight"></span> ' +
+      'font-family: <input value="' + defaultFontFamily + '" class="' + self.id + '-txt-text" style="width:110px" oninput="DebugJS.self.onChangeFontFamily(this)">&nbsp;&nbsp;' +
+      'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + self.id + '-fontweight-range" class="' + self.id + '-txt-range" style="width:80px" oninput="DebugJS.self.onChangeFontWeight();" onchange="DebugJS.self.onChangeFontWeight();"><span id="' + self.id + '-font-weight"></span> ' +
       '<table class="' + self.id + '-txt-tbl">' +
-      '<tr><td colspan="2">FG #<input id="' + self.id + '-fg-rgb" class="' + self.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px;" oninput="DebugJS.self.onChangeFgRGB()"></td></tr>' +
+      '<tr><td colspan="2">FG #<input id="' + self.id + '-fg-rgb" class="' + self.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px" oninput="DebugJS.self.onChangeFgRGB()"></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-r" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeFgColor(true);" onchange="DebugJS.self.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-r"></span></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-g" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeFgColor(true);" onchange="DebugJS.self.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-g"></span></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-fg-range-b" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeFgColor(true);" onchange="DebugJS.self.onChangeFgColor(true);"></td><td><span id="' + self.id + '-fg-b"></span></td></tr>' +
-      '<tr><td colspan="2">BG #<input id="' + self.id + '-bg-rgb" class="' + self.id + '-txt-text" value="' + defaultBgRGB16 + '" style="width:80px;" oninput="DebugJS.self.onChangeBgRGB()"></td></tr>' +
+      '<tr><td colspan="2">BG #<input id="' + self.id + '-bg-rgb" class="' + self.id + '-txt-text" value="' + defaultBgRGB16 + '" style="width:80px" oninput="DebugJS.self.onChangeBgRGB()"></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-r" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeBgColor(true);" onchange="DebugJS.self.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-r"></span></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-g" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeBgColor(true);" onchange="DebugJS.self.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-g"></span></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-b" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeBgColor(true);" onchange="DebugJS.self.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-b"></span></td></tr>' +
@@ -4122,7 +4122,7 @@ DebugJS.prototype = {
     var contentPreview = '';
     if (file.type.match(/image\//)) {
       var selfSizePos = self.getSelfSizePos();
-      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.computedFontSize * 13) - 8) + 'px;">\n';
+      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.computedFontSize * 13) - 8) + 'px">\n';
     } else if (file.type.match(/text\//)) {
       var contents = contentBase64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
@@ -4158,7 +4158,7 @@ DebugJS.prototype = {
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
-    var hexDump = '<pre style="white-space:pre !important"><span style="background:#0f0;color:#000;">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>\n00000000 : ';
+    var hexDump = '<pre style="white-space:pre !important"><span style="background:#0f0;color:#000">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>\n00000000 : ';
     for (var i = 0; i < len; i++) {
       var hex = ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase());
       hexDump += hex;
@@ -4204,7 +4204,7 @@ DebugJS.prototype = {
       }
     }
     if (buf.length > MAX_LEN) {
-      hexDump += '\n<span style="color:#ccc;">...</span>';
+      hexDump += '\n<span style="color:#ccc">...</span>';
     }
     hexDump += '</pre>';
     return hexDump;
@@ -4244,14 +4244,14 @@ DebugJS.prototype = {
       self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewerPrevPanel);
 
       self.htmlPreviewEditorPanel = document.createElement('div');
-      var html = '<span style="color:#ccc;">HTML Editor</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.drawHtml();DebugJS.self.htmlPreviewEditor.focus();">[DRAW]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet()">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="DebugJS.self.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(2)">&lt;CODE3&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(3)">&lt;CODE4&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertHtmlSnippet(4)">&lt;CODE5&gt;</span>';
+      var html = '<span style="color:#ccc">HTML Editor</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.drawHtml();DebugJS.self.htmlPreviewEditor.focus();">[DRAW]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet()">[CLR]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px" onclick="DebugJS.self.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(2)">&lt;CODE3&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(3)">&lt;CODE4&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(4)">&lt;CODE5&gt;</span>';
       self.htmlPreviewEditorPanel.innerHTML = html;
       self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditorPanel);
 
@@ -4312,11 +4312,11 @@ DebugJS.prototype = {
       self.toolsBodyPanel.appendChild(self.memoBasePanel);
 
       self.memoEditorPanel = document.createElement('div');
-      var html = '<span style="color:#ccc;">Memo</span>';
+      var html = '<span style="color:#ccc">Memo</span>';
       if (DebugJS.LS_AVAILABLE) {
-        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
+        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
       } else {
-        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px;">[SAVE]</span>' +
+        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px">[SAVE]</span>' +
         '<span style="float:right;margin-right:4px;color:#caa">Save function (localStorage) is not available.</span>';
       }
       self.memoEditorPanel.innerHTML = html;
@@ -4381,18 +4381,18 @@ DebugJS.prototype = {
       self.scriptPanel.className = self.id + '-overlay-panel';
       var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" ' +
       'style="position:relative;top:-1px;float:right;' +
-      'font-size:' + (18 * self.options.zoom) + 'px;color:#888;" ' +
+      'font-size:' + (18 * self.options.zoom) + 'px;color:#888" ' +
       'onclick="DebugJS.self.disableScriptEditor();" ' +
       'onmouseover="this.style.color=\'#d88\';" ' +
       'onmouseout="this.style.color=\'#888\';">x</div>' +
-      '<span style="color:#ccc;">Script Editor</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px;" onclick="DebugJS.self.execScript();">[EXEC]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet()">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px;" onclick="DebugJS.self.insertSnippet(0)">{CODE1}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(1)">{CODE2}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(2)">{CODE3}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(3)">{CODE4}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px;" onclick="DebugJS.self.insertSnippet(4)">{CODE5}</span>';
+      '<span style="color:#ccc">Script Editor</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.execScript();">[EXEC]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet()">[CLR]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px" onclick="DebugJS.self.insertSnippet(0)">{CODE1}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(1)">{CODE2}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(2)">{CODE3}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(3)">{CODE4}</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(4)">{CODE5}</span>';
       self.scriptPanel.innerHTML = html;
       self.addOverlayPanel(self.scriptPanel);
 
@@ -4858,7 +4858,7 @@ DebugJS.prototype = {
         if (hex.length > data.digit) {
           ret = hex.slice(data.digit * -1);
           var omit = hex.substr(0, hex.length - data.digit);
-          ret = '<span style="color:#888;">' + omit + '</span>' + ret;
+          ret = '<span style="color:#888">' + omit + '</span>' + ret;
         } else if (hex.length < data.digit) {
           var padding = data.digit - hex.length;
           var zero = '';
@@ -4951,7 +4951,7 @@ DebugJS.prototype = {
       var cmd = buf[i];
       cmd = DebugJS.escapeTag(cmd);
       cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa;');
-      str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap;">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
+      str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
     str += '</table>';
     DebugJS.log.mlt(str);
@@ -5613,7 +5613,7 @@ DebugJS.omitLeadingAndTrailingWhiteSpace = function(str) {
 };
 
 DebugJS.encloseString = function(str) {
-  return '<span style="color:#0ff;">"</span>' + str + '<span style="color:#0ff;">"</span>';
+  return '<span style="color:#0ff">"</span>' + str + '<span style="color:#0ff">"</span>';
 };
 
 DebugJS.encloseStringIfNeeded = function(str) {
@@ -5689,7 +5689,7 @@ DebugJS.checkMetaKey = function(e) {
   var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
   var ctrl = e.ctrlKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
   var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
-  var metaKey = '<span style="color:' + shift + ';">S</span><span style="color:' + ctrl + ';">C</span><span style="color:' + alt + ';">A</span>';
+  var metaKey = '<span style="color:' + shift + '">S</span><span style="color:' + ctrl + '">C</span><span style="color:' + alt + '">A</span>';
   return metaKey;
 };
 
@@ -5726,7 +5726,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
   }
   var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
   if (typeof obj === 'function') {
-    arg.dump += '<span style="color:#4c4;">function</span>()\n';
+    arg.dump += '<span style="color:#4c4">function</span>()\n';
   }
   var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit);
   if ((!noMaxLimit) && (ret.cnt >= DebugJS.self.properties.dumplimit.value)) {
@@ -5744,7 +5744,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
     }
     if ((!noMaxLimit) && (arg.cnt >= DebugJS.self.properties.dumplimit.value)) {
       if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
-        arg.dump += '<span style="color:#aaa;">...</span>'; arg.cnt++;
+        arg.dump += '<span style="color:#aaa">...</span>'; arg.cnt++;
       }
       return arg;
     }
@@ -5761,7 +5761,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
         }
         indent += DebugJS.INDENT_SP;
       } else {
-        arg.dump += '<span style="color:#c08;">[Array][' + obj.length + ']</span>';
+        arg.dump += '<span style="color:#c08">[Array][' + obj.length + ']</span>';
       }
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
         var sibling = 0;
@@ -5798,7 +5798,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
         if (toJson) {
           arg.dump += indent;
         } else {
-          arg.dump += '<span style="color:#49f;">[Object]</span> ';
+          arg.dump += '<span style="color:#49f">[Object]</span> ';
         }
         if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
           arg.dump += '{\n';
@@ -5816,7 +5816,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             arg.dump += '\n';
           }
           if (typeof obj[key] === 'function') {
-            arg.dump += indent + '<span style="color:#4c4;">function</span>';
+            arg.dump += indent + '<span style="color:#4c4">function</span>';
             if (obj[key].toString().match(/\[native code\]/)) {
               arg.dump += ' [native]';
             }
@@ -5834,7 +5834,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             if (toJson) {arg.dump += '"';}
             var dt = DebugJS.getDateTime(obj[key]);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
-            arg.dump += ': <span style="color:#f80;">[Date]</span> ' + date;
+            arg.dump += ': <span style="color:#f80">[Date]</span> ' + date;
             sibling++;
             continue;
           } else if (obj[key] instanceof ArrayBuffer) {
@@ -5842,7 +5842,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             if (toJson) {arg.dump += '"';}
             arg.dump += key;
             if (toJson) {arg.dump += '"';}
-            arg.dump += ': <span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
+            arg.dump += ': <span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
             sibling++;
             continue;
           } else {
@@ -5873,16 +5873,16 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
         }
         if (sibling == 0) {
           if (typeof obj === 'function') {
-            arg.dump += '<span style="color:#4c4;">function</span>()';
+            arg.dump += '<span style="color:#4c4">function</span>()';
             if (obj.toString().match(/\[native code\]/)) {
               arg.dump += ' [native]';
             }
           } else if (Object.prototype.toString.call(obj) === '[object Date]') {
             var dt = DebugJS.getDateTime(obj);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
-            arg.dump += '<span style="color:#f80;">[Date]</span> ' + date;
+            arg.dump += '<span style="color:#f80">[Date]</span> ' + date;
           } else if (obj instanceof ArrayBuffer) {
-            arg.dump += '<span style="color:#d4c;">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
+            arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
           } else {
             arg.dump += indent + obj;
           }
@@ -5899,14 +5899,14 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
       if (toJson) {
         arg.dump += 'null';
       } else {
-        arg.dump += '<span style="color:#ccc;">null</span>';
+        arg.dump += '<span style="color:#ccc">null</span>';
       }
       arg.cnt++;
     } else if (obj === undefined) {
       if (toJson) {
         arg.dump += 'undefined';
       } else {
-        arg.dump += '<span style="color:#ccc;">undefined</span>';
+        arg.dump += '<span style="color:#ccc">undefined</span>';
       }
       arg.cnt++;
     } else if (typeof obj === 'string') {
@@ -5916,7 +5916,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
       arg.dump += obj; arg.cnt++;
     }
   } catch (e) {
-    arg.dump += '<span style="color:#f66;">parse error: ' + e + '</span>'; arg.cnt++;
+    arg.dump += '<span style="color:#f66">parse error: ' + e + '</span>'; arg.cnt++;
   }
   return arg;
 };
@@ -5973,9 +5973,9 @@ DebugJS.countElements = function(selector, showDetail) {
   if (showDetail) {
     var l = '<table>';
     for (var key in cnt) {
-      l += '<tr><td>' + key + '</td><td style="text-align:right;">' + cnt[key] + '</td></tr>';
+      l += '<tr><td>' + key + '</td><td style="text-align:right">' + cnt[key] + '</td></tr>';
     }
-    l += '<tr><td>Total</td><td style="text-align:right;">' + total + '</td></tr></table>';
+    l += '<tr><td>Total</td><td style="text-align:right">' + total + '</td></tr></table>';
     DebugJS.log.mlt(l);
   }
   return total;
@@ -6098,7 +6098,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
-  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block;"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
+  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
   var rgb = {'r': r10, 'g': g10, 'b': b10, 'rgb': rgb10};
   return rgb;
 };
@@ -6118,7 +6118,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
     g16 = g16.substring(0, 1);
     b16 = b16.substring(0, 1);
   }
-  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em;"><span style="background:#' + r16 + g16 + b16 + ';width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block;"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
+  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:#' + r16 + g16 + b16 + ';width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   var rgb = {'r': r16, 'g': g16, 'b': b16, 'rgb': rgb16};
   return rgb;
 };
@@ -6222,7 +6222,7 @@ DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
   var bin = '';
   if (grouping) {
     if ((highlight > 0) && (len > highlight)) {
-      bin += '<span style="color:#888;">';
+      bin += '<span style="color:#888">';
     }
     for (var i = 0; i < len; i++) {
       if ((i != 0) && ((len - i) % 4 == 0)) {
@@ -6512,7 +6512,7 @@ DebugJS.timeStart = function(timerName, msg) {
   if (msg === undefined) {
     str = _timerName + ': timer started';
   } else {
-    str = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' + self.options.timerColor + ';">00:00:00.000</span>');
+    str = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' + self.options.timerColor + '">00:00:00.000</span>');
   }
 
   DebugJS.log(str);
@@ -6534,7 +6534,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
 
   var prevSplit = self.timers[_timerName].split;
   var t = DebugJS.getElapsedTimeStr(self.timers[_timerName].start, now);
-  var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
+  var dt = '<span style="color:' + self.options.timerColor + '">' + t + '</span>';
 
   if (isEnd) {
     delete self.timers[_timerName];
@@ -6549,7 +6549,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
   var dtLap = '';
   if (prevSplit) {
     var tLap = DebugJS.getElapsedTimeStr(prevSplit, now);
-    dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
+    dtLap = '<span style="color:' + self.options.timerColor + '">' + tLap + '</span>';
   } else {
     if (!isEnd) {
       dtLap = dt;
@@ -6591,12 +6591,12 @@ DebugJS.timeLog = function(msg, timerName) {
     t = '00:00:00.000';
   }
 
-  var dt = '<span style="color:' + self.options.timerColor + ';">' + t + '</span>';
+  var dt = '<span style="color:' + self.options.timerColor + '">' + t + '</span>';
 
   var dtLap = '';
   if (self.timers[timerName].split) {
     var tLap = DebugJS.getElapsedTimeStr(self.timers[timerName].split, now);
-    dtLap = '<span style="color:' + self.options.timerColor + ';">' + tLap + '</span>';
+    dtLap = '<span style="color:' + self.options.timerColor + '">' + tLap + '</span>';
   }
 
   var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
@@ -6616,11 +6616,11 @@ DebugJS.timeList = function() {
   var now = new Date();
   var l;
   if (Object.keys(self.timers).length == 0) {
-    l = '<span style="color:#ccc;">no timers</span>';
+    l = '<span style="color:#ccc">no timers</span>';
   } else {
     l = '<table>';
     for (var key in self.timers) {
-      l += '<tr><td>' + key + '</td><td><span style="color:' + self.options.timerColor + ';">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
+      l += '<tr><td>' + key + '</td><td><span style="color:' + self.options.timerColor + '">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
     }
     l += '</table>';
   }
@@ -6735,7 +6735,7 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
 
   var req = 'Sending a ' + method + ' request.\n' +
   'URL : ' + url + '\n' +
-  'Body: ' + ((data == null) ? '<span style="color:#ccc;">null</span>' : data);
+  'Body: ' + ((data == null) ? '<span style="color:#ccc">null</span>' : data);
   DebugJS.log(req);
 
   try {
@@ -6862,25 +6862,25 @@ DebugJS.browserColoring = function(name) {
   var str = name;
   switch (name) {
     case 'Chrome':
-      str = '<span style="color:#f44;">Ch</span><span style="color:#ff0;">ro</span><span style="color:#4f4;">m</span><span style="color:#6cf;">e</span>';
+      str = '<span style="color:#f44">Ch</span><span style="color:#ff0">ro</span><span style="color:#4f4">m</span><span style="color:#6cf">e</span>';
       break;
     case 'Edge':
-      str = '<span style="color:#0af;">' + name + '</span>';
+      str = '<span style="color:#0af">' + name + '</span>';
       break;
     case 'Firefox':
-      str = '<span style="color:#e57f25;">' + name + '</span>';
+      str = '<span style="color:#e57f25">' + name + '</span>';
       break;
     case 'Opera':
-      str = '<span style="color:#f44;">' + name + '</span>';
+      str = '<span style="color:#f44">' + name + '</span>';
       break;
     case 'IE11':
     case 'IE10':
     case 'IE9':
     case 'IE8':
-      str = '<span style="color:#61d5f8;">' + name + '</span>';
+      str = '<span style="color:#61d5f8">' + name + '</span>';
       break;
     case 'Safari':
-      str = '<span style="color:#86c8e8;">Safa</span><span style="color:#dd5651;">r</span><span style="color:#ececec;">i</span>';
+      str = '<span style="color:#86c8e8">Safa</span><span style="color:#dd5651">r</span><span style="color:#ececec">i</span>';
       break;
     default:
       break;
@@ -7091,7 +7091,7 @@ DebugJS.log.res = function(m) {
   var self = DebugJS.self;
   m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encloseStringIfNeeded(m);
-  var msg = '<span style="color:' + self.options.promptColor + ';">&gt;</span> ' + m;
+  var msg = '<span style="color:' + self.options.promptColor + '">&gt;</span> ' + m;
   DebugJS.log(msg);
 };
 
@@ -7099,7 +7099,7 @@ DebugJS.log.res.err = function(m) {
   var self = DebugJS.self;
   m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encloseStringIfNeeded(m);
-  var msg = '<span style="color:' + self.options.promptColorE + ';">&gt;</span> ' + m;
+  var msg = '<span style="color:' + self.options.promptColorE + '">&gt;</span> ' + m;
   DebugJS.log(msg);
 };
 
