@@ -3,13 +3,13 @@ DebugJS.x.cmdAbc = function(arg, tbl) {
 };
 
 DebugJS.x.cmdXyz = function(arg, tbl) {
-  if (arg == '') {
+  var args = DebugJS.splitArgs(arg);
+  if (args[0] == '') {
     DebugJS.printUsage(tbl.usage);
-  } else {
-    var args = arg.split(' ');
-    for (var i = 0; i < args.length; i++) {
-      DebugJS.log('arg' + i + ' = ' + args[i]);
-    }
+    return;
+  }
+  for (var i = 0; i < args.length; i++) {
+    DebugJS.log('arg' + i + ' = ' + args[i]);
   }
 };
 
