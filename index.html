@@ -1493,13 +1493,13 @@ $ base64 -d YWJjZGVmZw==
       Convert a number to binary.
 <pre class="eg">
 $ bin 128
--&gt; 0000 0000 0000 0000 0000 0000 1000 0000 (32 bits)
+-&gt; <span style="color:#ccc">0000 0000 0000 0000 0000 0000</span> 1000 0000 (8 bits)
 
 $ bin 128 8
 -&gt; 1000 0000 (8 bits)
 
 $ bin (1 + 2) 8
--&gt; 0000 0011 (8 bits)
+-&gt; <span style="color:#ccc">0000 00</span>11 (2 bits)
 </pre>
     </td>
   </tr>
@@ -1513,7 +1513,16 @@ $ bin (1 + 2) 8
   <tr>
     <td class="name">elements</td>
     <td><span class="annotation">(opt)</span> #id / .class / tagName</td>
-    <td>Count elements by #id / .className / tagName.</td>
+    <td>
+      Count elements by #id / .className / tagName.
+<pre class="eg">
+$ elements #header
+
+DIV   6
+A     1
+IMG   1
+BR    1
+Total 9</span></td>
   </tr>
 
   <tr>
@@ -1562,7 +1571,7 @@ get https://debugjs.net/env/?abc=123&amp;xyz=987
       Convert a number to hexadecimal.
 <pre class="eg">
 $ hex 15
--&gt; 0x0000000F
+-&gt; 0xF
 
 $ hex 15 4
 -&gt; 0x000F
@@ -1579,7 +1588,10 @@ $ hex (30 + 2) 4
     <td>
       Displays command history.<br><br>
       Option:<br>
-      -c Clear the history list.
+      -c<br>
+      &nbsp;&nbsp;Clear the history list.<br><br>
+      -d <i>offset</i><br>
+      &nbsp;&nbsp;Delete the history entry at position <i>offset</i>.
     </td>
   </tr>
 
@@ -1972,6 +1984,33 @@ $ U+6F22 U+5B57
     <td>Close the winodw</td>
   </tr>
 </table>
+<br>
+
+<div class="caption">// Extension</div>
+You can define your own command like below.<br>
+
+<pre class="code">
+&lt;script src="debug.js"&gt;&lt;/script&gt;
+<span class="emphasis">&lt;script src="debug-x.js"&gt;&lt;/script&gt;</span>
+</pre>
+
+<pre class="code emphasis" style="margin-bottom:2px">
+DebugJS.x.cmdHello = function(arg, tbl) {
+  DebugJS.log('Hello!');
+};
+
+DebugJS.x.CMD_TBL = [
+  {'cmd': 'hello', 'fnc': DebugJS.x.cmdHello, 'desc': 'extention command example'}
+];
+</pre>
+<span style="font-family:Consolas">
+$ hello<br>
+-&gt; Hello!<br>
+</span>
+<br>
+<i>DebugJS.x</i> is prospectively defined in debug.js.<br>
+Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x.js" target="_blank">extension-sample/debug-x.js</a> for details.
+<br>
 <br>
 
 <div class="caption">// Browser Support</div>
