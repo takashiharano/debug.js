@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701090110';
+  this.v = '201701091242';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5871,6 +5871,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
           }
           sibling++;
         }
+        var empty = false;
         if (sibling == 0) {
           if (typeof obj === 'function') {
             arg.dump += '<span style="color:#4c4">function</span>()';
@@ -5884,14 +5885,16 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
           } else if (obj instanceof ArrayBuffer) {
             arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
           } else {
-            arg.dump += indent + obj;
+            empty = true;
+            arg.dump = arg.dump.replace(/\n$/, '');
+            arg.dump += '}';
           }
           arg.cnt++;
         }
         indent = indent.replace(DebugJS.INDENT_SP, '');
         if ((typeof obj !== 'function') &&
             (Object.prototype.toString.call(obj) !== '[object Date]') &&
-            !(obj instanceof ArrayBuffer)) {
+            !(obj instanceof ArrayBuffer) && (!empty)) {
           arg.dump += '\n' + indent + '}';
         }
       }
@@ -6892,8 +6895,9 @@ DebugJS.substr = function(text, len) {
   var textLen = text.length;
   var count = 0;
   var str = '';
+  var i;
   if (len >= 0) {
-    for (var i = 0; i < textLen; i++) {
+    for (i = 0; i < textLen; i++) {
       var x = encodeURIComponent(text.charAt(i));
       if (x.length <= 3) {
         count++;
@@ -6907,7 +6911,6 @@ DebugJS.substr = function(text, len) {
     }
   } else {
     len *= (-1);
-    var i;
     for (i = (textLen - 1); i >= 0; i--) {
       var x = encodeURIComponent(text.charAt(i));
       if (x.length <= 3) {
