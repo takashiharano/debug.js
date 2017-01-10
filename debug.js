@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701091242';
+  this.v = '201701110032';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5449,6 +5449,7 @@ DebugJS.prototype = {
     var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
     if (argNoWhiteSpace == '') {
       DebugJS.printUsage(tbl.usage);
+      return;
     }
     args = DebugJS.splitCmdLineInTwo(arg);
     var url = args[0];
