@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701111900';
+  this.v = '201701112000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -675,6 +675,7 @@ DebugJS.prototype = {
           self.bodyEl.style.cursor = 'nesw-resize';
         };
         self.dbgWin.appendChild(self.resizeSW);
+        self.windowBody.ondblclick = self.onDbgWinDblClick;
       }
     }
 
@@ -2367,6 +2368,16 @@ DebugJS.prototype = {
     }
     if (self.options.useMouseStatusInfo) {
       self.updateMouseClickPanel();
+    }
+  },
+
+  onDbgWinDblClick: function(e) {
+    var self = DebugJS.self;
+    if (self.isMoveExemptedElement(e.target)) return;
+    if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_H)) {
+      self.setWindowSize('restore');
+    } else {
+      self.setWindowSize('expand');
     }
   },
 
