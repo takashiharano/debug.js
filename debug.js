@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701110032';
+  this.v = '201701111900';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -6986,7 +6986,7 @@ DebugJS.escapeTag = function(str) {
 };
 
 DebugJS.escapeSpclChr = function(str) {
-  var txt = str;
+  var txt = str + '';
   txt = txt.replace(/&/g, '&amp;');
   txt = txt.replace(/</g, '&lt;');
   txt = txt.replace(/>/g, '&gt;');
