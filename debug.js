@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701130004';
+  this.v = '201701130030';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -893,7 +893,7 @@ DebugJS.prototype = {
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
       if (self.options.kioskMode) {
-        self.cmdLine.focus();
+        self.focusCmdLine();
       } else {
         self.setupMove();
 
@@ -904,9 +904,7 @@ DebugJS.prototype = {
         self.updateWinCtrlBtnPanel();
 
         if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
-          if (self.cmdLine) {
-            self.cmdLine.focus();
-          }
+          self.focusCmdLine();
         }
 
         if (!(self.status & DebugJS.STATE_VISIBLE)) {
@@ -1695,9 +1693,9 @@ DebugJS.prototype = {
       fn = 'DebugJS.self.restoreDebugWindow();';
       btn = '&#x2750;';
     }
-    fn += 'DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.cmdLine.focus();';
+    fn += 'DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();';
     var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.cmdLine.focus();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -2388,7 +2386,7 @@ DebugJS.prototype = {
         self.widenDebugWindow();
       }
     }
-    self.cmdLine.focus();
+    self.focusCmdLine();
   },
 
   widenDebugWindow: function() {
@@ -2635,6 +2633,11 @@ DebugJS.prototype = {
       self.disableElmInfo();
     }
     self.hideDebugWindow();
+  },
+
+  focusCmdLine: function() {
+    var self = DebugJS.self;
+    if (self.cmdLine) self.cmdLine.focus();
   },
 
   startMeasure: function(e) {
