@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701112000';
+  this.v = '201701130004';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1689,14 +1689,15 @@ DebugJS.prototype = {
   updateWinCtrlBtnPanel: function() {
     var self = DebugJS.self;
     if (!self.winCtrlBtnPanel) return;
-    var fn = 'DebugJS.self.expandDebugWindow(true)';
+    var fn = 'DebugJS.self.expandDebugWindow(true);';
     var btn = '&#x25A1;';
     if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_H)) {
-      fn = 'DebugJS.self.restoreDebugWindow()';
+      fn = 'DebugJS.self.restoreDebugWindow();';
       btn = '&#x2750;';
     }
-    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + ';DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
+    fn += 'DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.cmdLine.focus();';
+    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:3px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:1px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.cmdLine.focus();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -2374,11 +2375,46 @@ DebugJS.prototype = {
   onDbgWinDblClick: function(e) {
     var self = DebugJS.self;
     if (self.isMoveExemptedElement(e.target)) return;
-    if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) || (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_W) || (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_H)) {
+    if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) ||
+        (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_W) ||
+        (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_H)) {
       self.setWindowSize('restore');
     } else {
-      self.setWindowSize('expand');
+      var sizePos = self.getSelfSizePos();
+      if ((sizePos.w > DebugJS.DEBUG_WIN_EXPAND_W) ||
+          (sizePos.h > DebugJS.DEBUG_WIN_EXPAND_H)) {
+        self.setWindowSize('expand');
+      } else {
+        self.widenDebugWindow();
+      }
     }
+    self.cmdLine.focus();
+  },
+
+  widenDebugWindow: function() {
+    var self = DebugJS.self;
+    var sizePos = self.getSelfSizePos();
+    var clientWidth = document.documentElement.clientWidth;
+    var clientHeight = document.documentElement.clientHeight;
+    var l = sizePos.x1 + 3;
+    var t = sizePos.y1 + 3;
+    var w = DebugJS.DEBUG_WIN_EXPAND_W;
+    var h = DebugJS.DEBUG_WIN_EXPAND_H;
+    if (sizePos.x1 > (clientWidth - sizePos.x2)) {
+      l = (sizePos.x1 - (DebugJS.DEBUG_WIN_EXPAND_W - sizePos.w)) + 1;
+    }
+    if (sizePos.y1 > (clientHeight - sizePos.y2)) {
+      t = (sizePos.y1 - (DebugJS.DEBUG_WIN_EXPAND_H - sizePos.h)) + 1;
+    }
+    if (l < 0) l = 0;
+    if (clientHeight < DebugJS.DEBUG_WIN_EXPAND_H) {
+      t = clientHeight - DebugJS.DEBUG_WIN_EXPAND_H;
+    }
+    self.saveSizeAndPos();
+    self.setDebugWindowPos(t, l);
+    self.setDebugWindowSize(w, h);
+    self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
+    self.updateWinCtrlBtnPanel();
   },
 
   expandDebugWindow: function(auto) {
