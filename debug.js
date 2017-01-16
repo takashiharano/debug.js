@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701151355';
+  this.v = '201701162250';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -368,6 +368,8 @@ DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.DEBUG_WIN_EXPAND_W = 960;
 DebugJS.DEBUG_WIN_EXPAND_H = 640;
+DebugJS.DEBUG_WIN_EXPAND_W2 = 720;
+DebugJS.DEBUG_WIN_EXPAND_H2 = 600;
 DebugJS.DEBUG_WIN_POS_NONE = -9999;
 DebugJS.WINDOW_SHADOW = 10;
 DebugJS.WINDOW_BORDER = 1;
@@ -1792,7 +1794,6 @@ DebugJS.prototype = {
         (e.button != 0) || self.isMoveExemptedElement(e.target)) {
       return;
     }
-    self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
     self.status |= DebugJS.STATE_DRAGGING;
     self.windowBody.style.cursor = 'move';
     self.prevOffsetTop = e.clientY - self.dbgWin.offsetTop;
@@ -1813,6 +1814,7 @@ DebugJS.prototype = {
   doMove: function(e) {
     var self = DebugJS.self;
     if (!(self.status & DebugJS.STATE_DRAGGING)) return;
+    self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
     self.dbgWin.style.top = e.clientY - self.prevOffsetTop + 'px';
     self.dbgWin.style.left = e.clientX - self.prevOffsetLeft + 'px';
   },
@@ -2270,8 +2272,7 @@ DebugJS.prototype = {
     self.updateBodySizePanel();
     if (self.status & DebugJS.STATE_VISIBLE) {
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
-        var sizePos = self.getSelfSizePos();
-        self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
+        self.adjustDebugWindowPos();
       } else {
         self.adjustWindowMax();
       }
@@ -2380,8 +2381,8 @@ DebugJS.prototype = {
       self.setWindowSize('restore');
     } else {
       var sizePos = self.getSelfSizePos();
-      if ((sizePos.w > DebugJS.DEBUG_WIN_EXPAND_W) ||
-          (sizePos.h > DebugJS.DEBUG_WIN_EXPAND_H)) {
+      if ((sizePos.w > DebugJS.DEBUG_WIN_EXPAND_W2) ||
+          (sizePos.h > DebugJS.DEBUG_WIN_EXPAND_H2)) {
         self.setWindowSize('expand');
       } else {
         self.widenDebugWindow();
@@ -2397,17 +2398,17 @@ DebugJS.prototype = {
     var clientHeight = document.documentElement.clientHeight;
     var l = sizePos.x1 + 3;
     var t = sizePos.y1 + 3;
-    var w = DebugJS.DEBUG_WIN_EXPAND_W;
-    var h = DebugJS.DEBUG_WIN_EXPAND_H;
+    var w = DebugJS.DEBUG_WIN_EXPAND_W2;
+    var h = DebugJS.DEBUG_WIN_EXPAND_H2;
     if (sizePos.x1 > (clientWidth - sizePos.x2)) {
-      l = (sizePos.x1 - (DebugJS.DEBUG_WIN_EXPAND_W - sizePos.w)) + 1;
+      l = (sizePos.x1 - (DebugJS.DEBUG_WIN_EXPAND_W2 - sizePos.w)) + 1;
     }
     if (sizePos.y1 > (clientHeight - sizePos.y2)) {
-      t = (sizePos.y1 - (DebugJS.DEBUG_WIN_EXPAND_H - sizePos.h)) + 1;
+      t = (sizePos.y1 - (DebugJS.DEBUG_WIN_EXPAND_H2 - sizePos.h)) + 1;
     }
     if (l < 0) l = 0;
-    if (clientHeight < DebugJS.DEBUG_WIN_EXPAND_H) {
-      t = clientHeight - DebugJS.DEBUG_WIN_EXPAND_H;
+    if (clientHeight < DebugJS.DEBUG_WIN_EXPAND_H2) {
+      t = clientHeight - DebugJS.DEBUG_WIN_EXPAND_H2;
     }
     self.saveSizeAndPos();
     self.setDebugWindowPos(t, l);
@@ -2465,6 +2466,7 @@ DebugJS.prototype = {
     } else {
       self.setDebugWindowPos(t, l);
       self.setDebugWindowSize(w, h);
+      self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
       self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     }
   },
@@ -2477,6 +2479,7 @@ DebugJS.prototype = {
     var l = 0;
     self.setDebugWindowPos(t, l);
     self.setDebugWindowSize(w, h);
+    self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
     self.status |= DebugJS.STATE_WINDOW_SIZE_FULL_WH;
     self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
   },
@@ -2495,7 +2498,12 @@ DebugJS.prototype = {
     if (h > 0) self.dbgWin.style.height = h + 'px';
     self.resizeMainHeight();
     self.resizeImgPreview();
-    self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
+  },
+
+  adjustDebugWindowPos: function() {
+    var self = DebugJS.self;
+    var sizePos = self.getSelfSizePos();
+    self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
   },
 
   adjustWindowMax: function() {
@@ -2546,6 +2554,9 @@ DebugJS.prototype = {
     self.logPanel.scrollTop = self.logPanel.scrollHeight;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_EXPANDED;
     self.status &= ~DebugJS.STATE_WINDOW_SIZE_FULL_WH;
+    if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
+      self.adjustDebugWindowPos();
+    }
   },
 
   resetDebugWindowSizePos: function() {
@@ -2589,10 +2600,9 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.dbgWin.style.display = 'block';
     self.status |= DebugJS.STATE_VISIBLE;
-    var sizePos = self.getSelfSizePos();
     if ((self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) ||
        ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow()))) {
-      self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
+      self.adjustDebugWindowPos();
     } else {
       self.adjustWindowMax();
     }
@@ -4604,7 +4614,7 @@ DebugJS.prototype = {
       self.setSelfSizeH(height);
       sizePos = self.getSelfSizePos();
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
-        self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
+        self.adjustDebugWindowPos();
       } else {
         if (sizePos.y2 > clientHeight) {
           if (clientHeight < (height + self.options.adjPosY)) {
@@ -4635,8 +4645,7 @@ DebugJS.prototype = {
       self.resizeImgPreview();
       self.logPanel.scrollTop = self.logPanel.scrollHeight;
       if (self.status & DebugJS.STATE_AUTO_POSITION_ADJUST) {
-        var sizePos = self.getSelfSizePos();
-        self.setWindowPosition(self.options.position, sizePos.w, sizePos.h);
+        self.adjustDebugWindowPos();
       }
     }
   },
@@ -5409,6 +5418,7 @@ DebugJS.prototype = {
         self.savePosNone();
         self.setDebugWindowSize(self.computedMinWidth, self.computedMinHeight);
         self.logPanel.scrollTop = self.logPanel.scrollHeight;
+        self.status &= ~DebugJS.STATE_AUTO_POSITION_ADJUST;
         self.status |= DebugJS.STATE_WINDOW_SIZE_EXPANDED;
         self.updateWinCtrlBtnPanel();
         break;
