@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701162250';
+  this.v = '201701172107';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -368,8 +368,8 @@ DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
 DebugJS.DEBUG_WIN_EXPAND_W = 960;
 DebugJS.DEBUG_WIN_EXPAND_H = 640;
-DebugJS.DEBUG_WIN_EXPAND_W2 = 720;
-DebugJS.DEBUG_WIN_EXPAND_H2 = 600;
+DebugJS.DEBUG_WIN_EXPAND_W2 = 750;
+DebugJS.DEBUG_WIN_EXPAND_H2 = 550;
 DebugJS.DEBUG_WIN_POS_NONE = -9999;
 DebugJS.WINDOW_SHADOW = 10;
 DebugJS.WINDOW_BORDER = 1;
@@ -2374,7 +2374,10 @@ DebugJS.prototype = {
 
   onDbgWinDblClick: function(e) {
     var self = DebugJS.self;
-    if (self.isMoveExemptedElement(e.target)) return;
+    if ((self.isMoveExemptedElement(e.target)) ||
+        (!(self.status & DebugJS.STATE_DRAGGABLE))) {
+      return;
+    }
     if ((self.status & DebugJS.STATE_WINDOW_SIZE_EXPANDED) ||
         (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_W) ||
         (self.status & DebugJS.STATE_WINDOW_SIZE_FULL_H)) {
