@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701172107';
+  this.v = '201701172320';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5248,7 +5248,8 @@ DebugJS.prototype = {
 
   cmdRadixConv: function(val) {
     val = DebugJS.omitLeadingAndTrailingWhiteSpace(val);
-    if (val.match(/^\-{0,1}[0-9]+$/)) {
+    if (val.match(/^\-{0,1}[0-9,]+$/)) {
+      val = val.replace(/,/g, '');
       DebugJS.convRadixFromDEC(val);
       return true;
     } else if (val.match(/^\-{0,1}0x[0-9A-Fa-f]+$/)) {
