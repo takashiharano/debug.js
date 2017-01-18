@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701172320';
+  this.v = '201701182123';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -363,6 +363,7 @@ DebugJS.FILE_LOAD_FORMAT_BIN = 1;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
 DebugJS.CMD_ATTR_HIDDEN = 0x2;
 DebugJS.CMD_ATTR_DYNAMIC = 0x4;
+DebugJS.CMD_ATTR_DISABLED = 0x8;
 DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DEBUG_WIN_MIN_W = 292;
 DebugJS.DEBUG_WIN_MIN_H = 155;
@@ -4890,7 +4891,13 @@ DebugJS.prototype = {
         if (i == self.intCmdTblLen) {
           str += '<tr><td colspan="2">---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
         }
-        str += '<tr><td>' + self.CMD_TBL[i].cmd + '</td><td>' + self.CMD_TBL[i].desc + '</td></tr>';
+        var style1 = '';
+        var style2 = '';
+        if (self.CMD_TBL[i].attr & DebugJS.CMD_ATTR_DISABLED) {
+          style1 = '<span style="color:#aaa">';
+          style2 = '</span>';
+        }
+        str += '<tr><td>' + style1 + self.CMD_TBL[i].cmd + style2 + '</td><td>' + style1 + self.CMD_TBL[i].desc + style2 + '</td></tr>';
       }
     }
     str += '</table>';
@@ -5538,8 +5545,21 @@ DebugJS.prototype = {
   addCmdTbl: function(table) {
     var self = DebugJS.self;
     for (var i = 0; i < table.length; i++) {
+      if (self.existCmd(table[i].cmd)) {
+        table[i].attr |= DebugJS.CMD_ATTR_DISABLED;
+      }
       self.CMD_TBL.push(table[i]);
     }
+  },
+
+  existCmd: function(cmd) {
+    var self = DebugJS.self;
+    for (var i = 0; i < self.CMD_TBL.length; i++) {
+      if (self.CMD_TBL[i].cmd == cmd) {
+        return true;
+      }
+    }
+    return false;
   }
 };
 
