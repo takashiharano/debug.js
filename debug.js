@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701182123';
+  this.v = '201701182318';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1354,9 +1354,8 @@ DebugJS.prototype = {
   },
 
   createTextInput: function(width, textAlign, color, value, inputHandler) {
-    var self = DebugJS.self;
     var textInput = document.createElement('input');
-    textInput.className = self.id + '-txt-text';
+    textInput.className = DebugJS.self.id + '-txt-text';
     textInput.style.setProperty('width', width, 'important');
     textInput.style.setProperty('margin', '0', 'important');
     textInput.style.setProperty('padding', '0', 'important');
@@ -1805,10 +1804,9 @@ DebugJS.prototype = {
   },
 
   isMoveExemptedElement: function(el) {
-    var self = DebugJS.self;
     if (el.nodeName == 'INPUT') return true;
     if (el.nodeName == 'TEXTAREA') return true;
-    if (DebugJS.hasClass(el, this.id + '-nomove')) return true;
+    if (DebugJS.hasClass(el, DebugJS.self.id + '-nomove')) return true;
     return false;
   },
 
@@ -3925,9 +3923,8 @@ DebugJS.prototype = {
   },
 
   onChangeFontFamily: function(font) {
-    var self = DebugJS.self;
     var fontFamily = font.value;
-    self.textCheck.style.setProperty('font-family', fontFamily, 'important');
+    DebugJS.self.textCheck.style.setProperty('font-family', fontFamily, 'important');
   },
 
   disableTextChecker: function() {
@@ -4051,9 +4048,8 @@ DebugJS.prototype = {
   },
 
   handleFileSelect: function(e) {
-    var self = DebugJS.self;
-    self.fileLoaderFile = e.target.files[0];
-    self.loadFile();
+    DebugJS.self.fileLoaderFile = e.target.files[0];
+    DebugJS.self.loadFile();
   },
 
   handleDragOver: function(e) {
@@ -4063,11 +4059,10 @@ DebugJS.prototype = {
   },
 
   handleFileDrop: function(e) {
-    var self = DebugJS.self;
     e.stopPropagation();
     e.preventDefault();
-    self.fileLoaderFile = e.dataTransfer.files[0];
-    self.loadFile();
+    DebugJS.self.fileLoaderFile = e.dataTransfer.files[0];
+    DebugJS.self.loadFile();
   },
 
   loadFile: function() {
@@ -4108,9 +4103,8 @@ DebugJS.prototype = {
   },
 
   onAbortLoadFile: function(e) {
-    var self = DebugJS.self;
-    self.updateFilePreview('File read cancelled.');
-    setTimeout(self.fileLoadFinalize, 1000);
+    DebugJS.self.updateFilePreview('File read cancelled.');
+    setTimeout(DebugJS.self.fileLoadFinalize, 1000);
   },
 
   fileLoadErrorHandler: function(e) {
@@ -4217,7 +4211,6 @@ DebugJS.prototype = {
 
   getHexDump: function(file, contentArray) {
     var MAX_LEN = 102400;
-    var self = DebugJS.self;
     var buf = new Uint8Array(contentArray);
     var len = ((buf.length > MAX_LEN) ? MAX_LEN : buf.length);
     if (len % 0x10 != 0) {
@@ -4276,9 +4269,8 @@ DebugJS.prototype = {
   },
 
   updateFilePreview: function(html) {
-    var self = DebugJS.self;
-    self.filePreview.innerHTML = html;
-    self.filePreviewWrapper.scrollTop = 0;
+    DebugJS.self.filePreview.innerHTML = html;
+    DebugJS.self.filePreviewWrapper.scrollTop = 0;
   },
 
   fileLoadFinalize: function() {
@@ -4352,8 +4344,7 @@ DebugJS.prototype = {
   },
 
   saveHtmlBuf: function() {
-    var self = DebugJS.self;
-    self.htmlPreviewBuf = self.htmlPreviewEditor.value;
+    DebugJS.self.htmlPreviewBuf = DebugJS.self.htmlPreviewEditor.value;
   },
 
   drawHtml: function() {
@@ -4402,19 +4393,15 @@ DebugJS.prototype = {
   },
 
   loadMemo: function() {
-    var self = DebugJS.self;
     var memo = localStorage.getItem('DebugJS-memo');
-    if (memo == null) {
-      memo = '';
-    }
-    self.memoEditor.value = memo;
+    if (memo == null) memo = '';
+    DebugJS.self.memoEditor.value = memo;
   },
 
   saveMemo: function() {
-    var self = DebugJS.self;
-    var memo = self.memoEditor.value;
+    var memo = DebugJS.self.memoEditor.value;
     if (memo != '') {
-      localStorage.setItem('DebugJS-memo', self.memoEditor.value);
+      localStorage.setItem('DebugJS-memo', DebugJS.self.memoEditor.value);
     } else {
       localStorage.removeItem('DebugJS-memo');
     }
@@ -4503,13 +4490,11 @@ DebugJS.prototype = {
   },
 
   addOverlayPanelFull: function(panel) {
-    var self = DebugJS.self;
-    self.mainPanel.appendChild(panel);
+    DebugJS.self.mainPanel.appendChild(panel);
   },
 
   removeOverlayPanelFull: function(panel) {
-    var self = DebugJS.self;
-    self.mainPanel.removeChild(panel);
+    DebugJS.self.mainPanel.removeChild(panel);
   },
 
   insertSnippet: function(n) {
@@ -4532,18 +4517,15 @@ DebugJS.prototype = {
   },
 
   saveScriptBuf: function() {
-    var self = DebugJS.self;
-    self.scriptBuf = self.scriptEditor.value;
+    DebugJS.self.scriptBuf = DebugJS.self.scriptEditor.value;
   },
 
   execScript: function() {
-    var self = DebugJS.self;
-    self.execCode(self.scriptBuf);
+    DebugJS.self.execCode(DebugJS.self.scriptBuf);
   },
 
   execCode: function(code) {
     if (code == '') return;
-    var self = DebugJS.self;
     try {
       var ret = eval(code);
       DebugJS.log.res(ret);
@@ -4553,9 +4535,8 @@ DebugJS.prototype = {
   },
 
   disableScriptEditor: function() {
-    var self = DebugJS.self;
-    self.stopScript();
-    self.updateScriptBtn();
+    DebugJS.self.stopScript();
+    DebugJS.self.updateScriptBtn();
   },
 
   stopScript: function() {
@@ -4568,8 +4549,7 @@ DebugJS.prototype = {
   },
 
   isOnDebugWindow: function(x, y) {
-    var self = DebugJS.self;
-    var sizePos = self.getSelfSizePos();
+    var sizePos = DebugJS.self.getSelfSizePos();
     if (((x >= sizePos.x1) && (x <= sizePos.x2)) && ((y >= sizePos.y1) && (y <= sizePos.y2))) {
       return true;
     }
@@ -4721,9 +4701,8 @@ DebugJS.prototype = {
   },
 
   setMsg: function(msg) {
-    var self = DebugJS.self;
-    self.msgString = msg;
-    self.updateMsgPanel();
+    DebugJS.self.msgString = msg;
+    DebugJS.self.updateMsgPanel();
   },
 
   execCmd: function() {
@@ -4810,13 +4789,11 @@ DebugJS.prototype = {
   },
 
   cmdBase64: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
+    DebugJS.self.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
   },
 
   cmdBin: function(arg, tbl) {
-    var self = DebugJS.self;
-    var data = self.radixCmd(arg, tbl);
+    var data = DebugJS.self.radixCmd(arg, tbl);
     if (data == null) {
       return;
     }
@@ -4829,8 +4806,7 @@ DebugJS.prototype = {
   },
 
   cmdCls: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.clearMessage();
+    DebugJS.self.clearMessage();
   },
 
   cmdElements: function(arg, tbl) {
@@ -4843,8 +4819,7 @@ DebugJS.prototype = {
   },
 
   cmdExecute: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.execScript();
+    DebugJS.self.execScript();
   },
 
   cmdExit: function(arg, tbl) {
@@ -4879,8 +4854,7 @@ DebugJS.prototype = {
   },
 
   cmdGet: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.httpRequest(arg, tbl, 'GET');
+    DebugJS.self.httpRequest(arg, tbl, 'GET');
   },
 
   cmdHelp: function(arg, tbl) {
@@ -4905,8 +4879,7 @@ DebugJS.prototype = {
   },
 
   cmdHex: function(arg, tbl) {
-    var self = DebugJS.self;
-    var data = self.radixCmd(arg, tbl);
+    var data = DebugJS.self.radixCmd(arg, tbl);
     if (data == null) {
       return;
     }
@@ -5014,8 +4987,7 @@ DebugJS.prototype = {
   },
 
   showHistory: function() {
-    var self = DebugJS.self;
-    var buf = self.cmdHistoryBuf.getAll();
+    var buf = DebugJS.self.cmdHistoryBuf.getAll();
     var str = '<table>';
     for (var i = 0, len = buf.length; i < len; i++) {
       var cmd = buf[i];
@@ -5056,15 +5028,13 @@ DebugJS.prototype = {
   },
 
   getHistory: function(idx) {
-    var self = DebugJS.self;
-    var cmds = self.cmdHistoryBuf.getAll();
+    var cmds = DebugJS.self.cmdHistoryBuf.getAll();
     var cmd = cmds[idx];
     return ((cmd == undefined) ? '' : cmd);
   },
 
   getLastHistory: function() {
-    var self = DebugJS.self;
-    var cmds = self.cmdHistoryBuf.getAll();
+    var cmds = DebugJS.self.cmdHistoryBuf.getAll();
     var cmd = cmds[cmds.length - 1];
     return ((cmd == undefined) ? '' : cmd);
   },
@@ -5087,8 +5057,7 @@ DebugJS.prototype = {
   },
 
   clearHistory: function() {
-    var self = DebugJS.self;
-    self.cmdHistoryBuf.clear();
+    DebugJS.self.cmdHistoryBuf.clear();
     if (DebugJS.LS_AVAILABLE) {
       localStorage.removeItem('DebugJS-history');
     }
@@ -5155,17 +5124,15 @@ DebugJS.prototype = {
   },
 
   cmdLed: function(arg, tbl) {
-    var self = DebugJS.self;
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      self.setLed(arg);
+      DebugJS.self.setLed(arg);
     }
   },
 
   cmdMsg: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.setMsg(arg);
+    DebugJS.self.setMsg(arg);
   },
 
   cmdP: function(arg, tbl) {
@@ -5201,8 +5168,7 @@ DebugJS.prototype = {
   },
 
   cmdPost: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.httpRequest(arg, tbl, 'POST');
+    DebugJS.self.httpRequest(arg, tbl, 'POST');
   },
 
   cmdProp: function(arg, tbl) {
@@ -5281,8 +5247,7 @@ DebugJS.prototype = {
   },
 
   cmdSelf: function(arg, tbl) {
-    var self = DebugJS.self;
-    var sizePos = self.getSelfSizePos();
+    var sizePos = DebugJS.self.getSelfSizePos();
     var str = 'width : ' + sizePos.w + '\n' +
     'height: ' + sizePos.h + '\n' +
     'posX1 : ' + sizePos.x1 + '\n' +
@@ -5316,7 +5281,6 @@ DebugJS.prototype = {
   },
 
   cmdTimeCalc: function(arg) {
-    var self = DebugJS.self;
     var wkArg = arg.replace(/\s{2,}/g, ' ');
     if (!wkArg.match(/[\d :\.\+]{1,}/)) {
       return false;
@@ -5391,17 +5355,14 @@ DebugJS.prototype = {
   },
 
   cmdUnicode: function(arg, tbl) {
-    var self = DebugJS.self;
-    self.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
+    DebugJS.self.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
   },
 
   cmdV: function(arg, tbl) {
-    var self = DebugJS.self;
-    DebugJS.log(self.v);
+    DebugJS.log(DebugJS.self.v);
   },
 
   cmdWin: function(arg, tbl) {
-    var self = DebugJS.self;
     var args = DebugJS.parseArgs(arg);
     var size = args.data;
     switch (size) {
@@ -5412,7 +5373,7 @@ DebugJS.prototype = {
       case 'expand':
       case 'restore':
       case 'reset':
-        self.setWindowSize(size);
+        DebugJS.self.setWindowSize(size);
         break;
       default:
         DebugJS.printUsage(tbl.usage);
@@ -5517,7 +5478,6 @@ DebugJS.prototype = {
   },
 
   httpRequest: function(arg, tbl, method) {
-    var self = DebugJS.self;
     var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
     if (argNoWhiteSpace == '') {
       DebugJS.printUsage(tbl.usage);
@@ -7058,10 +7018,9 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
 };
 
 DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
-  var self = DebugJS.self;
   var text = obj;
   if ((exceptFalse && ((obj == undefined) || (obj == null))) || ((!exceptFalse) && (obj !== 0) && (!obj))) {
-    text = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
+    text = '<span class="' + DebugJS.self.id + '-unavailable">' + obj + '</span>';
   }
   return text;
 };
@@ -7177,18 +7136,16 @@ DebugJS.log.p = function(o, l, m) {
 };
 
 DebugJS.log.res = function(m) {
-  var self = DebugJS.self;
   m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encloseStringIfNeeded(m);
-  var msg = '<span style="color:' + self.options.promptColor + '">&gt;</span> ' + m;
+  var msg = '<span style="color:' + DebugJS.self.options.promptColor + '">&gt;</span> ' + m;
   DebugJS.log(msg);
 };
 
 DebugJS.log.res.err = function(m) {
-  var self = DebugJS.self;
   m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encloseStringIfNeeded(m);
-  var msg = '<span style="color:' + self.options.promptColorE + '">&gt;</span> ' + m;
+  var msg = '<span style="color:' + DebugJS.self.options.promptColorE + '">&gt;</span> ' + m;
   DebugJS.log(msg);
 };
 
