@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701211453';
+  this.v = '201701222110';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -264,10 +264,10 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
     {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'get', 'fnc': this.cmdGet, 'desc': 'Send an HTTP request by GET method', 'usage': 'get URL'},
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'hex', 'fnc': this.cmdHex, 'desc': 'Convert a number to hexadecimal', 'usage': 'hex num digit'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c] [-d offset] [n]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'http', 'fnc': this.cmdHttp, 'desc': 'Send an HTTP request', 'usage': 'http [method] url [data]'},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
@@ -276,7 +276,6 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
     {'cmd': 'pos', 'fnc': this.cmdPos, 'desc': 'Set the debugger window position', 'usage': 'pos n|ne|e|se|s|sw|w|nw|c', 'attr': DebugJS.CMD_ATTR_DYNAMIC},
-    {'cmd': 'post', 'fnc': this.cmdPost, 'desc': 'Send an HTTP request by POST method', 'usage': 'post URL'},
     {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Displays a property value', 'usage': 'prop property-name'},
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
@@ -4774,7 +4773,7 @@ DebugJS.prototype = {
     }
 
     if ((!found) && (str.match(/^\s*http/))) {
-      this.cmdGet(str);
+      DebugJS.self.httpRequest('GET', str);
       return;
     }
 
@@ -4859,10 +4858,6 @@ DebugJS.prototype = {
     self.clearMessage();
     self.logFilter = DebugJS.LOG_FILTER_ALL;
     self.updateLogFilterButtons();
-  },
-
-  cmdGet: function(arg, tbl) {
-    DebugJS.self.httpRequest(arg, tbl, 'GET');
   },
 
   cmdHelp: function(arg, tbl) {
@@ -5071,6 +5066,20 @@ DebugJS.prototype = {
     }
   },
 
+  cmdHttp: function(arg, tbl) {
+    args = DebugJS.splitCmdLineInTwo(arg);
+    var method = args[0];
+    var data = args[1];
+    if (method == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    } else if (method.match(/^\s*http/)) {
+      method = 'GET';
+      data = arg;
+    }
+    DebugJS.self.httpRequest(method, data);
+  },
+
   cmdJson: function(arg, tbl) {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
@@ -5173,10 +5182,6 @@ DebugJS.prototype = {
         DebugJS.printUsage(tbl.usage);
         break;
     }
-  },
-
-  cmdPost: function(arg, tbl) {
-    DebugJS.self.httpRequest(arg, tbl, 'POST');
   },
 
   cmdProp: function(arg, tbl) {
@@ -5484,13 +5489,8 @@ DebugJS.prototype = {
     }
   },
 
-  httpRequest: function(arg, tbl, method) {
-    var argNoWhiteSpace = DebugJS.omitAllWhiteSpace(arg);
-    if (argNoWhiteSpace == '') {
-      DebugJS.printUsage(tbl.usage);
-      return;
-    }
-    args = DebugJS.splitCmdLineInTwo(arg);
+  httpRequest: function(method, arg) {
+    var args = DebugJS.splitCmdLineInTwo(arg);
     var url = args[0];
     var data = args[1];
     data = DebugJS.encodeURIString(data);
@@ -6771,6 +6771,7 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
   if (async == undefined) async = false;
   if (user == undefined) user = '';
   if (password == undefined) password = '';
+  method = method.toUpperCase();
   if (method == 'GET') {
     if ((data != null) && (data != '')) {
       if (url.match(/\?/)) {
@@ -6778,6 +6779,7 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
       } else {
         url += '?' + data;
       }
+      data = null;
     }
   }
 

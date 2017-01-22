@@ -1538,24 +1538,6 @@ Total 9</pre></td>
   </tr>
 
   <tr>
-    <td class="name">get</td>
-    <td>
-      arg1: URL<br>
-      arg2: data to send<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Send an HTTP request by GET method.<br><br>
-      The results of the following commands will be the same.
-<pre class="eg">
-get https://debugjs.net/env/ abc=123&amp;xyz=987
-get https://debugjs.net/env/?abc=123&amp;xyz=987
-
-&gt; https://debugjs.net/env/?abc=123&amp;xyz=987
-</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">help</td>
     <td></td>
     <td>Displays available command list.</td>
@@ -1592,6 +1574,35 @@ $ hex (30 + 2) 4
       &nbsp;&nbsp;Clear the history list.<br><br>
       -d <i>offset</i><br>
       &nbsp;&nbsp;Delete the history entry at position <i>offset</i>.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">http</td>
+    <td>
+      arg1: method<span class="annotation">(opt)</span><br>
+      arg2: url<br>
+      arg3: data to send<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Send an HTTP request by specified method.<br><br>
+      mthod:<br>
+      OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT, extension-method<br>
+      <span class="annotation">If the method is not specified, the default method is GET.</span><br>
+<pre class="eg">
+e.g.,)
+
+GET <span class="annotation">The results of the following commands will be the same.</span>
+https://debugjs.net/test/?abc=123&amp;xyz=987
+http get https://debugjs.net/test/?abc=123&amp;xyz=987
+http get https://debugjs.net/test/ abc=123&amp;xyz=987
+http https://debugjs.net/test/?abc=123&amp;xyz=987
+
+POST
+http post https://debugjs.net/test/ abc=123&amp;xyz=987
+
+HEAD
+http head https://debugjs.net/test/</pre>
     </td>
   </tr>
 
@@ -1686,23 +1697,6 @@ $ p -a objectName
       &nbsp;&nbsp;w: left | middle<br>
       &nbsp;&nbsp;nw: left | top<br>
       &nbsp;&nbsp;c: center | middle<br>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">post</td>
-    <td>
-      arg1: URL<br>
-      arg2: data to send<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Send an HTTP request by POST method.
-<pre class="eg">
-post https://debugjs.net/env/ abc=123&amp;xyz=987
-
-&gt; url      : https://debugjs.net/env/
-&gt; send data: abc=123&amp;xyz=987
-</pre>
     </td>
   </tr>
 
