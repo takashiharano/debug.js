@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701222120';
+  this.v = '201701230000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -401,23 +401,23 @@ DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
-DebugJS.IND_BIT_7 = 0x80;
-DebugJS.IND_BIT_6 = 0x40;
-DebugJS.IND_BIT_5 = 0x20;
-DebugJS.IND_BIT_4 = 0x10;
-DebugJS.IND_BIT_3 = 0x8;
-DebugJS.IND_BIT_2 = 0x4;
-DebugJS.IND_BIT_1 = 0x2;
-DebugJS.IND_BIT_0 = 0x1;
-DebugJS.IND_BIT_7_COLOR = '#ddd';
-DebugJS.IND_BIT_6_COLOR = '#f0f';
-DebugJS.IND_BIT_5_COLOR = '#f66';
-DebugJS.IND_BIT_4_COLOR = '#f80';
-DebugJS.IND_BIT_3_COLOR = '#ee0';
-DebugJS.IND_BIT_2_COLOR = '#6f6';
-DebugJS.IND_BIT_1_COLOR = '#0ff';
-DebugJS.IND_BIT_0_COLOR = '#4cf';
-DebugJS.IND_COLOR_INACTIVE = '#777';
+DebugJS.LED_BIT_7 = 0x80;
+DebugJS.LED_BIT_6 = 0x40;
+DebugJS.LED_BIT_5 = 0x20;
+DebugJS.LED_BIT_4 = 0x10;
+DebugJS.LED_BIT_3 = 0x8;
+DebugJS.LED_BIT_2 = 0x4;
+DebugJS.LED_BIT_1 = 0x2;
+DebugJS.LED_BIT_0 = 0x1;
+DebugJS.LED_BIT_7_COLOR = '#ddd';
+DebugJS.LED_BIT_6_COLOR = '#f0f';
+DebugJS.LED_BIT_5_COLOR = '#f66';
+DebugJS.LED_BIT_4_COLOR = '#f80';
+DebugJS.LED_BIT_3_COLOR = '#ee0';
+DebugJS.LED_BIT_2_COLOR = '#6f6';
+DebugJS.LED_BIT_1_COLOR = '#0ff';
+DebugJS.LED_BIT_0_COLOR = '#4cf';
+DebugJS.LED_COLOR_INACTIVE = '#777';
 DebugJS.ITEM_NAME_COLOR = '#8f0';
 DebugJS.KEYWORD_COLOR = '#2f6';
 DebugJS.RANDOM_TYPE_NUM = '-d';
@@ -1583,14 +1583,14 @@ DebugJS.prototype = {
     if (self.ledPanel) {
       var LED = '&#x25CF;';
       var SHADOW = 'text-shadow:0 0 5px;';
-      var bit7Color = (self.led & DebugJS.IND_BIT_7) ? 'color:' + DebugJS.IND_BIT_7_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-      var bit6Color = (self.led & DebugJS.IND_BIT_6) ? 'color:' + DebugJS.IND_BIT_6_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-      var bit5Color = (self.led & DebugJS.IND_BIT_5) ? 'color:' + DebugJS.IND_BIT_5_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-      var bit4Color = (self.led & DebugJS.IND_BIT_4) ? 'color:' + DebugJS.IND_BIT_4_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-      var bit3Color = (self.led & DebugJS.IND_BIT_3) ? 'color:' + DebugJS.IND_BIT_3_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-      var bit2Color = (self.led & DebugJS.IND_BIT_2) ? 'color:' + DebugJS.IND_BIT_2_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-      var bit1Color = (self.led & DebugJS.IND_BIT_1) ? 'color:' + DebugJS.IND_BIT_1_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
-      var bit0Color = (self.led & DebugJS.IND_BIT_0) ? 'color:' + DebugJS.IND_BIT_0_COLOR + ';' + SHADOW : 'color:' + DebugJS.IND_COLOR_INACTIVE + ';';
+      var bit7Color = (self.led & DebugJS.LED_BIT_7) ? 'color:' + DebugJS.LED_BIT_7_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+      var bit6Color = (self.led & DebugJS.LED_BIT_6) ? 'color:' + DebugJS.LED_BIT_6_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+      var bit5Color = (self.led & DebugJS.LED_BIT_5) ? 'color:' + DebugJS.LED_BIT_5_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+      var bit4Color = (self.led & DebugJS.LED_BIT_4) ? 'color:' + DebugJS.LED_BIT_4_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+      var bit3Color = (self.led & DebugJS.LED_BIT_3) ? 'color:' + DebugJS.LED_BIT_3_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+      var bit2Color = (self.led & DebugJS.LED_BIT_2) ? 'color:' + DebugJS.LED_BIT_2_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+      var bit1Color = (self.led & DebugJS.LED_BIT_1) ? 'color:' + DebugJS.LED_BIT_1_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+      var bit0Color = (self.led & DebugJS.LED_BIT_0) ? 'color:' + DebugJS.LED_BIT_0_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
       var led = '' +
       '<span style="' + bit7Color + 'margin-right:2px">' + LED + '</span>' +
       '<span style="' + bit6Color + 'margin-right:2px">' + LED + '</span>' +
@@ -1702,8 +1702,8 @@ DebugJS.prototype = {
       btn = '&#x2750;';
     }
     fn += 'DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();';
-    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * self.options.zoom) + 'px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:' + self.options.zoom + 'px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();" onmouseover="this.style.color=\'#ddd\';" onmouseout="this.style.color=\'#888\';">-</span>';
+    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * self.options.zoom) + 'px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
+    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:' + self.options.zoom + 'px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -4663,28 +4663,28 @@ DebugJS.prototype = {
     var bit = 0;
     switch (pos) {
       case 0:
-        bit = DebugJS.IND_BIT_0;
+        bit = DebugJS.LED_BIT_0;
         break;
       case 1:
-        bit = DebugJS.IND_BIT_1;
+        bit = DebugJS.LED_BIT_1;
         break;
       case 2:
-        bit = DebugJS.IND_BIT_2;
+        bit = DebugJS.LED_BIT_2;
         break;
       case 3:
-        bit = DebugJS.IND_BIT_3;
+        bit = DebugJS.LED_BIT_3;
         break;
       case 4:
-        bit = DebugJS.IND_BIT_4;
+        bit = DebugJS.LED_BIT_4;
         break;
       case 5:
-        bit = DebugJS.IND_BIT_5;
+        bit = DebugJS.LED_BIT_5;
         break;
       case 6:
-        bit = DebugJS.IND_BIT_6;
+        bit = DebugJS.LED_BIT_6;
         break;
       case 7:
-        bit = DebugJS.IND_BIT_7;
+        bit = DebugJS.LED_BIT_7;
         break;
       default:
         break;
@@ -4750,7 +4750,7 @@ DebugJS.prototype = {
     if (echo) {
       var echoStr = str;
       echoStr = DebugJS.escapeTag(echoStr);
-      echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa;');
+      echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS.log.s(echoStr);
     }
     var self = DebugJS.self;
@@ -4995,7 +4995,7 @@ DebugJS.prototype = {
     for (var i = 0, len = buf.length; i < len; i++) {
       var cmd = buf[i];
       cmd = DebugJS.escapeTag(cmd);
-      cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa;');
+      cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
     str += '</table>';
@@ -6790,10 +6790,8 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
     if (!cache) {
       xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
     }
-
     //var userAgent = 'Mozilla/5.0 (' + navigator.platform + ') DebugJS/1.0';
     //xhr.setRequestHeader('User-Agent', userAgent);
-
     xhr.send(data);
   } catch (e) {
     DebugJS.log.e(e);
