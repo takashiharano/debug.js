@@ -1587,15 +1587,15 @@ $ hex (30 + 2) 4
     <td>
       Send an HTTP request by specified method.<br><br>
       mthod:<br>
-      OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT, extension-method<br>
-      <span class="annotation">If the method is not specified, the default method is GET.</span><br>
+      The HTTP method to use, such as GET, POST, HEAD, PUT, DELETE, OPTIONS, etc.<br>
+      <span class="annotation">GET is set as the default value in case of that the method is not specified.</span><br>
 <pre class="eg">
 e.g.,)
 
 GET <span class="annotation">The results of the following commands will be the same.</span>
-https://debugjs.net/test/?abc=123&amp;xyz=987
 http get https://debugjs.net/test/?abc=123&amp;xyz=987
 http https://debugjs.net/test/?abc=123&amp;xyz=987
+https://debugjs.net/test/?abc=123&amp;xyz=987
 
 POST
 http post https://debugjs.net/test/ abc=123&amp;xyz=987
@@ -2512,7 +2512,7 @@ console.timeEnd('timer3');<br>
 
 <!-- ********************************************************************** -->
 <div class="caption2">One-line JSON Sample for "json" command</div>
-<div class="desc-small">execute a command from the command line like below.<br>$ json {"foo": "abc", "bar": 1}</div>
+<div class="desc-small">Execute a command from the command line like below.<br>$ json {"foo": "abc", "bar": 1}</div>
 
 <pre id="json1" class="code emphasis">
 {"name": "John Smith", "age": 25, "city": "New York"}
