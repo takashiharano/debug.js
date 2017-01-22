@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701222110';
+  this.v = '201701222120';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -6772,19 +6772,8 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
   if (user == undefined) user = '';
   if (password == undefined) password = '';
   method = method.toUpperCase();
-  if (method == 'GET') {
-    if ((data != null) && (data != '')) {
-      if (url.match(/\?/)) {
-        url += '&' + data;
-      } else {
-        url += '?' + data;
-      }
-      data = null;
-    }
-  }
 
   var xhr = new XMLHttpRequest();
-
   xhr.onreadystatechange = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
       DebugJS.onHttpRequestDone(xhr);
