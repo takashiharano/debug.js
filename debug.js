@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701230000';
+  this.v = '201701270000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -124,27 +124,27 @@ var DebugJS = DebugJS || function() {
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
   this.toolsBodyPanel = null;
-  this.textCheckerBtn = null;
-  this.textCheckerPanel = null;
-  this.textCheck = null;
-  this.textCheckFontSizeRange = null;
-  this.textCheckFontSizeInput = null;
-  this.textCheckFontWeightRange = null;
-  this.textCheckFontWeightLabel = null;
-  this.textCheckerInputFgRGB = null;
-  this.textCheckerRangeFgR = null;
-  this.textCheckerRangeFgG = null;
-  this.textCheckerRangeFgB = null;
-  this.textCheckerLabelFgR = null;
-  this.textCheckerLabelFgG = null;
-  this.textCheckerLabelFgB = null;
-  this.textCheckerInputBgRGB = null;
-  this.textCheckerRangeBgR = null;
-  this.textCheckerRangeBgG = null;
-  this.textCheckerRangeBgB = null;
-  this.textCheckerLabelBgR = null;
-  this.textCheckerLabelBgG = null;
-  this.textCheckerLabelBgB = null;
+  this.txtChkBtn = null;
+  this.txtChkPanel = null;
+  this.txtChk = null;
+  this.txtChkFontSizeRange = null;
+  this.txtChkFontSizeInput = null;
+  this.txtChkFontWeightRange = null;
+  this.txtChkFontWeightLabel = null;
+  this.txtChkInputFgRGB = null;
+  this.txtChkRangeFgR = null;
+  this.txtChkRangeFgG = null;
+  this.txtChkRangeFgB = null;
+  this.txtChkLabelFgR = null;
+  this.txtChkLabelFgG = null;
+  this.txtChkLabelFgB = null;
+  this.txtChkInputBgRGB = null;
+  this.txtChkRangeBgR = null;
+  this.txtChkRangeBgG = null;
+  this.txtChkRangeBgB = null;
+  this.txtChkLabelBgR = null;
+  this.txtChkLabelBgG = null;
+  this.txtChkLabelBgB = null;
   this.fileLoaderBtn = null;
   this.fileLoaderPanel = null;
   this.fileInput = null;
@@ -165,12 +165,12 @@ var DebugJS = DebugJS || function() {
   this.scriptPanel = null;
   this.scriptEditor = null;
   this.scriptBuf = '';
-  this.htmlPreviewerBtn = null;
-  this.htmlPreviewerBasePanel = null;
-  this.htmlPreviewerPrevPanel = null;
-  this.htmlPreviewEditorPanel = null;
-  this.htmlPreviewEditor = null;
-  this.htmlPreviewBuf = '';
+  this.htmlPrevBtn = null;
+  this.htmlPrevBasePanel = null;
+  this.htmlPrevPrevPanel = null;
+  this.htmlPrevEditorPanel = null;
+  this.htmlPrevEditor = null;
+  this.htmlPrevBuf = '';
   this.memoBtn = null;
   this.memoBasePanel = null;
   this.memoEditorPanel = null;
@@ -250,8 +250,8 @@ var DebugJS = DebugJS || function() {
   this.savedFunc = null;
   this.computedFontSize = this.DEFAULT_OPTIONS.fontSize;
   this.computedWidth = this.DEFAULT_OPTIONS.width;
-  this.computedMinWidth = DebugJS.DBGWIN_MIN_W;
-  this.computedMinHeight = DebugJS.DBGWIN_MIN_H;
+  this.computedMinW = DebugJS.DBGWIN_MIN_W;
+  this.computedMinH = DebugJS.DBGWIN_MIN_H;
   this.status = 0;
   this.sizeStatus = 0;
   this.logFilter = DebugJS.LOG_FILTER_ALL;
@@ -279,7 +279,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Displays a property value', 'usage': 'prop property-name'},
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
-    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb color-value (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
     {'cmd': 'set', 'fnc': this.cmdSet, 'desc': 'Set a property value', 'usage': 'set property-name value'},
     {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
@@ -302,8 +302,8 @@ var DebugJS = DebugJS || function() {
 DebugJS.ENABLE = true;
 DebugJS.MERGE_CONSOLE = true;
 
+DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DEFAULT_UNIT = 32;
-DebugJS.INIT_CAUSE_NONE = 0;
 DebugJS.INIT_CAUSE_ZOOM = 1;
 DebugJS.STATE_INITIALIZED = 0x1;
 DebugJS.STATE_VISIBLE = 0x2;
@@ -506,8 +506,8 @@ DebugJS.prototype = {
       }
     }
 
-    self.computedMinWidth = DebugJS.DBGWIN_MIN_W * self.options.zoom;
-    self.computedMinHeight = DebugJS.DBGWIN_MIN_H * self.options.zoom;
+    self.computedMinW = DebugJS.DBGWIN_MIN_W * self.options.zoom;
+    self.computedMinH = DebugJS.DBGWIN_MIN_H * self.options.zoom;
     self.computedFontSize = Math.round(self.options.fontSize * self.options.zoom);
     self.computedWidth = Math.round(self.options.width * self.options.zoom);
 
@@ -1072,7 +1072,6 @@ DebugJS.prototype = {
       self.mainPanel.appendChild(self.logHeaderPanel);
     }
 
-    // CLR Button
     if (self.options.useClearButton) {
       self.clearBtn = document.createElement('span');
       self.clearBtn.className = this.id + '-btn ' + this.id + '-nomove';
@@ -1162,27 +1161,22 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.swBtnPanel);
     }
 
-    // Tools Button
     if (self.options.useTools) {
       self.toolsBtn = self.createHeaderButton('toolsBtn', 'TL', 2, null, DebugJS.self.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BUTTON_COLOR', false);
     }
 
-    // Script Button
     if (self.options.useScriptEditor) {
       self.scriptBtn = self.createHeaderButton('scriptBtn', 'JS', 2, null, DebugJS.self.toggleScriptMode, 'STATE_SCRIPT', 'JS_BUTTON_COLOR', false);
     }
 
-    // Element Info Button
     if (self.options.useElementInfo) {
       self.elmInfoBtn = self.createHeaderButton('elmInfoBtn', 'DOM', 3, null, DebugJS.self.toggleElmInfoMode, 'STATE_ELEMENT_INSPECTING', 'DOM_BUTTON_COLOR', false);
     }
 
-    // HTML Src Button
     if (self.options.useHtmlSrc) {
       self.htmlSrcBtn = self.createHeaderButton('htmlSrcBtn', 'HTM', 3, null, DebugJS.self.toggleHtmlSrcMode, 'STATE_HTML_SRC', 'HTML_BUTTON_COLOR', false);
     }
 
-    // System Info Button
     if (self.options.useSystemInfo) {
       self.sysInfoBtn = self.createHeaderButton('sysInfoBtn', 'SYS', 3, null, DebugJS.self.toggleSystemInfoMode, 'STATE_SYSTEM_INFO', 'SYS_BUTTON_COLOR', false);
     }
@@ -1397,7 +1391,7 @@ DebugJS.prototype = {
 
   createLogFilterButton: function(type, btnobj, color) {
     var self = DebugJS.self;
-    btn = document.createElement('span');
+    var btn = document.createElement('span');
     btn.className = this.id + '-btn ' + this.id + '-nomove';
     btn.style.marginLeft = '2px';
     btn.innerText = '[' + type + ']';
@@ -1531,53 +1525,43 @@ DebugJS.prototype = {
     }
   },
 
-  // Update Window Size
   updateWindowSizePanel: function() {
     this.windowSizePanel.innerText = 'WIN:w=' + window.outerWidth + ',h=' + window.outerHeight;
   },
 
-  // Update Client Size
   updateClientSizePanel: function() {
     this.clientSizePanel.innerText = 'CLI:w=' + document.documentElement.clientWidth + ',h=' + document.documentElement.clientHeight;
   },
 
-  // Update Body Size
   updateBodySizePanel: function() {
     this.bodySizePanel.innerText = 'BODY:w=' + this.bodyEl.clientWidth + ',h=' + document.body.clientHeight;
   },
 
-  // Update Scroll Position
   updateScrollPosPanel: function() {
     this.scrollPosPanel.innerText = 'SCROLL:x=' + this.scrollPosX + ',y=' + this.scrollPosY;
   },
 
-  // Update Mouse Position
   updateMousePositionPanel: function() {
     this.mousePositionPanel.innerText = 'POS:' + this.mousePos;
   },
 
-  // Update Mouse Click
   updateMouseClickPanel: function() {
     var mouseClick = '<span style="color:' + this.mouseClickL + '">L</span><span style="color:' + this.mouseClickC + '">C</span><span style="color:' + this.mouseClickR + '">R</span>';
     this.mouseClickPanel.innerHTML = 'CLICK:' + mouseClick;
   },
 
-  // Update key Down
   updateKeyDownPanel: function() {
     this.keyDownPanel.innerHTML = 'Key Down:' + this.keyDownCode;
   },
 
-  // Update key Press
   updateKeyPressPanel: function() {
     this.keyPressPanel.innerHTML = 'Press:' + this.keyPressCode;
   },
 
-  // Update key Up
   updateKeyUpPanel: function() {
     this.keyUpPanel.innerHTML = 'Up:' + this.keyUpCode;
   },
 
-  // Update LED
   updateLedPanel: function() {
     var self = DebugJS.self;
     if (self.ledPanel) {
@@ -1604,7 +1588,6 @@ DebugJS.prototype = {
     }
   },
 
-  // Update Message Display
   updateMsgPanel: function() {
     var self = DebugJS.self;
     var message = self.msgString;
@@ -1619,43 +1602,36 @@ DebugJS.prototype = {
     }
   },
 
-  // Update Measure Button
   updateMeasureBtn: function() {
     var self = DebugJS.self;
     self.measureBtn.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
-  // Update System Info Button
   updateSysInfoBtn: function() {
     var self = DebugJS.self;
     self.sysInfoBtn.style.color = (self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update Element Info Button
   updateElmInfoBtn: function() {
     var self = DebugJS.self;
     self.elmInfoBtn.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update HTML Src Button
   updateHtmlSrcBtn: function() {
     var self = DebugJS.self;
     self.htmlSrcBtn.style.color = (self.status & DebugJS.STATE_HTML_SRC) ? DebugJS.HTML_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update Tools Button
   updateToolsBtn: function() {
     var self = DebugJS.self;
     self.toolsBtn.style.color = (self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update Script Button
   updateScriptBtn: function() {
     var self = DebugJS.self;
     self.scriptBtn.style.color = (self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update Stop Watch Button
   updateSwBtnPanel: function() {
     var self = DebugJS.self;
     var btn = (self.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
@@ -1665,7 +1641,6 @@ DebugJS.prototype = {
     self.swBtnPanel.innerHTML = btns;
   },
 
-  // Update Stop Watch
   updateSwPanel: function() {
     var self = DebugJS.self;
     self.updateStopWatch();
@@ -1679,19 +1654,16 @@ DebugJS.prototype = {
     }
   },
 
-  // Update Suspend Log Button
   updateSuspendLogBtn: function() {
     var self = DebugJS.self;
     self.suspendLogBtn.style.color = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
   },
 
-  // Update Pin Button
   updatePinBtn: function() {
     var self = DebugJS.self;
     self.pinBtn.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;
   },
 
-  // Window Control Button
   updateWinCtrlBtnPanel: function() {
     var self = DebugJS.self;
     if (!self.winCtrlBtnPanel) return;
@@ -1856,8 +1828,8 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING_N) {
       moveY = self.clickedPosY - currentY;
       h = self.orgSizePos.h + moveY;
-      if (h < self.computedMinHeight) {
-        h = self.computedMinHeight;
+      if (h < self.computedMinH) {
+        h = self.computedMinH;
       } else {
         t = self.orgSizePos.t - moveY;
         self.dbgWin.style.top = t + 'px';
@@ -1871,8 +1843,8 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING_W) {
       moveX = self.clickedPosX - currentX;
       w = self.orgSizePos.w + moveX;
-      if (w < self.computedMinWidth) {
-        w = self.computedMinWidth;
+      if (w < self.computedMinW) {
+        w = self.computedMinW;
       } else {
         l = self.orgSizePos.l - moveX;
         self.dbgWin.style.left = l + 'px';
@@ -1883,19 +1855,19 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING_E) {
       moveX = currentX - self.clickedPosX;
       w = self.orgSizePos.w + moveX;
-      if (w < self.computedMinWidth) w = self.computedMinWidth;
+      if (w < self.computedMinW) w = self.computedMinW;
       self.dbgWin.style.width = w + 'px';
     }
 
     if (self.status & DebugJS.STATE_RESIZING_S) {
       moveY = currentY - self.clickedPosY;
       h = self.orgSizePos.h + moveY;
-      if (self.initHeight < self.computedMinHeight) {
+      if (self.initHeight < self.computedMinH) {
         if (h < self.initHeight) {
           h = self.initHeight;
         }
-      } else if (h < self.computedMinHeight) {
-        h = self.computedMinHeight;
+      } else if (h < self.computedMinH) {
+        h = self.computedMinH;
       }
       self.dbgWin.style.height = h + 'px';
       if (self.logPanel.scrollTop != 0) {
@@ -2345,6 +2317,7 @@ DebugJS.prototype = {
     if (self.status & DebugJS.STATE_RESIZING) self.doResize(e);
     if (self.status & DebugJS.STATE_MEASURING) self.doMeasure(e);
     if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) self.inspectElement(e);
+    self.resizeMainHeight();
   },
 
   onMouseUp: function(e) {
@@ -2671,16 +2644,17 @@ DebugJS.prototype = {
     self.clickedPosY = posY;
 
     if (self.measureBox == null) {
-      self.measureBox = document.createElement('div');
-      self.measureBox.style.position = 'fixed';
-      self.measureBox.style.zIndex = 0x7fffffff;
-      self.measureBox.style.top = self.clickedPosY + 'px';
-      self.measureBox.style.left = self.clickedPosX + 'px';
-      self.measureBox.style.width = '0px';
-      self.measureBox.style.height = '0px';
-      self.measureBox.style.border = 'dotted 1px #333';
-      self.measureBox.style.background = 'rgba(0,0,0,0.1)';
-      self.bodyEl.appendChild(self.measureBox);
+      var box = document.createElement('div');
+      box.style.position = 'fixed';
+      box.style.zIndex = 0x7fffffff;
+      box.style.top = self.clickedPosY + 'px';
+      box.style.left = self.clickedPosX + 'px';
+      box.style.width = '0px';
+      box.style.height = '0px';
+      box.style.border = 'dotted 1px #333';
+      box.style.background = 'rgba(0,0,0,0.1)';
+      self.measureBox = box;
+      self.bodyEl.appendChild(box);
     }
     self.savedFunc = document.onselectstart;
     document.onselectstart = function() {return false;};
@@ -3699,9 +3673,9 @@ DebugJS.prototype = {
       self.toolsBodyPanel.style.height = 'calc(100% - ' + self.computedFontSize + 'px)';
       self.toolsPanel.appendChild(self.toolsBodyPanel);
 
-      self.textCheckerBtn = self.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FNC_TEXT', 'textCheckerBtn');
+      self.txtChkBtn = self.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FNC_TEXT', 'txtChkBtn');
       self.fileLoaderBtn = self.createToolsHeaderButton('FILE', 'TOOLS_ACTIVE_FNC_FILE', 'fileLoaderBtn');
-      self.htmlPreviewerBtn = self.createToolsHeaderButton('HTML', 'TOOLS_ACTIVE_FNC_HTML', 'htmlPreviewerBtn');
+      self.htmlPrevBtn = self.createToolsHeaderButton('HTML', 'TOOLS_ACTIVE_FNC_HTML', 'htmlPrevBtn');
       self.memoBtn = self.createToolsHeaderButton('MEMO', 'TOOLS_ACTIVE_FNC_MEMO', 'memoBtn');
 
       self.addOverlayPanelFull(self.toolsPanel);
@@ -3738,9 +3712,9 @@ DebugJS.prototype = {
 
   updateToolsButtons: function() {
     var self = DebugJS.self;
-    self.textCheckerBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.txtChkBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.fileLoaderBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    self.htmlPreviewerBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    self.htmlPrevBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.memoBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
   },
 
@@ -3775,33 +3749,33 @@ DebugJS.prototype = {
 
   enableTextChecker: function() {
     var self = DebugJS.self;
-    if (self.textCheckerPanel == null) {
+    if (self.txtChkPanel == null) {
       var defaultFontSize = self.computedFontSize;
       var defaultFontFamily = 'Consolas';
       var defaultFontWeight = 400;
       var defaultFgRGB16 = 'fff';
       var defaultBgRGB16 = '000';
       var panelPadding = 2;
-      self.textCheckerPanel = document.createElement('div');
-      self.textCheckerPanel.className = self.id + '-tools';
-      self.toolsBodyPanel.appendChild(self.textCheckerPanel);
+      self.txtChkPanel = document.createElement('div');
+      self.txtChkPanel.className = self.id + '-tools';
+      self.toolsBodyPanel.appendChild(self.txtChkPanel);
 
       var txtPadding = 4;
-      self.textCheck = document.createElement('input');
-      self.textCheck.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
-      self.textCheck.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
-      self.textCheck.style.setProperty('margin-bottom', '8px', 'important');
-      self.textCheck.style.setProperty('padding', txtPadding + 'px', 'important');
-      self.textCheck.style.setProperty('border', '0', 'important');
-      self.textCheck.style.setProperty('border-radius', '0', 'important');
-      self.textCheck.style.setProperty('outline', 'none', 'important');
-      self.textCheck.style.setProperty('font-size', defaultFontSize + 'px', 'important');
-      self.textCheck.style.setProperty('font-family', defaultFontFamily, 'important');
-      self.textCheck.value = 'ABCDEFG.abcdefg 12345-67890_!?';
-      self.textCheckerPanel.appendChild(self.textCheck);
+      self.txtChk = document.createElement('input');
+      self.txtChk.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
+      self.txtChk.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
+      self.txtChk.style.setProperty('margin-bottom', '8px', 'important');
+      self.txtChk.style.setProperty('padding', txtPadding + 'px', 'important');
+      self.txtChk.style.setProperty('border', '0', 'important');
+      self.txtChk.style.setProperty('border-radius', '0', 'important');
+      self.txtChk.style.setProperty('outline', 'none', 'important');
+      self.txtChk.style.setProperty('font-size', defaultFontSize + 'px', 'important');
+      self.txtChk.style.setProperty('font-family', defaultFontFamily, 'important');
+      self.txtChk.value = 'ABCDEFG.abcdefg 12345-67890_!?';
+      self.txtChkPanel.appendChild(self.txtChk);
 
-      self.textCheckCtrl = document.createElement('div');
-      self.textCheckerPanel.appendChild(self.textCheckCtrl);
+      self.txtChkCtrl = document.createElement('div');
+      self.txtChkPanel.appendChild(self.txtChkCtrl);
       var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + self.id + '-fontsize-range" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeFontSize(true);" onchange="DebugJS.self.onChangeFontSize(true);">' +
       '<input value="' + defaultFontSize + '" id="' + self.id + '-font-size" class="' + self.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.self.onChangeFontSizeTxt()">px' +
       '<br>' +
@@ -3817,128 +3791,128 @@ DebugJS.prototype = {
       '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-g" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeBgColor(true);" onchange="DebugJS.self.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-g"></span></td></tr>' +
       '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + self.id + '-bg-range-b" class="' + self.id + '-txt-range" oninput="DebugJS.self.onChangeBgColor(true);" onchange="DebugJS.self.onChangeBgColor(true);"></td><td><span id="' + self.id + '-bg-b"></span></td></tr>' +
       '</tbale>';
-      self.textCheckCtrl.innerHTML = html;
+      self.txtChkCtrl.innerHTML = html;
 
-      self.textCheckFontSizeRange = document.getElementById(self.id + '-fontsize-range');
-      self.textCheckFontSizeInput = document.getElementById(self.id + '-font-size');
-      self.textCheckFontWeightRange = document.getElementById(self.id + '-fontweight-range');
-      self.textCheckFontWeightLabel = document.getElementById(self.id + '-font-weight');
-      self.textCheckerInputFgRGB = document.getElementById(self.id + '-fg-rgb');
-      self.textCheckerRangeFgR = document.getElementById(self.id + '-fg-range-r');
-      self.textCheckerRangeFgG = document.getElementById(self.id + '-fg-range-g');
-      self.textCheckerRangeFgB = document.getElementById(self.id + '-fg-range-b');
-      self.textCheckerLabelFgR = document.getElementById(self.id + '-fg-r');
-      self.textCheckerLabelFgG = document.getElementById(self.id + '-fg-g');
-      self.textCheckerLabelFgB = document.getElementById(self.id + '-fg-b');
-      self.textCheckerInputBgRGB = document.getElementById(self.id + '-bg-rgb');
-      self.textCheckerRangeBgR = document.getElementById(self.id + '-bg-range-r');
-      self.textCheckerRangeBgG = document.getElementById(self.id + '-bg-range-g');
-      self.textCheckerRangeBgB = document.getElementById(self.id + '-bg-range-b');
-      self.textCheckerLabelBgR = document.getElementById(self.id + '-bg-r');
-      self.textCheckerLabelBgG = document.getElementById(self.id + '-bg-g');
-      self.textCheckerLabelBgB = document.getElementById(self.id + '-bg-b');
+      self.txtChkFontSizeRange = document.getElementById(self.id + '-fontsize-range');
+      self.txtChkFontSizeInput = document.getElementById(self.id + '-font-size');
+      self.txtChkFontWeightRange = document.getElementById(self.id + '-fontweight-range');
+      self.txtChkFontWeightLabel = document.getElementById(self.id + '-font-weight');
+      self.txtChkInputFgRGB = document.getElementById(self.id + '-fg-rgb');
+      self.txtChkRangeFgR = document.getElementById(self.id + '-fg-range-r');
+      self.txtChkRangeFgG = document.getElementById(self.id + '-fg-range-g');
+      self.txtChkRangeFgB = document.getElementById(self.id + '-fg-range-b');
+      self.txtChkLabelFgR = document.getElementById(self.id + '-fg-r');
+      self.txtChkLabelFgG = document.getElementById(self.id + '-fg-g');
+      self.txtChkLabelFgB = document.getElementById(self.id + '-fg-b');
+      self.txtChkInputBgRGB = document.getElementById(self.id + '-bg-rgb');
+      self.txtChkRangeBgR = document.getElementById(self.id + '-bg-range-r');
+      self.txtChkRangeBgG = document.getElementById(self.id + '-bg-range-g');
+      self.txtChkRangeBgB = document.getElementById(self.id + '-bg-range-b');
+      self.txtChkLabelBgR = document.getElementById(self.id + '-bg-r');
+      self.txtChkLabelBgG = document.getElementById(self.id + '-bg-g');
+      self.txtChkLabelBgB = document.getElementById(self.id + '-bg-b');
 
       self.onChangeFontSizeTxt();
       self.onChangeFontWeight();
       self.onChangeFgRGB();
       self.onChangeBgRGB();
     } else {
-      self.toolsBodyPanel.appendChild(self.textCheckerPanel);
+      self.toolsBodyPanel.appendChild(self.txtChkPanel);
     }
   },
 
   onChangeFgRGB: function() {
     var self = DebugJS.self;
-    var rgb16 = '#' + self.textCheckerInputFgRGB.value;
+    var rgb16 = '#' + self.txtChkInputFgRGB.value;
     var rgb10 = DebugJS.convRGB16to10(rgb16);
-    self.textCheckerRangeFgR.value = rgb10.r;
-    self.textCheckerRangeFgG.value = rgb10.g;
-    self.textCheckerRangeFgB.value = rgb10.b;
+    self.txtChkRangeFgR.value = rgb10.r;
+    self.txtChkRangeFgG.value = rgb10.g;
+    self.txtChkRangeFgB.value = rgb10.b;
     self.onChangeFgColor(null);
-    self.textCheck.style.setProperty('color', rgb16, 'important');
+    self.txtChk.style.setProperty('color', rgb16, 'important');
   },
 
   onChangeBgRGB: function() {
     var self = DebugJS.self;
-    var rgb16 = '#' + self.textCheckerInputBgRGB.value;
+    var rgb16 = '#' + self.txtChkInputBgRGB.value;
     var rgb10 = DebugJS.convRGB16to10(rgb16);
-    self.textCheckerRangeBgR.value = rgb10.r;
-    self.textCheckerRangeBgG.value = rgb10.g;
-    self.textCheckerRangeBgB.value = rgb10.b;
+    self.txtChkRangeBgR.value = rgb10.r;
+    self.txtChkRangeBgG.value = rgb10.g;
+    self.txtChkRangeBgB.value = rgb10.b;
     self.onChangeBgColor(null);
-    self.textCheck.style.setProperty('background', rgb16, 'important');
+    self.txtChk.style.setProperty('background', rgb16, 'important');
   },
 
   onChangeFgColor: function(callFromRange) {
     var self = DebugJS.self;
-    var fgR = self.textCheckerRangeFgR.value;
-    var fgG = self.textCheckerRangeFgG.value;
-    var fgB = self.textCheckerRangeFgB.value;
+    var fgR = self.txtChkRangeFgR.value;
+    var fgG = self.txtChkRangeFgG.value;
+    var fgB = self.txtChkRangeFgB.value;
     var rgb16 = DebugJS.convRGB10to16(fgR + ' ' + fgG + ' ' + fgB);
-    self.textCheckerLabelFgR.innerText = fgR;
-    self.textCheckerLabelFgG.innerText = fgG;
-    self.textCheckerLabelFgB.innerText = fgB;
+    self.txtChkLabelFgR.innerText = fgR;
+    self.txtChkLabelFgG.innerText = fgG;
+    self.txtChkLabelFgB.innerText = fgB;
     if (callFromRange) {
-      self.textCheckerInputFgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      self.textCheck.style.setProperty('color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')', 'important');
+      self.txtChkInputFgRGB.value = rgb16.r + rgb16.g + rgb16.b;
+      self.txtChk.style.setProperty('color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')', 'important');
     }
   },
 
   onChangeBgColor: function(callFromRange) {
     var self = DebugJS.self;
-    var bgR = self.textCheckerRangeBgR.value;
-    var bgG = self.textCheckerRangeBgG.value;
-    var bgB = self.textCheckerRangeBgB.value;
+    var bgR = self.txtChkRangeBgR.value;
+    var bgG = self.txtChkRangeBgG.value;
+    var bgB = self.txtChkRangeBgB.value;
     var rgb16 = DebugJS.convRGB10to16(bgR + ' ' + bgG + ' ' + bgB);
-    self.textCheckerLabelBgR.innerText = bgR;
-    self.textCheckerLabelBgG.innerText = bgG;
-    self.textCheckerLabelBgB.innerText = bgB;
+    self.txtChkLabelBgR.innerText = bgR;
+    self.txtChkLabelBgG.innerText = bgG;
+    self.txtChkLabelBgB.innerText = bgB;
     if (callFromRange) {
-      self.textCheckerInputBgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      self.textCheck.style.setProperty('background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')', 'important');
+      self.txtChkInputBgRGB.value = rgb16.r + rgb16.g + rgb16.b;
+      self.txtChk.style.setProperty('background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')', 'important');
     }
   },
 
   onChangeFontSizeTxt: function() {
     var self = DebugJS.self;
-    var fontSize = self.textCheckFontSizeInput.value;
-    self.textCheckFontSizeRange.value = fontSize;
+    var fontSize = self.txtChkFontSizeInput.value;
+    self.txtChkFontSizeRange.value = fontSize;
     self.onChangeFontSize(null);
-    self.textCheck.style.setProperty('font-size', fontSize + 'px', 'important');
+    self.txtChk.style.setProperty('font-size', fontSize + 'px', 'important');
   },
 
   onChangeFontSize: function(callFromRange) {
     var self = DebugJS.self;
     var fontSize;
-    fontSize = self.textCheckFontSizeRange.value;
+    fontSize = self.txtChkFontSizeRange.value;
     if (callFromRange) {
-      self.textCheckFontSizeInput.value = fontSize;
-      self.textCheck.style.setProperty('font-size', fontSize + 'px', 'important');
+      self.txtChkFontSizeInput.value = fontSize;
+      self.txtChk.style.setProperty('font-size', fontSize + 'px', 'important');
     }
   },
 
   onChangeFontWeight: function() {
     var self = DebugJS.self;
-    var fontWeight = self.textCheckFontWeightRange.value;
-    self.textCheck.style.setProperty('font-weight', fontWeight, 'important');
+    var fontWeight = self.txtChkFontWeightRange.value;
+    self.txtChk.style.setProperty('font-weight', fontWeight, 'important');
     if (fontWeight == 400) {
       fontWeight += '(normal)';
     } else if (fontWeight == 700) {
       fontWeight += '(bold)';
     }
-    self.textCheckFontWeightLabel.innerText = fontWeight;
+    self.txtChkFontWeightLabel.innerText = fontWeight;
   },
 
   onChangeFontFamily: function(font) {
     var fontFamily = font.value;
-    DebugJS.self.textCheck.style.setProperty('font-family', fontFamily, 'important');
+    DebugJS.self.txtChk.style.setProperty('font-family', fontFamily, 'important');
   },
 
   disableTextChecker: function() {
     var self = DebugJS.self;
     if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TEXT) &&
-        (self.textCheckerPanel != null)) {
-      self.toolsBodyPanel.removeChild(self.textCheckerPanel);
+        (self.txtChkPanel != null)) {
+      self.toolsBodyPanel.removeChild(self.txtChkPanel);
     }
   },
 
@@ -4297,43 +4271,43 @@ DebugJS.prototype = {
 
   enableHtmlEditor: function() {
     var self = DebugJS.self;
-    if (self.htmlPreviewerBasePanel == null) {
-      self.htmlPreviewerBasePanel = document.createElement('div');
-      self.htmlPreviewerBasePanel.className = self.id + '-tools';
-      self.toolsBodyPanel.appendChild(self.htmlPreviewerBasePanel);
+    if (self.htmlPrevBasePanel == null) {
+      self.htmlPrevBasePanel = document.createElement('div');
+      self.htmlPrevBasePanel.className = self.id + '-tools';
+      self.toolsBodyPanel.appendChild(self.htmlPrevBasePanel);
 
-      self.htmlPreviewerPrevPanel = document.createElement('div');
-      self.htmlPreviewerPrevPanel.style.height = '50%';
-      self.htmlPreviewerPrevPanel.innerHTML = 'HTML PREVIEWER';
-      self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewerPrevPanel);
+      self.htmlPrevPrevPanel = document.createElement('div');
+      self.htmlPrevPrevPanel.style.height = '50%';
+      self.htmlPrevPrevPanel.innerHTML = 'HTML PREVIEWER';
+      self.htmlPrevBasePanel.appendChild(self.htmlPrevPrevPanel);
 
-      self.htmlPreviewEditorPanel = document.createElement('div');
+      self.htmlPrevEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc">HTML Editor</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.drawHtml();DebugJS.self.htmlPreviewEditor.focus();">[DRAW]</span>' +
+      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.drawHtml();DebugJS.self.htmlPrevEditor.focus();">[DRAW]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet()">[CLR]</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px" onclick="DebugJS.self.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(2)">&lt;CODE3&gt;</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(3)">&lt;CODE4&gt;</span>' +
       '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(4)">&lt;CODE5&gt;</span>';
-      self.htmlPreviewEditorPanel.innerHTML = html;
-      self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditorPanel);
+      self.htmlPrevEditorPanel.innerHTML = html;
+      self.htmlPrevBasePanel.appendChild(self.htmlPrevEditorPanel);
 
-      self.htmlPreviewEditor = document.createElement('textarea');
-      self.htmlPreviewEditor.className = self.id + '-editor';
-      self.htmlPreviewEditor.style.setProperty('height', 'calc(50% - ' + (self.computedFontSize + 10) + 'px)', 'important');
-      self.htmlPreviewEditor.onblur = DebugJS.self.saveHtmlBuf;
-      self.htmlPreviewEditor.value = self.htmlPreviewBuf;
-      self.htmlPreviewerBasePanel.appendChild(self.htmlPreviewEditor);
+      self.htmlPrevEditor = document.createElement('textarea');
+      self.htmlPrevEditor.className = self.id + '-editor';
+      self.htmlPrevEditor.style.setProperty('height', 'calc(50% - ' + (self.computedFontSize + 10) + 'px)', 'important');
+      self.htmlPrevEditor.onblur = DebugJS.self.saveHtmlBuf;
+      self.htmlPrevEditor.value = self.htmlPrevBuf;
+      self.htmlPrevBasePanel.appendChild(self.htmlPrevEditor);
     } else {
-      self.toolsBodyPanel.appendChild(self.htmlPreviewerBasePanel);
+      self.toolsBodyPanel.appendChild(self.htmlPrevBasePanel);
     }
-    self.htmlPreviewEditor.focus();
+    self.htmlPrevEditor.focus();
   },
 
   insertHtmlSnippet: function(n) {
     var self = DebugJS.self;
-    var editor = self.htmlPreviewEditor;
+    var editor = self.htmlPrevEditor;
     if (n == undefined) {
       editor.value = '';
       editor.focus();
@@ -4344,26 +4318,26 @@ DebugJS.prototype = {
       var leftBuf = buf.substr(0, posCursole);
       var rightBuf = buf.substr(posCursole, buf.length);
       buf = leftBuf + code + rightBuf;
-      self.htmlPreviewEditor.focus();
-      self.htmlPreviewEditor.value = buf;
+      self.htmlPrevEditor.focus();
+      self.htmlPrevEditor.value = buf;
       editor.selectionStart = editor.selectionEnd = posCursole + code.length;
     }
   },
 
   saveHtmlBuf: function() {
-    DebugJS.self.htmlPreviewBuf = DebugJS.self.htmlPreviewEditor.value;
+    DebugJS.self.htmlPrevBuf = DebugJS.self.htmlPrevEditor.value;
   },
 
   drawHtml: function() {
     var self = DebugJS.self;
-    self.htmlPreviewerPrevPanel.innerHTML = self.htmlPreviewBuf;
+    self.htmlPrevPrevPanel.innerHTML = self.htmlPrevBuf;
   },
 
   disableHtmlEditor: function() {
     var self = DebugJS.self;
     if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_HTML) &&
-        (self.htmlPreviewerBasePanel != null)) {
-      self.toolsBodyPanel.removeChild(self.htmlPreviewerBasePanel);
+        (self.htmlPrevBasePanel != null)) {
+      self.toolsBodyPanel.removeChild(self.htmlPrevBasePanel);
     }
   },
 
@@ -5400,7 +5374,7 @@ DebugJS.prototype = {
       case 'min':
         self.saveSize();
         self.savePosNone();
-        self.setDebugWindowSize(self.computedMinWidth, self.computedMinHeight);
+        self.setDebugWindowSize(self.computedMinW, self.computedMinH);
         self.logPanel.scrollTop = self.logPanel.scrollHeight;
         self.status &= ~DebugJS.STATE_POS_AUTO_ADJUST;
         self.sizeStatus = DebugJS.SIZE_ST_MIN;
