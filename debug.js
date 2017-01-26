@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701270000';
+  this.v = '201701270024';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2252,6 +2252,7 @@ DebugJS.prototype = {
       } else {
         self.adjustWindowMax();
       }
+      self.resizeMainHeight();
     }
   },
 
@@ -2265,6 +2266,7 @@ DebugJS.prototype = {
       self.scrollPosY = window.scrollY;
     }
     self.updateScrollPosPanel();
+    self.resizeMainHeight();
   },
 
   onMouseDown: function(e) {
@@ -2592,6 +2594,7 @@ DebugJS.prototype = {
       self.logPanel.scrollTop = self.logPanel.scrollHeight;
       self.status &= ~DebugJS.STATE_NEED_TO_SCROLL;
     }
+    self.resizeMainHeight();
   },
 
   showDebugWindowOnError: function() {
