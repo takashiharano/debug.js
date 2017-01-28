@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701270024';
+  this.v = '201701281833';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -82,7 +82,7 @@ var DebugJS = DebugJS || function() {
   this.bodyEl = null;
   this.styleEl = null;
   this.dbgWin = null;
-  this.windowBody = null;
+  this.winBody = null;
   this.headPanel = null;
   this.infoPanel = null;
   this.clockPanel = null;
@@ -557,130 +557,49 @@ DebugJS.prototype = {
     // Resize
     if (self.status & DebugJS.STATE_RESIZABLE) {
       if (self.status & DebugJS.STATE_DYNAMIC) {
-        self.resizeN = document.createElement('div');
-        self.resizeN.className = self.id + '-resize-side';
-        self.resizeN.style.top = '-3px';
-        self.resizeN.style.left = '0';
-        self.resizeN.style.width = '100%';
-        self.resizeN.style.height = '6px';
-        self.resizeN.style.cursor = 'ns-resize';
-        self.resizeN.onmousedown = function(e) {
-          var self = DebugJS.self;
-          if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-          self.startResize(e);
-          self.status |= DebugJS.STATE_RESIZING_N;
-          self.bodyEl.style.cursor = 'ns-resize';
-        };
-        self.dbgWin.appendChild(self.resizeN);
+        var resizeN = self.createResizeSideArea('ns-resize', DebugJS.STATE_RESIZING_N, '100%', '6px');
+        resizeN.style.top = '-3px';
+        resizeN.style.left = '0';
+        self.dbgWin.appendChild(resizeN);
       }
 
-      self.resizeE = document.createElement('div');
-      self.resizeE.className = self.id + '-resize-side';
-      self.resizeE.style.top = '0';
-      self.resizeE.style.right = '-3px';
-      self.resizeE.style.width = '6px';
-      self.resizeE.style.height = '100%';
-      self.resizeE.style.cursor = 'ew-resize';
-      self.resizeE.onmousedown = function(e) {
-        var self = DebugJS.self;
-        if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-        self.startResize(e);
-        self.status |= DebugJS.STATE_RESIZING_E;
-        self.bodyEl.style.cursor = 'ew-resize';
-      };
-      self.dbgWin.appendChild(self.resizeE);
+      var resizeE = self.createResizeSideArea('ew-resize', DebugJS.STATE_RESIZING_E, '6px', '100%');
+      resizeE.style.top = '0';
+      resizeE.style.right = '-3px';
+      self.dbgWin.appendChild(resizeE);
 
-      self.resizeS = document.createElement('div');
-      self.resizeS.className = self.id + '-resize-side';
-      self.resizeS.style.bottom = '-3px';
-      self.resizeS.style.left = '0';
-      self.resizeS.style.width = '100%';
-      self.resizeS.style.height = '6px';
-      self.resizeS.style.cursor = 'ns-resize';
-      self.resizeS.onmousedown = function(e) {
-        var self = DebugJS.self;
-        if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-        self.startResize(e);
-        self.status |= DebugJS.STATE_RESIZING_S;
-        self.bodyEl.style.cursor = 'ns-resize';
-      };
-      self.dbgWin.appendChild(self.resizeS);
+      var resizeS = self.createResizeSideArea('ns-resize', DebugJS.STATE_RESIZING_S, '100%', '6px');
+      resizeS.style.bottom = '-3px';
+      resizeS.style.left = '0';
+      self.dbgWin.appendChild(resizeS);
+
+      var resizeSE = self.createResizeCornerArea('nwse-resize', DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_E);
+      resizeSE.style.bottom = '-3px';
+      resizeSE.style.right = '-3px';
+      self.dbgWin.appendChild(resizeSE);
 
       if (self.status & DebugJS.STATE_DYNAMIC) {
-        self.resizeW = document.createElement('div');
-        self.resizeW.className = self.id + '-resize-side';
-        self.resizeW.style.top = '0';
-        self.resizeW.style.left = '-3px';
-        self.resizeW.style.width = '6px';
-        self.resizeW.style.height = '100%';
-        self.resizeW.style.cursor = 'ew-resize';
-        self.resizeW.onmousedown = function(e) {
-          var self = DebugJS.self;
-          if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-          self.startResize(e);
-          self.status |= DebugJS.STATE_RESIZING_W;
-          self.bodyEl.style.cursor = 'ew-resize';
-        };
-        self.dbgWin.appendChild(self.resizeW);
+        var resizeW = self.createResizeSideArea('ew-resize', DebugJS.STATE_RESIZING_W, '6px', '100%');
+        resizeW.style.top = '0';
+        resizeW.style.left = '-3px';
+        self.dbgWin.appendChild(resizeW);
 
-        self.resizeNW = document.createElement('div');
-        self.resizeNW.className = self.id + '-resize-corner';
-        self.resizeNW.style.top = '-3px';
-        self.resizeNW.style.left = '-3px';
-        self.resizeNW.style.cursor = 'nwse-resize';
-        self.resizeNW.onmousedown = function(e) {
-          var self = DebugJS.self;
-          if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-          self.startResize(e);
-          self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_W;
-          self.bodyEl.style.cursor = 'nwse-resize';
-        };
-        self.dbgWin.appendChild(self.resizeNW);
+        var resizeNW = self.createResizeCornerArea('nwse-resize', DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_W);
+        resizeNW.style.top = '-3px';
+        resizeNW.style.left = '-3px';
+        self.dbgWin.appendChild(resizeNW);
 
-        self.resizeNE = document.createElement('div');
-        self.resizeNE.className = self.id + '-resize-corner';
-        self.resizeNE.style.top = '-3px';
-        self.resizeNE.style.right = '-3px';
-        self.resizeNE.style.cursor = 'nesw-resize';
-        self.resizeNE.onmousedown = function(e) {
-          var self = DebugJS.self;
-          if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-          self.startResize(e);
-          self.status |= DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E;
-          self.bodyEl.style.cursor = 'nesw-resize';
-        };
-        self.dbgWin.appendChild(self.resizeNE);
-      }
+        var resizeNE = self.createResizeCornerArea('nesw-resize', DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E);
+        resizeNE.style.top = '-3px';
+        resizeNE.style.right = '-3px';
+        self.dbgWin.appendChild(resizeNE);
 
-      self.resizeSE = document.createElement('div');
-      self.resizeSE.className = self.id + '-resize-corner';
-      self.resizeSE.style.bottom = '-3px';
-      self.resizeSE.style.right = '-3px';
-      self.resizeSE.style.cursor = 'nwse-resize';
-      self.resizeSE.onmousedown = function(e) {
-        var self = DebugJS.self;
-        if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-        self.startResize(e);
-        self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_E;
-        self.bodyEl.style.cursor = 'nwse-resize';
-      };
-      self.dbgWin.appendChild(self.resizeSE);
+        var resizeSW = self.createResizeCornerArea('nesw-resize', DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W);
+        resizeSW.style.bottom = '-3px';
+        resizeSW.style.left = '-3px';
+        self.dbgWin.appendChild(resizeSW);
 
-      if (self.status & DebugJS.STATE_DYNAMIC) {
-        self.resizeSW = document.createElement('div');
-        self.resizeSW.className = self.id + '-resize-corner';
-        self.resizeSW.style.bottom = '-3px';
-        self.resizeSW.style.left = '-3px';
-        self.resizeSW.style.cursor = 'nesw-resize';
-        self.resizeSW.onmousedown = function(e) {
-          var self = DebugJS.self;
-          if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
-          self.startResize(e);
-          self.status |= DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
-          self.bodyEl.style.cursor = 'nesw-resize';
-        };
-        self.dbgWin.appendChild(self.resizeSW);
-        self.windowBody.ondblclick = self.onDbgWinDblClick;
+        self.winBody.ondblclick = self.onDbgWinDblClick;
       }
     }
 
@@ -933,6 +852,37 @@ DebugJS.prototype = {
     return true;
   },
 
+  createResizeSideArea: function(cursor, state, width, height) {
+    var self = DebugJS.self;
+    var area = document.createElement('div');
+    area.className = self.id + '-resize-side';
+    area.style.width = width;
+    area.style.height = height;
+    area.style.cursor = cursor;
+    area.onmousedown = function(e) {
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= state;
+      self.bodyEl.style.cursor = cursor;
+    };
+    return area;
+  },
+
+  createResizeCornerArea: function(cursor, state) {
+    var self = DebugJS.self;
+    var area = document.createElement('div');
+    area.className = self.id + '-resize-corner';
+    area.style.cursor = cursor;
+    area.onmousedown = function(e) {
+      var self = DebugJS.self;
+      if (!(self.status & DebugJS.STATE_RESIZABLE)) return;
+      self.startResize(e);
+      self.status |= state;
+      self.bodyEl.style.cursor = cursor;
+    };
+    return area;
+  },
+
   setupDefaultOptions: function() {
     this.options = {};
     for (var key in this.DEFAULT_OPTIONS) {
@@ -1035,22 +985,22 @@ DebugJS.prototype = {
   createPanels: function() {
     var self = DebugJS.self;
     // Window Body
-    self.windowBody = document.createElement('div');
-    self.dbgWin.appendChild(self.windowBody);
+    self.winBody = document.createElement('div');
+    self.dbgWin.appendChild(self.winBody);
     if (self.status & DebugJS.STATE_DRAGGABLE) {
-      self.windowBody.style.cursor = 'default';
+      self.winBody.style.cursor = 'default';
     }
 
     if (!self.isAllFeaturesDisabled()) {
       // Head Panel
       self.headPanel = document.createElement('div');
       self.headPanel.style.padding = '2px';
-      self.windowBody.appendChild(self.headPanel);
+      self.winBody.appendChild(self.headPanel);
 
       // Info Panel
       self.infoPanel = document.createElement('div');
       self.infoPanel.style.padding = '0 2px 1px 2px';
-      self.windowBody.appendChild(self.infoPanel);
+      self.winBody.appendChild(self.infoPanel);
     }
 
     // Main
@@ -1061,7 +1011,7 @@ DebugJS.prototype = {
       self.mainPanel.style.height = self.options.lines + '.1em';
     }
     self.mainPanel.style.clear = 'both';
-    self.windowBody.appendChild(self.mainPanel);
+    self.winBody.appendChild(self.mainPanel);
 
     // Log Header Panel
     if (self.options.useLogFilter) {
@@ -1183,19 +1133,20 @@ DebugJS.prototype = {
 
     // Screen Measure Button
     if (self.options.useScreenMeasure) {
-      self.measureBtn = document.createElement('span');
-      self.measureBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.measureBtn.style.display = 'inline-block';
-      self.measureBtn.style.float = 'right';
-      self.measureBtn.style.marginTop = ((self.options.zoom <= 1) ? 1 : (2 * self.options.zoom)) + 'px';
-      self.measureBtn.style.marginLeft = '3px';
-      self.measureBtn.style.width = (10 * self.options.zoom) + 'px';
-      self.measureBtn.style.height = (7 * self.options.zoom) + 'px';
-      self.measureBtn.innerText = ' ';
-      self.measureBtn.onclick = DebugJS.self.toggleMeasureMode;
-      self.measureBtn.onmouseover = new Function('DebugJS.self.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
-      self.measureBtn.onmouseout = new Function('DebugJS.self.measureBtn.style.borderColor=(DebugJS.self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
-      self.headPanel.appendChild(self.measureBtn);
+      var measureBtn = document.createElement('span');
+      measureBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      measureBtn.style.display = 'inline-block';
+      measureBtn.style.float = 'right';
+      measureBtn.style.marginTop = ((self.options.zoom <= 1) ? 1 : (2 * self.options.zoom)) + 'px';
+      measureBtn.style.marginLeft = '3px';
+      measureBtn.style.width = (10 * self.options.zoom) + 'px';
+      measureBtn.style.height = (7 * self.options.zoom) + 'px';
+      measureBtn.innerText = ' ';
+      measureBtn.onclick = DebugJS.self.toggleMeasureMode;
+      measureBtn.onmouseover = new Function('DebugJS.self.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
+      measureBtn.onmouseout = new Function('DebugJS.self.measureBtn.style.borderColor=(DebugJS.self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      self.headPanel.appendChild(measureBtn);
+      self.measureBtn = measureBtn;
     }
     // -- R to L
 
@@ -1259,41 +1210,43 @@ DebugJS.prototype = {
 
     // Message Display
     if (self.options.useMsgDisplay) {
-      self.msgPanel = document.createElement('span');
-      self.msgPanel.className = this.id + '-sys-info';
-      self.msgPanel.style.float = self.options.msgDisplayPos;
-      self.msgPanel.style.marginRight = '3px';
-      self.msgPanel.style.border = '0';
-      self.msgPanel.style.padding = '0 1px';
-      self.msgPanel.style.background = self.options.msgDisplayBackground;
-      self.msgPanel.style.color = self.options.fontColor;
-      self.msgPanel.style.whiteSpace = 'pre-wrap';
-      self.msgPanel.style.wordBreak = 'break-all';
-      self.msgPanel.style.overflow = 'hidden';
-      self.msgPanel.style.textOverflow = 'ellipsis';
-      self.infoPanel.appendChild(self.msgPanel);
+      var msgPanel = document.createElement('span');
+      msgPanel.className = this.id + '-sys-info';
+      msgPanel.style.float = self.options.msgDisplayPos;
+      msgPanel.style.marginRight = '3px';
+      msgPanel.style.border = '0';
+      msgPanel.style.padding = '0 1px';
+      msgPanel.style.background = self.options.msgDisplayBackground;
+      msgPanel.style.color = self.options.fontColor;
+      msgPanel.style.whiteSpace = 'pre-wrap';
+      msgPanel.style.wordBreak = 'break-all';
+      msgPanel.style.overflow = 'hidden';
+      msgPanel.style.textOverflow = 'ellipsis';
+      self.infoPanel.appendChild(msgPanel);
+      self.msgPanel = msgPanel;
     }
 
     // Command Line
     if (self.options.useCommandLine) {
       self.cmdPanel = document.createElement('div');
       self.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
-      self.windowBody.appendChild(self.cmdPanel);
+      self.winBody.appendChild(self.cmdPanel);
       self.cmdPanel.innerHTML = '<span style="color:' + self.options.promptColor + '">$</span>';
-      self.cmdLine = document.createElement('input');
-      self.cmdLine.style.setProperty('width', 'calc(100% - ' + self.computedFontSize + 'px)', 'important');
-      self.cmdLine.style.setProperty('margin-left', '2px', 'important');
-      self.cmdLine.style.setProperty('padding', '1px', 'important');
-      self.cmdLine.style.setProperty('border', '0', 'important');
-      self.cmdLine.style.setProperty('border-bottom', 'solid 1px #888', 'important');
-      self.cmdLine.style.setProperty('border-radius', '0', 'important');
-      self.cmdLine.style.setProperty('outline', 'none', 'important');
-      self.cmdLine.style.setProperty('box-shadow', 'none', 'important');
-      self.cmdLine.style.setProperty('background', 'transparent', 'important');
-      self.cmdLine.style.setProperty('color', self.options.fontColor, 'important');
-      self.cmdLine.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
-      self.cmdLine.style.setProperty('font-family', self.options.fontFamily, 'important');
-      self.cmdPanel.appendChild(self.cmdLine);
+      var cmdLine = document.createElement('input');
+      cmdLine.style.setProperty('width', 'calc(100% - ' + self.computedFontSize + 'px)', 'important');
+      cmdLine.style.setProperty('margin-left', '2px', 'important');
+      cmdLine.style.setProperty('padding', '1px', 'important');
+      cmdLine.style.setProperty('border', '0', 'important');
+      cmdLine.style.setProperty('border-bottom', 'solid 1px #888', 'important');
+      cmdLine.style.setProperty('border-radius', '0', 'important');
+      cmdLine.style.setProperty('outline', 'none', 'important');
+      cmdLine.style.setProperty('box-shadow', 'none', 'important');
+      cmdLine.style.setProperty('background', 'transparent', 'important');
+      cmdLine.style.setProperty('color', self.options.fontColor, 'important');
+      cmdLine.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
+      cmdLine.style.setProperty('font-family', self.options.fontFamily, 'important');
+      self.cmdPanel.appendChild(cmdLine);
+      self.cmdLine = cmdLine;
       self.initHistory();
     }
   },
@@ -1763,7 +1716,7 @@ DebugJS.prototype = {
 
   setupMove: function() {
     var self = DebugJS.self;
-    self.windowBody.onmousedown = self.startMove;
+    self.winBody.onmousedown = self.startMove;
   },
 
   startMove: function(e) {
@@ -1773,7 +1726,7 @@ DebugJS.prototype = {
       return;
     }
     self.status |= DebugJS.STATE_DRAGGING;
-    self.windowBody.style.cursor = 'move';
+    self.winBody.style.cursor = 'move';
     self.prevOffsetTop = e.clientY - self.dbgWin.offsetTop;
     self.prevOffsetLeft = e.clientX - self.dbgWin.offsetLeft;
     if (!document.all) {
@@ -1799,7 +1752,7 @@ DebugJS.prototype = {
   endMove: function() {
     var self = DebugJS.self;
     self.status &= ~DebugJS.STATE_DRAGGING;
-    self.windowBody.style.cursor = 'default';
+    self.winBody.style.cursor = 'default';
   },
 
   startResize: function(e) {
@@ -1940,14 +1893,14 @@ DebugJS.prototype = {
   enableDraggable: function() {
     var self = DebugJS.self;
     self.status |= DebugJS.STATE_DRAGGABLE;
-    self.windowBody.style.cursor = 'default';
+    self.winBody.style.cursor = 'default';
     self.updatePinBtn();
   },
 
   disableDraggable: function() {
     var self = DebugJS.self;
     self.status &= ~DebugJS.STATE_DRAGGABLE;
-    self.windowBody.style.cursor = 'auto';
+    self.winBody.style.cursor = 'auto';
     self.updatePinBtn();
   },
 
@@ -2554,6 +2507,7 @@ DebugJS.prototype = {
     self.sizeStatus = DebugJS.SIZE_ST_NORMAL;
     if (self.status & DebugJS.STATE_DRAGGABLE) {
       self.status |= DebugJS.STATE_POS_AUTO_ADJUST;
+      self.adjustDebugWindowPos();
     }
   },
 
@@ -3764,18 +3718,19 @@ DebugJS.prototype = {
       self.toolsBodyPanel.appendChild(self.txtChkPanel);
 
       var txtPadding = 4;
-      self.txtChk = document.createElement('input');
-      self.txtChk.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
-      self.txtChk.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
-      self.txtChk.style.setProperty('margin-bottom', '8px', 'important');
-      self.txtChk.style.setProperty('padding', txtPadding + 'px', 'important');
-      self.txtChk.style.setProperty('border', '0', 'important');
-      self.txtChk.style.setProperty('border-radius', '0', 'important');
-      self.txtChk.style.setProperty('outline', 'none', 'important');
-      self.txtChk.style.setProperty('font-size', defaultFontSize + 'px', 'important');
-      self.txtChk.style.setProperty('font-family', defaultFontFamily, 'important');
-      self.txtChk.value = 'ABCDEFG.abcdefg 12345-67890_!?';
-      self.txtChkPanel.appendChild(self.txtChk);
+      var txtChk = document.createElement('input');
+      txtChk.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
+      txtChk.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
+      txtChk.style.setProperty('margin-bottom', '8px', 'important');
+      txtChk.style.setProperty('padding', txtPadding + 'px', 'important');
+      txtChk.style.setProperty('border', '0', 'important');
+      txtChk.style.setProperty('border-radius', '0', 'important');
+      txtChk.style.setProperty('outline', 'none', 'important');
+      txtChk.style.setProperty('font-size', defaultFontSize + 'px', 'important');
+      txtChk.style.setProperty('font-family', defaultFontFamily, 'important');
+      txtChk.value = 'ABCDEFG.abcdefg 12345-67890_!?';
+      self.txtChkPanel.appendChild(txtChk);
+      self.txtChk = txtChk;
 
       self.txtChkCtrl = document.createElement('div');
       self.txtChkPanel.appendChild(self.txtChkCtrl);
@@ -3926,19 +3881,20 @@ DebugJS.prototype = {
       self.fileLoaderPanel.className = self.id + '-tools';
       self.toolsBodyPanel.appendChild(self.fileLoaderPanel);
 
-      self.fileInput = document.createElement('input');
-      self.fileInput.type = 'file';
-      self.fileInput.style.setProperty('width', 'calc(100% - ' + (self.computedFontSize * 12) + 'px)', 'important');
-      self.fileInput.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
-      self.fileInput.style.setProperty('margin-bottom', '4px', 'important');
-      self.fileInput.style.setProperty('padding', '1px', 'important');
-      self.fileInput.style.setProperty('border', '0', 'important');
-      self.fileInput.style.setProperty('border-radius', '0', 'important');
-      self.fileInput.style.setProperty('outline', 'none', 'important');
-      self.fileInput.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
-      self.fileInput.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
-      self.fileInput.addEventListener('change', self.handleFileSelect, false);
-      self.fileLoaderPanel.appendChild(self.fileInput);
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.style.setProperty('width', 'calc(100% - ' + (self.computedFontSize * 12) + 'px)', 'important');
+      fileInput.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
+      fileInput.style.setProperty('margin-bottom', '4px', 'important');
+      fileInput.style.setProperty('padding', '1px', 'important');
+      fileInput.style.setProperty('border', '0', 'important');
+      fileInput.style.setProperty('border-radius', '0', 'important');
+      fileInput.style.setProperty('outline', 'none', 'important');
+      fileInput.style.setProperty('font-size', self.computedFontSize + 'px', 'important');
+      fileInput.style.setProperty('font-family', self.options.fontFamily + 'px', 'important');
+      fileInput.addEventListener('change', self.handleFileSelect, false);
+      self.fileLoaderPanel.appendChild(fileInput);
+      self.fileInput = fileInput;
 
       self.fileLoaderLabelB64 = document.createElement('label');
       self.fileLoaderLabelB64.innerText = 'Base64';
