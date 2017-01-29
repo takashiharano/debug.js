@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701281833';
+  this.v = '201701291756';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -229,14 +229,6 @@ var DebugJS = DebugJS || function() {
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
   this.cmdTmp = '';
   this.timers = {};
-  this.resizeN = null;
-  this.resizeE = null;
-  this.resizeS = null;
-  this.resizeW = null;
-  this.resizeNW = null;
-  this.resizeNE = null;
-  this.resizeSE = null;
-  this.resizeSW = null;
   this.initWidth = 0;
   this.initHeight = 0;
   this.orgSizePos = {'w': 0, 'h': 0, 't': 0, 'l': 0};
@@ -275,7 +267,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
-    {'cmd': 'pos', 'fnc': this.cmdPos, 'desc': 'Set the debugger window position', 'usage': 'pos n|ne|e|se|s|sw|w|nw|c', 'attr': DebugJS.CMD_ATTR_DYNAMIC},
+    {'cmd': 'pos', 'fnc': this.cmdPos, 'desc': 'Set the debugger window position', 'usage': 'pos n|ne|e|se|s|sw|w|nw|c', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Displays a property value', 'usage': 'prop property-name'},
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
@@ -286,7 +278,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC},
+    {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {'cmd': 'zoom', 'fnc': this.cmdZoom, 'desc': 'Zoom the debugger window', 'usage': 'zoom ratio', 'attr': DebugJS.CMD_ATTR_DYNAMIC}
   ];
   this.intCmdTblLen = this.INT_CMD_TBL.length;
@@ -359,7 +351,8 @@ DebugJS.FILE_LOAD_FORMAT_BIN = 1;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
 DebugJS.CMD_ATTR_HIDDEN = 0x2;
 DebugJS.CMD_ATTR_DYNAMIC = 0x4;
-DebugJS.CMD_ATTR_DISABLED = 0x8;
+DebugJS.CMD_ATTR_NO_KIOSK = 0x8;
+DebugJS.CMD_ATTR_DISABLED = 0x10;
 DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DBGWIN_MIN_W = 292;
 DebugJS.DBGWIN_MIN_H = 155;
@@ -1416,7 +1409,11 @@ DebugJS.prototype = {
           self.CMD_TBL.push(self.INT_CMD_TBL[i]);
         }
       } else {
-        if (!(!(self.status & DebugJS.STATE_DYNAMIC) && (self.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC))) {
+        if (!(!(self.status & DebugJS.STATE_DYNAMIC) &&
+               (self.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
+            (!((self.status & DebugJS.STATE_DYNAMIC) &&
+             (self.options.kioskMode) &&
+             (self.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_NO_KIOSK)))) {
           self.CMD_TBL.push(self.INT_CMD_TBL[i]);
         }
       }
@@ -7123,9 +7120,9 @@ DebugJS.call = function(fnc, delay) {
   return setTimeout(fnc, delay);
 };
 
-DebugJS.exec = function(cmd, echo) {
+DebugJS.cmd = function(c, echo) {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.self._execCmd(cmd, echo);
+  DebugJS.self._execCmd(c, echo);
 };
 
 DebugJS.led = function(val) {
@@ -7269,7 +7266,7 @@ if (DebugJS.ENABLE) {
   DebugJS.init = function(x) {};
   DebugJS.countElements = function(x, xx) {};
   DebugJS.call = function(x, xx) {};
-  DebugJS.exec = function(x, xx) {};
+  DebugJS.cmd = function(x, xx) {};
   DebugJS.led = function(x) {};
   DebugJS.led.on = function(x) {};
   DebugJS.led.off = function(x) {};
