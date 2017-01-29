@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701291756';
+  this.v = '201701292238';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -264,6 +264,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
     {'cmd': 'laptime', 'fnc': this.cmdLaptime, 'desc': 'Lap time test'},
+    {'cmd': 'launch', 'fnc': this.cmdLaunch, 'desc': 'Launch a function', 'usage': 'launch [sys|html|dom|js|tool] [text|file|html|memo] [b64|bin]'},
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
@@ -3672,18 +3673,15 @@ DebugJS.prototype = {
     self.memoBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
   },
 
-  switchToolsFunction: function(kind) {
+  switchToolsFunction: function(kind, param) {
     var self = DebugJS.self;
-    if (DebugJS.self.toolsActiveFunction == kind) {
-      return;
-    }
     if (kind & DebugJS.TOOLS_ACTIVE_FNC_TEXT) {
       self.enableTextChecker();
     } else {
       self.disableTextChecker();
     }
     if (kind & DebugJS.TOOLS_ACTIVE_FNC_FILE) {
-      self.enableFileLoader();
+      self.enableFileLoader(param);
     } else {
       self.disableFileLoader();
     }
@@ -3871,7 +3869,7 @@ DebugJS.prototype = {
     }
   },
 
-  enableFileLoader: function() {
+  enableFileLoader: function(format) {
     var self = DebugJS.self;
     if (self.fileLoaderPanel == null) {
       self.fileLoaderPanel = document.createElement('div');
@@ -3901,8 +3899,8 @@ DebugJS.prototype = {
       self.fileLoaderRadioB64.type = 'radio';
       self.fileLoaderRadioB64.name = this.id + '-load-type';
       self.fileLoaderRadioB64.value = 'base64';
-      self.fileLoaderRadioB64.checked = true;
       self.fileLoaderRadioB64.onchange = self.loadFile;
+      self.fileLoaderRadioB64.checked = true;
       self.fileLoaderLabelB64.appendChild(self.fileLoaderRadioB64);
 
       self.fileLoaderLabelBin = document.createElement('label');
@@ -3973,6 +3971,20 @@ DebugJS.prototype = {
       self.fileLoaderFooter.appendChild(self.fileLoadCancelBtn);
     } else {
       self.toolsBodyPanel.appendChild(self.fileLoaderPanel);
+    }
+
+    if (format != undefined) {
+      if (format == DebugJS.FILE_LOAD_FORMAT_BIN) {
+        self.fileLoaderRadioB64.checked = false;
+        self.fileLoaderRadioBin.checked = true;
+      } else {
+        self.fileLoaderRadioB64.checked = true;
+        self.fileLoaderRadioBin.checked = false;
+      }
+
+      if (self.fileLoadFormat != format) {
+        self.loadFile();
+      }
     }
   },
 
@@ -5067,6 +5079,66 @@ DebugJS.prototype = {
       }
       self.status |= DebugJS.STATE_STOPWATCH_LAPTIME;
       self.startStopWatch();
+    }
+  },
+
+  cmdLaunch: function(arg, tbl) {
+    var self = DebugJS.self;
+    var args = DebugJS.splitArgs(arg);
+    var func = args[0];
+    var subfunc = args[1];
+    var opt = args[2];
+    if (func == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    switch (func) {
+      case 'measure':
+        self.enableMeasureMode();
+        break;
+      case 'sys':
+        self.enableSystemInfo();
+        break;
+      case 'html':
+        self.enableHtmlSrc();
+        break;
+      case 'dom':
+        self.enableElmInfo();
+        break;
+      case 'js':
+        self.enableScriptEditor();
+        break;
+      case 'tool':
+        var kind;
+        var param;
+        switch (subfunc) {
+          case 'text':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_TEXT;
+            break;
+          case 'file':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_FILE;
+            if (opt == 'bin') {
+              param = DebugJS.FILE_LOAD_FORMAT_BIN;
+            } else {
+              param = DebugJS.FILE_LOAD_FORMAT_BASE64;
+            }
+            break;
+          case 'html':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_HTML;
+            break;
+          case 'memo':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_MEMO;
+            break;
+          default:
+            DebugJS.printUsage(tbl.usage);
+            return;
+        }
+        self.enableTools();
+        self.switchToolsFunction(kind, param);
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+        break;
     }
   },
 

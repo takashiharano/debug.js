@@ -12,27 +12,12 @@
 -->
 
 <!--
-<link rel="stylesheet" href="../foundation.css" />
-<script src="../jquery-3.1.1.min.js"></script>
-<script src="../underscore.js"></script>
--->
-
-<!--
 <link rel="stylesheet" href="dummy1.css" />
 <link rel="stylesheet" href="dummy2.css" />
 <link rel="stylesheet" href="dummy3.css" />
 <script src="dummy1.js"></script>
 <script src="dummy2.js"></script>
 <script src="dummy3.js"></script>
--->
-
-<!--
-<link rel="stylesheet" href="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy1.css" />
-<link rel="stylesheet" href="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy2.css" />
-<link rel="stylesheet" href="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy3.css" />
-<script src="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy1.js"></script>
-<script src="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy2.js"></script>
-<script src="file:///C:/duumy/あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをんぁぃぅぇぉっゃゅょ/dmy3.js"></script>
 -->
 
 <style>
@@ -83,22 +68,94 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .alias {font-size:12px; color:#88c; font-style:italic; margin-left:2px;}
 .showhide-button {color:#0a0;}
 .showhide-button:hover {cursor:pointer;}
-/*td {                        */
-/*  width:100px;              */
-/*  font-size:50px !important;*/
-/*  border:solid 1px #ccc;    */
-/*  line-height:2em;          */
-/*}                           */
-/*pre {                       */
-/*  font-size: 18px;          */
-/*  font-family: Arial;       */
-/*}                           */
 </style>
 <script>
 DebugJS.init({'visible':true});
 
 //DebugJS.init({'kioskMode':true,'zoom':2});
 //DebugJS.init({'target':'debug'});
+
+var options1 = {
+  'visible': true,
+  'zoom': '1.4'
+};
+//DebugJS.init(options1);
+
+var options2 = {
+  'visible': true,
+  'keyAssign': {
+    'key': 113,
+    'alt': false,
+    'ctrl': false,
+    'shift': true
+  },
+  'position': 'c',
+  //'position': 'n'
+  //'position': 'ne'
+  //'position': 'e'
+  //'position': 'se'
+  //'position': 's'
+  //'position': 'sw'
+  //'position': 'w'
+  //'position': 'nw'
+  //'disableAllCommands': true
+};
+//DebugJS.init(options2);
+
+var options3 = {
+  'visible': true,
+  'lines': 23,
+  'showTimeStamp': false,
+  'disableAllFeatures': true,
+  //'useSystemInfo': true,
+  //'useCommandLine': true,
+  //'useTools': true,
+  //'resizable': false
+};
+//DebugJS.init(options3);
+
+var options4 = {
+  'target': 'debug',
+  'lines': 10,
+  'bufsize': 10,
+  'bgOpacity': '0.9',
+  'showTimeStamp': false,
+  'resizable': false,
+  'disableAllFeatures': true,
+  'useClearButton': true
+};
+//DebugJS.init(options4);
+
+var options5 = {
+  'target': 'debug',
+  'lines': 10,
+  'fontSize': 13,
+  'fontColor': '#333',
+  'logColorD': '#909090',
+  'logColorI': '#08f',
+  'logColorW': '#c65911',
+  'logColorS': '#0df',
+  'timerColor': '#00f',
+  'btnColor': '#00f',
+  'promptColor': '#00f',
+  'bgColor': '255,255,255',
+  'bgOpacity': '1.0',
+  'showTimeStamp': false,
+  'disableAllFeatures': true,
+  //'clockColor': '#00f',
+  //'useClock': true,
+  //'useCommandLine': true,
+  //'useWindowSizeInfo': true,
+  //'useMouseStatusInfo': true,
+  //'useKeyStatusInfo': true,
+  //'useLed': true,
+  //'useLogFilter': true,
+  'useMsgDisplay': true,
+  'msgDisplayPos': 'left',
+  'msgDisplayBackground': 'rgba(168,168,168,0.2)',
+  'useClearButton': true
+};
+//DebugJS.init(options5);
 
 //log.t('init start');
 log('Here is the log output example!');
@@ -110,93 +167,7 @@ var base64DText = null;
 
 //window.addEventListener('load', init, true);
 window.onload = function() {
-  init();
-}
-
-function init() {
   log('The window\'s load event fired.');
-
-  var options1 = {
-    'visible': true,
-    'zoom': '1.4'
-  };
-  //DebugJS.init(options1);
-
-  var options2 = {
-    'visible': true,
-    'keyAssign': {
-      'key': 113,
-      'alt': false,
-      'ctrl': false,
-      'shift': true
-    },
-    'position': 'c',
-    //'position': 'n'
-    //'position': 'ne'
-    //'position': 'e'
-    //'position': 'se'
-    //'position': 's'
-    //'position': 'sw'
-    //'position': 'w'
-    //'position': 'nw'
-    //'disableAllCommands': true
-  };
-  //DebugJS.init(options2);
-
-  var options3 = {
-    'visible': true,
-    'lines': 23,
-    'showTimeStamp': false,
-    'disableAllFeatures': true,
-    //'useSystemInfo': true,
-    //'useCommandLine': true,
-    //'useTools': true,
-    //'resizable': false
-  };
-  //DebugJS.init(options3);
-
-  var options4 = {
-    'target': 'debug',
-    'lines': 10,
-    'bufsize': 10,
-    'bgOpacity': '0.9',
-    'showTimeStamp': false,
-    'resizable': false,
-    'disableAllFeatures': true,
-    'useClearButton': true
-  };
-  //DebugJS.init(options4);
-
-  var options5 = {
-    'target': 'debug',
-    'lines': 10,
-    'fontSize': 13,
-    'fontColor': '#333',
-    'logColorD': '#909090',
-    'logColorI': '#08f',
-    'logColorW': '#c65911',
-    'logColorS': '#0df',
-    'timerColor': '#00f',
-    'btnColor': '#00f',
-    'promptColor': '#00f',
-    'bgColor': '255,255,255',
-    'bgOpacity': '1.0',
-    'showTimeStamp': false,
-    'disableAllFeatures': true,
-    //'clockColor': '#00f',
-    //'useClock': true,
-    //'useCommandLine': true,
-    //'useWindowSizeInfo': true,
-    //'useMouseStatusInfo': true,
-    //'useKeyStatusInfo': true,
-    //'useLed': true,
-    //'useLogFilter': true,
-    'useMsgDisplay': true,
-    'msgDisplayPos': 'left',
-    'msgDisplayBackground': 'rgba(168,168,168,0.2)',
-    'useClearButton': true
-  };
-  //DebugJS.init(options5);
 
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
@@ -207,7 +178,7 @@ function init() {
   setTimeout(displayDemoMessages, 1500);
   //setTimeout(ledDemo, 1500);
   //setTimeout(msgDemo, 1500);
-
+  //dbg.cmd('launch tool file bin');
   //log.t('init completed');
 }
 
@@ -1645,6 +1616,37 @@ Option:
       Lap time test <span class="annotation">togglable</span><br>
       Start the stopwatch and print the measurement time by clicking left mouse button.<br>
       The stopwatch will be reset with each clicking.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">launch</td>
+    <td>
+      arg1: function<br>
+      arg2: sub function<br>
+      arg3: option
+   </td>
+    <td>
+      Launch a function<br>
+<pre class="eg">
+function
+  sys : System Info
+  html: HTML Source Viewer
+  dom : Element Info
+  js  : JavaScript Editor
+  tool: Tools
+
+sub function (for tools)
+  text: Text Checker
+  file: File Loader
+  html: HTML Editor
+  memo: Memo
+
+option
+  for tools.file: load format
+    b64: Base64
+    bin: Binary
+</pre>
     </td>
   </tr>
 
