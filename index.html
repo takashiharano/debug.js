@@ -25,7 +25,7 @@ html, body {width:100%; margin:0; font-family:Arial, sans-serif; font-size:18px;
 a {color:#00f; text-decoration:none;}
 a:hover {text-decoration:underline;}
 select {width:80px; height:30px; font-size:16px;}
-button, input[type="button"], input[type="submit"] {width:200px; height:40px; border:none; border-radius:4px; outline:none; font-size:16px; font-weight:bold; margin:4px 4px 12px 4px; color:#fff; background:#0068cc;}
+button, input[type="button"], input[type="submit"] {width:200px; height:40px; border:none; border-radius:4px; outline:none; font-size:16px; font-weight:bold; margin:4px 4px 12px 4px; color:#fff; background:#0068cc; transition:all 0.2s ease;}
 button:hover, input[type="button"]:hover, input[type="submit"]:hover {cursor:pointer; background:#00a8ff; color:#fff; transition:all 0.2s ease;}
 input, input[type="text"], textarea, select {font-size: 16px; padding: 3px; color: #333; vertical-align: middle; border: 1px solid #ccc; border-radius: 3px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); transition: border linear 0.1s, box-shadow linear 0.1s;}
 input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:#51a7e8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
@@ -301,23 +301,107 @@ var ledDemoSteps = [
   },
   {
     'fnc': function() {dbg.led.all(false);},
-    'delay': 250
+    'delay': 200
   },
   {
     'fnc': function() {dbg.led.all(true);},
-    'delay': 250
+    'delay': 200
   },
   {
     'fnc': function() {dbg.led.all(false);},
-    'delay': 250
+    'delay': 200
   },
   {
     'fnc': function() {dbg.led.all(true);},
-    'delay': 250
+    'delay': 200
   },
   {
     'fnc': function() {dbg.led.all(false);},
-    'delay': 250
+    'delay': 200
+  },
+  {
+    'fnc': function() {dbg.led.all(true);},
+    'delay': 1000
+  },
+  {
+    'fnc': function() {dbg.led.off(3);dbg.led.off(4);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led.off(2);dbg.led.off(5);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led.off(1);dbg.led.off(6);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led.off(0);dbg.led.off(7);},
+    'delay': 500
+  },
+  {
+    'fnc': function() {dbg.led(1);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(2);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(4);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(8);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0x10);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0x20);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0x40);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0x80);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0x40);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0x20);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0x10);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(8);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(4);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(2);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(1);},
+    'delay': 100
+  },
+  {
+    'fnc': function() {dbg.led(0);},
+    'delay': 100
   }
 ];
 
@@ -2464,15 +2548,14 @@ dbg.led.all(false);<br>
 </td>
 </tr>
 
-<!--
+
 <tr>
 <td colspan="2">
 <button onclick="ledDemo();">demo</button>
 </td>
 </tr>
--->
-</table>
 
+</table>
 <br>
 
 <!-- ********************************************************************** -->
@@ -2509,7 +2592,6 @@ console.timeEnd('timer3');<br>
 </td>
 </tr>
 </table>
-
 <br>
 
 <!-- ********************************************************************** -->
@@ -2523,7 +2605,6 @@ console.timeEnd('timer3');<br>
 <pre id="json2" class="code emphasis">
 {"firstName":"John","lastName":"Smith","isAlive":true,"age":25,"address":{"streetAddress":"21 2nd Street","city": "New York","state":"NY","postalCode":"10021-3100"},"phoneNumbers":[{"type":"home","number":"212 555-1234"},{"type":"office","number":"646 555-4567"},{"type":"mobile","number":"123 456-7890"}],"children":[],"spouse":null}
 </pre>
-
 <br>
 
 <!-- ********************************************************************** -->
@@ -2565,21 +2646,9 @@ console.timeEnd('timer3');<br>
 <a href="https://www.google.com/" rel="nofollow">DummyLink1</a>&nbsp;
 <a href="https://debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" rel="nofollow">DummyLink2</a>
 </div>
-
-<!--
-<table>
-  <tr>
-    <td>AAA</td>
-    <td>BBB</td>
-    <td>CCC</td>
-  </tr>
-</table>
--->
 </div><!-- dummy__body -->
-
 </div><!-- content -->
 </div><!-- main -->
-
 <div id="footer">
 <div id="footer-wrapper">
 <div id="footer-content">
