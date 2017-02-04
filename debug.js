@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201701292238';
+  this.v = '201702041223';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5316,11 +5316,12 @@ DebugJS.prototype = {
     if ((timeL == null) || (timeR == null)) {
       return false;
     }
+    var byTheDay = (vals[2] == undefined);
     var ret;
     if (op == '-') {
-      ret = DebugJS.subTime(timeL, timeR);
+      ret = DebugJS.subTime(timeL, timeR, byTheDay);
     } else if (op == '+') {
-      ret = DebugJS.addTime(timeL, timeR);
+      ret = DebugJS.addTime(timeL, timeR, byTheDay);
     }
     DebugJS.log.res(ret);
     return true;
@@ -6412,7 +6413,7 @@ DebugJS.convertTimeJson = function(t) {
   return time;
 };
 
-DebugJS.subTime = function(tL, tR) {
+DebugJS.subTime = function(tL, tR, byTheDay) {
   var hh, mm, ss, ms;
   var c = false;
   if (tL.msec >= tR.msec) {
@@ -6476,7 +6477,7 @@ DebugJS.subTime = function(tL, tR) {
     hh = 0;
     if (c) {
       hh -= 1;
-      if (hh == -1) {
+      if ((byTheDay) && (hh == -1)) {
         days = -1;
         hh = 23;
       }
@@ -6486,8 +6487,10 @@ DebugJS.subTime = function(tL, tR) {
     if (c) {
       hh -= 1;
     }
-    days = Math.floor(hh / 24);
-    hh -= (24 * days);
+    if (byTheDay) {
+      days = Math.floor(hh / 24);
+      hh -= (24 * days);
+    }
     c = true;
   }
 
@@ -6495,11 +6498,14 @@ DebugJS.subTime = function(tL, tR) {
   if (days < 0) {
     excess = ' (' + days + ' Day' + ((days <= -2) ? 's' : '') + ')';
   }
-  var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
+  if (byTheDay) {
+    hh = ('0' + hh).slice(-2);
+  }
+  var ret = hh + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
   return ret;
 };
 
-DebugJS.addTime = function(tL, tR) {
+DebugJS.addTime = function(tL, tR, byTheDay) {
   var hh, mm, ss, ms;
   var c = false;
   ms = tR.msec + tL.msec;
@@ -6535,7 +6541,7 @@ DebugJS.addTime = function(tL, tR) {
   if (c) {
     hh++;
   }
-  if (hh >= 24) {
+  if ((byTheDay) && (hh >= 24)) {
     days = Math.floor(hh / 24);
     hh -= (24 * days);
     c = true;
@@ -6547,7 +6553,10 @@ DebugJS.addTime = function(tL, tR) {
   if (days > 0) {
     excess = ' (+' + days + ' Day' + ((days >= 2) ? 's' : '') + ')';
   }
-  var ret = ('0' + hh).slice(-2) + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
+  if (byTheDay) {
+    hh = ('0' + hh).slice(-2);
+  }
+  var ret = hh + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
   return ret;
 };
 

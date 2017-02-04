@@ -6,7 +6,6 @@
 <meta name="description" content="debug.js is embedded JavaScript debugger for web development. It allows you to debug easily without the F12 Tools. The library has useful features such as logging, DOM element inspenction, screen measure, command-line, etc.">
 <meta name="viewport" content="width=900, initial-scale=1">
 <script src="debug.js"></script>
-
 <!--
 <script src="extension-sample/debug-x.js"></script>
 -->
@@ -1960,8 +1959,8 @@ HEX 0xF0
   <tr>
     <td class="name">Time calculation</td>
     <td>
-     HH:MI:SS.sss + HH:MI:SS.sss<br><br>
-     HH:MI:SS.sss - HH:MI:SS.sss
+     HH:MI:SS.sss + HH:MI:SS.sss [+]<br><br>
+     HH:MI:SS.sss - HH:MI:SS.sss [-]
     </td>
     <td>
      Perform a time calculation.
@@ -1975,8 +1974,14 @@ $ 00:05:30.700 - 00:05:20.400
 $ 10:00 + 16:00
 -&gt; 02:00:00.000 (+1 Day)
 
+$ 10:00 + 16:00 +
+-&gt; 26:00:00.000
+
 $ 10:00 - 16:00
 -&gt; 18:00:00.000 (-1 Day)
+
+$ 10:00 - 16:00 -
+-&gt; -6:00:00.000
 </pre>
     </td>
   </tr>
