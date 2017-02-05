@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201702041223';
+  this.v = '201702051554';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5297,7 +5297,7 @@ DebugJS.prototype = {
 
   cmdTimeCalc: function(arg) {
     var wkArg = arg.replace(/\s{2,}/g, ' ');
-    if (!wkArg.match(/[\d :\.\+]{1,}/)) {
+    if (!wkArg.match(/\d{1,}:{1}\d{2}/)) {
       return false;
     }
     wkArg = wkArg.replace(/\s/g, '');
@@ -5314,7 +5314,8 @@ DebugJS.prototype = {
     var timeL = DebugJS.convertTimeJson(vals[0]);
     var timeR = DebugJS.convertTimeJson(vals[1]);
     if ((timeL == null) || (timeR == null)) {
-      return false;
+      DebugJS.log.e('Invalid time format');
+      return true;
     }
     var byTheDay = (vals[2] == undefined);
     var ret;
