@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201702082227';
+  this.v = '201702180000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5497,8 +5497,21 @@ DebugJS.prototype = {
     var args = DebugJS.splitCmdLineInTwo(arg);
     var url = args[0];
     var data = args[1];
+    var user = '';
+    var pass = '';
+    if (data.match(/^\s*--user /)) {
+      var parts = DebugJS.splitCmdLineInTwo(data);
+      parts = DebugJS.splitCmdLineInTwo(parts[1]);
+      var auth = parts[0];
+      var auths = auth.split(':');
+      if (auths.length > 1) {
+        user = auths[0];
+        pass = auths[1];
+        data = parts[1];
+      }
+    }
     data = DebugJS.encodeURIString(data);
-    DebugJS.doHttpRequest(url, method, data);
+    DebugJS.doHttpRequest(url, method, data, false, false, user, pass);
   },
 
   initExtension: function() {
@@ -6795,6 +6808,9 @@ DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password
   var req = 'Sending a ' + method + ' request.\n' +
   'URL : ' + url + '\n' +
   'Body: ' + ((data == null) ? '<span style="color:#ccc">null</span>' : data);
+  if (user || password) {
+    req += '\nuser: ' + user + ':' + (password ? '*' : '');
+  }
   DebugJS.log(req);
 
   try {
