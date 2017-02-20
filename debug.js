@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201702180000';
+  this.v = '201702210123';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -259,7 +259,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'hex', 'fnc': this.cmdHex, 'desc': 'Convert a number to hexadecimal', 'usage': 'hex num digit'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c] [-d offset] [n]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'http', 'fnc': this.cmdHttp, 'desc': 'Send an HTTP request', 'usage': 'http [method] url [data]'},
+    {'cmd': 'http', 'fnc': this.cmdHttp, 'desc': 'Send an HTTP request', 'usage': 'http [method] url [--user user:pass] [data]'},
     {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
