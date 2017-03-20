@@ -1670,7 +1670,9 @@ http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
 
   <tr>
     <td class="name">json</td>
-    <td>JSON</td>
+    <td>
+      one-line JSON
+    </td>
     <td>
      Parse one-line JSON.
 <pre class="eg">
@@ -1683,9 +1685,12 @@ $ json {"name": "John Smith", "age": 25, "city": "New York"}
  "city": "New York"
 }
 </pre>
-Option:
+Option:<br>
 -p<br>
-&nbsp;&nbsp;Print the object in the same format as p command.
+&nbsp;&nbsp;Print the object in the same format as p command.<br>
+<br>
+-l&lt;n&gt;<br>
+&nbsp;&nbsp;Recursion level limit
     </td>
   </tr>
 

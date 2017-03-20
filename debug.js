@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201703202000';
+  this.v = '201703202121';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -260,14 +260,14 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'hex', 'fnc': this.cmdHex, 'desc': 'Convert a number to hexadecimal', 'usage': 'hex num digit'},
     {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c] [-d offset] [n]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'http', 'fnc': this.cmdHttp, 'desc': 'Send an HTTP request', 'usage': 'http [method] url [--user user:pass] [data]'},
-    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-p] one-line-json'},
+    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-l<n>] [-p] one-line-json'},
     {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
     {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
     {'cmd': 'laptime', 'fnc': this.cmdLaptime, 'desc': 'Lap time test'},
     {'cmd': 'launch', 'fnc': this.cmdLaunch, 'desc': 'Launch a function', 'usage': 'launch [sys|html|dom|js|tool] [text|file|html|memo] [b64|bin]'},
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
-    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p object'},
+    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p [-l<n>] object'},
     {'cmd': 'pos', 'fnc': this.cmdPos, 'desc': 'Set the debugger window position', 'usage': 'pos n|ne|e|se|s|sw|w|nw|c', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Displays a property value', 'usage': 'prop property-name'},
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
@@ -278,7 +278,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
-    {'cmd': 'uri', 'fnc': this.cmdUri, 'desc': 'Encodes / decodes a URI component', 'usage': 'uri [-e|-d] string'},
+    {'cmd': 'uri', 'fnc': this.cmdUri, 'desc': 'Encodes/Decodes a URI component', 'usage': 'uri [-e|-d] string'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {'cmd': 'zoom', 'fnc': this.cmdZoom, 'desc': 'Zoom the debugger window', 'usage': 'zoom ratio', 'attr': DebugJS.CMD_ATTR_DYNAMIC}
@@ -5024,18 +5024,16 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       var json = DebugJS.omitLeadingWhiteSpace(arg);
-      var flg = true;
+      var lv = 0;
+      var jsnFlg = true;
       if (json.substr(0, 1) == '-') {
-        var opt = json.match(/^-(.[^\s]*)\s/);
-        if ((opt != null) && (opt[1] == 'p')) {
-          json = json.substr(3);
-          flg = false;
-        } else {
-          DebugJS.printUsage(tbl.usage);
-          return;
-        }
+        var opt = json.match(/-p\s/);
+        if (opt != null) jsnFlg = false;
+        opt = json.match(/-l(\d+)/);
+        if (opt) lv = opt[1];
+        json = json.match(/({.*)/)[1];
       }
-      DebugJS.execCmdJson(json, flg);
+      DebugJS.execCmdJson(json, jsnFlg, lv);
     }
   },
 
@@ -6060,11 +6058,10 @@ DebugJS.getChildElements = function(el, list) {
   }
 };
 
-DebugJS.execCmdJson = function(json, flg) {
+DebugJS.execCmdJson = function(json, flg, lv) {
   try {
     var j = JSON.parse(json);
-    var levelLimit = 0;
-    var jsn = DebugJS.objDump(j, flg, levelLimit);
+    var jsn = DebugJS.objDump(j, flg, lv);
     DebugJS.log.mlt(jsn);
   } catch (e) {
     DebugJS.log.e('JSON format error.');
