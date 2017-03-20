@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201703202121';
+  this.v = '201703202350';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5031,9 +5031,16 @@ DebugJS.prototype = {
         if (opt != null) jsnFlg = false;
         opt = json.match(/-l(\d+)/);
         if (opt) lv = opt[1];
-        json = json.match(/({.*)/)[1];
+        json = json.match(/({.*)/);
+        if (json) {
+          json = json[1];
+        }
       }
-      DebugJS.execCmdJson(json, jsnFlg, lv);
+      if (json) {
+        DebugJS.execCmdJson(json, jsnFlg, lv);
+      } else {
+        DebugJS.printUsage(tbl.usage);
+      }
     }
   },
 
