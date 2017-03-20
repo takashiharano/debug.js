@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201702210123';
+  this.v = '201703202000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -278,6 +278,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
     {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
     {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
+    {'cmd': 'uri', 'fnc': this.cmdUri, 'desc': 'Encodes / decodes a URI component', 'usage': 'uri [-e|-d] string'},
     {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM},
     {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {'cmd': 'zoom', 'fnc': this.cmdZoom, 'desc': 'Zoom the debugger window', 'usage': 'zoom ratio', 'attr': DebugJS.CMD_ATTR_DYNAMIC}
@@ -436,7 +437,7 @@ DebugJS.SNIPPET = [
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000">\n\n</div>\n',
 '<div style="width:100%; height:100%; background:#000; color:#fff">\n\n</div>\n',
-'',
+'<video src="" controls autoplay>',
 '',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
@@ -1460,7 +1461,6 @@ DebugJS.prototype = {
       default:
         self.dbgWin.style.top = self.options.adjPosY + 'px';
         self.dbgWin.style.left = self.options.adjPosX + 'px';
-        break;
     }
   },
 
@@ -2003,7 +2003,6 @@ DebugJS.prototype = {
           break;
         default:
           if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + m + '\n';
-          break;
       }
       logs += line;
     }
@@ -4070,7 +4069,6 @@ DebugJS.prototype = {
         break;
       default:
         self.updateFilePreview('FILE_READ_ERROR');
-        break;
     }
   },
 
@@ -4192,7 +4190,6 @@ DebugJS.prototype = {
                   break;
                 default:
                   hexDump += String.fromCharCode(code);
-                  break;
               }
             } else {
               hexDump += ' ';
@@ -5138,7 +5135,6 @@ DebugJS.prototype = {
         break;
       default:
         DebugJS.printUsage(tbl.usage);
-        break;
     }
   },
 
@@ -5182,7 +5178,6 @@ DebugJS.prototype = {
         break;
       default:
         DebugJS.printUsage(tbl.usage);
-        break;
     }
   },
 
@@ -5348,7 +5343,6 @@ DebugJS.prototype = {
         break;
       default:
         DebugJS.printUsage(tbl.usage);
-        break;
     }
   },
 
@@ -5367,12 +5361,15 @@ DebugJS.prototype = {
         break;
       default:
         DebugJS.printUsage(tbl.usage);
-        break;
     }
   },
 
   cmdUnicode: function(arg, tbl) {
     DebugJS.self.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
+  },
+
+  cmdUri: function(arg, tbl) {
+    DebugJS.self.execDecodeAndEncode(arg, tbl, DebugJS.decodeUri, DebugJS.encodeUri, DebugJS.decodeUri);
   },
 
   cmdV: function(arg, tbl) {
@@ -5394,7 +5391,6 @@ DebugJS.prototype = {
         break;
       default:
         DebugJS.printUsage(tbl.usage);
-        break;
     }
   },
 
@@ -5464,7 +5460,7 @@ DebugJS.prototype = {
     }
   },
 
-  execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc) {
+  execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc, defaultFunc) {
     var args = DebugJS.parseArgs(arg);
     var result = '';
     if (args.data == '') {
@@ -5474,7 +5470,6 @@ DebugJS.prototype = {
         switch (args.opt) {
           case 'd':
             result = decodeFunc(args.dataRaw);
-            result = DebugJS.encloseStringIfNeeded(result);
             break;
           case '':
           case 'e':
@@ -5482,8 +5477,8 @@ DebugJS.prototype = {
             break;
           default:
             DebugJS.printUsage(tbl.usage);
-            break;
         }
+        result = DebugJS.encloseStringIfNeeded(result);
         if (result != '') {
           DebugJS.log.res(result);
         }
@@ -6025,7 +6020,6 @@ DebugJS.countElements = function(selector, showDetail) {
       break;
     default:
       elmList = document.getElementsByTagName(selector);
-      break;
   }
 
   if (element) {
@@ -6396,6 +6390,14 @@ DebugJS.encodeUnicode = function(str) {
     code += 'U+' + DebugJS.convRadixDECtoHEX(point, true);
   }
   return code;
+};
+
+DebugJS.decodeUri = function(str) {
+  return decodeURIComponent(str);
+};
+
+DebugJS.encodeUri = function(str) {
+  return encodeURIComponent(str);
 };
 
 DebugJS.convertTimeJson = function(t) {
@@ -7035,7 +7037,6 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
       default:
         str = DebugJS.substr(str, maxLen);
         str = DebugJS.escapeTag(str) + snip;
-        break;
     }
   }
   return str;

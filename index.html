@@ -1519,14 +1519,14 @@ debug.js will not use aliases in case of those that are already defined.
   <tr>
     <td class="name">base64</td>
     <td>
-      arg1: type<br>
+      arg1: operation<br>
       arg2: string
     </td>
     <td>
      Encodes / Decodes Base64 string.
 <pre class="eg">
-type: -e encode<span class="annotation">(default option)</span>
-      -d decode
+operation: -e encode<span class="annotation">(default option)</span>
+           -d decode
 
 $ base64 -e abcdefg
 -&gt; YWJjZGVmZw==
@@ -1869,20 +1869,41 @@ $ rgb 255 255 255
   <tr>
     <td class="name">unicode</td>
     <td>
-      arg1: type<br>
+      arg1: operation<br>
       arg2: string
     </td>
     <td>
      Displays unicode code point(s) from text string / Decodes unicode string from code point(s).
 <pre class="eg">
-type: -e encode<span class="annotation">(default option)</span>
-      -d decode
+operation: -e encode<span class="annotation">(default option)</span>
+           -d decode
 
 $ unicode -e abc
 -&gt; U+41 U+42 U+43
 
 $ unicode -d 41 42 43
 -&gt; ABC
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">uri</td>
+    <td>
+      arg1: operation<br>
+      arg2: string
+    </td>
+    <td>
+     Encodes / decodes a URI component.
+<pre class="eg">
+operation: -e encode<span class="annotation">(default option)</span>
+           -d decode
+
+$ uri -e abc:def
+-&gt; abc%3Adef
+
+$ uri -d abc%3Adef
+-&gt; abc:def
 </pre>
     </td>
   </tr>
