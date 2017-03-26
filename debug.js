@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201703202350';
+  this.v = '201703262329';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5849,16 +5849,19 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
           arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
           sibling++;
         }
-        if (toJson) {
-          indent = indent.replace(DebugJS.INDENT_SP, '');
-          if (sibling > 0) {
-            arg.dump += '\n';
-          }
-          if (obj.length > 0) {
-            arg.dump += indent;
-          }
-          arg.dump += ']';
+      }
+      if (toJson) {
+        indent = indent.replace(DebugJS.INDENT_SP, '');
+        if (sibling > 0) {
+          arg.dump += '\n';
         }
+        if (obj.length > 0) {
+          if ((levelLimit >= 1) && (arg.lv >= levelLimit)) {
+            arg.dump += indent + DebugJS.INDENT_SP + '<span style="color:#aaa">...</span>\n';
+          }
+          arg.dump += indent;
+        }
+        arg.dump += ']';
       }
     } else if (obj instanceof Object) {
       arg.cnt++;
@@ -5870,7 +5873,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
         } else {
           arg.dump += '<span style="color:#49f">[Object]</span> ';
         }
-        if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
+        if ((toJson) || (levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
           arg.dump += '{\n';
         }
       }
@@ -5967,6 +5970,9 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             !(obj instanceof ArrayBuffer) && (!empty)) {
           arg.dump += '\n' + indent + '}';
         }
+      }
+      if ((toJson) && (levelLimit >= 1) && (arg.lv >= levelLimit)) {
+        arg.dump += indent + DebugJS.INDENT_SP + '<span style="color:#aaa">...</span>\n' + indent + '}';
       }
     } else if (obj === null) {
       if (toJson) {
