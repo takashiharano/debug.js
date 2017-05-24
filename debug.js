@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201703262329';
+  this.v = '201705242233';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -42,9 +42,10 @@ var DebugJS = DebugJS || function() {
     'btnHoverColor': '#8ef',
     'promptColor': '#0cf',
     'promptColorE': '#f45',
-    'bgColor': '0,0,0',
-    'bgOpacity': '0.65',
+    'background': 'rgba(0,0,0,0.65)',
     'border': 'solid 1px #888',
+    'borderRadius': '0',
+    'opacity': '1',
     'showLineNums': true,
     'showTimeStamp': true,
     'resizable': true,
@@ -537,10 +538,12 @@ DebugJS.prototype = {
     self.dbgWin.style.lineHeight = '1em';
     self.dbgWin.style.boxSizing = 'content-box';
     self.dbgWin.style.border = self.options.border;
-    self.dbgWin.style.background = 'rgba(' + self.options.bgColor + ',' + self.options.bgOpacity + ')';
+    self.dbgWin.style.borderRadius = self.options.borderRadius;
+    self.dbgWin.style.background = self.options.background;
     self.dbgWin.style.color = self.options.fontColor;
     self.dbgWin.style.fontSize = self.computedFontSize + 'px',
     self.dbgWin.style.fontFamily = self.options.fontFamily;
+    self.dbgWin.style.opacity = self.options.opacity;
 
     // Buffer
     if ((!self.msgBuf) || ((self.msgBuf) && (self.msgBuf.getSize() != self.options.bufsize))) {
@@ -1228,8 +1231,9 @@ DebugJS.prototype = {
       self.winBody.appendChild(self.cmdPanel);
       self.cmdPanel.innerHTML = '<span style="color:' + self.options.promptColor + '">$</span>';
       var cmdLine = document.createElement('input');
+      cmdLine.style.setProperty('min-height', self.computedFontSize + 'px', 'important');
       cmdLine.style.setProperty('width', 'calc(100% - ' + self.computedFontSize + 'px)', 'important');
-      cmdLine.style.setProperty('margin-left', '2px', 'important');
+      cmdLine.style.setProperty('margin', '0 0 0 2px', 'important');
       cmdLine.style.setProperty('padding', '1px', 'important');
       cmdLine.style.setProperty('border', '0', 'important');
       cmdLine.style.setProperty('border-bottom', 'solid 1px #888', 'important');
@@ -1302,9 +1306,11 @@ DebugJS.prototype = {
   },
 
   createTextInput: function(width, textAlign, color, value, inputHandler) {
+    var self = DebugJS.self;
     var textInput = document.createElement('input');
-    textInput.className = DebugJS.self.id + '-txt-text';
+    textInput.className = self.id + '-txt-text';
     textInput.style.setProperty('width', width, 'important');
+    textInput.style.setProperty('min-height', self.computedFontSize + 'px', 'important');
     textInput.style.setProperty('margin', '0', 'important');
     textInput.style.setProperty('padding', '0', 'important');
     if (textAlign) textInput.style.setProperty('text-align', textAlign, 'important');
@@ -1468,7 +1474,7 @@ DebugJS.prototype = {
   updateClockPanel: function() {
     var self = DebugJS.self;
     var dt = DebugJS.getCurrentDateTime();
-    var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
+    var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
     //t += (dt.sss < 500) ? ' ' : '.';
     self.clockPanel.innerText = t;
     if (self.status & DebugJS.STATE_SHOW_CLOCK) {
@@ -3879,7 +3885,7 @@ DebugJS.prototype = {
       fileInput.type = 'file';
       fileInput.style.setProperty('width', 'calc(100% - ' + (self.computedFontSize * 12) + 'px)', 'important');
       fileInput.style.setProperty('min-height', (20 * self.options.zoom) + 'px', 'important');
-      fileInput.style.setProperty('margin-bottom', '4px', 'important');
+      fileInput.style.setProperty('margin', '0 0 4px 0', 'important');
       fileInput.style.setProperty('padding', '1px', 'important');
       fileInput.style.setProperty('border', '0', 'important');
       fileInput.style.setProperty('border-radius', '0', 'important');

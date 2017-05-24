@@ -117,7 +117,7 @@ var options4 = {
   'target': 'debug',
   'lines': 10,
   'bufsize': 10,
-  'bgOpacity': '0.9',
+  'background': 'rgba(0,0,0,0.9)',
   'showTimeStamp': false,
   'resizable': false,
   'disableAllFeatures': true,
@@ -138,7 +138,7 @@ var options5 = {
   'btnColor': '#00f',
   'promptColor': '#00f',
   'bgColor': '255,255,255',
-  'bgOpacity': '1.0',
+  'background': 'rgba(0,0,0,1.0)',
   'showTimeStamp': false,
   'disableAllFeatures': true,
   //'clockColor': '#00f',
@@ -842,21 +842,27 @@ If you want to change the debugger settings, explicitly call for initialization 
   </tr>
 
   <tr>
-    <td class="name">bgColor</td>
-    <td>Background Color (rgb format)</td>
-    <td>'0,0,0'</td>
-  </tr>
-
-  <tr>
-    <td class="name">bgOpacity</td>
-    <td>Background Opacity. 0.0 (fully transparent) &lt;-&gt; 1.0 (fully opaque)</td>
-    <td>'0.65'</td>
+    <td class="name">backgdound</td>
+    <td>Background style</td>
+    <td>'rgba(0,0,0,0.65)'</td>
   </tr>
 
   <tr>
     <td class="name">border</td>
     <td>Debug window border style</td>
     <td>'solid 1px #888'</td>
+  </tr>
+
+  <tr>
+    <td class="name">borderRadius</td>
+    <td>Rounded style for corners of the debug window</td>
+    <td>'0'</td>
+  </tr>
+
+  <tr>
+    <td class="name">opacity</td>
+    <td>Transparency of the debug window</td>
+    <td>'1'</td>
   </tr>
 
   <tr>
