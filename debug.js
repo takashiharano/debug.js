@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201705242233';
+  this.v = '201705312133';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1335,7 +1335,7 @@ DebugJS.prototype = {
     self.filterInputLabel.innerText = 'Filter:';
     self.logHeaderPanel.appendChild(self.filterInputLabel);
 
-    var filterWidth = 'calc(100% - 23em)';
+    var filterWidth = 'calc(100% - 23.5em)';
     self.filterInput = self.createTextInput(filterWidth, null, self.options.sysInfoColor, self.filterText, DebugJS.self.onchangeLogFilter);
     self.filterInput.style.setProperty('position', 'relative', 'important');
     self.filterInput.style.setProperty('top', '-2px', 'important');
@@ -7112,7 +7112,7 @@ DebugJS.export = function(o) {
   DebugJS.log.s('An object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.obj</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
 };
 
-DebugJS.onLoad = function() {
+DebugJS.onReady = function() {
   if (!window._) DebugJS._AVAILABLE = true;
   if (typeof window.localStorage != 'undefined') {
     DebugJS.LS_AVAILABLE = true;
@@ -7354,7 +7354,7 @@ DebugJS.self = DebugJS.self || new DebugJS();
 if (DebugJS.ENABLE) {
   DebugJS.el = null;
   DebugJS.obj = null;
-  window.addEventListener('load', DebugJS.onLoad, true);
+  window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
   window.addEventListener('error', DebugJS.onError, true);
   if (DebugJS.MERGE_CONSOLE) {
     console.log = function(x) {log(x);};
