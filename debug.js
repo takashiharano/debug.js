@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201705312133';
+  this.v = '201706040030';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -296,6 +296,7 @@ var DebugJS = DebugJS || function() {
 };
 DebugJS.ENABLE = true;
 DebugJS.MERGE_CONSOLE = true;
+DebugJS.PRESERVE_LOG = false;
 
 DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DEFAULT_UNIT = 32;
@@ -883,9 +884,7 @@ DebugJS.prototype = {
 
   setupDefaultOptions: function() {
     this.options = {};
-    for (var key in this.DEFAULT_OPTIONS) {
-      this.options[key] = this.DEFAULT_OPTIONS[key];
-    }
+    DebugJS.deepCopy(this.DEFAULT_OPTIONS, this.options);
   },
 
   setupEventHandler: function() {
@@ -915,10 +914,8 @@ DebugJS.prototype = {
     if (self.options.useKeyStatusInfo) {
       window.addEventListener('keydown', self.onKeyDown, true);
       self.updateKeyDownPanel();
-
       window.addEventListener('keypress', self.onKeyPress, true);
       self.updateKeyPressPanel();
-
       window.addEventListener('keyup', self.onKeyUp, true);
       self.updateKeyUpPanel();
     }
@@ -7106,18 +7103,51 @@ DebugJS.hasClass = function(el, name) {
   return false;
 };
 
+DebugJS.deepCopy = function(src, dest) {
+  for (var key in src) {
+    dest[key] = src[key];
+  }
+};
+
 DebugJS.export = function(o) {
   DebugJS.obj = o;
   if (DebugJS._AVAILABLE) _ = DebugJS.obj;
   DebugJS.log.s('An object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.obj</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
 };
 
-DebugJS.onReady = function() {
-  if (!window._) DebugJS._AVAILABLE = true;
-  if (typeof window.localStorage != 'undefined') {
-    DebugJS.LS_AVAILABLE = true;
+DebugJS.preserveLog = function() {
+  if (!DebugJS.LS_AVAILABLE) return;
+  var buf = DebugJS.self.msgBuf.getAll();
+  for (var i = 0; i < buf.length; i++) {
+    buf[i].msg = DebugJS.encodeBase64(buf[i].msg);
   }
+  var json = JSON.stringify(buf);
+  localStorage.setItem('DebugJS-log', json);
+};
+
+DebugJS.restoreLog = function() {
+  if (!DebugJS.LS_AVAILABLE) return;
+  var json = localStorage.getItem('DebugJS-log');
+  if (!json) return;
+  localStorage.removeItem('DebugJS-log');
+  var buf = JSON.parse(json);
+  for (var i = 0; i < buf.length; i++) {
+    var bf = buf[i];
+    bf.msg = DebugJS.decodeBase64(bf.msg);
+    DebugJS.self.msgBuf.add(bf);
+  }
+};
+
+DebugJS.onReady = function() {
   DebugJS._init();
+};
+
+DebugJS.onLoad = function() {
+  window.addEventListener('unload', DebugJS.onUnload, true);
+};
+
+DebugJS.onUnload = function() {
+  if (DebugJS.PRESERVE_LOG) DebugJS.preserveLog();
 };
 
 DebugJS.onError = function(e) {
@@ -7354,7 +7384,12 @@ DebugJS.self = DebugJS.self || new DebugJS();
 if (DebugJS.ENABLE) {
   DebugJS.el = null;
   DebugJS.obj = null;
+  if (!window._) DebugJS._AVAILABLE = true;
+  if (typeof window.localStorage != 'undefined') {
+    DebugJS.LS_AVAILABLE = true;
+  }
   window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
+  window.addEventListener('load', DebugJS.onLoad, true);
   window.addEventListener('error', DebugJS.onError, true);
   if (DebugJS.MERGE_CONSOLE) {
     console.log = function(x) {log(x);};
@@ -7364,6 +7399,7 @@ if (DebugJS.ENABLE) {
     console.time = function(x) {time.start(x);};
     console.timeEnd = function(x) {time.end(x);};
   }
+  if (DebugJS.PRESERVE_LOG) DebugJS.restoreLog();
 } else {
   log = function(x) {};
   log.e = function(x) {};
