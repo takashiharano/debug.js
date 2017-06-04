@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706040030';
+  this.v = '201706050013';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -189,9 +189,9 @@ var DebugJS = DebugJS || function() {
   this.mousePositionPanel = null;
   this.mousePos = 'x=-,y=-';
   this.mouseClickPanel = null;
-  this.mouseClickL = DebugJS.COLOR_INACTIVE;
-  this.mouseClickC = DebugJS.COLOR_INACTIVE;
-  this.mouseClickR = DebugJS.COLOR_INACTIVE;
+  this.mouseClick0 = DebugJS.COLOR_INACTIVE;
+  this.mouseClick1 = DebugJS.COLOR_INACTIVE;
+  this.mouseClick2 = DebugJS.COLOR_INACTIVE;
   this.windowSizePanel = null;
   this.clientSizePanel = null;
   this.bodySizePanel = null;
@@ -1467,7 +1467,6 @@ DebugJS.prototype = {
     }
   },
 
-  // Update Clock
   updateClockPanel: function() {
     var self = DebugJS.self;
     var dt = DebugJS.getCurrentDateTime();
@@ -1500,7 +1499,7 @@ DebugJS.prototype = {
   },
 
   updateMouseClickPanel: function() {
-    var mouseClick = '<span style="color:' + this.mouseClickL + '">L</span><span style="color:' + this.mouseClickC + '">C</span><span style="color:' + this.mouseClickR + '">R</span>';
+    var mouseClick = '<span style="color:' + this.mouseClick0 + ';margin-right:2px;">0</span><span style="color:' + this.mouseClick1 + ';margin-right:2px;">1</span><span style="color:' + this.mouseClick2 + '">2</span>';
     this.mouseClickPanel.innerHTML = 'CLICK:' + mouseClick;
   },
 
@@ -1633,7 +1632,6 @@ DebugJS.prototype = {
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
-  // Log Output
   printLogMessage: function() {
     var self = DebugJS.self;
     var msg = self.getLogMsgs();
@@ -2228,7 +2226,7 @@ DebugJS.prototype = {
     var posY = e.clientY;
     switch (e.button) {
       case 0:
-        self.mouseClickL = DebugJS.COLOR_ACTIVE;
+        self.mouseClick0 = DebugJS.COLOR_ACTIVE;
         if (self.status & DebugJS.STATE_MEASURE) {
           self.startMeasure(e);
         }
@@ -2238,10 +2236,10 @@ DebugJS.prototype = {
         }
         break;
       case 1:
-        self.mouseClickC = DebugJS.COLOR_ACTIVE;
+        self.mouseClick1 = DebugJS.COLOR_ACTIVE;
         break;
       case 2:
-        self.mouseClickR = DebugJS.COLOR_ACTIVE;
+        self.mouseClick2 = DebugJS.COLOR_ACTIVE;
         if (self.status & DebugJS.STATE_ELEMENT_INSPECTING) {
           if (self.isOnDebugWindow(posX, posY)) {
             if ((DebugJS.el) && (DebugJS.el != self.targetElm)) {
@@ -2253,8 +2251,6 @@ DebugJS.prototype = {
             self.captureElm(pointedElm);
           }
         }
-        break;
-      default:
         break;
     }
     if (self.options.useMouseStatusInfo) {
@@ -2279,7 +2275,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     switch (e.button) {
       case 0:
-        self.mouseClickL = DebugJS.COLOR_INACTIVE;
+        self.mouseClick0 = DebugJS.COLOR_INACTIVE;
         if (self.status & DebugJS.STATE_MEASURING) {
           self.stopMeasure();
         }
@@ -2291,12 +2287,10 @@ DebugJS.prototype = {
         }
         break;
       case 1:
-        self.mouseClickC = DebugJS.COLOR_INACTIVE;
+        self.mouseClick1 = DebugJS.COLOR_INACTIVE;
         break;
       case 2:
-        self.mouseClickR = DebugJS.COLOR_INACTIVE;
-        break;
-      default:
+        self.mouseClick2 = DebugJS.COLOR_INACTIVE;
         break;
     }
     if (self.options.useMouseStatusInfo) {
