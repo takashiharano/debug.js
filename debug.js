@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706050013';
+  this.v = '201706052018';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -13,7 +13,8 @@ var DebugJS = DebugJS || function() {
       'key': 113,
       'alt': false,
       'ctrl': false,
-      'shift': false
+      'shift': false,
+      'meta': false
     },
     'popupOnError': {
       'scriptError': true,
@@ -393,7 +394,7 @@ DebugJS.LOG_SUSPEND_BUTTON_COLOR = '#d00';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
-DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + '">SCA</span>';
+DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + '">SCAM</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
@@ -2149,7 +2150,8 @@ DebugJS.prototype = {
       case self.options.keyAssign.key:
         if ((e.altKey == self.options.keyAssign.alt) &&
             (e.ctrlKey == self.options.keyAssign.ctrl) &&
-            (e.shiftKey == self.options.keyAssign.shift)) {
+            (e.shiftKey == self.options.keyAssign.shift) &&
+            (e.metaKey == self.options.keyAssign.meta)) {
           if ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow())) {
             self.resetToOriginalPosition();
           } else if (self.status & DebugJS.STATE_VISIBLE) {
@@ -2159,16 +2161,13 @@ DebugJS.prototype = {
           }
         }
         break;
-
-      default:
-        break;
     }
   },
 
   onKeyDown: function(e) {
     var self = DebugJS.self;
-    var metaKey = DebugJS.checkMetaKey(e);
-    self.keyDownCode = e.keyCode + ' ' + metaKey;
+    var modKey = DebugJS.checkModKey(e);
+    self.keyDownCode = e.keyCode + ' ' + modKey;
     self.updateKeyDownPanel();
 
     self.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
@@ -2180,15 +2179,15 @@ DebugJS.prototype = {
 
   onKeyPress: function(e) {
     var self = DebugJS.self;
-    var metaKey = DebugJS.checkMetaKey(e);
-    self.keyPressCode = e.keyCode + '(' + String.fromCharCode(e.keyCode) + ')' + metaKey;
+    var modKey = DebugJS.checkModKey(e);
+    self.keyPressCode = e.keyCode + '(' + String.fromCharCode(e.keyCode) + ') ' + modKey;
     self.updateKeyPressPanel();
   },
 
   onKeyUp: function(e) {
     var self = DebugJS.self;
-    var metaKey = DebugJS.checkMetaKey(e);
-    self.keyUpCode = e.keyCode + ' ' + metaKey;
+    var modKey = DebugJS.checkModKey(e);
+    self.keyUpCode = e.keyCode + ' ' + modKey;
     self.updateKeyUpPanel();
   },
 
@@ -4622,8 +4621,6 @@ DebugJS.prototype = {
       case 7:
         bit = DebugJS.LED_BIT_7;
         break;
-      default:
-        break;
     }
     if (active) {
       self.led |= bit;
@@ -5439,8 +5436,6 @@ DebugJS.prototype = {
         self.resetDebugWindowSizePos();
         self.updateWinCtrlBtnPanel();
         break;
-      default:
-       break;
     }
   },
 
@@ -5752,11 +5747,12 @@ DebugJS.getTimerStr = function(timeMs) {
   return retStr;
 };
 
-DebugJS.checkMetaKey = function(e) {
+DebugJS.checkModKey = function(e) {
   var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
   var ctrl = e.ctrlKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
   var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
-  var metaKey = '<span style="color:' + shift + '">S</span><span style="color:' + ctrl + '">C</span><span style="color:' + alt + '">A</span>';
+  var meta = e.metaKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACTIVE;
+  var metaKey = '<span style="color:' + shift + '">S</span><span style="color:' + ctrl + '">C</span><span style="color:' + alt + '">A</span><span style="color:' + meta + '">M</span>';
   return metaKey;
 };
 
@@ -6756,8 +6752,6 @@ DebugJS.getRandom = function(type, min, max) {
     case DebugJS.RANDOM_TYPE_STR:
       random = DebugJS.getRandomString(min, max);
       break;
-    default:
-      break;
   }
   return random;
 };
@@ -6963,8 +6957,6 @@ DebugJS.browserColoring = function(name) {
       break;
     case 'Safari':
       str = '<span style="color:#86c8e8">Safa</span><span style="color:#dd5651">r</span><span style="color:#ececec">i</span>';
-      break;
-    default:
       break;
   }
   return str;
