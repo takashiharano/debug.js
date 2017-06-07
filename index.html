@@ -1432,6 +1432,21 @@ dbg.getKeys(obj);
 
   <tr>
     <td class="name">
+      DebugJS.loadLog<br>
+      <span class="alias">( dbg.loadLog )</span>
+    </td>
+    <td>json</td>
+    <td>
+      Load logs into the debug window
+<pre class="eg">
+JSON Format
+[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.msg<br>
       <span class="alias">( dbg.msg )</span>
     </td>
@@ -1496,6 +1511,17 @@ max: maximum length
     <td>string</td>
     <td>
       Replace "&lt;" and "&gt;" to "&amp;lt;" and "&amp;gt;".
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.saveLog<br>
+      <span class="alias">( dbg.saveLog )</span>
+    </td>
+    <td></td>
+    <td>
+      Export the log buffer in JSON format
     </td>
   </tr>
 
@@ -1756,6 +1782,20 @@ option
   </tr>
 
   <tr>
+    <td class="name">
+      load
+    </td>
+    <td>json-data</td>
+    <td>
+      Load logs into the debug window
+<pre class="eg">
+JSON Format
+[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">msg</td>
     <td>message</td>
     <td>Set a string to the message display.</td>
@@ -1847,6 +1887,16 @@ $ rgb #fff
 
 $ rgb 255 255 255
 -&gt; #fff</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      save<br>
+    </td>
+    <td></td>
+    <td>
+      Export the log buffer in JSON format
     </td>
   </tr>
 

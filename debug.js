@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706052018';
+  this.v = '201706072150';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -268,6 +268,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'laptime', 'fnc': this.cmdLaptime, 'desc': 'Lap time test'},
     {'cmd': 'launch', 'fnc': this.cmdLaunch, 'desc': 'Launch a function', 'usage': 'launch [sys|html|dom|js|tool] [text|file|html|memo] [b64|bin]'},
     {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
+    {'cmd': 'load', 'fnc': this.cmdLoad, 'desc': 'Load the log buffer', 'usage': 'load json-data'},
     {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
     {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p [-l<n>] object'},
     {'cmd': 'pos', 'fnc': this.cmdPos, 'desc': 'Set the debugger window position', 'usage': 'pos n|ne|e|se|s|sw|w|nw|c', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
@@ -275,6 +276,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {'cmd': 'save', 'fnc': this.cmdSave, 'desc': 'Export the log buffer'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
     {'cmd': 'set', 'fnc': this.cmdSet, 'desc': 'Set a property value', 'usage': 'set property-name value'},
     {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
@@ -847,7 +849,7 @@ DebugJS.prototype = {
       self.restoreDbgWinSize(restoreOption.sizeStatus);
     }
     self.status |= DebugJS.STATE_INITIALIZED;
-    self.printLogMessage();
+    self.printLogMsg();
 
     return true;
   },
@@ -1633,7 +1635,7 @@ DebugJS.prototype = {
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
-  printLogMessage: function() {
+  printLogMsg: function() {
     var self = DebugJS.self;
     var msg = self.getLogMsgs();
     var html = '<pre style="padding:0 3px">' + msg + '</pre>';
@@ -1647,7 +1649,7 @@ DebugJS.prototype = {
   clearMessage: function() {
     var self = DebugJS.self;
     self.msgBuf.clear();
-    self.printLogMessage();
+    self.printLogMsg();
   },
 
   toggleLogFilter: function(filter) {
@@ -1670,7 +1672,7 @@ DebugJS.prototype = {
       }
     }
     self.updateLogFilterButtons();
-    self.printLogMessage();
+    self.printLogMsg();
   },
 
   updateLogFilterButtons: function() {
@@ -1686,7 +1688,7 @@ DebugJS.prototype = {
   onchangeLogFilter: function() {
     var self = DebugJS.self;
     self.filterText = self.filterInput.value;
-    self.printLogMessage();
+    self.printLogMsg();
   },
 
   applyStyles: function(styles) {
@@ -4923,10 +4925,10 @@ DebugJS.prototype = {
   },
 
   showHistory: function() {
-    var buf = DebugJS.self.cmdHistoryBuf.getAll();
+    var bf = DebugJS.self.cmdHistoryBuf.getAll();
     var str = '<table>';
-    for (var i = 0, len = buf.length; i < len; i++) {
-      var cmd = buf[i];
+    for (var i = 0, len = bf.length; i < len; i++) {
+      var cmd = bf[i];
       cmd = DebugJS.escapeTag(cmd);
       cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
@@ -4940,10 +4942,10 @@ DebugJS.prototype = {
     self.cmdHistoryBuf.add(cmd);
     self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
     if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
-      var buf = self.cmdHistoryBuf.getAll();
+      var bf = self.cmdHistoryBuf.getAll();
       var cmds = '';
-      for (var i = 0, len = buf.length; i < len; i++) {
-        cmds += buf[i] + '\n';
+      for (var i = 0, len = bf.length; i < len; i++) {
+        cmds += bf[i] + '\n';
       }
       localStorage.setItem('DebugJS-history', cmds);
     }
@@ -4952,9 +4954,9 @@ DebugJS.prototype = {
   loadHistory: function() {
     var self = DebugJS.self;
     if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
-      var buf = localStorage.getItem('DebugJS-history');
-      if (buf != null) {
-        var cmds = buf.split('\n');
+      var bf = localStorage.getItem('DebugJS-history');
+      if (bf != null) {
+        var cmds = bf.split('\n');
         for (var i = 0, len = (cmds.length - 1); i < len; i++) {
           self.cmdHistoryBuf.add(cmds[i]);
           self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
@@ -5253,6 +5255,20 @@ DebugJS.prototype = {
     } else {
       DebugJS.convRGB(arg);
     }
+  },
+
+  cmdLoad: function(arg, tbl) {
+    if (arg == '') {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.loadLog(arg);
+      DebugJS.self.printLogMsg();
+    }
+  },
+
+  cmdSave: function(arg, tbl) {
+    var l = DebugJS.saveLog();
+    DebugJS.log.res(l);
   },
 
   cmdSelf: function(arg, tbl) {
@@ -7101,13 +7117,30 @@ DebugJS.export = function(o) {
   DebugJS.log.s('An object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.obj</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
 };
 
+DebugJS.saveLog = function() {
+  var buf = DebugJS.self.msgBuf.getAll();
+  var b = [];
+  for (var i = 0; i < buf.length; i++) {
+    var l = {'type': buf[i].type, 'time': buf[i].time, 'msg': buf[i].msg};
+    l.msg = DebugJS.encodeBase64(l.msg);
+    b.push(l);
+  }
+  var json = JSON.stringify(b);
+  return json;
+};
+
+DebugJS.loadLog = function(json) {
+  var buf = JSON.parse(json);
+  for (var i = 0; i < buf.length; i++) {
+    var bf = buf[i];
+    bf.msg = DebugJS.decodeBase64(bf.msg);
+    DebugJS.self.msgBuf.add(bf);
+  }
+};
+
 DebugJS.preserveLog = function() {
   if (!DebugJS.LS_AVAILABLE) return;
-  var buf = DebugJS.self.msgBuf.getAll();
-  for (var i = 0; i < buf.length; i++) {
-    buf[i].msg = DebugJS.encodeBase64(buf[i].msg);
-  }
-  var json = JSON.stringify(buf);
+  var json = DebugJS.DebugJS.saveLog();
   localStorage.setItem('DebugJS-log', json);
 };
 
@@ -7116,12 +7149,7 @@ DebugJS.restoreLog = function() {
   var json = localStorage.getItem('DebugJS-log');
   if (!json) return;
   localStorage.removeItem('DebugJS-log');
-  var buf = JSON.parse(json);
-  for (var i = 0; i < buf.length; i++) {
-    var bf = buf[i];
-    bf.msg = DebugJS.decodeBase64(bf.msg);
-    DebugJS.self.msgBuf.add(bf);
-  }
+  DebugJS.loadLog(json);
 };
 
 DebugJS.onReady = function() {
@@ -7217,7 +7245,7 @@ DebugJS.log.out = function(m, type) {
   if (!(DebugJS.self.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS._init()) {return;}
   }
-  DebugJS.self.printLogMessage();
+  DebugJS.self.printLogMsg();
 };
 
 DebugJS.time = {};
@@ -7256,8 +7284,8 @@ DebugJS.cmd = function(c, echo) {
   DebugJS.self._execCmd(c, echo);
 };
 
-DebugJS.led = function(val) {
-  DebugJS.self.setLed(val);
+DebugJS.led = function(v) {
+  DebugJS.self.setLed(v);
 };
 
 DebugJS.led.on = function(pos) {
