@@ -5,15 +5,15 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706072150';
+  this.v = '201706100030';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
     'keyAssign': {
       'key': 113,
-      'alt': false,
-      'ctrl': false,
       'shift': false,
+      'ctrl': false,
+      'alt': false,
       'meta': false
     },
     'popupOnError': {
@@ -111,7 +111,7 @@ var DebugJS = DebugJS || function() {
   this.elmSelectBtn = null;
   this.elmHighlightBtn = null;
   this.elmUpdateBtn = null;
-  this.elmExportBtn = null;
+  this.elmCapBtn = null;
   this.elmUpdateInputLabel = null;
   this.elmUpdateInputLabel2 = null;
   this.elmUpdateInput = null;
@@ -293,7 +293,8 @@ var DebugJS = DebugJS || function() {
   this.errStatus = DebugJS.ERR_STATE_NONE;
   this.properties = {
     'esc': {'value': 'enable', 'restriction': /^enable$|^disable$/},
-    'dumplimit': {'value': 1000, 'restriction': /^[0-9]+$/}
+    'dumplimit': {'value': 1000, 'restriction': /^[0-9]+$/},
+    'hexdumplimit': {'value': 102400, 'restriction': /^[0-9]+$/}
   };
   this.setupDefaultOptions();
 };
@@ -401,22 +402,8 @@ DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
-DebugJS.LED_BIT_7 = 0x80;
-DebugJS.LED_BIT_6 = 0x40;
-DebugJS.LED_BIT_5 = 0x20;
-DebugJS.LED_BIT_4 = 0x10;
-DebugJS.LED_BIT_3 = 0x8;
-DebugJS.LED_BIT_2 = 0x4;
-DebugJS.LED_BIT_1 = 0x2;
-DebugJS.LED_BIT_0 = 0x1;
-DebugJS.LED_BIT_7_COLOR = '#ddd';
-DebugJS.LED_BIT_6_COLOR = '#f0f';
-DebugJS.LED_BIT_5_COLOR = '#f66';
-DebugJS.LED_BIT_4_COLOR = '#f80';
-DebugJS.LED_BIT_3_COLOR = '#ee0';
-DebugJS.LED_BIT_2_COLOR = '#6f6';
-DebugJS.LED_BIT_1_COLOR = '#0ff';
-DebugJS.LED_BIT_0_COLOR = '#4cf';
+DebugJS.LED_BIT = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
+DebugJS.LED_COLOR = ['#4cf', '#0ff', '#6f6', '#ee0', '#f80', '#f66', '#f0f', '#ddd'];
 DebugJS.LED_COLOR_INACTIVE = '#777';
 DebugJS.ITEM_NAME_COLOR = '#8f0';
 DebugJS.KEYWORD_COLOR = '#2f6';
@@ -1523,23 +1510,12 @@ DebugJS.prototype = {
     if (self.ledPanel) {
       var LED = '&#x25CF;';
       var SHADOW = 'text-shadow:0 0 5px;';
-      var bit7Color = (self.led & DebugJS.LED_BIT_7) ? 'color:' + DebugJS.LED_BIT_7_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var bit6Color = (self.led & DebugJS.LED_BIT_6) ? 'color:' + DebugJS.LED_BIT_6_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var bit5Color = (self.led & DebugJS.LED_BIT_5) ? 'color:' + DebugJS.LED_BIT_5_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var bit4Color = (self.led & DebugJS.LED_BIT_4) ? 'color:' + DebugJS.LED_BIT_4_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var bit3Color = (self.led & DebugJS.LED_BIT_3) ? 'color:' + DebugJS.LED_BIT_3_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var bit2Color = (self.led & DebugJS.LED_BIT_2) ? 'color:' + DebugJS.LED_BIT_2_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var bit1Color = (self.led & DebugJS.LED_BIT_1) ? 'color:' + DebugJS.LED_BIT_1_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var bit0Color = (self.led & DebugJS.LED_BIT_0) ? 'color:' + DebugJS.LED_BIT_0_COLOR + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
-      var led = '' +
-      '<span style="' + bit7Color + 'margin-right:2px">' + LED + '</span>' +
-      '<span style="' + bit6Color + 'margin-right:2px">' + LED + '</span>' +
-      '<span style="' + bit5Color + 'margin-right:2px">' + LED + '</span>' +
-      '<span style="' + bit4Color + 'margin-right:2px">' + LED + '</span>' +
-      '<span style="' + bit3Color + 'margin-right:2px">' + LED + '</span>' +
-      '<span style="' + bit2Color + 'margin-right:2px">' + LED + '</span>' +
-      '<span style="' + bit1Color + 'margin-right:2px">' + LED + '</span>' +
-      '<span style="' + bit0Color + '">' + LED + '</span>';
+      var led = '';
+      for (var i = 7; i >= 0; i--) {
+        var bitColor = (self.led & DebugJS.LED_BIT[i]) ? 'color:' + DebugJS.LED_COLOR[i] + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+        var margin = (i == 0 ? '' : 'margin-right:2px');
+        led += '<span style="' + bitColor + margin + '">' + LED + '</span>';
+      }
       self.ledPanel.innerHTML = led;
     }
   },
@@ -1565,27 +1541,27 @@ DebugJS.prototype = {
 
   updateSysInfoBtn: function() {
     var self = DebugJS.self;
-    self.sysInfoBtn.style.color = (self.status & DebugJS.STATE_SYSTEM_INFO) ? DebugJS.SYS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.updateBtnActive(self.sysInfoBtn, DebugJS.STATE_SYSTEM_INFO, DebugJS.SYS_BUTTON_COLOR);
   },
 
   updateElmInfoBtn: function() {
     var self = DebugJS.self;
-    self.elmInfoBtn.style.color = (self.status & DebugJS.STATE_ELEMENT_INSPECTING) ? DebugJS.DOM_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.updateBtnActive(self.elmInfoBtn, DebugJS.STATE_ELEMENT_INSPECTING, DebugJS.DOM_BUTTON_COLOR);
   },
 
   updateHtmlSrcBtn: function() {
     var self = DebugJS.self;
-    self.htmlSrcBtn.style.color = (self.status & DebugJS.STATE_HTML_SRC) ? DebugJS.HTML_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.updateBtnActive(self.htmlSrcBtn, DebugJS.STATE_HTML_SRC, DebugJS.HTML_BUTTON_COLOR);
   },
 
   updateToolsBtn: function() {
     var self = DebugJS.self;
-    self.toolsBtn.style.color = (self.status & DebugJS.STATE_TOOLS) ? DebugJS.TOOLS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.updateBtnActive(self.toolsBtn, DebugJS.STATE_TOOLS, DebugJS.TOOLS_BUTTON_COLOR);
   },
 
   updateScriptBtn: function() {
     var self = DebugJS.self;
-    self.scriptBtn.style.color = (self.status & DebugJS.STATE_SCRIPT) ? DebugJS.JS_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.updateBtnActive(self.scriptBtn, DebugJS.STATE_SCRIPT, DebugJS.JS_BUTTON_COLOR);
   },
 
   updateSwBtnPanel: function() {
@@ -1612,12 +1588,16 @@ DebugJS.prototype = {
 
   updateSuspendLogBtn: function() {
     var self = DebugJS.self;
-    self.suspendLogBtn.style.color = (self.status & DebugJS.STATE_LOG_SUSPENDING) ? DebugJS.LOG_SUSPEND_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;
+    self.updateBtnActive(self.suspendLogBtn, DebugJS.STATE_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BUTTON_COLOR);
   },
 
   updatePinBtn: function() {
     var self = DebugJS.self;
     self.pinBtn.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;
+  },
+
+  updateBtnActive: function(btn, status, activeColor) {
+    btn.style.color = (DebugJS.self.status & status) ? activeColor : DebugJS.COLOR_INACTIVE;
   },
 
   updateWinCtrlBtnPanel: function() {
@@ -2150,9 +2130,9 @@ DebugJS.prototype = {
         break;
 
       case self.options.keyAssign.key:
-        if ((e.altKey == self.options.keyAssign.alt) &&
+        if ((e.shiftKey == self.options.keyAssign.shift) &&
             (e.ctrlKey == self.options.keyAssign.ctrl) &&
-            (e.shiftKey == self.options.keyAssign.shift) &&
+            (e.altKey == self.options.keyAssign.alt) &&
             (e.metaKey == self.options.keyAssign.meta)) {
           if ((self.status & DebugJS.STATE_DYNAMIC) && (self.isOutOfWindow())) {
             self.resetToOriginalPosition();
@@ -3007,12 +2987,8 @@ DebugJS.prototype = {
       self.elmInfoHeaderPanel = document.createElement('div');
       self.elmInfoPanel.appendChild(self.elmInfoHeaderPanel);
 
-      self.elmPrevBtn = document.createElement('span');
-      self.elmPrevBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmPrevBtn = self.createElmInfoHeadButton('<<', DebugJS.self.showPrevElem);
       self.elmPrevBtn.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmPrevBtn.onclick = DebugJS.self.showPrevElem;
-      self.elmPrevBtn.innerText = '<<';
-      self.elmInfoHeaderPanel.appendChild(self.elmPrevBtn);
 
       self.elmTitle = document.createElement('span');
       self.elmTitle.style.marginLeft = '4px';
@@ -3021,36 +2997,20 @@ DebugJS.prototype = {
       self.elmTitle.innerText = 'ELEMENT INFO';
       self.elmInfoHeaderPanel.appendChild(self.elmTitle);
 
-      self.elmNextBtn = document.createElement('span');
-      self.elmNextBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmNextBtn = self.createElmInfoHeadButton('>>', DebugJS.self.showNextElem);
       self.elmNextBtn.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmNextBtn.onclick = DebugJS.self.showNextElem;
-      self.elmNextBtn.innerText = '>>';
-      self.elmInfoHeaderPanel.appendChild(self.elmNextBtn);
 
-      self.elmSelectBtn = document.createElement('span');
-      self.elmSelectBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmSelectBtn = self.createElmInfoHeadButton('SELECT', DebugJS.self.toggleElmSelectMode);
       self.elmSelectBtn.style.marginLeft = '8px';
       self.elmSelectBtn.style.marginRight = '4px';
-      self.elmSelectBtn.onclick = DebugJS.self.toggleElmSelectMode;
-      self.elmSelectBtn.innerText = 'SELECT';
-      self.elmInfoHeaderPanel.appendChild(self.elmSelectBtn);
 
-      self.elmHighlightBtn = document.createElement('span');
-      self.elmHighlightBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmHighlightBtn = self.createElmInfoHeadButton('HIGHLIGHT', DebugJS.self.toggleElmHighlightMode);
       self.elmHighlightBtn.style.marginLeft = '4px';
       self.elmHighlightBtn.style.marginRight = '4px';
-      self.elmHighlightBtn.onclick = DebugJS.self.toggleElmHighlightMode;
-      self.elmHighlightBtn.innerText = 'HIGHLIGHT';
-      self.elmInfoHeaderPanel.appendChild(self.elmHighlightBtn);
 
-      self.elmUpdateBtn = document.createElement('span');
-      self.elmUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.elmUpdateBtn = self.createElmInfoHeadButton('UPDATE', DebugJS.self.updateElementInfo);
       self.elmUpdateBtn.style.marginLeft = '4px';
       self.elmUpdateBtn.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmUpdateBtn.onclick = DebugJS.self.updateElementInfo;
-      self.elmUpdateBtn.innerText = 'UPDATE';
-      self.elmInfoHeaderPanel.appendChild(self.elmUpdateBtn);
 
       var UPDATE_COLOR = '#ccc';
       self.elmUpdateInputLabel = document.createElement('span');
@@ -3074,14 +3034,10 @@ DebugJS.prototype = {
       self.elmInfoHeaderPanel.appendChild(self.elmNumPanel);
       self.updateElementInfoInterval();
 
-      self.elmExportBtn = document.createElement('span');
-      self.elmExportBtn.className = this.id + '-btn ' + this.id + '-nomove';
-      self.elmExportBtn.style.float = 'right';
-      self.elmExportBtn.style.marginRight = '4px';
-      self.elmExportBtn.style.color = DebugJS.COLOR_INACTIVE;
-      self.elmExportBtn.onclick = DebugJS.self.exportTargetElm;
-      self.elmExportBtn.innerText = 'EXPORT';
-      self.elmInfoHeaderPanel.appendChild(self.elmExportBtn);
+      self.elmCapBtn = self.createElmInfoHeadButton('CAPTURE', DebugJS.self.exportTargetElm);
+      self.elmCapBtn.style.float = 'right';
+      self.elmCapBtn.style.marginRight = '4px';
+      self.elmCapBtn.style.color = DebugJS.COLOR_INACTIVE;
 
       self.elmInfoBodyPanel = document.createElement('div');
       self.elmInfoBodyPanel.style.height = 'calc(100% - 1.3em)';
@@ -3091,6 +3047,16 @@ DebugJS.prototype = {
     self.updateElmInfoBtn();
     self.updateElmSelectBtn();
     self.updateElmHighlightBtn();
+  },
+
+  createElmInfoHeadButton: function(label, handler) {
+    var self = DebugJS.self;
+    var btn = document.createElement('span');
+    btn.className = self.id + '-btn ' + self.id + '-nomove';
+    btn.onclick = handler;
+    btn.innerText = label;
+    self.elmInfoHeaderPanel.appendChild(btn);
+    return btn;
   },
 
   disableElmInfo: function() {
@@ -3369,7 +3335,7 @@ DebugJS.prototype = {
       self.elmPrevBtn.style.color = self.options.btnColor;
       self.elmNextBtn.style.color = self.options.btnColor;
       self.elmUpdateBtn.style.color = self.options.btnColor;
-      self.elmExportBtn.style.color = self.options.btnColor;
+      self.elmCapBtn.style.color = self.options.btnColor;
     }
   },
 
@@ -3894,7 +3860,7 @@ DebugJS.prototype = {
       self.fileLoaderPanel.appendChild(self.fileLoaderLabelB64);
       self.fileLoaderRadioB64 = document.createElement('input');
       self.fileLoaderRadioB64.type = 'radio';
-      self.fileLoaderRadioB64.name = this.id + '-load-type';
+      self.fileLoaderRadioB64.name = self.id + '-load-type';
       self.fileLoaderRadioB64.value = 'base64';
       self.fileLoaderRadioB64.onchange = self.loadFile;
       self.fileLoaderRadioB64.checked = true;
@@ -3906,7 +3872,7 @@ DebugJS.prototype = {
       self.fileLoaderPanel.appendChild(self.fileLoaderLabelBin);
       self.fileLoaderRadioBin = document.createElement('input');
       self.fileLoaderRadioBin.type = 'radio';
-      self.fileLoaderRadioBin.name = this.id + '-load-type';
+      self.fileLoaderRadioBin.name = self.id + '-load-type';
       self.fileLoaderRadioBin.value = 'binary';
       self.fileLoaderRadioBin.onchange = self.loadFile;
       self.fileLoaderLabelBin.appendChild(self.fileLoaderRadioBin);
@@ -3959,7 +3925,7 @@ DebugJS.prototype = {
       self.fileLoadProgressBar.appendChild(self.fileLoadProgress);
 
       self.fileLoadCancelBtn = document.createElement('span');
-      self.fileLoadCancelBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.fileLoadCancelBtn.className = self.id + '-btn ' + self.id + '-nomove';
       self.fileLoadCancelBtn.style.position = 'relative';
       self.fileLoadCancelBtn.style.top = '2px';
       self.fileLoadCancelBtn.style.float = 'right';
@@ -4095,7 +4061,6 @@ DebugJS.prototype = {
     var dt = DebugJS.getDateTime(file.lastModifiedDate);
     var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
     var contentPreview = '';
-
     if (file.size > 0) {
       if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64) {
         contentPreview = self.getContentPreview(file, content);
@@ -4103,7 +4068,6 @@ DebugJS.prototype = {
         contentPreview = '\n' + self.getHexDump(file, content);
       }
     }
-
     var html = 'file    : ' + file.name + '\n' +
     'type    : ' + file.type + '\n' +
     'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
@@ -4117,23 +4081,22 @@ DebugJS.prototype = {
       }
     }
     self.updateFilePreview(html);
-
     setTimeout(self.fileLoadFinalize, 1000);
   },
 
   getContentPreview: function(file, contentBase64) {
     var self = DebugJS.self;
-    var contentPreview = '';
+    var preview = '';
     if (file.type.match(/image\//)) {
       var selfSizePos = self.getSelfSizePos();
-      contentPreview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.computedFontSize * 13) - 8) + 'px">\n';
+      preview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.computedFontSize * 13) - 8) + 'px">\n';
     } else if (file.type.match(/text\//)) {
       var contents = contentBase64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
       decodedContent = DebugJS.escapeTag(decodedContent);
-      contentPreview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
+      preview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
     }
-    return contentPreview;
+    return preview;
   },
 
   resizeImgPreview: function() {
@@ -4154,62 +4117,94 @@ DebugJS.prototype = {
     imgPreview.style.maxHeight = maxH + 'px';
   },
 
-  getHexDump: function(file, contentArray) {
-    var MAX_LEN = 102400;
-    var buf = new Uint8Array(contentArray);
-    var len = ((buf.length > MAX_LEN) ? MAX_LEN : buf.length);
+  getHexDump: function(file, bufArray) {
+    var self = DebugJS.self;
+    var maxLen = self.properties.hexdumplimit.value;
+    var buf = new Uint8Array(bufArray);
+    var bLen = buf.length;
+    var len = ((bLen > maxLen) ? maxLen : bLen);
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
-    var hexDump = '<pre style="white-space:pre !important"><span style="background:#0f0;color:#000">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>\n00000000 : ';
+    var hexDump = '<pre style="white-space:pre !important"><span style="background:#0f0;color:#000">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>';
+    hexDump += self.dumpAddr(0);
     for (var i = 0; i < len; i++) {
-      var hex = ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase());
-      hexDump += hex;
-      if ((i + 1) % 0x10 == 0) {
-        hexDump += '  ';
-        for (var j = ((i + 1) - 0x10); j <= i; j++) {
-          if (j <= len) {
-            var code = buf[j];
-            if (code == undefined) {
-              break;
-            } else if ((code >= 0x20) && (code <= 0x7E)) {
-              switch (code) {
-                case 0x22:
-                  hexDump += '&quot;';
-                  break;
-                case 0x26:
-                  hexDump += '&amp;';
-                  break;
-                case 0x3C:
-                  hexDump += '&lt;';
-                  break;
-                case 0x3E:
-                  hexDump += '&gt;';
-                  break;
-                default:
-                  hexDump += String.fromCharCode(code);
-              }
-            } else {
-              hexDump += ' ';
-            }
-          }
-        }
-        if ((i + 1) < len) {
-          hexDump += '\n';
-          var addr = ('0000000' + (i + 1).toString(16)).slice(-8).toUpperCase();
-          hexDump += addr + ' : ';
-        }
-      } else if ((i + 1) % 8 == 0) {
-        hexDump += '  ';
-      } else {
-        hexDump += ' ';
-      }
+      hexDump += self.printDump(i, buf, len);
     }
-    if (buf.length > MAX_LEN) {
-      hexDump += '\n<span style="color:#ccc">...</span>';
+    if (bLen > maxLen) {
+      if (bLen - maxLen > 0x10) {
+        hexDump += '\n<span style="color:#ccc">...</span>';
+      }
+      var rem = (bLen % 0x10);
+      var start = (rem == 0 ? (bLen - 0x10) : (bLen - rem));
+      var end = start + 0x10;
+      hexDump += self.dumpAddr(start);
+      for (i = start; i < end; i++) {
+        hexDump += self.printDump(i, buf, end);
+      }
     }
     hexDump += '</pre>';
     return hexDump;
+  },
+
+  printDump: function(i, buf, len) {
+    var b = DebugJS.self.dumpBin(i, buf);
+    if ((i + 1) % 0x10 == 0) {
+      b += '  ' + DebugJS.self.dumpAscii(((i + 1) - 0x10), buf, len);
+      if ((i + 1) < len) {
+        b += DebugJS.self.dumpAddr(i + 1);
+      }
+    } else if ((i + 1) % 8 == 0) {
+      b += '  ';
+    } else {
+      b += ' ';
+    }
+    return b;
+  },
+
+  dumpAddr: function(i) {
+    var addr = ('0000000' + i.toString(16)).slice(-8).toUpperCase();
+    var b = '\n' + addr + ' : ';
+    return b;
+  },
+
+  dumpBin: function(i, buf) {
+    var b = ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase());
+    return b;
+  },
+
+  dumpAscii: function(pos, buf, len) {
+    var b = '';
+    var lim = pos + 0x10;
+    for (var i = pos; i < lim; i++) {
+      var code = buf[i];
+      if (code == undefined) break;
+      switch (code) {
+        case 0x0A:
+        case 0x0D:
+          b += '<span style="color:#888">&#x21b5;</span>';
+          break;
+        case 0x22:
+          b += '&quot;';
+          break;
+        case 0x26:
+          b += '&amp;';
+          break;
+        case 0x3C:
+          b += '&lt;';
+          break;
+        case 0x3E:
+          b += '&gt;';
+          break;
+        default:
+          if ((code >= 0x20) && (code <= 0x7E)) {
+            b += String.fromCharCode(code);
+          } else {
+            b += ' ';
+          }
+      }
+    }
+    return b;
   },
 
   updateFilePreview: function(html) {
@@ -4246,13 +4241,13 @@ DebugJS.prototype = {
 
       self.htmlPrevEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc">HTML Editor</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.drawHtml();DebugJS.self.htmlPrevEditor.focus();">[DRAW]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet()">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px" onclick="DebugJS.self.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(2)">&lt;CODE3&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(3)">&lt;CODE4&gt;</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(4)">&lt;CODE5&gt;</span>';
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.drawHtml();DebugJS.self.htmlPrevEditor.focus();">[DRAW]</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet()">[CLR]</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:8px" onclick="DebugJS.self.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(2)">&lt;CODE3&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(3)">&lt;CODE4&gt;</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertHtmlSnippet(4)">&lt;CODE5&gt;</span>';
       self.htmlPrevEditorPanel.innerHTML = html;
       self.htmlPrevBasePanel.appendChild(self.htmlPrevEditorPanel);
 
@@ -4314,9 +4309,9 @@ DebugJS.prototype = {
       self.memoEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc">Memo</span>';
       if (DebugJS.LS_AVAILABLE) {
-        html += '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
+        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.saveMemo();DebugJS.self.memoEditor.focus();">[SAVE]</span>';
       } else {
-        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + this.id + '-btn-disabled" style="float:right;margin-right:4px">[SAVE]</span>' +
+        html += '<span class="' + self.id + '-btn ' + self.id + '-nomove ' + self.id + '-btn-disabled" style="float:right;margin-right:4px">[SAVE]</span>' +
         '<span style="float:right;margin-right:4px;color:#caa">Save function (localStorage) is not available.</span>';
       }
       self.memoEditorPanel.innerHTML = html;
@@ -4375,20 +4370,20 @@ DebugJS.prototype = {
     if (self.scriptPanel == null) {
       self.scriptPanel = document.createElement('div');
       self.scriptPanel.className = self.id + '-overlay-panel';
-      var html = '<div class="' + self.id + '-btn ' + this.id + '-nomove" ' +
+      var html = '<div class="' + self.id + '-btn ' + self.id + '-nomove" ' +
       'style="position:relative;top:-1px;float:right;' +
       'font-size:' + (18 * self.options.zoom) + 'px;color:#888" ' +
       'onclick="DebugJS.self.disableScriptEditor();" ' +
       'onmouseover="this.style.color=\'#d88\';" ' +
       'onmouseout="this.style.color=\'#888\';">x</div>' +
       '<span style="color:#ccc">Script Editor</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.execScript();">[EXEC]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet()">[CLR]</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:8px" onclick="DebugJS.self.insertSnippet(0)">{CODE1}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(1)">{CODE2}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(2)">{CODE3}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(3)">{CODE4}</span>' +
-      '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(4)">{CODE5}</span>';
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.self.execScript();">[EXEC]</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet()">[CLR]</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:8px" onclick="DebugJS.self.insertSnippet(0)">{CODE1}</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(1)">{CODE2}</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(2)">{CODE3}</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(3)">{CODE4}</span>' +
+      '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(4)">{CODE5}</span>';
       self.scriptPanel.innerHTML = html;
       self.addOverlayPanel(self.scriptPanel);
 
@@ -4597,33 +4592,7 @@ DebugJS.prototype = {
 
   turnLed: function(pos, active) {
     var self = DebugJS.self;
-    var bit = 0;
-    switch (pos) {
-      case 0:
-        bit = DebugJS.LED_BIT_0;
-        break;
-      case 1:
-        bit = DebugJS.LED_BIT_1;
-        break;
-      case 2:
-        bit = DebugJS.LED_BIT_2;
-        break;
-      case 3:
-        bit = DebugJS.LED_BIT_3;
-        break;
-      case 4:
-        bit = DebugJS.LED_BIT_4;
-        break;
-      case 5:
-        bit = DebugJS.LED_BIT_5;
-        break;
-      case 6:
-        bit = DebugJS.LED_BIT_6;
-        break;
-      case 7:
-        bit = DebugJS.LED_BIT_7;
-        break;
-    }
+    var bit = DebugJS.LED_BIT[pos];
     if (active) {
       self.led |= bit;
     } else {
@@ -5258,16 +5227,32 @@ DebugJS.prototype = {
   },
 
   cmdLoad: function(arg, tbl) {
-    if (arg == '') {
+    var args = DebugJS.parseArgs(arg);
+    if (args.data == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.loadLog(arg);
-      DebugJS.self.printLogMsg();
+      try {
+        switch (args.opt) {
+          case 'b64':
+            DebugJS.loadLog(args.data, true);
+            break;
+          default:
+            DebugJS.loadLog(args.data);
+        }
+        DebugJS.self.printLogMsg();
+      } catch (e) {
+        DebugJS.log.e(e);
+      }
     }
   },
 
   cmdSave: function(arg, tbl) {
-    var l = DebugJS.saveLog();
+    var l;
+    if (DebugJS.omitLeadingAndTrailingWhiteSpace(arg) == '-b64') {
+      l = DebugJS.saveLog(true);
+    } else {
+      l = DebugJS.saveLog();
+    }
     DebugJS.log.res(l);
   },
 
@@ -5481,12 +5466,12 @@ DebugJS.prototype = {
     } else {
       try {
         switch (args.opt) {
-          case 'd':
-            result = decodeFunc(args.dataRaw);
-            break;
           case '':
           case 'e':
             result = encodeFunc(args.dataRaw);
+            break;
+          case 'd':
+            result = decodeFunc(args.dataRaw);
             break;
           default:
             DebugJS.printUsage(tbl.usage);
@@ -5547,18 +5532,14 @@ DebugJS.prototype = {
   existCmd: function(cmd) {
     var self = DebugJS.self;
     for (var i = 0; i < self.CMD_TBL.length; i++) {
-      if (self.CMD_TBL[i].cmd == cmd) {
-        return true;
-      }
+      if (self.CMD_TBL[i].cmd == cmd) return true;
     }
     return false;
   }
 };
 
 DebugJS.RingBuffer = function(len) {
-  if (len == undefined) {
-    len = 0;
-  }
+  if (len == undefined) len = 0;
   this.buffer = new Array(len);
   this.cnt = 0;
 };
@@ -5660,7 +5641,7 @@ DebugJS.splitArgs = function(arg) {
 DebugJS.parseArgs = function(arg) {
   var args = {'opt': '', 'data': '', 'dataRaw': ''};
   var wkArgs = DebugJS.omitLeadingWhiteSpace(arg);
-  wkArgs = wkArgs.match(/-{1}(.)?\s{0,1}(.*)/);
+  wkArgs = wkArgs.match(/-{1}([^\s]*)\s{0,1}(.*)/);
   if (wkArgs == null) {
     args.dataRaw = arg;
     args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
@@ -5915,7 +5896,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             arg.dump += key;
             if (toJson) {arg.dump += '"';}
             var dt = DebugJS.getDateTime(obj[key]);
-            var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+            var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
             arg.dump += ': <span style="color:#f80">[Date]</span> ' + date;
             sibling++;
             continue;
@@ -7117,7 +7098,7 @@ DebugJS.export = function(o) {
   DebugJS.log.s('An object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.obj</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
 };
 
-DebugJS.saveLog = function() {
+DebugJS.saveLog = function(b64) {
   var buf = DebugJS.self.msgBuf.getAll();
   var b = [];
   for (var i = 0; i < buf.length; i++) {
@@ -7126,10 +7107,12 @@ DebugJS.saveLog = function() {
     b.push(l);
   }
   var json = JSON.stringify(b);
+  if (b64) json = DebugJS.encodeBase64(json);
   return json;
 };
 
-DebugJS.loadLog = function(json) {
+DebugJS.loadLog = function(json, b64) {
+  if (b64) json = DebugJS.decodeBase64(json);
   var buf = JSON.parse(json);
   for (var i = 0; i < buf.length; i++) {
     var bf = buf[i];
