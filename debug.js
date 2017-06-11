@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706111344';
+  this.v = '201706111904';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -352,8 +352,8 @@ DebugJS.ERR_STATE_SCRIPT = 0x1;
 DebugJS.ERR_STATE_LOAD = 0x2;
 DebugJS.ERR_STATE_LOG = 0x4;
 DebugJS.TOOLS_ACTIVE_FNC_NONE = 0x0;
-DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x1;
-DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x2;
+DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x1;
+DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x2;
 DebugJS.TOOLS_ACTIVE_FNC_HTML = 0x4;
 DebugJS.TOOLS_ACTIVE_FNC_MEMO = 0x8;
 DebugJS.FILE_LOAD_FORMAT_BIN = 0;
@@ -3593,13 +3593,13 @@ DebugJS.prototype = {
       self.toolsBodyPanel.style.height = 'calc(100% - ' + self.computedFontSize + 'px)';
       self.toolsPanel.appendChild(self.toolsBodyPanel);
 
-      self.txtChkBtn = self.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FNC_TEXT', 'txtChkBtn');
       self.fileLoaderBtn = self.createToolsHeaderButton('FILE', 'TOOLS_ACTIVE_FNC_FILE', 'fileLoaderBtn');
+      self.txtChkBtn = self.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FNC_TEXT', 'txtChkBtn');
       self.htmlPrevBtn = self.createToolsHeaderButton('HTML', 'TOOLS_ACTIVE_FNC_HTML', 'htmlPrevBtn');
       self.memoBtn = self.createToolsHeaderButton('MEMO', 'TOOLS_ACTIVE_FNC_MEMO', 'memoBtn');
 
       self.addOverlayPanelFull(self.toolsPanel);
-      self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FNC_TEXT);
+      self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FNC_FILE);
     } else {
       self.addOverlayPanelFull(self.toolsPanel);
       self.resizeImgPreview();
