@@ -157,6 +157,12 @@ var options5 = {
 };
 //DebugJS.init(options5);
 
+var options6 = {
+  'visible': true,
+  'onFileLoaded': onFileLoaded
+};
+//DebugJS.init(options6);
+
 //log.t('init start');
 log('Here is the log output example!');
 
@@ -531,32 +537,21 @@ var h = {
   'abc': [foo, bar, console.log, buf, (new Date()), b, foo]
 }
 var z = {};
-//window.onkeydown = function(e) {
-//  switch (e.keyCode) {
-//    case 76:
-//      log("Hello, World!");
-//      break;
-//    case 68:
-//      log.d("Hello, World!");
-//      break;
-//    case 73:
-//      log.i("Hello, World!");
-//      break;
-//    case 87:
-//      log.w("Hello, World!");
-//      break;
-//    case 69:
-//      log.e("Hello, World!");
-//      break;
-//    default:
-//      break;
-//  }
-//};
-//window.onkeypress = function() {
-//  log("key press");
-//};
-//
-//window.onkeyup = function() {log("key up");};
+
+function onFileLoaded(file, content, isB64) {
+  log('file name = ' + file.name);
+  log('isB64 = ' + isB64);
+  if (isB64) {
+    log(content);
+  } else {
+    var buf = new Uint8Array(content);
+    var b = '';
+    for (var i = 0; i < buf.length; i++) {
+      b += ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase()) + ' ';
+    }
+    log(b);
+  }
+}
 </script>
 </head>
 <body>
@@ -1060,6 +1055,16 @@ If you want to change the debugger settings, explicitly call for initialization 
       Disable all features except log feature<span class="annotation">overridable</span>
     </td>
     <td>false</td>
+  </tr>
+
+  <tr>
+    <td class="name">onFileLoaded</td>
+    <td>
+      Callback function which is called when file load has been completed<br>
+<pre class="eg">Function format:
+function onFileLoaded(file, content, isB64) {}</pre>
+    </td>
+    <td>null</td>
   </tr>
 
   <tr>
