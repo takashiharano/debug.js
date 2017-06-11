@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706100030';
+  this.v = '201706111344';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -77,6 +77,7 @@ var DebugJS = DebugJS || function() {
     'kioskMode': false,
     'disableAllCommands': false,
     'disableAllFeatures': false,
+    'onFileLoaded': null,
     'target': null
   };
   this.DEFAULT_ELM_ID = '_debug_';
@@ -160,7 +161,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoadProgressBar = null;
   this.fileLoadProgress = null;
   this.fileLoadCancelBtn = null;
-  this.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BASE64;
+  this.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_B64;
   this.fileLoaderFile = null;
   this.fileReader = null;
   this.scriptBtn = null;
@@ -294,6 +295,7 @@ var DebugJS = DebugJS || function() {
   this.properties = {
     'esc': {'value': 'enable', 'restriction': /^enable$|^disable$/},
     'dumplimit': {'value': 1000, 'restriction': /^[0-9]+$/},
+    'prevlimit': {'value': 5 * 1024 * 1024, 'restriction': /^[0-9]+$/},
     'hexdumplimit': {'value': 102400, 'restriction': /^[0-9]+$/}
   };
   this.setupDefaultOptions();
@@ -354,8 +356,8 @@ DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x1;
 DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x2;
 DebugJS.TOOLS_ACTIVE_FNC_HTML = 0x4;
 DebugJS.TOOLS_ACTIVE_FNC_MEMO = 0x8;
-DebugJS.FILE_LOAD_FORMAT_BASE64 = 0;
-DebugJS.FILE_LOAD_FORMAT_BIN = 1;
+DebugJS.FILE_LOAD_FORMAT_BIN = 0;
+DebugJS.FILE_LOAD_FORMAT_B64 = 1;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
 DebugJS.CMD_ATTR_HIDDEN = 0x2;
 DebugJS.CMD_ATTR_DYNAMIC = 0x4;
@@ -3854,18 +3856,6 @@ DebugJS.prototype = {
       self.fileLoaderPanel.appendChild(fileInput);
       self.fileInput = fileInput;
 
-      self.fileLoaderLabelB64 = document.createElement('label');
-      self.fileLoaderLabelB64.innerText = 'Base64';
-      self.fileLoaderLabelB64.style.marginLeft = '10px';
-      self.fileLoaderPanel.appendChild(self.fileLoaderLabelB64);
-      self.fileLoaderRadioB64 = document.createElement('input');
-      self.fileLoaderRadioB64.type = 'radio';
-      self.fileLoaderRadioB64.name = self.id + '-load-type';
-      self.fileLoaderRadioB64.value = 'base64';
-      self.fileLoaderRadioB64.onchange = self.loadFile;
-      self.fileLoaderRadioB64.checked = true;
-      self.fileLoaderLabelB64.appendChild(self.fileLoaderRadioB64);
-
       self.fileLoaderLabelBin = document.createElement('label');
       self.fileLoaderLabelBin.innerText = 'Binary';
       self.fileLoaderLabelBin.style.marginLeft = '10px';
@@ -3875,7 +3865,19 @@ DebugJS.prototype = {
       self.fileLoaderRadioBin.name = self.id + '-load-type';
       self.fileLoaderRadioBin.value = 'binary';
       self.fileLoaderRadioBin.onchange = self.loadFile;
+      self.fileLoaderRadioBin.checked = true;
       self.fileLoaderLabelBin.appendChild(self.fileLoaderRadioBin);
+
+      self.fileLoaderLabelB64 = document.createElement('label');
+      self.fileLoaderLabelB64.innerText = 'Base64';
+      self.fileLoaderLabelB64.style.marginLeft = '10px';
+      self.fileLoaderPanel.appendChild(self.fileLoaderLabelB64);
+      self.fileLoaderRadioB64 = document.createElement('input');
+      self.fileLoaderRadioB64.type = 'radio';
+      self.fileLoaderRadioB64.name = self.id + '-load-type';
+      self.fileLoaderRadioB64.value = 'base64';
+      self.fileLoaderRadioB64.onchange = self.loadFile;
+      self.fileLoaderLabelB64.appendChild(self.fileLoaderRadioB64);
 
       self.filePreviewWrapper = document.createElement('div');
       self.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + 2) + 'px)', 'important');
@@ -3937,12 +3939,12 @@ DebugJS.prototype = {
     }
 
     if (format != undefined) {
-      if (format == DebugJS.FILE_LOAD_FORMAT_BIN) {
-        self.fileLoaderRadioB64.checked = false;
-        self.fileLoaderRadioBin.checked = true;
-      } else {
-        self.fileLoaderRadioB64.checked = true;
+      if (format == DebugJS.FILE_LOAD_FORMAT_B64) {
         self.fileLoaderRadioBin.checked = false;
+        self.fileLoaderRadioB64.checked = true;
+      } else {
+        self.fileLoaderRadioBin.checked = true;
+        self.fileLoaderRadioB64.checked = false;
       }
 
       if (self.fileLoadFormat != format) {
@@ -3999,7 +4001,7 @@ DebugJS.prototype = {
     })(file);
 
     if (self.fileLoaderRadioB64.checked) {
-      self.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BASE64;
+      self.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_B64;
       self.fileReader.readAsDataURL(file);
     } else {
       self.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_BIN;
@@ -4055,17 +4057,18 @@ DebugJS.prototype = {
   },
 
   onFileLoadCompleted: function(file, e) {
-    var PREVIEW_SIZE_MAX = 5 * 1024 * 1024;
+    var self = DebugJS.self;
+    var prevMaxSize = self.properties.prevlimit.value;
     var self = DebugJS.self;
     var content = (self.fileReader.result == null) ? '' : self.fileReader.result;
     var dt = DebugJS.getDateTime(file.lastModifiedDate);
     var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
     var contentPreview = '';
     if (file.size > 0) {
-      if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64) {
+      if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
         contentPreview = self.getContentPreview(file, content);
       } else {
-        contentPreview = '\n' + self.getHexDump(file, content);
+        contentPreview = '\n' + self.getHexDump(content);
       }
     }
     var html = 'file    : ' + file.name + '\n' +
@@ -4073,15 +4076,20 @@ DebugJS.prototype = {
     'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
     'modified: ' + fileDate + '\n' +
     contentPreview + '\n';
-    if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64) {
-      if (file.size <= PREVIEW_SIZE_MAX) {
+    if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
+      if (file.size <= prevMaxSize) {
         html += content;
       } else {
-        html += '<span style="color:' + self.options.logColorW + '">The file size exceeds the limit allowed.</span>';
+        html += '<span style="color:' + self.options.logColorW + '">The file size exceeds the limit allowed. (limit=' + prevMaxSize + ')</span>';
       }
     }
     self.updateFilePreview(html);
     setTimeout(self.fileLoadFinalize, 1000);
+    var cb = self.options.onFileLoaded;
+    if (cb) {
+      var isB64 = (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64);
+      cb(file, content, isB64);
+    }
   },
 
   getContentPreview: function(file, contentBase64) {
@@ -4103,7 +4111,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     if ((!(self.status & DebugJS.STATE_TOOLS)) ||
         (!(DebugJS.self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE)) ||
-        (!(self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_BASE64))) {
+        (!(self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64))) {
       return;
     }
     var imgPreview = document.getElementById(self.id + '-img-preview');
@@ -4117,7 +4125,7 @@ DebugJS.prototype = {
     imgPreview.style.maxHeight = maxH + 'px';
   },
 
-  getHexDump: function(file, bufArray) {
+  getHexDump: function(bufArray) {
     var self = DebugJS.self;
     var maxLen = self.properties.hexdumplimit.value;
     var buf = new Uint8Array(bufArray);
@@ -4126,7 +4134,7 @@ DebugJS.prototype = {
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
-    var hexDump = '<pre style="white-space:pre !important"><span style="background:#0f0;color:#000">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>';
+    var hexDump = '<pre style="white-space:pre !important"><span style="background:#0cf;color:#000">Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           </span>';
     hexDump += self.dumpAddr(0);
     for (var i = 0; i < len; i++) {
       hexDump += self.printDump(i, buf, len);
@@ -4182,7 +4190,7 @@ DebugJS.prototype = {
       switch (code) {
         case 0x0A:
         case 0x0D:
-          b += '<span style="color:#888">&#x21b5;</span>';
+          b += '<span style="color:#0cf">&#x21b5;</span>';
           break;
         case 0x22:
           b += '&quot;';
@@ -5087,7 +5095,7 @@ DebugJS.prototype = {
             if (opt == 'bin') {
               param = DebugJS.FILE_LOAD_FORMAT_BIN;
             } else {
-              param = DebugJS.FILE_LOAD_FORMAT_BASE64;
+              param = DebugJS.FILE_LOAD_FORMAT_B64;
             }
             break;
           case 'html':
