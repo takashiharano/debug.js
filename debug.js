@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706111904';
+  this.v = '201706111959';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1011,7 +1011,7 @@ DebugJS.prototype = {
 
     if (self.options.useClearButton) {
       self.clearBtn = document.createElement('span');
-      self.clearBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.clearBtn.className = self.id + '-btn ' + self.id + '-nomove';
       self.clearBtn.onclick = DebugJS.self.clearMessage;
       self.clearBtn.innerText = '[CLR]';
       self.headPanel.appendChild(self.clearBtn);
@@ -1053,7 +1053,7 @@ DebugJS.prototype = {
     // X Button
     if (self.options.togglableShowHide) {
       self.closeBtn = document.createElement('span');
-      self.closeBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.closeBtn.className = self.id + '-btn ' + self.id + '-nomove';
       self.closeBtn.style.float = 'right';
       self.closeBtn.style.position = 'relative';
       self.closeBtn.style.top = '-1px';
@@ -1121,7 +1121,7 @@ DebugJS.prototype = {
     // Screen Measure Button
     if (self.options.useScreenMeasure) {
       var measureBtn = document.createElement('span');
-      measureBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      measureBtn.className = self.id + '-btn ' + self.id + '-nomove';
       measureBtn.style.display = 'inline-block';
       measureBtn.style.float = 'right';
       measureBtn.style.marginTop = ((self.options.zoom <= 1) ? 1 : (2 * self.options.zoom)) + 'px';
@@ -1140,7 +1140,7 @@ DebugJS.prototype = {
     // LED
     if (self.options.useLed) {
       self.ledPanel = document.createElement('span');
-      self.ledPanel.className = this.id + '-sys-info';
+      self.ledPanel.className = self.id + '-sys-info';
       self.ledPanel.style.float = 'right';
       self.ledPanel.style.marginRight = '4px';
       self.infoPanel.appendChild(self.ledPanel);
@@ -1148,32 +1148,16 @@ DebugJS.prototype = {
 
     // Window Size
     if (self.options.useWindowSizeInfo) {
-      self.windowSizePanel = document.createElement('span');
-      self.windowSizePanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.windowSizePanel);
-
-      self.clientSizePanel = document.createElement('span');
-      self.clientSizePanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.clientSizePanel);
-
-      self.bodySizePanel = document.createElement('span');
-      self.bodySizePanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.bodySizePanel);
-
-      self.scrollPosPanel = document.createElement('span');
-      self.scrollPosPanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.scrollPosPanel);
+      self.windowSizePanel = self.createSysInfoPanel();
+      self.clientSizePanel = self.createSysInfoPanel();
+      self.bodySizePanel = self.createSysInfoPanel();
+      self.scrollPosPanel = self.createSysInfoPanel();
     }
 
     // Mouse Status
     if (self.options.useMouseStatusInfo) {
-      self.mousePositionPanel = document.createElement('span');
-      self.mousePositionPanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.mousePositionPanel);
-
-      self.mouseClickPanel = document.createElement('span');
-      self.mouseClickPanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.mouseClickPanel);
+      self.mousePositionPanel = self.createSysInfoPanel();
+      self.mouseClickPanel = self.createSysInfoPanel();
     }
 
     if ((self.options.useWindowSizeInfo) || (self.options.useMouseStatusInfo)) {
@@ -1182,23 +1166,14 @@ DebugJS.prototype = {
 
     // Key Status
     if (self.options.useKeyStatusInfo) {
-      self.keyDownPanel = document.createElement('span');
-      self.keyDownPanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.keyDownPanel);
-
-      self.keyPressPanel = document.createElement('span');
-      self.keyPressPanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.keyPressPanel);
-
-      self.keyUpPanel = document.createElement('span');
-      self.keyUpPanel.className = this.id + '-sys-info';
-      self.infoPanel.appendChild(self.keyUpPanel);
+      self.keyDownPanel = self.createSysInfoPanel();
+      self.keyPressPanel = self.createSysInfoPanel();
+      self.keyUpPanel = self.createSysInfoPanel();
     }
 
     // Message Display
     if (self.options.useMsgDisplay) {
-      var msgPanel = document.createElement('span');
-      msgPanel.className = this.id + '-sys-info';
+      var msgPanel = self.createSysInfoPanel();
       msgPanel.style.float = self.options.msgDisplayPos;
       msgPanel.style.marginRight = '3px';
       msgPanel.style.border = '0';
@@ -1209,7 +1184,6 @@ DebugJS.prototype = {
       msgPanel.style.wordBreak = 'break-all';
       msgPanel.style.overflow = 'hidden';
       msgPanel.style.textOverflow = 'ellipsis';
-      self.infoPanel.appendChild(msgPanel);
       self.msgPanel = msgPanel;
     }
 
@@ -1278,7 +1252,7 @@ DebugJS.prototype = {
   createHeaderButton: function(btnobj, label, marginLeft, fontSize, handler, status, activeColor, reverse) {
     var self = DebugJS.self;
     var btn = document.createElement('span');
-    btn.className = this.id + '-btn ' + this.id + '-nomove';
+    btn.className = self.id + '-btn ' + self.id + '-nomove';
     btn.style.float = 'right';
     btn.style.marginLeft = (marginLeft * self.options.zoom) + 'px';
     if (fontSize) btn.style.fontSize = fontSize;
@@ -1292,6 +1266,14 @@ DebugJS.prototype = {
     }
     self.headPanel.appendChild(btn);
     return btn;
+  },
+
+  createSysInfoPanel: function() {
+    var self = DebugJS.self;
+    var el = document.createElement('span');
+    el.className = self.id + '-sys-info';
+    self.infoPanel.appendChild(el);
+    return el;
   },
 
   createTextInput: function(width, textAlign, color, value, inputHandler) {
@@ -1335,7 +1317,7 @@ DebugJS.prototype = {
   createLogFilterButton: function(type, btnobj, color) {
     var self = DebugJS.self;
     var btn = document.createElement('span');
-    btn.className = this.id + '-btn ' + this.id + '-nomove';
+    btn.className = self.id + '-btn ' + self.id + '-nomove';
     btn.style.marginLeft = '2px';
     btn.innerText = '[' + type + ']';
     btn.onclick = new Function('DebugJS.self.toggleLogFilter(DebugJS.LOG_FILTER_' + type + ');');
@@ -1570,8 +1552,8 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var btn = (self.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
     var margin = (2 * self.options.zoom) + 'px';
-    var btns = '<span class="' + this.id + '-btn ' + this.id + '-nomove" style="margin-right:' + margin + '" onclick="DebugJS.self.resetStopWatch();">0</span>' +
-    '<span class="' + this.id + '-btn ' + this.id + '-nomove" onclick="DebugJS.self.startStopStopWatch();">' + btn + '</span>';
+    var btns = '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-right:' + margin + '" onclick="DebugJS.self.resetStopWatch();">0</span>' +
+    '<span class="' + self.id + '-btn ' + self.id + '-nomove" onclick="DebugJS.self.startStopStopWatch();">' + btn + '</span>';
     self.swBtnPanel.innerHTML = btns;
   },
 
@@ -1612,8 +1594,8 @@ DebugJS.prototype = {
       btn = '&#x2750;';
     }
     fn += 'DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();';
-    var b = '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * self.options.zoom) + 'px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + this.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:' + self.options.zoom + 'px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
+    var b = '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * self.options.zoom) + 'px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
+    '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:' + self.options.zoom + 'px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -1706,7 +1688,7 @@ DebugJS.prototype = {
   startMove: function(e) {
     var self = DebugJS.self;
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) ||
-        (e.button != 0) || self.isMoveExemptedElement(e.target)) {
+        (e.button != 0) || self.isMoveExempted(e)) {
       return;
     }
     self.status |= DebugJS.STATE_DRAGGING;
@@ -1718,7 +1700,8 @@ DebugJS.prototype = {
     }
   },
 
-  isMoveExemptedElement: function(el) {
+  isMoveExempted: function(e) {
+    var el = e.target;
     if (el.nodeName == 'INPUT') return true;
     if (el.nodeName == 'TEXTAREA') return true;
     if (DebugJS.hasClass(el, DebugJS.self.id + '-nomove')) return true;
@@ -2283,7 +2266,7 @@ DebugJS.prototype = {
 
   onDbgWinDblClick: function(e) {
     var self = DebugJS.self;
-    if ((self.isMoveExemptedElement(e.target)) ||
+    if ((self.isMoveExempted(e)) ||
         (!(self.status & DebugJS.STATE_DRAGGABLE))) {
       return;
     }
@@ -2601,7 +2584,6 @@ DebugJS.prototype = {
     var deltaX = currentPosX - self.clickedPosX;
     var deltaY = currentPosY - self.clickedPosY;
     var clientWidth = document.documentElement.clientWidth;
-
     if (deltaX < 0) {
       self.measureBox.style.left = currentPosX + 'px';
       deltaX *= -1;
@@ -2612,7 +2594,6 @@ DebugJS.prototype = {
     }
     self.measureBox.style.width = deltaX + 'px';
     self.measureBox.style.height = deltaY + 'px';
-
     var sizeLabelW = 210;
     var sizeLabelH = 40;
     var sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
@@ -2953,7 +2934,7 @@ DebugJS.prototype = {
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
         partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omitpart, style);
-        foldingText = '<span class="' + self.id + '-showhide-button ' + this.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
+        foldingText = '<span class="' + self.id + '-showhide-button ' + self.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisplay + '" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
       } else {
@@ -3292,7 +3273,6 @@ DebugJS.prototype = {
         el = lastChild;
       }
     }
-
     if (el) {
       if (!(el instanceof HTMLDocument)) {
         self.showElementInfo(el);
@@ -3320,7 +3300,6 @@ DebugJS.prototype = {
         }
       }
     }
-
     if (el) {
       self.showElementInfo(el);
       self.updateTargetElm(el);
@@ -3497,7 +3476,7 @@ DebugJS.prototype = {
       self.htmlSrcHeaderPanel.appendChild(self.htmlSrcUpdateInputLabel);
 
       self.htmlSrcUpdateBtn = document.createElement('span');
-      self.htmlSrcUpdateBtn.className = this.id + '-btn ' + this.id + '-nomove';
+      self.htmlSrcUpdateBtn.className = self.id + '-btn ' + self.id + '-nomove';
       self.htmlSrcUpdateBtn.style.float = 'right';
       self.htmlSrcUpdateBtn.style.marginLeft = '4px';
       self.htmlSrcUpdateBtn.style.color = self.options.btnColor;
@@ -3577,7 +3556,6 @@ DebugJS.prototype = {
   enableTools: function() {
     var self = DebugJS.self;
     self.status |= DebugJS.STATE_TOOLS;
-
     if (self.toolsPanel == null) {
       var defaultFontSize = self.computedFontSize;
       self.toolsPanel = document.createElement('div');
@@ -3611,7 +3589,7 @@ DebugJS.prototype = {
   createToolsHeaderButton: function(label, state, btnobj) {
     var self = DebugJS.self;
     var btn = document.createElement('span');
-    btn.className = this.id + '-btn ' + this.id + '-nomove';
+    btn.className = self.id + '-btn ' + self.id + '-nomove';
     btn.style.marginRight = '4px';
     btn.innerText = '<' + label + '>';
     btn.onclick = new Function('DebugJS.self.switchToolsFunction(DebugJS.' + state + ');');
@@ -3946,7 +3924,6 @@ DebugJS.prototype = {
         self.fileLoaderRadioBin.checked = true;
         self.fileLoaderRadioB64.checked = false;
       }
-
       if (self.fileLoadFormat != format) {
         self.loadFile();
       }
@@ -6030,11 +6007,9 @@ DebugJS.countElements = function(selector, showDetail) {
     default:
       elmList = document.getElementsByTagName(selector);
   }
-
   if (element) {
     DebugJS.getChildElements(element, elmList);
   }
-
   if (elmList) {
     for (var i = 0, len = elmList.length; i < len; i++) {
       if (!cnt[elmList[i].tagName]) {
@@ -6045,7 +6020,6 @@ DebugJS.countElements = function(selector, showDetail) {
       total++;
     }
   }
-
   if (showDetail) {
     var l = '<table>';
     for (var key in cnt) {
