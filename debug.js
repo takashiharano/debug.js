@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706122013';
+  this.v = '201706122200';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1688,7 +1688,7 @@ DebugJS.prototype = {
   startMove: function(e) {
     var self = DebugJS.self;
     if ((!(self.status & DebugJS.STATE_DRAGGABLE)) ||
-        (e.button != 0) || self.isMoveExempted(e)) {
+        (e.button != 0) || !self.isMovable(e)) {
       return;
     }
     self.status |= DebugJS.STATE_DRAGGING;
@@ -1700,12 +1700,30 @@ DebugJS.prototype = {
     }
   },
 
-  isMoveExempted: function(e) {
+  isMovable: function(e) {
+    var self = DebugJS.self;
     var el = e.target;
-    if (el.nodeName == 'INPUT') return true;
-    if (el.nodeName == 'TEXTAREA') return true;
-    if (DebugJS.hasClass(el, DebugJS.self.id + '-nomove')) return true;
-    return false;
+    if (el.nodeName == 'INPUT') return false;
+    if (el.nodeName == 'TEXTAREA') return false;
+    if (DebugJS.hasClass(el, self.id + '-nomove')) return false;
+    var browser = DebugJS.getBrowserType();
+    if ((browser.name == 'IE11') || (browser.name == 'Firefox')) {
+      if ((el == self.logPanel) ||
+          (el == self.sysInfoPanel) ||
+          (el == self.elmInfoBodyPanel) ||
+          (el == self.htmlSrcBodyPanel) ||
+          (el == self.filePreviewWrapper) ||
+          (el == self.toolsPanel)) {
+        var scrollW = 17;
+        var rect = el.getBoundingClientRect();
+        var scrollL = rect.left + rect.width - scrollW;
+        var scrollR = rect.left + rect.width;
+        if ((e.clientX >= scrollL) && (e.clientX <= scrollR)) {
+          return false;
+        }
+      }
+    }
+    return true;
   },
 
   doMove: function(e) {
@@ -2266,7 +2284,7 @@ DebugJS.prototype = {
 
   onDbgWinDblClick: function(e) {
     var self = DebugJS.self;
-    if ((self.isMoveExempted(e)) ||
+    if ((!self.isMovable(e)) ||
         (!(self.status & DebugJS.STATE_DRAGGABLE))) {
       return;
     }
@@ -3023,6 +3041,7 @@ DebugJS.prototype = {
       self.elmCapBtn.style.color = DebugJS.COLOR_INACTIVE;
 
       self.elmInfoBodyPanel = document.createElement('div');
+      self.elmInfoBodyPanel.style.width = '100%';
       self.elmInfoBodyPanel.style.height = 'calc(100% - 1.3em)';
       self.elmInfoBodyPanel.style.overflow = 'auto';
       self.elmInfoPanel.appendChild(self.elmInfoBodyPanel);
