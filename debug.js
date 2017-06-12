@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706111959';
+  this.v = '201706122013';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -4035,29 +4035,29 @@ DebugJS.prototype = {
 
   onFileLoadCompleted: function(file, e) {
     var self = DebugJS.self;
-    var prevMaxSize = self.properties.prevlimit.value;
-    var self = DebugJS.self;
+    var limit = self.properties.prevlimit.value;
     var content = (self.fileReader.result == null) ? '' : self.fileReader.result;
     var dt = DebugJS.getDateTime(file.lastModifiedDate);
     var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
-    var contentPreview = '';
+    var preview = '';
     if (file.size > 0) {
       if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
-        contentPreview = self.getContentPreview(file, content);
+        preview = self.getContentPreview(file, content);
       } else {
-        contentPreview = '\n' + self.getHexDump(content);
+        var buf = new Uint8Array(content);
+        preview = '\n' + self.getHexDump(buf);
       }
     }
     var html = 'file    : ' + file.name + '\n' +
     'type    : ' + file.type + '\n' +
     'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
     'modified: ' + fileDate + '\n' +
-    contentPreview + '\n';
+    preview + '\n';
     if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
-      if (file.size <= prevMaxSize) {
+      if (file.size <= limit) {
         html += content;
       } else {
-        html += '<span style="color:' + self.options.logColorW + '">The file size exceeds the limit allowed. (limit=' + prevMaxSize + ')</span>';
+        html += '<span style="color:' + self.options.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
       }
     }
     self.updateFilePreview(html);
@@ -4069,14 +4069,14 @@ DebugJS.prototype = {
     }
   },
 
-  getContentPreview: function(file, contentBase64) {
+  getContentPreview: function(file, contentB64) {
     var self = DebugJS.self;
     var preview = '';
     if (file.type.match(/image\//)) {
       var selfSizePos = self.getSelfSizePos();
-      preview = '<img src="' + contentBase64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.computedFontSize * 13) - 8) + 'px">\n';
+      preview = '<img src="' + contentB64 + '" id="' + self.id + '-img-preview" style="max-width:' + (selfSizePos.w - 32) + 'px;max-height:' + (selfSizePos.h - (self.computedFontSize * 13) - 8) + 'px">\n';
     } else if (file.type.match(/text\//)) {
-      var contents = contentBase64.split(',');
+      var contents = contentB64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
       decodedContent = DebugJS.escapeTag(decodedContent);
       preview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
@@ -4102,12 +4102,11 @@ DebugJS.prototype = {
     imgPreview.style.maxHeight = maxH + 'px';
   },
 
-  getHexDump: function(bufArray) {
+  getHexDump: function(buf) {
     var self = DebugJS.self;
-    var maxLen = self.properties.hexdumplimit.value;
-    var buf = new Uint8Array(bufArray);
+    var limit = self.properties.hexdumplimit.value;
     var bLen = buf.length;
-    var len = ((bLen > maxLen) ? maxLen : bLen);
+    var len = ((bLen > limit) ? limit : bLen);
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
@@ -4116,8 +4115,8 @@ DebugJS.prototype = {
     for (var i = 0; i < len; i++) {
       hexDump += self.printDump(i, buf, len);
     }
-    if (bLen > maxLen) {
-      if (bLen - maxLen > 0x10) {
+    if (bLen > limit) {
+      if (bLen - limit > 0x10) {
         hexDump += '\n<span style="color:#ccc">...</span>';
       }
       var rem = (bLen % 0x10);
@@ -4636,13 +4635,13 @@ DebugJS.prototype = {
   },
 
   _execCmd: function(str, echo) {
+    var self = DebugJS.self;
     if (echo) {
       var echoStr = str;
       echoStr = DebugJS.escapeTag(echoStr);
       echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS.log.s(echoStr);
     }
-    var self = DebugJS.self;
     var cmd, arg;
     var cmds = DebugJS.splitCmdLineInTwo(str);
     cmd = cmds[0];
