@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706122200';
+  this.v = '201706150047';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3169,10 +3169,10 @@ DebugJS.prototype = {
         borderColorB16 = '#' + borderColorB16cnv.r + borderColorB16cnv.g + borderColorB16cnv.b;
       }
 
-      var borderT = 'top    = ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + computedStyle.borderTopColor + ' ' + borderColorT16 + ' <span style="background:' + borderColorT + ';width:6px;height:12px;display:inline-block"> </span>';
-      var borderLRB = '            left   = ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + computedStyle.borderLeftColor + ' ' + borderColorL16 + ' <span style="background:' + borderColorL + ';width:6px;height:12px;display:inline-block"> </span>\n' +
-      '            right  = ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + computedStyle.borderRightColor + ' ' + borderColorR16 + ' <span style="background:' + borderColorR + ';width:6px;height:12px;display:inline-block"> </span>\n' +
-      '            bottom = ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + computedStyle.borderBottomColor + ' ' + borderColorB16 + ' <span style="background:' + borderColorB + ';width:6px;height:12px;display:inline-block"> </span>';
+      var borderT = 'top   : ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + computedStyle.borderTopColor + ' ' + borderColorT16 + ' <span style="background:' + borderColorT + ';width:6px;height:12px;display:inline-block"> </span>';
+      var borderLRB = '            left  : ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + computedStyle.borderLeftColor + ' ' + borderColorL16 + ' <span style="background:' + borderColorL + ';width:6px;height:12px;display:inline-block"> </span>\n' +
+      '            right : ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + computedStyle.borderRightColor + ' ' + borderColorR16 + ' <span style="background:' + borderColorR + ';width:6px;height:12px;display:inline-block"> </span>\n' +
+      '            bottom: ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + computedStyle.borderBottomColor + ' ' + borderColorB16 + ' <span style="background:' + borderColorB + ';width:6px;height:12px;display:inline-block"> </span>';
 
       var allStyles = '';
       var LEADING_INDENT = '           ';
@@ -3205,25 +3205,26 @@ DebugJS.prototype = {
       'position  : ' + computedStyle.position + '\n' +
       'z-index   : ' + computedStyle.zIndex + '\n' +
       'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
-      'size      : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
+      'border    : ' + borderT + ' ' + self.createFoldingText(borderLRB, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['elBorder']) + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
-      'border    : ' + borderT + ' ' + self.createFoldingText(borderLRB, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['elBorder']) +
       '<div class="' + self.id + '-separator"></div>' +
-      'font      : size   = ' + computedStyle.fontSize + '\n' +
-      '            family = ' + computedStyle.fontFamily + '\n' +
-      '            weight = ' + computedStyle.fontWeight + '\n' +
-      '            style  = ' + computedStyle.fontStyle + '\n' +
-      'color     : ' + color + ' ' + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block"> </span>\n' +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' <span style="background:' + backgroundColor + ';width:6px;height:12px;display:inline-block"> </span>\n' +
-      'opacity   : ' + computedStyle.opacity + '\n' +
+      'color     : ' + color + ' ' + color16 + ' <span style="background:' + color + ';width:6px;height:12px;display:inline-block"> </span>\n' +
+      'font      : size  : ' + computedStyle.fontSize + '\n' +
+      '            family: ' + computedStyle.fontFamily + '\n' +
+      '            weight: ' + computedStyle.fontWeight + '\n' +
+      '            style : ' + computedStyle.fontStyle + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
-      'location  : top    = ' + Math.round(rect.top + window.pageYOffset) + 'px (' + computedStyle.top + ')\n' +
-      '            left   = ' + Math.round(rect.left + window.pageXOffset) + 'px (' + computedStyle.left + ')\n' +
-      '            right  = ' + Math.round(rect.right + window.pageXOffset) + 'px (' + computedStyle.right + ')\n' +
-      '            bottom = ' + Math.round(rect.bottom + window.pageYOffset) + 'px (' + computedStyle.bottom + ')\n' +
-      'overflow  : ' + computedStyle.overflow + '\n' +
+      'size      : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
+      'location  : <span style="color:#aaa">winOffset + pageOffset = pos (computedStyle)</span>\n' +
+      '            top   : ' + Math.round(rect.top) + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
+      '            left  : ' + Math.round(rect.left) + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
+      '            right : ' + Math.round(rect.right) + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.right + window.pageXOffset) + ' px (' + computedStyle.right + ')\n' +
+      '            bottom: ' + Math.round(rect.bottom) + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.bottom + window.pageYOffset) + ' px (' + computedStyle.bottom + ')\n' +
       'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
+      'overflow  : ' + computedStyle.overflow + '\n' +
+      'opacity   : ' + computedStyle.opacity + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
