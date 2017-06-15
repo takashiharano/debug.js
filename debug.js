@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706150047';
+  this.v = '201706160115';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -1707,7 +1707,7 @@ DebugJS.prototype = {
     if (el.nodeName == 'TEXTAREA') return false;
     if (DebugJS.hasClass(el, self.id + '-nomove')) return false;
     var browser = DebugJS.getBrowserType();
-    if ((browser.name == 'IE11') || (browser.name == 'Firefox')) {
+    if ((browser.family == 'IE') || (browser.name == 'Firefox')) {
       if ((el == self.logPanel) ||
           (el == self.sysInfoPanel) ||
           (el == self.elmInfoBodyPanel) ||
@@ -3112,9 +3112,9 @@ DebugJS.prototype = {
       var text = '';
       if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
         if (el.tagName == 'META') {
-          text = DebugJS.escapeTag(el.outerHTML);
+          text = DebugJS.escTag(el.outerHTML);
         } else {
-          text = DebugJS.escapeTag(el.innerText);
+          text = DebugJS.escTag(el.innerText);
         }
       }
       var txt = self.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, self.elmInfoShowHideStatus['text']);
@@ -3191,7 +3191,7 @@ DebugJS.prototype = {
         }
       }
       allStylesFolding = self.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['allStyles']);
-      var name = (el.name == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.name) : DebugJS.escapeTag(el.name);
+      var name = (el.name == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.name) : DebugJS.escTag(el.name);
       var val = (el.value == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.value) : DebugJS.escapeSpclChr(el.value);
 
       html += '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
@@ -4098,7 +4098,7 @@ DebugJS.prototype = {
     } else if (file.type.match(/text\//)) {
       var contents = contentB64.split(',');
       var decodedContent = DebugJS.decodeBase64(contents[1]);
-      decodedContent = DebugJS.escapeTag(decodedContent);
+      decodedContent = DebugJS.escTag(decodedContent);
       preview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
     }
     return preview;
@@ -4658,7 +4658,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     if (echo) {
       var echoStr = str;
-      echoStr = DebugJS.escapeTag(echoStr);
+      echoStr = DebugJS.escTag(echoStr);
       echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS.log.s(echoStr);
     }
@@ -4902,7 +4902,7 @@ DebugJS.prototype = {
     var str = '<table>';
     for (var i = 0, len = bf.length; i < len; i++) {
       var cmd = bf[i];
-      cmd = DebugJS.escapeTag(cmd);
+      cmd = DebugJS.escTag(cmd);
       cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
@@ -6902,21 +6902,19 @@ DebugJS.getBrowserType = function() {
 
   if (ua.indexOf('Trident/7.') >= 1) {
     browser.name = 'IE11';
+    browser.family = 'IE';
     return browser;
   }
 
   if (ua.indexOf('Trident/6.') >= 1) {
     browser.name = 'IE10';
+    browser.family = 'IE';
     return browser;
   }
 
   if (ua.indexOf('Trident/5.') >= 1) {
     browser.name = 'IE9';
-    return browser;
-  }
-
-  if (ua.indexOf('Trident/4.') >= 1) {
-    browser.name = 'IE8';
+    browser.family = 'IE';
     return browser;
   }
 
@@ -7018,7 +7016,7 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
     switch (omitpart) {
       case DebugJS.OMIT_FIRST:
         str = DebugJS.substr(str, (maxLen * (-1)));
-        str = snip + DebugJS.escapeTag(str);
+        str = snip + DebugJS.escTag(str);
         break;
       case DebugJS.OMIT_MID:
         var firstLen = maxLen / 2;
@@ -7029,11 +7027,11 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
         }
         var firstText = DebugJS.substr(str, firstLen);
         var latterText = DebugJS.substr(str, (latterLen * (-1)));
-        str = DebugJS.escapeTag(firstText) + snip + DebugJS.escapeTag(latterText);
+        str = DebugJS.escTag(firstText) + snip + DebugJS.escTag(latterText);
         break;
       default:
         str = DebugJS.substr(str, maxLen);
-        str = DebugJS.escapeTag(str) + snip;
+        str = DebugJS.escTag(str) + snip;
     }
   }
   return str;
@@ -7047,7 +7045,7 @@ DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
   return text;
 };
 
-DebugJS.escapeTag = function(str) {
+DebugJS.escTag = function(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 
