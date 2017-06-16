@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706160115';
+  this.v = '201706162243';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -7387,7 +7387,7 @@ if (DebugJS.ENABLE) {
   window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
   window.addEventListener('load', DebugJS.onLoad, true);
   window.addEventListener('error', DebugJS.onError, true);
-  if (DebugJS.MERGE_CONSOLE) {
+  if ((DebugJS.MERGE_CONSOLE) && (window.console)) {
     console.log = function(x) {log(x);};
     console.info = function(x) {log.i(x);};
     console.warn = function(x) {log.w(x);};

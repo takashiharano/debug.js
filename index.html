@@ -494,7 +494,7 @@ function errorDemo() {
   fakeError
 }
 
-var buf = new ArrayBuffer(32);
+var buf = (window.ArrayBuffer ? new ArrayBuffer(32) : null);
 
 var a = {
   'key1': 'val1',
