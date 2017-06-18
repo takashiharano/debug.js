@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706162243';
+  this.v = '201706181340';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -419,6 +419,8 @@ DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_FULL_OVERLAY = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
+DebugJS.EXPANDBTN = '&gt;';
+DebugJS.CLOSEBTN = 'v';
 DebugJS.LS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
@@ -725,7 +727,8 @@ DebugJS.prototype = {
 
     styles['.' + self.id + '-showhide-button'] = {
       'color': '#0a0',
-      'font-size': (self.computedFontSize * 0.8) + 'px'
+      'font-size': self.computedFontSize + 'px',
+      'font-weight': 'bold'
     };
 
     styles['.' + self.id + '-showhide-button:hover'] = {
@@ -2914,14 +2917,14 @@ DebugJS.prototype = {
     var partialBody = document.getElementById(self.id + '-' + name + '__partial-body');
     var body = document.getElementById(self.id + '-' + name + '__body');
     if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
-      button.innerHTML = '&#x25bc;';
+      button.innerHTML = DebugJS.CLOSEBTN;
       partialBody.style.display = 'none';
       body.style.display = 'block';
       if (self.elmInfoShowHideStatus[name] != undefined) {
         self.elmInfoShowHideStatus[name] = true;
       }
     } else {
-      button.innerHTML = '&#x25b6;';
+      button.innerHTML = DebugJS.EXPANDBTN;
       partialBody.style.display = 'inline';
       body.style.display = 'none';
       if (self.elmInfoShowHideStatus[name] != undefined) {
@@ -2934,18 +2937,16 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var DEFAULT_MAX_LEN = 50;
     var foldingText;
-
     if (lineMaxLen == undefined) lineMaxLen = DEFAULT_MAX_LEN;
     if (!style) style = 'color:#aaa';
-
     if (!obj) {
       foldingText = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
     } else {
-      var btn = '&#x25b6;';
+      var btn = DebugJS.EXPANDBTN;
       var partDisplay = 'inline';
       var bodyDisplay = 'none';
       if (show) {
-        btn = '&#x25bc;';
+        btn = DebugJS.CLOSEBTN;
         partDisplay = 'none';
         bodyDisplay = 'block';
       }
@@ -3259,15 +3260,22 @@ DebugJS.prototype = {
       'onsubmit     : ' + self.getEventHandlerString(el.onsubmit, 'elOnSubmit') + '\n' +
       '<div class="' + self.id + '-separator"></div>' +
       'onscroll     : ' + self.getEventHandlerString(el.onscroll, 'elOnScroll') + '\n' +
-      '<div class="' + self.id + '-separator"></div>';
-
-      for (var data in el.dataset) {
-        html += 'data-' + data + ': ' + el.dataset[data] + '\n';
+      '<div class="' + self.id + '-separator"></div>' +
+      'dataset (data-*):\n';
+      if (el.dataset) {
+        html += '{' + ((Object.keys(el.dataset).length > 0) ? '\n' : '');
+        for (var data in el.dataset) {
+          html += ' ' + data + ': ' + el.dataset[data] + '\n';
+        }
+        html += '}';
+      } else {
+        html += '<span style="color:#aaa">' + el.dataset + '</span>';
       }
 
       var htmlSrc = el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       htmlSrc = self.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, self.elmInfoShowHideStatus['htmlSrc']);
-      html += 'outerHTML: ' + htmlSrc;
+      html += '<div class="' + self.id + '-separator"></div>' +
+      'outerHTML: ' + htmlSrc;
     }
     html += '</pre>';
     self.elmInfoBodyPanel.innerHTML = html;
@@ -6661,11 +6669,9 @@ DebugJS.timeEnd = function(timerName, msg) {
 DebugJS.timeLog = function(msg, timerName) {
   var now = new Date();
   var self = DebugJS.self;
-
   if (!timerName) {
     timerName = DebugJS.DEFAULT_TIMER_NAME;
   }
-
   var t;
   if (self.timers[timerName]) {
     t = DebugJS.getElapsedTimeStr(self.timers[timerName].start, now);
@@ -6674,15 +6680,12 @@ DebugJS.timeLog = function(msg, timerName) {
     self.timers[timerName].start = (new Date());
     t = '00:00:00.000';
   }
-
   var dt = '<span style="color:' + self.options.timerColor + '">' + t + '</span>';
-
   var dtLap = '';
   if (self.timers[timerName].split) {
     var tLap = DebugJS.getElapsedTimeStr(self.timers[timerName].split, now);
     dtLap = '<span style="color:' + self.options.timerColor + '">' + tLap + '</span>';
   }
-
   var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   DebugJS.log(str);
 };
@@ -6948,7 +6951,6 @@ DebugJS.browserColoring = function(name) {
     case 'IE11':
     case 'IE10':
     case 'IE9':
-    case 'IE8':
       str = '<span style="color:#61d5f8">' + name + '</span>';
       break;
     case 'Safari':
