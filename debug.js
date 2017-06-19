@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706181340';
+  this.v = '201706200000';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -388,14 +388,14 @@ DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.TOOLS_COLOR_ACTIVE = '#6cf';
 DebugJS.TOOLS_COLOR_INACTIVE = '#ccc';
 DebugJS.COLOR_INACTIVE = '#999';
-DebugJS.MEASURE_BUTTON_COLOR = '#6cf';
-DebugJS.SYS_BUTTON_COLOR = '#3af';
-DebugJS.HTML_BUTTON_COLOR = '#8f8';
-DebugJS.DOM_BUTTON_COLOR = '#f63';
-DebugJS.TOOLS_BUTTON_COLOR = '#ff0';
-DebugJS.JS_BUTTON_COLOR = '#6df';
-DebugJS.PIN_BUTTON_COLOR = '#fa0';
-DebugJS.LOG_SUSPEND_BUTTON_COLOR = '#d00';
+DebugJS.MEASURE_BTN_COLOR = '#6cf';
+DebugJS.SYS_BTN_COLOR = '#3af';
+DebugJS.HTML_BTN_COLOR = '#8f8';
+DebugJS.DOM_BTN_COLOR = '#f63';
+DebugJS.TOOLS_BTN_COLOR = '#ff0';
+DebugJS.JS_BTN_COLOR = '#6df';
+DebugJS.PIN_BTN_COLOR = '#fa0';
+DebugJS.LOG_SUSPEND_BTN_COLOR = '#d00';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
@@ -725,13 +725,13 @@ DebugJS.prototype = {
       'color': '#ccc'
     };
 
-    styles['.' + self.id + '-showhide-button'] = {
+    styles['.' + self.id + '-showhide-btn'] = {
       'color': '#0a0',
       'font-size': self.computedFontSize + 'px',
       'font-weight': 'bold'
     };
 
-    styles['.' + self.id + '-showhide-button:hover'] = {
+    styles['.' + self.id + '-showhide-btn:hover'] = {
       'cursor': 'pointer'
     };
 
@@ -974,7 +974,7 @@ DebugJS.prototype = {
 
   createPanels: function() {
     var self = DebugJS.self;
-    // Window Body
+    // WindowBody
     self.winBody = document.createElement('div');
     self.dbgWin.appendChild(self.winBody);
     if (self.status & DebugJS.STATE_DRAGGABLE) {
@@ -982,12 +982,12 @@ DebugJS.prototype = {
     }
 
     if (!self.isAllFeaturesDisabled()) {
-      // Head Panel
+      // HeadPanel
       self.headPanel = document.createElement('div');
       self.headPanel.style.padding = '2px';
       self.winBody.appendChild(self.headPanel);
 
-      // Info Panel
+      // InfoPanel
       self.infoPanel = document.createElement('div');
       self.infoPanel.style.padding = '0 2px 1px 2px';
       self.winBody.appendChild(self.infoPanel);
@@ -1003,7 +1003,7 @@ DebugJS.prototype = {
     self.mainPanel.style.clear = 'both';
     self.winBody.appendChild(self.mainPanel);
 
-    // Log Header Panel
+    // LogHeaderPanel
     if (self.options.useLogFilter) {
       self.logHeaderPanel = document.createElement('div');
       self.logHeaderPanel.style.position = 'relative';
@@ -1020,7 +1020,7 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.clearBtn);
     }
 
-    // Log Filter
+    // LogFilter
     if (self.options.useLogFilter) {
       self.createLogFilter();
     }
@@ -1070,7 +1070,7 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.closeBtn);
     }
 
-    // Window Control Button
+    // WindowControlButton
     if ((self.status & DebugJS.STATE_DYNAMIC) &&
         (self.status & DebugJS.STATE_RESIZABLE) &&
         (self.options.useWindowControlButton)) {
@@ -1078,14 +1078,12 @@ DebugJS.prototype = {
       self.headPanel.appendChild(self.winCtrlBtnPanel);
     }
 
-    // Pin Button
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', 2, (11 * self.options.zoom) + 'px', DebugJS.self.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BUTTON_COLOR', true);
+      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', 2, (11 * self.options.zoom) + 'px', DebugJS.self.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true);
     }
 
-    // Suspend Log Button
     if (self.options.useSuspendLogButton) {
-      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', 4, (11 * self.options.zoom) + 'px', DebugJS.self.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BUTTON_COLOR', false);
+      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', 4, (11 * self.options.zoom) + 'px', DebugJS.self.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false);
     }
 
     // Stopwatch
@@ -1102,26 +1100,26 @@ DebugJS.prototype = {
     }
 
     if (self.options.useTools) {
-      self.toolsBtn = self.createHeaderButton('toolsBtn', 'TL', 2, null, DebugJS.self.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BUTTON_COLOR', false);
+      self.toolsBtn = self.createHeaderButton('toolsBtn', 'TL', 2, null, DebugJS.self.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
 
     if (self.options.useScriptEditor) {
-      self.scriptBtn = self.createHeaderButton('scriptBtn', 'JS', 2, null, DebugJS.self.toggleScriptMode, 'STATE_SCRIPT', 'JS_BUTTON_COLOR', false);
+      self.scriptBtn = self.createHeaderButton('scriptBtn', 'JS', 2, null, DebugJS.self.toggleScriptMode, 'STATE_SCRIPT', 'JS_BTN_COLOR', false);
     }
 
     if (self.options.useElementInfo) {
-      self.elmInfoBtn = self.createHeaderButton('elmInfoBtn', 'DOM', 3, null, DebugJS.self.toggleElmInfoMode, 'STATE_ELEMENT_INSPECTING', 'DOM_BUTTON_COLOR', false);
+      self.elmInfoBtn = self.createHeaderButton('elmInfoBtn', 'DOM', 3, null, DebugJS.self.toggleElmInfoMode, 'STATE_ELEMENT_INSPECTING', 'DOM_BTN_COLOR', false);
     }
 
     if (self.options.useHtmlSrc) {
-      self.htmlSrcBtn = self.createHeaderButton('htmlSrcBtn', 'HTM', 3, null, DebugJS.self.toggleHtmlSrcMode, 'STATE_HTML_SRC', 'HTML_BUTTON_COLOR', false);
+      self.htmlSrcBtn = self.createHeaderButton('htmlSrcBtn', 'HTM', 3, null, DebugJS.self.toggleHtmlSrcMode, 'STATE_HTML_SRC', 'HTML_BTN_COLOR', false);
     }
 
     if (self.options.useSystemInfo) {
-      self.sysInfoBtn = self.createHeaderButton('sysInfoBtn', 'SYS', 3, null, DebugJS.self.toggleSystemInfoMode, 'STATE_SYSTEM_INFO', 'SYS_BUTTON_COLOR', false);
+      self.sysInfoBtn = self.createHeaderButton('sysInfoBtn', 'SYS', 3, null, DebugJS.self.toggleSystemInfoMode, 'STATE_SYSTEM_INFO', 'SYS_BTN_COLOR', false);
     }
 
-    // Screen Measure Button
+    // ScreenMeasureButton
     if (self.options.useScreenMeasure) {
       var measureBtn = document.createElement('span');
       measureBtn.className = self.id + '-btn ' + self.id + '-nomove';
@@ -1133,8 +1131,8 @@ DebugJS.prototype = {
       measureBtn.style.height = (7 * self.options.zoom) + 'px';
       measureBtn.innerText = ' ';
       measureBtn.onclick = DebugJS.self.toggleMeasureMode;
-      measureBtn.onmouseover = new Function('DebugJS.self.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BUTTON_COLOR + '\';');
-      measureBtn.onmouseout = new Function('DebugJS.self.measureBtn.style.borderColor=(DebugJS.self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE;');
+      measureBtn.onmouseover = new Function('DebugJS.self.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BTN_COLOR + '\';');
+      measureBtn.onmouseout = new Function('DebugJS.self.measureBtn.style.borderColor=(DebugJS.self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
       self.headPanel.appendChild(measureBtn);
       self.measureBtn = measureBtn;
     }
@@ -1149,7 +1147,7 @@ DebugJS.prototype = {
       self.infoPanel.appendChild(self.ledPanel);
     }
 
-    // Window Size
+    // WindowSize
     if (self.options.useWindowSizeInfo) {
       self.windowSizePanel = self.createSysInfoPanel();
       self.clientSizePanel = self.createSysInfoPanel();
@@ -1157,7 +1155,7 @@ DebugJS.prototype = {
       self.scrollPosPanel = self.createSysInfoPanel();
     }
 
-    // Mouse Status
+    // MouseStatus
     if (self.options.useMouseStatusInfo) {
       self.mousePositionPanel = self.createSysInfoPanel();
       self.mouseClickPanel = self.createSysInfoPanel();
@@ -1167,14 +1165,14 @@ DebugJS.prototype = {
       self.infoPanel.appendChild(document.createElement('br'));
     }
 
-    // Key Status
+    // KeyStatus
     if (self.options.useKeyStatusInfo) {
       self.keyDownPanel = self.createSysInfoPanel();
       self.keyPressPanel = self.createSysInfoPanel();
       self.keyUpPanel = self.createSysInfoPanel();
     }
 
-    // Message Display
+    // MessageDisplay
     if (self.options.useMsgDisplay) {
       var msgPanel = self.createSysInfoPanel();
       msgPanel.style.float = self.options.msgDisplayPos;
@@ -1190,7 +1188,7 @@ DebugJS.prototype = {
       self.msgPanel = msgPanel;
     }
 
-    // Command Line
+    // CommandLine
     if (self.options.useCommandLine) {
       self.cmdPanel = document.createElement('div');
       self.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
@@ -1523,32 +1521,32 @@ DebugJS.prototype = {
 
   updateMeasureBtn: function() {
     var self = DebugJS.self;
-    self.measureBtn.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BUTTON_COLOR : DebugJS.COLOR_INACTIVE);
+    self.measureBtn.style.border = 'solid 1px ' + ((self.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   updateSysInfoBtn: function() {
     var self = DebugJS.self;
-    self.updateBtnActive(self.sysInfoBtn, DebugJS.STATE_SYSTEM_INFO, DebugJS.SYS_BUTTON_COLOR);
+    self.updateBtnActive(self.sysInfoBtn, DebugJS.STATE_SYSTEM_INFO, DebugJS.SYS_BTN_COLOR);
   },
 
   updateElmInfoBtn: function() {
     var self = DebugJS.self;
-    self.updateBtnActive(self.elmInfoBtn, DebugJS.STATE_ELEMENT_INSPECTING, DebugJS.DOM_BUTTON_COLOR);
+    self.updateBtnActive(self.elmInfoBtn, DebugJS.STATE_ELEMENT_INSPECTING, DebugJS.DOM_BTN_COLOR);
   },
 
   updateHtmlSrcBtn: function() {
     var self = DebugJS.self;
-    self.updateBtnActive(self.htmlSrcBtn, DebugJS.STATE_HTML_SRC, DebugJS.HTML_BUTTON_COLOR);
+    self.updateBtnActive(self.htmlSrcBtn, DebugJS.STATE_HTML_SRC, DebugJS.HTML_BTN_COLOR);
   },
 
   updateToolsBtn: function() {
     var self = DebugJS.self;
-    self.updateBtnActive(self.toolsBtn, DebugJS.STATE_TOOLS, DebugJS.TOOLS_BUTTON_COLOR);
+    self.updateBtnActive(self.toolsBtn, DebugJS.STATE_TOOLS, DebugJS.TOOLS_BTN_COLOR);
   },
 
   updateScriptBtn: function() {
     var self = DebugJS.self;
-    self.updateBtnActive(self.scriptBtn, DebugJS.STATE_SCRIPT, DebugJS.JS_BUTTON_COLOR);
+    self.updateBtnActive(self.scriptBtn, DebugJS.STATE_SCRIPT, DebugJS.JS_BTN_COLOR);
   },
 
   updateSwBtnPanel: function() {
@@ -1575,12 +1573,12 @@ DebugJS.prototype = {
 
   updateSuspendLogBtn: function() {
     var self = DebugJS.self;
-    self.updateBtnActive(self.suspendLogBtn, DebugJS.STATE_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BUTTON_COLOR);
+    self.updateBtnActive(self.suspendLogBtn, DebugJS.STATE_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BTN_COLOR);
   },
 
   updatePinBtn: function() {
     var self = DebugJS.self;
-    self.pinBtn.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BUTTON_COLOR;
+    self.pinBtn.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BTN_COLOR;
   },
 
   updateBtnActive: function(btn, status, activeColor) {
@@ -2048,6 +2046,7 @@ DebugJS.prototype = {
       case 13: // Enter
         if (document.activeElement == self.cmdLine) {
           self.execCmd();
+          e.preventDefault();
         }
         break;
 
@@ -2685,7 +2684,7 @@ DebugJS.prototype = {
     self.status |= DebugJS.STATE_SYSTEM_INFO;
     if (self.sysInfoPanel == null) {
       self.sysInfoPanel = document.createElement('div');
-      self.sysInfoPanel.innerHTML = '<span style="color:' + DebugJS.SYS_BUTTON_COLOR + '">&lt;SYSTEM INFO&gt;</span>';
+      self.sysInfoPanel.innerHTML = '<span style="color:' + DebugJS.SYS_BTN_COLOR + '">&lt;SYSTEM INFO&gt;</span>';
       if (DebugJS.SYS_INFO_FULL_OVERLAY) {
         self.sysInfoPanel.className = self.id + '-overlay-panel-full';
         self.addOverlayPanelFull(self.sysInfoPanel);
@@ -2913,18 +2912,18 @@ DebugJS.prototype = {
 
   showHideByName: function(name) {
     var self = DebugJS.self;
-    var button = document.getElementById(self.id + '-' + name + '__button');
+    var btn = document.getElementById(self.id + '-' + name + '__button');
     var partialBody = document.getElementById(self.id + '-' + name + '__partial-body');
     var body = document.getElementById(self.id + '-' + name + '__body');
     if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
-      button.innerHTML = DebugJS.CLOSEBTN;
+      btn.innerHTML = DebugJS.CLOSEBTN;
       partialBody.style.display = 'none';
       body.style.display = 'block';
       if (self.elmInfoShowHideStatus[name] != undefined) {
         self.elmInfoShowHideStatus[name] = true;
       }
     } else {
-      button.innerHTML = DebugJS.EXPANDBTN;
+      btn.innerHTML = DebugJS.EXPANDBTN;
       partialBody.style.display = 'inline';
       body.style.display = 'none';
       if (self.elmInfoShowHideStatus[name] != undefined) {
@@ -2953,7 +2952,7 @@ DebugJS.prototype = {
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
         partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omitpart, style);
-        foldingText = '<span class="' + self.id + '-showhide-button ' + self.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
+        foldingText = '<span class="' + self.id + '-showhide-btn ' + self.id + '-nomove" id="' + self.id + '-' + name + '__button" onclick="DebugJS.self.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + self.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisplay + '" id="' + self.id + '-' + name + '__body">' + obj + '</div>';
       } else {
@@ -2995,7 +2994,7 @@ DebugJS.prototype = {
       self.elmTitle = document.createElement('span');
       self.elmTitle.style.marginLeft = '4px';
       self.elmTitle.style.marginRight = '4px';
-      self.elmTitle.style.color = DebugJS.DOM_BUTTON_COLOR;
+      self.elmTitle.style.color = DebugJS.DOM_BTN_COLOR;
       self.elmTitle.innerText = 'ELEMENT INFO';
       self.elmInfoHeaderPanel.appendChild(self.elmTitle);
 
@@ -3481,7 +3480,7 @@ DebugJS.prototype = {
       self.htmlSrcPanel.appendChild(self.htmlSrcHeaderPanel);
 
       self.htmlSrcTitle = document.createElement('span');
-      self.htmlSrcTitle.style.color = DebugJS.HTML_BUTTON_COLOR;
+      self.htmlSrcTitle.style.color = DebugJS.HTML_BTN_COLOR;
       self.htmlSrcTitle.innerText = 'HTML SOURCE';
       self.htmlSrcHeaderPanel.appendChild(self.htmlSrcTitle);
 
