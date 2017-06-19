@@ -534,7 +534,7 @@ var e = false;
 var f = undefined;
 var g = null;
 var h = {
-  'abc': [foo, bar, console.log, buf, (new Date()), b, foo]
+  'abc': [foo, bar, (window.console ? console.log : null), buf, (new Date()), b, foo]
 }
 var z = {};
 
