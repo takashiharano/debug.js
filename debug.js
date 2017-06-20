@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706201934';
+  this.v = '201706202357';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2338,10 +2338,7 @@ DebugJS.prototype = {
     var clientHeight = document.documentElement.clientHeight;
     var expandThresholdW = document.documentElement.clientWidth * 0.6;
     var expandThresholdH = document.documentElement.clientHeight * 0.6;
-    var w = 0;
-    var h = 0;
-    var t = 0;
-    var l = 0;
+    var w = 0, h = 0, t = 0, l = 0;
 
     if (auto) {
       if ((DebugJS.DBGWIN_EXPAND_W > clientWidth) || (sizePos.w > expandThresholdW)) {
@@ -2394,8 +2391,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
-    var t = 0;
-    var l = 0;
+    var t = 0, l = 0;
     self.setDebugWindowPos(t, l);
     self.setDebugWindowSize(w, h);
     self.status &= ~DebugJS.STATE_POS_AUTO_ADJUST;
@@ -2693,13 +2689,11 @@ DebugJS.prototype = {
         self.addOverlayPanel(self.sysInfoPanel);
         self.expandHightIfNeeded(self.windowExpandHeight);
       }
-
       self.sysTimePanel = document.createElement('div');
       self.sysTimePanel.style.marginRight = '4px';
       self.sysTimePanel.color = '#fff';
       self.sysInfoPanel.appendChild(self.sysTimePanel);
       self.updateSystemTime();
-
       self.sysInfoPanelBody = document.createElement('div');
       self.sysInfoPanelBody.style.top = self.computedFontSize;
       self.sysInfoPanel.appendChild(self.sysInfoPanelBody);
@@ -2717,7 +2711,6 @@ DebugJS.prototype = {
     var UPDATE_INTERVAL = DebugJS.UPDATE_INTERVAL_H;
     var sysTime = (new Date()).getTime();
     var sysTimeBin = DebugJS.formatBin(parseInt(sysTime).toString(2), false, 1);
-
     var html = '<pre>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : (new Date()).getTime() = ' + sysTime + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin +
@@ -4324,7 +4317,6 @@ DebugJS.prototype = {
       self.memoBasePanel = document.createElement('div');
       self.memoBasePanel.className = self.id + '-tools';
       self.toolsBodyPanel.appendChild(self.memoBasePanel);
-
       self.memoEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc">Memo</span>';
       if (DebugJS.LS_AVAILABLE) {
@@ -4335,12 +4327,10 @@ DebugJS.prototype = {
       }
       self.memoEditorPanel.innerHTML = html;
       self.memoBasePanel.appendChild(self.memoEditorPanel);
-
       self.memoEditor = document.createElement('textarea');
       self.memoEditor.className = self.id + '-editor';
       self.memoEditor.style.setProperty('height', 'calc(100% - ' + (self.computedFontSize + 10) + 'px)', 'important');
       self.memoBasePanel.appendChild(self.memoEditor);
-
       if (DebugJS.LS_AVAILABLE) {
         self.loadMemo();
       }
@@ -4405,7 +4395,6 @@ DebugJS.prototype = {
       '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="margin-left:4px" onclick="DebugJS.self.insertSnippet(4)">{CODE5}</span>';
       self.scriptPanel.innerHTML = html;
       self.addOverlayPanel(self.scriptPanel);
-
       self.scriptEditor = document.createElement('textarea');
       self.scriptEditor.className = self.id + '-editor';
       self.scriptEditor.onblur = DebugJS.self.saveScriptBuf;
@@ -5711,7 +5700,6 @@ DebugJS.getDateTime = function(dt) {
   var ss = dt.getSeconds();
   var ms = dt.getMilliseconds();
   var wd = dt.getDay();
-
   if (mm < 10) mm = '0' + mm;
   if (dd < 10) dd = '0' + dd;
   if (hh < 10) hh = '0' + hh;
@@ -5719,7 +5707,6 @@ DebugJS.getDateTime = function(dt) {
   if (ss < 10) ss = '0' + ss;
   if (ms < 10) {ms = '00' + ms;}
   else if (ms < 100) {ms = '0' + ms;}
-
   var dateTime = {'yyyy': yyyy, 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'sss': ms, 'wday': wd};
   return dateTime;
 };
@@ -5743,7 +5730,6 @@ DebugJS.getTimerStr = function(timeMs) {
   } else {
     passedHour = 0;
   }
-
   var passedMin;
   if (wkPassedTimeSec >= 60) {
     passedMin = Math.floor(wkPassedTimeSec / 60);
@@ -5751,14 +5737,11 @@ DebugJS.getTimerStr = function(timeMs) {
   } else {
     passedMin = 0;
   }
-
   var passedSec = wkPassedTimeSec;
   var passedMsec = ('00' + timeMs).slice(-3);
-
   if (passedHour < 10) passedHour = '0' + passedHour;
   if (passedMin < 10) passedMin = '0' + passedMin;
   if (passedSec < 10) passedSec = '0' + passedSec;
-
   var retStr = passedHour + ':' + passedMin + ':' + passedSec + '.' + passedMsec;
   return retStr;
 };
@@ -5886,7 +5869,6 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
           arg.dump += '{\n';
         }
       }
-
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
         indent += DebugJS.INDENT_SP;
         var sibling = 0;
