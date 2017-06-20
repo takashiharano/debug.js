@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706200000';
+  this.v = '201706201934';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -3966,8 +3966,12 @@ DebugJS.prototype = {
   },
 
   handleFileSelect: function(e) {
-    DebugJS.self.fileLoaderFile = e.target.files[0];
-    DebugJS.self.loadFile();
+    if (e.target.files) {
+      DebugJS.self.fileLoaderFile = e.target.files[0];
+      DebugJS.self.loadFile();
+    } else {
+      DebugJS.log.e('unsupported');
+    }
   },
 
   handleDragOver: function(e) {
@@ -3979,8 +3983,12 @@ DebugJS.prototype = {
   handleFileDrop: function(e) {
     e.stopPropagation();
     e.preventDefault();
-    DebugJS.self.fileLoaderFile = e.dataTransfer.files[0];
-    DebugJS.self.loadFile();
+    if (e.dataTransfer.files) {
+      DebugJS.self.fileLoaderFile = e.dataTransfer.files[0];
+      DebugJS.self.loadFile();
+    } else {
+      DebugJS.log.e('unsupported');
+    }
   },
 
   loadFile: function() {
@@ -5868,7 +5876,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
       arg.cnt++;
       if ((typeof obj !== 'function') &&
           (Object.prototype.toString.call(obj) !== '[object Date]') &&
-          !(obj instanceof ArrayBuffer)) {
+          ((window.ArrayBuffer) && !(obj instanceof ArrayBuffer))) {
         if (toJson) {
           arg.dump += indent;
         } else {
@@ -5911,7 +5919,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             arg.dump += ': <span style="color:#f80">[Date]</span> ' + date;
             sibling++;
             continue;
-          } else if (obj[key] instanceof ArrayBuffer) {
+          } else if ((window.ArrayBuffer) && (obj[key] instanceof ArrayBuffer)) {
             arg.dump += indent;
             if (toJson) {arg.dump += '"';}
             arg.dump += key;
@@ -5956,7 +5964,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
             var dt = DebugJS.getDateTime(obj);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
             arg.dump += '<span style="color:#f80">[Date]</span> ' + date;
-          } else if (obj instanceof ArrayBuffer) {
+          } else if ((window.ArrayBuffer) && (obj instanceof ArrayBuffer)) {
             arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
           } else {
             empty = true;
@@ -5968,7 +5976,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
         indent = indent.replace(DebugJS.INDENT_SP, '');
         if ((typeof obj !== 'function') &&
             (Object.prototype.toString.call(obj) !== '[object Date]') &&
-            !(obj instanceof ArrayBuffer) && (!empty)) {
+            ((window.ArrayBuffer) && !(obj instanceof ArrayBuffer) && (!empty))) {
           arg.dump += '\n' + indent + '}';
         }
       }
