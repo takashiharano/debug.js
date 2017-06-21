@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706202357';
+  this.v = '201706220050';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -5468,7 +5468,7 @@ DebugJS.prototype = {
 
   execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc, defaultFunc) {
     var args = DebugJS.parseArgs(arg);
-    var result = '';
+    var res = '';
     if (args.data == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -5476,18 +5476,16 @@ DebugJS.prototype = {
         switch (args.opt) {
           case '':
           case 'e':
-            result = encodeFunc(args.dataRaw);
+            res = encodeFunc(args.dataRaw);
             break;
           case 'd':
-            result = decodeFunc(args.dataRaw);
+            res = decodeFunc(args.dataRaw);
             break;
           default:
             DebugJS.printUsage(tbl.usage);
         }
-        result = DebugJS.encloseStringIfNeeded(result);
-        if (result != '') {
-          DebugJS.log.res(result);
-        }
+        res = DebugJS.encloseStringIfNeeded(res);
+        DebugJS.log.res(res);
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -6076,48 +6074,48 @@ DebugJS.checkJson = function(json) {
   json = DebugJS.omitLeadingAndTrailingWhiteSpace(json);
   var wkJson = json.split('\\');
   var cnt = 0;
-  var result = '';
+  var res = '';
   for (var i = 0; i < wkJson.length; i++) {
     if (wkJson[i] == '') {
       cnt++;
     } else {
       if (i == 0) {
-        result += wkJson[i];
+        res += wkJson[i];
         continue;
       }
       if (cnt >= 1) {
-        result += '\\';
+        res += '\\';
         for (var j = 0; j < (cnt - 1); j++) {
-          result += '\\';
+          res += '\\';
         }
         if (cnt % 2 == 0) {
-          result += '<span class="' + self.id + '-txt-hl">\\</span>';
+          res += '<span class="' + self.id + '-txt-hl">\\</span>';
         } else {
-          result += '\\';
+          res += '\\';
         }
-        result += wkJson[i];
+        res += wkJson[i];
         cnt = 0;
       } else {
         if (wkJson[i].match(/^n|^r|^t|^b|^"/)) {
-          result += '\\' + wkJson[i];
+          res += '\\' + wkJson[i];
         } else {
-          result += '<span class="' + self.id + '-txt-hl">\\</span>' + wkJson[i];
+          res += '<span class="' + self.id + '-txt-hl">\\</span>' + wkJson[i];
         }
       }
     }
   }
-  result = result.replace(/\t/g, '<span class="' + self.id + '-txt-hl">\\t</span>');
-  result = result.replace(/\r\n/g, '<span class="' + self.id + '-txt-hl">\\r\\n</span>');
-  result = result.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-txt-hl">\\r</span>');
-  result = result.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-txt-hl">\\n</span>');
-  if (!result.match(/^{/)) {
-    result = '<span class="' + self.id + '-txt-hl"> </span>' + result;
+  res = res.replace(/\t/g, '<span class="' + self.id + '-txt-hl">\\t</span>');
+  res = res.replace(/\r\n/g, '<span class="' + self.id + '-txt-hl">\\r\\n</span>');
+  res = res.replace(/([^\\])\r/g, '$1<span class="' + self.id + '-txt-hl">\\r</span>');
+  res = res.replace(/([^\\])\n/g, '$1<span class="' + self.id + '-txt-hl">\\n</span>');
+  if (!res.match(/^{/)) {
+    res = '<span class="' + self.id + '-txt-hl"> </span>' + res;
   }
-  result = result.replace(/}([^}]+)$/, '}<span class="' + self.id + '-txt-hl">$1</span>');
-  if (!result.match(/}$/)) {
-    result = result + '<span class="' + self.id + '-txt-hl"> </span>';
+  res = res.replace(/}([^}]+)$/, '}<span class="' + self.id + '-txt-hl">$1</span>');
+  if (!res.match(/}$/)) {
+    res = res + '<span class="' + self.id + '-txt-hl"> </span>';
   }
-  return result;
+  return res;
 };
 
 DebugJS.digits = function(x) {
@@ -6340,6 +6338,7 @@ DebugJS.formatHex = function(v16, prefix, upper) {
 };
 
 DebugJS.encodeBase64 = function(str) {
+  if (!window.btoa) return '';
   var encoded = '';
   try {
     encoded = btoa(str);
@@ -6352,6 +6351,7 @@ DebugJS.encodeBase64 = function(str) {
 };
 
 DebugJS.decodeBase64 = function(str) {
+  if (!window.atob) return '';
   var decoded = '';
   try {
     decoded = decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
@@ -7304,7 +7304,7 @@ DebugJS._init = function() {
 DebugJS.init = function(options) {
   DebugJS.self.init(options, null);
 };
-// ---- ---- ---- ---- ---- ---- ---- ----
+// ---- ---- ---- ----
 var log = function(m) {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log(m);
@@ -7363,7 +7363,7 @@ log.clear = function() {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.self.clearMessage();
 };
-// ---- ---- ---- ---- ---- ---- ---- ----
+// ---- ---- ---- ----
 var dbg = dbg || DebugJS;
 var time = time || DebugJS.time;
 DebugJS.x = DebugJS.x || {};
