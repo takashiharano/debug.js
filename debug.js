@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706220050';
+  this.v = '201706292321';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -74,7 +74,7 @@ var DebugJS = DebugJS || function() {
     'useCommandLine': true,
     'saveCmdHistory': true,
     'cmdHistoryMax': 100,
-    'kioskMode': false,
+    'display': '',
     'disableAllCommands': false,
     'disableAllFeatures': false,
     'onFileLoaded': null,
@@ -510,7 +510,9 @@ DebugJS.prototype = {
     self.initCommandTable();
 
     // Debug Window
-    if (self.options.target == null) {
+    if (self.options.display == 'noui') {
+      return false;
+    } else if (self.options.target == null) {
       self.id = self.DEFAULT_ELM_ID;
       self.dbgWin = document.createElement('div');
       self.dbgWin.id = self.id;
@@ -520,7 +522,7 @@ DebugJS.prototype = {
       self.dbgWin.style.boxShadow = DebugJS.WINDOW_SHADOW + 'px ' + DebugJS.WINDOW_SHADOW + 'px 10px rgba(0,0,0,.3)';
       self.bodyEl.appendChild(self.dbgWin);
 
-      if (self.options.kioskMode) {
+      if (self.options.display == 'kiosk') {
         self.setupKioskMode();
       }
     } else {
@@ -810,7 +812,7 @@ DebugJS.prototype = {
     self.setupEventHandler();
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
-      if (self.options.kioskMode) {
+      if (self.options.display == 'kiosk') {
         self.focusCmdLine();
       } else {
         self.setupMove();
@@ -1392,7 +1394,7 @@ DebugJS.prototype = {
         if (!(!(self.status & DebugJS.STATE_DYNAMIC) &&
                (self.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
             (!((self.status & DebugJS.STATE_DYNAMIC) &&
-             (self.options.kioskMode) &&
+             (self.options.display == 'kiosk') &&
              (self.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_NO_KIOSK)))) {
           self.CMD_TBL.push(self.INT_CMD_TBL[i]);
         }
@@ -4758,7 +4760,7 @@ DebugJS.prototype = {
       if (self.options.usePinButton) {
         self.enableDraggable();
       }
-      if (!self.options.kioskMode) {
+      if (!self.options.display == 'kiosk') {
         self.resetDebugWindowSizePos();
         self.updateWinCtrlBtnPanel();
       }

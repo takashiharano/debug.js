@@ -71,7 +71,8 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 <script>
 DebugJS.init({'visible':true});
 
-//DebugJS.init({'kioskMode':true,'zoom':2});
+//DebugJS.init({'display':'kiosk','zoom':2});
+//DebugJS.init({'display':'noui'});
 //DebugJS.init({'target':'debug'});
 
 var options1 = {
@@ -1034,11 +1035,13 @@ If you want to change the debugger settings, explicitly call for initialization 
   </tr>
 
   <tr>
-    <td class="name">kioskMode</td>
+    <td class="name">display</td>
     <td>
-      Make the debugger window go full screen
+      "kiosk" : Make the debugger window go full screen<br>
+      "noui" : No debugger window, log buffering only<br>
+      other : Normal debug window
     </td>
-    <td>false</td>
+    <td>''</td>
   </tr>
 
   <tr>
