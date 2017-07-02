@@ -1524,12 +1524,15 @@ max: maximum length
 
   <tr>
     <td class="name">
-      DebugJS.saveLog<br>
-      <span class="alias">( dbg.saveLog )</span>
+      DebugJS.dumpLog<br>
+      <span class="alias">( dbg.dumpLog )</span>
     </td>
-    <td></td>
     <td>
-      Export the log buffer in JSON format
+      arg1: type<span class="annotation">'json' / 'text'</span><br>
+      arg2: base64 enode<span class="annotation">(opt) default: false</span>
+    </td>
+    <td>
+      Export the log buffer in JSON format / plain text format
     </td>
   </tr>
 
@@ -1604,6 +1607,25 @@ $ bin (1 + 2) 8
     <td class="name">cls</td>
     <td></td>
     <td>Clear log message.</td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      dumplog<br>
+    </td>
+    <td>
+      option<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Export the log buffer in JSON format
+<pre class="eg">
+$ dumplog
+-&gt; export in JSON format
+
+$ dumplog -b64
+-&gt; export in base64 encoded JSON format
+</pre>
+    </td>
   </tr>
 
   <tr>
@@ -1895,16 +1917,6 @@ $ rgb #fff
 
 $ rgb 255 255 255
 -&gt; #fff</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">
-      save<br>
-    </td>
-    <td></td>
-    <td>
-      Export the log buffer in JSON format
     </td>
   </tr>
 

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201706292321';
+  this.v = '201707022332';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -72,7 +72,6 @@ var DebugJS = DebugJS || function() {
     'useScriptEditor': true,
     'useLogFilter': true,
     'useCommandLine': true,
-    'saveCmdHistory': true,
     'cmdHistoryMax': 100,
     'display': '',
     'disableAllCommands': false,
@@ -256,6 +255,7 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'base64', 'fnc': this.cmdBase64, 'desc': 'Encodes/Decodes Base64 string', 'usage': 'base64 [-e|-d] string'},
     {'cmd': 'bin', 'fnc': this.cmdBin, 'desc': 'Convert a number to binary', 'usage': 'bin num digit'},
     {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message', 'attr': DebugJS.CMD_ATTR_SYSTEM},
+    {'cmd': 'dumplog', 'fnc': this.cmdDumpLog, 'desc': 'Dump the log buffer'},
     {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
     {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
     {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status', 'attr': DebugJS.CMD_ATTR_SYSTEM},
@@ -277,7 +277,6 @@ var DebugJS = DebugJS || function() {
     {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
     {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
     {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {'cmd': 'save', 'fnc': this.cmdSave, 'desc': 'Export the log buffer'},
     {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
     {'cmd': 'set', 'fnc': this.cmdSet, 'desc': 'Set a property value', 'usage': 'set property-name value'},
     {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
@@ -4730,6 +4729,16 @@ DebugJS.prototype = {
     DebugJS.self.clearMessage();
   },
 
+  cmdDumpLog: function(arg, tbl) {
+    var l;
+    if (DebugJS.omitLeadingAndTrailingWhiteSpace(arg) == '-b64') {
+      l = DebugJS.dumpLog('json', true);
+    } else {
+      l = DebugJS.dumpLog('json');
+    }
+    DebugJS.log.res(l);
+  },
+
   cmdElements: function(arg, tbl) {
     arg = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
     if ((arg == '-h') || (arg == '--help')) {
@@ -4898,7 +4907,7 @@ DebugJS.prototype = {
       self.CMD_HISTORY_MAX = self.options.cmdHistoryMax;
       self.cmdHistoryBuf = new DebugJS.RingBuffer(self.CMD_HISTORY_MAX);
     }
-    if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
+    if (DebugJS.LS_AVAILABLE) {
       self.loadHistory();
     }
   },
@@ -4920,7 +4929,7 @@ DebugJS.prototype = {
     var self = DebugJS.self;
     self.cmdHistoryBuf.add(cmd);
     self.cmdHistoryIdx = (self.cmdHistoryBuf.count() < self.CMD_HISTORY_MAX) ? self.cmdHistoryBuf.count() : self.CMD_HISTORY_MAX;
-    if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
+    if (DebugJS.LS_AVAILABLE) {
       var bf = self.cmdHistoryBuf.getAll();
       var cmds = '';
       for (var i = 0, len = bf.length; i < len; i++) {
@@ -4932,7 +4941,7 @@ DebugJS.prototype = {
 
   loadHistory: function() {
     var self = DebugJS.self;
-    if ((self.options.saveCmdHistory) && (DebugJS.LS_AVAILABLE)) {
+    if (DebugJS.LS_AVAILABLE) {
       var bf = localStorage.getItem('DebugJS-history');
       if (bf != null) {
         var cmds = bf.split('\n');
@@ -5254,16 +5263,6 @@ DebugJS.prototype = {
         DebugJS.log.e(e);
       }
     }
-  },
-
-  cmdSave: function(arg, tbl) {
-    var l;
-    if (DebugJS.omitLeadingAndTrailingWhiteSpace(arg) == '-b64') {
-      l = DebugJS.saveLog(true);
-    } else {
-      l = DebugJS.saveLog();
-    }
-    DebugJS.log.res(l);
   },
 
   cmdSelf: function(arg, tbl) {
@@ -7090,17 +7089,22 @@ DebugJS.export = function(o) {
   DebugJS.log.s('An object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.obj</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
 };
 
-DebugJS.saveLog = function(b64) {
+DebugJS.dumpLog = function(type, b64) {
   var buf = DebugJS.self.msgBuf.getAll();
   var b = [];
+  var l = '';
   for (var i = 0; i < buf.length; i++) {
-    var l = {'type': buf[i].type, 'time': buf[i].time, 'msg': buf[i].msg};
-    l.msg = DebugJS.encodeBase64(l.msg);
-    b.push(l);
+    if (type == 'json') {
+      l = {'type': buf[i].type, 'time': buf[i].time, 'msg': buf[i].msg};
+      l.msg = DebugJS.encodeBase64(l.msg);
+      b.push(l);
+    } else {
+      l += buf[i].time + '\t' + buf[i].type + '\t' + buf[i].msg + '\n';
+    }
   }
-  var json = JSON.stringify(b);
-  if (b64) json = DebugJS.encodeBase64(json);
-  return json;
+  if (type == 'json') l = JSON.stringify(b);
+  if (b64) l = DebugJS.encodeBase64(l);
+  return l;
 };
 
 DebugJS.loadLog = function(json, b64) {
@@ -7115,7 +7119,7 @@ DebugJS.loadLog = function(json, b64) {
 
 DebugJS.preserveLog = function() {
   if (!DebugJS.LS_AVAILABLE) return;
-  var json = DebugJS.DebugJS.saveLog();
+  var json = DebugJS.DebugJS.dumpLog('json');
   localStorage.setItem('DebugJS-log', json);
 };
 
