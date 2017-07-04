@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707022332';
+  this.v = '201707042241';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -331,13 +331,13 @@ DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
 DebugJS.STATE_POS_AUTO_ADJUST = 0x10000000;
 DebugJS.STATE_NEED_TO_SCROLL = 0x20000000;
 DebugJS.STATE_STOPWATCH_LAPTIME = 0x40000000;
-DebugJS.LOG_FILTER_STD = 0x1;
+DebugJS.LOG_FILTER_LOG = 0x1;
 DebugJS.LOG_FILTER_DBG = 0x2;
 DebugJS.LOG_FILTER_INF = 0x4;
 DebugJS.LOG_FILTER_WRN = 0x8;
 DebugJS.LOG_FILTER_ERR = 0x10;
-DebugJS.LOG_FILTER_ALL = DebugJS.LOG_FILTER_STD | DebugJS.LOG_FILTER_DBG | DebugJS.LOG_FILTER_INF | DebugJS.LOG_FILTER_WRN | DebugJS.LOG_FILTER_ERR;
-DebugJS.LOG_TYPE_STD = 0x1;
+DebugJS.LOG_FILTER_ALL = DebugJS.LOG_FILTER_LOG | DebugJS.LOG_FILTER_DBG | DebugJS.LOG_FILTER_INF | DebugJS.LOG_FILTER_WRN | DebugJS.LOG_FILTER_ERR;
+DebugJS.LOG_TYPE_LOG = 0x1;
 DebugJS.LOG_TYPE_DBG = 0x2;
 DebugJS.LOG_TYPE_INF = 0x4;
 DebugJS.LOG_TYPE_WRN = 0x8;
@@ -722,7 +722,7 @@ DebugJS.prototype = {
       'height': (self.computedFontSize * 0.5) + 'px'
     };
 
-    styles['.' + self.id + '-unavailable'] = {
+    styles['.' + self.id + '-na'] = {
       'color': '#ccc'
     };
 
@@ -1016,7 +1016,7 @@ DebugJS.prototype = {
     if (self.options.useClearButton) {
       self.clearBtn = document.createElement('span');
       self.clearBtn.className = self.id + '-btn ' + self.id + '-nomove';
-      self.clearBtn.onclick = DebugJS.self.clearMessage;
+      self.clearBtn.onclick = DebugJS.self.onClr;
       self.clearBtn.innerText = '[CLR]';
       self.headPanel.appendChild(self.clearBtn);
     }
@@ -1296,7 +1296,7 @@ DebugJS.prototype = {
   createLogFilter: function() {
     var self = DebugJS.self;
     self.filterBtnAll = self.createLogFilterButton('ALL', 'filterBtnAll', 'btnColor');
-    self.filterBtnStd = self.createLogFilterButton('STD', 'filterBtnStd', 'fontColor');
+    self.filterBtnStd = self.createLogFilterButton('LOG', 'filterBtnStd', 'fontColor');
     self.filterBtnDbg = self.createLogFilterButton('DBG', 'filterBtnDbg', 'logColorD');
     self.filterBtnInf = self.createLogFilterButton('INF', 'filterBtnInf', 'logColorI');
     self.filterBtnWrn = self.createLogFilterButton('WRN', 'filterBtnWrn', 'logColorW');
@@ -1612,6 +1612,11 @@ DebugJS.prototype = {
     }
   },
 
+  onClr: function() {
+    DebugJS.self.clearMessage();
+    DebugJS.self.focusCmdLine();
+  },
+
   clearMessage: function() {
     var self = DebugJS.self;
     self.msgBuf.clear();
@@ -1644,7 +1649,7 @@ DebugJS.prototype = {
   updateLogFilterButtons: function() {
     var self = DebugJS.self;
     self.filterBtnAll.style.color = (self.logFilter == DebugJS.LOG_FILTER_ALL) ? DebugJS.self.options.btnColor : DebugJS.COLOR_INACTIVE;
-    self.filterBtnStd.style.color = (self.logFilter & DebugJS.LOG_FILTER_STD) ? DebugJS.self.options.fontColor : DebugJS.COLOR_INACTIVE;
+    self.filterBtnStd.style.color = (self.logFilter & DebugJS.LOG_FILTER_LOG) ? DebugJS.self.options.fontColor : DebugJS.COLOR_INACTIVE;
     self.filterBtnDbg.style.color = (self.logFilter & DebugJS.LOG_FILTER_DBG) ? DebugJS.self.options.logColorD : DebugJS.COLOR_INACTIVE;
     self.filterBtnInf.style.color = (self.logFilter & DebugJS.LOG_FILTER_INF) ? DebugJS.self.options.logColorI : DebugJS.COLOR_INACTIVE;
     self.filterBtnWrn.style.color = (self.logFilter & DebugJS.LOG_FILTER_WRN) ? DebugJS.self.options.logColorW : DebugJS.COLOR_INACTIVE;
@@ -1985,13 +1990,13 @@ DebugJS.prototype = {
           if (self.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + self.options.logColorD + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_SYS:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="color:' + self.options.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_MLT:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(self.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
           break;
         default:
-          if (self.logFilter & DebugJS.LOG_FILTER_STD) line += lineNum + m + '\n';
+          if (self.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + m + '\n';
       }
       logs += line;
     }
@@ -2742,7 +2747,7 @@ DebugJS.prototype = {
     var screenSize = 'w=' + screen.width + ' x h=' + screen.height;
     var languages = self.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
-    var jq = '<span class="' + self.id + '-unavailable">not loaded</span>';
+    var jq = '<span class="' + self.id + '-na">not loaded</span>';
     if (typeof jQuery != 'undefined') {
       jq = 'v' + jQuery.fn.jquery;
     }
@@ -2768,7 +2773,7 @@ DebugJS.prototype = {
 
     var INDENT = '         ';
     var links = document.getElementsByTagName('link');
-    var loadedStyles = '<span class="' + self.id + '-unavailable">not loaded</span>';
+    var loadedStyles = '<span class="' + self.id + '-na">not loaded</span>';
     for (var i = 0; i < links.length; i++) {
       if (links[i].rel == 'stylesheet') {
         if (i == 0) {
@@ -2780,7 +2785,7 @@ DebugJS.prototype = {
     }
 
     var scripts = document.getElementsByTagName('script');
-    var loadedScripts = '<span class="' + self.id + '-unavailable">not loaded</span>';
+    var loadedScripts = '<span class="' + self.id + '-na">not loaded</span>';
     for (var i = 0; i < scripts.length; i++) {
       if (scripts[i].src) {
         if (i == 0) {
@@ -2933,7 +2938,7 @@ DebugJS.prototype = {
     if (lineMaxLen == undefined) lineMaxLen = DEFAULT_MAX_LEN;
     if (!style) style = 'color:#aaa';
     if (!obj) {
-      foldingText = '<span class="' + self.id + '-unavailable">' + obj + '</span>';
+      foldingText = '<span class="' + self.id + '-na">' + obj + '</span>';
     } else {
       var btn = DebugJS.EXPANDBTN;
       var partDisplay = 'inline';
@@ -7032,7 +7037,7 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
 DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
   var text = obj;
   if ((exceptFalse && ((obj == undefined) || (obj == null))) || ((!exceptFalse) && (obj !== 0) && (!obj))) {
-    text = '<span class="' + DebugJS.self.id + '-unavailable">' + obj + '</span>';
+    text = '<span class="' + DebugJS.self.id + '-na">' + obj + '</span>';
   }
   return text;
 };
@@ -7094,12 +7099,31 @@ DebugJS.dumpLog = function(type, b64) {
   var b = [];
   var l = '';
   for (var i = 0; i < buf.length; i++) {
+    var data = buf[i];
     if (type == 'json') {
-      l = {'type': buf[i].type, 'time': buf[i].time, 'msg': buf[i].msg};
+      l = {'type': data.type, 'time': data.time, 'msg': data.msg};
       l.msg = DebugJS.encodeBase64(l.msg);
       b.push(l);
     } else {
-      l += buf[i].time + '\t' + buf[i].type + '\t' + buf[i].msg + '\n';
+      var type = 'LOG';
+      switch (data.type) {
+        case DebugJS.LOG_TYPE_ERR:
+          type = 'ERR';
+          break;
+        case DebugJS.LOG_TYPE_WRN:
+          type = 'WRN';
+          break;
+        case DebugJS.LOG_TYPE_INF:
+          type = 'INF';
+          break;
+        case DebugJS.LOG_TYPE_DBG:
+          type = 'DBG';
+          break;
+        case DebugJS.LOG_TYPE_SYS:
+          type = 'SYS';
+          break;
+      }
+      l += data.time + '\t' + type + '\t' + data.msg + '\n';
     }
   }
   if (type == 'json') l = JSON.stringify(b);
@@ -7170,7 +7194,7 @@ DebugJS.log = function(m) {
   if (m instanceof Object) {
     DebugJS.log.p(m, 0);
   } else {
-    DebugJS.log.out(m, DebugJS.LOG_TYPE_STD);
+    DebugJS.log.out(m, DebugJS.LOG_TYPE_LOG);
   }
 };
 
@@ -7196,7 +7220,7 @@ DebugJS.log.s = function(m) {
 
 DebugJS.log.p = function(o, l, m) {
   var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false);
-  DebugJS.log.out(str, DebugJS.LOG_TYPE_STD);
+  DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
 };
 
 DebugJS.log.res = function(m) {
