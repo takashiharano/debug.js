@@ -67,6 +67,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .alias {font-size:12px; color:#88c; font-style:italic; margin-left:2px;}
 .showhide-button {color:#0a0;}
 .showhide-button:hover {cursor:pointer;}
+.inline-text-input{border:none !important;border-bottom:1px solid #aaa !important;border-radius:0 !important;background:transparent;color:#fff !important;font-family:Consolas;}
 </style>
 <script>
 DebugJS.init({'visible':true});
@@ -473,11 +474,6 @@ function showHideByName(name) {
   }
 }
 
-function test() {
-  var val1 = 100;
-  dbg.export(val1);
-}
-
 function foo() {
   log('button was clicked');
 }
@@ -551,6 +547,48 @@ function onFileLoaded(file, content, isB64) {
       b += ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase()) + ' ';
     }
     log(b);
+  }
+}
+
+function httpDemo() {
+  var url = document.getElementById('http-url-text').value;
+  var method = document.getElementById('http-method-text').value;
+  var data = document.getElementById('http-data-text').value;
+  var async = document.getElementById('http-async-text').value;
+  var cache = document.getElementById('http-cache-text').value;
+  var user = document.getElementById('http-user-text').value;
+  var pass = document.getElementById('http-pass-text').value;
+  var userAgent = document.getElementById('http-ua-text').value;
+
+  async = ((async == 'true') ? true : false);
+  cache = ((cache == 'true') ? true : false);
+
+  var request = {
+    'url': url,
+    'method': method,
+    'data': data,
+    'async': async,
+    'cache': cache,
+    'user': user,
+    'pass': pass,
+    'userAgent': userAgent
+  };
+
+  dbg.httpRequest(request, httpCallback);
+}
+
+function httpCallback(xhr) {
+  var statusMsg = xhr.status + ' ' + xhr.statusText;
+  if (xhr.status == 0) {
+    log.e('cannot load: ' + statusMsg);
+  } else {
+    log(statusMsg);
+  }
+  var head = xhr.getAllResponseHeaders();
+  var txt = xhr.responseText.replace(/</g, '&lt;');
+  txt = txt.replace(/>/g, '&gt;');
+  if (head || txt) {
+    log(head + '\n'+ txt);
   }
 }
 </script>
@@ -1330,26 +1368,6 @@ dbg.countElements('tagName');
 
   <tr>
     <td class="name">
-      DebugJS.export<br>
-      <span class="alias">( dbg.export )</span>
-    </td>
-    <td>
-      object
-    </td>
-    <td>
-      Export an object to DebugJS.obj<br>
-<pre class="eg">
-function foo() {
-  var val1 = 100;
-  dbg.export(obj);
-}
-<span class="annotation">-&gt; You can watch the value of val1 from the command-line.</span>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">
       DebugJS.getKeys<br>
       <span class="alias">( dbg.getKeys )</span>
     </td>
@@ -1533,6 +1551,20 @@ max: maximum length
     </td>
     <td>
       Export the log buffer in JSON format / plain text format
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.httpRequest<br>
+      <span class="alias">( dbg.httpRequest )</span>
+    </td>
+    <td>
+      arg1: request<br>
+      arg2: callback<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Send an HTTP request. See demo section for details.
     </td>
   </tr>
 
@@ -2712,6 +2744,41 @@ console.timeEnd('timer3');<br>
 </tr>
 </table>
 <br>
+
+<!-- ********************************************************************** -->
+<div class="caption2">HTTP Request</div>
+<pre id="json1" class="code">
+<span class="emphasis">var request = {
+  'url': '<input type="text" id="http-url-text" value="https://debugjs.net/test/" class="inline-text-input" style="width:600px;">',
+  'method': '<input type="text" id="http-method-text" value="GET" class="inline-text-input" style="width:60px;">',
+  'data': '<input type="text" id="http-data-text" value="" class="inline-text-input" style="width:600px;">',
+  'async': <input type="text" id="http-async-text" value="false" class="inline-text-input" style="width:60px;">,
+  'cache': <input type="text" id="http-cache-text" value="false" class="inline-text-input" style="width:60px;">,
+  'user': '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
+  'pass': '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
+  'userAgent': '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:550px;">'
+};
+
+dbg.httpRequest(request, httpCallback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
+
+function httpCallback(xhr) {
+  var statusMsg = xhr.status + ' ' + xhr.statusText;
+  if (xhr.status == 0) {
+    log.e('cannot load: ' + statusMsg);
+  } else {
+    log(statusMsg);
+  }
+  var head = xhr.getAllResponseHeaders();
+  var txt = xhr.responseText.replace(/&lt;/g, '&amp;lt;');
+  txt = txt.replace(/&gt;/g, '&amp;gt;');
+  if (head || txt) {
+    log(head + '\n'+ txt);
+  }
+}
+</pre>
+
+<br>
+
 
 <!-- ********************************************************************** -->
 <div class="caption2">One-line JSON Sample for "json" command</div>

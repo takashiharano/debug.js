@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707042241';
+  this.v = '201707052244';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -21,9 +21,9 @@ var DebugJS = DebugJS || function() {
       'loadError': true,
       'errorLog': true
     },
-    'lines': 17,
+    'lines': 18,
     'bufsize': 300,
-    'width': 500,
+    'width': 520,
     'zoom': 1,
     'position': 'se',
     'adjPosX': 20,
@@ -1101,7 +1101,7 @@ DebugJS.prototype = {
     }
 
     if (self.options.useTools) {
-      self.toolsBtn = self.createHeaderButton('toolsBtn', 'TL', 2, null, DebugJS.self.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
+      self.toolsBtn = self.createHeaderButton('toolsBtn', 'TOOL', 2, null, DebugJS.self.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
 
     if (self.options.useScriptEditor) {
@@ -4691,7 +4691,7 @@ DebugJS.prototype = {
     }
 
     if ((!found) && (str.match(/^\s*http/))) {
-      DebugJS.self.httpRequest('GET', str);
+      DebugJS.self.doHttpRequest('GET', str);
       return;
     }
 
@@ -5005,7 +5005,7 @@ DebugJS.prototype = {
       method = 'GET';
       data = arg;
     }
-    DebugJS.self.httpRequest(method, data);
+    DebugJS.self.doHttpRequest(method, data);
   },
 
   cmdJson: function(arg, tbl) {
@@ -5498,25 +5498,52 @@ DebugJS.prototype = {
     }
   },
 
-  httpRequest: function(method, arg) {
+  doHttpRequest: function(method, arg) {
     var args = DebugJS.splitCmdLineInTwo(arg);
     var url = args[0];
     var data = args[1];
     var user = '';
     var pass = '';
-    if (data.match(/^\s*--user /)) {
+    if (url == '--user') {
       var parts = DebugJS.splitCmdLineInTwo(data);
-      parts = DebugJS.splitCmdLineInTwo(parts[1]);
       var auth = parts[0];
       var auths = auth.split(':');
       if (auths.length > 1) {
         user = auths[0];
         pass = auths[1];
+        parts = DebugJS.splitCmdLineInTwo(parts[1]);
+        url = parts[0];
         data = parts[1];
       }
     }
     data = DebugJS.encodeURIString(data);
-    DebugJS.doHttpRequest(url, method, data, false, false, user, pass);
+    var req = 'Sending a ' + method + ' request.\n' +
+    'URL : ' + url + '\n' +
+    'Body: ' + ((data == '') ? '<span style="color:#ccc">null</span>' : data);
+    if (user || pass) {
+      req += '\nuser: ' + user + ':' + (pass ? '*' : '');
+    }
+    DebugJS.log(req);
+    var request = {
+      'url': url,
+      'method': method,
+      'data': data,
+      'async': false,
+      'cache': false,
+      'user': user,
+      'pass': pass,
+      //'userAgent': 'Mozilla/5.0 (' + DebugJS.getBrowserType().name + ') DebugJS/1.0'
+    };
+    try {
+      DebugJS.httpRequest(request, DebugJS.onHttpRequestDone);
+    } catch (e) {
+      DebugJS.log.e(e);
+      var baseURI = document.baseURI;
+      var regexp = new RegExp('^' + baseURI + '(.*?)');
+      if (!url.match(regexp)) {
+        DebugJS.log.w('Cross-Origin Request\nsource : ' + baseURI + '\nrequest: ' + url);
+      }
+    }
   },
 
   initExtension: function() {
@@ -6790,44 +6817,26 @@ DebugJS.getRandomString = function(min, max) {
   return str;
 };
 
-DebugJS.doHttpRequest = function(url, method, data, async, cache, user, password) {
-  if ((data == undefined) || (data == '')) data = null;
-  if (async == undefined) async = false;
-  if (user == undefined) user = '';
-  if (password == undefined) password = '';
-  method = method.toUpperCase();
-
+DebugJS.httpRequest = function(rq, cb) {
+  if ((rq.data == undefined) || (rq.data == '')) data = null;
+  if (rq.async == undefined) rq.async = false;
+  if (rq.user == undefined) rq.user = '';
+  if (rq.pass == undefined) rq.pass = '';
+  rq.method = rq.method.toUpperCase();
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
-      DebugJS.onHttpRequestDone(xhr);
+      if (cb) cb(xhr);
     }
   };
-
-  var req = 'Sending a ' + method + ' request.\n' +
-  'URL : ' + url + '\n' +
-  'Body: ' + ((data == null) ? '<span style="color:#ccc">null</span>' : data);
-  if (user || password) {
-    req += '\nuser: ' + user + ':' + (password ? '*' : '');
+  xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
+  if (!rq.cache) {
+    xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
   }
-  DebugJS.log(req);
-
-  try {
-    xhr.open(method, url, async, user, password);
-    if (!cache) {
-      xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
-    }
-    //var userAgent = 'Mozilla/5.0 (' + navigator.platform + ') DebugJS/1.0';
-    //xhr.setRequestHeader('User-Agent', userAgent);
-    xhr.send(data);
-  } catch (e) {
-    DebugJS.log.e(e);
-    var baseURI = document.baseURI;
-    var regexp = new RegExp('^' + baseURI + '(.*?)');
-    if (!url.match(regexp)) {
-      DebugJS.log.w('Cross-Origin Request\nsource : ' + baseURI + '\nrequest: ' + url);
-    }
+  if (rq.userAgent) {
+    xhr.setRequestHeader('User-Agent', rq.userAgent);
   }
+  xhr.send(rq.data);
 };
 
 DebugJS.onHttpRequestDone = function(xhr) {
@@ -7086,12 +7095,6 @@ DebugJS.deepCopy = function(src, dest) {
   for (var key in src) {
     dest[key] = src[key];
   }
-};
-
-DebugJS.export = function(o) {
-  DebugJS.obj = o;
-  if (DebugJS._AVAILABLE) _ = DebugJS.obj;
-  DebugJS.log.s('An object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.obj</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
 };
 
 DebugJS.dumpLog = function(type, b64) {
