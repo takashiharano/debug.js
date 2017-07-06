@@ -591,6 +591,11 @@ function httpCallback(xhr) {
     log(head + '\n'+ txt);
   }
 }
+
+function onReady() {
+
+}
+window.addEventListener('DOMContentLoaded', onReady, true);
 </script>
 </head>
 <body>
@@ -1551,6 +1556,24 @@ max: maximum length
     </td>
     <td>
       Export the log buffer in JSON format / plain text format
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.getBrowserType<br>
+      <span class="alias">( dbg.getBrowserType )</span>
+    </td>
+    <td></td>
+    <td>
+      Get browser type info<br><br>
+      e.g.,)
+<pre class="eg">
+{
+  'name': 'Firefox',
+  'version': '50.0'
+}
+</pre>
     </td>
   </tr>
 
