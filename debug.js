@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707052244';
+  this.v = '201707062047';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -472,6 +472,7 @@ DebugJS.prototype = {
           self.dbgWin.removeChild(self.dbgWin.childNodes[i]);
         }
         self.bodyEl.removeChild(self.dbgWin);
+        self.dbgWin = null;
       }
     }
 
@@ -510,6 +511,7 @@ DebugJS.prototype = {
 
     // Debug Window
     if (self.options.display == 'noui') {
+      self.removeEventHandler();
       return false;
     } else if (self.options.target == null) {
       self.id = self.DEFAULT_ELM_ID;
@@ -915,6 +917,19 @@ DebugJS.prototype = {
       window.addEventListener('keyup', self.onKeyUp, true);
       self.updateKeyUpPanel();
     }
+  },
+
+  removeEventHandler: function() {
+    var self = DebugJS.self;
+    window.removeEventListener('keydown', self.keyHandler, true);
+    window.removeEventListener('mousedown', self.onMouseDown, true);
+    window.removeEventListener('mousemove', self.onMouseMove, true);
+    window.removeEventListener('mouseup', self.onMouseUp, true);
+    window.removeEventListener('resize', self.onResize, true);
+    window.removeEventListener('scroll', self.onScroll, true);
+    window.removeEventListener('keydown', self.onKeyDown, true);
+    window.removeEventListener('keypress', self.onKeyPress, true);
+    window.removeEventListener('keyup', self.onKeyUp, true);
   },
 
   initStatus: function(options) {
