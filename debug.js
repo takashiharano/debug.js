@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707070011';
+  this.v = '201707070743';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -2759,7 +2759,7 @@ DebugJS.prototype = {
   showSystemInfo: function(e) {
     var self = DebugJS.self;
     var INDENT = '                  ';
-    var screenSize = 'w=' + screen.width + ' x h=' + screen.height;
+    var screenSize = 'width=' + screen.width + ' height=' + screen.height;
     var languages = self.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
     var jq = '<span class="' + self.id + '-na">not loaded</span>';
@@ -2839,7 +2839,7 @@ DebugJS.prototype = {
     var docOncontextmenu = self.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
     var html = '<pre>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SCREEN SIZE</span> : ' + screenSize + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">screen.</span>     : ' + screenSize + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
     '<div class="' + self.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">navigator.</span>\n' +
