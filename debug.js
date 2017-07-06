@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707062047';
+  this.v = '201707070011';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -463,7 +463,7 @@ DebugJS.prototype = {
   init: function(options, restoreOption) {
     if (!DebugJS.ENABLE) {return false;}
     var self = DebugJS.self;
-    var keepStatus = (((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) ? true : false);
+    var keepStatus = ((restoreOption && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) ? true : false);
     self.bodyEl = document.body;
 
     if (self.status & DebugJS.STATE_DYNAMIC) {
@@ -480,7 +480,7 @@ DebugJS.prototype = {
       self.status = 0;
     }
 
-    if ((this.options == null) || ((options != null) && (!keepStatus))) {
+    if ((this.options == null) || ((options != null) && (!keepStatus)) || (options === undefined)) {
       self.setupDefaultOptions();
     }
     if (options) {

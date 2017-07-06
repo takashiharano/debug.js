@@ -686,7 +686,7 @@ If you want to change the debugger settings, explicitly call for initialization 
       'zoom': 1.4,
       'position': 'ne'
     };
-    DebugJS.init(options);</span> <button class="demo-button" onclick="DebugJS.init({'visible':true,'zoom':1.4,'position':'ne'});">DEMO</button> <button class="demo-button reset-button" onclick="DebugJS.init(DebugJS.self.DEFAULT_OPTIONS);DebugJS.init({'visible':true});">RESET</button>
+    DebugJS.init(options);</span> <button class="demo-button" onclick="DebugJS.init({'visible':true,'zoom':1.4,'position':'ne'});">DEMO</button> <button class="demo-button reset-button" onclick="DebugJS.init();DebugJS.init({'visible':true});">RESET</button>
 
     function foo() {
       log('button was clicked');
