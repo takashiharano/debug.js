@@ -442,10 +442,10 @@ function httpCallback(xhr) {
     log(statusMsg);
   }
   var head = xhr.getAllResponseHeaders();
-  var txt = xhr.responseText.replace(/</g, '&lt;');
-  txt = txt.replace(/>/g, '&gt;');
+  var body = xhr.responseText.replace(/</g, '&lt;');
+  body = body.replace(/>/g, '&gt;');
   if (head || txt) {
-    log(head + '\n'+ txt);
+    log('Response:\n' + head + '\n'+ body);
   }
 }
 
@@ -2652,7 +2652,7 @@ console.timeEnd('timer3');<br>
   url: '<input type="text" id="http-url-text" value="https://debugjs.net/test/" class="inline-text-input" style="width:600px;">',
   method: '<input type="text" id="http-method-text" value="GET" class="inline-text-input" style="width:60px;">',
   data: '<input type="text" id="http-data-text" value="" class="inline-text-input" style="width:600px;">',
-  async: <input type="text" id="http-async-text" value="false" class="inline-text-input" style="width:60px;">,
+  async: <input type="text" id="http-async-text" value="true" class="inline-text-input" style="width:60px;">,
   cache: <input type="text" id="http-cache-text" value="false" class="inline-text-input" style="width:60px;">,
   user: '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
   pass: '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
