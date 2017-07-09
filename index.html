@@ -450,9 +450,25 @@ function httpCallback(xhr) {
 }
 
 function onReady() {
-
+  //log('ready');
 }
+
+function onLoad() {
+  //log('load');
+}
+
+function onUnload() {
+  //log('unload');
+}
+
+function onError() {
+  //log('error');
+}
+
 window.addEventListener('DOMContentLoaded', onReady, true);
+window.addEventListener('load', onLoad, true);
+window.addEventListener('unload', onUnload, true);
+window.addEventListener('error', onError, true);
 </script>
 </head>
 <body>
