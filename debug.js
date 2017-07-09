@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707070743';
+  this.v = '201707091611';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -184,6 +184,7 @@ var DebugJS = DebugJS || function() {
   this.swElapsedTimeDisp = '00:00:00.000';
   this.clearBtn = null;
   this.suspendLogBtn = null;
+  this.preserveLogBtn = null;
   this.pinBtn = null;
   this.winCtrlBtnPanel = null;
   this.closeBtn = null;
@@ -301,36 +302,36 @@ var DebugJS = DebugJS || function() {
 };
 DebugJS.ENABLE = true;
 DebugJS.MERGE_CONSOLE = true;
-DebugJS.PRESERVE_LOG = false;
 
 DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DEFAULT_UNIT = 32;
 DebugJS.INIT_CAUSE_ZOOM = 1;
-DebugJS.STATE_INITIALIZED = 0x1;
-DebugJS.STATE_VISIBLE = 0x2;
-DebugJS.STATE_DYNAMIC = 0x4;
-DebugJS.STATE_SHOW_CLOCK = 0x8;
-DebugJS.STATE_STOPWATCH_RUNNING = 0x10;
-DebugJS.STATE_DRAGGABLE = 0x20;
-DebugJS.STATE_DRAGGING = 0x40;
-DebugJS.STATE_RESIZABLE = 0x100;
-DebugJS.STATE_RESIZING = 0x200;
-DebugJS.STATE_RESIZING_N = 0x400;
-DebugJS.STATE_RESIZING_E = 0x800;
-DebugJS.STATE_RESIZING_S = 0x1000;
-DebugJS.STATE_RESIZING_W = 0x2000;
+DebugJS.STATE_INITIALIZED = 1;
+DebugJS.STATE_VISIBLE = 1 << 1;
+DebugJS.STATE_DYNAMIC = 1 << 2;
+DebugJS.STATE_SHOW_CLOCK = 1 << 3;
+DebugJS.STATE_STOPWATCH_RUNNING = 1 << 4;
+DebugJS.STATE_DRAGGABLE = 1 << 5;
+DebugJS.STATE_DRAGGING = 1 << 6;
+DebugJS.STATE_RESIZABLE = 1 << 7;
+DebugJS.STATE_RESIZING = 1 << 8;
+DebugJS.STATE_RESIZING_N = 1 << 9;
+DebugJS.STATE_RESIZING_E = 1 << 10;
+DebugJS.STATE_RESIZING_S = 1 << 11;
+DebugJS.STATE_RESIZING_W = 1 << 12;
 DebugJS.STATE_RESIZING_ALL = DebugJS.STATE_RESIZING | DebugJS.STATE_RESIZING_N | DebugJS.STATE_RESIZING_E | DebugJS.STATE_RESIZING_S | DebugJS.STATE_RESIZING_W;
-DebugJS.STATE_MEASURE = 0x100000;
-DebugJS.STATE_MEASURING = 0x200000;
-DebugJS.STATE_SYSTEM_INFO = 0x400000;
-DebugJS.STATE_ELEMENT_INSPECTING = 0x800000;
-DebugJS.STATE_TOOLS = 0x1000000;
-DebugJS.STATE_SCRIPT = 0x2000000;
-DebugJS.STATE_HTML_SRC = 0x4000000;
-DebugJS.STATE_LOG_SUSPENDING = 0x8000000;
-DebugJS.STATE_POS_AUTO_ADJUST = 0x10000000;
-DebugJS.STATE_NEED_TO_SCROLL = 0x20000000;
-DebugJS.STATE_STOPWATCH_LAPTIME = 0x40000000;
+DebugJS.STATE_MEASURE = 1 << 13;
+DebugJS.STATE_MEASURING = 1 << 14;
+DebugJS.STATE_SYSTEM_INFO = 1 << 15;
+DebugJS.STATE_ELEMENT_INSPECTING = 1 << 16;
+DebugJS.STATE_TOOLS = 1 << 17;
+DebugJS.STATE_SCRIPT = 1 << 18;
+DebugJS.STATE_HTML_SRC = 1 << 19;
+DebugJS.STATE_LOG_SUSPENDING = 1 << 20;
+DebugJS.STATE_LOG_PRESERVED = 1 << 21;
+DebugJS.STATE_POS_AUTO_ADJUST = 1 << 22;
+DebugJS.STATE_NEED_TO_SCROLL = 1 << 23;
+DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 24;
 DebugJS.LOG_FILTER_LOG = 0x1;
 DebugJS.LOG_FILTER_DBG = 0x2;
 DebugJS.LOG_FILTER_INF = 0x4;
@@ -395,6 +396,7 @@ DebugJS.TOOLS_BTN_COLOR = '#ff0';
 DebugJS.JS_BTN_COLOR = '#6df';
 DebugJS.PIN_BTN_COLOR = '#fa0';
 DebugJS.LOG_SUSPEND_BTN_COLOR = '#d00';
+DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
@@ -477,7 +479,11 @@ DebugJS.prototype = {
     }
 
     if (!keepStatus) {
-      self.status = 0;
+      if (self.status & DebugJS.STATE_LOG_PRESERVED) {
+        self.status = DebugJS.STATE_LOG_PRESERVED;
+      } else {
+        self.status = 0;
+      }
     }
 
     if ((this.options == null) || ((options != null) && (!keepStatus)) || (options === undefined)) {
@@ -1095,11 +1101,15 @@ DebugJS.prototype = {
     }
 
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.pinBtn = self.createHeaderButton('pinBtn', '&#x1F4CC;', 2, (11 * self.options.zoom) + 'px', DebugJS.self.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true);
+      self.pinBtn = self.createHeaderButton('pinBtn', '@', 2, self.computedFontSize + 'px', DebugJS.self.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true);
     }
 
     if (self.options.useSuspendLogButton) {
-      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '&#x1F6AB;', 4, (11 * self.options.zoom) + 'px', DebugJS.self.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false);
+      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '!', 4, self.computedFontSize + 'px', DebugJS.self.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false);
+    }
+
+    if (DebugJS.LS_AVAILABLE) {
+      self.preserveLogBtn = self.createHeaderButton('preserveLogBtn', '*', 4, self.computedFontSize + 'px', DebugJS.self.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false);
     }
 
     // Stopwatch
@@ -1248,6 +1258,7 @@ DebugJS.prototype = {
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
       self.updatePinBtn();
     }
+    if (self.preserveLogBtn) self.updatePreserveLogBtn();
     if (self.options.useSuspendLogButton) self.updateSuspendLogBtn();
     if ((self.status & DebugJS.STATE_RESIZABLE) && (self.options.useWindowControlButton)) {
       self.updateWinCtrlBtnPanel();
@@ -1592,6 +1603,11 @@ DebugJS.prototype = {
     self.updateBtnActive(self.suspendLogBtn, DebugJS.STATE_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BTN_COLOR);
   },
 
+  updatePreserveLogBtn: function() {
+    var self = DebugJS.self;
+    self.updateBtnActive(self.preserveLogBtn, DebugJS.STATE_LOG_PRESERVED, DebugJS.LOG_PRESERVE_BTN_COLOR);
+  },
+
   updatePinBtn: function() {
     var self = DebugJS.self;
     self.pinBtn.style.color = (self.status & DebugJS.STATE_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BTN_COLOR;
@@ -1862,6 +1878,16 @@ DebugJS.prototype = {
       self.status |= DebugJS.STATE_LOG_SUSPENDING;
     }
     self.updateSuspendLogBtn();
+  },
+
+  toggleLogPreserve: function() {
+    var self = DebugJS.self;
+    if (self.status & DebugJS.STATE_LOG_PRESERVED) {
+      self.status &= ~DebugJS.STATE_LOG_PRESERVED;
+    } else {
+      self.status |= DebugJS.STATE_LOG_PRESERVED;
+    }
+    self.updatePreserveLogBtn();
   },
 
   toggleMeasureMode: function() {
@@ -5543,7 +5569,7 @@ DebugJS.prototype = {
       'url': url,
       'method': method,
       'data': data,
-      'async': false,
+      'async': true,
       'cache': false,
       'user': user,
       'pass': pass,
@@ -6834,7 +6860,7 @@ DebugJS.getRandomString = function(min, max) {
 
 DebugJS.httpRequest = function(rq, cb) {
   if ((rq.data == undefined) || (rq.data == '')) data = null;
-  if (rq.async == undefined) rq.async = false;
+  if (rq.async == undefined) rq.async = true;
   if (rq.user == undefined) rq.user = '';
   if (rq.pass == undefined) rq.pass = '';
   rq.method = rq.method.toUpperCase();
@@ -7159,9 +7185,23 @@ DebugJS.loadLog = function(json, b64) {
   }
 };
 
+DebugJS.saveStatus = function() {
+  if (!DebugJS.LS_AVAILABLE) return;
+  localStorage.setItem('DebugJS-st', DebugJS.self.status + '');
+};
+
+DebugJS.loadStatus = function() {
+  if (!DebugJS.LS_AVAILABLE) return 0;
+  var st = localStorage.getItem('DebugJS-st');
+  if (st == null) return 0;
+  localStorage.removeItem('DebugJS-st');
+  st |= 0;
+  return st;
+};
+
 DebugJS.preserveLog = function() {
   if (!DebugJS.LS_AVAILABLE) return;
-  var json = DebugJS.DebugJS.dumpLog('json');
+  var json = DebugJS.dumpLog('json');
   localStorage.setItem('DebugJS-log', json);
 };
 
@@ -7182,7 +7222,8 @@ DebugJS.onLoad = function() {
 };
 
 DebugJS.onUnload = function() {
-  if (DebugJS.PRESERVE_LOG) DebugJS.preserveLog();
+  if (DebugJS.self.status & DebugJS.STATE_LOG_PRESERVED) DebugJS.preserveLog();
+  DebugJS.saveStatus();
 };
 
 DebugJS.onError = function(e) {
@@ -7415,10 +7456,10 @@ log.clear = function() {
 var dbg = dbg || DebugJS;
 var time = time || DebugJS.time;
 DebugJS.x = DebugJS.x || {};
+
+DebugJS.start = function() {
 DebugJS.self = DebugJS.self || new DebugJS();
-if (DebugJS.ENABLE) {
   DebugJS.el = null;
-  DebugJS.obj = null;
   if (!window._) DebugJS._AVAILABLE = true;
   if (typeof window.localStorage != 'undefined') {
     DebugJS.LS_AVAILABLE = true;
@@ -7434,8 +7475,14 @@ if (DebugJS.ENABLE) {
     console.time = function(x) {time.start(x);};
     console.timeEnd = function(x) {time.end(x);};
   }
-  if (DebugJS.PRESERVE_LOG) DebugJS.restoreLog();
-} else {
+  var st = DebugJS.loadStatus();
+  if (st & DebugJS.STATE_LOG_PRESERVED) {
+    DebugJS.self.status |= DebugJS.STATE_LOG_PRESERVED;
+    DebugJS.restoreLog();
+  }
+};
+
+DebugJS.disable = function() {
   log = function(x) {};
   log.e = function(x) {};
   log.w = function(x) {};
@@ -7459,4 +7506,10 @@ if (DebugJS.ENABLE) {
   DebugJS.led.all = function(x) {};
   DebugJS.random = function(min, max) {};
   DebugJS.random.string = function(min, max) {};
+};
+
+if (DebugJS.ENABLE) {
+  DebugJS.start();
+} else {
+  DebugJS.disable();
 }
