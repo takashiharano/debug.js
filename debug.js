@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707091611';
+  this.v = '201707091831';
 
   this.DEFAULT_OPTIONS = {
     'visible': false,
@@ -302,7 +302,6 @@ var DebugJS = DebugJS || function() {
 };
 DebugJS.ENABLE = true;
 DebugJS.MERGE_CONSOLE = true;
-
 DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DEFAULT_UNIT = 32;
 DebugJS.INIT_CAUSE_ZOOM = 1;
@@ -7492,20 +7491,20 @@ DebugJS.disable = function() {
   log.p = function(x, xx, xxx) {};
   log.stack = function() {};
   log.clear = function() {};
+  DebugJS.msg = function(x) {};
+  DebugJS.msg.clear = function() {};
   DebugJS.time.start = function(x, xx) {};
   DebugJS.time.split = function(x, xx) {};
   DebugJS.time.end = function(x, xx) {};
   DebugJS.time.check = function(x) {};
   DebugJS.init = function(x) {};
-  DebugJS.countElements = function(x, xx) {};
   DebugJS.call = function(x, xx) {};
   DebugJS.cmd = function(x, xx) {};
+  DebugJS.countElements = function(x, xx) {};
   DebugJS.led = function(x) {};
   DebugJS.led.on = function(x) {};
   DebugJS.led.off = function(x) {};
   DebugJS.led.all = function(x) {};
-  DebugJS.random = function(min, max) {};
-  DebugJS.random.string = function(min, max) {};
 };
 
 if (DebugJS.ENABLE) {
