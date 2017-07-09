@@ -5,79 +5,79 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707091831';
+  this.v = '201707100014';
 
   this.DEFAULT_OPTIONS = {
-    'visible': false,
-    'keyAssign': {
-      'key': 113,
-      'shift': false,
-      'ctrl': false,
-      'alt': false,
-      'meta': false
+    visible: false,
+    keyAssign: {
+      key: 113,
+      shift: false,
+      ctrl: false,
+      alt: false,
+      meta: false
     },
-    'popupOnError': {
-      'scriptError': true,
-      'loadError': true,
-      'errorLog': true
+    popupOnError: {
+      scriptError: true,
+      loadError: true,
+      errorLog: true
     },
-    'lines': 18,
-    'bufsize': 300,
-    'width': 520,
-    'zoom': 1,
-    'position': 'se',
-    'adjPosX': 20,
-    'adjPosY': 20,
-    'fontSize': 12,
-    'fontFamily': 'Consolas, monospace',
-    'fontColor': '#fff',
-    'logColorD': '#ccc',
-    'logColorI': '#9ef',
-    'logColorW': '#fe0',
-    'logColorE': '#f88',
-    'logColorS': '#fff',
-    'clockColor': '#8f0',
-    'timerColor': '#9ef',
-    'sysInfoColor': '#ddd',
-    'btnColor': '#6cf',
-    'btnHoverColor': '#8ef',
-    'promptColor': '#0cf',
-    'promptColorE': '#f45',
-    'background': 'rgba(0,0,0,0.65)',
-    'border': 'solid 1px #888',
-    'borderRadius': '0',
-    'opacity': '1',
-    'showLineNums': true,
-    'showTimeStamp': true,
-    'resizable': true,
-    'togglableShowHide': true,
-    'useClock': true,
-    'useClearButton': true,
-    'useSuspendLogButton': true,
-    'usePinButton': true,
-    'useWindowControlButton': true,
-    'useStopWatch': true,
-    'useWindowSizeInfo': true,
-    'useMouseStatusInfo': true,
-    'useKeyStatusInfo': true,
-    'useLed': true,
-    'useMsgDisplay': true,
-    'msgDisplayPos': 'right',
-    'msgDisplayBackground': 'rgba(0,0,0,0.2)',
-    'useScreenMeasure': true,
-    'useSystemInfo': true,
-    'useHtmlSrc': true,
-    'useElementInfo': true,
-    'useTools': true,
-    'useScriptEditor': true,
-    'useLogFilter': true,
-    'useCommandLine': true,
-    'cmdHistoryMax': 100,
-    'display': '',
-    'disableAllCommands': false,
-    'disableAllFeatures': false,
-    'onFileLoaded': null,
-    'target': null
+    lines: 18,
+    bufsize: 300,
+    width: 520,
+    zoom: 1,
+    position: 'se',
+    adjPosX: 20,
+    adjPosY: 20,
+    fontSize: 12,
+    fontFamily: 'Consolas, monospace',
+    fontColor: '#fff',
+    logColorD: '#ccc',
+    logColorI: '#9ef',
+    logColorW: '#fe0',
+    logColorE: '#f88',
+    logColorS: '#fff',
+    clockColor: '#8f0',
+    timerColor: '#9ef',
+    sysInfoColor: '#ddd',
+    btnColor: '#6cf',
+    btnHoverColor: '#8ef',
+    promptColor: '#0cf',
+    promptColorE: '#f45',
+    background: 'rgba(0,0,0,0.65)',
+    border: 'solid 1px #888',
+    borderRadius: '0',
+    opacity: '1',
+    showLineNums: true,
+    showTimeStamp: true,
+    resizable: true,
+    togglableShowHide: true,
+    useClock: true,
+    useClearButton: true,
+    useSuspendLogButton: true,
+    usePinButton: true,
+    useWindowControlButton: true,
+    useStopWatch: true,
+    useWindowSizeInfo: true,
+    useMouseStatusInfo: true,
+    useKeyStatusInfo: true,
+    useLed: true,
+    useMsgDisplay: true,
+    msgDisplayPos: 'right',
+    msgDisplayBackground: 'rgba(0,0,0,0.2)',
+    useScreenMeasure: true,
+    useSystemInfo: true,
+    useHtmlSrc: true,
+    useElementInfo: true,
+    useTools: true,
+    useScriptEditor: true,
+    useLogFilter: true,
+    useCommandLine: true,
+    cmdHistoryMax: 100,
+    display: '',
+    disableAllCommands: false,
+    disableAllFeatures: false,
+    onFileLoaded: null,
+    target: null
   };
   this.DEFAULT_ELM_ID = '_debug_';
   this.id = null;
@@ -120,7 +120,7 @@ var DebugJS = DebugJS || function() {
   this.elmInfoStatus = DebugJS.ELMINFO_STATE_SELECT | DebugJS.ELMINFO_STATE_HIGHLIGHT;
   this.elmUpdateInterval = 0;
   this.elmUpdateTimerId = 0;
-  this.elmInfoShowHideStatus = {'text': false, 'allStyles': false, 'elBorder': false, 'htmlSrc': false};
+  this.elmInfoShowHideStatus = {text: false, allStyles: false, elBorder: false, htmlSrc: false};
   this.targetElm = null;
   this.toolsBtn = null;
   this.toolsPanel = null;
@@ -234,8 +234,8 @@ var DebugJS = DebugJS || function() {
   this.timers = {};
   this.initWidth = 0;
   this.initHeight = 0;
-  this.orgSizePos = {'w': 0, 'h': 0, 't': 0, 'l': 0};
-  this.expandModeOrg = {'w': 0, 'h': 0, 't': 0, 'l': 0};
+  this.orgSizePos = {w: 0, h: 0, t: 0, l: 0};
+  this.expandModeOrg = {w: 0, h: 0, t: 0, l: 0};
   this.windowExpandHeight = DebugJS.DBGWIN_EXPAND_H * this.DEFAULT_OPTIONS.zoom;
   this.windowExpandCnt = 0;
   this.clickedPosX = 0;
@@ -253,50 +253,50 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFunction = DebugJS.TOOLS_ACTIVE_FNC_NONE;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {'cmd': 'base64', 'fnc': this.cmdBase64, 'desc': 'Encodes/Decodes Base64 string', 'usage': 'base64 [-e|-d] string'},
-    {'cmd': 'bin', 'fnc': this.cmdBin, 'desc': 'Convert a number to binary', 'usage': 'bin num digit'},
-    {'cmd': 'cls', 'fnc': this.cmdCls, 'desc': 'Clear log message', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'dumplog', 'fnc': this.cmdDumpLog, 'desc': 'Dump the log buffer'},
-    {'cmd': 'elements', 'fnc': this.cmdElements, 'desc': 'Count elements by #id / .className / tagName', 'usage': 'elements [#id|.className|tagName]'},
-    {'cmd': 'execute', 'fnc': this.cmdExecute, 'desc': 'Execute the edited JavaScript code'},
-    {'cmd': 'exit', 'fnc': this.cmdExit, 'desc': 'Close the debug window and clear all status', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'help', 'fnc': this.cmdHelp, 'desc': 'Displays available command list', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'hex', 'fnc': this.cmdHex, 'desc': 'Convert a number to hexadecimal', 'usage': 'hex num digit'},
-    {'cmd': 'history', 'fnc': this.cmdHistory, 'desc': 'Displays command history', 'usage': 'history [-c] [-d offset] [n]', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'http', 'fnc': this.cmdHttp, 'desc': 'Send an HTTP request', 'usage': 'http [method] url [--user user:pass] [data]'},
-    {'cmd': 'json', 'fnc': this.cmdJson, 'desc': 'Parse one-line JSON', 'usage': 'json [-l<n>] [-p] one-line-json'},
-    {'cmd': 'jquery', 'fnc': this.cmdJquery, 'desc': 'Displays what version of jQuery is loaded'},
-    {'cmd': 'keys', 'fnc': this.cmdKeys, 'desc': 'Displays all enumerable property keys of an object', 'usage': 'keys object'},
-    {'cmd': 'laptime', 'fnc': this.cmdLaptime, 'desc': 'Lap time test'},
-    {'cmd': 'launch', 'fnc': this.cmdLaunch, 'desc': 'Launch a function', 'usage': 'launch [sys|html|dom|js|tool] [text|file|html|memo] [b64|bin]'},
-    {'cmd': 'led', 'fnc': this.cmdLed, 'desc': 'Set a bit pattern to the indicator', 'usage': 'led bit-pattern'},
-    {'cmd': 'load', 'fnc': this.cmdLoad, 'desc': 'Load the log buffer', 'usage': 'load json-data'},
-    {'cmd': 'msg', 'fnc': this.cmdMsg, 'desc': 'Set a string to the message display', 'usage': 'msg message'},
-    {'cmd': 'p', 'fnc': this.cmdP, 'desc': 'Print JavaScript Objects', 'usage': 'p [-l<n>] object'},
-    {'cmd': 'pos', 'fnc': this.cmdPos, 'desc': 'Set the debugger window position', 'usage': 'pos n|ne|e|se|s|sw|w|nw|c', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
-    {'cmd': 'prop', 'fnc': this.cmdProp, 'desc': 'Displays a property value', 'usage': 'prop property-name'},
-    {'cmd': 'props', 'fnc': this.cmdProps, 'desc': 'Displays property list'},
-    {'cmd': 'random', 'fnc': this.cmdRandom, 'desc': 'Generate a rondom number/string', 'usage': 'random [-d|-s] [min] [max]'},
-    {'cmd': 'rgb', 'fnc': this.cmdRGB, 'desc': 'Convert RGB color values between HEX and DEC', 'usage': 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {'cmd': 'self', 'fnc': this.cmdSelf, 'attr': DebugJS.CMD_ATTR_HIDDEN},
-    {'cmd': 'set', 'fnc': this.cmdSet, 'desc': 'Set a property value', 'usage': 'set property-name value'},
-    {'cmd': 'stopwatch', 'fnc': this.cmdStopwatch, 'desc': 'Manipulate the stopwatch', 'usage': 'stopwatch start|stop|reset'},
-    {'cmd': 'time', 'fnc': this.cmdTime, 'desc': 'Manipulate the timer', 'usage': 'time start|split|end|list [timer-name]'},
-    {'cmd': 'unicode', 'fnc': this.cmdUnicode, 'desc': 'Displays unicode code point / Decodes unicode string', 'usage': 'unicode [-e|-d] string|codePoint(s)'},
-    {'cmd': 'uri', 'fnc': this.cmdUri, 'desc': 'Encodes/Decodes a URI component', 'usage': 'uri [-e|-d] string'},
-    {'cmd': 'v', 'fnc': this.cmdV, 'desc': 'Displays version info', 'attr': DebugJS.CMD_ATTR_SYSTEM},
-    {'cmd': 'win', 'fnc': this.cmdWin, 'desc': 'Set the debugger window size', 'usage': 'win min|normal|max|full|expand|restore|reset', 'attr': DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
-    {'cmd': 'zoom', 'fnc': this.cmdZoom, 'desc': 'Zoom the debugger window', 'usage': 'zoom ratio', 'attr': DebugJS.CMD_ATTR_DYNAMIC}
+    {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
+    {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
+    {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'dumplog', fnc: this.cmdDumpLog, desc: 'Dump the log buffer'},
+    {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
+    {cmd: 'execute', fnc: this.cmdExecute, desc: 'Execute the edited JavaScript code'},
+    {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'help', fnc: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'hex', fnc: this.cmdHex, desc: 'Convert a number to hexadecimal', usage: 'hex num digit'},
+    {cmd: 'history', fnc: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
+    {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
+    {cmd: 'jquery', fnc: this.cmdJquery, desc: 'Displays what version of jQuery is loaded'},
+    {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
+    {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
+    {cmd: 'launch', fnc: this.cmdLaunch, desc: 'Launch a function', usage: 'launch [sys|html|dom|js|tool] [text|file|html|memo] [b64|bin]'},
+    {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
+    {cmd: 'load', fnc: this.cmdLoad, desc: 'Load the log buffer', usage: 'load json-data'},
+    {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
+    {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
+    {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
+    {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
+    {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
+    {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
+    {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch start|stop|reset'},
+    {cmd: 'time', fnc: this.cmdTime, desc: 'Manipulate the timer', usage: 'time start|split|end|list [timer-name]'},
+    {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
+    {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
+    {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC}
   ];
   this.intCmdTblLen = this.INT_CMD_TBL.length;
   this.CMD_TBL = [];
   this.options = null;
   this.errStatus = DebugJS.ERR_STATE_NONE;
   this.properties = {
-    'esc': {'value': 'enable', 'restriction': /^enable$|^disable$/},
-    'dumplimit': {'value': 1000, 'restriction': /^[0-9]+$/},
-    'prevlimit': {'value': 5 * 1024 * 1024, 'restriction': /^[0-9]+$/},
-    'hexdumplimit': {'value': 102400, 'restriction': /^[0-9]+$/}
+    esc: {value: 'enable', restriction: /^enable$|^disable$/},
+    dumplimit: {value: 1000, restriction: /^[0-9]+$/},
+    prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
+    hexdumplimit: {value: 102400, restriction: /^[0-9]+$/}
   };
   this.setupDefaultOptions();
 };
@@ -485,7 +485,7 @@ DebugJS.prototype = {
       }
     }
 
-    if ((this.options == null) || ((options != null) && (!keepStatus)) || (options === undefined)) {
+    if ((self.options == null) || ((options != null) && (!keepStatus)) || (options === undefined)) {
       self.setupDefaultOptions();
     }
     if (options) {
@@ -1100,15 +1100,15 @@ DebugJS.prototype = {
     }
 
     if ((self.status & DebugJS.STATE_DYNAMIC) && (self.options.usePinButton)) {
-      self.pinBtn = self.createHeaderButton('pinBtn', '@', 2, self.computedFontSize + 'px', DebugJS.self.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true);
+      self.pinBtn = self.createHeaderButton('pinBtn', 'P', 3, self.computedFontSize + 'px', DebugJS.self.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true);
     }
 
     if (self.options.useSuspendLogButton) {
-      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '!', 4, self.computedFontSize + 'px', DebugJS.self.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false);
+      self.suspendLogBtn = self.createHeaderButton('suspendLogBtn', '/', 3, self.computedFontSize + 'px', DebugJS.self.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false);
     }
 
     if (DebugJS.LS_AVAILABLE) {
-      self.preserveLogBtn = self.createHeaderButton('preserveLogBtn', '*', 4, self.computedFontSize + 'px', DebugJS.self.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false);
+      self.preserveLogBtn = self.createHeaderButton('preserveLogBtn', '*', 5, self.computedFontSize + 'px', DebugJS.self.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false);
     }
 
     // Stopwatch
@@ -1627,7 +1627,7 @@ DebugJS.prototype = {
     }
     fn += 'DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();';
     var b = '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * self.options.zoom) + 'px;font-size:' + (16 * self.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
-    '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;position:relative;top:-2px;margin-right:' + self.options.zoom + 'px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
+    '<span class="' + self.id + '-btn ' + self.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * self.options.zoom + 'px;margin-right:' + self.options.zoom + 'px;font-size:' + (30 * self.options.zoom) + 'px;color:#888" onclick="DebugJS.self.resetDebugWindowSizePos();DebugJS.self.updateWinCtrlBtnPanel();DebugJS.self.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
     self.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -4744,7 +4744,7 @@ DebugJS.prototype = {
     }
 
     if ((!found) && (str.match(/^\s*U\+/i))) {
-      this.cmdUnicode('-d ' + str);
+      self.cmdUnicode('-d ' + str);
       return;
     }
 
@@ -4922,8 +4922,8 @@ DebugJS.prototype = {
       }
     }
     var data = {
-      'exp': exp,
-      'digit': (digit | 0)
+      exp: exp,
+      digit: (digit | 0)
     };
     return data;
   },
@@ -5502,13 +5502,13 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else if (zoom != self.options.zoom) {
       var restoreOption = {
-        'cause': DebugJS.INIT_CAUSE_ZOOM,
-        'status': self.status,
-        'sizeStatus': self.sizeStatus
+        cause: DebugJS.INIT_CAUSE_ZOOM,
+        status: self.status,
+        sizeStatus: self.sizeStatus
       };
       self.closeFeatures();
       self.setWindowSize('normal');
-      self.init({'zoom': zoom}, restoreOption);
+      self.init({zoom: zoom}, restoreOption);
     }
   },
 
@@ -5565,14 +5565,14 @@ DebugJS.prototype = {
     }
     DebugJS.log(req);
     var request = {
-      'url': url,
-      'method': method,
-      'data': data,
-      'async': true,
-      'cache': false,
-      'user': user,
-      'pass': pass,
-      //'userAgent': 'Mozilla/5.0 (' + DebugJS.getBrowserType().name + ') DebugJS/1.0'
+      url: url,
+      method: method,
+      data: data,
+      async: true,
+      cache: false,
+      user: user,
+      pass: pass,
+      //userAgent: 'Mozilla/5.0 (' + DebugJS.getBrowserType().name + ') DebugJS/1.0'
     };
     try {
       DebugJS.httpRequest(request, DebugJS.onHttpRequestDone);
@@ -5718,7 +5718,7 @@ DebugJS.splitArgs = function(arg) {
 // data: "1  2 3  4"
 // dataRaw: " 1  2 3  4 "
 DebugJS.parseArgs = function(arg) {
-  var args = {'opt': '', 'data': '', 'dataRaw': ''};
+  var args = {opt: '', data: '', dataRaw: ''};
   var wkArgs = DebugJS.omitLeadingWhiteSpace(arg);
   wkArgs = wkArgs.match(/-{1}([^\s]*)\s{0,1}(.*)/);
   if (wkArgs == null) {
@@ -5778,7 +5778,7 @@ DebugJS.getDateTime = function(dt) {
   if (ss < 10) ss = '0' + ss;
   if (ms < 10) {ms = '00' + ms;}
   else if (ms < 100) {ms = '0' + ms;}
-  var dateTime = {'yyyy': yyyy, 'mm': mm, 'dd': dd, 'hh': hh, 'mi': mi, 'ss': ss, 'sss': ms, 'wday': wd};
+  var dateTime = {yyyy: yyyy, mm: mm, dd: dd, hh: hh, mi: mi, ss: ss, sss: ms, wday: wd};
   return dateTime;
 };
 
@@ -5857,7 +5857,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
   if (levelLimit == undefined) {
     levelLimit = 0;
   }
-  var arg = {'lv': 0, 'cnt': 0, 'dump': ''};
+  var arg = {lv: 0, cnt: 0, dump: ''};
   if (typeof obj === 'function') {
     arg.dump += '<span style="color:#4c4">function</span>()\n';
   }
@@ -6235,7 +6235,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
   var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
-  var rgb = {'r': r10, 'g': g10, 'b': b10, 'rgb': rgb10};
+  var rgb = {r: r10, g: g10, b: b10, rgb: rgb10};
   return rgb;
 };
 
@@ -6255,13 +6255,13 @@ DebugJS.convRGB10to16 = function(rgb10) {
     b16 = b16.substring(0, 1);
   }
   var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:#' + r16 + g16 + b16 + ';width:' + (self.options.zoom * 0.7) + 'em;height:' + (self.options.zoom * 0.7) + 'em;margin-top:' + (2 * self.options.zoom) + 'px;display:inline-block"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
-  var rgb = {'r': r16, 'g': g16, 'b': b16, 'rgb': rgb16};
+  var rgb = {r: r16, g: g16, b: b16, rgb: rgb16};
   return rgb;
 };
 
 DebugJS.convRadixFromHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
-  var bin = DebugJS.convertBin({'exp': v10, 'digit': DebugJS.DEFAULT_UNIT});
+  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DEFAULT_UNIT});
   if (v10 > 0xffffffff) {
     var v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
@@ -6278,7 +6278,7 @@ DebugJS.convRadixFromHEX = function(v16) {
 
 DebugJS.convRadixFromDEC = function(v10) {
   var unit = DebugJS.DEFAULT_UNIT;
-  var bin = DebugJS.convertBin({'exp': v10, 'digit': DebugJS.DEFAULT_UNIT});
+  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DEFAULT_UNIT});
   var v16 = parseInt(v10).toString(16);
   if (v10 < 0) {
     var v2 = '';
@@ -6304,7 +6304,7 @@ DebugJS.convRadixFromBIN = function(v2) {
   v2 = v2.replace(/\s/g, '');
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
-  var bin = DebugJS.convertBin({'exp': v10, 'digit': DebugJS.DEFAULT_UNIT});
+  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DEFAULT_UNIT});
   if (v10 > 0xffffffff) {
     v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
@@ -6496,7 +6496,7 @@ DebugJS.convertTimeJson = function(t) {
   if ((min >= 60) || (sec >= 60)) {
     return null;
   }
-  var time = {'hour': hour, 'min': min, 'sec': sec, 'msec': msec};
+  var time = {hour: hour, min: min, sec: sec, msec: msec};
   return time;
 };
 
@@ -6910,7 +6910,7 @@ DebugJS.encodeURIString = function(data) {
 DebugJS.getBrowserType = function() {
   var ua = navigator.userAgent;
   var ver;
-  var browser = {'name': '', 'version': ''};
+  var browser = {name: '', version: ''};
   if (ua.indexOf('Edge') >= 1) {
     browser.name = 'Edge';
     ver = ua.match(/Edge\/(.*)/);
@@ -7144,7 +7144,7 @@ DebugJS.dumpLog = function(type, b64) {
   for (var i = 0; i < buf.length; i++) {
     var data = buf[i];
     if (type == 'json') {
-      l = {'type': data.type, 'time': data.time, 'msg': data.msg};
+      l = {type: data.type, time: data.time, msg: data.msg};
       l.msg = DebugJS.encodeBase64(l.msg);
       b.push(l);
     } else {
@@ -7301,7 +7301,7 @@ DebugJS.log.mlt = function(m) {
 
 DebugJS.log.out = function(m, type) {
   m = DebugJS.setStyleIfObjNotAvailable(m);
-  var data = {'type': type, 'time': DebugJS.getLogTime(), 'msg': m};
+  var data = {type: type, time: DebugJS.getLogTime(), msg: m};
   DebugJS.self.msgBuf.add(data);
   if (!(DebugJS.self.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS._init()) {return;}
@@ -7451,13 +7451,9 @@ log.clear = function() {
   if (DebugJS.self.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.self.clearMessage();
 };
-// ---- ---- ---- ----
-var dbg = dbg || DebugJS;
-var time = time || DebugJS.time;
-DebugJS.x = DebugJS.x || {};
 
 DebugJS.start = function() {
-DebugJS.self = DebugJS.self || new DebugJS();
+  DebugJS.self = DebugJS.self || new DebugJS();
   DebugJS.el = null;
   if (!window._) DebugJS._AVAILABLE = true;
   if (typeof window.localStorage != 'undefined') {
@@ -7507,6 +7503,9 @@ DebugJS.disable = function() {
   DebugJS.led.all = function(x) {};
 };
 
+var dbg = dbg || DebugJS;
+var time = time || DebugJS.time;
+DebugJS.x = DebugJS.x || {};
 if (DebugJS.ENABLE) {
   DebugJS.start();
 } else {

@@ -70,100 +70,95 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .inline-text-input{border:none !important;border-bottom:1px solid #aaa !important;border-radius:0 !important;background:transparent;color:#fff !important;font-family:Consolas;}
 </style>
 <script>
-DebugJS.init({'visible':true});
+DebugJS.init({visible:true});
 
-//DebugJS.init({'display':'kiosk','zoom':2});
-//DebugJS.init({'display':'noui'});
-//DebugJS.init({'target':'debug'});
+//DebugJS.init({visible: true, zoom: '1.4'});
+//DebugJS.init({display:'kiosk',zoom:2});
+//DebugJS.init({display:'noui'});
+//DebugJS.init({target:'debug'});
 
 var options1 = {
-  'visible': true,
-  'zoom': '1.4'
+  visible: true,
+  keyAssign: {
+    key: 113,
+    shift: true,
+    ctrl: false,
+    alt: false,
+    meta: false
+  },
+  position: 'c',
+  //position: 'n'
+  //position: 'ne'
+  //position: 'e'
+  //position: 'se'
+  //position: 's'
+  //position: 'sw'
+  //position: 'w'
+  //position: 'nw'
+  //disableAllCommands: true
 };
 //DebugJS.init(options1);
 
 var options2 = {
-  'visible': true,
-  'keyAssign': {
-    'key': 113,
-    'shift': true,
-    'ctrl': false,
-    'alt': false,
-    'meta': false
-  },
-  'position': 'c',
-  //'position': 'n'
-  //'position': 'ne'
-  //'position': 'e'
-  //'position': 'se'
-  //'position': 's'
-  //'position': 'sw'
-  //'position': 'w'
-  //'position': 'nw'
-  //'disableAllCommands': true
+  visible: true,
+  lines: 23,
+  showTimeStamp: false,
+  disableAllFeatures: true,
+  //useSystemInfo: true,
+  //useCommandLine: true,
+  //useTools: true,
+  //resizable: false
 };
 //DebugJS.init(options2);
 
 var options3 = {
-  'visible': true,
-  'lines': 23,
-  'showTimeStamp': false,
-  'disableAllFeatures': true,
-  //'useSystemInfo': true,
-  //'useCommandLine': true,
-  //'useTools': true,
-  //'resizable': false
+  target: 'debug',
+  lines: 10,
+  bufsize: 10,
+  background: 'rgba(0,0,0,0.9)',
+  showTimeStamp: false,
+  resizable: false,
+  disableAllFeatures: true,
+  useClearButton: true
 };
 //DebugJS.init(options3);
 
 var options4 = {
-  'target': 'debug',
-  'lines': 10,
-  'bufsize': 10,
-  'background': 'rgba(0,0,0,0.9)',
-  'showTimeStamp': false,
-  'resizable': false,
-  'disableAllFeatures': true,
-  'useClearButton': true
+  target: 'debug',
+  lines: 10,
+  fontSize: 13,
+  fontColor: '#333',
+  logColorD: '#909090',
+  logColorI: '#08f',
+  logColorW: '#c65911',
+  logColorS: '#0df',
+  timerColor: '#00f',
+  btnColor: '#00f',
+  promptColor: '#00f',
+  bgColor: '255,255,255',
+  background: 'rgba(255,255,255,1.0)',
+  showTimeStamp: false,
+  disableAllFeatures: true,
+  //clockColor: '#00f',
+  //useClock: true,
+  //useCommandLine: true,
+  //useWindowSizeInfo: true,
+  //useMouseStatusInfo: true,
+  //useKeyStatusInfo: true,
+  //useLed: true,
+  //useLogFilter: true,
+  useMsgDisplay: true,
+  msgDisplayPos: 'left',
+  msgDisplayBackground: 'rgba(168,168,168,0.2)',
+  useClearButton: true
 };
 //DebugJS.init(options4);
 
 var options5 = {
-  'target': 'debug',
-  'lines': 10,
-  'fontSize': 13,
-  'fontColor': '#333',
-  'logColorD': '#909090',
-  'logColorI': '#08f',
-  'logColorW': '#c65911',
-  'logColorS': '#0df',
-  'timerColor': '#00f',
-  'btnColor': '#00f',
-  'promptColor': '#00f',
-  'bgColor': '255,255,255',
-  'background': 'rgba(255,255,255,1.0)',
-  'showTimeStamp': false,
-  'disableAllFeatures': true,
-  //'clockColor': '#00f',
-  //'useClock': true,
-  //'useCommandLine': true,
-  //'useWindowSizeInfo': true,
-  //'useMouseStatusInfo': true,
-  //'useKeyStatusInfo': true,
-  //'useLed': true,
-  //'useLogFilter': true,
-  'useMsgDisplay': true,
-  'msgDisplayPos': 'left',
-  'msgDisplayBackground': 'rgba(168,168,168,0.2)',
-  'useClearButton': true
+  visible: true,
+  onFileLoaded: onFileLoaded
 };
 //DebugJS.init(options5);
-
-var options6 = {
-  'visible': true,
-  'onFileLoaded': onFileLoaded
-};
-//DebugJS.init(options6);
 
 //log.t('init start');
 log('Here is the log output example!');
@@ -200,16 +195,8 @@ function displayDemoMessages() {
 }
 
 var demoMessages = [
-  {
-    'fnc': log,
-    'msg': 'This window is draggable.',
-    'delay': 250
-  },
-  {
-    'fnc': log,
-    'msg': 'You can switch show/hide by F2 key.',
-    'delay': 250
-  },
+  {fnc: log, msg: 'This window is draggable.', delay: 250},
+  {fnc: log, msg: 'You can switch show/hide by F2 key.', delay: 250},
 ];
 
 var sampleDispCount = 0;
@@ -225,192 +212,62 @@ function displaySampleMessages() {
 }
 
 var sampleMessages = [
-  {
-    'fnc': log,
-    'msg': 'standard log sample.',
-    'delay': 50
-  },
-  {
-    'fnc': log.d,
-    'msg': 'debug log sample.',
-    'delay': 50
-  },
-  {
-    'fnc': log.i,
-    'msg': 'information log sample.',
-    'delay': 50
-  },
-  {
-    'fnc': log.w,
-    'msg': 'warning log sample.',
-    'delay': 50
-  },
-  {
-    'fnc': log.e,
-    'msg': 'error log sample.',
-    'delay': 50
-  },
-//  {
-//    'fnc': log.res,
-//    'msg': 'result log sample.',
-//    'delay': 50
-//  },
-//  {
-//    'fnc': log.res.err,
-//    'msg': 'error result log sample.',
-//    'delay': 50
-//  },
+  {fnc: log, msg: 'standard log sample.', delay: 50},
+  {fnc: log.d, msg: 'debug log sample.', delay: 50},
+  {fnc: log.i, msg: 'information log sample.', delay: 50},
+  {fnc: log.w, msg: 'warning log sample.', delay: 50},
+  {fnc: log.e, msg: 'error log sample.', delay: 50},
+//{fnc: log.res, msg: 'result log sample.', delay: 50},
+//{fnc: log.res.err, msg: 'error result log sample.', delay: 50},
 ];
 
 var ledDemoStepCount = 0;
 function ledDemo() {
-  if (ledDemoStepCount >= ledDemoSteps.length) {
+  if (ledDemoStepCount >= ledDemoData.length) {
     ledDemoStepCount = 0;
     return;
   }
-  var step = ledDemoSteps[ledDemoStepCount];
+  var step = ledDemoData[ledDemoStepCount];
   ledDemoStepCount++;
   step.fnc();
   setTimeout(ledDemo, step.delay);
 }
 
-var ledDemoSteps = [
-  {
-    'fnc': function() {dbg.led.on(0);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.on(1);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.on(2);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.on(3);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.on(4);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.on(5);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.on(6);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.on(7);},
-    'delay': 1000
-  },
-  {
-    'fnc': function() {dbg.led.all(false);},
-    'delay': 200
-  },
-  {
-    'fnc': function() {dbg.led.all(true);},
-    'delay': 200
-  },
-  {
-    'fnc': function() {dbg.led.all(false);},
-    'delay': 200
-  },
-  {
-    'fnc': function() {dbg.led.all(true);},
-    'delay': 200
-  },
-  {
-    'fnc': function() {dbg.led.all(false);},
-    'delay': 200
-  },
-  {
-    'fnc': function() {dbg.led.all(true);},
-    'delay': 1000
-  },
-  {
-    'fnc': function() {dbg.led.off(3);dbg.led.off(4);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.off(2);dbg.led.off(5);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.off(1);dbg.led.off(6);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led.off(0);dbg.led.off(7);},
-    'delay': 500
-  },
-  {
-    'fnc': function() {dbg.led(1);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(2);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(4);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(8);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0x10);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0x20);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0x40);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0x80);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0x40);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0x20);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0x10);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(8);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(4);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(2);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(1);},
-    'delay': 100
-  },
-  {
-    'fnc': function() {dbg.led(0);},
-    'delay': 100
-  }
+var ledDemoData = [
+  {fnc: function() {dbg.led.on(0);}, delay: 100},
+  {fnc: function() {dbg.led.on(1);}, delay: 100},
+  {fnc: function() {dbg.led.on(2);}, delay: 100},
+  {fnc: function() {dbg.led.on(3);}, delay: 100},
+  {fnc: function() {dbg.led.on(4);}, delay: 100},
+  {fnc: function() {dbg.led.on(5);}, delay: 100},
+  {fnc: function() {dbg.led.on(6);}, delay: 100},
+  {fnc: function() {dbg.led.on(7);}, delay: 1000},
+  {fnc: function() {dbg.led.all(false);}, delay: 200},
+  {fnc: function() {dbg.led.all(true);}, delay: 200},
+  {fnc: function() {dbg.led.all(false);}, delay: 200},
+  {fnc: function() {dbg.led.all(true);}, delay: 200},
+  {fnc: function() {dbg.led.all(false);}, delay: 200},
+  {fnc: function() {dbg.led.all(true);}, delay: 1000},
+  {fnc: function() {dbg.led.off(3);dbg.led.off(4);}, delay: 100},
+  {fnc: function() {dbg.led.off(2);dbg.led.off(5);}, delay: 100},
+  {fnc: function() {dbg.led.off(1);dbg.led.off(6);}, delay: 100},
+  {fnc: function() {dbg.led.off(0);dbg.led.off(7);}, delay: 500},
+  {fnc: function() {dbg.led(1);}, delay: 100},
+  {fnc: function() {dbg.led(2);}, delay: 100},
+  {fnc: function() {dbg.led(4);}, delay: 100},
+  {fnc: function() {dbg.led(8);}, delay: 100},
+  {fnc: function() {dbg.led(0x10);}, delay: 100},
+  {fnc: function() {dbg.led(0x20);}, delay: 100},
+  {fnc: function() {dbg.led(0x40);}, delay: 100},
+  {fnc: function() {dbg.led(0x80);}, delay: 100},
+  {fnc: function() {dbg.led(0x40);}, delay: 100},
+  {fnc: function() {dbg.led(0x20);}, delay: 100},
+  {fnc: function() {dbg.led(0x10);}, delay: 100},
+  {fnc: function() {dbg.led(8);}, delay: 100},
+  {fnc: function() {dbg.led(4);}, delay: 100},
+  {fnc: function() {dbg.led(2);}, delay: 100},
+  {fnc: function() {dbg.led(1);}, delay: 100},
+  {fnc: function() {dbg.led(0);}, delay: 100}
 ];
 
 var msgDemoCnt = 0;
@@ -480,9 +337,9 @@ function foo() {
 
 function bar() {
   var obj = {
-    'key1': 'value1',
-    'key2': 123,
-    'key3': true
+    key1: 'value1',
+    key2: 123,
+    key3: true
   }
   log.p(obj);
 }
@@ -494,44 +351,44 @@ function errorDemo() {
 var buf = (window.ArrayBuffer ? new ArrayBuffer(32) : null);
 
 var a = {
-  'key1': 'val1',
-  'key2': '123',
-  'key3': 123,
-  'key4': {
-    'keyA': 'A',
-    'keyB': {
-      'keyB1': 'b1',
-      'keyB2': 'b2'
+  key1: 'val1',
+  key2: '123',
+  key3: 123,
+  key4: {
+    keyA: 'A',
+    keyB: {
+      keyB1: 'b1',
+      keyB2: 'b2'
     },
-    'keyC': 'C'
+    keyC: 'C'
    },
-   'key5': null,
-   'key6': undefined,
-   'key7': true,
-   'key8': [
+   key5: null,
+   key6: undefined,
+   key7: true,
+   key8: [
      {
-       'aaa': 111,
-       'bbb': 'test1'
+       aaa: 111,
+       bbb: 'test1'
      },
      {
-       'aaa': 222,
-       'bbb': 'test2'
+       aaa: 222,
+       bbb: 'test2'
      }
    ],
-   'key9': (new Date()),
-   'key10': buf,
-   'key11': foo,
-   'key12': {}
+   key9: (new Date()),
+   key10: buf,
+   key11: foo,
+   key12: {}
 };
 
 var b = ['1', '2', '3'];
 var c = 1;
-var d = "string";
+var d = 'string';
 var e = false;
 var f = undefined;
 var g = null;
 var h = {
-  'abc': [foo, bar, (window.console ? console.log : null), buf, (new Date()), b, foo]
+  abc: [foo, bar, (window.console ? console.log : null), buf, (new Date()), b, foo]
 }
 var z = {};
 
@@ -564,14 +421,14 @@ function httpDemo() {
   cache = ((cache == 'true') ? true : false);
 
   var request = {
-    'url': url,
-    'method': method,
-    'data': data,
-    'async': async,
-    'cache': cache,
-    'user': user,
-    'pass': pass,
-    'userAgent': userAgent
+    url: url,
+    method: method,
+    data: data,
+    async: async,
+    cache: cache,
+    user: user,
+    pass: pass,
+    userAgent: userAgent
   };
 
   dbg.httpRequest(request, httpCallback);
@@ -662,9 +519,9 @@ You can also print all the properties of an object.</div>
 <pre class="code">
 function bar() {
   var obj = {
-    'key1': 'value1',
-    'key2': 123,
-    'key3': true
+    key1: 'value1',
+    key2: 123,
+    key3: true
   };
   <span class="emphasis">log.p(obj);</span> <button class="demo-button" onclick="bar();">DEMO</button>
 }
@@ -682,9 +539,9 @@ If you want to change the debugger settings, explicitly call for initialization 
   &lt;script src="debug.js"&gt;&lt;/script&gt;
   &lt;script&gt;
     <span class="emphasis">var options = {
-      'visible': true,
-      'zoom': 1.4,
-      'position': 'ne'
+      visible: true,
+      zoom: 1.4,
+      position: 'ne'
     };
     DebugJS.init(options);</span> <button class="demo-button" onclick="DebugJS.init({'visible':true,'zoom':1.4,'position':'ne'});">DEMO</button> <button class="demo-button reset-button" onclick="DebugJS.init();DebugJS.init({'visible':true});">RESET</button>
 
@@ -712,11 +569,11 @@ If you want to change the debugger settings, explicitly call for initialization 
     <td>Key code for the debug window show/hide control</td>
     <td>
 {<br>
-&nbsp;&nbsp;'key': 113,<span class="annotation">(F2)</span><br>
-&nbsp;&nbsp;'shift': false<br>
-&nbsp;&nbsp;'ctrl': false,<br>
-&nbsp;&nbsp;'alt': false,<br>
-&nbsp;&nbsp;'meta': false<br>
+&nbsp;&nbsp;key: 113,<span class="annotation">(F2)</span><br>
+&nbsp;&nbsp;shift: false<br>
+&nbsp;&nbsp;ctrl: false,<br>
+&nbsp;&nbsp;alt: false,<br>
+&nbsp;&nbsp;meta: false<br>
 }
     </td>
   </tr>
@@ -732,9 +589,9 @@ If you want to change the debugger settings, explicitly call for initialization 
     </td>
     <td>
 {<br>
-&nbsp;&nbsp;'scriptError': true,<br>
-&nbsp;&nbsp;'loadError': true,<br>
-&nbsp;&nbsp;'errorLog': true<br>
+&nbsp;&nbsp;scriptError: true,<br>
+&nbsp;&nbsp;loadError: true,<br>
+&nbsp;&nbsp;errorLog: true<br>
 }<br>
     </td>
   </tr>
@@ -944,13 +801,13 @@ If you want to change the debugger settings, explicitly call for initialization 
 
   <tr>
     <td class="name">useSuspendLogButton</td>
-    <td>Show ! button</td>
+    <td>Show / button</td>
     <td>true</td>
   </tr>
 
   <tr>
     <td class="name">usePinButton</td>
-    <td>Show @ button</td>
+    <td>Show P button</td>
     <td>true</td>
   </tr>
 
@@ -1381,9 +1238,9 @@ dbg.countElements('tagName');
       Returns property key name array of the object<br>
 <pre class="eg">
 var obj = {
-  'key1': 'A',
-  'key2': 'B',
-  'key3': 'C',
+  key1: 'A',
+  key2: 'B',
+  key3: 'C',
 };
 
 dbg.getKeys(obj);
@@ -1570,8 +1427,8 @@ max: maximum length
       e.g.,)
 <pre class="eg">
 {
-  'name': 'Firefox',
-  'version': '50.0'
+  name: 'Firefox',
+  version: '50.0'
 }
 </pre>
     </td>
@@ -2217,11 +2074,11 @@ $ U+6F22 U+5B57
     <td>Preserve log</td>
   </tr>
   <tr>
-    <td>!</td>
+    <td>/</td>
     <td>Suspend log output</td>
   </tr>
   <tr>
-    <td>@</td>
+    <td>P</td>
     <td>Fix the window in its position</td>
   </tr>
   <tr>
@@ -2253,7 +2110,7 @@ DebugJS.x.cmdHello = function(arg, tbl) {
 };
 
 DebugJS.x.CMD_TBL = [
-  {'cmd': 'hello', 'fnc': DebugJS.x.cmdHello, 'desc': 'extention command example'}
+  {cmd: 'hello', fnc: DebugJS.x.cmdHello, desc: 'extention command example'}
 ];
 </pre>
 <span style="font-family:Consolas">
@@ -2776,14 +2633,14 @@ console.timeEnd('timer3');<br>
 <div class="caption2">HTTP Request</div>
 <pre id="json1" class="code">
 <span class="emphasis">var request = {
-  'url': '<input type="text" id="http-url-text" value="https://debugjs.net/test/" class="inline-text-input" style="width:600px;">',
-  'method': '<input type="text" id="http-method-text" value="GET" class="inline-text-input" style="width:60px;">',
-  'data': '<input type="text" id="http-data-text" value="" class="inline-text-input" style="width:600px;">',
-  'async': <input type="text" id="http-async-text" value="false" class="inline-text-input" style="width:60px;">,
-  'cache': <input type="text" id="http-cache-text" value="false" class="inline-text-input" style="width:60px;">,
-  'user': '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
-  'pass': '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
-  'userAgent': '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:550px;">'
+  url: '<input type="text" id="http-url-text" value="https://debugjs.net/test/" class="inline-text-input" style="width:600px;">',
+  method: '<input type="text" id="http-method-text" value="GET" class="inline-text-input" style="width:60px;">',
+  data: '<input type="text" id="http-data-text" value="" class="inline-text-input" style="width:600px;">',
+  async: <input type="text" id="http-async-text" value="false" class="inline-text-input" style="width:60px;">,
+  cache: <input type="text" id="http-cache-text" value="false" class="inline-text-input" style="width:60px;">,
+  user: '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
+  pass: '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
+  userAgent: '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:550px;">'
 };
 
 dbg.httpRequest(request, httpCallback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
