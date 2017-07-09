@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707100014';
+  this.v = '201707100020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7221,8 +7221,10 @@ DebugJS.onLoad = function() {
 };
 
 DebugJS.onUnload = function() {
-  if (DebugJS.self.status & DebugJS.STATE_LOG_PRESERVED) DebugJS.preserveLog();
-  DebugJS.saveStatus();
+  if (DebugJS.self.status & DebugJS.STATE_LOG_PRESERVED) {
+    DebugJS.preserveLog();
+    DebugJS.saveStatus();
+  }
 };
 
 DebugJS.onError = function(e) {
