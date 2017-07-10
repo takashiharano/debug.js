@@ -341,7 +341,7 @@ function bar() {
     key2: 123,
     key3: true
   }
-  log.p(obj);
+  log(obj);
 }
 
 function errorDemo() {
@@ -524,7 +524,7 @@ log(message);
   &lt;/script&gt;
 &lt;/head&gt;
 &lt;body&gt;
-  &lt;button onclick="foo();"&gt;BUTTON&lt;/button&gt; <button class="demo-button" onclick="foo();">DEMO</button>
+  &lt;button onclick="foo();"&gt;DEMO&lt;/button&gt; <button class="demo-button" onclick="foo();">DEMO</button>
 &lt;/body&gt;
 &lt;/html&gt;
 </pre><br>
@@ -533,14 +533,12 @@ log(message);
 <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Print an object</div>
 You can also print all the properties of an object.</div>
 <pre class="code">
-function bar() {
-  var obj = {
-    key1: 'value1',
-    key2: 123,
-    key3: true
-  };
-  <span class="emphasis">log.p(obj);</span> <button class="demo-button" onclick="bar();">DEMO</button>
-}
+var obj = {
+  key1: 'value1',
+  key2: 123,
+  key3: true
+};
+<span class="emphasis">log(obj);</span> <button class="demo-button" onclick="bar();">DEMO</button>
 </pre><br>
 
 
