@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707160021SST';
+  this.v = '201707232238';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -126,6 +126,15 @@ var DebugJS = DebugJS || function() {
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
   this.toolsBodyPanel = null;
+  this.timerBtn = null;
+  this.timerBasePanel = null;
+  this.timerLayout = null;
+  this.timerLabel = null;
+  this.timerSwStartTime = 0;
+  this.timerSwElapsedTime = 0;
+  this.timerResetBtn = null;
+  this.timerStartStopBtn = null;
+  this.timerFontSize = 12;
   this.txtChkBtn = null;
   this.txtChkPanel = null;
   this.txtChk = null;
@@ -248,6 +257,8 @@ var DebugJS = DebugJS || function() {
   this.computedMinW = DebugJS.DBGWIN_MIN_W;
   this.computedMinH = DebugJS.DBGWIN_MIN_H;
   this.status = 0;
+  this.toolStatus = 0;
+  this.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
   this.sizeStatus = 0;
   this.logFilter = DebugJS.LOG_FILTER_ALL;
   this.toolsActiveFunction = DebugJS.TOOLS_ACTIVE_FNC_NONE;
@@ -332,6 +343,10 @@ DebugJS.STATE_LOG_PRESERVED = 1 << 21;
 DebugJS.STATE_POS_AUTO_ADJUST = 1 << 22;
 DebugJS.STATE_NEED_TO_SCROLL = 1 << 23;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 24;
+DebugJS.TOOL_ST_SW_RUNNING = 1;
+DebugJS.TOOL_TIMER_MODE_CLOCK = 0;
+DebugJS.TOOL_TIMER_MODE_SW = 1;
+DebugJS.TOOL_TIMER_BTN_COLOR = '#fff';
 DebugJS.LOG_FILTER_LOG = 0x1;
 DebugJS.LOG_FILTER_DBG = 0x2;
 DebugJS.LOG_FILTER_INF = 0x4;
@@ -352,10 +367,11 @@ DebugJS.ERR_STATE_SCRIPT = 0x1;
 DebugJS.ERR_STATE_LOAD = 0x2;
 DebugJS.ERR_STATE_LOG = 0x4;
 DebugJS.TOOLS_ACTIVE_FNC_NONE = 0x0;
-DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x1;
-DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x2;
-DebugJS.TOOLS_ACTIVE_FNC_HTML = 0x4;
-DebugJS.TOOLS_ACTIVE_FNC_MEMO = 0x8;
+DebugJS.TOOLS_ACTIVE_FNC_TIMER = 0x1;
+DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x2;
+DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x4;
+DebugJS.TOOLS_ACTIVE_FNC_HTML = 0x8;
+DebugJS.TOOLS_ACTIVE_FNC_MEMO = 0x10;
 DebugJS.FILE_LOAD_FORMAT_BIN = 0;
 DebugJS.FILE_LOAD_FORMAT_B64 = 1;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
@@ -395,7 +411,7 @@ DebugJS.DOM_BTN_COLOR = '#f63';
 DebugJS.TOOLS_BTN_COLOR = '#ff0';
 DebugJS.JS_BTN_COLOR = '#6df';
 DebugJS.PIN_BTN_COLOR = '#fa0';
-DebugJS.LOG_SUSPEND_BTN_COLOR = '#d00';
+DebugJS.LOG_SUSPEND_BTN_COLOR = '#f00';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
@@ -1974,8 +1990,8 @@ DebugJS.prototype = {
   },
 
   updateStopWatch: function() {
-    if (!(DebugJS.self.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
     var self = DebugJS.self;
+    if (!(self.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
     var swCurrentTime = (new Date()).getTime();
     self.swElapsedTime = swCurrentTime - self.swStartTime;
     self.swElapsedTimeDisp = DebugJS.getTimerStr(self.swElapsedTime);
@@ -2785,7 +2801,7 @@ DebugJS.prototype = {
   showSystemInfo: function(e) {
     var self = DebugJS.self;
     var INDENT = '                  ';
-    var screenSize = 'width=' + screen.width + ' height=' + screen.height;
+    var screenSize = 'width = ' + screen.width + ' x height = ' + screen.height;
     var languages = self.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
     var jq = '<span class="' + self.id + '-na">not loaded</span>';
@@ -3638,13 +3654,14 @@ DebugJS.prototype = {
       self.toolsBodyPanel.style.height = 'calc(100% - ' + self.computedFontSize + 'px)';
       self.toolsPanel.appendChild(self.toolsBodyPanel);
 
+      self.timerBtn = self.createToolsHeaderButton('TIMER', 'TOOLS_ACTIVE_FNC_TIMER', 'timerBtn');
       self.fileLoaderBtn = self.createToolsHeaderButton('FILE', 'TOOLS_ACTIVE_FNC_FILE', 'fileLoaderBtn');
       self.txtChkBtn = self.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FNC_TEXT', 'txtChkBtn');
       self.htmlPrevBtn = self.createToolsHeaderButton('HTML', 'TOOLS_ACTIVE_FNC_HTML', 'htmlPrevBtn');
       self.memoBtn = self.createToolsHeaderButton('MEMO', 'TOOLS_ACTIVE_FNC_MEMO', 'memoBtn');
 
       self.addOverlayPanelFull(self.toolsPanel);
-      self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FNC_FILE);
+      self.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FNC_TIMER);
     } else {
       self.addOverlayPanelFull(self.toolsPanel);
       self.resizeImgPreview();
@@ -3677,6 +3694,7 @@ DebugJS.prototype = {
 
   updateToolsButtons: function() {
     var self = DebugJS.self;
+    self.timerBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.txtChkBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.fileLoaderBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     self.htmlPrevBtn.style.color = (self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
@@ -3685,15 +3703,20 @@ DebugJS.prototype = {
 
   switchToolsFunction: function(kind, param) {
     var self = DebugJS.self;
-    if (kind & DebugJS.TOOLS_ACTIVE_FNC_TEXT) {
-      self.enableTextChecker();
+    if (kind & DebugJS.TOOLS_ACTIVE_FNC_TIMER) {
+      self.enableTimer();
     } else {
-      self.disableTextChecker();
+      self.disableTimer();
     }
     if (kind & DebugJS.TOOLS_ACTIVE_FNC_FILE) {
       self.enableFileLoader(param);
     } else {
       self.disableFileLoader();
+    }
+    if (kind & DebugJS.TOOLS_ACTIVE_FNC_TEXT) {
+      self.enableTextChecker();
+    } else {
+      self.disableTextChecker();
     }
     if (kind & DebugJS.TOOLS_ACTIVE_FNC_HTML) {
       self.enableHtmlEditor();
@@ -3707,6 +3730,202 @@ DebugJS.prototype = {
     }
     self.toolsActiveFunction = kind;
     self.updateToolsButtons();
+  },
+
+  enableTimer: function() {
+    var self = DebugJS.self;
+    if (self.timerBasePanel == null) {
+      var baseFontSize = self.computedFontSize;
+      var fontSize = baseFontSize * 6.5;
+
+      self.timerBasePanel = document.createElement('div');
+      self.timerBasePanel.className = self.id + '-tools';
+      self.toolsBodyPanel.appendChild(self.timerBasePanel);
+
+      self.timerLayout = document.createElement('div');
+      self.timerLayout.style.fontSize = fontSize + 'px';
+      self.timerLayout.style.lineHeight = '1em';
+      self.timerLayout.style.textAlign = 'center';
+      self.timerBasePanel.appendChild(self.timerLayout);
+
+      self.timerLabel = document.createElement('div');
+      self.timerLayout.appendChild(self.timerLabel);
+
+      self.timerBtns = document.createElement('div');
+      self.timerBtns.style.fontSize = (baseFontSize * 3) + 'px';
+      self.timerBtns.style.marginTop = baseFontSize + 'px';
+      self.timerLayout.appendChild(self.timerBtns);
+
+      self.timerModeBtn = self.createTimerButton('MODE', self.switchTimerMode);
+      self.timerResetBtn = self.createTimerButton('RST', self.timerReset);
+      self.timerStartStopBtn = self.createTimerButton('>>', self.startStopTimerStopWatch);
+
+      self.timerFontSize = fontSize;
+      self.switchTimerModeClock();
+    } else {
+      self.toolsBodyPanel.appendChild(self.timerBasePanel);
+    }
+  },
+
+  createTimerButton: function(label, handler) {
+    var self = DebugJS.self;
+    var btn = document.createElement('span');
+    btn.className = self.id + '-btn ' + self.id + '-nomove';
+    btn.style.marginRight = '0.5em';
+    btn.style.color = DebugJS.TOOL_TIMER_BTN_COLOR;
+    btn.onclick = handler;
+    btn.innerText = label;
+    self.timerBtns.appendChild(btn);
+    return btn;
+  },
+
+  switchTimerMode: function() {
+    var self = DebugJS.self;
+    self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+    var nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
+    if (self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW) {
+      self.switchTimerModeClock();
+    } else {
+      self.switchTimerModeStopWatch();
+    }
+  },
+
+  switchTimerModeClock: function() {
+    var self = DebugJS.self;
+    self.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
+    self.disableBtn(self.timerResetBtn);
+    self.disableBtn(self.timerStartStopBtn);
+    self.updateTimerClock();
+    self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_H;
+  },
+
+  switchTimerModeStopWatch: function() {
+    var self = DebugJS.self;
+    self.toolTimerMode = DebugJS.TOOL_TIMER_MODE_SW;
+    self.enableBtn(self.timerResetBtn, self.timerReset, DebugJS.TOOL_TIMER_BTN_COLOR);
+    self.enableBtn(self.timerStartStopBtn, self.startStopTimerStopWatch, DebugJS.TOOL_TIMER_BTN_COLOR);
+    self.drawStopWatch();
+    self.updateTimerStopWatch();
+  },
+
+  updateTimerClock: function() {
+    var self = DebugJS.self;
+    if (self.toolTimerMode != DebugJS.TOOL_TIMER_MODE_CLOCK) return;
+    var tm = DebugJS.getDateTime();
+    var s = self.createClockStr(tm);
+    self.updateTimerLabel(s);
+    setTimeout(self.updateTimerClock, DebugJS.UPDATE_INTERVAL_H);
+  },
+
+  startStopTimerStopWatch: function() {
+    var self = DebugJS.self;
+    if (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) {
+      self.stopTimerStopWatch();
+    } else {
+      self.startTimerStopWatch();
+    }
+    self.updateTimerSwBtns();
+  },
+
+  startTimerStopWatch: function() {
+    var self = DebugJS.self;
+    self.toolStatus |= DebugJS.TOOL_ST_SW_RUNNING;
+    self.timerSwStartTime = (new Date()).getTime() - self.timerSwElapsedTime;
+    self.updateTimerStopWatch();
+  },
+
+  stopTimerStopWatch: function() {
+    var self = DebugJS.self;
+    self.updateTimerStopWatch();
+    self.toolStatus &= ~DebugJS.TOOL_ST_SW_RUNNING;
+    self.drawStopWatch();
+  },
+
+  updateTimerStopWatch: function() {
+    var self = DebugJS.self;
+    if ((self.toolTimerMode != DebugJS.TOOL_TIMER_MODE_SW) || !(self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) return;
+    var now = (new Date()).getTime();
+    self.timerSwElapsedTime = now - self.timerSwStartTime;
+    self.drawStopWatch();
+    setTimeout(self.updateTimerStopWatch, DebugJS.UPDATE_INTERVAL_H);
+  },
+
+  drawStopWatch: function() {
+    var self = DebugJS.self;
+    var tm = DebugJS.parseTime(self.timerSwElapsedTime);
+    var s = self.createTimeStr(tm);
+    self.updateTimerLabel(s);
+  },
+
+  updateTimerSwBtns: function() {
+    var self = DebugJS.self;
+    var btn = (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) ? '||' : '>>';
+    self.timerStartStopBtn.innerText = btn;
+  },
+
+  timerReset: function() {
+    var self = DebugJS.self;
+    self.timerSwStartTime = (new Date()).getTime();
+    self.timerSwElapsedTime = 0;
+    var tm = DebugJS.parseTime(self.timerSwElapsedTime);
+    var s = self.createTimeStr(tm);
+    self.updateTimerLabel(s);
+  },
+
+  createClockStr: function(tm) {
+    var self = DebugJS.self;
+    var baseFontSize = self.timerFontSize * 1.2;
+    var msFontSize = baseFontSize * 0.6;
+    var dot = '.';
+    if (tm.sss > 500) {
+      if ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) ||
+          ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW) &&
+           (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING))) {
+        dot = '&nbsp;';
+      }
+    }
+    var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' ' + DebugJS.WDAYS[tm.wday];
+    var time = tm.hh + ':' + tm.mi + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.ss + '</span>';
+    var label = '<div style="font-size:' + (baseFontSize * 0.4) + 'px">' + date + '</div><div style="font-size:' + baseFontSize + 'px;margin-top:-20px;">' + time + '</div>';
+    return label;
+  },
+
+  createTimeStr: function(tm) {
+    var self = DebugJS.self;
+    var baseFontSize = self.timerFontSize;
+    var msFontSize = baseFontSize * 0.6;
+    var dot = '.';
+    if (tm.sss > 500) {
+      if ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) ||
+          ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW) &&
+           (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING))) {
+        dot = '&nbsp;';
+      }
+    }
+    var label = '<div style="margin-top:' + (baseFontSize * 0.5) + 'px">' + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span></div>';
+    return label;
+  },
+
+  updateTimerLabel: function(s) {
+    DebugJS.self.timerLabel.innerHTML = s;
+  },
+
+  disableTimer: function() {
+    var self = DebugJS.self;
+    if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) &&
+        (self.timerBasePanel != null)) {
+      self.toolsBodyPanel.removeChild(self.timerBasePanel);
+    }
+  },
+
+  enableBtn: function(btn, fn, color) {
+    btn.onclick = fn;
+    btn.style.color = color;
+  },
+
+  disableBtn: function(btn) {
+    btn.onclick = null;
+    btn.style.color = DebugJS.COLOR_INACTIVE;
   },
 
   enableTextChecker: function() {
@@ -4113,7 +4332,7 @@ DebugJS.prototype = {
     var limit = self.properties.prevlimit.value;
     var content = (self.fileReader.result == null) ? '' : self.fileReader.result;
     var dt = DebugJS.getDateTime(file.lastModifiedDate);
-    var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + '(' + DebugJS.WDAYS[dt.wday] + ') ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+    var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
     var preview = '';
     if (file.size > 0) {
       if (self.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
@@ -5149,8 +5368,8 @@ DebugJS.prototype = {
         var kind;
         var param;
         switch (subfunc) {
-          case 'text':
-            kind = DebugJS.TOOLS_ACTIVE_FNC_TEXT;
+          case 'timer':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_TIMER;
             break;
           case 'file':
             kind = DebugJS.TOOLS_ACTIVE_FNC_FILE;
@@ -5159,6 +5378,9 @@ DebugJS.prototype = {
             } else {
               param = DebugJS.FILE_LOAD_FORMAT_B64;
             }
+            break;
+          case 'text':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_TEXT;
             break;
           case 'html':
             kind = DebugJS.TOOLS_ACTIVE_FNC_HTML;
@@ -5822,7 +6044,7 @@ DebugJS.getLogTime = function() {
   return t;
 };
 
-DebugJS.getTimerStr = function(timeMs) {
+DebugJS.parseTime = function(timeMs) {
   var wkPassedTimeSec = Math.floor(timeMs / 1000);
   var passedHour;
   if (wkPassedTimeSec >= 3600) {
@@ -5843,8 +6065,19 @@ DebugJS.getTimerStr = function(timeMs) {
   if (passedHour < 10) passedHour = '0' + passedHour;
   if (passedMin < 10) passedMin = '0' + passedMin;
   if (passedSec < 10) passedSec = '0' + passedSec;
-  var retStr = passedHour + ':' + passedMin + ':' + passedSec + '.' + passedMsec;
-  return retStr;
+  var tm = {
+    hh: passedHour,
+    mi: passedMin,
+    ss: passedSec,
+    sss: passedMsec
+  };
+  return tm;
+};
+
+DebugJS.getTimerStr = function(timeMs) {
+  var tm = DebugJS.parseTime(timeMs);
+  var ret = tm.hh + ':' + tm.mi + ':' + tm.ss + '.' + tm.sss;
+  return ret;
 };
 
 DebugJS.checkModKey = function(e) {
