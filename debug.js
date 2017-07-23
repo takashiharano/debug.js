@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707232238';
+  this.v = '201707240111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3690,6 +3690,7 @@ DebugJS.prototype = {
     }
     self.status &= ~DebugJS.STATE_TOOLS;
     self.updateToolsBtn();
+    self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
   },
 
   updateToolsButtons: function() {
@@ -3814,7 +3815,7 @@ DebugJS.prototype = {
     var tm = DebugJS.getDateTime();
     var s = self.createClockStr(tm);
     self.updateTimerLabel(s);
-    setTimeout(self.updateTimerClock, DebugJS.UPDATE_INTERVAL_H);
+    setTimeout(self.updateTimerClock, self.clockUpdateInterval);
   },
 
   startStopTimerStopWatch: function() {
@@ -3875,7 +3876,7 @@ DebugJS.prototype = {
   createClockStr: function(tm) {
     var self = DebugJS.self;
     var baseFontSize = self.timerFontSize * 1.2;
-    var msFontSize = baseFontSize * 0.6;
+    var msFontSize = baseFontSize * 0.65;
     var dot = '.';
     if (tm.sss > 500) {
       if ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) ||
@@ -3885,7 +3886,7 @@ DebugJS.prototype = {
       }
     }
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' ' + DebugJS.WDAYS[tm.wday];
-    var time = tm.hh + ':' + tm.mi + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.ss + '</span>';
+    var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (msFontSize / 5) + 'px;font-size:' + msFontSize + 'px">' + tm.ss + dot + '</span>';
     var label = '<div style="font-size:' + (baseFontSize * 0.4) + 'px">' + date + '</div><div style="font-size:' + baseFontSize + 'px;margin-top:-20px;">' + time + '</div>';
     return label;
   },
@@ -3893,7 +3894,7 @@ DebugJS.prototype = {
   createTimeStr: function(tm) {
     var self = DebugJS.self;
     var baseFontSize = self.timerFontSize;
-    var msFontSize = baseFontSize * 0.6;
+    var msFontSize = baseFontSize * 0.65;
     var dot = '.';
     if (tm.sss > 500) {
       if ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) ||
@@ -3915,6 +3916,7 @@ DebugJS.prototype = {
     if ((self.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) &&
         (self.timerBasePanel != null)) {
       self.toolsBodyPanel.removeChild(self.timerBasePanel);
+      self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
     }
   },
 
