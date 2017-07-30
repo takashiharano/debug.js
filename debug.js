@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707240111';
+  this.v = '201707301527';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -73,6 +73,13 @@ var DebugJS = DebugJS || function() {
     useLogFilter: true,
     useCommandLine: true,
     cmdHistoryMax: 100,
+    timerLineColor: '#0cf',
+    timerDefaultVal: {
+      hh: '00',
+      mi: '03',
+      ss: '00',
+      sss: '000'
+    },
     display: '',
     disableAllCommands: false,
     disableAllFeatures: false,
@@ -128,13 +135,21 @@ var DebugJS = DebugJS || function() {
   this.toolsBodyPanel = null;
   this.timerBtn = null;
   this.timerBasePanel = null;
-  this.timerLayout = null;
-  this.timerLabel = null;
+  this.timerClockSubPanel = null;
+  this.timerClockLabel = null;
+  this.timerStopWatchCuSubPanel = null;
+  this.timerStopWatchCuLabel = null;
+  this.timerStopWatchCdSubPanel = null;
+  this.timerStopWatchCdLabel = null;
+  this.timerStopWatchCdInpSubPanel = null;
+  this.timerStopWatchCdInput = null;
   this.timerSwStartTime = 0;
-  this.timerSwElapsedTime = 0;
-  this.timerResetBtn = null;
-  this.timerStartStopBtn = null;
-  this.timerFontSize = 12;
+  this.timerTimeUpTime = 0;
+  this.timerSwTimeCu = 0;
+  this.timerSwTimeCd = 0;
+  this.timerStartStopBtnCu = null;
+  this.timerStartStopBtnCd = null;
+  this.timerStartStopBtnCdInp = null;
   this.txtChkBtn = null;
   this.txtChkPanel = null;
   this.txtChk = null;
@@ -343,10 +358,14 @@ DebugJS.STATE_LOG_PRESERVED = 1 << 21;
 DebugJS.STATE_POS_AUTO_ADJUST = 1 << 22;
 DebugJS.STATE_NEED_TO_SCROLL = 1 << 23;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 24;
-DebugJS.TOOL_ST_SW_RUNNING = 1;
+DebugJS.TOOL_ST_SW_RUNNING_CU = 1;
+DebugJS.TOOL_ST_SW_RUNNING_CD = 1 << 1;
+DebugJS.TOOL_ST_SW_CD_RST = 1 << 2;
+DebugJS.TOOL_ST_SW_TIMEUP = 1 << 3;
 DebugJS.TOOL_TIMER_MODE_CLOCK = 0;
-DebugJS.TOOL_TIMER_MODE_SW = 1;
-DebugJS.TOOL_TIMER_BTN_COLOR = '#fff';
+DebugJS.TOOL_TIMER_MODE_SW_CU = 1;
+DebugJS.TOOL_TIMER_MODE_SW_CD = 2;
+DebugJS.TOOL_TIMER_BTN_COLOR = '#eee';
 DebugJS.LOG_FILTER_LOG = 0x1;
 DebugJS.LOG_FILTER_DBG = 0x2;
 DebugJS.LOG_FILTER_INF = 0x4;
@@ -828,6 +847,20 @@ DebugJS.prototype = {
     styles['.' + self.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX] = {
       'outline': 'solid 1px #f00 !important',
       'opacity': '0.7 !important'
+    };
+
+    styles['.' + self.id + '-timer-input'] = {
+      'width': '1.1em !important',
+      'height': '1em !important',
+      'border': 'none !important',
+      'outline': 'none !important',
+      'margin': '0 !important',
+      'padding': '0 !important',
+      'text-align': 'center !important',
+      'vartical-align': 'middle !important',
+      'background': 'transparent !important',
+      'color': '#fff !important',
+      'font-family': self.options.fontFamily + ' !important'
     };
 
     self.applyStyles(styles);
@@ -2774,10 +2807,9 @@ DebugJS.prototype = {
     var UPDATE_INTERVAL = DebugJS.UPDATE_INTERVAL_H;
     var sysTime = (new Date()).getTime();
     var sysTimeBin = DebugJS.formatBin(parseInt(sysTime).toString(2), false, 1);
-    var html = '<pre>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : (new Date()).getTime() = ' + sysTime + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin +
-    '</pre>';
+    var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(DebugJS.getDateTime(sysTime)) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         RAW</span>  (new Date()).getTime() = ' + sysTime + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin + '</pre>';
     self.sysTimePanel.innerHTML = html;
     setTimeout(self.updateSystemTime, UPDATE_INTERVAL);
   },
@@ -3741,174 +3773,463 @@ DebugJS.prototype = {
 
       self.timerBasePanel = document.createElement('div');
       self.timerBasePanel.className = self.id + '-tools';
+      self.timerBasePanel.style.fontSize = fontSize + 'px';
+      self.timerBasePanel.style.lineHeight = '1em';
+      self.timerBasePanel.style.textAlign = 'center';
       self.toolsBodyPanel.appendChild(self.timerBasePanel);
 
-      self.timerLayout = document.createElement('div');
-      self.timerLayout.style.fontSize = fontSize + 'px';
-      self.timerLayout.style.lineHeight = '1em';
-      self.timerLayout.style.textAlign = 'center';
-      self.timerBasePanel.appendChild(self.timerLayout);
+      self.createTimerClockSubPanel();
+      self.createTimerStopWatchCuSubPanel();
+      self.createTimerStopWatchCdSubPanel();
+      self.createTimerStopWatchCdInpSubPanel();
 
-      self.timerLabel = document.createElement('div');
-      self.timerLayout.appendChild(self.timerLabel);
-
-      self.timerBtns = document.createElement('div');
-      self.timerBtns.style.fontSize = (baseFontSize * 3) + 'px';
-      self.timerBtns.style.marginTop = baseFontSize + 'px';
-      self.timerLayout.appendChild(self.timerBtns);
-
-      self.timerModeBtn = self.createTimerButton('MODE', self.switchTimerMode);
-      self.timerResetBtn = self.createTimerButton('RST', self.timerReset);
-      self.timerStartStopBtn = self.createTimerButton('>>', self.startStopTimerStopWatch);
-
-      self.timerFontSize = fontSize;
-      self.switchTimerModeClock();
+      self.switchTimerMode(DebugJS.TOOL_TIMER_MODE_CLOCK);
     } else {
       self.toolsBodyPanel.appendChild(self.timerBasePanel);
     }
   },
 
-  createTimerButton: function(label, handler) {
+  createTimerClockSubPanel: function() {
     var self = DebugJS.self;
+      var fontSize = self.computedFontSize;
+      self.timerClockSubPanel = document.createElement('div');
+
+      self.timerClockLabel = document.createElement('div');
+      self.timerClockLabel.style.marginBottom = '20px';
+      self.timerClockSubPanel.appendChild(self.timerClockLabel);
+
+      var btns = document.createElement('div');
+      btns.style.fontSize = (fontSize * 3) + 'px';
+      btns.style.borderTop = 'solid 2px ' + self.options.timerLineColor;
+      btns.style.lineHeight = (fontSize * 5) + 'px';
+      self.timerClockSubPanel.appendChild(btns);
+
+      self.createTimerButton(btns, 'MODE', self.toggleTimerMode);
+      self.createTimerButton(btns, 'RST', null, true);
+      self.createTimerButton(btns, '>>', null, true);
+  },
+
+  createTimerStopWatchCuSubPanel: function() {
+    var self = DebugJS.self;
+      var fontSize = self.computedFontSize;
+      self.timerStopWatchCuSubPanel = document.createElement('div');
+
+      self.timerStopWatchCuLabel = document.createElement('div');
+      self.timerStopWatchCuLabel.style.margin = '40px 0';
+      self.timerStopWatchCuSubPanel.appendChild(self.timerStopWatchCuLabel);
+
+      var btns = document.createElement('div');
+      btns.style.fontSize = (fontSize * 3) + 'px';
+      btns.style.borderTop = 'solid 2px ' + self.options.timerLineColor;
+      btns.style.lineHeight = (fontSize * 5) + 'px';
+      self.timerStopWatchCuSubPanel.appendChild(btns);
+
+      self.createTimerButton(btns, 'MODE', self.toggleTimerMode);
+      self.createTimerButton(btns, 'RST', self.timerResetCu);
+      self.timerStartStopBtnCu = self.createTimerButton(btns, '>>', self.startStopTimerStopWatchCu);
+  },
+
+  createTimerStopWatchCdSubPanel: function() {
+    var self = DebugJS.self;
+    var fontSize = self.computedFontSize;
+    self.timerStopWatchCdSubPanel = document.createElement('div');
+
+    self.timerStopWatchCdLabel = document.createElement('div');
+    self.timerStopWatchCdLabel.style.margin = '40px 0';
+    self.timerStopWatchCdSubPanel.appendChild(self.timerStopWatchCdLabel);
+
+    var btns = document.createElement('div');
+    btns.style.fontSize = (fontSize * 3) + 'px';
+    btns.style.borderTop = 'solid 2px ' + self.options.timerLineColor;
+    btns.style.lineHeight = (fontSize * 5) + 'px';
+    self.timerStopWatchCdSubPanel.appendChild(btns);
+
+    self.createTimerButton(btns, 'MODE', self.toggleTimerMode);
+    self.createTimerButton(btns, 'RST', self.timerResetCd);
+    self.timerStartStopBtnCd = self.createTimerButton(btns, '>>', self.startStopTimerStopWatchCd);
+  },
+
+  createTimerStopWatchCdInpSubPanel: function() {
+    var self = DebugJS.self;
+    var fontSize = self.computedFontSize;
+    var baseFontSize = fontSize * 6.5;
+    var msFontSize = baseFontSize * 0.65;
+    self.timerStopWatchCdInpSubPanel = document.createElement('div');
+
+    var timerUpBtns = document.createElement('div');
+    timerUpBtns.style.fontSize = (fontSize * 3) + 'px';
+    timerUpBtns.style.marginTop = '-' + (fontSize * 1.5) + 'px';
+    timerUpBtns.style.marginBottom = '-' + (fontSize * 2.5) + 'px';
+    self.timerStopWatchCdInpSubPanel.appendChild(timerUpBtns);
+    self.createTimerUpDwnButton(true, 'hh', timerUpBtns, 3);
+    self.createTimerUpDwnButton(true, 'mi', timerUpBtns, 3);
+    self.createTimerUpDwnButton(true, 'ss', timerUpBtns, 2.5);
+    self.createTimerUpDwnButton(true, 'sss', timerUpBtns);
+
+    self.timerStopWatchCdInput = document.createElement('div');
+    self.timerStopWatchCdInput.style.margin = '0';
+    self.timerStopWatchCdInpSubPanel.appendChild(self.timerStopWatchCdInput);
+    self.timerTxtHH = self.createTimerInput(self.timerStopWatchCdInput, self.options.timerDefaultVal.hh, baseFontSize);
+    self.createTimerInputLabel(self.timerStopWatchCdInput, ':');
+    self.timerTxtMI = self.createTimerInput(self.timerStopWatchCdInput, self.options.timerDefaultVal.mi, baseFontSize);
+    self.createTimerInputLabel(self.timerStopWatchCdInput, ':');
+    self.timerTxtSS = self.createTimerInput(self.timerStopWatchCdInput, self.options.timerDefaultVal.ss, baseFontSize);
+    self.createTimerInputLabel(self.timerStopWatchCdInput, '.', msFontSize);
+    self.timerTxtSSS = self.createTimerInput(self.timerStopWatchCdInput, self.options.timerDefaultVal.sss, msFontSize, '2em');
+
+    var timerDwnBtns = document.createElement('div');
+    timerDwnBtns.style.fontSize = (fontSize * 3) + 'px';
+    timerDwnBtns.style.marginTop = '-' + (fontSize * 2.5) + 'px';
+    self.timerStopWatchCdInpSubPanel.appendChild(timerDwnBtns);
+    self.createTimerUpDwnButton(false, 'hh', timerDwnBtns, 3);
+    self.createTimerUpDwnButton(false, 'mi', timerDwnBtns, 3);
+    self.createTimerUpDwnButton(false, 'ss', timerDwnBtns, 2.5);
+    self.createTimerUpDwnButton(false, 'sss', timerDwnBtns);
+
+    var btns = document.createElement('div');
+    btns.style.fontSize = (fontSize * 3) + 'px';
+    btns.style.borderTop = 'solid 2px ' + self.options.timerLineColor;
+    btns.style.lineHeight = (fontSize * 5) + 'px';
+    self.timerStopWatchCdInpSubPanel.appendChild(btns);
+
+    self.createTimerButton(btns, 'MODE', self.toggleTimerMode);
+    self.createTimerButton(btns, 'RST', self.timerResetCd);
+    self.timerStartStopBtnCdInp = self.createTimerButton(btns, '>>', self.startStopTimerStopWatchCd);
+  },
+
+  createTimerInput: function(base, val, fontSize, width) {
+    var self = DebugJS.self;
+    var txt = document.createElement('input');
+    txt.className = self.id + '-timer-input';
+    txt.style.setProperty('font-size', fontSize + 'px', 'important');
+    if (width) txt.style.setProperty('width', width, 'important');
+    txt.value = val;
+    base.appendChild(txt);
+    return txt;
+  },
+
+  createTimerInputLabel: function(base, label, fontSize) {
+    var self = DebugJS.self;
+    var span = document.createElement('span');
+    span.innerText = label;
+    if (fontSize) span.style.fontSize = fontSize + 'px';
+    base.appendChild(span);
+  },
+
+  createTimerButton: function(base, label, handler, disabled) {
+    var self = DebugJS.self;
+    self.toolStatus |= DebugJS.TOOL_ST_SW_CD_RST;
     var btn = document.createElement('span');
     btn.className = self.id + '-btn ' + self.id + '-nomove';
     btn.style.marginRight = '0.5em';
-    btn.style.color = DebugJS.TOOL_TIMER_BTN_COLOR;
+    btn.style.color = (disabled ? '#888' : DebugJS.TOOL_TIMER_BTN_COLOR);
     btn.onclick = handler;
     btn.innerText = label;
-    self.timerBtns.appendChild(btn);
+    base.appendChild(btn);
     return btn;
   },
 
-  switchTimerMode: function() {
+  createTimerUpDwnButton: function(up, part, area, margin) {
+    var self = DebugJS.self;
+    var btn = document.createElement('span');
+    btn.className = self.id + '-btn ' + self.id + '-nomove ' + self.id + '-timerupdwn';
+    btn.style.marginRight = margin + 'em';
+    btn.style.color = DebugJS.TOOL_TIMER_BTN_COLOR;
+    btn.onclick = new Function('DebugJS.self.timerUpDwn(\'' + part + '\', ' + up + ')');
+    btn.innerText = (up ? '+' : '-');
+    area.appendChild(btn);
+    return btn;
+  },
+
+  disableTimerUpDwnButton: function() {
+    var self = DebugJS.self;
+    var btn = document.getElementsByClassName(self.id + '-timerupdwn');
+    for (var i = 0; btn.length; i++) {
+      btn[i].style.color = 'transparent';
+    }
+  },
+
+  timerUpDwn: function(part, up) {
+    var self = DebugJS.self;
+    var val = self.calcTimeupTimeInp();
+    var v = 0;
+    switch (part) {
+      case 'hh':
+        v = 60 * 60 * 1000;
+        break;
+      case 'mi':
+        v = 60 * 1000;
+        break;
+      case 'ss':
+        v = 1000;
+        break;
+      case 'sss':
+        v = 1;
+    }
+    if (up) {
+      val += v;
+    } else {
+      if (val >= v) val -= v;
+    }
+    self.updateTimeupTimeInp(val);
+    self.drawStopWatchCd();
+  },
+
+  calcTimeupTimeInp: function() {
+    var self = DebugJS.self;
+    var timeupHH = (self.timerTxtHH.value | 0) * 60 * 60 * 1000;
+    var timeupMI = (self.timerTxtMI.value | 0) * 60 * 1000;
+    var timeupSS = (self.timerTxtSS.value | 0) * 1000;
+    var timeupSSS = (self.timerTxtSSS.value | 0);
+    var timeup = timeupHH + timeupMI + timeupSS + timeupSSS;
+    return timeup;
+  },
+
+  updateTimeupTimeInp: function(v) {
+    var self = DebugJS.self;
+    var tm = DebugJS.parseTime(v);
+    self.timerTxtHH.value = tm.hh;
+    self.timerTxtMI.value = tm.mi;
+    self.timerTxtSS.value = tm.ss;
+    self.timerTxtSSS.value = tm.sss;
+  },
+
+  toggleTimerMode: function() {
+    var self = DebugJS.self;
+    var nextMode;
+    if (self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) {
+      nextMode = DebugJS.TOOL_TIMER_MODE_SW_CU;
+    } else if (self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CU) {
+      nextMode = DebugJS.TOOL_TIMER_MODE_SW_CD;
+    } else {
+      nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
+    }
+    self.switchTimerMode(nextMode);
+  },
+
+  switchTimerMode: function(mode) {
     var self = DebugJS.self;
     self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
     var nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
-    if (self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW) {
-      self.switchTimerModeClock();
+    if (mode == DebugJS.TOOL_TIMER_MODE_SW_CU) {
+      self.switchTimerModeStopWatchCu();
+    } else if (mode == DebugJS.TOOL_TIMER_MODE_SW_CD) {
+      self.switchTimerModeStopWatchCd();
     } else {
-      self.switchTimerModeStopWatch();
+      self.switchTimerModeClock();
     }
   },
 
   switchTimerModeClock: function() {
     var self = DebugJS.self;
+    self.replaceTimerSubPanel(self.timerClockSubPanel);
     self.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
-    self.disableBtn(self.timerResetBtn);
-    self.disableBtn(self.timerStartStopBtn);
     self.updateTimerClock();
     self.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_H;
   },
 
-  switchTimerModeStopWatch: function() {
+  switchTimerModeStopWatchCu: function() {
     var self = DebugJS.self;
-    self.toolTimerMode = DebugJS.TOOL_TIMER_MODE_SW;
-    self.enableBtn(self.timerResetBtn, self.timerReset, DebugJS.TOOL_TIMER_BTN_COLOR);
-    self.enableBtn(self.timerStartStopBtn, self.startStopTimerStopWatch, DebugJS.TOOL_TIMER_BTN_COLOR);
-    self.drawStopWatch();
-    self.updateTimerStopWatch();
+    self.toolTimerMode = DebugJS.TOOL_TIMER_MODE_SW_CU;
+    self.replaceTimerSubPanel(self.timerStopWatchCuSubPanel);
+    self.drawStopWatchCu();
+    self.updateTimerStopWatchCu();
+  },
+
+  switchTimerModeStopWatchCd: function() {
+    var self = DebugJS.self;
+    self.toolTimerMode = DebugJS.TOOL_TIMER_MODE_SW_CD;
+    if (self.toolStatus & DebugJS.TOOL_ST_SW_CD_RST) {
+      self.replaceTimerSubPanel(self.timerStopWatchCdInpSubPanel);
+    } else {
+      self.replaceTimerSubPanel(self.timerStopWatchCdSubPanel);
+      self.drawStopWatchCd();
+      self.updateTimerStopWatchCd();
+    }
+  },
+
+  replaceTimerSubPanel: function(panel) {
+    var self = DebugJS.self;
+    for (var i = self.timerBasePanel.childNodes.length - 1; i >= 0; i--) {
+      self.timerBasePanel.removeChild(self.timerBasePanel.childNodes[i]);
+    }
+    self.timerBasePanel.appendChild(panel);
   },
 
   updateTimerClock: function() {
     var self = DebugJS.self;
     if (self.toolTimerMode != DebugJS.TOOL_TIMER_MODE_CLOCK) return;
     var tm = DebugJS.getDateTime();
-    var s = self.createClockStr(tm);
-    self.updateTimerLabel(s);
+    self.timerClockLabel.innerHTML = self.createClockStr(tm);
     setTimeout(self.updateTimerClock, self.clockUpdateInterval);
   },
 
-  startStopTimerStopWatch: function() {
+  startStopTimerStopWatchCu: function() {
     var self = DebugJS.self;
-    if (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) {
-      self.stopTimerStopWatch();
+    if (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CU) {
+      self.stopTimerStopWatchCu();
     } else {
-      self.startTimerStopWatch();
+      self.startTimerStopWatchCu();
     }
-    self.updateTimerSwBtns();
   },
 
-  startTimerStopWatch: function() {
+  startStopTimerStopWatchCd: function() {
     var self = DebugJS.self;
-    self.toolStatus |= DebugJS.TOOL_ST_SW_RUNNING;
-    self.timerSwStartTime = (new Date()).getTime() - self.timerSwElapsedTime;
-    self.updateTimerStopWatch();
+    if (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CD) {
+      self.stopTimerStopWatchCd();
+    } else {
+      self.startTimerStopWatchCd();
+    }
   },
 
-  stopTimerStopWatch: function() {
+  startTimerStopWatchCu: function() {
     var self = DebugJS.self;
-    self.updateTimerStopWatch();
-    self.toolStatus &= ~DebugJS.TOOL_ST_SW_RUNNING;
-    self.drawStopWatch();
+    self.toolStatus |= DebugJS.TOOL_ST_SW_RUNNING_CU;
+    self.timerSwStartTime = (new Date()).getTime() - self.timerSwTimeCu;
+    self.updateTimerStopWatchCu();
+    self.updateTimerSwBtnsCu();
   },
 
-  updateTimerStopWatch: function() {
+  startTimerStopWatchCd: function() {
     var self = DebugJS.self;
-    if ((self.toolTimerMode != DebugJS.TOOL_TIMER_MODE_SW) || !(self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) return;
+    if (self.toolStatus & DebugJS.TOOL_ST_SW_TIMEUP) {
+      self.timerResetCd();
+    }
+
+    if (self.toolStatus & DebugJS.TOOL_ST_SW_CD_RST) {
+      self.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_RST;
+      var timeup = self.calcTimeupTimeInp();
+      self.timerTimeUpTime = (new Date()).getTime() + timeup;
+      self.replaceTimerSubPanel(self.timerStopWatchCdSubPanel);
+    } else {
+      self.timerTimeUpTime = (new Date()).getTime() + self.timerSwTimeCd;
+    }
+
+    self.toolStatus |= DebugJS.TOOL_ST_SW_RUNNING_CD;
+    self.updateTimerStopWatchCd();
+    self.updateTimerSwBtnsCd();
+  },
+
+  stopTimerStopWatchCu: function() {
+    var self = DebugJS.self;
+    self.updateTimerStopWatchCu();
+    self.toolStatus &= ~DebugJS.TOOL_ST_SW_RUNNING_CU;
+    self.drawStopWatchCu();
+    self.updateTimerSwBtnsCu();
+  },
+
+  stopTimerStopWatchCd: function() {
+    var self = DebugJS.self;
+    self.updateTimerStopWatchCd();
+    self.toolStatus &= ~DebugJS.TOOL_ST_SW_RUNNING_CD;
+    self.drawStopWatchCd();
+    self.updateTimerSwBtnsCd();
+  },
+
+  updateTimerStopWatchCu: function() {
+    var self = DebugJS.self;
+    if ((self.toolTimerMode != DebugJS.TOOL_TIMER_MODE_SW_CU) || (!(self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CU))) return;
     var now = (new Date()).getTime();
-    self.timerSwElapsedTime = now - self.timerSwStartTime;
-    self.drawStopWatch();
-    setTimeout(self.updateTimerStopWatch, DebugJS.UPDATE_INTERVAL_H);
+    self.timerSwTimeCu = now - self.timerSwStartTime;
+    self.drawStopWatchCu();
+    setTimeout(self.updateTimerStopWatchCu, DebugJS.UPDATE_INTERVAL_H);
   },
 
-  drawStopWatch: function() {
+  updateTimerStopWatchCd: function() {
     var self = DebugJS.self;
-    var tm = DebugJS.parseTime(self.timerSwElapsedTime);
-    var s = self.createTimeStr(tm);
-    self.updateTimerLabel(s);
+    if ((self.toolTimerMode != DebugJS.TOOL_TIMER_MODE_SW_CD) || ((!(self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CD)) && (!(self.toolStatus & DebugJS.TOOL_ST_SW_TIMEUP)))) return;
+    var now = (new Date()).getTime();
+    self.timerSwTimeCd = self.timerTimeUpTime - now;
+    if (self.timerSwTimeCd < 0) {
+      self.toolStatus |= DebugJS.TOOL_ST_SW_TIMEUP;
+      self.toolStatus &= ~DebugJS.TOOL_ST_SW_RUNNING_CD;
+      self.updateTimerSwBtnsCd();
+    }
+    self.drawStopWatchCd();
+    setTimeout(self.updateTimerStopWatchCd, DebugJS.UPDATE_INTERVAL_H);
   },
 
-  updateTimerSwBtns: function() {
+  drawStopWatchCu: function() {
     var self = DebugJS.self;
-    var btn = (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) ? '||' : '>>';
-    self.timerStartStopBtn.innerText = btn;
+    var currentTime = self.timerSwTimeCu;
+    var tm = DebugJS.parseTime(currentTime);
+    self.timerStopWatchCuLabel.innerHTML = self.createTimeStr(tm);
   },
 
-  timerReset: function() {
+  drawStopWatchCd: function() {
+    var self = DebugJS.self;
+    var currentTime = self.timerSwTimeCd;
+    var tm = DebugJS.parseTime(currentTime);
+    self.timerStopWatchCdLabel.innerHTML = self.createTimeStr(tm);
+  },
+
+  updateTimerSwBtnsCu: function() {
+    var self = DebugJS.self;
+    var btn = (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CU) ? '||' : '>>';
+    self.timerStartStopBtnCu.innerText = btn;
+  },
+
+  updateTimerSwBtnsCd: function() {
+    var self = DebugJS.self;
+    var btn = (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CD) ? '||' : '>>';
+    self.timerStartStopBtnCd.innerText = btn;
+    self.timerStartStopBtnCdInp.innerText = btn;
+  },
+
+  timerResetCu: function() {
     var self = DebugJS.self;
     self.timerSwStartTime = (new Date()).getTime();
-    self.timerSwElapsedTime = 0;
-    var tm = DebugJS.parseTime(self.timerSwElapsedTime);
-    var s = self.createTimeStr(tm);
-    self.updateTimerLabel(s);
+    self.timerSwTimeCu = 0;
+    self.drawStopWatchCu();
+    self.updateTimerSwBtnsCu();
+  },
+
+  timerResetCd: function() {
+    var self = DebugJS.self;
+    self.toolStatus &= ~DebugJS.TOOL_ST_SW_RUNNING_CD;
+    self.toolStatus &= ~DebugJS.TOOL_ST_SW_TIMEUP;
+    self.toolStatus |= DebugJS.TOOL_ST_SW_CD_RST;
+    self.replaceTimerSubPanel(self.timerStopWatchCdInpSubPanel);
+    self.updateTimerSwBtnsCd();
   },
 
   createClockStr: function(tm) {
     var self = DebugJS.self;
-    var baseFontSize = self.timerFontSize * 1.2;
-    var msFontSize = baseFontSize * 0.65;
+    var fontSize = self.computedFontSize * 8;
+    var dtFontSize = fontSize * 0.45;
+    var msFontSize = fontSize * 0.65;
     var dot = '.';
     if (tm.sss > 500) {
-      if ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) ||
-          ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW) &&
-           (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING))) {
-        dot = '&nbsp;';
-      }
+      dot = '&nbsp;';
     }
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' ' + DebugJS.WDAYS[tm.wday];
     var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (msFontSize / 5) + 'px;font-size:' + msFontSize + 'px">' + tm.ss + dot + '</span>';
-    var label = '<div style="font-size:' + (baseFontSize * 0.4) + 'px">' + date + '</div><div style="font-size:' + baseFontSize + 'px;margin-top:-20px;">' + time + '</div>';
+    var label = '<div style="font-size:' + dtFontSize + 'px">' + date + '</div>' +
+                '<div style="font-size:' + fontSize + 'px;margin:-20px 0 10px 0">' + time + '</div>';
     return label;
   },
 
   createTimeStr: function(tm) {
     var self = DebugJS.self;
-    var baseFontSize = self.timerFontSize;
-    var msFontSize = baseFontSize * 0.65;
+    var fontSize = self.computedFontSize * 7;
+    var msFontSize = fontSize * 0.65;
     var dot = '.';
     if (tm.sss > 500) {
-      if ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) ||
-          ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW) &&
-           (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING))) {
+      if (((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CU) && (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CU)) ||
+          ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CD) && (self.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CD))) {
         dot = '&nbsp;';
       }
     }
-    var label = '<div style="margin-top:' + (baseFontSize * 0.5) + 'px">' + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span></div>';
+    var str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>';
+    if ((self.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CD) && (self.toolStatus & DebugJS.TOOL_ST_SW_TIMEUP)) {
+      if (tm.sss > 500) {
+        str = '&nbsp;<span style="font-size:' + msFontSize + 'px">' + '&nbsp;</span>';
+      } else {
+        str = '00:00:00<span style="font-size:' + msFontSize + 'px">' + '.000</span>';
+      }
+    }
+    var label = '<div style="font-size:' + fontSize + 'px">' + str + '</div>';
     return label;
-  },
-
-  updateTimerLabel: function(s) {
-    DebugJS.self.timerLabel.innerHTML = s;
   },
 
   disableTimer: function() {
