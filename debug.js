@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707302355';
+  this.v = '201707310000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4244,10 +4244,10 @@ DebugJS.prototype = {
     var fontSize = ctx.computedFontSize * 7;
     var msFontSize = fontSize * 0.65;
     var dot = '.';
-    if (((tm.sss > 500) && 
+    if (((tm.sss > 500) &&
          (ctx.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CU) &&
          (ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CU)) ||
-        ((tm.sss < 500) && 
+        ((tm.sss < 500) &&
          (ctx.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CD) &&
          (ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CD))) {
       dot = '&nbsp;';
