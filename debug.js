@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707310000';
+  this.v = '201707310735';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -439,7 +439,7 @@ DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + '">SCAM</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-DebugJS.WDAYS_COLOR = ['f74', 'abf', 'f66', '5cf', 'c85', 'ff2', '8fd'];
+DebugJS.WDAYS_COLOR = ['f74', 'fff', 'fff', 'fff', 'fff', 'fff', '8fd'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
@@ -1156,15 +1156,15 @@ DebugJS.prototype = {
     }
 
     if ((ctx.status & DebugJS.STATE_DYNAMIC) && (ctx.options.usePinButton)) {
-      ctx.pinBtn = ctx.createHeaderButton('pinBtn', 'P', 3, ctx.computedFontSize + 'px', DebugJS.ctx.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true);
+      ctx.pinBtn = ctx.createHeaderButton('pinBtn', 'P', 3, ctx.computedFontSize + 'px', DebugJS.ctx.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
 
     if (ctx.options.useSuspendLogButton) {
-      ctx.suspendLogBtn = ctx.createHeaderButton('suspendLogBtn', '/', 3, ctx.computedFontSize + 'px', DebugJS.ctx.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false);
+      ctx.suspendLogBtn = ctx.createHeaderButton('suspendLogBtn', '/', 3, ctx.computedFontSize + 'px', DebugJS.ctx.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
     }
 
     if (DebugJS.LS_AVAILABLE) {
-      ctx.preserveLogBtn = ctx.createHeaderButton('preserveLogBtn', '*', 5, ctx.computedFontSize + 'px', DebugJS.ctx.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false);
+      ctx.preserveLogBtn = ctx.createHeaderButton('preserveLogBtn', '*', 5, ctx.computedFontSize + 'px', DebugJS.ctx.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
     }
 
     // Stopwatch
@@ -1332,7 +1332,7 @@ DebugJS.prototype = {
     if (ctx.options.useMsgDisplay) ctx.updateMsgPanel();
   },
 
-  createHeaderButton: function(btnobj, label, marginLeft, fontSize, handler, status, activeColor, reverse) {
+  createHeaderButton: function(btnobj, label, marginLeft, fontSize, handler, status, activeColor, reverse, title) {
     var ctx = DebugJS.ctx;
     var btn = document.createElement('span');
     btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
@@ -1347,6 +1347,7 @@ DebugJS.prototype = {
     } else {
       btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.status & DebugJS.' + status + ') ? DebugJS.' + activeColor + ' : DebugJS.COLOR_INACTIVE;');
     }
+    if (title) btn.title = title;
     ctx.headPanel.appendChild(btn);
     return btn;
   },
