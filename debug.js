@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707301536';
+  this.v = '201707301700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -95,6 +95,7 @@ var DebugJS = DebugJS || function() {
   this.headPanel = null;
   this.infoPanel = null;
   this.clockPanel = null;
+  this.clockUpdateIntervalHCnt = 0;
   this.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
   this.measureBtn = null;
   this.measureBox = null;
@@ -387,9 +388,9 @@ DebugJS.ERR_STATE_LOAD = 0x2;
 DebugJS.ERR_STATE_LOG = 0x4;
 DebugJS.TOOLS_ACTIVE_FNC_NONE = 0x0;
 DebugJS.TOOLS_ACTIVE_FNC_TIMER = 0x1;
-DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x2;
-DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x4;
-DebugJS.TOOLS_ACTIVE_FNC_HTML = 0x8;
+DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x2;
+DebugJS.TOOLS_ACTIVE_FNC_HTML = 0x4;
+DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x8;
 DebugJS.TOOLS_ACTIVE_FNC_MEMO = 0x10;
 DebugJS.FILE_LOAD_FORMAT_BIN = 0;
 DebugJS.FILE_LOAD_FORMAT_B64 = 1;
@@ -437,6 +438,7 @@ DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
 DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + '">SCAM</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+DebugJS.WDAYS_COLOR = ['f74', 'abf', 'f66', '5cf', 'c85', 'ff2', '8fd'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
 DebugJS.DEFAULT_TIMER_NAME = 'timer0';
@@ -1120,7 +1122,7 @@ DebugJS.prototype = {
       ctx.clockPanel.style.color = ctx.options.clockColor;
       ctx.clockPanel.style.fontSize = ctx.computedFontSize + 'px';
       ctx.headPanel.appendChild(ctx.clockPanel);
-      ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+      ctx.setIntervalL();
     }
 
     // -- R to L
@@ -1765,6 +1767,22 @@ DebugJS.prototype = {
       }
       s.insertRule(selector + '{' + propStr + '}', s.cssRules.length);
     }
+  },
+
+  setIntervalL: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.clockUpdateIntervalHCnt > 0) {
+      ctx.clockUpdateIntervalHCnt--;
+    }
+    if (ctx.clockUpdateIntervalHCnt == 0) {
+      ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+    }
+  },
+
+  setIntervalH: function() {
+    var ctx = DebugJS.ctx;
+    ctx.clockUpdateIntervalHCnt++;
+    ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_H;
   },
 
   setupMove: function() {
@@ -2796,7 +2814,7 @@ DebugJS.prototype = {
     }
     ctx.updateSysInfoBtn();
     ctx.showSystemInfo();
-    ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_H;
+    ctx.setIntervalH();
   },
 
   updateSystemTime: function() {
@@ -2804,14 +2822,13 @@ DebugJS.prototype = {
     if (!(ctx.status & DebugJS.STATE_SYSTEM_INFO)) {
       return;
     }
-    var UPDATE_INTERVAL = DebugJS.UPDATE_INTERVAL_H;
     var sysTime = (new Date()).getTime();
     var sysTimeBin = DebugJS.formatBin(parseInt(sysTime).toString(2), false, 1);
     var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(DebugJS.getDateTime(sysTime)) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         RAW</span>  (new Date()).getTime() = ' + sysTime + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin + '</pre>';
     ctx.sysTimePanel.innerHTML = html;
-    setTimeout(ctx.updateSystemTime, UPDATE_INTERVAL);
+    setTimeout(ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
 
   disableSystemInfo: function() {
@@ -2827,7 +2844,7 @@ DebugJS.prototype = {
     }
     ctx.status &= ~DebugJS.STATE_SYSTEM_INFO;
     ctx.updateSysInfoBtn();
-    ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+    ctx.setIntervalL();
   },
 
   showSystemInfo: function(e) {
@@ -3687,9 +3704,9 @@ DebugJS.prototype = {
       ctx.toolsPanel.appendChild(ctx.toolsBodyPanel);
 
       ctx.timerBtn = ctx.createToolsHeaderButton('TIMER', 'TOOLS_ACTIVE_FNC_TIMER', 'timerBtn');
-      ctx.fileLoaderBtn = ctx.createToolsHeaderButton('FILE', 'TOOLS_ACTIVE_FNC_FILE', 'fileLoaderBtn');
       ctx.txtChkBtn = ctx.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FNC_TEXT', 'txtChkBtn');
       ctx.htmlPrevBtn = ctx.createToolsHeaderButton('HTML', 'TOOLS_ACTIVE_FNC_HTML', 'htmlPrevBtn');
+      ctx.fileLoaderBtn = ctx.createToolsHeaderButton('FILE', 'TOOLS_ACTIVE_FNC_FILE', 'fileLoaderBtn');
       ctx.memoBtn = ctx.createToolsHeaderButton('MEMO', 'TOOLS_ACTIVE_FNC_MEMO', 'memoBtn');
 
       ctx.addOverlayPanelFull(ctx.toolsPanel);
@@ -3722,15 +3739,15 @@ DebugJS.prototype = {
     }
     ctx.status &= ~DebugJS.STATE_TOOLS;
     ctx.updateToolsBtn();
-    ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+    ctx.setIntervalL();
   },
 
   updateToolsButtons: function() {
     var ctx = DebugJS.ctx;
     ctx.timerBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     ctx.txtChkBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    ctx.fileLoaderBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     ctx.htmlPrevBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    ctx.fileLoaderBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
     ctx.memoBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
   },
 
@@ -3741,11 +3758,6 @@ DebugJS.prototype = {
     } else {
       ctx.disableTimer();
     }
-    if (kind & DebugJS.TOOLS_ACTIVE_FNC_FILE) {
-      ctx.enableFileLoader(param);
-    } else {
-      ctx.disableFileLoader();
-    }
     if (kind & DebugJS.TOOLS_ACTIVE_FNC_TEXT) {
       ctx.enableTextChecker();
     } else {
@@ -3755,6 +3767,11 @@ DebugJS.prototype = {
       ctx.enableHtmlEditor();
     } else {
       ctx.disableHtmlEditor();
+    }
+    if (kind & DebugJS.TOOLS_ACTIVE_FNC_FILE) {
+      ctx.enableFileLoader(param);
+    } else {
+      ctx.disableFileLoader();
     }
     if (kind & DebugJS.TOOLS_ACTIVE_FNC_MEMO) {
       ctx.enableMemoEditor();
@@ -4009,7 +4026,7 @@ DebugJS.prototype = {
 
   switchTimerMode: function(mode) {
     var ctx = DebugJS.ctx;
-    ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+    ctx.setIntervalL();
     var nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
     if (mode == DebugJS.TOOL_TIMER_MODE_SW_CU) {
       ctx.switchTimerModeStopWatchCu();
@@ -4025,7 +4042,7 @@ DebugJS.prototype = {
     ctx.replaceTimerSubPanel(ctx.timerClockSubPanel);
     ctx.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
     ctx.updateTimerClock();
-    ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_H;
+    ctx.setIntervalH();
   },
 
   switchTimerModeStopWatchCu: function() {
@@ -4202,7 +4219,7 @@ DebugJS.prototype = {
     if (tm.sss > 500) {
       dot = '&nbsp;';
     }
-    var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' ' + DebugJS.WDAYS[tm.wday];
+    var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + '">' + DebugJS.WDAYS[tm.wday] + '</span>';
     var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (msFontSize / 5) + 'px;font-size:' + msFontSize + 'px">' + tm.ss + dot + '</span>';
     var label = '<div style="font-size:' + dtFontSize + 'px">' + date + '</div>' +
                 '<div style="font-size:' + fontSize + 'px;margin:-20px 0 10px 0">' + time + '</div>';
@@ -4237,7 +4254,7 @@ DebugJS.prototype = {
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) &&
         (ctx.timerBasePanel != null)) {
       ctx.toolsBodyPanel.removeChild(ctx.timerBasePanel);
-      ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+      ctx.setIntervalL();
     }
   },
 
@@ -5694,6 +5711,12 @@ DebugJS.prototype = {
           case 'timer':
             kind = DebugJS.TOOLS_ACTIVE_FNC_TIMER;
             break;
+          case 'text':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_TEXT;
+            break;
+          case 'html':
+            kind = DebugJS.TOOLS_ACTIVE_FNC_HTML;
+            break;
           case 'file':
             kind = DebugJS.TOOLS_ACTIVE_FNC_FILE;
             if (opt == 'bin') {
@@ -5701,12 +5724,6 @@ DebugJS.prototype = {
             } else {
               param = DebugJS.FILE_LOAD_FORMAT_B64;
             }
-            break;
-          case 'text':
-            kind = DebugJS.TOOLS_ACTIVE_FNC_TEXT;
-            break;
-          case 'html':
-            kind = DebugJS.TOOLS_ACTIVE_FNC_HTML;
             break;
           case 'memo':
             kind = DebugJS.TOOLS_ACTIVE_FNC_MEMO;
