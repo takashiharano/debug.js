@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707301700';
+  this.v = '201707302133';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -95,8 +95,8 @@ var DebugJS = DebugJS || function() {
   this.headPanel = null;
   this.infoPanel = null;
   this.clockPanel = null;
-  this.clockUpdateIntervalHCnt = 0;
-  this.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+  this.clockUpdIntHCnt = 0;
+  this.clockUpdInt = DebugJS.UPDATE_INTERVAL_L;
   this.measureBtn = null;
   this.measureBox = null;
   this.sysInfoBtn = null;
@@ -359,6 +359,7 @@ DebugJS.STATE_LOG_PRESERVED = 1 << 21;
 DebugJS.STATE_POS_AUTO_ADJUST = 1 << 22;
 DebugJS.STATE_NEED_TO_SCROLL = 1 << 23;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 24;
+DebugJS.STATE_REINIT = 1 << 31;
 DebugJS.TOOL_ST_SW_RUNNING_CU = 1;
 DebugJS.TOOL_ST_SW_RUNNING_CD = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RST = 1 << 2;
@@ -511,11 +512,14 @@ DebugJS.prototype = {
           ctx.dbgWin.removeChild(ctx.dbgWin.childNodes[i]);
         }
         ctx.bodyEl.removeChild(ctx.dbgWin);
+        ctx.timerBasePanel = null;
         ctx.dbgWin = null;
       }
     }
 
-    if (!keepStatus) {
+    if (keepStatus) {
+      ctx.status |= DebugJS.STATE_REINIT;
+    } else {
       if (ctx.status & DebugJS.STATE_LOG_PRESERVED) {
         ctx.status = DebugJS.STATE_LOG_PRESERVED;
       } else {
@@ -1527,7 +1531,7 @@ DebugJS.prototype = {
     //t += (dt.sss < 500) ? ' ' : '.';
     ctx.clockPanel.innerText = t;
     if (ctx.status & DebugJS.STATE_SHOW_CLOCK) {
-      setTimeout(ctx.updateClockPanel, ctx.clockUpdateInterval);
+      setTimeout(ctx.updateClockPanel, ctx.clockUpdInt);
     }
   },
 
@@ -1771,18 +1775,18 @@ DebugJS.prototype = {
 
   setIntervalL: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.clockUpdateIntervalHCnt > 0) {
-      ctx.clockUpdateIntervalHCnt--;
+    if (ctx.clockUpdIntHCnt > 0) {
+      ctx.clockUpdIntHCnt--;
     }
-    if (ctx.clockUpdateIntervalHCnt == 0) {
-      ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_L;
+    if (ctx.clockUpdIntHCnt == 0) {
+      ctx.clockUpdInt = DebugJS.UPDATE_INTERVAL_L;
     }
   },
 
   setIntervalH: function() {
     var ctx = DebugJS.ctx;
-    ctx.clockUpdateIntervalHCnt++;
-    ctx.clockUpdateInterval = DebugJS.UPDATE_INTERVAL_H;
+    ctx.clockUpdIntHCnt++;
+    ctx.clockUpdInt = DebugJS.UPDATE_INTERVAL_H;
   },
 
   setupMove: function() {
@@ -3688,6 +3692,7 @@ DebugJS.prototype = {
   enableTools: function() {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.STATE_TOOLS;
+    var activeFunc = DebugJS.TOOLS_ACTIVE_FNC_TIMER;
     if (ctx.toolsPanel == null) {
       var defaultFontSize = ctx.computedFontSize;
       ctx.toolsPanel = document.createElement('div');
@@ -3710,11 +3715,13 @@ DebugJS.prototype = {
       ctx.memoBtn = ctx.createToolsHeaderButton('MEMO', 'TOOLS_ACTIVE_FNC_MEMO', 'memoBtn');
 
       ctx.addOverlayPanelFull(ctx.toolsPanel);
-      ctx.switchToolsFunction(DebugJS.TOOLS_ACTIVE_FNC_TIMER);
+      ctx.switchToolsFunction();
     } else {
       ctx.addOverlayPanelFull(ctx.toolsPanel);
       ctx.resizeImgPreview();
+      activeFunc = ctx.toolsActiveFunction;
     }
+    ctx.switchToolsFunction(activeFunc);
     ctx.updateToolsButtons();
     ctx.updateToolsBtn();
   },
@@ -3739,7 +3746,7 @@ DebugJS.prototype = {
     }
     ctx.status &= ~DebugJS.STATE_TOOLS;
     ctx.updateToolsBtn();
-    ctx.setIntervalL();
+    ctx.switchToolsFunction(0);
   },
 
   updateToolsButtons: function() {
@@ -3778,7 +3785,7 @@ DebugJS.prototype = {
     } else {
       ctx.disableMemoEditor();
     }
-    ctx.toolsActiveFunction = kind;
+    if (kind) ctx.toolsActiveFunction = kind;
     ctx.updateToolsButtons();
   },
 
@@ -3799,11 +3806,14 @@ DebugJS.prototype = {
       ctx.createTimerStopWatchCuSubPanel();
       ctx.createTimerStopWatchCdSubPanel();
       ctx.createTimerStopWatchCdInpSubPanel();
-
-      ctx.switchTimerMode(DebugJS.TOOL_TIMER_MODE_CLOCK);
+      if (!(ctx.status & DebugJS.STATE_REINIT)) {
+        ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_RST;
+      }
+      ctx.switchTimerMode(ctx.toolTimerMode);
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.timerBasePanel);
     }
+    ctx.setIntervalH();
   },
 
   createTimerClockSubPanel: function() {
@@ -3811,8 +3821,9 @@ DebugJS.prototype = {
       var fontSize = ctx.computedFontSize;
       ctx.timerClockSubPanel = document.createElement('div');
 
+      var marginB = 20 * ctx.options.zoom;
       ctx.timerClockLabel = document.createElement('div');
-      ctx.timerClockLabel.style.marginBottom = '20px';
+      ctx.timerClockLabel.style.marginBottom = marginB + 'px';
       ctx.timerClockSubPanel.appendChild(ctx.timerClockLabel);
 
       var btns = document.createElement('div');
@@ -3828,22 +3839,23 @@ DebugJS.prototype = {
 
   createTimerStopWatchCuSubPanel: function() {
     var ctx = DebugJS.ctx;
-      var fontSize = ctx.computedFontSize;
-      ctx.timerStopWatchCuSubPanel = document.createElement('div');
+    var fontSize = ctx.computedFontSize;
+    ctx.timerStopWatchCuSubPanel = document.createElement('div');
 
-      ctx.timerStopWatchCuLabel = document.createElement('div');
-      ctx.timerStopWatchCuLabel.style.margin = '40px 0';
-      ctx.timerStopWatchCuSubPanel.appendChild(ctx.timerStopWatchCuLabel);
+    var margin = 40 * ctx.options.zoom;
+    ctx.timerStopWatchCuLabel = document.createElement('div');
+    ctx.timerStopWatchCuLabel.style.margin = margin + 'px 0';
+    ctx.timerStopWatchCuSubPanel.appendChild(ctx.timerStopWatchCuLabel);
 
-      var btns = document.createElement('div');
-      btns.style.fontSize = (fontSize * 3) + 'px';
-      btns.style.borderTop = 'solid 2px ' + ctx.options.timerLineColor;
-      btns.style.lineHeight = (fontSize * 5) + 'px';
-      ctx.timerStopWatchCuSubPanel.appendChild(btns);
+    var btns = document.createElement('div');
+    btns.style.fontSize = (fontSize * 3) + 'px';
+    btns.style.borderTop = 'solid 2px ' + ctx.options.timerLineColor;
+    btns.style.lineHeight = (fontSize * 5) + 'px';
+    ctx.timerStopWatchCuSubPanel.appendChild(btns);
 
-      ctx.createTimerButton(btns, 'MODE', ctx.toggleTimerMode);
-      ctx.createTimerButton(btns, 'RST', ctx.timerResetCu);
-      ctx.timerStartStopBtnCu = ctx.createTimerButton(btns, '>>', ctx.startStopTimerStopWatchCu);
+    ctx.createTimerButton(btns, 'MODE', ctx.toggleTimerMode);
+    ctx.createTimerButton(btns, 'RST', ctx.timerResetCu);
+    ctx.timerStartStopBtnCu = ctx.createTimerButton(btns, '>>', ctx.startStopTimerStopWatchCu);
   },
 
   createTimerStopWatchCdSubPanel: function() {
@@ -3851,8 +3863,9 @@ DebugJS.prototype = {
     var fontSize = ctx.computedFontSize;
     ctx.timerStopWatchCdSubPanel = document.createElement('div');
 
+    var margin = 40 * ctx.options.zoom;
     ctx.timerStopWatchCdLabel = document.createElement('div');
-    ctx.timerStopWatchCdLabel.style.margin = '40px 0';
+    ctx.timerStopWatchCdLabel.style.margin = margin + 'px 0';
     ctx.timerStopWatchCdSubPanel.appendChild(ctx.timerStopWatchCdLabel);
 
     var btns = document.createElement('div');
@@ -3935,7 +3948,6 @@ DebugJS.prototype = {
 
   createTimerButton: function(base, label, handler, disabled) {
     var ctx = DebugJS.ctx;
-    ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_RST;
     var btn = document.createElement('span');
     btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
     btn.style.marginRight = '0.5em';
@@ -4026,8 +4038,6 @@ DebugJS.prototype = {
 
   switchTimerMode: function(mode) {
     var ctx = DebugJS.ctx;
-    ctx.setIntervalL();
-    var nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
     if (mode == DebugJS.TOOL_TIMER_MODE_SW_CU) {
       ctx.switchTimerModeStopWatchCu();
     } else if (mode == DebugJS.TOOL_TIMER_MODE_SW_CD) {
@@ -4042,7 +4052,6 @@ DebugJS.prototype = {
     ctx.replaceTimerSubPanel(ctx.timerClockSubPanel);
     ctx.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
     ctx.updateTimerClock();
-    ctx.setIntervalH();
   },
 
   switchTimerModeStopWatchCu: function() {
@@ -4051,6 +4060,7 @@ DebugJS.prototype = {
     ctx.replaceTimerSubPanel(ctx.timerStopWatchCuSubPanel);
     ctx.drawStopWatchCu();
     ctx.updateTimerStopWatchCu();
+    ctx.updateTimerSwBtnsCu();
   },
 
   switchTimerModeStopWatchCd: function() {
@@ -4063,6 +4073,7 @@ DebugJS.prototype = {
       ctx.drawStopWatchCd();
       ctx.updateTimerStopWatchCd();
     }
+    ctx.updateTimerSwBtnsCd();
   },
 
   replaceTimerSubPanel: function(panel) {
@@ -4078,7 +4089,7 @@ DebugJS.prototype = {
     if (ctx.toolTimerMode != DebugJS.TOOL_TIMER_MODE_CLOCK) return;
     var tm = DebugJS.getDateTime();
     ctx.timerClockLabel.innerHTML = ctx.createClockStr(tm);
-    setTimeout(ctx.updateTimerClock, ctx.clockUpdateInterval);
+    setTimeout(ctx.updateTimerClock, ctx.clockUpdInt);
   },
 
   startStopTimerStopWatchCu: function() {
@@ -4215,6 +4226,8 @@ DebugJS.prototype = {
     var fontSize = ctx.computedFontSize * 8;
     var dtFontSize = fontSize * 0.45;
     var msFontSize = fontSize * 0.65;
+    var marginT = 20 * ctx.options.zoom;
+    var marginB = 10 * ctx.options.zoom;
     var dot = '.';
     if (tm.sss > 500) {
       dot = '&nbsp;';
@@ -4222,7 +4235,7 @@ DebugJS.prototype = {
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + '">' + DebugJS.WDAYS[tm.wday] + '</span>';
     var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (msFontSize / 5) + 'px;font-size:' + msFontSize + 'px">' + tm.ss + dot + '</span>';
     var label = '<div style="font-size:' + dtFontSize + 'px">' + date + '</div>' +
-                '<div style="font-size:' + fontSize + 'px;margin:-20px 0 10px 0">' + time + '</div>';
+                '<div style="font-size:' + fontSize + 'px;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
     return label;
   },
 
