@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707310735';
+  this.v = '201707312210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -559,6 +559,8 @@ DebugJS.prototype = {
     // Debug Window
     if (ctx.options.display == 'noui') {
       ctx.removeEventHandler();
+      ctx.init = function(x, xx) {};
+      DebugJS.init = function(x) {};
       return false;
     } else if (ctx.options.target == null) {
       ctx.id = ctx.DEFAULT_ELM_ID;
@@ -906,7 +908,6 @@ DebugJS.prototype = {
     }
     ctx.status |= DebugJS.STATE_INITIALIZED;
     ctx.printLogMsg();
-
     return true;
   },
 
@@ -4215,11 +4216,16 @@ DebugJS.prototype = {
 
   timerResetCd: function() {
     var ctx = DebugJS.ctx;
-    ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_RUNNING_CD;
-    ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_TIMEUP;
-    ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_RST;
-    ctx.replaceTimerSubPanel(ctx.timerStopWatchCdInpSubPanel);
-    ctx.updateTimerSwBtnsCd();
+    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CD) {
+      var timeup = ctx.calcTimeupTimeInp();
+      ctx.timerTimeUpTime = (new Date()).getTime() + timeup;
+      ctx.updateTimerStopWatchCd();
+    } else {
+      ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_TIMEUP;
+      ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_RST;
+      ctx.replaceTimerSubPanel(ctx.timerStopWatchCdInpSubPanel);
+      ctx.updateTimerSwBtnsCd();
+    }
   },
 
   createClockStr: function(tm) {
