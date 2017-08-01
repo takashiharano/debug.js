@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201707312210';
+  this.v = '201708011845';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -80,10 +80,10 @@ var DebugJS = DebugJS || function() {
       ss: '00',
       sss: '000'
     },
-    display: '',
     disableAllCommands: false,
     disableAllFeatures: false,
     onFileLoaded: null,
+    mode: '',
     target: null
   };
   this.DEFAULT_ELM_ID = '_debug_';
@@ -557,8 +557,9 @@ DebugJS.prototype = {
     ctx.initCommandTable();
 
     // Debug Window
-    if (ctx.options.display == 'noui') {
+    if (ctx.options.mode == 'noui') {
       ctx.removeEventHandler();
+      // balse
       ctx.init = function(x, xx) {};
       DebugJS.init = function(x) {};
       return false;
@@ -571,8 +572,7 @@ DebugJS.prototype = {
       ctx.dbgWin.style.width = ctx.computedWidth + 'px';
       ctx.dbgWin.style.boxShadow = DebugJS.WINDOW_SHADOW + 'px ' + DebugJS.WINDOW_SHADOW + 'px 10px rgba(0,0,0,.3)';
       ctx.bodyEl.appendChild(ctx.dbgWin);
-
-      if (ctx.options.display == 'kiosk') {
+      if (ctx.options.mode == 'kiosk') {
         ctx.setupKioskMode();
       }
     } else {
@@ -876,7 +876,7 @@ DebugJS.prototype = {
     ctx.setupEventHandler();
 
     if (ctx.status & DebugJS.STATE_DYNAMIC) {
-      if (ctx.options.display == 'kiosk') {
+      if (ctx.options.mode == 'kiosk') {
         ctx.focusCmdLine();
       } else {
         ctx.setupMove();
@@ -1476,7 +1476,7 @@ DebugJS.prototype = {
         if (!(!(ctx.status & DebugJS.STATE_DYNAMIC) &&
                (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
             (!((ctx.status & DebugJS.STATE_DYNAMIC) &&
-             (ctx.options.display == 'kiosk') &&
+             (ctx.options.mode == 'kiosk') &&
              (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_NO_KIOSK)))) {
           ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
         }
@@ -5401,7 +5401,7 @@ DebugJS.prototype = {
       if (ctx.options.usePinButton) {
         ctx.enableDraggable();
       }
-      if (!ctx.options.display == 'kiosk') {
+      if (!ctx.options.mode == 'kiosk') {
         ctx.resetDebugWindowSizePos();
         ctx.updateWinCtrlBtnPanel();
       }

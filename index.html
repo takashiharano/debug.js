@@ -73,8 +73,8 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 DebugJS.init({visible:true});
 
 //DebugJS.init({visible: true, zoom: '1.4'});
-//DebugJS.init({display:'kiosk',zoom:2});
-//DebugJS.init({display:'noui'});
+//DebugJS.init({mode:'kiosk',zoom:2});
+//DebugJS.init({mode:'noui'});
 //DebugJS.init({target:'debug'});
 
 var options1 = {
@@ -968,16 +968,6 @@ If you want to change the debugger settings, explicitly call for initialization 
   </tr>
 
   <tr>
-    <td class="name">display</td>
-    <td>
-      "kiosk" : Make the debugger window go full screen<br>
-      "noui" : No debugger window, log buffering only<br>
-      other : Normal debug window
-    </td>
-    <td>''</td>
-  </tr>
-
-  <tr>
     <td class="name">disableAllCommands</td>
     <td>
       Disable all internal function commands
@@ -1001,6 +991,16 @@ If you want to change the debugger settings, explicitly call for initialization 
 function onFileLoaded(file, content, isB64) {}</pre>
     </td>
     <td>null</td>
+  </tr>
+
+  <tr>
+    <td class="name">mode</td>
+    <td>
+      "kiosk" : Make the debugger window go full screen<br>
+      "noui" : No debugger window, log buffering only<br>
+      other : Normal debug window
+    </td>
+    <td>''</td>
   </tr>
 
   <tr>
