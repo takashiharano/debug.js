@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708012205';
+  this.v = '201708012304';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6868,6 +6868,7 @@ DebugJS.convRGB = function(v) {
 
 DebugJS.convRGB16to10 = function(rgb16) {
   var ctx = DebugJS.ctx;
+  var boxSize = '0.7em';
   var r16, g16, b16, r10, g10, b10;
   rgb16 = rgb16.replace(/\s/g, '');
   if (rgb16.length == 7) {
@@ -6887,13 +6888,14 @@ DebugJS.convRGB16to10 = function(rgb16) {
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
-  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + (ctx.options.zoom * 0.7) + 'em;height:' + (ctx.options.zoom * 0.7) + 'em;margin-top:' + (2 * ctx.options.zoom) + 'px;display:inline-block"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
+  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + boxSize + ';height:' + boxSize + ';margin-top:0.2em;display:inline-block"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
   var rgb = {r: r10, g: g10, b: b10, rgb: rgb10};
   return rgb;
 };
 
 DebugJS.convRGB10to16 = function(rgb10) {
   var ctx = DebugJS.ctx;
+  var boxSize = '0.7em';
   rgb10 = rgb10.replace(/\s{2,}/g, ' ');
   var rgb10s = rgb10.split(' ', 3);
   if ((rgb10s.length != 3) || ((rgb10s[0] < 0) || (rgb10s[0] > 255)) || ((rgb10s[1] < 0) || (rgb10s[1] > 255)) || ((rgb10s[2] < 0) || (rgb10s[2] > 255))) {
@@ -6907,7 +6909,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
     g16 = g16.substring(0, 1);
     b16 = b16.substring(0, 1);
   }
-  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:#' + r16 + g16 + b16 + ';width:' + (ctx.options.zoom * 0.7) + 'em;height:' + (ctx.options.zoom * 0.7) + 'em;margin-top:' + (2 * ctx.options.zoom) + 'px;display:inline-block"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
+  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:#' + r16 + g16 + b16 + ';width:' + boxSize + ';height:' + boxSize + ';margin-top:0.2em;display:inline-block"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   var rgb = {r: r16, g: g16, b: b16, rgb: rgb16};
   return rgb;
 };
