@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708011845';
+  this.v = '201708012205';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -309,7 +309,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch start|stop|reset'},
-    {cmd: 'time', fnc: this.cmdTime, desc: 'Manipulate the timer', usage: 'time start|split|end|list [timer-name]'},
+    {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
     {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -1052,6 +1052,7 @@ DebugJS.prototype = {
 
   createPanels: function() {
     var ctx = DebugJS.ctx;
+    var fontSize = ctx.computedFontSize + 'px';
     // WindowBody
     ctx.winBody = document.createElement('div');
     ctx.dbgWin.appendChild(ctx.winBody);
@@ -1085,7 +1086,7 @@ DebugJS.prototype = {
     if (ctx.options.useLogFilter) {
       ctx.logHeaderPanel = document.createElement('div');
       ctx.logHeaderPanel.style.position = 'relative';
-      ctx.logHeaderPanel.style.height = ctx.computedFontSize + 'px';
+      ctx.logHeaderPanel.style.height = fontSize;
       ctx.logHeaderPanel.style.marginBottom = '2px';
       ctx.mainPanel.appendChild(ctx.logHeaderPanel);
     }
@@ -1125,7 +1126,7 @@ DebugJS.prototype = {
       ctx.clockPanel = document.createElement('span');
       ctx.clockPanel.style.marginLeft = '2px';
       ctx.clockPanel.style.color = ctx.options.clockColor;
-      ctx.clockPanel.style.fontSize = ctx.computedFontSize + 'px';
+      ctx.clockPanel.style.fontSize = fontSize;
       ctx.headPanel.appendChild(ctx.clockPanel);
       ctx.setIntervalL();
     }
@@ -1157,15 +1158,15 @@ DebugJS.prototype = {
     }
 
     if ((ctx.status & DebugJS.STATE_DYNAMIC) && (ctx.options.usePinButton)) {
-      ctx.pinBtn = ctx.createHeaderButton('pinBtn', 'P', 3, ctx.computedFontSize + 'px', DebugJS.ctx.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
+      ctx.pinBtn = ctx.createHeaderButton('pinBtn', 'P', 3, fontSize, DebugJS.ctx.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
 
     if (ctx.options.useSuspendLogButton) {
-      ctx.suspendLogBtn = ctx.createHeaderButton('suspendLogBtn', '/', 3, ctx.computedFontSize + 'px', DebugJS.ctx.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
+      ctx.suspendLogBtn = ctx.createHeaderButton('suspendLogBtn', '/', 3, fontSize, DebugJS.ctx.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
     }
 
     if (DebugJS.LS_AVAILABLE) {
-      ctx.preserveLogBtn = ctx.createHeaderButton('preserveLogBtn', '*', 5, ctx.computedFontSize + 'px', DebugJS.ctx.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
+      ctx.preserveLogBtn = ctx.createHeaderButton('preserveLogBtn', '*', 5, fontSize, DebugJS.ctx.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
     }
 
     // Stopwatch
@@ -1277,7 +1278,7 @@ DebugJS.prototype = {
       ctx.winBody.appendChild(ctx.cmdPanel);
       ctx.cmdPanel.innerHTML = '<span style="color:' + ctx.options.promptColor + '">$</span>';
       var cmdLine = document.createElement('input');
-      cmdLine.style.setProperty('min-height', ctx.computedFontSize + 'px', 'important');
+      cmdLine.style.setProperty('min-height', fontSize, 'important');
       cmdLine.style.setProperty('width', 'calc(100% - ' + ctx.computedFontSize + 'px)', 'important');
       cmdLine.style.setProperty('margin', '0 0 0 2px', 'important');
       cmdLine.style.setProperty('padding', '1px', 'important');
@@ -1288,7 +1289,7 @@ DebugJS.prototype = {
       cmdLine.style.setProperty('box-shadow', 'none', 'important');
       cmdLine.style.setProperty('background', 'transparent', 'important');
       cmdLine.style.setProperty('color', ctx.options.fontColor, 'important');
-      cmdLine.style.setProperty('font-size', ctx.computedFontSize + 'px', 'important');
+      cmdLine.style.setProperty('font-size', fontSize, 'important');
       cmdLine.style.setProperty('font-family', ctx.options.fontFamily, 'important');
       ctx.cmdPanel.appendChild(cmdLine);
       ctx.cmdLine = cmdLine;
@@ -1414,17 +1415,18 @@ DebugJS.prototype = {
 
   resetStylesOnZoom: function() {
     var ctx = DebugJS.ctx;
+    var fontSize = ctx.computedFontSize + 'px';
     if (ctx.toolsPanel != null) {
-      ctx.toolsHeaderPanel.style.height = ctx.computedFontSize + 'px';
+      ctx.toolsHeaderPanel.style.height = fontSize;
       ctx.toolsBodyPanel.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
     }
     if (ctx.fileLoaderPanel != null) {
       ctx.fileInput.style.setProperty('width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)', 'important');
       ctx.fileInput.style.setProperty('min-height', (20 * ctx.options.zoom) + 'px', 'important');
-      ctx.fileInput.style.setProperty('font-size', ctx.computedFontSize + 'px', 'important');
+      ctx.fileInput.style.setProperty('font-size', fontSize, 'important');
       ctx.filePreviewWrapper.style.setProperty('height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)', 'important');
-      ctx.filePreviewWrapper.style.setProperty('font-size', ctx.computedFontSize + 'px', 'important');
-      ctx.filePreview.style.setProperty('font-size', ctx.computedFontSize + 'px', 'important');
+      ctx.filePreviewWrapper.style.setProperty('font-size', fontSize, 'important');
+      ctx.filePreview.style.setProperty('font-size', fontSize, 'important');
       ctx.fileLoaderFooter.style.height = (ctx.computedFontSize + 3) + 'px';
       ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
       ctx.fileLoadProgress.style.fontSize = (ctx.computedFontSize * 0.8) + 'px';
@@ -4462,6 +4464,7 @@ DebugJS.prototype = {
 
   enableFileLoader: function(format) {
     var ctx = DebugJS.ctx;
+    var fontSize = ctx.computedFontSize + 'px';
     if (ctx.fileLoaderPanel == null) {
       ctx.fileLoaderPanel = document.createElement('div');
       ctx.fileLoaderPanel.className = ctx.id + '-tools';
@@ -4476,7 +4479,7 @@ DebugJS.prototype = {
       fileInput.style.setProperty('border', '0', 'important');
       fileInput.style.setProperty('border-radius', '0', 'important');
       fileInput.style.setProperty('outline', 'none', 'important');
-      fileInput.style.setProperty('font-size', ctx.computedFontSize + 'px', 'important');
+      fileInput.style.setProperty('font-size', fontSize, 'important');
       fileInput.style.setProperty('font-family', ctx.options.fontFamily + 'px', 'important');
       fileInput.addEventListener('change', ctx.handleFileSelect, false);
       ctx.fileLoaderPanel.appendChild(fileInput);
@@ -4511,7 +4514,7 @@ DebugJS.prototype = {
       ctx.filePreviewWrapper.style.setProperty('margin-bottom', '4px', 'important');
       ctx.filePreviewWrapper.style.setProperty('padding', '2px', 'important');
       ctx.filePreviewWrapper.style.setProperty('border', '1px dotted #ccc', 'important');
-      ctx.filePreviewWrapper.style.setProperty('font-size', ctx.computedFontSize + 'px', 'important');
+      ctx.filePreviewWrapper.style.setProperty('font-size', fontSize, 'important');
       ctx.filePreviewWrapper.style.setProperty('font-family', ctx.options.fontFamily + 'px', 'important');
       ctx.filePreviewWrapper.style.setProperty('overflow', 'auto', 'important');
       ctx.filePreviewWrapper.addEventListener('dragover', ctx.handleDragOver, false);
@@ -4521,7 +4524,7 @@ DebugJS.prototype = {
       ctx.filePreview = document.createElement('pre');
       ctx.filePreview.style.setProperty('background', 'transparent', 'important');
       ctx.filePreview.style.setProperty('color', ctx.options.fontColor, 'important');
-      ctx.filePreview.style.setProperty('font-size', ctx.computedFontSize + 'px', 'important');
+      ctx.filePreview.style.setProperty('font-size', fontSize, 'important');
       ctx.filePreview.style.setProperty('font-family', ctx.options.fontFamily + 'px', 'important');
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
       ctx.filePreview.innerText = 'Drop a file here';
@@ -5968,7 +5971,7 @@ DebugJS.prototype = {
     return true;
   },
 
-  cmdTime: function(arg, tbl) {
+  cmdTimer: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
     var operation = args[0];
     var timerName = args[1];
@@ -5980,7 +5983,7 @@ DebugJS.prototype = {
       case 'split':
         DebugJS.timeSplit(timerName, false);
         break;
-      case 'end':
+      case 'stop':
         DebugJS.timeEnd(timerName);
         break;
       case 'list':
