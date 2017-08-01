@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708012304';
+  this.v = '201708020739';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -359,7 +359,6 @@ DebugJS.STATE_LOG_PRESERVED = 1 << 21;
 DebugJS.STATE_POS_AUTO_ADJUST = 1 << 22;
 DebugJS.STATE_NEED_TO_SCROLL = 1 << 23;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 24;
-DebugJS.STATE_REINIT = 1 << 31;
 DebugJS.TOOL_ST_SW_RUNNING_CU = 1;
 DebugJS.TOOL_ST_SW_RUNNING_CD = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RST = 1 << 2;
@@ -517,9 +516,7 @@ DebugJS.prototype = {
       }
     }
 
-    if (keepStatus) {
-      ctx.status |= DebugJS.STATE_REINIT;
-    } else {
+    if (!keepStatus) {
       if (ctx.status & DebugJS.STATE_LOG_PRESERVED) {
         ctx.status = DebugJS.STATE_LOG_PRESERVED;
       } else {
@@ -3810,7 +3807,8 @@ DebugJS.prototype = {
       ctx.createTimerStopWatchCuSubPanel();
       ctx.createTimerStopWatchCdSubPanel();
       ctx.createTimerStopWatchCdInpSubPanel();
-      if (!(ctx.status & DebugJS.STATE_REINIT)) {
+      if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING_CD) &&
+          !(ctx.toolStatus & DebugJS.TOOL_ST_SW_TIMEUP)) {
         ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_RST;
       }
       ctx.switchTimerMode(ctx.toolTimerMode);
