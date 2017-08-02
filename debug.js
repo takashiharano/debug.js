@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708022229';
+  this.v = '201708030015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8176,6 +8176,7 @@ DebugJS.disable = function() {
   log.w = function(x) {};
   log.i = function(x) {};
   log.d = function(x) {};
+  log.v = function(x) {};
   log.t = function(x, xx) {};
   log.p = function(x, xx, xxx) {};
   log.stack = function() {};
