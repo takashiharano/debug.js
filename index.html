@@ -213,6 +213,7 @@ function displaySampleMessages() {
 
 var sampleMessages = [
   {fnc: log, msg: 'standard log sample.', delay: 50},
+  {fnc: log.v, msg: 'verbose log sample.', delay: 50},
   {fnc: log.d, msg: 'debug log sample.', delay: 50},
   {fnc: log.i, msg: 'information log sample.', delay: 50},
   {fnc: log.w, msg: 'warning log sample.', delay: 50},
@@ -302,6 +303,9 @@ function randomDemo() {
       break;
     case 4:
       log.d(str);
+      break;
+    case 5:
+      log.v(str);
       break;
     default:
       log(str);
@@ -1023,6 +1027,12 @@ function onFileLoaded(file, content, isB64) {}</pre>
     <td class="name">log</td>
     <td>message string</td>
     <td>Output standard log</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.v</td>
+    <td>message string</td>
+    <td>Output verbose log <span class="annotation">The messages are not displayed by default filter setting</span></td>
   </tr>
 
   <tr>
@@ -2227,6 +2237,11 @@ debug log<br>
 <td>
 info log<br>
 <button onclick="log.i(logMessageText.value);">log.i()</button>
+</td>
+
+<td>
+info log<br>
+<button onclick="log.v(logMessageText.value);">log.v()</button>
 </td>
 </tr>
 

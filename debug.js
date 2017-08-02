@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708020739';
+  this.v = '201708022054';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -31,6 +31,7 @@ var DebugJS = DebugJS || function() {
     fontSize: 12,
     fontFamily: 'Consolas, monospace',
     fontColor: '#fff',
+    logColorV: '#aaa',
     logColorD: '#ccc',
     logColorI: '#9ef',
     logColorW: '#fe0',
@@ -241,6 +242,7 @@ var DebugJS = DebugJS || function() {
   this.logHeaderPanel = null;
   this.filterBtnAll = null;
   this.filterBtnStd = null;
+  this.filterBtnVrb = null;
   this.filterBtnDbg = null;
   this.filterBtnInf = null;
   this.filterBtnWrn = null;
@@ -368,18 +370,20 @@ DebugJS.TOOL_TIMER_MODE_SW_CU = 1;
 DebugJS.TOOL_TIMER_MODE_SW_CD = 2;
 DebugJS.TOOL_TIMER_BTN_COLOR = '#eee';
 DebugJS.LOG_FILTER_LOG = 0x1;
-DebugJS.LOG_FILTER_DBG = 0x2;
-DebugJS.LOG_FILTER_INF = 0x4;
-DebugJS.LOG_FILTER_WRN = 0x8;
-DebugJS.LOG_FILTER_ERR = 0x10;
+DebugJS.LOG_FILTER_VRB = 0x2;
+DebugJS.LOG_FILTER_DBG = 0x4;
+DebugJS.LOG_FILTER_INF = 0x8;
+DebugJS.LOG_FILTER_WRN = 0x10;
+DebugJS.LOG_FILTER_ERR = 0x20;
 DebugJS.LOG_FILTER_ALL = DebugJS.LOG_FILTER_LOG | DebugJS.LOG_FILTER_DBG | DebugJS.LOG_FILTER_INF | DebugJS.LOG_FILTER_WRN | DebugJS.LOG_FILTER_ERR;
 DebugJS.LOG_TYPE_LOG = 0x1;
-DebugJS.LOG_TYPE_DBG = 0x2;
-DebugJS.LOG_TYPE_INF = 0x4;
-DebugJS.LOG_TYPE_WRN = 0x8;
-DebugJS.LOG_TYPE_ERR = 0x10;
-DebugJS.LOG_TYPE_SYS = 0x20;
-DebugJS.LOG_TYPE_MLT = 0x40;
+DebugJS.LOG_TYPE_VRB = 0x2;
+DebugJS.LOG_TYPE_DBG = 0x4;
+DebugJS.LOG_TYPE_INF = 0x8;
+DebugJS.LOG_TYPE_WRN = 0x10;
+DebugJS.LOG_TYPE_ERR = 0x20;
+DebugJS.LOG_TYPE_SYS = 0x40;
+DebugJS.LOG_TYPE_MLT = 0x80;
 DebugJS.ELMINFO_STATE_SELECT = 0x1;
 DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
 DebugJS.ERR_STATE_NONE = 0;
@@ -414,10 +418,10 @@ DebugJS.SIZE_ST_FULL_W = 4;
 DebugJS.SIZE_ST_FULL_H = 5;
 DebugJS.SIZE_ST_FULL_WH = 6;
 DebugJS.DBGWIN_POS_NONE = -9999;
-DebugJS.WINDOW_SHADOW = 10;
-DebugJS.WINDOW_BORDER = 1;
-DebugJS.WINDOW_PADDING = 1;
-DebugJS.WINDOW_ADJUST = ((DebugJS.WINDOW_BORDER * 2) + (DebugJS.WINDOW_PADDING * 2));
+DebugJS.WIN_SHADOW = 10;
+DebugJS.WIN_BORDER = 1;
+DebugJS.WIN_PADDING = 1;
+DebugJS.WIN_ADJUST = ((DebugJS.WIN_BORDER * 2) + (DebugJS.WIN_PADDING * 2));
 DebugJS.OVERLAY_PANEL_HEIGHT = 77; //%
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
@@ -567,7 +571,7 @@ DebugJS.prototype = {
       ctx.dbgWin.style.position = 'fixed';
       ctx.dbgWin.style.zIndex = 0x7fffffff;
       ctx.dbgWin.style.width = ctx.computedWidth + 'px';
-      ctx.dbgWin.style.boxShadow = DebugJS.WINDOW_SHADOW + 'px ' + DebugJS.WINDOW_SHADOW + 'px 10px rgba(0,0,0,.3)';
+      ctx.dbgWin.style.boxShadow = DebugJS.WIN_SHADOW + 'px ' + DebugJS.WIN_SHADOW + 'px 10px rgba(0,0,0,.3)';
       ctx.bodyEl.appendChild(ctx.dbgWin);
       if (ctx.options.mode == 'kiosk') {
         ctx.setupKioskMode();
@@ -578,7 +582,7 @@ DebugJS.prototype = {
       ctx.dbgWin.style.position = 'relative';
     }
     ctx.dbgWin.style.display = 'block';
-    ctx.dbgWin.style.padding = DebugJS.WINDOW_BORDER + 'px';
+    ctx.dbgWin.style.padding = DebugJS.WIN_BORDER + 'px';
     ctx.dbgWin.style.lineHeight = '1em';
     ctx.dbgWin.style.boxSizing = 'content-box';
     ctx.dbgWin.style.border = ctx.options.border;
@@ -748,10 +752,10 @@ DebugJS.prototype = {
 
     styles['.' + ctx.id + '-overlay-panel-full'] = {
       'position': 'absolute',
-      'top': (ctx.computedFontSize + DebugJS.WINDOW_ADJUST) + 'px',
+      'top': (ctx.computedFontSize + DebugJS.WIN_ADJUST) + 'px',
       'left': '1px',
-      'width': 'calc(100% - ' + (DebugJS.WINDOW_SHADOW + DebugJS.WINDOW_ADJUST - ((overlayPanelPadding * 2) + (overlayPanelBorder * 2))) + 'px)',
-      'height': 'calc(100% - ' + ((ctx.computedFontSize + DebugJS.WINDOW_ADJUST) + DebugJS.WINDOW_SHADOW + ctx.computedFontSize + 10 - (overlayPanelPadding * 2)) + 'px)',
+      'width': 'calc(100% - ' + (DebugJS.WIN_SHADOW + DebugJS.WIN_ADJUST - ((overlayPanelPadding * 2) + (overlayPanelBorder * 2))) + 'px)',
+      'height': 'calc(100% - ' + ((ctx.computedFontSize + DebugJS.WIN_ADJUST) + DebugJS.WIN_SHADOW + ctx.computedFontSize + 10 - (overlayPanelPadding * 2)) + 'px)',
       'padding': overlayPanelPadding + 'px',
       'border': 'solid ' + overlayPanelBorder + 'px #333',
       'background': 'rgba(0,0,0,0.5)',
@@ -893,8 +897,8 @@ DebugJS.prototype = {
         }
       }
     } else {
-      ctx.initWidth = ctx.dbgWin.offsetWidth - DebugJS.WINDOW_ADJUST;
-      ctx.initHeight = ctx.dbgWin.offsetHeight - DebugJS.WINDOW_ADJUST;
+      ctx.initWidth = ctx.dbgWin.offsetWidth - DebugJS.WIN_ADJUST;
+      ctx.initHeight = ctx.dbgWin.offsetHeight - DebugJS.WIN_ADJUST;
     }
     ctx.windowExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.options.zoom;
     ctx.initExtension();
@@ -1378,10 +1382,11 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.filterBtnAll = ctx.createLogFilterButton('ALL', 'filterBtnAll', 'btnColor');
     ctx.filterBtnStd = ctx.createLogFilterButton('LOG', 'filterBtnStd', 'fontColor');
-    ctx.filterBtnDbg = ctx.createLogFilterButton('DBG', 'filterBtnDbg', 'logColorD');
-    ctx.filterBtnInf = ctx.createLogFilterButton('INF', 'filterBtnInf', 'logColorI');
-    ctx.filterBtnWrn = ctx.createLogFilterButton('WRN', 'filterBtnWrn', 'logColorW');
     ctx.filterBtnErr = ctx.createLogFilterButton('ERR', 'filterBtnErr', 'logColorE');
+    ctx.filterBtnWrn = ctx.createLogFilterButton('WRN', 'filterBtnWrn', 'logColorW');
+    ctx.filterBtnInf = ctx.createLogFilterButton('INF', 'filterBtnInf', 'logColorI');
+    ctx.filterBtnDbg = ctx.createLogFilterButton('DBG', 'filterBtnDbg', 'logColorD');
+    ctx.filterBtnVrb = ctx.createLogFilterButton('VRB', 'filterBtnVrb', 'logColorV');
 
     ctx.filterInputLabel = document.createElement('span');
     ctx.filterInputLabel.style.marginLeft = '4px';
@@ -1389,7 +1394,7 @@ DebugJS.prototype = {
     ctx.filterInputLabel.innerText = 'Filter:';
     ctx.logHeaderPanel.appendChild(ctx.filterInputLabel);
 
-    var filterWidth = 'calc(100% - 23.5em)';
+    var filterWidth = 'calc(100% - 26.5em)';
     ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.options.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
     ctx.filterInput.style.setProperty('position', 'relative', 'important');
     ctx.filterInput.style.setProperty('top', '-2px', 'important');
@@ -1713,13 +1718,19 @@ DebugJS.prototype = {
   toggleLogFilter: function(filter) {
     var ctx = DebugJS.ctx;
     if (filter == DebugJS.LOG_FILTER_ALL) {
-      if (ctx.logFilter == DebugJS.LOG_FILTER_ALL) {
+      if ((ctx.logFilter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) {
         ctx.logFilter = 0;
       } else {
-        ctx.logFilter = DebugJS.LOG_FILTER_ALL;
+        ctx.logFilter |= filter;
+      }
+    } else if (filter == DebugJS.LOG_FILTER_VRB) {
+      if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) {
+        ctx.logFilter &= ~filter;
+      } else {
+        ctx.logFilter |= filter;
       }
     } else {
-      if (ctx.logFilter == DebugJS.LOG_FILTER_ALL) {
+      if ((ctx.logFilter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) {
         ctx.logFilter = filter;
       } else {
         if (ctx.logFilter & filter) {
@@ -1735,8 +1746,9 @@ DebugJS.prototype = {
 
   updateLogFilterButtons: function() {
     var ctx = DebugJS.ctx;
-    ctx.filterBtnAll.style.color = (ctx.logFilter == DebugJS.LOG_FILTER_ALL) ? DebugJS.ctx.options.btnColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnAll.style.color = ((ctx.logFilter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? DebugJS.ctx.options.btnColor : DebugJS.COLOR_INACTIVE;
     ctx.filterBtnStd.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_LOG) ? DebugJS.ctx.options.fontColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnVrb.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_VRB) ? DebugJS.ctx.options.logColorV : DebugJS.COLOR_INACTIVE;
     ctx.filterBtnDbg.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_DBG) ? DebugJS.ctx.options.logColorD : DebugJS.COLOR_INACTIVE;
     ctx.filterBtnInf.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_INF) ? DebugJS.ctx.options.logColorI : DebugJS.COLOR_INACTIVE;
     ctx.filterBtnWrn.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_WRN) ? DebugJS.ctx.options.logColorW : DebugJS.COLOR_INACTIVE;
@@ -1938,7 +1950,7 @@ DebugJS.prototype = {
     var headPanelH = (ctx.headPanel) ? ctx.headPanel.offsetHeight : 0;
     var infoPanelH = (ctx.infoPanel) ? ctx.infoPanel.offsetHeight : 0;
     var cmdPanelH = (ctx.cmdPanel) ? ctx.cmdPanel.offsetHeight : 0;
-    var mainPanelHeight = ctx.dbgWin.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WINDOW_ADJUST;
+    var mainPanelHeight = ctx.dbgWin.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WIN_ADJUST;
     ctx.mainPanel.style.height = mainPanelHeight + 'px';
   },
 
@@ -2101,6 +2113,9 @@ DebugJS.prototype = {
           break;
         case DebugJS.LOG_TYPE_DBG:
           if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.options.logColorD + '">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_VRB:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) line += lineNum + '<span style="color:' + ctx.options.logColorV + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_SYS:
           if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="color:' + ctx.options.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
@@ -2559,9 +2574,9 @@ DebugJS.prototype = {
 
   saveSize: function() {
     var ctx = DebugJS.ctx;
-    var shadow = (ctx.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
-    ctx.orgSizePos.w = (ctx.dbgWin.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
-    ctx.orgSizePos.h = (ctx.dbgWin.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
+    var shadow = (ctx.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
+    ctx.orgSizePos.w = (ctx.dbgWin.offsetWidth + DebugJS.WIN_BORDER - shadow);
+    ctx.orgSizePos.h = (ctx.dbgWin.offsetHeight + DebugJS.WIN_BORDER - shadow);
   },
 
   savePos: function() {
@@ -2593,8 +2608,8 @@ DebugJS.prototype = {
 
   resetDebugWindowSizePos: function() {
     var ctx = DebugJS.ctx;
-    var w = (ctx.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
-    var h = (ctx.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
+    var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
+    var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
     ctx.setWindowPosition(ctx.options.position, ctx.initWidth, ctx.initHeight);
     ctx.setDebugWindowSize(w, h);
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
@@ -4507,7 +4522,7 @@ DebugJS.prototype = {
       ctx.fileLoaderLabelB64.appendChild(ctx.fileLoaderRadioB64);
 
       ctx.filePreviewWrapper = document.createElement('div');
-      ctx.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + 2) + 'px)', 'important');
+      ctx.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)', 'important');
       ctx.filePreviewWrapper.style.setProperty('height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)', 'important');
       ctx.filePreviewWrapper.style.setProperty('margin-bottom', '4px', 'important');
       ctx.filePreviewWrapper.style.setProperty('padding', '2px', 'important');
@@ -4528,7 +4543,7 @@ DebugJS.prototype = {
       ctx.filePreview.innerText = 'Drop a file here';
 
       ctx.fileLoaderFooter = document.createElement('div');
-      ctx.fileLoaderFooter.style.width = 'calc(100% - ' + (DebugJS.WINDOW_ADJUST + DebugJS.WINDOW_SHADOW) + 'px)';
+      ctx.fileLoaderFooter.style.width = 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)';
       ctx.fileLoaderFooter.style.height = (ctx.computedFontSize + 3) + 'px';
       ctx.fileLoaderFooter.style.opacity = 0;
       ctx.fileLoaderFooter.style.transition = 'opacity 0.5s linear';
@@ -4543,7 +4558,7 @@ DebugJS.prototype = {
       ctx.fileLoaderFooter.appendChild(ctx.fileLoadProgressBar);
 
       ctx.fileLoadProgress = document.createElement('div');
-      ctx.fileLoadProgress.style.width = 'calc(100% - ' + (DebugJS.WINDOW_BORDER * 2) + 'px)';
+      ctx.fileLoadProgress.style.width = 'calc(100% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
       ctx.fileLoadProgress.style.height = 'auto';
       ctx.fileLoadProgress.style.padding = '1px';
       ctx.fileLoadProgress.style.border = 'none';
@@ -4678,7 +4693,7 @@ DebugJS.prototype = {
       var total = e.total;
       var loaded = e.loaded;
       var percentLoaded = (total == 0) ? 100 : Math.round((loaded / total) * 100);
-      ctx.fileLoadProgress.style.width = 'calc(' + percentLoaded + '% - ' + (DebugJS.WINDOW_BORDER * 2) + 'px)';
+      ctx.fileLoadProgress.style.width = 'calc(' + percentLoaded + '% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
       ctx.fileLoadProgress.textContent = percentLoaded + '%';
       ctx.updateFilePreview('LOADING...\n' + DebugJS.formatDec(loaded) + ' / ' + DebugJS.formatDec(total) + ' bytes');
     }
@@ -4978,7 +4993,7 @@ DebugJS.prototype = {
   saveMemo: function() {
     var memo = DebugJS.ctx.memoEditor.value;
     if (memo != '') {
-      localStorage.setItem('DebugJS-memo', DebugJS.ctx.memoEditor.value);
+      localStorage.setItem('DebugJS-memo', memo);
     } else {
       localStorage.removeItem('DebugJS-memo');
     }
@@ -5141,8 +5156,8 @@ DebugJS.prototype = {
     sizePos.h = ctx.dbgWin.clientHeight;
     sizePos.x1 = rect.left - resizeBoxSize / 2;
     sizePos.y1 = rect.top - resizeBoxSize / 2;
-    sizePos.x2 = sizePos.x1 + ctx.dbgWin.clientWidth + resizeBoxSize + DebugJS.WINDOW_BORDER;
-    sizePos.y2 = sizePos.y1 + ctx.dbgWin.clientHeight + resizeBoxSize + DebugJS.WINDOW_BORDER;
+    sizePos.x2 = sizePos.x1 + ctx.dbgWin.clientWidth + resizeBoxSize + DebugJS.WIN_BORDER;
+    sizePos.y2 = sizePos.y1 + ctx.dbgWin.clientHeight + resizeBoxSize + DebugJS.WIN_BORDER;
     return sizePos;
   },
 
@@ -5220,9 +5235,9 @@ DebugJS.prototype = {
 
   saveExpandModeOrgSizeAndPos: function() {
     var ctx = DebugJS.ctx;
-    var shadow = (ctx.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WINDOW_SHADOW / 2) : 0;
-    ctx.expandModeOrg.w = (ctx.dbgWin.offsetWidth + DebugJS.WINDOW_BORDER - shadow);
-    ctx.expandModeOrg.h = (ctx.dbgWin.offsetHeight + DebugJS.WINDOW_BORDER - shadow);
+    var shadow = (ctx.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
+    ctx.expandModeOrg.w = (ctx.dbgWin.offsetWidth + DebugJS.WIN_BORDER - shadow);
+    ctx.expandModeOrg.h = (ctx.dbgWin.offsetHeight + DebugJS.WIN_BORDER - shadow);
     ctx.expandModeOrg.t = ctx.dbgWin.offsetTop;
     ctx.expandModeOrg.l = ctx.dbgWin.offsetLeft;
   },
@@ -6053,8 +6068,8 @@ DebugJS.prototype = {
         ctx.updateWinCtrlBtnPanel();
         break;
       case 'normal':
-        var w = (ctx.initWidth - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
-        var h = (ctx.initHeight - (DebugJS.WINDOW_SHADOW / 2) + DebugJS.WINDOW_BORDER);
+        var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
+        var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
         ctx.setDebugWindowSize(w, h);
         ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
         ctx.updateWinCtrlBtnPanel();
@@ -7815,6 +7830,9 @@ DebugJS.dumpLog = function(type, b64) {
         case DebugJS.LOG_TYPE_DBG:
           type = 'DBG';
           break;
+        case DebugJS.LOG_TYPE_VRB:
+          type = 'VRB';
+          break;
         case DebugJS.LOG_TYPE_SYS:
           type = 'SYS';
           break;
@@ -7925,6 +7943,10 @@ DebugJS.log.i = function(m) {
 
 DebugJS.log.d = function(m) {
   DebugJS.log.out(m, DebugJS.LOG_TYPE_DBG);
+};
+
+DebugJS.log.v = function(m) {
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_VRB);
 };
 
 DebugJS.log.s = function(m) {
@@ -8074,6 +8096,11 @@ log.i = function(m) {
 log.d = function(m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.d(m);
+};
+
+log.v = function(m) {
+  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  DebugJS.log.v(m);
 };
 
 log.t = function(m, n) {
