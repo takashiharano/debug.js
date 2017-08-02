@@ -355,7 +355,7 @@ function errorDemo() {
 var buf = (window.ArrayBuffer ? new ArrayBuffer(32) : null);
 
 var a = {
-  key1: 'val1',
+  key1: '1234567890abcdefghijklmnopqrstuvwxyz',
   key2: '123',
   key3: 123,
   key4: {
@@ -394,6 +394,7 @@ var g = null;
 var h = {
   abc: [foo, bar, (window.console ? console.log : null), buf, (new Date()), b, foo]
 }
+
 var z = {};
 
 function onFileLoaded(file, content, isB64) {

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708022054';
+  this.v = '201708022229';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -325,6 +325,7 @@ var DebugJS = DebugJS || function() {
   this.properties = {
     esc: {value: 'enable', restriction: /^enable$|^disable$/},
     dumplimit: {value: 1000, restriction: /^[0-9]+$/},
+    dumpvallen: {value: 256, restriction: /^[0-9]+$/},
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
     hexdumplimit: {value: 102400, restriction: /^[0-9]+$/}
   };
@@ -6473,6 +6474,7 @@ DebugJS.execCmdP = function(arg) {
   var start = 0;
   var levelLimit = 0;
   var noMaxLimit = false;
+  var valLenLimit = DebugJS.ctx.properties.dumpvallen.value;
   if (opt != null) {
     start = 1;
     levelLimit = opt[1];
@@ -6484,7 +6486,7 @@ DebugJS.execCmdP = function(arg) {
   }
   for (var i = start, len = args.length; i < len; i++) {
     if (args[i] == '') continue;
-    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ', false, ' + levelLimit + ', ' + noMaxLimit + ');DebugJS.log.mlt(DebugJS.buf);';
+    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ', false, ' + levelLimit + ', ' + noMaxLimit + ', ' + valLenLimit + ');DebugJS.log.mlt(DebugJS.buf);';
     try {
       eval(cmd);
     } catch (e) {
@@ -6494,7 +6496,7 @@ DebugJS.execCmdP = function(arg) {
 };
 
 DebugJS.INDENT_SP = ' ';
-DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
+DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit, valLenLimit) {
   if (levelLimit == undefined) {
     levelLimit = 0;
   }
@@ -6502,7 +6504,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
   if (typeof obj === 'function') {
     arg.dump += '<span style="color:#4c4">function</span>()\n';
   }
-  var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit);
+  var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimit);
   if ((!noMaxLimit) && (ret.cnt >= DebugJS.ctx.properties.dumplimit.value)) {
     DebugJS.log.w('The object is too large. (>=' + ret.cnt + ')');
   }
@@ -6511,7 +6513,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit) {
   return ret.dump;
 };
 
-DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
+DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimit) {
   try {
     if ((levelLimit >= 1) && (arg.lv > levelLimit)) {
       return arg;
@@ -6549,7 +6551,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
           if (!toJson) {
             arg.dump += '\n' + indent + '[' + i + '] ';
           }
-          arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit, noMaxLimit);
+          arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit, noMaxLimit, valLenLimit);
           arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
           sibling++;
         }
@@ -6635,7 +6637,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
           }
           if ((typeof obj[key] !== 'function') || (hasChildren)) {
             arg.lv++;
-            arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, noMaxLimit);
+            arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, noMaxLimit, valLenLimit);
             arg.lv--;
           }
           if (typeof obj[key] === 'function') {
@@ -6692,8 +6694,15 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit) {
       }
       arg.cnt++;
     } else if (typeof obj === 'string') {
-      var str = obj.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      arg.dump += '"' + str + '"'; arg.cnt++;
+      var str;
+      if (obj.length > valLenLimit) {
+        str = obj.substr(0, valLenLimit);
+        str = str.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '<span style="color:#aaa">...</span>';
+      } else {
+        str = obj.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+      arg.dump += '"' + str + '"';
+      arg.cnt++;
     } else {
       arg.dump += obj; arg.cnt++;
     }
@@ -6774,7 +6783,8 @@ DebugJS.getChildElements = function(el, list) {
 DebugJS.execCmdJson = function(json, flg, lv) {
   try {
     var j = JSON.parse(json);
-    var jsn = DebugJS.objDump(j, flg, lv);
+    var valLen = DebugJS.ctx.properties.dumpvallen.value;
+    var jsn = DebugJS.objDump(j, flg, lv, false, valLen);
     DebugJS.log.mlt(jsn);
   } catch (e) {
     DebugJS.log.e('JSON format error.');
@@ -7954,7 +7964,8 @@ DebugJS.log.s = function(m) {
 };
 
 DebugJS.log.p = function(o, l, m) {
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false);
+  var valLen = DebugJS.ctx.properties.dumpvallen.value;
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false, valLen);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
 };
 
