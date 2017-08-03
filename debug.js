@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708032057';
+  this.v = '201708032131';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -409,8 +409,8 @@ DebugJS.DBGWIN_MIN_W = 292;
 DebugJS.DBGWIN_MIN_H = 155;
 DebugJS.DBGWIN_EXPAND_W = 960;
 DebugJS.DBGWIN_EXPAND_H = 640;
-DebugJS.DBGWIN_EXPAND_W2 = 750;
-DebugJS.DBGWIN_EXPAND_H2 = 550;
+DebugJS.DBGWIN_EXPAND_W2 = 800;
+DebugJS.DBGWIN_EXPAND_H2 = 580;
 DebugJS.SIZE_ST_MIN = -1;
 DebugJS.SIZE_ST_NORMAL = 0;
 DebugJS.SIZE_ST_EXPANDED = 1;
