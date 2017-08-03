@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708032131';
+  this.v = '201708040037';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2950,6 +2950,24 @@ DebugJS.prototype = {
     var docOnselectstart = ctx.createFoldingText(document.onselectstart, 'documentOnselectstart', DebugJS.OMIT_LAST);
     var docOncontextmenu = ctx.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
+    var lsKeys = '';
+    for (i = 0; i < localStorage.length; i++) {
+      if (i == 0) {
+        lsKeys += '(' + i + ') = ' + localStorage.key(i);
+      } else {
+        lsKeys += '\n    (' + i + ') = ' + localStorage.key(i);
+      }
+    }
+
+    var ssKeys = '';
+    for (i = 0; i < sessionStorage.length; i++) {
+      if (i == 0) {
+        ssKeys += '(' + i + ') = ' + sessionStorage.key(i);
+      } else {
+        ssKeys += '\n    (' + i + ') = ' + sessionStorage.key(i);
+      }
+    }
+
     var html = '<pre>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">screen.</span>     : ' + screenSize + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n' +
@@ -2979,6 +2997,7 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> vendor</span>       : ' + DebugJS.setStyleIfObjNotAvailable(navigator.vendor) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> platform</span>     : ' + DebugJS.setStyleIfObjNotAvailable(navigator.platform) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> oscpu</span>        : ' + DebugJS.setStyleIfObjNotAvailable(navigator.oscpu) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
     '<div class="' + ctx.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">window.</span>\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> onload</span>       : ' + winOnload + '\n' +
@@ -3008,11 +3027,18 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> onselectstart</span>: ' + docOnselectstart + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> oncontextmenu</span>: ' + docOncontextmenu + '\n' +
     '<div class="' + ctx.id + '-separator"></div>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> location</span>  : ' + ctx.createFoldingText(document.location, 'docLocation' + i, DebugJS.OMIT_MID) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> baseURI</span>   : ' + ctx.createFoldingText(document.baseURI, 'docBaseURL' + i, DebugJS.OMIT_MID) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> location</span> : ' + ctx.createFoldingText(document.location, 'docLocation' + i, DebugJS.OMIT_MID) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> baseURI</span>  : ' + ctx.createFoldingText(document.baseURI, 'docBaseURL' + i, DebugJS.OMIT_MID) + '\n' +
     '<div class="' + ctx.id + '-separator"></div>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">cookieEnabled</span>: ' + navigator.cookieEnabled + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Cookie</span>: ' + ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">localStorage.</span>\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> length</span> = ' + localStorage.length + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> key</span>' + lsKeys + '\n' +
+    '<div class="' + ctx.id + '-separator"></div>' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">sessionStorage.</span>\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> length</span> = ' + sessionStorage.length + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> key</span>' + ssKeys + '\n' +
+    '<div class="' + ctx.id + '-separator"></div>' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">document.cookie</span>: ' + ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID) + '\n' +
     '<div class="' + ctx.id + '-separator"></div>' +
     '</pre>';
     ctx.sysInfoPanelBody.innerHTML = html;
