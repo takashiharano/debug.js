@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708040037';
+  this.v = '201708040108';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -465,6 +465,7 @@ DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
 DebugJS.EXPANDBTN = '&gt;';
 DebugJS.CLOSEBTN = 'v';
 DebugJS.LS_AVAILABLE = false;
+DebugJS.SS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
@@ -2951,20 +2952,24 @@ DebugJS.prototype = {
     var docOncontextmenu = ctx.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
     var lsKeys = '';
-    for (i = 0; i < localStorage.length; i++) {
-      if (i == 0) {
-        lsKeys += '(' + i + ') = ' + localStorage.key(i);
-      } else {
-        lsKeys += '\n    (' + i + ') = ' + localStorage.key(i);
+    if (DebugJS.LS_AVAILABLE) {
+      for (i = 0; i < localStorage.length; i++) {
+        if (i == 0) {
+          lsKeys += '(' + i + ') = ' + localStorage.key(i);
+        } else {
+          lsKeys += '\n    (' + i + ') = ' + localStorage.key(i);
+        }
       }
     }
 
     var ssKeys = '';
-    for (i = 0; i < sessionStorage.length; i++) {
-      if (i == 0) {
-        ssKeys += '(' + i + ') = ' + sessionStorage.key(i);
-      } else {
-        ssKeys += '\n    (' + i + ') = ' + sessionStorage.key(i);
+    if (DebugJS.SS_AVAILABLE) {
+      for (i = 0; i < sessionStorage.length; i++) {
+        if (i == 0) {
+          ssKeys += '(' + i + ') = ' + sessionStorage.key(i);
+        } else {
+          ssKeys += '\n    (' + i + ') = ' + sessionStorage.key(i);
+        }
       }
     }
 
@@ -3030,14 +3035,20 @@ DebugJS.prototype = {
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> location</span> : ' + ctx.createFoldingText(document.location, 'docLocation' + i, DebugJS.OMIT_MID) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> baseURI</span>  : ' + ctx.createFoldingText(document.baseURI, 'docBaseURL' + i, DebugJS.OMIT_MID) + '\n' +
     '<div class="' + ctx.id + '-separator"></div>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">localStorage.</span>\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> length</span> = ' + localStorage.length + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> key</span>' + lsKeys + '\n' +
-    '<div class="' + ctx.id + '-separator"></div>' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">sessionStorage.</span>\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> length</span> = ' + sessionStorage.length + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> key</span>' + ssKeys + '\n' +
-    '<div class="' + ctx.id + '-separator"></div>' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">localStorage.</span>\n';
+    if (DebugJS.LS_AVAILABLE) {
+      html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> key</span>' + lsKeys + '\n';
+    } else {
+      html += ' <span class="' + ctx.id + '-na">undefined</span>';
+    }
+    html += '<div class="' + ctx.id + '-separator"></div>' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">sessionStorage.</span>\n';
+    if (DebugJS.SS_AVAILABLE) {
+      html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> key</span>' + ssKeys + '\n';
+    } else {
+      html += ' <span class="' + ctx.id + '-na">undefined</span>';
+    }
+    html += '<div class="' + ctx.id + '-separator"></div>' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">document.cookie</span>: ' + ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID) + '\n' +
     '<div class="' + ctx.id + '-separator"></div>' +
     '</pre>';
@@ -3047,17 +3058,17 @@ DebugJS.prototype = {
   getLanguages: function(indent) {
     var ctx = DebugJS.ctx;
     var languages;
-    var navLanguages = navigator.languages;
-    if (navLanguages) {
-      for (var i = 0; i < navLanguages.length; i++) {
+    var navLangs = navigator.languages;
+    if (navLangs) {
+      for (var i = 0; i < navLangs.length; i++) {
         if (i == 0) {
-          languages = '[' + i + '] ' + navLanguages[i];
+          languages = '[' + i + '] ' + navLangs[i];
         } else {
-          languages += '\n' + indent + '[' + i + '] ' + navLanguages[i];
+          languages += '\n' + indent + '[' + i + '] ' + navLangs[i];
         }
       }
     } else {
-      languages = DebugJS.setStyleIfObjNotAvailable(navLanguages);
+      languages = DebugJS.setStyleIfObjNotAvailable(navLangs);
     }
     return languages;
   },
@@ -8177,6 +8188,9 @@ DebugJS.start = function() {
   if (!window._) DebugJS._AVAILABLE = true;
   if (typeof window.localStorage != 'undefined') {
     DebugJS.LS_AVAILABLE = true;
+  }
+  if (typeof window.sessionStorage != 'undefined') {
+    DebugJS.SS_AVAILABLE = true;
   }
   window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
   window.addEventListener('load', DebugJS.onLoad, true);
