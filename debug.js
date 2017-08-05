@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708042304';
+  this.v = '201708051816';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -470,9 +470,9 @@ DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 '',
-'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    dbg.call(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
+'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    setTimeout(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
-'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    dbg.call(test);\n  }\n}\n'
+'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000">\n\n</div>\n',
@@ -8060,11 +8060,6 @@ DebugJS.time.check = function(timerName) {
   return DebugJS.timeCheck(timerName, now);
 };
 
-DebugJS.call = function(fnc, delay) {
-  if (delay === undefined) delay = 0;
-  return setTimeout(fnc, delay);
-};
-
 DebugJS.cmd = function(c, echo) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.ctx._execCmd(c, echo);
@@ -8228,7 +8223,6 @@ DebugJS.disable = function() {
   DebugJS.time.end = function(x, xx) {};
   DebugJS.time.check = function(x) {};
   DebugJS.init = function(x) {};
-  DebugJS.call = function(x, xx) {};
   DebugJS.cmd = function(x, xx) {};
   DebugJS.countElements = function(x, xx) {};
   DebugJS.led = function(x) {};

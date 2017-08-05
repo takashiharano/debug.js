@@ -278,7 +278,7 @@ function msgDemo() {
   msgDemoCnt++;
   dbg.msg('Message Display Demo(cnt=' + msgDemoCnt + ')');
   if (msgDemoCnt <= msgDemoCntMax) {
-    dbg.call(msgDemo, msgDemoSpeed);
+    setTimeout(msgDemo, msgDemoSpeed);
   } else {
     dbg.msg.clear();
     msgDemoCnt = 0;
@@ -1239,21 +1239,6 @@ dbg.countElements('.className');
 dbg.countElements('tagName');
 -&gt; Count elements which correspond to the tagName.
 </pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">
-      DebugJS.call<br>
-      <span class="alias">( dbg.call )</span>
-    </td>
-    <td>
-      arg1: function<br>
-      arg2: delay<span class="annotation">(opt) default: 0ms</span>
-    </td>
-    <td>
-      Call function asynchronously<br>
-      <span class="annotation">This function is an alias of "setTimeout()".</span>
     </td>
   </tr>
 
