@@ -48,6 +48,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .button-100 {width:100px !important;}
 .dl-button {position:relative; width:105px; height:25px; margin:0; font-size:14px;}
 .demo-button {position:relative; width:74px; height:22px; margin:0; font-size:14px; background:#04a; color:#aaa}
+.demo-button2 {position:relative; width:50px; height:18px; margin:0 0 0 10px; font-size:12px; background:#06e; color:#eee}
 .reset-button {width:46px; height:18px; font-size:10px; font-qweight:normal;}
 .button:hover {cursor:pointer; background:#00a8ff; text-decoration:none;}
 .button-green {background:#00cc68;}
@@ -1422,12 +1423,68 @@ max: maximum length
 
   <tr>
     <td class="name">
-      DebugJS.escTag<br>
-      <span class="alias">( dbg.escTag )</span>
+      DebugJS.escTags<br>
+      <span class="alias">( dbg.escTags )</span>
     </td>
     <td>string</td>
     <td>
       Replace "&lt;" and "&gt;" to "&amp;lt;" and "&amp;gt;".
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="name">
+      DebugJS.stopwatch<br>
+      <span class="alias">( dbg.stopwatch )</span>
+    </td>
+    <td></td>
+    <td>
+      Launch stopwatch function <button class="demo-button2" onclick="dbg.stopwatch();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.stopwatch.start<br>
+      <span class="alias">( dbg.stopwatch.start )</span>
+    </td>
+    <td></td>
+    <td>
+      Start stopwatch <button class="demo-button2" onclick="dbg.stopwatch.start();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.stopwatch.stop<br>
+      <span class="alias">( dbg.stopwatch.stop )</span>
+    </td>
+    <td></td>
+    <td>
+      Stop stopwatch (pause) <button class="demo-button2" onclick="dbg.stopwatch.stop();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.stopwatch.end<br>
+      <span class="alias">( dbg.stopwatch.end )</span>
+    </td>
+    <td></td>
+    <td>
+      Stop stopwatch (completely end measuring) <button class="demo-button2" onclick="dbg.stopwatch.end();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.stopwatch.reset<br>
+      <span class="alias">( dbg.stopwatch.reset )</span>
+    </td>
+    <td></td>
+    <td>
+      Reset stopwatch <button class="demo-button2" onclick="dbg.stopwatch.reset();">DEMO</button>
     </td>
   </tr>
 
