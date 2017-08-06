@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708061905';
+  this.v = '201708070728';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8170,6 +8170,7 @@ DebugJS.stopwatch.start = function() {
   var ctx = DebugJS.ctx;
   if (DebugJS.stopwatch()) {
     ctx.startTimerStopWatchCu();
+    DebugJS.log.s('Start stopwatch');
   }
 };
 
@@ -8180,10 +8181,14 @@ DebugJS.stopwatch.stop = function() {
   }
 };
 
-DebugJS.stopwatch.end = function() {
+DebugJS.stopwatch.end = function(msg) {
   var ctx = DebugJS.ctx;
   if (DebugJS.stopwatch()) {
     ctx.endTimerStopWatchCu();
+    var t = DebugJS.getTimerStr(ctx.timerSwTimeCu);
+    var m = '<span style="color:' + ctx.options.timerColor + '">' + t + '</span>';
+    if (msg != undefined) m += ' ' + msg;
+    DebugJS.log.s(m);
   }
   return ctx.timerSwTimeCu;
 };

@@ -48,7 +48,7 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 .button-100 {width:100px !important;}
 .dl-button {position:relative; width:105px; height:25px; margin:0; font-size:14px;}
 .demo-button {position:relative; width:74px; height:22px; margin:0; font-size:14px; background:#04a; color:#aaa}
-.demo-button2 {position:relative; width:50px; height:18px; margin:0 0 0 10px; font-size:12px; background:#06e; color:#eee}
+.demo-button2 {position:relative; width:50px; height:18px; margin:0 0 2px 10px; font-size:12px; background:#06e; color:#eee}
 .reset-button {width:46px; height:18px; font-size:10px; font-qweight:normal;}
 .button:hover {cursor:pointer; background:#00a8ff; text-decoration:none;}
 .button-green {background:#00cc68;}
@@ -1471,9 +1471,11 @@ max: maximum length
       DebugJS.stopwatch.end<br>
       <span class="alias">( dbg.stopwatch.end )</span>
     </td>
-    <td></td>
+    <td>message</td>
     <td>
-      Stop stopwatch (completely end measuring) <button class="demo-button2" onclick="dbg.stopwatch.end();">DEMO</button>
+      Stop stopwatch (completely end measuring)<br>
+      <button class="demo-button2" onclick="dbg.stopwatch.end();">DEMO</button> (w/o message)<br>
+      <button class="demo-button2" onclick="dbg.stopwatch.end('message');">DEMO</button> (w/ message)
     </td>
   </tr>
 
