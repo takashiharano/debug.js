@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708101655';
+  this.v = '201708110106';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -90,6 +90,7 @@ var DebugJS = DebugJS || function() {
   this.DEFAULT_ELM_ID = '_debug_';
   this.id = null;
   this.bodyEl = null;
+  this.bodyCursor = '';
   this.styleEl = null;
   this.dbgWin = null;
   this.winBody = null;
@@ -928,6 +929,7 @@ DebugJS.prototype = {
       if (!(ctx.status & DebugJS.STATE_RESIZABLE)) return;
       ctx.startResize(e);
       ctx.status |= state;
+      ctx.bodyCursor = ctx.bodyEl.style.cursor;
       ctx.bodyEl.style.cursor = cursor;
     };
     return area;
@@ -943,6 +945,7 @@ DebugJS.prototype = {
       if (!(ctx.status & DebugJS.STATE_RESIZABLE)) return;
       ctx.startResize(e);
       ctx.status |= state;
+      ctx.bodyCursor = ctx.bodyEl.style.cursor;
       ctx.bodyEl.style.cursor = cursor;
     };
     return area;
@@ -1947,7 +1950,7 @@ DebugJS.prototype = {
   endResize: function() {
     var ctx = DebugJS.ctx;
     ctx.status &= ~DebugJS.STATE_RESIZING_ALL;
-    ctx.bodyEl.style.cursor = 'auto';
+    ctx.bodyEl.style.cursor = ctx.bodyCursor;
   },
 
   resizeMainHeight: function() {
@@ -1992,12 +1995,15 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (!silent) DebugJS.log.s('Screen Measure ON.');
     ctx.status |= DebugJS.STATE_MEASURE;
+    ctx.bodyCursor = ctx.bodyEl.style.cursor;
+    ctx.bodyEl.style.cursor = 'default';
     ctx.updateMeasureBtn();
   },
 
   disableMeasureMode: function(silent) {
     var ctx = DebugJS.ctx;
     ctx.stopMeasure();
+    ctx.bodyEl.style.cursor = ctx.bodyCursor;
     ctx.status &= ~DebugJS.STATE_MEASURE;
     if (!silent) DebugJS.log.s('Screen Measure OFF.');
     ctx.updateMeasureBtn();
