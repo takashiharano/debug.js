@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708070728';
+  this.v = '201708101655';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4086,6 +4086,12 @@ DebugJS.prototype = {
     ctx.timerTxtMI.value = tm.mi;
     ctx.timerTxtSS.value = tm.ss;
     ctx.timerTxtSSS.value = tm.sss;
+    ctx.options.timerDefaultVal = {
+      hh: tm.hh,
+      mi: tm.mi,
+      ss: tm.ss,
+      sss: tm.sss
+    };
   },
 
   toggleTimerMode: function() {
