@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708110106';
+  this.v = '201708111853';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4087,7 +4087,7 @@ DebugJS.prototype = {
 
   updateTimeupTimeInp: function(v) {
     var ctx = DebugJS.ctx;
-    var tm = DebugJS.parseTime(v);
+    var tm = DebugJS.ms2struct(v, true);
     ctx.timerTxtHH.value = tm.hh;
     ctx.timerTxtMI.value = tm.mi;
     ctx.timerTxtSS.value = tm.ss;
@@ -4257,7 +4257,7 @@ DebugJS.prototype = {
 
   drawStopWatchCu: function() {
     var ctx = DebugJS.ctx;
-    var tm = DebugJS.parseTime(ctx.timerSwTimeCu);
+    var tm = DebugJS.ms2struct(ctx.timerSwTimeCu, true);
     ctx.timerStopWatchCuLabel.innerHTML = ctx.createTimeStrCu(tm);
   },
 
@@ -4365,7 +4365,7 @@ DebugJS.prototype = {
 
   drawStopWatchCd: function() {
     var ctx = DebugJS.ctx;
-    var tm = DebugJS.parseTime(ctx.timerSwTimeCd);
+    var tm = DebugJS.ms2struct(ctx.timerSwTimeCd, true);
     ctx.timerStopWatchCdLabel.innerHTML = ctx.createTimeStrCd(tm);
   },
 
@@ -6115,8 +6115,8 @@ DebugJS.prototype = {
     if (vals.length < 2) {
       return false;
     }
-    var timeL = DebugJS.convertTimeJson(vals[0]);
-    var timeR = DebugJS.convertTimeJson(vals[1]);
+    var timeL = DebugJS.str2ms(vals[0]);
+    var timeR = DebugJS.str2ms(vals[1]);
     if ((timeL == null) || (timeR == null)) {
       DebugJS.log.e('Invalid time format');
       return true;
@@ -6570,38 +6570,47 @@ DebugJS.getLogTime = function() {
   return t;
 };
 
-DebugJS.parseTime = function(timeMs) {
-  var wkPassedTimeSec = Math.floor(timeMs / 1000);
-  var passedHour;
-  if (wkPassedTimeSec >= 3600) {
-    passedHour = Math.floor(wkPassedTimeSec / 3600);
-    wkPassedTimeSec = (wkPassedTimeSec - (passedHour * 3600));
-  } else {
-    passedHour = 0;
+DebugJS.ms2struct = function(ms, format) {
+  var wk = ms;
+  var sign = false;
+  if (ms < 0) {
+    sign = true;
+    wk *= (-1);
   }
-  var passedMin;
-  if (wkPassedTimeSec >= 60) {
-    passedMin = Math.floor(wkPassedTimeSec / 60);
-    wkPassedTimeSec = (wkPassedTimeSec - (passedMin * 60));
-  } else {
-    passedMin = 0;
+  var hh = 0;
+  if (wk >= 3600000) {
+    hh = Math.floor(wk / 3600000);
+    wk -= (hh * 3600000);
   }
-  var passedSec = wkPassedTimeSec;
-  var passedMsec = ('00' + timeMs).slice(-3);
-  if (passedHour < 10) passedHour = '0' + passedHour;
-  if (passedMin < 10) passedMin = '0' + passedMin;
-  if (passedSec < 10) passedSec = '0' + passedSec;
+  var mi = 0;
+  if (wk >= 60000) {
+    mi = Math.floor(wk / 60000);
+    wk -= (mi * 60000);
+  }
+  var ss = Math.floor(wk / 1000);
+  var sss = wk - (ss * 1000);
   var tm = {
-    hh: passedHour,
-    mi: passedMin,
-    ss: passedSec,
-    sss: passedMsec
+    sign: sign,
+    hh: hh,
+    mi: mi,
+    ss: ss,
+    sss: sss
   };
+  if (format) {
+    if (tm.hh < 10) tm.hh = '0' + tm.hh;
+    if (tm.mi < 10) tm.mi = '0' + tm.mi;
+    if (tm.ss < 10) tm.ss = '0' + tm.ss;
+    if (tm.sss < 10) {
+      tm.sss = '00' + tm.sss;
+    } else if (tm.sss < 100) {
+      tm.sss = '0' + tm.sss;
+    }
+  }
   return tm;
 };
 
-DebugJS.getTimerStr = function(timeMs) {
-  var tm = DebugJS.parseTime(timeMs);
+DebugJS.getTimerStr = function(ms) {
+  var tm = DebugJS.ms2struct(ms, true);
   var ret = tm.hh + ':' + tm.mi + ':' + tm.ss + '.' + tm.sss;
   return ret;
 };
@@ -7296,9 +7305,9 @@ DebugJS.encodeUri = function(str) {
   return encodeURIComponent(str);
 };
 
-DebugJS.convertTimeJson = function(t) {
+DebugJS.str2ms = function(t) {
   var hour = min = sec = msec = 0;
-  var s;
+  var s = '0';
   var times = t.split(':');
   if (times.length == 3) {
     hour = times[0] | 0;
@@ -7307,168 +7316,48 @@ DebugJS.convertTimeJson = function(t) {
   } else if (times.length == 2) {
     hour = times[0] | 0;
     min = times[1] | 0;
-    s = '0';
   } else {
     return null;
   }
   var ss = s.split('.');
-  if (ss.length == 2) {
-    sec = ss[0] | 0;
-    msec = ((ss[1] + '00').substr(0, 3)) | 0;
-  } else {
-    sec = ss | 0;
+  sec = ss[0] | 0;
+  if (ss.length >= 2) {
+    msec = ss[1] | 0;
   }
-  if ((min >= 60) || (sec >= 60)) {
-    return null;
-  }
-  var time = {hour: hour, min: min, sec: sec, msec: msec};
+  var time = (hour * 60 * 60 * 1000) + (min * 60 * 1000) + (sec * 1000) + msec;
   return time;
 };
 
 DebugJS.subTime = function(tL, tR, byTheDay) {
-  var hh, mm, ss, ms;
-  var c = false;
-  if (tL.msec >= tR.msec) {
-    ms = tL.msec - tR.msec;
-  } else {
-    ms = 1000 - tR.msec + tL.msec;
-    c = true;
-  }
-  if (tL.sec > tR.sec) {
-    ss = tL.sec - tR.sec;
-    if (c) {
-      ss -= 1;
-    }
-    c = false;
-  } else if (tL.sec == tR.sec) {
-    ss = 0;
-    if (c) {
-      ss -= 1;
-      if (ss == -1) {
-        ss = 59;
-      }
-    }
-  } else {
-    ss = 60 - tR.sec + tL.sec;
-    if (c) {
-      ss -= 1;
-    }
-    c = true;
-  }
-
-  if (tL.min > tR.min) {
-    mm = tL.min - tR.min;
-    if (c) {
-      mm -= 1;
-    }
-    c = false;
-  } else if (tL.min == tR.min) {
-    mm = 0;
-    if (c) {
-      mm -= 1;
-      if (mm == -1) {
-        mm = 59;
-      }
-    }
-  } else {
-    mm = 60 - tR.min + tL.min;
-    if (c) {
-      mm -= 1;
-    }
-    c = true;
-  }
-
+  var res = tL - tR;
   var days = 0;
-  if (tL.hour > tR.hour) {
-    hh = tL.hour - tR.hour;
-    if (c) {
-      hh -= 1;
-    }
-    c = false;
-  } else if (tL.hour == tR.hour) {
-    hh = 0;
-    if (c) {
-      hh -= 1;
-      if ((byTheDay) && (hh == -1)) {
-        days = -1;
-        hh = 23;
-      }
-    }
-  } else {
-    hh = tL.hour - tR.hour;
-    if (c) {
-      hh -= 1;
-    }
-    if (byTheDay) {
-      days = Math.floor(hh / 24);
-      hh -= (24 * days);
-    }
-    c = true;
+  if ((res < 0) && (byTheDay)) {
+    days = Math.floor(res / 86400000) * (-1);
+    res += days * 86400000;
   }
-
-  var excess = '';
-  if (days < 0) {
-    excess = ' (' + days + ' Day' + ((days <= -2) ? 's' : '') + ')';
-  }
-  if (byTheDay) {
-    hh = ('0' + hh).slice(-2);
-  }
-  var ret = hh + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
-  return ret;
+  return DebugJS.calcTime(res, days, true);
 };
 
 DebugJS.addTime = function(tL, tR, byTheDay) {
-  var hh, mm, ss, ms;
-  var c = false;
-  ms = tR.msec + tL.msec;
-  if (ms >= 1000) {
-    ms -= 1000;
-    c = true;
-  }
-
-  ss = tL.sec + tR.sec;
-  if (c) {
-    ss++;
-  }
-  if (ss >= 60) {
-    ss -= 60;
-    c = true;
-  } else {
-    c = false;
-  }
-
-  mm = tL.min + tR.min;
-  if (c) {
-    mm++;
-  }
-  if (mm >= 60) {
-    mm -= 60;
-    c = true;
-  } else {
-    c = false;
-  }
-
+  var res = tL + tR;
   var days = 0;
-  hh = tL.hour + tR.hour;
-  if (c) {
-    hh++;
-  }
-  if ((byTheDay) && (hh >= 24)) {
-    days = Math.floor(hh / 24);
-    hh -= (24 * days);
-    c = true;
-  } else {
-    c = false;
-  }
-
-  var excess = '';
-  if (days > 0) {
-    excess = ' (+' + days + ' Day' + ((days >= 2) ? 's' : '') + ')';
-  }
   if (byTheDay) {
-    hh = ('0' + hh).slice(-2);
+    days = Math.floor(res / 86400000);
+    res -= days * 86400000;
   }
-  var ret = hh + ':' + ('0' + mm).slice(-2) + ':' + ('0' + ss).slice(-2) + '.' + ('00' + ms).slice(-3) + excess;
+  return DebugJS.calcTime(res, days, false);
+};
+
+DebugJS.calcTime = function(res, days, isSub) {
+  var t = DebugJS.ms2struct(res);
+  var ex = '';
+  if (days > 0) {
+    ex = ' (' + (isSub ? '-' : '+') + days + ' Day' + ((days >= 2) ? 's' : '') + ')';
+  }
+  if (t.hh < 10) t.hh = '0' + t.hh;
+  var ret = (t.sign ? '-' : '') + t.hh + ':' +
+            ('0' + t.mi).slice(-2) + ':' +
+            ('0' + t.ss).slice(-2) + '.' + ('00' + t.sss).slice(-3) + ex;
   return ret;
 };
 
