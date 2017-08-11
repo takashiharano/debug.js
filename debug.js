@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708111853';
+  this.v = '201708112125';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -75,7 +75,7 @@ var DebugJS = DebugJS || function() {
     useCommandLine: true,
     cmdHistoryMax: 100,
     timerLineColor: '#0cf',
-    timerDefaultVal: {
+    cdTimerDefaultVal: {
       hh: '00',
       mi: '03',
       ss: '00',
@@ -3967,13 +3967,13 @@ DebugJS.prototype = {
     ctx.timerStopWatchCdInput = document.createElement('div');
     ctx.timerStopWatchCdInput.style.margin = '0';
     ctx.timerStopWatchCdInpSubPanel.appendChild(ctx.timerStopWatchCdInput);
-    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.timerDefaultVal.hh, baseFontSize);
+    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.hh, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, ':');
-    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.timerDefaultVal.mi, baseFontSize);
+    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.mi, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, ':');
-    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.timerDefaultVal.ss, baseFontSize);
+    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.ss, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, '.', msFontSize);
-    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.timerDefaultVal.sss, msFontSize, '2em');
+    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.sss, msFontSize, '2em');
 
     var timerDwnBtns = document.createElement('div');
     timerDwnBtns.style.fontSize = (fontSize * 3) + 'px';
@@ -4092,12 +4092,18 @@ DebugJS.prototype = {
     ctx.timerTxtMI.value = tm.mi;
     ctx.timerTxtSS.value = tm.ss;
     ctx.timerTxtSSS.value = tm.sss;
-    ctx.options.timerDefaultVal = {
-      hh: tm.hh,
-      mi: tm.mi,
-      ss: tm.ss,
-      sss: tm.sss
-    };
+  },
+
+  saveCountDownTimerVal: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.timerStopWatchCdInput) {
+      ctx.options.cdTimerDefaultVal = {
+        hh: ctx.timerTxtHH.value,
+        mi: ctx.timerTxtMI.value,
+        ss: ctx.timerTxtSS.value,
+        sss: ctx.timerTxtSSS.value
+      };
+    }
   },
 
   toggleTimerMode: function() {
@@ -6261,6 +6267,7 @@ DebugJS.prototype = {
         status: ctx.status,
         sizeStatus: ctx.sizeStatus
       };
+      ctx.saveCountDownTimerVal();
       ctx.closeFeatures();
       ctx.setWindowSize('normal');
       ctx.init({zoom: zoom}, restoreOption);
