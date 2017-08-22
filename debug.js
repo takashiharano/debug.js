@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708222303';
+  this.v = '201708230757';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -290,7 +290,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time'},
+    {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'dumplog', fnc: this.cmdDumpLog, desc: 'Dump the log buffer'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'execute', fnc: this.cmdExecute, desc: 'Execute the edited JavaScript code'},
@@ -5577,7 +5577,11 @@ DebugJS.prototype = {
 
   cmdDate: function(arg, tbl) {
     var d = DebugJS.date(arg);
-    DebugJS.log.res(d);
+    if (d == undefined) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      DebugJS.log.res(d);
+    }
   },
 
   cmdDumpLog: function(arg, tbl) {
