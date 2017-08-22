@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708122223';
+  this.v = '201708222303';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7529,7 +7529,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
   if (msg === undefined) {
     str = _timerName + ': ' + dt;
     if (dtLap != '') {
-      str += ' (⊿' + dtLap + ')';
+      str += '(⊿' + dtLap + ')';
     }
   } else {
     str = msg.replace(/%n/g, _timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
@@ -7560,19 +7560,20 @@ DebugJS.timeLog = function(msg, timerName) {
     timerName = DebugJS.DEFAULT_TIMER_NAME;
   }
   var t;
+  var tLap;
   if (ctx.timers[timerName]) {
     t = DebugJS.getElapsedTimeStr(ctx.timers[timerName].start, now);
+    tLap = DebugJS.getElapsedTimeStr(ctx.timers[timerName].split, now);
+    ctx.timers[timerName].split = now;
   } else {
     ctx.timers[timerName] = {};
     ctx.timers[timerName].start = now;
+    ctx.timers[timerName].split = now;
     t = '00:00:00.000';
+    tLap = t;
   }
   var dt = '<span style="color:' + ctx.options.timerColor + '">' + t + '</span>';
-  var dtLap = '';
-  if (ctx.timers[timerName].split) {
-    var tLap = DebugJS.getElapsedTimeStr(ctx.timers[timerName].split, now);
-    dtLap = '<span style="color:' + ctx.options.timerColor + '">' + tLap + '</span>';
-  }
+  var dtLap = '<span style="color:' + ctx.options.timerColor + '">' + tLap + '</span>';
   var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   DebugJS.log(str);
 };
@@ -8184,11 +8185,11 @@ DebugJS.stopwatch = function() {
   return true;
 };
 
-DebugJS.stopwatch.start = function() {
+DebugJS.stopwatch.start = function(m) {
   var ctx = DebugJS.ctx;
   if (DebugJS.stopwatch()) {
     ctx.startTimerStopWatchCu();
-    DebugJS.log.s('Start stopwatch');
+    DebugJS.stopwatch.log(m);
   }
 };
 
@@ -8199,16 +8200,21 @@ DebugJS.stopwatch.stop = function() {
   }
 };
 
-DebugJS.stopwatch.end = function(msg) {
+DebugJS.stopwatch.end = function(m) {
   var ctx = DebugJS.ctx;
   if (DebugJS.stopwatch()) {
     ctx.endTimerStopWatchCu();
-    var t = DebugJS.getTimerStr(DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU));
-    var m = '<span style="color:' + ctx.options.timerColor + '">' + t + '</span>';
-    if (msg != undefined) m += ' ' + msg;
-    DebugJS.log.s(m);
+    DebugJS.stopwatch.log(m);
   }
   return DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU);
+};
+
+DebugJS.stopwatch.split = function(m) {
+  var ctx = DebugJS.ctx;
+  if (DebugJS.stopwatch()) {
+    m = DebugJS.TIMER_NAME_SW_CU + ': %t(⊿%lt)' + (m == undefined ? '' : ' ' + m);
+    DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU, false, m);
+  }
 };
 
 DebugJS.stopwatch.reset = function() {
@@ -8216,6 +8222,14 @@ DebugJS.stopwatch.reset = function() {
   if (DebugJS.stopwatch()) {
     ctx.resetTimerStopWatchCu();
   }
+};
+
+DebugJS.stopwatch.log = function(msg) {
+  var ctx = DebugJS.ctx;
+  var t = DebugJS.getTimerStr(DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU));
+  var m = DebugJS.TIMER_NAME_SW_CU + ': <span style="color:' + ctx.options.timerColor + '">' + t + '</span>';
+  if (msg != undefined) m += ' ' + msg;
+  DebugJS.log(m);
 };
 
 DebugJS.cmd = function(c, echo) {

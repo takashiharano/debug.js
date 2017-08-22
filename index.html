@@ -1455,9 +1455,24 @@ max: maximum length
       DebugJS.stopwatch.start<br>
       <span class="alias">( dbg.stopwatch.start )</span>
     </td>
-    <td></td>
+    <td>message</td>
     <td>
-      Start stopwatch <button class="demo-button2" onclick="dbg.stopwatch.start();">DEMO</button>
+      Start stopwatch<br>
+      <button class="demo-button2" onclick="dbg.stopwatch.start();">DEMO</button> (w/o message)<br>
+      <button class="demo-button2" onclick="dbg.stopwatch.start('message');">DEMO</button> (w/ message)
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.stopwatch.split<br>
+      <span class="alias">( dbg.stopwatch.split )</span>
+    </td>
+    <td>message</td>
+    <td>
+      Split/LAP stopwatch<br>
+      <button class="demo-button2" onclick="dbg.stopwatch.split();">DEMO</button> (w/o message)<br>
+      <button class="demo-button2" onclick="dbg.stopwatch.split('message');">DEMO</button> (w/ message)
     </td>
   </tr>
 
@@ -2444,12 +2459,12 @@ time.start('timer2', '%t start [Timer Name = %n]');<br>
 
 <td>
 time.split('timer2', '%n: split=%t/lap=%lt');<br>
-<button onclick="time.split('timer2', '%t %n: lap=%lt');">time.split() 2</button>
+<button onclick="time.split('timer2', '%n: split=%t lap=%lt');">time.split() 2</button>
 </td>
 
 <td>
 time.eEnd('timer2', '%n: split=%t/lap=%lt');<br>
-<button onclick="time.end('timer2', '%t %n: lap=%lt');">time.end() 2</button>
+<button onclick="time.end('timer2', '%n: split=%t lap=%lt');">time.end() 2</button>
 </td>
 
 <td>
