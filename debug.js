@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708232122';
+  this.v = '201708232157';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7946,21 +7946,25 @@ DebugJS.escSpclChr = function(str) {
   return txt;
 };
 
-DebugJS.addClass = function(el, className) {
+DebugJS.addClass = function(el, name) {
+  if (DebugJS.hasClass(el, name)) return;
   if (el.className == '') {
-    el.className = className;
+    el.className = name;
   } else {
-    el.className += ' ' + className;
+    el.className += ' ' + name;
   }
 };
 
-DebugJS.removeClass = function(el, className) {
-  var orgClassName = el.className;
-  var regexp = new RegExp('\\s*' + className, 'g');
-  var newClassName = orgClassName.replace(regexp, '');
-  newClassName = newClassName.replace(/\s+$/, '');
-  newClassName = newClassName.replace(/^\s+/, '');
-  el.className = newClassName;
+DebugJS.removeClass = function(el, name) {
+  var names = el.className.split(' ');
+  var removed = '';
+  for (var i = 0; i < names.length; i++) {
+    if (names[i] != name) {
+      if (i > 0) removed += ' ';
+      removed += names[i];
+    }
+  }
+  el.className = removed;
 };
 
 DebugJS.hasClass = function(el, name) {
