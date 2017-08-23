@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708230757';
+  this.v = '201708232122';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5618,6 +5618,13 @@ DebugJS.prototype = {
       ctx.stopStopWatch();
     }
     ctx.resetStopWatch();
+    if (ctx.timerBasePanel != null) {
+      ctx.stopTimerStopWatchCu();
+      ctx.resetTimerStopWatchCu();
+      ctx.stopTimerStopWatchCd();
+      ctx.resetTimerStopWatchCd();
+      ctx.switchTimerModeClock();
+    }
     ctx.setLed(0);
     ctx.setMsg('');
     if (ctx.status & DebugJS.STATE_DYNAMIC) {
