@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708242210';
+  this.v = '201708250053';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1710,8 +1710,7 @@ DebugJS.prototype = {
 
   printLogMsg: function() {
     var ctx = DebugJS.ctx;
-    var msg = ctx.getLogMsgs();
-    var html = '<pre style="padding:0 3px">' + msg + '</pre>';
+    var html = '<pre style="padding:0 3px">' + ctx.getLogMsgs() + '</pre>';
     ctx.logPanel.innerHTML = html;
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     if (!(ctx.status & DebugJS.STATE_VISIBLE)) {
@@ -2120,17 +2119,17 @@ DebugJS.prototype = {
       }
       var m = (((ctx.options.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
       switch (data.type) {
+        case DebugJS.LOG_TYPE_DBG:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.options.logColorD + '">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_INF:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + ctx.options.logColorI + '">' + m + '</span>\n';
+          break;
         case DebugJS.LOG_TYPE_ERR:
           if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + ctx.options.logColorE + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_WRN:
           if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + ctx.options.logColorW + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_INF:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + ctx.options.logColorI + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_DBG:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.options.logColorD + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_VRB:
           if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) line += lineNum + '<span style="color:' + ctx.options.logColorV + '">' + m + '</span>\n';
