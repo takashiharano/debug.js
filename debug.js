@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708242010';
+  this.v = '201708242210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1624,7 +1624,7 @@ DebugJS.prototype = {
 
   updateMeasureBtn: function() {
     var ctx = DebugJS.ctx;
-    ctx.measureBtn.style.border = 'solid 1px ' + ((ctx.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.measureBtn.style.border = 'solid ' + ctx.options.zoom + 'px ' + ((ctx.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   updateSysInfoBtn: function() {
@@ -7928,12 +7928,12 @@ DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
 };
 
 DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
-  var text = obj;
+  var txt = obj;
   if ((exceptFalse && ((obj == undefined) || (obj == null))) ||
       ((!exceptFalse) && (obj !== 0) && (!obj))) {
-    text = '<span class="' + DebugJS.ctx.id + '-na">' + obj + '</span>';
+    txt = '<span class="' + DebugJS.ctx.id + '-na">' + obj + '</span>';
   }
-  return text;
+  return txt;
 };
 
 DebugJS.escTags = function(str) {
