@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708232157';
+  this.v = '201708242010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1273,7 +1273,9 @@ DebugJS.prototype = {
     if (ctx.options.useMsgDisplay) {
       var msgPanel = ctx.createSysInfoPanel();
       msgPanel.style.float = ctx.options.msgDisplayPos;
-      msgPanel.style.marginRight = '3px';
+      msgPanel.style.position = 'absolute';
+      msgPanel.style.marginRight = '0';
+      msgPanel.style.right = '5px';
       msgPanel.style.border = '0';
       msgPanel.style.padding = '0 1px';
       msgPanel.style.background = ctx.options.msgDisplayBackground;
@@ -1608,11 +1610,11 @@ DebugJS.prototype = {
 
   updateMsgPanel: function() {
     var ctx = DebugJS.ctx;
-    var message = ctx.msgString;
+    var str = ctx.msgString;
     if (ctx.msgPanel) {
-      var html = '<pre>' + message + '</pre>';
+      var html = '<pre>' + str + '</pre>';
       ctx.msgPanel.innerHTML = html;
-      if (message == '') {
+      if (str == '') {
         ctx.msgPanel.style.opacity = 0;
       } else {
         ctx.msgPanel.style.opacity = 1;
@@ -5466,8 +5468,8 @@ DebugJS.prototype = {
     }
   },
 
-  setMsg: function(msg) {
-    DebugJS.ctx.msgString = msg;
+  setMsg: function(m) {
+    DebugJS.ctx.msgString = m;
     DebugJS.ctx.updateMsgPanel();
   },
 
