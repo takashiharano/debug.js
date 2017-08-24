@@ -28,6 +28,7 @@ button, input[type="button"], input[type="submit"] {width:200px; height:40px; bo
 button:hover, input[type="button"]:hover, input[type="submit"]:hover {cursor:pointer; background:#00a8ff; color:#fff; transition:all 0.2s ease;}
 input, input[type="text"], textarea, select {font-size: 16px; padding: 3px; color: #333; vertical-align: middle; border: 1px solid #ccc; border-radius: 3px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); transition: border linear 0.1s, box-shadow linear 0.1s;}
 input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:#51a7e8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
+pre {margin: 4px 0; font-family:Consolas;}
 #header-line {width:100%; height:10px; color:#fff; background:#08f;}
 #header {width:100%; height:290px; color:#fff; background:#333;}
 #header-wrapper {display:table; width:900px; height:100%; margin:auto;}
@@ -42,14 +43,15 @@ input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:
 #footer-content {position:relative; display:table-cell; vertical-align:middle; text-align:center;}
 .caption {font-size:30px; font-weight:bold;}
 .caption2 {font-size:25px;}
-.code {width:750px; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
-.eg1 {font-size:14px;font-style:italic;margin-bottom:-10px;}
+.code {width:750px; margin:14px 0; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
+.eg1 {margin-bottom:-10px; font-size:14px;font-style:italic;}
 .emphasis {color:#eee;}
 .button-100 {width:100px !important;}
 .dl-button {position:relative; width:105px; height:25px; margin:0; font-size:14px;}
 .demo-button {position:relative; width:74px; height:22px; margin:0; font-size:14px; background:#04a; color:#aaa}
-.demo-button2 {position:relative; width:50px; height:18px; margin:0 0 2px 10px; font-size:12px; background:#06e; color:#eee}
+.demo-button2 {position:relative; width:50px; height:18px; margin:0 0 2px 4px; font-size:12px; background:#06e; color:#eee}
 .reset-button {width:46px; height:18px; font-size:10px; font-qweight:normal;}
+input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px solid #333; border-radius:0; box-shadow:none; margin:5px 0;}
 .button:hover {cursor:pointer; background:#00a8ff; text-decoration:none;}
 .button-green {background:#00cc68;}
 .button-green:hover {background:#00ffa8;}
@@ -326,11 +328,11 @@ function showHideByName(name) {
   var partialBody = document.getElementById(name + '__partial-body');
   var body = document.getElementById(name + '__body');
   if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
-    button.innerText = '▼';
+    button.innerText = 'v';
     partialBody.style.display = 'none';
     body.style.display = 'block';
   } else {
-    button.innerText = '▶';
+    button.innerText = '>';
     partialBody.style.display = 'inline';
     body.style.display = 'none';
   }
@@ -1234,17 +1236,20 @@ time.check('timer1')
     <td>
       Count number of elements.
 <pre class="eg">
-dbg.countElements('*');
+dbg.countElements('*');<button class="demo-button2" onclick="log(dbg.countElements('*'));">DEMO</button>
+dbg.countElements('*', true); <button class="demo-button2" onclick="log(dbg.countElements('*', true));">DEMO</button>
 -&gt; Count all elements
 
 dbg.countElements('#id');
 -&gt; Count the id's element
+   dbg.countElements('#title');<button class="demo-button2" onclick="log(dbg.countElements('#title'));">DEMO</button>
 
 dbg.countElements('.className');
 -&gt; Count elements which has the className.
 
 dbg.countElements('tagName');
 -&gt; Count elements which correspond to the tagName.
+   dbg.countElements('div');<button class="demo-button2" onclick="log(dbg.countElements('div'));">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -1317,6 +1322,10 @@ dbg.getKeys(obj);
          <td style="border:0">0</td>
        </tr>
       </table>
+
+<pre>
+dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width:30px" value="255">);<button class="demo-button2" onclick="dbg.led(document.getElementById('led-demo-val-text').value);">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -1327,7 +1336,15 @@ dbg.getKeys(obj);
     </td>
     <td>bit position</td>
     <td>
-      Turn on the indicator
+      Turn on the indicator<br><br>
+<pre>dbg.led.on(n);</pre>
+<button class="demo-button2" onclick="dbg.led.on(7);">n=7</button>
+<button class="demo-button2" onclick="dbg.led.on(6);">n=6</button>
+<button class="demo-button2" onclick="dbg.led.on(5);">n=5</button>
+<button class="demo-button2" onclick="dbg.led.on(4);">n=4</button>
+<button class="demo-button2" onclick="dbg.led.on(3);">n=3</button>
+<button class="demo-button2" onclick="dbg.led.on(2);">n=2</button>
+<button class="demo-button2" onclick="dbg.led.on(1);">n=1</button>
     </td>
   </tr>
 
@@ -1338,7 +1355,15 @@ dbg.getKeys(obj);
     </td>
     <td>bit position</td>
     <td>
-      Turn off the indicator
+      Turn off the indicator<br><br>
+<pre>dbg.led.off(n);</pre>
+<button class="demo-button2" onclick="dbg.led.off(7);">n=7</button>
+<button class="demo-button2" onclick="dbg.led.off(6);">n=6</button>
+<button class="demo-button2" onclick="dbg.led.off(5);">n=5</button>
+<button class="demo-button2" onclick="dbg.led.off(4);">n=4</button>
+<button class="demo-button2" onclick="dbg.led.off(3);">n=3</button>
+<button class="demo-button2" onclick="dbg.led.off(2);">n=2</button>
+<button class="demo-button2" onclick="dbg.led.off(1);">n=1</button>
     </td>
   </tr>
 
@@ -1350,7 +1375,11 @@ dbg.getKeys(obj);
     <td>flag</td>
     <td>
       Turn on/off all indicator<br>
-      flag: true = Turn on / false = Turn off
+      flag: true = Turn on / false = Turn off<br><br>
+<pre>
+dbg.led.all(true); <button class="demo-button2" onclick="dbg.led.all(true);">DEMO</button>
+dbg.led.all(false); <button class="demo-button2" onclick="dbg.led.all(false);">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -1376,7 +1405,10 @@ JSON Format
     </td>
     <td>message</td>
     <td>
-      Set a string to the message display
+      Set a string to the message display<br>
+      <input type="text" id="msg-message-text" class="demo-text" value="Hello, message display!">
+      <button class="demo-button2" onclick="dbg.msg(msgMessageText.value);">DEMO</button>
+      <button class="demo-button2" onclick="msgDemo();">e.g.,</button>
     </td>
   </tr>
 
@@ -1387,7 +1419,7 @@ JSON Format
     </td>
     <td></td>
     <td>
-      Clear the message display
+      Clear the message display <button class="demo-button2" onclick="dbg.msg.clear();">DEMO</button>
     </td>
   </tr>
 
@@ -2385,26 +2417,6 @@ log with random message<br>
 </table>
 
 <!-- ********************************************************************** -->
-<div class="caption2">dbg.msg</div>
-<input type="text" id="msg-message-text" value="Hello, message display!" style="width:400px;margin-top:3px;">
-
-<table class="demo-table">
-<tr>
-<td>
-<button onclick="dbg.msg(msgMessageText.value);">dbg.msg()</button>
-</td>
-
-<td>
-<button onclick="dbg.msg.clear();">dbg.msg.clear()</button>
-</td>
-
-<td>
-<button onclick="msgDemo();">demo</button>
-</td>
-</tr>
-</table>
-
-<!-- ********************************************************************** -->
 <div class="caption2">time</div>
 <table class="demo-table">
 <tr>
@@ -2473,34 +2485,7 @@ log.t('elapsed time of %n t=%t lap=%lt', 'timer2');<br>
 </td>
 </tr>
 </table>
-
 <br>
-
-<!-- ********************************************************************** -->
-<div class="caption2">dbg.countElements</div>
-<table class="demo-table">
-<tr>
-<td>
-dbg.countElements('*');<br>
-<button onclick="log(dbg.countElements('*'));">dbg.countElements</button>
-</td>
-
-<td>
-dbg.countElements('*', true);<br>
-<button onclick="log(dbg.countElements('*', true));">dbg.countElements</button>
-</td>
-
-<td>
-dbg.countElements('#title');<br>
-<button onclick="log(dbg.countElements('#title'));">dbg.countElements</button>
-</td>
-
-<td>
-dbg.countElements('div');<br>
-<button onclick="log(dbg.countElements('div'));">dbg.countElements</button>
-</td>
-</tr>
-</table>
 
 <!-- ********************************************************************** -->
 <div class="caption2">dbg.cmd / $ Command Line</div>
@@ -2548,7 +2533,7 @@ dbg.cmd('10:00 + 14:01');<br>
 </table>
 
 <!-- ********************************************************************** -->
-<span id="timecalc__button" class="showhide-button" onclick="showHideByName('timecalc')" style="color:#fff">▶</span>
+<span id="timecalc__button" class="showhide-button" onclick="showHideByName('timecalc')">&gt;</span>
 <span id="timecalc__partial-body"></span>
 <div id="timecalc__body" style="display:none;">
 <table class="demo-table">
@@ -2628,99 +2613,15 @@ dbg.cmd('base64 -d xxx')<br>
 <br>
 
 <!-- ********************************************************************** -->
-<div class="caption2">dbg.led.on(n); / dbg.led.off(n);</div>
+<div class="caption2">dbg.led</div>
 <table class="demo-table">
 <tr>
 <td>
-<button class="button-100" onclick="dbg.led.on(7);">On(7)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.on(6);">On(6)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.on(5);">On(5)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.on(4);">On(4)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.on(3);">On(3)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.on(2);">On(2)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.on(1);">On(1)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.on(0);">On(0)</button>
 </td>
 </tr>
 
 <tr>
 <td>
-<button class="button-100" onclick="dbg.led.off(7);">Off(7)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.off(6);">Off(6)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.off(5);">Off(5)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.off(4);">Off(4)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.off(3);">Off(3)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.off(2);">Off(2)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.off(1);">Off(1)</button>
-</td>
-
-<td>
-<button class="button-100" onclick="dbg.led.off(0);">Off(0)</button>
-</td>
-</tr>
-
-<tr>
-<td colspan="2">
-dbg.led(n);<br>
-<button onclick="dbg.led(0x55);">dbg.led(0x55)</button>
-</td>
-
-<td colspan="2">
-<button onclick="dbg.led(0xaa);">dbg.led(0xaa)</button>
-</td>
-
-<td colspan="2">
-dbg.led.all(true);<br>
-<button onclick="dbg.led.all(true);">dbg.led.all(true)</button>
-</td>
-
-<td colspan="2">
-dbg.led.all(false);<br>
-<button onclick="dbg.led.all(false);">dbg.led.all(false)</button>
-</td>
-</tr>
-
-<tr>
-<td colspan="2">
 <button onclick="ledDemo();">demo</button>
 </td>
 </tr>
@@ -2813,7 +2714,7 @@ function httpCallback(xhr) {
 <br>
 
 <!-- ********************************************************************** -->
-<span id="dummy__button" class="showhide-button" onclick="showHideByName('dummy')">▶</span>
+<span id="dummy__button" class="showhide-button" onclick="showHideByName('dummy')">&gt;</span>
 <span id="dummy__partial-body">Dummy elements for DOM Element Inspection Test</span>
 <div id="dummy__body" style="display:none;">
 <div class="caption2">Dummy elements for DOM Element Inspection Test</div>
