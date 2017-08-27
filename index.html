@@ -9,7 +9,9 @@
 <!--
 <script src="extension-sample/debug-x.js"></script>
 -->
-
+<!--
+<script src="extension-sample/debug-x-panel.js"></script>
+-->
 <!--
 <link rel="stylesheet" href="dummy1.css" />
 <link rel="stylesheet" href="dummy2.css" />
@@ -2267,12 +2269,12 @@ You can define your own command like below.<br>
 </pre>
 
 <pre class="code emphasis" style="margin-bottom:2px">
-DebugJS.x.cmdHello = function(arg, tbl) {
+example.cmdHello = function(arg, tbl) {
   DebugJS.log('Hello!');
 };
 
 DebugJS.x.CMD_TBL = [
-  {cmd: 'hello', fnc: DebugJS.x.cmdHello, desc: 'extention command example'}
+  {cmd: 'hello', fnc: example.cmdHello, desc: 'extention command example'}
 ];
 </pre>
 <span style="font-family:Consolas">
