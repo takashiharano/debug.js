@@ -2340,16 +2340,16 @@ Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/e
 };</span>
 
 // Called when the panel is hidden.
-<span class="emphasis">extsample.onInActiveP1 = function(panel) {
+<span class="emphasis">example.onInActiveP1 = function(panel) {
   log('onInActiveP1');
 };
 
 example.regieterExtensionPanel = function() {
   var panel1 = {
     name: 'Panel1',
-    onCreate: extsample.onCreateP1,
-    onActive: extsample.onActiveP1,
-    onInActive: extsample.onInActiveP1
+    onCreate: example.onCreateP1,
+    onActive: example.onActiveP1,
+    onInActive: example.onInActiveP1
   };
   dbg.x.addPanel(panel1);
 };
