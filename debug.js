@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708250053';
+  this.v = '201708271525';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -23,7 +23,7 @@ var DebugJS = DebugJS || function() {
     },
     lines: 18,
     bufsize: 300,
-    width: 520,
+    width: 532,
     zoom: 1,
     position: 'se',
     adjPosX: 20,
@@ -334,6 +334,12 @@ var DebugJS = DebugJS || function() {
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
     hexdumplimit: {value: 102400, restriction: /^[0-9]+$/}
   };
+  this.extBtn = null;
+  this.extPanel = null;
+  this.extHeaderPanel = null;
+  this.extBodyPanel = null;
+  this.extPanels = [];
+  this.extActivePanel = -1;
   this.setupDefaultOptions();
 };
 DebugJS.ENABLE = true;
@@ -367,6 +373,7 @@ DebugJS.STATE_LOG_PRESERVED = 1 << 21;
 DebugJS.STATE_POS_AUTO_ADJUST = 1 << 22;
 DebugJS.STATE_NEED_TO_SCROLL = 1 << 23;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 24;
+DebugJS.STATE_EXT_PANEL = 1 << 25;
 DebugJS.TOOL_ST_SW_CU_RUNNING = 1;
 DebugJS.TOOL_ST_SW_CU_END = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RUNNING = 1 << 2;
@@ -404,6 +411,7 @@ DebugJS.TOOLS_ACTIVE_FNC_TEXT = 0x2;
 DebugJS.TOOLS_ACTIVE_FNC_HTML = 0x4;
 DebugJS.TOOLS_ACTIVE_FNC_FILE = 0x8;
 DebugJS.TOOLS_ACTIVE_FNC_MEMO = 0x10;
+DebugJS.TOOLS_DFLT_ACTIVE_FNC = DebugJS.TOOLS_ACTIVE_FNC_TIMER;
 DebugJS.FILE_LOAD_FORMAT_BIN = 0;
 DebugJS.FILE_LOAD_FORMAT_B64 = 1;
 DebugJS.CMD_ATTR_SYSTEM = 0x1;
@@ -433,15 +441,16 @@ DebugJS.WIN_ADJUST = ((DebugJS.WIN_BORDER * 2) + (DebugJS.WIN_PADDING * 2));
 DebugJS.OVERLAY_PANEL_HEIGHT = 77; //%
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
-DebugJS.TOOLS_COLOR_ACTIVE = '#6cf';
-DebugJS.TOOLS_COLOR_INACTIVE = '#ccc';
+DebugJS.SBPNL_COLOR_ACTIVE = '#6cf';
+DebugJS.SBPNL_COLOR_INACTIVE = '#ccc';
 DebugJS.COLOR_INACTIVE = '#999';
 DebugJS.MEASURE_BTN_COLOR = '#6cf';
 DebugJS.SYS_BTN_COLOR = '#3af';
 DebugJS.HTML_BTN_COLOR = '#8f8';
 DebugJS.DOM_BTN_COLOR = '#f63';
-DebugJS.TOOLS_BTN_COLOR = '#ff0';
 DebugJS.JS_BTN_COLOR = '#6df';
+DebugJS.TOOLS_BTN_COLOR = '#ff0';
+DebugJS.EXT_BTN_COLOR = '#bf0';
 DebugJS.PIN_BTN_COLOR = '#fa0';
 DebugJS.LOG_SUSPEND_BTN_COLOR = '#f00';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
@@ -773,7 +782,7 @@ DebugJS.prototype = {
       'overflow': 'auto'
     };
 
-    styles['.' + ctx.id + '-tools'] = {
+    styles['.' + ctx.id + '-sbpnl'] = {
       'position': 'absolute',
       'top': 0,
       'left': 0,
@@ -912,13 +921,13 @@ DebugJS.prototype = {
       ctx.initHeight = ctx.dbgWin.offsetHeight - DebugJS.WIN_ADJUST;
     }
     ctx.windowExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.options.zoom;
-    ctx.initExtension();
     if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom();
       ctx.reopenFeatures(restoreOption.status);
       ctx.restoreDbgWinSize(restoreOption.sizeStatus);
     }
     ctx.status |= DebugJS.STATE_INITIALIZED;
+    ctx.initExtension();
     ctx.printLogMsg();
     return true;
   },
@@ -1196,6 +1205,9 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.swBtnPanel);
     }
 
+    ctx.extBtn = ctx.createHeaderButton('extBtn', 'EXT', 2, null, DebugJS.ctx.toggleExtPanelMode, 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
+    ctx.extBtn.style.display = 'none';
+
     if (ctx.options.useTools) {
       ctx.toolsBtn = ctx.createHeaderButton('toolsBtn', 'TOOL', 2, null, DebugJS.ctx.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
@@ -1322,8 +1334,9 @@ DebugJS.prototype = {
     if (ctx.options.useSystemInfo) ctx.updateSysInfoBtn();
     if (ctx.options.useElementInfo) ctx.updateElmInfoBtn();
     if (ctx.options.useHtmlSrc) ctx.updateHtmlSrcBtn();
-    if (ctx.options.useTools) ctx.updateToolsBtn();
     if (ctx.options.useScriptEditor) ctx.updateScriptBtn();
+    if (ctx.options.useTools) ctx.updateToolsBtn();
+    if (ctx.extPanel) ctx.updateExtBtn();
     if (ctx.options.useStopWatch) {
       ctx.updateSwBtnPanel();
       ctx.updateSwPanel();
@@ -1357,8 +1370,9 @@ DebugJS.prototype = {
     btn.style.float = 'right';
     btn.style.marginLeft = (marginLeft * ctx.options.zoom) + 'px';
     if (fontSize) btn.style.fontSize = fontSize;
-    btn.innerHTML = label;
+    btn.innerText = label;
     btn.onclick = handler;
+    btn.style.color = DebugJS.COLOR_INACTIVE;
     btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.' + activeColor + ';');
     if (reverse) {
       btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.status & DebugJS.' + status + ') ? DebugJS.COLOR_INACTIVE : DebugJS.' + activeColor + ';');
@@ -1448,6 +1462,10 @@ DebugJS.prototype = {
       ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
       ctx.fileLoadProgress.style.fontSize = (ctx.computedFontSize * 0.8) + 'px';
     }
+    if (ctx.extPanel != null) {
+      ctx.extHeaderPanel.style.height = fontSize;
+      ctx.extBodyPanel.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
+    }
   },
 
   reopenFeatures: function(status) {
@@ -1469,6 +1487,9 @@ DebugJS.prototype = {
     }
     if (status & DebugJS.STATE_TOOLS) {
       ctx.enableTools();
+    }
+    if (status & DebugJS.STATE_EXT_PANEL) {
+      ctx.enableExtPanel();
     }
   },
 
@@ -1642,14 +1663,19 @@ DebugJS.prototype = {
     ctx.updateBtnActive(ctx.htmlSrcBtn, DebugJS.STATE_HTML_SRC, DebugJS.HTML_BTN_COLOR);
   },
 
+  updateScriptBtn: function() {
+    var ctx = DebugJS.ctx;
+    ctx.updateBtnActive(ctx.scriptBtn, DebugJS.STATE_SCRIPT, DebugJS.JS_BTN_COLOR);
+  },
+
   updateToolsBtn: function() {
     var ctx = DebugJS.ctx;
     ctx.updateBtnActive(ctx.toolsBtn, DebugJS.STATE_TOOLS, DebugJS.TOOLS_BTN_COLOR);
   },
 
-  updateScriptBtn: function() {
+  updateExtBtn: function() {
     var ctx = DebugJS.ctx;
-    ctx.updateBtnActive(ctx.scriptBtn, DebugJS.STATE_SCRIPT, DebugJS.JS_BTN_COLOR);
+    ctx.updateBtnActive(ctx.extBtn, DebugJS.STATE_EXT_PANEL, DebugJS.EXT_BTN_COLOR);
   },
 
   updateSwBtnPanel: function() {
@@ -2183,6 +2209,9 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.STATE_SYSTEM_INFO) {
       ctx.disableSystemInfo();
     }
+    if (ctx.status & DebugJS.STATE_EXT_PANEL) {
+      ctx.disableExtPanel();
+    }
   },
 
   keyHandler: function(e) {
@@ -2232,6 +2261,10 @@ DebugJS.prototype = {
         }
         if (ctx.status & DebugJS.STATE_SYSTEM_INFO) {
           ctx.disableSystemInfo();
+          break;
+        }
+        if (ctx.status & DebugJS.STATE_EXT_PANEL) {
+          ctx.disableExtPanel();
           break;
         }
         ctx.hideDebugWindow();
@@ -3760,35 +3793,25 @@ DebugJS.prototype = {
   enableTools: function() {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.STATE_TOOLS;
-    var activeFunc = DebugJS.TOOLS_ACTIVE_FNC_TIMER;
+    var activeFunc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
     if (ctx.toolsPanel == null) {
       var defaultFontSize = ctx.computedFontSize;
-      ctx.toolsPanel = document.createElement('div');
-      ctx.toolsPanel.className = ctx.id + '-overlay-panel-full';
 
-      ctx.toolsHeaderPanel = document.createElement('div');
-      ctx.toolsHeaderPanel.style.position = 'relative';
-      ctx.toolsHeaderPanel.style.height = ctx.computedFontSize + 'px';
-      ctx.toolsPanel.appendChild(ctx.toolsHeaderPanel);
-
-      ctx.toolsBodyPanel = document.createElement('div');
-      ctx.toolsBodyPanel.style.position = 'relative';
-      ctx.toolsBodyPanel.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
-      ctx.toolsPanel.appendChild(ctx.toolsBodyPanel);
+      var p = ctx.createSubBasePanel(ctx);
+      ctx.toolsPanel = p.base;
+      ctx.toolsHeaderPanel = p.head;
+      ctx.toolsBodyPanel = p.body;
 
       ctx.timerBtn = ctx.createToolsHeaderButton('TIMER', 'TOOLS_ACTIVE_FNC_TIMER', 'timerBtn');
       ctx.txtChkBtn = ctx.createToolsHeaderButton('TEXT', 'TOOLS_ACTIVE_FNC_TEXT', 'txtChkBtn');
       ctx.htmlPrevBtn = ctx.createToolsHeaderButton('HTML', 'TOOLS_ACTIVE_FNC_HTML', 'htmlPrevBtn');
       ctx.fileLoaderBtn = ctx.createToolsHeaderButton('FILE', 'TOOLS_ACTIVE_FNC_FILE', 'fileLoaderBtn');
       ctx.memoBtn = ctx.createToolsHeaderButton('MEMO', 'TOOLS_ACTIVE_FNC_MEMO', 'memoBtn');
-
-      ctx.addOverlayPanelFull(ctx.toolsPanel);
-      ctx.switchToolsFunction();
     } else {
-      ctx.addOverlayPanelFull(ctx.toolsPanel);
-      ctx.resizeImgPreview();
       activeFunc = ctx.toolsActiveFunction;
     }
+    ctx.addOverlayPanelFull(ctx.toolsPanel);
+    ctx.resizeImgPreview();
     ctx.switchToolsFunction(activeFunc);
     ctx.updateToolsButtons();
     ctx.updateToolsBtn();
@@ -3801,8 +3824,8 @@ DebugJS.prototype = {
     btn.style.marginRight = '4px';
     btn.innerText = '<' + label + '>';
     btn.onclick = new Function('DebugJS.ctx.switchToolsFunction(DebugJS.' + state + ');');
-    btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.TOOLS_COLOR_ACTIVE;');
-    btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.toolsActiveFunction & DebugJS.' + state + ') ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;');
+    btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.SBPNL_COLOR_ACTIVE;');
+    btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.toolsActiveFunction & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;');
     ctx.toolsHeaderPanel.appendChild(btn);
     return btn;
   },
@@ -3819,11 +3842,11 @@ DebugJS.prototype = {
 
   updateToolsButtons: function() {
     var ctx = DebugJS.ctx;
-    ctx.timerBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    ctx.txtChkBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TEXT) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    ctx.htmlPrevBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_HTML) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    ctx.fileLoaderBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
-    ctx.memoBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_MEMO) ? DebugJS.TOOLS_COLOR_ACTIVE : DebugJS.TOOLS_COLOR_INACTIVE;
+    ctx.timerBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.txtChkBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.htmlPrevBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.fileLoaderBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.memoBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_MEMO) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
   },
 
   switchToolsFunction: function(kind, param) {
@@ -3863,8 +3886,7 @@ DebugJS.prototype = {
       var baseFontSize = ctx.computedFontSize;
       var fontSize = baseFontSize * 6.5;
 
-      ctx.timerBasePanel = document.createElement('div');
-      ctx.timerBasePanel.className = ctx.id + '-tools';
+      ctx.timerBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
       ctx.timerBasePanel.style.fontSize = fontSize + 'px';
       ctx.timerBasePanel.style.lineHeight = '1em';
       ctx.timerBasePanel.style.textAlign = 'center';
@@ -4518,9 +4540,7 @@ DebugJS.prototype = {
       var defaultFgRGB16 = 'fff';
       var defaultBgRGB16 = '000';
       var panelPadding = 2;
-      ctx.txtChkPanel = document.createElement('div');
-      ctx.txtChkPanel.className = ctx.id + '-tools';
-      ctx.toolsBodyPanel.appendChild(ctx.txtChkPanel);
+      ctx.txtChkPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
       var txtPadding = 4;
       var txtChk = document.createElement('input');
@@ -4683,9 +4703,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize + 'px';
     if (ctx.fileLoaderPanel == null) {
-      ctx.fileLoaderPanel = document.createElement('div');
-      ctx.fileLoaderPanel.className = ctx.id + '-tools';
-      ctx.toolsBodyPanel.appendChild(ctx.fileLoaderPanel);
+      ctx.fileLoaderPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
@@ -5090,9 +5108,7 @@ DebugJS.prototype = {
   enableHtmlEditor: function() {
     var ctx = DebugJS.ctx;
     if (ctx.htmlPrevBasePanel == null) {
-      ctx.htmlPrevBasePanel = document.createElement('div');
-      ctx.htmlPrevBasePanel.className = ctx.id + '-tools';
-      ctx.toolsBodyPanel.appendChild(ctx.htmlPrevBasePanel);
+      ctx.htmlPrevBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
       ctx.htmlPrevPrevPanel = document.createElement('div');
       ctx.htmlPrevPrevPanel.style.height = '50%';
@@ -5162,9 +5178,7 @@ DebugJS.prototype = {
   enableMemoEditor: function() {
     var ctx = DebugJS.ctx;
     if (ctx.memoBasePanel == null) {
-      ctx.memoBasePanel = document.createElement('div');
-      ctx.memoBasePanel.className = ctx.id + '-tools';
-      ctx.toolsBodyPanel.appendChild(ctx.memoBasePanel);
+      ctx.memoBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
       ctx.memoEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc">Memo</span>';
       if (DebugJS.LS_AVAILABLE) {
@@ -5341,6 +5355,104 @@ DebugJS.prototype = {
       ctx.scriptPanel = null;
     }
     ctx.status &= ~DebugJS.STATE_SCRIPT;
+  },
+
+  toggleExtPanelMode: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.STATE_EXT_PANEL) {
+      ctx.disableExtPanel();
+    } else {
+      ctx.enableExtPanel();
+    }
+  },
+
+  enableExtPanel: function() {
+    var ctx = DebugJS.ctx;
+    ctx.status |= DebugJS.STATE_EXT_PANEL;
+    ctx.addOverlayPanelFull(ctx.extPanel);
+    var activePanel = ctx.extActivePanel;
+    if (activePanel == -1) {
+      var activePanel = 0;
+      ctx.switchExtPanel(activePanel);
+    } else {
+      var p = ctx.extPanels[activePanel];
+      if ((p) && (p.onActive)) p.onActive(p.panel);
+    }
+    ctx.updateExtButtons();
+    ctx.updateExtBtn();
+  },
+
+  createExtHeaderButton: function(label, idx) {
+    var ctx = DebugJS.ctx;
+    var btn = document.createElement('span');
+    btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+    btn.style.marginRight = '4px';
+    btn.innerText = '<' + label + '>';
+    btn.onclick = new Function('DebugJS.ctx.switchExtPanel(' + idx + ');');
+    btn.onmouseover = new Function('DebugJS.ctx.extPanels[' + idx + '].btn.style.color=DebugJS.SBPNL_COLOR_ACTIVE;');
+    btn.onmouseout = new Function('DebugJS.ctx.extPanels[' + idx + '].btn.style.color=(DebugJS.ctx.extActivePanel == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;');
+    ctx.extHeaderPanel.appendChild(btn);
+    return btn;
+  },
+
+  disableExtPanel: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.extPanel != null) {
+      var p = ctx.extPanels[ctx.extActivePanel];
+      if ((p) && (p.onInActive)) p.onInActive(p.panel);
+      ctx.removeOverlayPanelFull(ctx.extPanel);
+    }
+    ctx.status &= ~DebugJS.STATE_EXT_PANEL;
+    ctx.updateExtBtn();
+  },
+
+  switchExtPanel: function(idx) {
+    var ctx = DebugJS.ctx;
+    if (ctx.extActivePanel == idx) {
+      return;
+    }
+
+    var pnls = ctx.extPanels;
+
+    if (ctx.extActivePanel != -1) {
+      var p2 = pnls[ctx.extActivePanel];
+      if (p2.onInActive) p2.onInActive(p2.panel);
+      ctx.extBodyPanel.removeChild(p2.panel);
+    }
+
+    var p1 = pnls[idx];
+    ctx.extBodyPanel.appendChild(p1.panel);
+    if (p1.onActive) p1.onActive(p1.panel);
+
+    ctx.extActivePanel = idx;
+    ctx.updateExtButtons();
+  },
+
+  updateExtButtons: function() {
+    var ctx = DebugJS.ctx;
+    var pnls = ctx.extPanels;
+    for (var i = 0; i < pnls.length; i++) {
+      var p = pnls[i];
+      p.btn.style.color = (ctx.extActivePanel == i) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    }
+  },
+
+  createSubBasePanel: function(ctx) {
+    var defaultFontSize = ctx.computedFontSize;
+    var base = document.createElement('div');
+    base.className = ctx.id + '-overlay-panel-full';
+
+    var head = document.createElement('div');
+    head.style.position = 'relative';
+    head.style.height = ctx.computedFontSize + 'px';
+    base.appendChild(head);
+
+    var body = document.createElement('div');
+    body.style.position = 'relative';
+    body.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
+    base.appendChild(body);
+
+    return {base: base, head: head, body: body};
   },
 
   isOnDebugWindow: function(x, y) {
@@ -5611,6 +5723,7 @@ DebugJS.prototype = {
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     ctx.closeFeatures();
+    ctx.toolsActiveFunction = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
     if (ctx.options.useSuspendLogButton) {
       ctx.status &= ~DebugJS.STATE_LOG_SUSPENDING;
       ctx.updateSuspendLogBtn();
@@ -6419,12 +6532,42 @@ DebugJS.prototype = {
 
   initExtension: function() {
     var ctx = DebugJS.ctx;
+    ctx.initExtCmds(ctx);
+    ctx.initExtPanel(ctx);
+  },
+
+  initExtCmds: function(ctx) {
     if (DebugJS.x.CMD_TBL) {
       ctx.addCmdTbl(DebugJS.x.CMD_TBL);
     }
     for (var key in DebugJS.x) {
       if (DebugJS.x[key].CMD_TBL) {
         ctx.addCmdTbl(DebugJS.x[key].CMD_TBL);
+      }
+    }
+  },
+
+  initExtPanel: function(ctx) {
+    var ctx = DebugJS.ctx;
+
+    if (ctx.extPanel == null) {
+      var bp = ctx.createSubBasePanel(ctx);
+      ctx.extPanel = bp.base;
+      ctx.extHeaderPanel = bp.head;
+      ctx.extBodyPanel = bp.body;
+    }
+
+    var pnls = ctx.extPanels;
+    if (pnls.length > 0) {
+      ctx.extBtn.style.display = 'block';
+      for (var i = 0; i < pnls.length; i++) {
+        var p = pnls[i];
+        if (p.panel == null) {
+          p.panel = DebugJS.addSubPanel(ctx.extBodyPanel);
+          p.btn = ctx.createExtHeaderButton(p.name, i);
+          if (p.onCreate) p.onCreate(p.panel);
+          ctx.extBodyPanel.removeChild(p.panel);
+        }
       }
     }
   },
@@ -6446,6 +6589,13 @@ DebugJS.prototype = {
     }
     return false;
   }
+};
+
+DebugJS.addSubPanel = function(base) {
+  var el = document.createElement('div');
+  el.className = DebugJS.ctx.id + '-sbpnl';
+  base.appendChild(el);
+  return el;
 };
 
 DebugJS.RingBuffer = function(len) {
@@ -8422,11 +8572,24 @@ DebugJS.disable = function() {
   DebugJS.time.split = function(x, xx) {};
   DebugJS.time.end = function(x, xx) {};
   DebugJS.time.check = function(x) {};
+  DebugJS.x.addPanel = function(x) {};
+  DebugJS.x.setBtnLabel = function(x) {};
 };
 
 var dbg = dbg || DebugJS;
 var time = time || DebugJS.time;
 DebugJS.x = DebugJS.x || {};
+DebugJS.x.addPanel = function(p) {
+  var ctx = DebugJS.ctx;
+  p.panel = null; p.btn = null;
+  ctx.extPanels.push(p);
+  if (DebugJS.ctx.status & DebugJS.STATE_INITIALIZED) {
+    ctx.initExtPanel(ctx);
+  }
+};
+DebugJS.x.setBtnLabel = function(l) {
+  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
+};
 if (DebugJS.ENABLE) {
   DebugJS.start();
 } else {
