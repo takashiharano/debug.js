@@ -45,7 +45,7 @@ pre {margin: 4px 0; font-family:Consolas;}
 #footer-content {position:relative; display:table-cell; vertical-align:middle; text-align:center;}
 .caption {font-size:30px; font-weight:bold;}
 .caption2 {font-size:25px;}
-.code {width:750px; margin:14px 0; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
+.code {width:750px; margin:8px 0; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
 .eg1 {margin-bottom:-10px; font-size:14px;font-style:italic;}
 .emphasis {color:#eee;}
 .button-100 {width:100px !important;}
@@ -479,6 +479,38 @@ window.addEventListener('DOMContentLoaded', onReady, true);
 window.addEventListener('load', onLoad, true);
 window.addEventListener('unload', onUnload, true);
 window.addEventListener('error', onError, true);
+
+//--------------------------------------------------
+var example = {};
+
+example.onCreateP1 = function(panel) {
+  log('onCreateP1');
+  var html = '<div style="box-sizing:border-box; ' +
+             'width:100%; ' +
+             'height:100%; ' +
+             'padding:4px;">' +
+             'Extension Panel' +
+             '</div>';
+  panel.innerHTML = html;
+};
+
+example.onActiveP1 = function(panel) {
+  log('onActiveP1');
+};
+
+example.onInActiveP1 = function(panel) {
+  log('onInActiveP1');
+};
+
+example.regieterExtensionPanel = function() {
+  var panel1 = {
+    name: 'P1',
+    onCreate: example.onCreateP1,
+    onActive: example.onActiveP1,
+    onInActive: example.onInActiveP1
+  };
+  dbg.x.addPanel(panel1);
+};
 </script>
 </head>
 <body>
@@ -2261,7 +2293,8 @@ $ U+6F22 U+5B57
 <br>
 
 <div class="caption">// Extension</div>
-You can define your own command like below.<br>
+You can define your own commands and panels like below.<br><br>
+<div class="caption2">Extension Command</div>
 
 <pre class="code">
 &lt;script src="debug.js"&gt;&lt;/script&gt;
@@ -2286,6 +2319,48 @@ $ hello<br>
 Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x.js" target="_blank">extension-sample/debug-x.js</a> for details.
 <br>
 <br>
+
+<div class="caption2">Extension Panel</div>
+<pre class="code">// Called when the panel is first created.
+// This is where you should do all of your normal static set up:
+// create views, initialize data, etc.
+// The argument <i>panel</i> is the base DOM element of the extension panel.
+<span class="emphasis">example.onCreateP1 = function(panel) {
+  log('onCreateP1');
+  var html = '&lt;div style="box-sizing:border-box; ' +
+             'width:100%; height:100%; padding:4px;"&gt;' +
+             'Extension Panel' +
+             '&lt;/div&gt;';
+  panel.innerHTML = html;
+};</span>
+
+// Called when the panel is displayed.
+<span class="emphasis">example.onActiveP1 = function(panel) {
+  log('onActiveP1');
+};</span>
+
+// Called when the panel is hidden.
+<span class="emphasis">extsample.onInActiveP1 = function(panel) {
+  log('onInActiveP1');
+};
+
+example.regieterExtensionPanel = function() {
+  var panel1 = {
+    name: 'Panel1',
+    onCreate: extsample.onCreateP1,
+    onActive: extsample.onActiveP1,
+    onInActive: extsample.onInActiveP1
+  };
+  dbg.x.addPanel(panel1);
+};
+
+example.regieterExtensionPanel();<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button>
+</span></pre>
+
+Change the button label
+<pre class="code"><span class="emphasis">DebugJS.x.setBtnLabel('<input type="text" id="ext-btn-label-text" value="ABC" class="inline-text-input" style="width:40px;">');<button class="demo-button2" onclick="DebugJS.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
+Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-panel.js" target="_blank">extension-sample/debug-x-panel.js</a> for details.
+<br><br>
 
 <div class="caption">// Browser Support</div>
 <table class="desc-table">
