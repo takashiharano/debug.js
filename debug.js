@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708271525';
+  this.v = '201708272056';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5376,14 +5376,16 @@ DebugJS.prototype = {
       ctx.switchExtPanel(activePanel);
     } else {
       var p = ctx.extPanels[activePanel];
-      if ((p) && (p.onActive)) p.onActive(p.panel);
+      if ((p) && (p.onActive)) p.onActive(p.panelBody);
     }
     ctx.updateExtButtons();
     ctx.updateExtBtn();
   },
 
   createExtHeaderButton: function(label, idx) {
+    var MAX_LEN = 20;
     var ctx = DebugJS.ctx;
+    if (label.length > MAX_LEN) {label = label.substr(0, MAX_LEN) + '...';}
     var btn = document.createElement('span');
     btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
     btn.style.marginRight = '4px';
@@ -5399,7 +5401,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.extPanel != null) {
       var p = ctx.extPanels[ctx.extActivePanel];
-      if ((p) && (p.onInActive)) p.onInActive(p.panel);
+      if ((p) && (p.onInActive)) p.onInActive(p.panelBody);
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.STATE_EXT_PANEL;
@@ -5416,13 +5418,13 @@ DebugJS.prototype = {
 
     if (ctx.extActivePanel != -1) {
       var p2 = pnls[ctx.extActivePanel];
-      if (p2.onInActive) p2.onInActive(p2.panel);
+      if (p2.onInActive) p2.onInActive(p2.panelBody);
       ctx.extBodyPanel.removeChild(p2.panel);
     }
 
     var p1 = pnls[idx];
     ctx.extBodyPanel.appendChild(p1.panel);
-    if (p1.onActive) p1.onActive(p1.panel);
+    if (p1.onActive) p1.onActive(p1.panelBody);
 
     ctx.extActivePanel = idx;
     ctx.updateExtButtons();
@@ -6564,8 +6566,10 @@ DebugJS.prototype = {
         var p = pnls[i];
         if (p.panel == null) {
           p.panel = DebugJS.addSubPanel(ctx.extBodyPanel);
+          p.panel.style.overflow = 'auto';
+          p.panelBody = DebugJS.addSubPanel(p.panel);
           p.btn = ctx.createExtHeaderButton(p.name, i);
-          if (p.onCreate) p.onCreate(p.panel);
+          if (p.onCreate) p.onCreate(p.panelBody);
           ctx.extBodyPanel.removeChild(p.panel);
         }
       }
@@ -8581,7 +8585,7 @@ var time = time || DebugJS.time;
 DebugJS.x = DebugJS.x || {};
 DebugJS.x.addPanel = function(p) {
   var ctx = DebugJS.ctx;
-  p.panel = null; p.btn = null;
+  p.panel = null; p.panelBody = null; p.btn = null;
   ctx.extPanels.push(p);
   if (DebugJS.ctx.status & DebugJS.STATE_INITIALIZED) {
     ctx.initExtPanel(ctx);
