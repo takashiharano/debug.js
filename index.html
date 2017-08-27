@@ -2344,21 +2344,17 @@ Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/e
   log('onInActiveP1');
 };
 
-example.regieterExtensionPanel = function() {
-  var panel1 = {
-    name: 'Panel1',
-    onCreate: example.onCreateP1,
-    onActive: example.onActiveP1,
-    onInActive: example.onInActiveP1
-  };
-  dbg.x.addPanel(panel1);
+var panel1 = {
+  name: 'P1',
+  onCreate: example.onCreateP1,
+  onActive: example.onActiveP1,
+  onInActive: example.onInActiveP1
 };
-
-example.regieterExtensionPanel();<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button>
+dbg.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button>
 </span></pre>
 
 Change the button label
-<pre class="code"><span class="emphasis">DebugJS.x.setBtnLabel('<input type="text" id="ext-btn-label-text" value="ABC" class="inline-text-input" style="width:40px;">');<button class="demo-button2" onclick="DebugJS.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
+<pre class="code"><span class="emphasis">dbg.x.setBtnLabel('<input type="text" id="ext-btn-label-text" value="ABC" class="inline-text-input" style="width:40px;">');<button class="demo-button2" onclick="dbg.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
 Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-panel.js" target="_blank">extension-sample/debug-x-panel.js</a> for details.
 <br><br>
 
