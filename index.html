@@ -2293,31 +2293,28 @@ $ U+6F22 U+5B57
 <br>
 
 <div class="caption">// Extension</div>
-You can define your own commands and panels like below.<br><br>
-<div class="caption2">Extension Command</div>
-
+You can define your own commands and panels like below.<br>
 <pre class="code">
 &lt;script src="debug.js"&gt;&lt;/script&gt;
-<span class="emphasis">&lt;script src="debug-x.js"&gt;&lt;/script&gt;</span>
+<span class="emphasis">&lt;script src="debug-x.js"&gt;&lt;/script&gt;</span> &lt;!-- Include your own script--&gt;
 </pre>
 
+<div class="caption2">Extension Command</div>
 <pre class="code emphasis" style="margin-bottom:2px">
 example.cmdHello = function(arg, tbl) {
   DebugJS.log('Hello!');
 };
 
-DebugJS.x.CMD_TBL = [
+example.CMD_TBL = [
   {cmd: 'hello', fnc: example.cmdHello, desc: 'extention command example'}
 ];
+
+DebugJS.x.addCmdTbl(example.CMD_TBL);
 </pre>
 <span style="font-family:Consolas">
 $ hello<br>
 -&gt; Hello!<br>
 </span>
-<br>
-<i>DebugJS.x</i> is prospectively defined in debug.js.<br>
-Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x.js" target="_blank">extension-sample/debug-x.js</a> for details.
-<br>
 <br>
 
 <div class="caption2">Extension Panel</div>
@@ -2350,12 +2347,15 @@ var panel1 = {
   onActive: example.onActiveP1,
   onInActive: example.onInActiveP1
 };
-dbg.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button>
+DebugJS.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button>
 </span></pre>
 
 Change the button label
 <pre class="code"><span class="emphasis">dbg.x.setBtnLabel('<input type="text" id="ext-btn-label-text" value="ABC" class="inline-text-input" style="width:40px;">');<button class="demo-button2" onclick="dbg.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
-Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-panel.js" target="_blank">extension-sample/debug-x-panel.js</a> for details.
+
+
+Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-cmd.js" target="_blank">extension-sample/debug-x-cmd.js</a> 
+and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-panel.js" target="_blank">extension-sample/debug-x-panel.js</a> for details.
 <br><br>
 
 <div class="caption">// Browser Support</div>
