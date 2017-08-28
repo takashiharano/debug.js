@@ -88,7 +88,7 @@ extsample.init = function() {
     onActive: extsample.onActiveP1,
     onInActive: extsample.onInActiveP1
   };
-  dbg.x.addPanel(panel1);
+  DebugJS.x.addPanel(panel1);
 };
 
 extsample.onLoad = function() {
@@ -103,7 +103,7 @@ extsample.addMorePanels = function() {
     onActive: extsample.onActiveP2,
     onInActive: extsample.onInActiveP2
   };
-  dbg.x.addPanel(panel2);
+  DebugJS.x.addPanel(panel2);
 
   var panel3 = {
     name: 'P3',
@@ -111,7 +111,7 @@ extsample.addMorePanels = function() {
     onActive: extsample.onActiveP3,
     onInActive: extsample.onInActiveP3
   };
-  dbg.x.addPanel(panel3);
+  DebugJS.x.addPanel(panel3);
 };
 
 //--------------------------------------

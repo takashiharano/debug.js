@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708272056';
+  this.v = '201708290102';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -323,8 +323,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC}
   ];
-  this.intCmdTblLen = this.INT_CMD_TBL.length;
   this.CMD_TBL = [];
+  this.EXT_CMD_TBL = [];
   this.options = null;
   this.errStatus = DebugJS.ERR_STATE_NONE;
   this.properties = {
@@ -1522,7 +1522,6 @@ DebugJS.prototype = {
         }
       }
     }
-    ctx.intCmdTblLen = ctx.CMD_TBL.length;
   },
 
   setWindowPosition: function(pos, dbgWinWidth, dbgWinHeight) {
@@ -5642,8 +5641,16 @@ DebugJS.prototype = {
       }
     }
 
-    if (ctx.options.disableAllCommands) {
+    if ((found) || (ctx.options.disableAllCommands)) {
       return;
+    }
+
+    for (var i = 0, len = ctx.EXT_CMD_TBL.length; i < len; i++) {
+      if (cmd == ctx.EXT_CMD_TBL[i].cmd) {
+        found = true;
+        ctx.EXT_CMD_TBL[i].fnc(arg, ctx.EXT_CMD_TBL[i]);
+        break;
+      }
     }
 
     if ((!found) && (str.match(/^\s*http/))) {
@@ -5764,18 +5771,28 @@ DebugJS.prototype = {
   cmdHelp: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var str = 'Available Commands:\n<table>';
-    for (var i = 0, len = ctx.CMD_TBL.length; i < len; i++) {
+    var len = ctx.CMD_TBL.length;
+    for (var i = 0; i < len; i++) {
       if (!(ctx.CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
-        if (i == ctx.intCmdTblLen) {
-          str += '<tr><td colspan="2">---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
+        str += '<tr><td>' + ctx.CMD_TBL[i].cmd + '</td><td>' + ctx.CMD_TBL[i].desc + '</td></tr>';
+      }
+    }
+    if (!ctx.options.disableAllCommands) {
+      len = ctx.EXT_CMD_TBL.length;
+      if (len > 0) {
+        str += '<tr><td colspan="2">' +
+               '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
+      }
+      for (var i = 0; i < len; i++) {
+        if (!(ctx.EXT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
+          var style1 = '';
+          var style2 = '';
+          if (ctx.EXT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DISABLED) {
+            style1 = '<span style="color:#aaa">';
+            style2 = '</span>';
+          }
+          str += '<tr><td>' + style1 + ctx.EXT_CMD_TBL[i].cmd + style2 + '</td><td>' + style1 + ctx.EXT_CMD_TBL[i].desc + style2 + '</td></tr>';
         }
-        var style1 = '';
-        var style2 = '';
-        if (ctx.CMD_TBL[i].attr & DebugJS.CMD_ATTR_DISABLED) {
-          style1 = '<span style="color:#aaa">';
-          style2 = '</span>';
-        }
-        str += '<tr><td>' + style1 + ctx.CMD_TBL[i].cmd + style2 + '</td><td>' + style1 + ctx.CMD_TBL[i].desc + style2 + '</td></tr>';
       }
     }
     str += '</table>';
@@ -6534,19 +6551,7 @@ DebugJS.prototype = {
 
   initExtension: function() {
     var ctx = DebugJS.ctx;
-    ctx.initExtCmds(ctx);
     ctx.initExtPanel(ctx);
-  },
-
-  initExtCmds: function(ctx) {
-    if (DebugJS.x.CMD_TBL) {
-      ctx.addCmdTbl(DebugJS.x.CMD_TBL);
-    }
-    for (var key in DebugJS.x) {
-      if (DebugJS.x[key].CMD_TBL) {
-        ctx.addCmdTbl(DebugJS.x[key].CMD_TBL);
-      }
-    }
   },
 
   initExtPanel: function(ctx) {
@@ -6576,20 +6581,10 @@ DebugJS.prototype = {
     }
   },
 
-  addCmdTbl: function(table) {
+  existCmd: function(cmd, tbl) {
     var ctx = DebugJS.ctx;
-    for (var i = 0; i < table.length; i++) {
-      if (ctx.existCmd(table[i].cmd)) {
-        table[i].attr |= DebugJS.CMD_ATTR_DISABLED;
-      }
-      ctx.CMD_TBL.push(table[i]);
-    }
-  },
-
-  existCmd: function(cmd) {
-    var ctx = DebugJS.ctx;
-    for (var i = 0; i < ctx.CMD_TBL.length; i++) {
-      if (ctx.CMD_TBL[i].cmd == cmd) return true;
+    for (var i = 0; i < tbl.length; i++) {
+      if (tbl[i].cmd == cmd) return true;
     }
     return false;
   }
@@ -8583,6 +8578,16 @@ DebugJS.disable = function() {
 var dbg = dbg || DebugJS;
 var time = time || DebugJS.time;
 DebugJS.x = DebugJS.x || {};
+DebugJS.x.addCmdTbl = function(table) {
+  var ctx = DebugJS.ctx;
+  for (var i = 0; i < table.length; i++) {
+    if ((ctx.existCmd(table[i].cmd, ctx.CMD_TBL)) ||
+        (ctx.existCmd(table[i].cmd, ctx.EXT_CMD_TBL))) {
+      table[i].attr |= DebugJS.CMD_ATTR_DISABLED;
+    }
+    ctx.EXT_CMD_TBL.push(table[i]);
+  }
+};
 DebugJS.x.addPanel = function(p) {
   var ctx = DebugJS.ctx;
   p.panel = null; p.panelBody = null; p.btn = null;

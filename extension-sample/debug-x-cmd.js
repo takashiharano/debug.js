@@ -15,7 +15,9 @@ extsample.cmdXyz = function(arg, tbl) {
   }
 };
 
-DebugJS.x.CMD_TBL = [
+extsample.CMD_TBL = [
   {'cmd': 'abc', 'fnc': extsample.cmdAbc, 'desc': 'extention command example1'},
   {'cmd': 'xyz', 'fnc': extsample.cmdXyz, 'desc': 'extention command example2', 'usage': 'xyz args...'}
 ];
+
+DebugJS.x.addCmdTbl(extsample.CMD_TBL);
