@@ -2294,22 +2294,22 @@ $ U+6F22 U+5B57
 
 <div class="caption">// Extension</div>
 You can define your own commands and panels like below.<br>
-<pre class="code">
-&lt;script src="debug.js"&gt;&lt;/script&gt;
-<span class="emphasis">&lt;script src="debug-x.js"&gt;&lt;/script&gt;</span> &lt;!-- Include your own script--&gt;
-</pre>
+<br>
 
 <div class="caption2">Extension Command</div>
-<pre class="code emphasis" style="margin-bottom:2px">
-example.cmdHello = function(arg, tbl) {
+<pre class="code" style="margin-bottom:2px">
+// Command definition
+<span class="emphasis">example.cmdHello = function(arg, tbl) {
   DebugJS.log('Hello!');
-};
+};</span>
 
-example.CMD_TBL = [
+// Command table definition
+<span class="emphasis">example.CMD_TBL = [
   {cmd: 'hello', fnc: example.cmdHello, desc: 'extention command example'}
-];
+];</span>
 
-DebugJS.x.addCmdTbl(example.CMD_TBL);
+// Register the command table
+<span class="emphasis">DebugJS.x.addCmdTbl(example.CMD_TBL);</span>
 </pre>
 <span style="font-family:Consolas">
 $ hello<br>
