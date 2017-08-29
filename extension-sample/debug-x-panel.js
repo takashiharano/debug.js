@@ -6,17 +6,7 @@ extsample.p1ActiveCount = 0;
 
 extsample.onCreateP1 = function(panel) {
   log('onCreateP1');
-  var body = document.createElement('pre');
-  body.style.boxSizing = 'border-box';
-  body.style.width = '100%';
-  body.style.height = '100%';
-  body.style.padding = '4px';
-
-  var content = 'Panel1';
-  body.innerHTML = content;
-
-  panel.appendChild(body);
-  extsample.panel1Body = body;
+  panel.innerHTML = 'Panel1';
 };
 
 extsample.onActiveP1 = function(panel) {
@@ -26,7 +16,7 @@ extsample.onActiveP1 = function(panel) {
   var content = 'Panel1\n' +
                 'Active = ' + extsample.p1ActiveCount;
 
-  extsample.panel1Body.innerHTML = content;
+  panel.innerHTML = content;
 };
 
 extsample.onInActiveP1 = function(panel) {
@@ -36,18 +26,7 @@ extsample.onInActiveP1 = function(panel) {
 //--------------------------------------
 extsample.onCreateP2 = function(panel) {
   log('onCreateP2');
-  var body = document.createElement('div');
-  body.style.boxSizing = 'border-box';
-  body.style.width = '100%';
-  body.style.height = '100%';
-  body.style.padding = '4px';
-  body.style.background = 'rgba(240, 255, 255, 0.6)';
-  body.style.color = '#00f';
-
-  var content = 'Panel2';
-  body.innerHTML = content;
-
- panel.appendChild(body);
+  panel.innerHTML = 'Panel2';
 };
 
 extsample.onActiveP2 = function(panel) {
@@ -82,8 +61,15 @@ extsample.onInActiveP3 = function(panel) {
 
 //--------------------------------------
 extsample.init = function() {
+  var p1base = document.createElement('pre');
+  p1base.style.boxSizing = 'border-box';
+  p1base.style.width = '100%';
+  p1base.style.height = '100%';
+  p1base.style.padding = '4px';
+
   var panel1 = {
     name: 'P1',
+    panel: p1base,
     onCreate: extsample.onCreateP1,
     onActive: extsample.onActiveP1,
     onInActive: extsample.onInActiveP1
@@ -97,8 +83,17 @@ extsample.onLoad = function() {
 };
 
 extsample.addMorePanels = function() {
+  var p2base = document.createElement('div');
+  p2base.style.boxSizing = 'border-box';
+  p2base.style.width = '100%';
+  p2base.style.height = '100%';
+  p2base.style.padding = '4px';
+  p2base.style.background = 'rgba(240, 255, 255, 0.6)';
+  p2base.style.color = '#00f';
+
   var panel2 = {
     name: 'P2',
+    panel: p2base,
     onCreate: extsample.onCreateP2,
     onActive: extsample.onActiveP2,
     onInActive: extsample.onInActiveP2

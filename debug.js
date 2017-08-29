@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708290102';
+  this.v = '201708300136';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5375,7 +5375,7 @@ DebugJS.prototype = {
       ctx.switchExtPanel(activePanel);
     } else {
       var p = ctx.extPanels[activePanel];
-      if ((p) && (p.onActive)) p.onActive(p.panelBody);
+      if ((p) && (p.onActive)) p.onActive(p.panel);
     }
     ctx.updateExtButtons();
     ctx.updateExtBtn();
@@ -5400,7 +5400,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.extPanel != null) {
       var p = ctx.extPanels[ctx.extActivePanel];
-      if ((p) && (p.onInActive)) p.onInActive(p.panelBody);
+      if ((p) && (p.onInActive)) p.onInActive(p.panel);
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.STATE_EXT_PANEL;
@@ -5417,13 +5417,13 @@ DebugJS.prototype = {
 
     if (ctx.extActivePanel != -1) {
       var p2 = pnls[ctx.extActivePanel];
-      if (p2.onInActive) p2.onInActive(p2.panelBody);
-      ctx.extBodyPanel.removeChild(p2.panel);
+      if (p2.onInActive) p2.onInActive(p2.panel);
+      ctx.extBodyPanel.removeChild(p2.base);
     }
 
     var p1 = pnls[idx];
-    ctx.extBodyPanel.appendChild(p1.panel);
-    if (p1.onActive) p1.onActive(p1.panelBody);
+    ctx.extBodyPanel.appendChild(p1.base);
+    if (p1.onActive) p1.onActive(p1.panel);
 
     ctx.extActivePanel = idx;
     ctx.updateExtButtons();
@@ -6562,6 +6562,7 @@ DebugJS.prototype = {
       ctx.extPanel = bp.base;
       ctx.extHeaderPanel = bp.head;
       ctx.extBodyPanel = bp.body;
+      ctx.extBodyPanel.style.overflow = 'auto';
     }
 
     var pnls = ctx.extPanels;
@@ -6569,16 +6570,23 @@ DebugJS.prototype = {
       ctx.extBtn.style.display = 'block';
       for (var i = 0; i < pnls.length; i++) {
         var p = pnls[i];
-        if (p.panel == null) {
-          p.panel = DebugJS.addSubPanel(ctx.extBodyPanel);
-          p.panel.style.overflow = 'auto';
-          p.panelBody = DebugJS.addSubPanel(p.panel);
-          p.btn = ctx.createExtHeaderButton(p.name, i);
-          if (p.onCreate) p.onCreate(p.panelBody);
-          ctx.extBodyPanel.removeChild(p.panel);
+        if (p.base == null) {
+          ctx.createExtPanel(ctx, p, i);
         }
       }
     }
+  },
+
+  createExtPanel: function(ctx, p, idx) {
+    p.base = document.createElement('div');
+    p.base.className = ctx.id + '-sbpnl';
+    p.btn = ctx.createExtHeaderButton(p.name, idx);
+    if (p.panel) {
+      p.base.appendChild(p.panel);
+    } else {
+      p.panel = p.base;
+    }
+    if (p.onCreate) p.onCreate(p.panel);
   },
 
   existCmd: function(cmd, tbl) {
@@ -8590,7 +8598,7 @@ DebugJS.x.addCmdTbl = function(table) {
 };
 DebugJS.x.addPanel = function(p) {
   var ctx = DebugJS.ctx;
-  p.panel = null; p.panelBody = null; p.btn = null;
+  p.base = null; p.btn = null;
   ctx.extPanels.push(p);
   if (DebugJS.ctx.status & DebugJS.STATE_INITIALIZED) {
     ctx.initExtPanel(ctx);
