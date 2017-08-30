@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708300136';
+  this.v = '201708310000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -488,7 +488,7 @@ DebugJS._AVAILABLE = false;
 DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 '',
-'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.convRadixDECtoHEX(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    setTimeout(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
+'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.toHex(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    setTimeout(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// ASCII characters\nvar str = \'\';\nfor (var i = 0x20; i <= 0x7e; i++) {\n  if ((i % 0x10) == 0) {\n    str += \'\\n\';\n  }\n  str += String.fromCharCode(i);\n}\nstr;\n',
 '// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
@@ -7234,7 +7234,7 @@ DebugJS.checkJson = function(json) {
 DebugJS.digits = function(x) {
   var digit = 0;
   while (x != 0) {
-    x = (x / 10) << 0; digit++;
+    x = (x / 10) | 0; digit++;
   }
   return digit;
 };
@@ -7386,12 +7386,12 @@ DebugJS.convRadixFromBIN = function(v2) {
   DebugJS.log.mlt(res);
 };
 
-DebugJS.convRadixDECtoHEX = function(v10, upper) {
-  var v16 = parseInt(v10).toString(16);
-  if (upper) {
-    v16 = v16.toUpperCase();
+DebugJS.toHex = function(v, uc) {
+  var hex = parseInt(v).toString(16);
+  if (uc) {
+    hex = hex.toUpperCase();
   }
-  return v16;
+  return hex;
 };
 
 DebugJS.convertBin = function(data) {
@@ -7525,7 +7525,7 @@ DebugJS.encodeUnicode = function(str) {
     if (i > 0) {
       code += ' ';
     }
-    code += 'U+' + DebugJS.convRadixDECtoHEX(point, true);
+    code += 'U+' + DebugJS.toHex(point, true);
   }
   return code;
 };
