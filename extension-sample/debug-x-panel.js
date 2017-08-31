@@ -61,6 +61,8 @@ extsample.onInActiveP3 = function(panel) {
 
 //--------------------------------------
 extsample.init = function() {
+  DebugJS.x.setBtnLabel('EXT');
+
   var p1base = document.createElement('pre');
   p1base.style.boxSizing = 'border-box';
   p1base.style.width = '100%';
@@ -78,7 +80,6 @@ extsample.init = function() {
 };
 
 extsample.onLoad = function() {
-  DebugJS.x.setBtnLabel('EXT');
   extsample.addMorePanels();
 };
 
