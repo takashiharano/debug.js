@@ -73,6 +73,10 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .showhide-button {color:#0a0;}
 .showhide-button:hover {cursor:pointer;}
 .inline-text-input{border:none !important;border-bottom:1px solid #aaa !important;border-radius:0 !important;background:transparent;color:#fff !important;font-family:Consolas;}
+.demo-textarea{width:500px;height:50px;border:1px solid #666;background:transparent;color:#fff;font-size:14px;font-family:Consolas;}
+.overlay-root{position:relative;}
+.overlay{position:absolute;top:0;left:0;white-space:nowrap;}
+.overlay-val{padding:2px;border-radius:4px;background:rgba(0,102,238,0.5); }
 </style>
 <script>
 DebugJS.init({visible:true});
@@ -88,8 +92,8 @@ var options1 = {
     key: 113,
     shift: true,
     ctrl: false,
-    alt: false,
-    meta: false
+    alt: undefined,
+    meta: undefined
   },
   position: 'c',
   //position: 'n'
@@ -484,32 +488,30 @@ window.addEventListener('error', onError, true);
 var example = {};
 
 example.onCreateP1 = function(panel) {
-  log('onCreateP1');
-  var html = '<div style="box-sizing:border-box; ' +
-             'width:100%; ' +
-             'height:100%; ' +
-             'padding:4px;">' +
-             'Extension Panel' +
-             '</div>';
-  panel.innerHTML = html;
+  var code = document.getElementById('ext-panel-create-code').value;
+  eval(code);
 };
 
 example.onActiveP1 = function(panel) {
-  log('onActiveP1');
+  var code = document.getElementById('ext-panel-active-code').value;
+  eval(code);
 };
 
 example.onInActiveP1 = function(panel) {
-  log('onInActiveP1');
+  var code = document.getElementById('ext-panel-inactive-code').value;
+  eval(code);
 };
 
 example.regieterExtensionPanel = function() {
+  var name = document.getElementById('ext-panel-name-text').value;
   var panel1 = {
-    name: 'P1',
+    name: name,
     onCreate: example.onCreateP1,
     onActive: example.onActiveP1,
     onInActive: example.onInActiveP1
   };
-  dbg.x.addPanel(panel1);
+  var index = dbg.x.addPanel(panel1);
+  document.getElementById('ext-panel-index').innerText = index;
 };
 </script>
 </head>
@@ -622,14 +624,25 @@ If you want to change the debugger settings, explicitly call for initialization 
 
   <tr>
     <td class="name">keyAssign</td>
-    <td>Key code for the debug window show/hide control</td>
+    <td>
+      Key code for the debug window show/hide control
+<pre class="eg">
+{
+  key: KeyCode,
+  shift: undefined<span class="annotation">(not care)</span> / true / false
+  ctrl: undefined<span class="annotation">(not care)</span> / true / false,
+  alt: undefined<span class="annotation">(not care)</span> / true / false,
+  meta: undefined<span class="annotation">(not care)</span> / true / false
+}
+</pre>
+    </td>
     <td>
 {<br>
 &nbsp;&nbsp;key: 113,<span class="annotation">(F2)</span><br>
-&nbsp;&nbsp;shift: false<br>
-&nbsp;&nbsp;ctrl: false,<br>
-&nbsp;&nbsp;alt: false,<br>
-&nbsp;&nbsp;meta: false<br>
+&nbsp;&nbsp;shift: undefined<br>
+&nbsp;&nbsp;ctrl: undefined,<br>
+&nbsp;&nbsp;alt: undefined,<br>
+&nbsp;&nbsp;meta: undefined<br>
 }
     </td>
   </tr>
@@ -1897,12 +1910,16 @@ function
   dom : Element Info
   js  : JavaScript Editor
   tool: Tools
+  ext : Extension Panel
 
 sub function (for tools)
   text: Text Checker
   file: File Loader
   html: HTML Editor
   memo: Memo
+
+sub function (for ext)
+  panel index
 
 option
   for tools.file: load format
@@ -2323,35 +2340,36 @@ $ hello<br>
 // create views, initialize data, etc.
 // The argument <i>panel</i> is the base DOM element of the extension panel.
 <span class="emphasis">example.onCreateP1 = function(panel) {
-  log('onCreateP1');
-  var html = '&lt;div style="box-sizing:border-box; ' +
-             'width:100%; height:100%; padding:4px;"&gt;' +
-             'Extension Panel' +
-             '&lt;/div&gt;';
-  panel.innerHTML = html;
+  <textarea id="ext-panel-create-code" class="demo-textarea" style="height:105px;">
+log('onCreateP1');
+var html = '&lt;div style="box-sizing:border-box; ' +
+           'width:100%; height:100%; padding:4px;"&gt;' +
+           'Extension Panel' +
+           '&lt;/div&gt;';
+panel.innerHTML = html;</textarea>
 };</span>
 
 // Called when the panel is displayed.
 <span class="emphasis">example.onActiveP1 = function(panel) {
-  log('onActiveP1');
+  <textarea id="ext-panel-active-code" class="demo-textarea" style="height:20px;">log('onActiveP1');</textarea>
 };</span>
 
 // Called when the panel is hidden.
 <span class="emphasis">example.onInActiveP1 = function(panel) {
-  log('onInActiveP1');
+  <textarea id="ext-panel-inactive-code" class="demo-textarea" style="height:20px;">log('onInActiveP1');</textarea>
 };
 
 var panel1 = {
-  name: 'P1',
+  name: '<input type="text" id="ext-panel-name-text" class="inline-text-input" style="width:30px;" value="P1">',
   onCreate: example.onCreateP1,
   onActive: example.onActiveP1,
   onInActive: example.onInActiveP1
 };
-DebugJS.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button>
+<span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = DebugJS.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span>
 </span></pre>
 
 Change the button label
-<pre class="code"><span class="emphasis">dbg.x.setBtnLabel('<input type="text" id="ext-btn-label-text" value="ABC" class="inline-text-input" style="width:40px;">');<button class="demo-button2" onclick="dbg.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
+<pre class="code"><span class="emphasis">dbg.x.setBtnLabel('<input type="text" id="ext-btn-label-text" class="inline-text-input" style="width:40px;" value="ABC">');<button class="demo-button2" onclick="dbg.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
 
 
 Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-cmd.js" target="_blank">extension-sample/debug-x-cmd.js</a> 

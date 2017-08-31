@@ -5,16 +5,16 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201708310000';
+  this.v = '201708312333';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
     keyAssign: {
       key: 113,
-      shift: false,
-      ctrl: false,
-      alt: false,
-      meta: false
+      shift: undefined,
+      ctrl: undefined,
+      alt: undefined,
+      meta: undefined
     },
     popupOnError: {
       scriptError: true,
@@ -303,7 +303,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'jquery', fnc: this.cmdJquery, desc: 'Displays what version of jQuery is loaded'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
-    {cmd: 'launch', fnc: this.cmdLaunch, desc: 'Launch a function', usage: 'launch [sys|html|dom|js|tool] [timer|text|file|html|memo] [clock|cu|cd]|[b64|bin]'},
+    {cmd: 'launch', fnc: this.cmdLaunch, desc: 'Launch a function', usage: 'launch [sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
     {cmd: 'load', fnc: this.cmdLoad, desc: 'Load the log buffer', usage: 'load json-data'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
@@ -335,6 +335,7 @@ var DebugJS = DebugJS || function() {
     hexdumplimit: {value: 102400, restriction: /^[0-9]+$/}
   };
   this.extBtn = null;
+  this.extBtnLabel = 'EXT';
   this.extPanel = null;
   this.extHeaderPanel = null;
   this.extBodyPanel = null;
@@ -1205,7 +1206,7 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.swBtnPanel);
     }
 
-    ctx.extBtn = ctx.createHeaderButton('extBtn', 'EXT', 2, null, DebugJS.ctx.toggleExtPanelMode, 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
+    ctx.extBtn = ctx.createHeaderButton('extBtn', ctx.extBtnLabel, 2, null, DebugJS.ctx.toggleExtPanelMode, 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
     ctx.extBtn.style.display = 'none';
 
     if (ctx.options.useTools) {
@@ -2310,7 +2311,7 @@ DebugJS.prototype = {
         break;
 
       case 112: // F1
-        if (ctx.status & DebugJS.STATE_DYNAMIC) {
+        if ((e.ctrlKey) && (ctx.status & DebugJS.STATE_DYNAMIC)) {
           ctx.dbgWin.style.top = 0;
           ctx.dbgWin.style.left = 0;
           ctx.status &= ~DebugJS.STATE_DRAGGING;
@@ -2318,10 +2319,10 @@ DebugJS.prototype = {
         break;
 
       case ctx.options.keyAssign.key:
-        if ((e.shiftKey == ctx.options.keyAssign.shift) &&
-            (e.ctrlKey == ctx.options.keyAssign.ctrl) &&
-            (e.altKey == ctx.options.keyAssign.alt) &&
-            (e.metaKey == ctx.options.keyAssign.meta)) {
+        if (((ctx.options.keyAssign.shift == undefined) || (e.shiftKey == ctx.options.keyAssign.shift)) &&
+            ((ctx.options.keyAssign.ctrl == undefined) || (e.ctrlKey == ctx.options.keyAssign.ctrl)) &&
+            ((ctx.options.keyAssign.alt == undefined) || (e.altKey == ctx.options.keyAssign.alt)) &&
+            ((ctx.options.keyAssign.meta == undefined) || (e.metaKey == ctx.options.keyAssign.meta))) {
           if ((ctx.status & DebugJS.STATE_DYNAMIC) && (ctx.isOutOfWindow())) {
             ctx.resetToOriginalPosition();
           } else if (ctx.status & DebugJS.STATE_VISIBLE) {
@@ -5389,6 +5390,7 @@ DebugJS.prototype = {
     btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
     btn.style.marginRight = '4px';
     btn.innerText = '<' + label + '>';
+    btn.style.color = DebugJS.SBPNL_COLOR_INACTIVE;
     btn.onclick = new Function('DebugJS.ctx.switchExtPanel(' + idx + ');');
     btn.onmouseover = new Function('DebugJS.ctx.extPanels[' + idx + '].btn.style.color=DebugJS.SBPNL_COLOR_ACTIVE;');
     btn.onmouseout = new Function('DebugJS.ctx.extPanels[' + idx + '].btn.style.color=(DebugJS.ctx.extActivePanel == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;');
@@ -5409,11 +5411,10 @@ DebugJS.prototype = {
 
   switchExtPanel: function(idx) {
     var ctx = DebugJS.ctx;
+    var pnls = ctx.extPanels;
     if (ctx.extActivePanel == idx) {
       return;
     }
-
-    var pnls = ctx.extPanels;
 
     if (ctx.extActivePanel != -1) {
       var p2 = pnls[ctx.extActivePanel];
@@ -6067,14 +6068,14 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
     var func = args[0];
-    var subfunc = args[1];
+    var subfnc = args[1];
     var opt = args[2];
-    if ((func == '') || (!ctx.launchFunc(func, subfunc, opt))) {
+    if ((func == '') || (!ctx.launchFunc(func, subfnc, opt))) {
       DebugJS.printUsage(tbl.usage);
     }
   },
 
-  launchFunc: function(func, subfunc, opt) {
+  launchFunc: function(func, subfnc, opt) {
     var ctx = DebugJS.ctx;
     switch (func) {
       case 'measure':
@@ -6095,7 +6096,7 @@ DebugJS.prototype = {
       case 'tool':
         var kind;
         var param;
-        switch (subfunc) {
+        switch (subfnc) {
           case 'timer':
             kind = DebugJS.TOOLS_ACTIVE_FNC_TIMER;
             if (opt == 'cu') {
@@ -6128,6 +6129,23 @@ DebugJS.prototype = {
         }
         ctx.enableTools();
         ctx.switchToolsFunction(kind, param);
+        return true;
+      case 'ext':
+        if (ctx.extPanels.length == 0) {
+          DebugJS.log.e('no extension panel');
+          return false;
+        }
+        var idx = subfnc;
+        if (idx == undefined) idx = ctx.extActivePanel;
+        if (idx < 0) idx = 0;
+        if (idx >= ctx.extPanels.length) {
+          DebugJS.log.e('no such panel');
+          return false;
+        }
+        if (!(ctx.status & DebugJS.STATE_EXT_PANEL)) {
+          ctx.enableExtPanel();
+        }
+        ctx.switchExtPanel(idx);
         return true;
     }
     return false;
@@ -8599,13 +8617,16 @@ DebugJS.x.addCmdTbl = function(table) {
 DebugJS.x.addPanel = function(p) {
   var ctx = DebugJS.ctx;
   p.base = null; p.btn = null;
-  ctx.extPanels.push(p);
+  var idx = ctx.extPanels.push(p) - 1;
   if (DebugJS.ctx.status & DebugJS.STATE_INITIALIZED) {
     ctx.initExtPanel(ctx);
   }
+  return idx;
 };
 DebugJS.x.setBtnLabel = function(l) {
-  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
+  var ctx = DebugJS.ctx;
+  ctx.extBtnLabel = l;
+  if (ctx.extBtn) ctx.extBtn.innerHTML = l;
 };
 if (DebugJS.ENABLE) {
   DebugJS.start();
