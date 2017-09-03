@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709030009';
+  this.v = '201709032311';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -85,6 +85,7 @@ var DebugJS = DebugJS || function() {
     disableAllCommands: false,
     disableAllFeatures: false,
     onFileLoaded: null,
+    onWatchdogTimeout: null,
     mode: '',
     target: null
   };
@@ -107,8 +108,9 @@ var DebugJS = DebugJS || function() {
   this.htmlSrcBtn = null;
   this.htmlSrcPanel = null;
   this.htmlSrcHeaderPanel = null;
-  this.htmlSrcUpdateInputLabel = null;
-  this.htmlSrcUpdateInputLabel2 = null;
+  this.htmlSrcUpdInpLbl = null;
+  this.htmlSrcUpdInpLbl2 = null;
+  this.htmlSrcUpdBtn = null;
   this.htmlSrcUpdateInput = null;
   this.htmlSrcBodyPanel = null;
   this.htmlSrcUpdateInterval = 0;
@@ -214,6 +216,7 @@ var DebugJS = DebugJS || function() {
   this.swElapsedTime = 0;
   this.swElapsedTimeDisp = '00:00:00.000';
   this.clearBtn = null;
+  this.wdBtn = null;
   this.suspendLogBtn = null;
   this.preserveLogBtn = null;
   this.pinBtn = null;
@@ -255,6 +258,8 @@ var DebugJS = DebugJS || function() {
   this.filterInputLabel = null;
   this.filterInput = null;
   this.filterText = '';
+  this.filterCaseLabel = null;
+  this.filterCaseChkBox = null;
   this.logPanel = null;
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
@@ -320,6 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
     {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop Watchdog', usage: 'watchdog start|stop [time(ms)]'},
     {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC}
   ];
@@ -332,7 +338,8 @@ var DebugJS = DebugJS || function() {
     dumplimit: {value: 1000, restriction: /^[0-9]+$/},
     dumpvallen: {value: 256, restriction: /^[0-9]+$/},
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
-    hexdumplimit: {value: 102400, restriction: /^[0-9]+$/}
+    hexdumplimit: {value: 102400, restriction: /^[0-9]+$/},
+    wdt: {value: 100, restriction: /^[0-9]+$/}
   };
   this.extBtn = null;
   this.extBtnLabel = 'EXT';
@@ -374,7 +381,8 @@ DebugJS.STATE_LOG_PRESERVED = 1 << 21;
 DebugJS.STATE_POS_AUTO_ADJUST = 1 << 22;
 DebugJS.STATE_NEED_TO_SCROLL = 1 << 23;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 24;
-DebugJS.STATE_EXT_PANEL = 1 << 25;
+DebugJS.STATE_WD = 1 << 25;
+DebugJS.STATE_EXT_PANEL = 1 << 26;
 DebugJS.TOOL_ST_SW_CU_RUNNING = 1;
 DebugJS.TOOL_ST_SW_CU_END = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RUNNING = 1 << 2;
@@ -452,9 +460,9 @@ DebugJS.DOM_BTN_COLOR = '#f63';
 DebugJS.JS_BTN_COLOR = '#6df';
 DebugJS.TOOLS_BTN_COLOR = '#ff0';
 DebugJS.EXT_BTN_COLOR = '#bf0';
-DebugJS.PIN_BTN_COLOR = '#fa0';
-DebugJS.LOG_SUSPEND_BTN_COLOR = '#f00';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
+DebugJS.LOG_SUSPEND_BTN_COLOR = '#f00';
+DebugJS.PIN_BTN_COLOR = '#fa0';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
@@ -542,11 +550,8 @@ DebugJS.prototype = {
     }
 
     if (!keepStatus) {
-      if (ctx.status & DebugJS.STATE_LOG_PRESERVED) {
-        ctx.status = DebugJS.STATE_LOG_PRESERVED;
-      } else {
-        ctx.status = 0;
-      }
+      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_WD;
+      ctx.status &= preserveStatus;
     }
 
     if ((ctx.options == null) || ((options != null) && (!keepStatus)) || (options === undefined)) {
@@ -1430,12 +1435,24 @@ DebugJS.prototype = {
     ctx.filterInputLabel.innerText = 'Filter:';
     ctx.logHeaderPanel.appendChild(ctx.filterInputLabel);
 
-    var filterWidth = 'calc(100% - 26.5em)';
+    var filterWidth = 'calc(100% - 28em)';
     ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.options.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
     ctx.filterInput.style.setProperty('position', 'relative', 'important');
     ctx.filterInput.style.setProperty('top', '-2px', 'important');
     ctx.filterInput.style.setProperty('margin-left', '2px', 'important');
     ctx.logHeaderPanel.appendChild(ctx.filterInput);
+
+    ctx.filterCaseChkBox = document.createElement('input');
+    ctx.filterCaseChkBox.type = 'checkbox';
+    ctx.filterCaseChkBox.id = ctx.id + '-case-cb';
+    ctx.filterCaseChkBox.style.margin = '0 1px 0 2px';
+    ctx.logHeaderPanel.appendChild(ctx.filterCaseChkBox);
+
+    ctx.filterCaseLabel = document.createElement('label');
+    ctx.filterCaseLabel.htmlFor = ctx.id + '-case-cb';
+    ctx.filterCaseLabel.style.margin = '0';
+    ctx.filterCaseLabel.innerText = 'Aa';
+    ctx.logHeaderPanel.appendChild(ctx.filterCaseLabel);
   },
 
   createLogFilterButton: function(type, btnobj, color) {
@@ -1706,14 +1723,14 @@ DebugJS.prototype = {
     }
   },
 
-  updateSuspendLogBtn: function() {
-    var ctx = DebugJS.ctx;
-    ctx.updateBtnActive(ctx.suspendLogBtn, DebugJS.STATE_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BTN_COLOR);
-  },
-
   updatePreserveLogBtn: function() {
     var ctx = DebugJS.ctx;
     ctx.updateBtnActive(ctx.preserveLogBtn, DebugJS.STATE_LOG_PRESERVED, DebugJS.LOG_PRESERVE_BTN_COLOR);
+  },
+
+  updateSuspendLogBtn: function() {
+    var ctx = DebugJS.ctx;
+    ctx.updateBtnActive(ctx.suspendLogBtn, DebugJS.STATE_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BTN_COLOR);
   },
 
   updatePinBtn: function() {
@@ -2121,15 +2138,19 @@ DebugJS.prototype = {
     var len = buf.length;
     var lineCnt = cnt - len;
     var logs = '';
+    var filter = ctx.filterText;
+    var fltCase = ctx.filterCaseChkBox.checked;
+    if (!fltCase) {
+      filter = filter.toLowerCase();
+    }
     for (var i = 0; i < len; i++) {
       lineCnt++;
       var data = buf[i];
       if (data == undefined) break;
       var msg = data.msg;
-      var filter = ctx.filterText;
       if (filter != '') {
         try {
-          var pos = msg.indexOf(filter);
+          var pos = (fltCase ? msg.indexOf(filter) : msg.toLowerCase().indexOf(filter));
           if (pos != -1) {
             var key = msg.substr(pos, filter.length);
             var hl = '<span class="' + ctx.id + '-txt-hl">' + key + '</span>';
@@ -3708,31 +3729,31 @@ DebugJS.prototype = {
       ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcTitle);
 
       var UPDATE_COLOR = '#fff';
-      ctx.htmlSrcUpdateInputLabel2 = document.createElement('span');
-      ctx.htmlSrcUpdateInputLabel2.style.float = 'right';
-      ctx.htmlSrcUpdateInputLabel2.style.marginLeft = '2px';
-      ctx.htmlSrcUpdateInputLabel2.style.color = UPDATE_COLOR;
-      ctx.htmlSrcUpdateInputLabel2.innerText = 'ms';
-      ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdateInputLabel2);
+      ctx.htmlSrcUpdInpLbl2 = document.createElement('span');
+      ctx.htmlSrcUpdInpLbl2.style.float = 'right';
+      ctx.htmlSrcUpdInpLbl2.style.marginLeft = '2px';
+      ctx.htmlSrcUpdInpLbl2.style.color = UPDATE_COLOR;
+      ctx.htmlSrcUpdInpLbl2.innerText = 'ms';
+      ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdInpLbl2);
 
       ctx.htmlSrcUpdateInput = ctx.createTextInput('50px', 'right', UPDATE_COLOR, ctx.htmlSrcUpdateInterval, DebugJS.ctx.onchangeHtmlSrcUpdateInterval);
       ctx.htmlSrcUpdateInput.style.float = 'right';
       ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdateInput);
 
-      ctx.htmlSrcUpdateInputLabel = document.createElement('span');
-      ctx.htmlSrcUpdateInputLabel.style.float = 'right';
-      ctx.htmlSrcUpdateInputLabel.style.color = UPDATE_COLOR;
-      ctx.htmlSrcUpdateInputLabel.innerText = ':';
-      ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdateInputLabel);
+      ctx.htmlSrcUpdInpLbl = document.createElement('span');
+      ctx.htmlSrcUpdInpLbl.style.float = 'right';
+      ctx.htmlSrcUpdInpLbl.style.color = UPDATE_COLOR;
+      ctx.htmlSrcUpdInpLbl.innerText = ':';
+      ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdInpLbl);
 
-      ctx.htmlSrcUpdateBtn = document.createElement('span');
-      ctx.htmlSrcUpdateBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
-      ctx.htmlSrcUpdateBtn.style.float = 'right';
-      ctx.htmlSrcUpdateBtn.style.marginLeft = '4px';
-      ctx.htmlSrcUpdateBtn.style.color = ctx.options.btnColor;
-      ctx.htmlSrcUpdateBtn.onclick = DebugJS.ctx.showHtmlSrc;
-      ctx.htmlSrcUpdateBtn.innerText = 'UPDATE';
-      ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdateBtn);
+      ctx.htmlSrcUpdBtn = document.createElement('span');
+      ctx.htmlSrcUpdBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+      ctx.htmlSrcUpdBtn.style.float = 'right';
+      ctx.htmlSrcUpdBtn.style.marginLeft = '4px';
+      ctx.htmlSrcUpdBtn.style.color = ctx.options.btnColor;
+      ctx.htmlSrcUpdBtn.onclick = DebugJS.ctx.showHtmlSrc;
+      ctx.htmlSrcUpdBtn.innerText = 'UPDATE';
+      ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdBtn);
 
       ctx.htmlSrcBodyPanel = document.createElement('div');
       ctx.htmlSrcBodyPanel.style.width = '100%';
@@ -4733,28 +4754,32 @@ DebugJS.prototype = {
       ctx.fileLoaderPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
 
-      ctx.fileLoaderLabelBin = document.createElement('label');
-      ctx.fileLoaderLabelBin.innerText = 'Binary';
-      ctx.fileLoaderLabelBin.style.marginLeft = '10px';
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelBin);
       ctx.fileLoaderRadioBin = document.createElement('input');
       ctx.fileLoaderRadioBin.type = 'radio';
+      ctx.fileLoaderRadioBin.id = ctx.id + '-load-type-bin';
       ctx.fileLoaderRadioBin.name = ctx.id + '-load-type';
+      ctx.fileLoaderRadioBin.style.marginLeft = '10px';
       ctx.fileLoaderRadioBin.value = 'binary';
       ctx.fileLoaderRadioBin.onchange = ctx.loadFile;
       ctx.fileLoaderRadioBin.checked = true;
-      ctx.fileLoaderLabelBin.appendChild(ctx.fileLoaderRadioBin);
+      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioBin);
+      ctx.fileLoaderLabelBin = document.createElement('label');
+      ctx.fileLoaderLabelBin.htmlFor = ctx.id + '-load-type-bin';
+      ctx.fileLoaderLabelBin.innerText = 'Binary';
+      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelBin);
 
-      ctx.fileLoaderLabelB64 = document.createElement('label');
-      ctx.fileLoaderLabelB64.innerText = 'Base64';
-      ctx.fileLoaderLabelB64.style.marginLeft = '10px';
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelB64);
       ctx.fileLoaderRadioB64 = document.createElement('input');
       ctx.fileLoaderRadioB64.type = 'radio';
+      ctx.fileLoaderRadioB64.id = ctx.id + '-load-type-b64';
       ctx.fileLoaderRadioB64.name = ctx.id + '-load-type';
+      ctx.fileLoaderRadioB64.style.marginLeft = '10px';
       ctx.fileLoaderRadioB64.value = 'base64';
       ctx.fileLoaderRadioB64.onchange = ctx.loadFile;
-      ctx.fileLoaderLabelB64.appendChild(ctx.fileLoaderRadioB64);
+      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioB64);
+      ctx.fileLoaderLabelB64 = document.createElement('label');
+      ctx.fileLoaderLabelB64.htmlFor = ctx.id + '-load-type-b64';
+      ctx.fileLoaderLabelB64.innerText = 'Base64';
+      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelB64);
 
       ctx.filePreviewWrapper = document.createElement('div');
       ctx.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)', 'important');
@@ -6372,10 +6397,10 @@ DebugJS.prototype = {
 
   cmdTimer: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
-    var operation = args[0];
+    var op = args[0];
     var timerName = args[1];
     if (timerName == undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
-    switch (operation) {
+    switch (op) {
       case 'start':
         DebugJS.timeStart(timerName);
         break;
@@ -6421,6 +6446,23 @@ DebugJS.prototype = {
 
   cmdV: function(arg, tbl) {
     DebugJS.log(DebugJS.ctx.v);
+  },
+
+  cmdWatchdog: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var op = args[0];
+    var time = args[1];
+    switch (op) {
+      case 'start':
+        DebugJS.wd.start(time);
+        break;
+      case 'stop':
+        DebugJS.wd.stop();
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+    }
   },
 
   cmdWin: function(arg, tbl) {
@@ -8517,6 +8559,51 @@ DebugJS.random.string = function(min, max) {
   return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
 };
 
+DebugJS.wd = {};
+DebugJS.wd.INTERVAL = 50;
+DebugJS.wd.wdTmId = 0;
+DebugJS.wd.wdPetTime = 0;
+
+DebugJS.wd.start = function(interval) {
+  var ctx = DebugJS.ctx;
+  interval |= 0;
+  if (interval > 0) {
+    ctx.properties.wdt.value = interval;
+  } else {
+    DebugJS.log.e('Invalid time value');
+    return;
+  }
+  ctx.status |= DebugJS.STATE_WD;
+  DebugJS.wd.wdPetTime = (new Date()).getTime();
+  var wdt = ctx.properties.wdt.value;
+  DebugJS.log.s('Start watchdog (' + wdt + 'ms)');
+  if (DebugJS.wd.wdTmId > 0) clearTimeout(DebugJS.wd.wdTmId);
+  DebugJS.wd.wdTmId = setTimeout(DebugJS.wd.pet, DebugJS.wd.INTERVAL);
+};
+
+DebugJS.wd.pet = function() {
+  var ctx = DebugJS.ctx;
+  if (!(ctx.status & DebugJS.STATE_WD)) return;
+  var now = (new Date()).getTime();
+  var elapsed = now - DebugJS.wd.wdPetTime;
+  if (elapsed > ctx.properties.wdt.value) {
+    DebugJS.log.w('watchdog bark! (' + elapsed + 'ms)');
+    var cb = ctx.options.onWatchdogTimeout;
+    if (cb) cb(elapsed);
+  }
+  DebugJS.wd.wdPetTime = now;
+  DebugJS.wd.wdTmId = setTimeout(DebugJS.wd.pet, DebugJS.wd.INTERVAL);
+};
+
+DebugJS.wd.stop = function() {
+  if (DebugJS.wd.wdTmId > 0) {
+    clearTimeout(DebugJS.wd.wdTmId);
+    DebugJS.wd.wdTmId = 0;
+  }
+  DebugJS.ctx.status &= ~DebugJS.STATE_WD;
+  DebugJS.log.s('Stop watchdog');
+};
+
 DebugJS._init = function() {
   if (!(DebugJS.ctx.status & DebugJS.STATE_INITIALIZED)) {
     return DebugJS.ctx.init(null, null);
@@ -8654,8 +8741,6 @@ DebugJS.disable = function() {
   DebugJS.x.setBtnLabel = function(x) {};
 };
 
-var dbg = dbg || DebugJS;
-var time = time || DebugJS.time;
 DebugJS.x = DebugJS.x || {};
 DebugJS.x.addCmdTbl = function(table) {
   var ctx = DebugJS.ctx;
@@ -8681,6 +8766,8 @@ DebugJS.x.setBtnLabel = function(l) {
   ctx.extBtnLabel = l;
   if (ctx.extBtn) ctx.extBtn.innerHTML = l;
 };
+var dbg = dbg || DebugJS;
+var time = time || DebugJS.time;
 if (DebugJS.ENABLE) {
   DebugJS.start();
 } else {

@@ -73,6 +73,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .showhide-button {color:#0a0;}
 .showhide-button:hover {cursor:pointer;}
 .inline-text-input{border:none !important;border-bottom:1px solid #aaa !important;border-radius:0 !important;background:transparent;color:#fff !important;font-family:Consolas;}
+.inline-text-input-wh{color:#333 !important;}
 .demo-textarea{width:500px;height:50px;border:1px solid #666;background:transparent;color:#fff;font-size:14px;font-family:Consolas;}
 .overlay-root{position:relative;}
 .overlay{position:absolute;top:0;left:0;white-space:nowrap;}
@@ -80,6 +81,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 </style>
 <script>
 DebugJS.init({visible:true});
+//DebugJS.wd.start(1000);
 
 //DebugJS.init({visible: true, zoom: '1.4'});
 //DebugJS.init({mode:'kiosk',zoom:2});
@@ -165,7 +167,8 @@ var options4 = {
 
 var options5 = {
   visible: true,
-  onFileLoaded: onFileLoaded
+  onFileLoaded: onFileLoaded,
+  onWatchdogTimeout: onWatchdogTimeout
 };
 //DebugJS.init(options5);
 
@@ -361,6 +364,32 @@ function errorDemo() {
   fakeError
 }
 
+function sleep(ms) {
+  ms |= 0;
+  const d1 = new Date();
+  while (true) {
+    const d2 = new Date();
+    if (d2 - d1 > ms) {
+      break;
+    }
+  }
+}
+
+function sleepDemo() {
+  var ms = document.getElementById('sleep-text').value;
+  log('sleep start');
+  setTimeout(doSleep, 10);
+}
+
+function doSleep() {
+  var ms = document.getElementById('sleep-text').value;
+  if (ms > 10) {
+    ms -= 10;
+  }
+  sleep(ms);
+  log('sleep end');
+}
+
 var buf = (window.ArrayBuffer ? new ArrayBuffer(32) : null);
 
 var a = {
@@ -419,6 +448,12 @@ function onFileLoaded(file, content, isB64) {
     }
     log(b);
   }
+}
+
+var wdtCount = 0;
+function onWatchdogTimeout(elapsed) {
+  wdtCount++;
+  log('count = ' + wdtCount + ' / elapsed = ' + elapsed);
 }
 
 function httpDemo() {
@@ -1055,6 +1090,16 @@ function onFileLoaded(file, content, isB64) {}</pre>
   </tr>
 
   <tr>
+    <td class="name">onWatchdogTimeout</td>
+    <td>
+      Callback function which is called when the watchdog timer has been timed out.<br>
+<pre class="eg">Function format:
+function onWatchdogTimeout(elapsed) {}</pre>
+    </td>
+    <td>null</td>
+  </tr>
+
+  <tr>
     <td class="name">mode</td>
     <td>
       "kiosk" : Make the debugger window go full screen<br>
@@ -1638,6 +1683,39 @@ max: maximum length
 
   <tr>
     <td class="name">
+      DebugJS.wd.start<br>
+      <span class="alias">( dbg.wd.start )</span>
+    </td>
+    <td>
+      arg: time interval<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Start watchdog timer<br>
+<pre>
+dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="width:30px" value="100">);<button class="demo-button2" onclick="dbg.wd.start(document.getElementById('wd-demo-val-text').value);">DEMO</button>
+</pre>
+
+<pre>
+sleep: <input type="text" id="sleep-text" value="3000" class="demo-text" style="width:50px;">ms; <button class="demo-button2 button-red" onclick="sleepDemo();">Sleep</button>
+</pre>
+
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.wd.stop<br>
+      <span class="alias">( dbg.wd.stop )</span>
+    </td>
+    <td>
+    </td>
+    <td>
+      Stop watchdog timer<button class="demo-button2" onclick="dbg.wd.stop();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.init<br>
       <span class="alias">( dbg.init )</span>
     </td>
@@ -2122,6 +2200,18 @@ $ uri -d abc%3Adef
   </tr>
 
   <tr>
+    <td class="name">watchdog</td>
+    <td>
+      arg1: start / stop<br>
+      arg2: time interval (ms)<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Start/Stop Watchdog<br>
+      The default time interval is 100ms.
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">win</td>
     <td>size</td>
     <td>
@@ -2500,11 +2590,6 @@ log() log.d() log.i() ...<br>
 log with random message<br>
 <button onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">start random logs</button>
 </td>
-
-<td>
-<button class="button-red" onclick="errorDemo();">Script Error</button>
-</td>
-</tr>
 </table>
 
 <!-- ********************************************************************** -->
@@ -2751,6 +2836,17 @@ console.time('timer3');<br>
 <td>
 console.timeEnd('timer3');<br>
 <button class="button-green" onclick="console.timeEnd('timer3');" style="width:210px;">console.timeEnd()</button>
+</td>
+</tr>
+</table>
+<br>
+
+<!-- ********************************************************************** -->
+<div class="caption2">Problematic Behavior</div>
+<table class="demo-table">
+<tr>
+<td>
+<button class="button-red" onclick="errorDemo();">Script Error</button>
 </td>
 </tr>
 </table>
