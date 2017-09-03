@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709032336';
+  this.v = '201709040135';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -258,8 +258,8 @@ var DebugJS = DebugJS || function() {
   this.filterInputLabel = null;
   this.filterInput = null;
   this.filterText = '';
-  this.filterCaseLabel = null;
-  this.filterCaseChkBox = null;
+  this.filterCase = false;
+  this.filterCaseBtn = null;
   this.logPanel = null;
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
@@ -393,6 +393,7 @@ DebugJS.TOOL_TIMER_MODE_CLOCK = 0;
 DebugJS.TOOL_TIMER_MODE_SW_CU = 1;
 DebugJS.TOOL_TIMER_MODE_SW_CD = 2;
 DebugJS.TOOL_TIMER_BTN_COLOR = '#eee';
+DebugJS.LOG_FILTER_CASE_BTN_COLOR = '#fff';
 DebugJS.LOG_FILTER_LOG = 0x1;
 DebugJS.LOG_FILTER_VRB = 0x2;
 DebugJS.LOG_FILTER_DBG = 0x4;
@@ -1124,11 +1125,8 @@ DebugJS.prototype = {
     }
 
     if (ctx.options.useClearButton) {
-      ctx.clearBtn = document.createElement('span');
-      ctx.clearBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+      ctx.clearBtn = ctx.createButton(ctx, ctx.headPanel, '[CLR]');
       ctx.clearBtn.onclick = DebugJS.ctx.onClr;
-      ctx.clearBtn.innerText = '[CLR]';
-      ctx.headPanel.appendChild(ctx.clearBtn);
     }
 
     // LogFilter
@@ -1166,8 +1164,7 @@ DebugJS.prototype = {
     // -- R to L
     // X Button
     if (ctx.options.togglableShowHide) {
-      ctx.closeBtn = document.createElement('span');
-      ctx.closeBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+      ctx.closeBtn = ctx.createButton(ctx, ctx.headPanel, 'x');
       ctx.closeBtn.style.float = 'right';
       ctx.closeBtn.style.position = 'relative';
       ctx.closeBtn.style.top = '-1px';
@@ -1177,8 +1174,6 @@ DebugJS.prototype = {
       ctx.closeBtn.onmouseover = new Function('this.style.color=\'#d88\';');
       ctx.closeBtn.onmouseout = new Function('this.style.color=\'#888\';');
       ctx.closeBtn.onclick = new Function('DebugJS.ctx.closeDebugWindow();');
-      ctx.closeBtn.innerText = 'x';
-      ctx.headPanel.appendChild(ctx.closeBtn);
     }
 
     // WindowControlButton
@@ -1371,14 +1366,20 @@ DebugJS.prototype = {
     if (ctx.options.useMsgDisplay) ctx.updateMsgPanel();
   },
 
-  createHeaderButton: function(btnobj, label, marginLeft, fontSize, handler, status, activeColor, reverse, title) {
-    var ctx = DebugJS.ctx;
+  createButton: function(ctx, base, label) {
     var btn = document.createElement('span');
     btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+    btn.innerText = label;
+    base.appendChild(btn);
+    return btn;
+  },
+
+  createHeaderButton: function(btnobj, label, marginLeft, fontSize, handler, status, activeColor, reverse, title) {
+    var ctx = DebugJS.ctx;
+    var btn = ctx.createButton(ctx, ctx.headPanel, label);
     btn.style.float = 'right';
     btn.style.marginLeft = (marginLeft * ctx.options.zoom) + 'px';
     if (fontSize) btn.style.fontSize = fontSize;
-    btn.innerText = label;
     btn.onclick = handler;
     btn.style.color = DebugJS.COLOR_INACTIVE;
     btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.' + activeColor + ';');
@@ -1388,7 +1389,6 @@ DebugJS.prototype = {
       btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.status & DebugJS.' + status + ') ? DebugJS.' + activeColor + ' : DebugJS.COLOR_INACTIVE;');
     }
     if (title) btn.title = title;
-    ctx.headPanel.appendChild(btn);
     return btn;
   },
 
@@ -1431,36 +1431,29 @@ DebugJS.prototype = {
     ctx.filterInputLabel.innerText = 'Filter:';
     ctx.logHeaderPanel.appendChild(ctx.filterInputLabel);
 
-    var filterWidth = 'calc(100% - 28em)';
+    var filterWidth = 'calc(100% - 27em)';
     ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.options.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
     ctx.filterInput.style.setProperty('position', 'relative', 'important');
     ctx.filterInput.style.setProperty('top', '-2px', 'important');
     ctx.filterInput.style.setProperty('margin-left', '2px', 'important');
     ctx.logHeaderPanel.appendChild(ctx.filterInput);
 
-    ctx.filterCaseChkBox = document.createElement('input');
-    ctx.filterCaseChkBox.type = 'checkbox';
-    ctx.filterCaseChkBox.id = ctx.id + '-case-cb';
-    ctx.filterCaseChkBox.style.margin = '0 1px 0 2px';
-    ctx.logHeaderPanel.appendChild(ctx.filterCaseChkBox);
-
-    ctx.filterCaseLabel = document.createElement('label');
-    ctx.filterCaseLabel.htmlFor = ctx.id + '-case-cb';
-    ctx.filterCaseLabel.style.margin = '0';
-    ctx.filterCaseLabel.innerText = 'Aa';
-    ctx.logHeaderPanel.appendChild(ctx.filterCaseLabel);
+    ctx.filterCaseBtn = ctx.createButton(ctx, ctx.logHeaderPanel, 'Aa');
+    ctx.filterCaseBtn.style.marginLeft = '2px';
+    ctx.filterCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
+    ctx.filterCaseBtn.style.color = DebugJS.COLOR_INACTIVE;
+    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.LOG_FILTER_CASE_BTN_COLOR;');
+    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.LOG_FILTER_CASE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
   },
 
   createLogFilterButton: function(type, btnobj, color) {
     var ctx = DebugJS.ctx;
-    var btn = document.createElement('span');
-    btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+    var label = '[' + type + ']';
+    var btn = ctx.createButton(ctx, ctx.logHeaderPanel, label);
     btn.style.marginLeft = '2px';
-    btn.innerText = '[' + type + ']';
     btn.onclick = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FILTER_' + type + ');');
     btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.ctx.options.' + color + ';');
     btn.onmouseout = DebugJS.ctx.updateLogFilterButtons;
-    ctx.logHeaderPanel.appendChild(btn);
     return btn;
   },
 
@@ -1818,6 +1811,13 @@ DebugJS.prototype = {
     ctx.printLogMsg();
   },
 
+  toggleFilterCase: function() {
+    var ctx = DebugJS.ctx;
+    ctx.filterCase = (ctx.filterCase ? false : true);
+    ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.LOG_FILTER_CASE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.onchangeLogFilter();
+  },
+
   applyStyles: function(styles) {
     var ctx = DebugJS.ctx;
     if (ctx.styleEl != null) {
@@ -2132,7 +2132,7 @@ DebugJS.prototype = {
     var lineCnt = cnt - len;
     var logs = '';
     var filter = ctx.filterText;
-    var fltCase = ctx.filterCaseChkBox.checked;
+    var fltCase = ctx.filterCase;
     if (!fltCase) {
       filter = filter.toLowerCase();
     }
@@ -3322,11 +3322,8 @@ DebugJS.prototype = {
 
   createElmInfoHeadButton: function(label, handler) {
     var ctx = DebugJS.ctx;
-    var btn = document.createElement('span');
-    btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+    var btn = ctx.createButton(ctx, ctx.elmInfoHeaderPanel, label);
     btn.onclick = handler;
-    btn.innerText = label;
-    ctx.elmInfoHeaderPanel.appendChild(btn);
     return btn;
   },
 
@@ -3739,14 +3736,11 @@ DebugJS.prototype = {
       ctx.htmlSrcUpdInpLbl.innerText = ':';
       ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdInpLbl);
 
-      ctx.htmlSrcUpdBtn = document.createElement('span');
-      ctx.htmlSrcUpdBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+      ctx.htmlSrcUpdBtn = ctx.createButton(ctx, ctx.htmlSrcHeaderPanel, 'UPDATE');
       ctx.htmlSrcUpdBtn.style.float = 'right';
       ctx.htmlSrcUpdBtn.style.marginLeft = '4px';
       ctx.htmlSrcUpdBtn.style.color = ctx.options.btnColor;
       ctx.htmlSrcUpdBtn.onclick = DebugJS.ctx.showHtmlSrc;
-      ctx.htmlSrcUpdBtn.innerText = 'UPDATE';
-      ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdBtn);
 
       ctx.htmlSrcBodyPanel = document.createElement('div');
       ctx.htmlSrcBodyPanel.style.width = '100%';
@@ -3846,14 +3840,11 @@ DebugJS.prototype = {
 
   createToolsHeaderButton: function(label, state, btnobj) {
     var ctx = DebugJS.ctx;
-    var btn = document.createElement('span');
-    btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+    var btn = ctx.createButton(ctx, ctx.toolsHeaderPanel, '<' + label + '>');
     btn.style.marginRight = '4px';
-    btn.innerText = '<' + label + '>';
     btn.onclick = new Function('DebugJS.ctx.switchToolsFunction(DebugJS.' + state + ');');
     btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.SBPNL_COLOR_ACTIVE;');
     btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.toolsActiveFunction & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;');
-    ctx.toolsHeaderPanel.appendChild(btn);
     return btn;
   },
 
@@ -4076,28 +4067,24 @@ DebugJS.prototype = {
 
   createTimerButton: function(base, label, handler, disabled, fontSize) {
     var ctx = DebugJS.ctx;
-    var btn = document.createElement('span');
-    btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+    var btn = ctx.createButton(ctx, base, label);
     btn.style.marginRight = '0.5em';
     btn.style.color = (disabled ? '#888' : DebugJS.TOOL_TIMER_BTN_COLOR);
     if (fontSize) {
       btn.style.fontSize = fontSize + 'px';
     }
     btn.onclick = handler;
-    btn.innerText = label;
-    base.appendChild(btn);
     return btn;
   },
 
   createTimerUpDwnButton: function(up, part, area, margin) {
     var ctx = DebugJS.ctx;
-    var btn = document.createElement('span');
-    btn.className = ctx.id + '-btn ' + ctx.id + '-nomove ' + ctx.id + '-timerupdwn';
+    var label = (up ? '+' : '-');
+    var btn = ctx.createButton(ctx, area, label);
+    btn.className += ' ' + ctx.id + '-timerupdwn';
     btn.style.marginRight = margin + 'em';
     btn.style.color = DebugJS.TOOL_TIMER_BTN_COLOR;
     btn.onclick = new Function('DebugJS.ctx.timerUpDwn(\'' + part + '\', ' + up + ')');
-    btn.innerText = (up ? '+' : '-');
-    area.appendChild(btn);
     return btn;
   },
 
@@ -4821,14 +4808,11 @@ DebugJS.prototype = {
       ctx.fileLoadProgress.innerText = '0%';
       ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
 
-      ctx.fileLoadCancelBtn = document.createElement('span');
-      ctx.fileLoadCancelBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+      ctx.fileLoadCancelBtn = ctx.createButton(ctx, ctx.fileLoaderFooter, '[CANCEL]');
       ctx.fileLoadCancelBtn.style.position = 'relative';
       ctx.fileLoadCancelBtn.style.top = '2px';
       ctx.fileLoadCancelBtn.style.float = 'right';
       ctx.fileLoadCancelBtn.onclick = DebugJS.ctx.cancelLoadFile;
-      ctx.fileLoadCancelBtn.innerText = '[CANCEL]';
-      ctx.fileLoaderFooter.appendChild(ctx.fileLoadCancelBtn);
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.fileLoaderPanel);
     }
@@ -5413,19 +5397,15 @@ DebugJS.prototype = {
     ctx.updateExtBtn();
   },
 
-  createExtHeaderButton: function(label, idx) {
+  createExtHeaderButton: function(ctx, label, idx) {
     var MAX_LEN = 20;
-    var ctx = DebugJS.ctx;
     if (label.length > MAX_LEN) {label = label.substr(0, MAX_LEN) + '...';}
-    var btn = document.createElement('span');
-    btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+    var btn = ctx.createButton(ctx, ctx.extHeaderPanel, '<' + label + '>');
     btn.style.marginRight = '4px';
-    btn.innerText = '<' + label + '>';
     btn.style.color = DebugJS.SBPNL_COLOR_INACTIVE;
     btn.onclick = new Function('DebugJS.ctx.switchExtPanel(' + idx + ');');
     btn.onmouseover = new Function('DebugJS.ctx.extPanels[' + idx + '].btn.style.color=DebugJS.SBPNL_COLOR_ACTIVE;');
     btn.onmouseout = new Function('DebugJS.ctx.extPanels[' + idx + '].btn.style.color=(DebugJS.ctx.extActivePanel == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;');
-    ctx.extHeaderPanel.appendChild(btn);
     return btn;
   },
 
@@ -6645,7 +6625,7 @@ DebugJS.prototype = {
   createExtPanel: function(ctx, p, idx) {
     p.base = document.createElement('div');
     p.base.className = ctx.id + '-sbpnl';
-    p.btn = ctx.createExtHeaderButton(p.name, idx);
+    p.btn = ctx.createExtHeaderButton(ctx, p.name, idx);
     if (p.panel) {
       p.base.appendChild(p.panel);
     } else {
