@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709040135';
+  this.v = '201709040746';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3154,8 +3154,10 @@ DebugJS.prototype = {
         if (i != 0) {
           html += '\n    ';
         }
-        html += '(' + i + ') = ' + '<span class="' + ctx.id + '-btn ' + ctx.id + '-btn-wh" onclick="DebugJS.log(DebugJS.escEncString(' + nm + '.getItem(\'' + key + '\')));">' + key + '</span>' +
-                ' <span class="' + ctx.id + '-btn ' + ctx.id + '-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');">x</span>';
+        var getCode = nm + '.getItem(\'' + key + '\')';
+        var rmvCode = nm + '.removeItem(\'' + key + '\')';
+        html += '(' + i + ') = ' + '<span class="' + ctx.id + '-btn ' + ctx.id + '-btn-wh" onclick="DebugJS.log(DebugJS.escEncString(' + getCode + '));" title="' + getCode + '">' + key + '</span>' +
+                ' <span class="' + ctx.id + '-btn ' + ctx.id + '-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');" title="' + rmvCode + '">x</span>';
       }
     }
     document.getElementById(ctx.id + '-sys-' + id).innerHTML = html;
