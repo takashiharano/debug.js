@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709040746';
+  this.v = '201709042200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -310,7 +310,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'launch', fnc: this.cmdLaunch, desc: 'Launch a function', usage: 'launch [sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
-    {cmd: 'load', fnc: this.cmdLoad, desc: 'Load the log buffer', usage: 'load json-data'},
+    {cmd: 'load', fnc: this.cmdLoad, desc: 'Load logs into the debug window', usage: 'load json-data'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
@@ -325,7 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
     {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop Watchdog timer', usage: 'watchdog start|stop [time(ms)]'},
+    {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC}
   ];
@@ -339,7 +339,7 @@ var DebugJS = DebugJS || function() {
     dumpvallen: {value: 256, restriction: /^[0-9]+$/},
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
     hexdumplimit: {value: 102400, restriction: /^[0-9]+$/},
-    wdt: {value: 100, restriction: /^[0-9]+$/}
+    wdt: {value: 500, restriction: /^[0-9]+$/}
   };
   this.extBtn = null;
   this.extBtnLabel = 'EXT';
@@ -902,7 +902,9 @@ DebugJS.prototype = {
     };
 
     styles['#' + ctx.id + ' input[type="radio"]'] = {
-      'margin': '0 3px'
+      'margin': '0 3px',
+      'width': 13 * ctx.options.zoom + 'px',
+      'height': 13 * ctx.options.zoom + 'px'
     };
 
     styles['.' + ctx.id + '-editor'] = {
@@ -1608,7 +1610,9 @@ DebugJS.prototype = {
   },
 
   updateMouseClickPanel: function() {
-    var mouseClick = '<span style="color:' + this.mouseClick0 + ';margin-right:2px;">0</span><span style="color:' + this.mouseClick1 + ';margin-right:2px;">1</span><span style="color:' + this.mouseClick2 + '">2</span>';
+    var mouseClick = '<span style="color:' + this.mouseClick0 + ';margin-right:2px;">0</span>' +
+                     '<span style="color:' + this.mouseClick1 + ';margin-right:2px;">1</span>' +
+                     '<span style="color:' + this.mouseClick2 + '">2</span>';
     this.mouseClickPanel.innerHTML = 'CLICK:' + mouseClick;
   },
 
@@ -1692,8 +1696,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var btn = (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
     var margin = (2 * ctx.options.zoom) + 'px';
-    var btns = '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-right:' + margin + '" onclick="DebugJS.ctx.resetStopWatch();">0</span>' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" onclick="DebugJS.ctx.startStopStopWatch();">' + btn + '</span>';
+    var btns = ctx.createBtnHtml(ctx, 'margin-right:' + margin, 'DebugJS.ctx.resetStopWatch();', '0') +
+               ctx.createBtnHtml(ctx, 'margin-right:' + margin, 'DebugJS.ctx.startStopStopWatch();', btn);
     ctx.swBtnPanel.innerHTML = btns;
   },
 
@@ -1891,7 +1895,8 @@ DebugJS.prototype = {
           (el == ctx.elmInfoBodyPanel) ||
           (el == ctx.htmlSrcBodyPanel) ||
           (el == ctx.filePreviewWrapper) ||
-          (el == ctx.toolsPanel)) {
+          (el == ctx.toolsPanel) ||
+          (el == ctx.extPanel)) {
         var scrollW = 17;
         var rect = el.getBoundingClientRect();
         var scrollL = rect.left + rect.width - scrollW;
@@ -3372,7 +3377,7 @@ DebugJS.prototype = {
     var OMIT_STYLE = 'color:#888';
     var OMIT_STYLE2 = 'color:#666';
     var html = '<pre>';
-    if (el && el.tagName) {
+    if (el.tagName) {
       DebugJS.dom = el;
       var computedStyle = window.getComputedStyle(el);
       var rect = el.getBoundingClientRect();
@@ -5134,13 +5139,11 @@ DebugJS.prototype = {
 
       ctx.htmlPrevEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc">HTML Editor</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.ctx.drawHtml();DebugJS.ctx.htmlPrevEditor.focus();">[DRAW]</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertHtmlSnippet()">[CLR]</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:8px" onclick="DebugJS.ctx.insertHtmlSnippet(0)">&lt;CODE1&gt;</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertHtmlSnippet(1)">&lt;CODE2&gt;</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertHtmlSnippet(2)">&lt;CODE3&gt;</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertHtmlSnippet(3)">&lt;CODE4&gt;</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertHtmlSnippet(4)">&lt;CODE5&gt;</span>';
+      ctx.createBtnHtml(ctx, 'float:right;margin-right:4px', 'DebugJS.ctx.drawHtml();DebugJS.ctx.htmlPrevEditor.focus();', '[DRAW]') +
+      ctx.createBtnHtml(ctx, 'margin-left:4px;margin-right:4px', 'DebugJS.ctx.insertHtmlSnippet();', '[CLR]');
+      for (var i = 0; i < 5; i++) {
+        html += ctx.createHtmlSnippetBtn(ctx, i);
+      }
       ctx.htmlPrevEditorPanel.innerHTML = html;
       ctx.htmlPrevBasePanel.appendChild(ctx.htmlPrevEditorPanel);
 
@@ -5154,6 +5157,10 @@ DebugJS.prototype = {
       ctx.toolsBodyPanel.appendChild(ctx.htmlPrevBasePanel);
     }
     ctx.htmlPrevEditor.focus();
+  },
+
+  createHtmlSnippetBtn: function(ctx, i) {
+    return ctx.createBtnHtml(ctx, 'margin-left:4px', 'DebugJS.ctx.insertHtmlSnippet(' + i + ');', '&lt;CODE' + (i + 1) + '&gt;');
   },
 
   insertHtmlSnippet: function(n) {
@@ -5199,7 +5206,7 @@ DebugJS.prototype = {
       ctx.memoEditorPanel = document.createElement('div');
       var html = '<span style="color:#ccc">Memo</span>';
       if (DebugJS.LS_AVAILABLE) {
-        html += '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.ctx.saveMemo();DebugJS.ctx.memoEditor.focus();">[SAVE]</span>';
+        html += ctx.createBtnHtml(ctx, 'float:right;margin-right:4px', 'DebugJS.ctx.saveMemo();DebugJS.ctx.memoEditor.focus();', '[SAVE]');
       } else {
         html += '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove ' + ctx.id + '-btn-disabled" style="float:right;margin-right:4px">[SAVE]</span>' +
         '<span style="float:right;margin-right:4px;color:#caa">Save function (localStorage) is not available.</span>';
@@ -5265,13 +5272,11 @@ DebugJS.prototype = {
       'onmouseover="this.style.color=\'#d88\';" ' +
       'onmouseout="this.style.color=\'#888\';">x</div>' +
       '<span style="color:#ccc">Script Editor</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;margin-right:4px" onclick="DebugJS.ctx.execScript();">[EXEC]</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertSnippet()">[CLR]</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:8px" onclick="DebugJS.ctx.insertSnippet(0)">{CODE1}</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertSnippet(1)">{CODE2}</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertSnippet(2)">{CODE3}</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertSnippet(3)">{CODE4}</span>' +
-      '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:4px" onclick="DebugJS.ctx.insertSnippet(4)">{CODE5}</span>';
+      ctx.createBtnHtml(ctx, 'float:right;margin-right:4px', 'DebugJS.ctx.execScript();', '[EXEC]') +
+      ctx.createBtnHtml(ctx, 'margin-left:4px;margin-right:4px', 'DebugJS.ctx.insertSnippet();', '[CLR]');
+      for (var i = 0; i < 5; i++) {
+        html += ctx.createJsSnippetBtn(ctx, i);
+      }
       ctx.scriptPanel.innerHTML = html;
       ctx.addOverlayPanel(ctx.scriptPanel);
       ctx.scriptEditor = document.createElement('textarea');
@@ -5282,6 +5287,14 @@ DebugJS.prototype = {
     }
     ctx.updateScriptBtn();
     ctx.scriptEditor.focus();
+  },
+
+  createJsSnippetBtn: function(ctx, i) {
+    return ctx.createBtnHtml(ctx, 'margin-left:4px', 'DebugJS.ctx.insertSnippet(' + i + ');', '{CODE' + (i + 1) + '}');
+  },
+
+  createBtnHtml: function(ctx, style, onclick, label) {
+    return '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' + (style == '' ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
   },
 
   addOverlayPanel: function(panel) {
@@ -6436,6 +6449,11 @@ DebugJS.prototype = {
         DebugJS.wd.stop();
         break;
       default:
+        if (ctx.status & DebugJS.STATE_WD) {
+          DebugJS.log('Running (' + ctx.properties.wdt.value + 'ms)');
+        } else {
+          DebugJS.log('Not Running');
+        }
         DebugJS.printUsage(tbl.usage);
     }
   },

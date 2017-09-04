@@ -1692,11 +1692,11 @@ max: maximum length
     <td>
       Start watchdog timer<br>
 <pre>
-dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="width:30px" value="100">);<button class="demo-button2" onclick="dbg.wd.start(document.getElementById('wd-demo-val-text').value);">DEMO</button>
+dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="width:30px" value="500">);<button class="demo-button2" onclick="dbg.wd.start(document.getElementById('wd-demo-val-text').value);">DEMO</button>
 </pre>
 
 <pre>
-sleep: <input type="text" id="sleep-text" value="3000" class="demo-text" style="width:50px;">ms; <button class="demo-button2 button-red" onclick="sleepDemo();">Sleep</button>
+sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2 button-red" onclick="sleepDemo();">Sleep</button>
 </pre>
 
     </td>
@@ -2207,7 +2207,7 @@ $ uri -d abc%3Adef
     </td>
     <td>
       Start/Stop Watchdog timer<br>
-      The default time interval is 100ms.
+      The default timeout value is 500ms.
     </td>
   </tr>
 
