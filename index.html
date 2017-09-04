@@ -81,7 +81,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 </style>
 <script>
 DebugJS.init({visible:true});
-//DebugJS.wd.start(1000);
+//DebugJS.wd.start(500);
 
 //DebugJS.init({visible: true, zoom: '1.4'});
 //DebugJS.init({mode:'kiosk',zoom:2});
@@ -166,7 +166,7 @@ var options4 = {
 //DebugJS.init(options4);
 
 var options5 = {
-  visible: true,
+  visible: false,
   onFileLoaded: onFileLoaded,
   onWatchdogTimeout: onWatchdogTimeout
 };
@@ -452,6 +452,7 @@ function onFileLoaded(file, content, isB64) {
 
 var wdtCount = 0;
 function onWatchdogTimeout(elapsed) {
+  dbg.show();
   wdtCount++;
   log('count = ' + wdtCount + ' / elapsed = ' + elapsed);
 }
@@ -1711,6 +1712,30 @@ sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="
     </td>
     <td>
       Stop watchdog timer<button class="demo-button2" onclick="dbg.wd.stop();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.show<br>
+      <span class="alias">( dbg.show )</span>
+    </td>
+    <td>
+    </td>
+    <td>
+      Show debug window<button class="demo-button2" onclick="dbg.show();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.hide<br>
+      <span class="alias">( dbg.hide )</span>
+    </td>
+    <td>
+    </td>
+    <td>
+      Hide debug window<button class="demo-button2" onclick="dbg.hide();">DEMO</button>
     </td>
   </tr>
 
