@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709060009';
+  this.v = '201709060738';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -575,7 +575,7 @@ DebugJS.prototype = {
       return false;
     }
 
-    ctx.initStatus(ctx.options);
+    ctx.initStatus(ctx, ctx.options);
     ctx.initCommandTable(ctx);
 
     // Debug Window
@@ -655,8 +655,8 @@ DebugJS.prototype = {
     ctx.windowExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.options.zoom;
     if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom(ctx);
-      ctx.reopenFeatures(restoreOption.status);
-      ctx.restoreDbgWinSize(restoreOption.sizeStatus);
+      ctx.reopenFeatures(ctx, restoreOption.status);
+      ctx.restoreDbgWinSize(ctx, restoreOption.sizeStatus);
     }
     ctx.status |= DebugJS.STATE_INITIALIZED;
     ctx.initExtension(ctx);
@@ -895,7 +895,7 @@ DebugJS.prototype = {
       'font-family': ctx.options.fontFamily + ' !important'
     };
 
-    ctx.applyStyles(styles);
+    ctx.applyStyles(ctx, styles);
   },
 
   initBuf: function(ctx) {
@@ -918,7 +918,7 @@ DebugJS.prototype = {
     area.style.cursor = cursor;
     area.onmousedown = function(e) {
       if (!(ctx.status & DebugJS.STATE_RESIZABLE)) return;
-      ctx.startResize(e);
+      ctx.startResize(ctx, e);
       ctx.status |= state;
       ctx.bodyCursor = ctx.bodyEl.style.cursor;
       ctx.bodyEl.style.cursor = cursor;
@@ -934,7 +934,7 @@ DebugJS.prototype = {
     area.onmousedown = function(e) {
       var ctx = DebugJS.ctx;
       if (!(ctx.status & DebugJS.STATE_RESIZABLE)) return;
-      ctx.startResize(e);
+      ctx.startResize(ctx, e);
       ctx.status |= state;
       ctx.bodyCursor = ctx.bodyEl.style.cursor;
       ctx.bodyEl.style.cursor = cursor;
@@ -948,7 +948,7 @@ DebugJS.prototype = {
   },
 
   setupEventHandler: function(ctx) {
-    if (!ctx.isAllFeaturesDisabled()) {
+    if (!ctx.isAllFeaturesDisabled(ctx)) {
       window.addEventListener('keydown', ctx.keyHandler, true);
     }
 
@@ -991,8 +991,7 @@ DebugJS.prototype = {
     window.removeEventListener('keyup', ctx.onKeyUp, true);
   },
 
-  initStatus: function(options) {
-    var ctx = DebugJS.ctx;
+  initStatus: function(ctx, options) {
     if (ctx.options.target == null) {
       ctx.status |= DebugJS.STATE_DYNAMIC;
       ctx.status |= DebugJS.STATE_DRAGGABLE;
@@ -1036,8 +1035,7 @@ DebugJS.prototype = {
     }
   },
 
-  isAllFeaturesDisabled: function() {
-    var ctx = DebugJS.ctx;
+  isAllFeaturesDisabled: function(ctx) {
     var len = DebugJS.FEATURES.length;
     for (var i = 0; i < len; i++) {
       if (ctx.options[DebugJS.FEATURES[i]]) return false;
@@ -1054,7 +1052,7 @@ DebugJS.prototype = {
       ctx.winBody.style.cursor = 'default';
     }
 
-    if (!ctx.isAllFeaturesDisabled()) {
+    if (!ctx.isAllFeaturesDisabled(ctx)) {
       // HeadPanel
       ctx.headPanel = document.createElement('div');
       ctx.headPanel.style.padding = '2px';
@@ -1092,7 +1090,7 @@ DebugJS.prototype = {
 
     // LogFilter
     if (ctx.options.useLogFilter) {
-      ctx.createLogFilter();
+      ctx.createLogFilter(ctx);
     }
 
     // Log
@@ -1108,7 +1106,7 @@ DebugJS.prototype = {
     ctx.logPanel.style.overflow = 'auto';
     ctx.mainPanel.appendChild(ctx.logPanel);
 
-    if (ctx.isAllFeaturesDisabled()) {
+    if (ctx.isAllFeaturesDisabled(ctx)) {
       return;
     }
 
@@ -1119,7 +1117,7 @@ DebugJS.prototype = {
       ctx.clockPanel.style.color = ctx.options.clockColor;
       ctx.clockPanel.style.fontSize = fontSize;
       ctx.headPanel.appendChild(ctx.clockPanel);
-      ctx.setIntervalL();
+      ctx.setIntervalL(ctx);
     }
 
     // -- R to L
@@ -1339,7 +1337,7 @@ DebugJS.prototype = {
   },
 
   initDebugWindow: function(ctx) {
-    if (ctx.isAllFeaturesDisabled()) return;
+    if (ctx.isAllFeaturesDisabled(ctx)) return;
     if (ctx.options.useLogFilter) ctx.updateLogFilterButtons();
     if (ctx.status & DebugJS.STATE_SHOW_CLOCK) ctx.updateClockPanel();
     if (ctx.options.useScreenMeasure) ctx.updateMeasureBtn(ctx);
@@ -1424,8 +1422,7 @@ DebugJS.prototype = {
     return textInput;
   },
 
-  createLogFilter: function() {
-    var ctx = DebugJS.ctx;
+  createLogFilter: function(ctx) {
     ctx.filterBtnAll = ctx.createLogFilterButton('ALL', 'filterBtnAll', 'btnColor');
     ctx.filterBtnStd = ctx.createLogFilterButton('LOG', 'filterBtnStd', 'fontColor');
     ctx.filterBtnErr = ctx.createLogFilterButton('ERR', 'filterBtnErr', 'logColorE');
@@ -1489,10 +1486,9 @@ DebugJS.prototype = {
     }
   },
 
-  reopenFeatures: function(status) {
-    var ctx = DebugJS.ctx;
+  reopenFeatures: function(ctx, status) {
     if (status & DebugJS.STATE_MEASURE) {
-      ctx.enableMeasureMode(true);
+      ctx.enableMeasureMode(ctx, true);
     }
     if (status & DebugJS.STATE_SYSTEM_INFO) {
       ctx.enableSystemInfo(ctx);
@@ -1514,8 +1510,7 @@ DebugJS.prototype = {
     }
   },
 
-  restoreDbgWinSize: function(sizeStatus) {
-    var ctx = DebugJS.ctx;
+  restoreDbgWinSize: function(ctx, sizeStatus) {
     if (sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       ctx.setWindowSize('full');
     } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED) {
@@ -1818,8 +1813,7 @@ DebugJS.prototype = {
     ctx.onchangeLogFilter();
   },
 
-  applyStyles: function(styles) {
-    var ctx = DebugJS.ctx;
+  applyStyles: function(ctx, styles) {
     if (ctx.styleEl != null) {
       document.head.removeChild(ctx.styleEl);
     }
@@ -1843,8 +1837,7 @@ DebugJS.prototype = {
     }
   },
 
-  setIntervalL: function() {
-    var ctx = DebugJS.ctx;
+  setIntervalL: function(ctx) {
     if (ctx.clockUpdIntHCnt > 0) {
       ctx.clockUpdIntHCnt--;
     }
@@ -1853,8 +1846,7 @@ DebugJS.prototype = {
     }
   },
 
-  setIntervalH: function() {
-    var ctx = DebugJS.ctx;
+  setIntervalH: function(ctx) {
     ctx.clockUpdIntHCnt++;
     ctx.clockUpdInt = DebugJS.UPDATE_INTERVAL_H;
   },
@@ -1866,7 +1858,7 @@ DebugJS.prototype = {
   startMove: function(e) {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.STATE_DRAGGABLE)) ||
-        (e.button != 0) || !ctx.isMovable(e)) {
+        (e.button != 0) || !ctx.isMovable(ctx, e)) {
       return;
     }
     ctx.status |= DebugJS.STATE_DRAGGING;
@@ -1878,8 +1870,7 @@ DebugJS.prototype = {
     }
   },
 
-  isMovable: function(e) {
-    var ctx = DebugJS.ctx;
+  isMovable: function(ctx, e) {
     var el = e.target;
     if (el.nodeName == 'INPUT') return false;
     if (el.nodeName == 'TEXTAREA') return false;
@@ -1905,23 +1896,20 @@ DebugJS.prototype = {
     return true;
   },
 
-  doMove: function(e) {
-    var ctx = DebugJS.ctx;
+  doMove: function(ctx, e) {
     if (!(ctx.status & DebugJS.STATE_DRAGGING)) return;
     ctx.status &= ~DebugJS.STATE_POS_AUTO_ADJUST;
     ctx.dbgWin.style.top = e.clientY - ctx.prevOffsetTop + 'px';
     ctx.dbgWin.style.left = e.clientX - ctx.prevOffsetLeft + 'px';
   },
 
-  endMove: function() {
-    var ctx = DebugJS.ctx;
+  endMove: function(ctx) {
     ctx.status &= ~DebugJS.STATE_DRAGGING;
     ctx.winBody.style.cursor = 'default';
   },
 
-  startResize: function(e) {
+  startResize: function(ctx, e) {
     if (e.button != 0) return;
-    var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.STATE_RESIZING;
     ctx.clickedPosX = e.clientX;
     ctx.clickedPosY = e.clientY;
@@ -1930,8 +1918,7 @@ DebugJS.prototype = {
     ctx.updateWinCtrlBtnPanel();
   },
 
-  doResize: function(e) {
-    var ctx = DebugJS.ctx;
+  doResize: function(ctx, e) {
     var currentX = e.clientX;
     var currentY = e.clientY;
     var moveX, moveY, t, l, w, h;
@@ -1996,8 +1983,7 @@ DebugJS.prototype = {
     ctx.resizeImgPreview();
   },
 
-  endResize: function() {
-    var ctx = DebugJS.ctx;
+  endResize: function(ctx) {
     ctx.status &= ~DebugJS.STATE_RESIZING_ALL;
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
   },
@@ -2034,14 +2020,13 @@ DebugJS.prototype = {
   toggleMeasureMode: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_MEASURE) {
-      ctx.disableMeasureMode();
+      ctx.disableMeasureMode(ctx);
     } else {
-      ctx.enableMeasureMode();
+      ctx.enableMeasureMode(ctx);
     }
   },
 
-  enableMeasureMode: function(silent) {
-    var ctx = DebugJS.ctx;
+  enableMeasureMode: function(ctx, silent) {
     if (!silent) DebugJS.log.s('Screen Measure ON.');
     ctx.status |= DebugJS.STATE_MEASURE;
     ctx.bodyCursor = ctx.bodyEl.style.cursor;
@@ -2049,8 +2034,7 @@ DebugJS.prototype = {
     ctx.updateMeasureBtn(ctx);
   },
 
-  disableMeasureMode: function(silent) {
-    var ctx = DebugJS.ctx;
+  disableMeasureMode: function(ctx, silent) {
     ctx.stopMeasure();
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
     ctx.status &= ~DebugJS.STATE_MEASURE;
@@ -2061,21 +2045,19 @@ DebugJS.prototype = {
   toggleDraggable: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_DRAGGABLE) {
-      ctx.disableDraggable();
+      ctx.disableDraggable(ctx);
     } else {
-      ctx.enableDraggable();
+      ctx.enableDraggable(ctx);
     }
   },
 
-  enableDraggable: function() {
-    var ctx = DebugJS.ctx;
+  enableDraggable: function(ctx) {
     ctx.status |= DebugJS.STATE_DRAGGABLE;
     ctx.winBody.style.cursor = 'default';
     ctx.updatePinBtn(ctx);
   },
 
-  disableDraggable: function() {
-    var ctx = DebugJS.ctx;
+  disableDraggable: function(ctx) {
     ctx.status &= ~DebugJS.STATE_DRAGGABLE;
     ctx.winBody.style.cursor = 'auto';
     ctx.updatePinBtn(ctx);
@@ -2206,10 +2188,10 @@ DebugJS.prototype = {
   closeAllFeatures: function(ctx) {
     if ((ctx.status & DebugJS.STATE_DRAGGING) || (ctx.status & DebugJS.STATE_RESIZING)) {
       ctx.status &= ~DebugJS.STATE_DRAGGING;
-      ctx.endResize();
+      ctx.endResize(ctx);
     }
     if (ctx.status & DebugJS.STATE_MEASURE) {
-      ctx.disableMeasureMode(true);
+      ctx.disableMeasureMode(ctx, true);
     }
     if (ctx.status & DebugJS.STATE_ELEMENT_INSPECTING) {
       ctx.disableElmInfo();
@@ -2253,11 +2235,11 @@ DebugJS.prototype = {
         }
         if ((ctx.status & DebugJS.STATE_DRAGGING) || (ctx.status & DebugJS.STATE_RESIZING)) {
           ctx.status &= ~DebugJS.STATE_DRAGGING;
-          ctx.endResize();
+          ctx.endResize(ctx);
           break;
         }
         if (ctx.status & DebugJS.STATE_MEASURE) {
-          ctx.disableMeasureMode();
+          ctx.disableMeasureMode(ctx);
           break;
         }
         if (ctx.status & DebugJS.STATE_HTML_SRC) {
@@ -2363,6 +2345,7 @@ DebugJS.prototype = {
 
     ctx.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
     ctx.updateKeyUpPanel();
+    ctx.resizeMainHeight();
   },
 
   onKeyPress: function(e) {
@@ -2370,6 +2353,7 @@ DebugJS.prototype = {
     var modKey = DebugJS.checkModKey(e);
     ctx.keyPressCode = e.keyCode + '(' + String.fromCharCode(e.keyCode) + ') ' + modKey;
     ctx.updateKeyPressPanel();
+    ctx.resizeMainHeight();
   },
 
   onKeyUp: function(e) {
@@ -2377,6 +2361,7 @@ DebugJS.prototype = {
     var modKey = DebugJS.checkModKey(e);
     ctx.keyUpCode = e.keyCode + ' ' + modKey;
     ctx.updateKeyUpPanel();
+    ctx.resizeMainHeight();
   },
 
   onResize: function() {
@@ -2451,8 +2436,8 @@ DebugJS.prototype = {
       ctx.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
       ctx.updateMousePositionPanel();
     }
-    if (ctx.status & DebugJS.STATE_DRAGGING) ctx.doMove(e);
-    if (ctx.status & DebugJS.STATE_RESIZING) ctx.doResize(e);
+    if (ctx.status & DebugJS.STATE_DRAGGING) ctx.doMove(ctx, e);
+    if (ctx.status & DebugJS.STATE_RESIZING) ctx.doResize(ctx, e);
     if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(e);
     if (ctx.status & DebugJS.STATE_ELEMENT_INSPECTING) ctx.inspectElement(e);
     ctx.resizeMainHeight();
@@ -2467,10 +2452,10 @@ DebugJS.prototype = {
           ctx.stopMeasure();
         }
         if (ctx.status & DebugJS.STATE_DRAGGABLE) {
-          ctx.endMove();
+          ctx.endMove(ctx);
         }
         if (ctx.status & DebugJS.STATE_RESIZING) {
-          ctx.endResize();
+          ctx.endResize(ctx);
         }
         break;
       case 1:
@@ -2487,7 +2472,7 @@ DebugJS.prototype = {
 
   onDbgWinDblClick: function(e) {
     var ctx = DebugJS.ctx;
-    if ((!ctx.isMovable(e)) ||
+    if ((!ctx.isMovable(ctx, e)) ||
         (!(ctx.status & DebugJS.STATE_DRAGGABLE))) {
       return;
     }
@@ -2743,7 +2728,7 @@ DebugJS.prototype = {
   closeDebugWindow: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_MEASURE) {
-      ctx.disableMeasureMode();
+      ctx.disableMeasureMode(ctx);
     }
     if (ctx.status & DebugJS.STATE_ELEMENT_INSPECTING) {
       ctx.disableElmInfo();
@@ -2889,7 +2874,7 @@ DebugJS.prototype = {
     }
     ctx.updateSysInfoBtn(ctx);
     ctx.showSystemInfo();
-    ctx.setIntervalH();
+    ctx.setIntervalH(ctx);
   },
 
   updateSystemTime: function() {
@@ -2919,7 +2904,7 @@ DebugJS.prototype = {
     }
     ctx.status &= ~DebugJS.STATE_SYSTEM_INFO;
     ctx.updateSysInfoBtn(ctx);
-    ctx.setIntervalL();
+    ctx.setIntervalL(ctx);
   },
 
   showSystemInfo: function(e) {
@@ -3886,7 +3871,7 @@ DebugJS.prototype = {
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.timerBasePanel);
     }
-    ctx.setIntervalH();
+    ctx.setIntervalH(ctx);
     if ((mode != undefined) && (mode != '')) {
       ctx.switchTimerMode(mode);
     }
@@ -4495,7 +4480,7 @@ DebugJS.prototype = {
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_TIMER) &&
         (ctx.timerBasePanel != null)) {
       ctx.toolsBodyPanel.removeChild(ctx.timerBasePanel);
-      ctx.setIntervalL();
+      ctx.setIntervalL(ctx);
     }
   },
 
@@ -5728,7 +5713,7 @@ DebugJS.prototype = {
     ctx.setMsg('');
     if (ctx.status & DebugJS.STATE_DYNAMIC) {
       if (ctx.options.usePinButton) {
-        ctx.enableDraggable();
+        ctx.enableDraggable(ctx);
       }
       if (!ctx.options.mode == 'kiosk') {
         ctx.resetDebugWindowSizePos();
@@ -6054,7 +6039,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     switch (func) {
       case 'measure':
-        ctx.enableMeasureMode();
+        ctx.enableMeasureMode(ctx);
         return true;
       case 'sys':
         ctx.enableSystemInfo(ctx);
