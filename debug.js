@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709052350';
+  this.v = '201709060009';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8707,11 +8707,12 @@ DebugJS.x = DebugJS.x || {};
 DebugJS.x.addCmdTbl = function(table) {
   var ctx = DebugJS.ctx;
   for (var i = 0; i < table.length; i++) {
-    if ((ctx.existCmd(table[i].cmd, ctx.CMD_TBL)) ||
-        (ctx.existCmd(table[i].cmd, ctx.EXT_CMD_TBL))) {
-      table[i].attr |= DebugJS.CMD_ATTR_DISABLED;
+    var c = table[i];
+    if ((ctx.existCmd(c.cmd, ctx.INT_CMD_TBL)) ||
+        (ctx.existCmd(c.cmd, ctx.EXT_CMD_TBL))) {
+      c.attr |= DebugJS.CMD_ATTR_DISABLED;
     }
-    ctx.EXT_CMD_TBL.push(table[i]);
+    ctx.EXT_CMD_TBL.push(c);
   }
 };
 DebugJS.x.addPanel = function(p) {
