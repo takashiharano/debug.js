@@ -494,7 +494,7 @@ function httpCallback(xhr) {
   var head = xhr.getAllResponseHeaders();
   var body = xhr.responseText.replace(/</g, '&lt;');
   body = body.replace(/>/g, '&gt;');
-  if (head || txt) {
+  if (head || body) {
     log('Response:\n' + head + '\n'+ body);
   }
 }
@@ -549,6 +549,14 @@ example.regieterExtensionPanel = function() {
   var index = dbg.x.addPanel(panel1);
   document.getElementById('ext-panel-index').innerText = index;
 };
+
+function buftest(size) {
+  var opt = {
+    visible: true,
+    bufsize: size
+  };
+  DebugJS.init(opt);
+}
 </script>
 </head>
 <body>
@@ -923,7 +931,7 @@ If you want to change the debugger settings, explicitly call for initialization 
   </tr>
 
   <tr>
-    <td class="name">useWindowControlButton</td>
+    <td class="name">useWinCtrlButton</td>
     <td>Show － □ button</td>
     <td>true</td>
   </tr>
@@ -2484,7 +2492,7 @@ var panel1 = {
 </span></pre>
 
 Change the button label
-<pre class="code"><span class="emphasis">dbg.x.setBtnLabel('<input type="text" id="ext-btn-label-text" class="inline-text-input" style="width:40px;" value="ABC">');<button class="demo-button2" onclick="dbg.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
+<pre class="code"><span class="emphasis">dbg.x.setBtnLabel('<input type="text" id="ext-btn-label-text" class="inline-text-input" style="width:40px;" value="ABC1">');<button class="demo-button2" onclick="dbg.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
 
 
 Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-cmd.js" target="_blank">extension-sample/debug-x-cmd.js</a> 
@@ -2901,10 +2909,10 @@ function httpCallback(xhr) {
     log(statusMsg);
   }
   var head = xhr.getAllResponseHeaders();
-  var txt = xhr.responseText.replace(/&lt;/g, '&amp;lt;');
-  txt = txt.replace(/&gt;/g, '&amp;gt;');
-  if (head || txt) {
-    log(head + '\n'+ txt);
+  var body = xhr.responseText.replace(/&lt;/g, '&amp;lt;');
+  body = body.replace(/&gt;/g, '&amp;gt;');
+  if (head || body) {
+    log(head + '\n'+ body);
   }
 }
 </pre>
