@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709052331';
+  this.v = '201709052350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -76,12 +76,7 @@ var DebugJS = DebugJS || function() {
     useCommandLine: true,
     cmdHistoryMax: 100,
     timerLineColor: '#0cf',
-    cdTimerDefaultVal: {
-      hh: '00',
-      mi: '03',
-      ss: '00',
-      sss: '000'
-    },
+    cdTimerDefaultVal: {hh: '00', mi: '03', ss: '00', sss: '000'},
     disableAllCommands: false,
     disableAllFeatures: false,
     onFileLoaded: null,
