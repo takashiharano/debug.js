@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709060738';
+  this.v = '201709062143';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1284,7 +1284,7 @@ DebugJS.prototype = {
       cmdLine.style.setProperty('font-family', ctx.options.fontFamily, 'important');
       ctx.cmdPanel.appendChild(cmdLine);
       ctx.cmdLine = cmdLine;
-      ctx.initHistory();
+      ctx.initHistory(ctx);
     }
   },
 
@@ -2035,7 +2035,7 @@ DebugJS.prototype = {
   },
 
   disableMeasureMode: function(ctx, silent) {
-    ctx.stopMeasure();
+    ctx.stopMeasure(ctx);
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
     ctx.status &= ~DebugJS.STATE_MEASURE;
     if (!silent) DebugJS.log.s('Screen Measure OFF.');
@@ -2206,7 +2206,7 @@ DebugJS.prototype = {
       ctx.disableHtmlSrc();
     }
     if (ctx.status & DebugJS.STATE_SYSTEM_INFO) {
-      ctx.disableSystemInfo();
+      ctx.disableSystemInfo(ctx);
     }
     if (ctx.status & DebugJS.STATE_EXT_PANEL) {
       ctx.disableExtPanel(ctx);
@@ -2259,14 +2259,14 @@ DebugJS.prototype = {
           break;
         }
         if (ctx.status & DebugJS.STATE_SYSTEM_INFO) {
-          ctx.disableSystemInfo();
+          ctx.disableSystemInfo(ctx);
           break;
         }
         if (ctx.status & DebugJS.STATE_EXT_PANEL) {
           ctx.disableExtPanel(ctx);
           break;
         }
-        ctx.hideDebugWindow();
+        ctx.hideDebugWindow(ctx);
         break;
 
       case 38: // Up
@@ -2371,7 +2371,7 @@ DebugJS.prototype = {
     ctx.updateBodySizePanel();
     if (ctx.status & DebugJS.STATE_VISIBLE) {
       if (ctx.status & DebugJS.STATE_POS_AUTO_ADJUST) {
-        ctx.adjustDebugWindowPos();
+        ctx.adjustDebugWindowPos(ctx);
       } else {
         ctx.adjustWindowMax(ctx);
       }
@@ -2400,7 +2400,7 @@ DebugJS.prototype = {
       case 0:
         ctx.mouseClick0 = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.STATE_MEASURE) {
-          ctx.startMeasure(e);
+          ctx.startMeasure(ctx, e);
         }
         if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
           DebugJS.log('<span style="color:' + ctx.options.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
@@ -2438,7 +2438,7 @@ DebugJS.prototype = {
     }
     if (ctx.status & DebugJS.STATE_DRAGGING) ctx.doMove(ctx, e);
     if (ctx.status & DebugJS.STATE_RESIZING) ctx.doResize(ctx, e);
-    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(e);
+    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, e);
     if (ctx.status & DebugJS.STATE_ELEMENT_INSPECTING) ctx.inspectElement(e);
     ctx.resizeMainHeight();
   },
@@ -2449,7 +2449,7 @@ DebugJS.prototype = {
       case 0:
         ctx.mouseClick0 = DebugJS.COLOR_INACTIVE;
         if (ctx.status & DebugJS.STATE_MEASURING) {
-          ctx.stopMeasure();
+          ctx.stopMeasure(ctx);
         }
         if (ctx.status & DebugJS.STATE_DRAGGABLE) {
           ctx.endMove(ctx);
@@ -2598,8 +2598,7 @@ DebugJS.prototype = {
     ctx.resizeImgPreview();
   },
 
-  adjustDebugWindowPos: function() {
-    var ctx = DebugJS.ctx;
+  adjustDebugWindowPos: function(ctx) {
     var sizePos = ctx.getSelfSizePos();
     ctx.setWindowPosition(ctx.options.position, sizePos.w, sizePos.h);
   },
@@ -2647,7 +2646,7 @@ DebugJS.prototype = {
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
     if (ctx.status & DebugJS.STATE_POS_AUTO_ADJUST) {
-      ctx.adjustDebugWindowPos();
+      ctx.adjustDebugWindowPos(ctx);
     }
   },
 
@@ -2658,11 +2657,11 @@ DebugJS.prototype = {
     ctx.setWindowPosition(ctx.options.position, ctx.initWidth, ctx.initHeight);
     ctx.setDebugWindowSize(w, h);
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
-    ctx.saveExpandModeOrgSizeAndPos();
+    ctx.saveExpandModeOrgSizeAndPos(ctx);
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
     if (ctx.status & DebugJS.STATE_DRAGGABLE) {
       ctx.status |= DebugJS.STATE_POS_AUTO_ADJUST;
-      ctx.adjustDebugWindowPos();
+      ctx.adjustDebugWindowPos(ctx);
     }
   },
 
@@ -2694,7 +2693,7 @@ DebugJS.prototype = {
     if ((ctx.status & DebugJS.STATE_POS_AUTO_ADJUST) ||
        ((ctx.status & DebugJS.STATE_DYNAMIC) && (ctx.isOutOfWindow(ctx)))) {
       ctx.status |= DebugJS.STATE_POS_AUTO_ADJUST;
-      ctx.adjustDebugWindowPos();
+      ctx.adjustDebugWindowPos(ctx);
     } else {
       ctx.adjustWindowMax(ctx);
     }
@@ -2716,8 +2715,7 @@ DebugJS.prototype = {
     }
   },
 
-  hideDebugWindow: function() {
-    var ctx = DebugJS.ctx;
+  hideDebugWindow: function(ctx) {
     if ((!ctx.options.togglableShowHide) || (!ctx.dbgWin)) return;
     ctx.errStatus = DebugJS.ERR_STATE_NONE;
     ctx.status &= ~DebugJS.STATE_DRAGGING;
@@ -2733,7 +2731,7 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.STATE_ELEMENT_INSPECTING) {
       ctx.disableElmInfo();
     }
-    ctx.hideDebugWindow();
+    ctx.hideDebugWindow(ctx);
   },
 
   focusCmdLine: function() {
@@ -2741,8 +2739,7 @@ DebugJS.prototype = {
     if (ctx.cmdLine) ctx.cmdLine.focus();
   },
 
-  startMeasure: function(e) {
-    var ctx = DebugJS.ctx;
+  startMeasure: function(ctx, e) {
     var posX = e.clientX;
     var posY = e.clientY;
     if (ctx.isOnDebugWindow(posX, posY)) return;
@@ -2768,8 +2765,7 @@ DebugJS.prototype = {
     document.onselectstart = function() {return false;};
   },
 
-  doMeasure: function(e) {
-    var ctx = DebugJS.ctx;
+  doMeasure: function(ctx, e) {
     var currentPosX = e.clientX;
     var currentPosY = e.clientY;
     var deltaX = currentPosX - ctx.clickedPosX;
@@ -2831,8 +2827,7 @@ DebugJS.prototype = {
     ctx.measureBox.innerHTML = origin + size + endPoint;
   },
 
-  stopMeasure: function() {
-    var ctx = DebugJS.ctx;
+  stopMeasure: function(ctx) {
     if (ctx.measureBox != null) {
       ctx.bodyEl.removeChild(ctx.measureBox);
       ctx.measureBox = null;
@@ -2844,7 +2839,7 @@ DebugJS.prototype = {
   toggleSystemInfoMode: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_SYSTEM_INFO) {
-      ctx.disableSystemInfo();
+      ctx.disableSystemInfo(ctx);
     } else {
       ctx.enableSystemInfo(ctx);
     }
@@ -2860,8 +2855,8 @@ DebugJS.prototype = {
         ctx.addOverlayPanelFull(ctx.sysInfoPanel);
       } else {
         ctx.sysInfoPanel.className = ctx.id + '-overlay-panel';
-        ctx.addOverlayPanel(ctx.sysInfoPanel);
-        ctx.expandHightIfNeeded(ctx.windowExpandHeight);
+        ctx.addOverlayPanel(ctx, ctx.sysInfoPanel);
+        ctx.expandHightIfNeeded(ctx);
       }
       ctx.sysTimePanel = document.createElement('div');
       ctx.sysTimePanel.style.marginRight = '4px';
@@ -2891,14 +2886,13 @@ DebugJS.prototype = {
     setTimeout(ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
 
-  disableSystemInfo: function() {
-    var ctx = DebugJS.ctx;
+  disableSystemInfo: function(ctx) {
     if (ctx.sysInfoPanel != null) {
       if (DebugJS.SYS_INFO_FULL_OVERLAY) {
         ctx.removeOverlayPanelFull(ctx.sysInfoPanel);
       } else {
-        ctx.removeOverlayPanel(ctx.sysInfoPanel);
-        ctx.resetExpandedHeightIfNeeded();
+        ctx.removeOverlayPanel(ctx, ctx.sysInfoPanel);
+        ctx.resetExpandedHeightIfNeeded(ctx);
       }
       ctx.sysInfoPanel = null;
     }
@@ -3204,8 +3198,8 @@ DebugJS.prototype = {
         ctx.addOverlayPanelFull(ctx.elmInfoPanel);
       } else {
         ctx.elmInfoPanel.className = ctx.id + '-overlay-panel';
-        ctx.addOverlayPanel(ctx.elmInfoPanel);
-        ctx.expandHightIfNeeded(ctx.windowExpandHeight);
+        ctx.addOverlayPanel(ctx, ctx.elmInfoPanel);
+        ctx.expandHightIfNeeded(ctx);
       }
 
       ctx.elmInfoHeaderPanel = document.createElement('div');
@@ -3291,8 +3285,8 @@ DebugJS.prototype = {
       if (DebugJS.ELM_INFO_FULL_OVERLAY) {
         ctx.removeOverlayPanelFull(ctx.elmInfoPanel);
       } else {
-        ctx.removeOverlayPanel(ctx.elmInfoPanel);
-        ctx.resetExpandedHeightIfNeeded();
+        ctx.removeOverlayPanel(ctx, ctx.elmInfoPanel);
+        ctx.resetExpandedHeightIfNeeded(ctx);
       }
       ctx.elmInfoPanel = null;
       ctx.elmInfoBodyPanel = null;
@@ -3659,9 +3653,9 @@ DebugJS.prototype = {
         ctx.addOverlayPanelFull(ctx.htmlSrcPanel);
       } else {
         ctx.htmlSrcPanel.className = ctx.id + '-overlay-panel';
-        ctx.addOverlayPanel(ctx.htmlSrcPanel);
+        ctx.addOverlayPanel(ctx, ctx.htmlSrcPanel);
       }
-      ctx.expandHightIfNeeded(ctx.windowExpandHeight);
+      ctx.expandHightIfNeeded(ctx);
 
       ctx.htmlSrcHeaderPanel = document.createElement('div');
       ctx.htmlSrcPanel.appendChild(ctx.htmlSrcHeaderPanel);
@@ -3714,9 +3708,9 @@ DebugJS.prototype = {
       if (DebugJS.HTML_SRC_FULL_OVERLAY) {
         ctx.removeOverlayPanelFull(ctx.htmlSrcPanel);
       } else {
-        ctx.removeOverlayPanel(ctx.htmlSrcPanel);
+        ctx.removeOverlayPanel(ctx, ctx.htmlSrcPanel);
       }
-      ctx.resetExpandedHeightIfNeeded();
+      ctx.resetExpandedHeightIfNeeded(ctx);
       ctx.htmlSrcPanel = null;
     }
     ctx.status &= ~DebugJS.STATE_HTML_SRC;
@@ -5219,7 +5213,7 @@ DebugJS.prototype = {
         html += ctx.createJsSnippetBtn(ctx, i);
       }
       ctx.scriptPanel.innerHTML = html;
-      ctx.addOverlayPanel(ctx.scriptPanel);
+      ctx.addOverlayPanel(ctx, ctx.scriptPanel);
       ctx.scriptEditor = document.createElement('textarea');
       ctx.scriptEditor.className = ctx.id + '-editor';
       ctx.scriptEditor.onblur = DebugJS.ctx.saveScriptBuf;
@@ -5238,8 +5232,7 @@ DebugJS.prototype = {
     return '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' + (style == '' ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
   },
 
-  addOverlayPanel: function(panel) {
-    var ctx = DebugJS.ctx;
+  addOverlayPanel: function(ctx, panel) {
     if (ctx.overlayBasePanel == null) {
       ctx.collapseLogPanel(ctx);
       ctx.overlayBasePanel = document.createElement('div');
@@ -5251,8 +5244,7 @@ DebugJS.prototype = {
     ctx.overlayPanels.push(panel);
   },
 
-  removeOverlayPanel: function(panel) {
-    var ctx = DebugJS.ctx;
+  removeOverlayPanel: function(ctx, panel) {
     if (ctx.overlayBasePanel != null) {
       for (var i = 0; i < ctx.overlayPanels.length; i++) {
         if (ctx.overlayPanels[i] == panel) {
@@ -5322,7 +5314,7 @@ DebugJS.prototype = {
 
   stopScript: function(ctx) {
     if (ctx.scriptPanel != null) {
-      ctx.removeOverlayPanel(ctx.scriptPanel);
+      ctx.removeOverlayPanel(ctx, ctx.scriptPanel);
       ctx.scriptPanel = null;
     }
     ctx.status &= ~DebugJS.STATE_SCRIPT;
@@ -5457,7 +5449,7 @@ DebugJS.prototype = {
 
   expandHight: function(ctx, height) {
     if (ctx.status & DebugJS.STATE_DYNAMIC) {
-      ctx.saveExpandModeOrgSizeAndPos();
+      ctx.saveExpandModeOrgSizeAndPos(ctx);
       var clientHeight = document.documentElement.clientHeight;
       var sizePos = ctx.getSelfSizePos();
       if (sizePos.h >= height) {
@@ -5468,7 +5460,7 @@ DebugJS.prototype = {
       ctx.setSelfSizeH(ctx, height);
       sizePos = ctx.getSelfSizePos();
       if (ctx.status & DebugJS.STATE_POS_AUTO_ADJUST) {
-        ctx.adjustDebugWindowPos();
+        ctx.adjustDebugWindowPos(ctx);
       } else {
         if (sizePos.y2 > clientHeight) {
           if (clientHeight < (height + ctx.options.adjPosY)) {
@@ -5482,10 +5474,9 @@ DebugJS.prototype = {
     }
   },
 
-  expandHightIfNeeded: function(height) {
-    var ctx = DebugJS.ctx;
+  expandHightIfNeeded: function(ctx) {
     if (ctx.windowExpandCnt == 0) {
-      ctx.expandHight(ctx, height);
+      ctx.expandHight(ctx, ctx.windowExpandHeight);
     }
     ctx.windowExpandCnt++;
   },
@@ -5498,21 +5489,19 @@ DebugJS.prototype = {
       ctx.resizeImgPreview();
       ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
       if (ctx.status & DebugJS.STATE_POS_AUTO_ADJUST) {
-        ctx.adjustDebugWindowPos();
+        ctx.adjustDebugWindowPos(ctx);
       }
     }
   },
 
-  resetExpandedHeightIfNeeded: function() {
-    var ctx = DebugJS.ctx;
+  resetExpandedHeightIfNeeded: function(ctx) {
     ctx.windowExpandCnt--;
     if (ctx.windowExpandCnt == 0) {
       ctx.resetExpandedHeight(ctx);
     }
   },
 
-  saveExpandModeOrgSizeAndPos: function() {
-    var ctx = DebugJS.ctx;
+  saveExpandModeOrgSizeAndPos: function(ctx) {
     var shadow = (ctx.status & DebugJS.STATE_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
     ctx.expandModeOrg.w = (ctx.dbgWin.offsetWidth + DebugJS.WIN_BORDER - shadow);
     ctx.expandModeOrg.h = (ctx.dbgWin.offsetHeight + DebugJS.WIN_BORDER - shadow);
@@ -5576,7 +5565,7 @@ DebugJS.prototype = {
         cl = '!' + arg;
       }
     }
-    ctx.saveHistory(cl);
+    ctx.saveHistory(ctx, cl);
     ctx._execCmd(cl, true);
   },
 
@@ -5848,7 +5837,7 @@ DebugJS.prototype = {
       } else if (args.opt == 'c') {
         ctx.clearHistory();
       } else if (args.opt == 'd') {
-        ctx.delHistory(args.data);
+        ctx.delHistory(ctx, args.data);
       } else {
         DebugJS.printUsage(tbl.usage);
       }
@@ -5857,14 +5846,13 @@ DebugJS.prototype = {
     }
   },
 
-  initHistory: function() {
-    var ctx = DebugJS.ctx;
+  initHistory: function(ctx) {
     if (ctx.cmdHistoryBuf == null) {
       ctx.CMD_HISTORY_MAX = ctx.options.cmdHistoryMax;
       ctx.cmdHistoryBuf = new DebugJS.RingBuffer(ctx.CMD_HISTORY_MAX);
     }
     if (DebugJS.LS_AVAILABLE) {
-      ctx.loadHistory();
+      ctx.loadHistory(ctx);
     }
   },
 
@@ -5881,8 +5869,7 @@ DebugJS.prototype = {
     DebugJS.log.mlt(str);
   },
 
-  saveHistory: function(cmd) {
-    var ctx = DebugJS.ctx;
+  saveHistory: function(ctx, cmd) {
     ctx.cmdHistoryBuf.add(cmd);
     ctx.cmdHistoryIdx = (ctx.cmdHistoryBuf.count() < ctx.CMD_HISTORY_MAX) ? ctx.cmdHistoryBuf.count() : ctx.CMD_HISTORY_MAX;
     if (DebugJS.LS_AVAILABLE) {
@@ -5895,8 +5882,7 @@ DebugJS.prototype = {
     }
   },
 
-  loadHistory: function() {
-    var ctx = DebugJS.ctx;
+  loadHistory: function(ctx) {
     if (DebugJS.LS_AVAILABLE) {
       var bf = localStorage.getItem('DebugJS-history');
       if (bf != null) {
@@ -5921,18 +5907,17 @@ DebugJS.prototype = {
     return ((cmd == undefined) ? '' : cmd);
   },
 
-  delHistory: function(idx) {
-    var ctx = DebugJS.ctx;
+  delHistory: function(ctx, idx) {
     var cmds = ctx.cmdHistoryBuf.getAll();
     ctx.clearHistory();
     for (var i = 0; i < cmds.length; i++) {
       if (cmds.length < ctx.options.cmdHistoryMax) {
         if (i != (idx - 1)) {
-          ctx.saveHistory(cmds[i]);
+          ctx.saveHistory(ctx, cmds[i]);
         }
       } else if (cmds.length >= ctx.options.cmdHistoryMax) {
         if (i != (idx - 2)) {
-          ctx.saveHistory(cmds[i]);
+          ctx.saveHistory(ctx, cmds[i]);
         }
       }
     }
@@ -6030,13 +6015,12 @@ DebugJS.prototype = {
     var func = args[0];
     var subfnc = args[1];
     var opt = args[2];
-    if ((func == '') || (!ctx.launchFunc(func, subfnc, opt))) {
+    if ((func == '') || (!ctx.launchFunc(ctx, func, subfnc, opt))) {
       DebugJS.printUsage(tbl.usage);
     }
   },
 
-  launchFunc: function(func, subfnc, opt) {
-    var ctx = DebugJS.ctx;
+  launchFunc: function(ctx, func, subfnc, opt) {
     switch (func) {
       case 'measure':
         ctx.enableMeasureMode(ctx);
@@ -6557,8 +6541,6 @@ DebugJS.prototype = {
   },
 
   initExtPanel: function(ctx) {
-    var ctx = DebugJS.ctx;
-
     if (ctx.extPanel == null) {
       var bp = ctx.createSubBasePanel(ctx);
       ctx.extPanel = bp.base;
@@ -8420,7 +8402,7 @@ DebugJS.stopwatch = function() {
   var ctx = DebugJS.ctx;
   if ((ctx.dbgWin == null) || !(ctx.options.useTools)) return false;
   ctx.showDebugWindow();
-  ctx.launchFunc('tool', 'timer', 'cu');
+  ctx.launchFunc(ctx, 'tool', 'timer', 'cu');
   return true;
 };
 
