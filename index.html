@@ -366,9 +366,9 @@ function errorDemo() {
 
 function sleep(ms) {
   ms |= 0;
-  const d1 = new Date();
+  var d1 = (new Date()).getTime();
   while (true) {
-    const d2 = new Date();
+    var d2 = (new Date()).getTime();
     if (d2 - d1 > ms) {
       break;
     }
