@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709070737';
+  this.v = '201709080038';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -665,6 +665,7 @@ DebugJS.prototype = {
   },
 
   initStyles: function(ctx) {
+    var opt = ctx.options;
     var styles = {};
     if (DebugJS.getBrowserType().name == 'Firefox') {
       styles['#' + ctx.id] = {
@@ -681,23 +682,23 @@ DebugJS.prototype = {
       'padding': '0 3px',
       'border': 'initial',
       'background': 'initial',
-      'color': ctx.options.fontColor,
+      'color': opt.fontColor,
       'font-size': ctx.computedFontSize + 'px',
-      'font-family': ctx.options.fontFamily
+      'font-family': opt.fontFamily
     };
 
     styles['#' + ctx.id + ' pre'] = {
       'margin': '0 !important',
-      'color': ctx.options.fontColor + ' !important',
+      'color': opt.fontColor + ' !important',
       'font-size': ctx.computedFontSize + 'px !important',
-      'font-family': ctx.options.fontFamily + ' !important',
+      'font-family': opt.fontFamily + ' !important',
       'white-space': 'pre-wrap !important',
       'word-break': 'break-all !important',
       'overflow': 'visible !important',
     };
 
     styles['.' + ctx.id + '-btn'] = {
-      'color': ctx.options.btnColor,
+      'color': opt.btnColor,
       'text-decoration': 'none'
     };
 
@@ -727,7 +728,7 @@ DebugJS.prototype = {
     styles['.' + ctx.id + '-sys-info'] = {
       'display': 'inline-block',
       'margin-right': '10px',
-      'color': ctx.options.sysInfoColor
+      'color': opt.sysInfoColor
     };
 
     styles['.' + ctx.id + '-resize-corner'] = {
@@ -766,9 +767,9 @@ DebugJS.prototype = {
 
     styles['.' + ctx.id + '-overlay-panel pre'] = {
       'padding': '0 1px',
-      'color': ctx.options.fontColor + ' !important',
+      'color': opt.fontColor + ' !important',
       'font-size': ctx.computedFontSize + 'px !important',
-      'font-family': ctx.options.fontFamily + ' !important'
+      'font-family': opt.fontFamily + ' !important'
     };
 
     styles['.' + ctx.id + '-overlay-panel-full'] = {
@@ -816,14 +817,14 @@ DebugJS.prototype = {
       'outline': 'none !important',
       'box-shadow': 'none !important',
       'background': 'transparent !important',
-      'color': ctx.options.fontColor + ' !important',
+      'color': opt.fontColor + ' !important',
       'font-size': ctx.computedFontSize + 'px !important',
-      'font-family': ctx.options.fontFamily + ' !important'
+      'font-family': opt.fontFamily + ' !important'
     };
 
     styles['.' + ctx.id + '-txt-range'] = {
-      'width': (256 * ctx.options.zoom) + 'px',
-      'height': (15 * ctx.options.zoom) + 'px',
+      'width': (256 * opt.zoom) + 'px',
+      'height': (15 * opt.zoom) + 'px',
       'padding': '0 !important',
       'border': 'none !important',
       'outline': 'none !important',
@@ -843,16 +844,16 @@ DebugJS.prototype = {
       'display': 'inline',
       'margin': '0',
       'line-height': '1em',
-      'color': ctx.options.fontColor,
+      'color': opt.fontColor,
       'font-size': ctx.computedFontSize + 'px',
       'font-weight': 'normal',
-      'font-family': ctx.options.fontFamily
+      'font-family': opt.fontFamily
     };
 
     styles['#' + ctx.id + ' input[type="radio"]'] = {
       'margin': '0 3px',
-      'width': 13 * ctx.options.zoom + 'px',
-      'height': 13 * ctx.options.zoom + 'px'
+      'width': 13 * opt.zoom + 'px',
+      'height': 13 * opt.zoom + 'px'
     };
 
     styles['.' + ctx.id + '-editor'] = {
@@ -867,7 +868,7 @@ DebugJS.prototype = {
       'background': 'transparent !important',
       'color': '#fff !important',
       'font-size': ctx.computedFontSize + 'px !important',
-      'font-family': ctx.options.fontFamily + ' !important',
+      'font-family': opt.fontFamily + ' !important',
       'overflow': 'auto !important',
       'resize': 'none !important'
     };
@@ -892,7 +893,7 @@ DebugJS.prototype = {
       'vartical-align': 'middle !important',
       'background': 'transparent !important',
       'color': '#fff !important',
-      'font-family': ctx.options.fontFamily + ' !important'
+      'font-family': opt.fontFamily + ' !important'
     };
 
     ctx.applyStyles(ctx, styles);
@@ -1044,8 +1045,9 @@ DebugJS.prototype = {
   },
 
   createPanels: function(ctx) {
+    var opt = ctx.options;
     var fontSize = ctx.computedFontSize + 'px';
-    // WinBody
+
     ctx.winBody = document.createElement('div');
     ctx.dbgWin.appendChild(ctx.winBody);
     if (ctx.status & DebugJS.STATE_DRAGGABLE) {
@@ -1053,12 +1055,10 @@ DebugJS.prototype = {
     }
 
     if (!ctx.isAllFeaturesDisabled(ctx)) {
-      // HeadPanel
       ctx.headPanel = document.createElement('div');
       ctx.headPanel.style.padding = '2px';
       ctx.winBody.appendChild(ctx.headPanel);
 
-      // InfoPanel
       ctx.infoPanel = document.createElement('div');
       ctx.infoPanel.style.padding = '0 2px 1px 2px';
       ctx.winBody.appendChild(ctx.infoPanel);
@@ -1066,16 +1066,15 @@ DebugJS.prototype = {
 
     // Main
     ctx.mainPanel = document.createElement('div');
-    if (ctx.options.useLogFilter) {
-      ctx.mainPanel.style.height = (ctx.options.lines + 1) + '.1em';
+    if (opt.useLogFilter) {
+      ctx.mainPanel.style.height = (opt.lines + 1) + '.1em';
     } else {
-      ctx.mainPanel.style.height = ctx.options.lines + '.1em';
+      ctx.mainPanel.style.height = opt.lines + '.1em';
     }
     ctx.mainPanel.style.clear = 'both';
     ctx.winBody.appendChild(ctx.mainPanel);
 
-    // LogHeaderPanel
-    if (ctx.options.useLogFilter) {
+    if (opt.useLogFilter) {
       ctx.logHeaderPanel = document.createElement('div');
       ctx.logHeaderPanel.style.position = 'relative';
       ctx.logHeaderPanel.style.height = fontSize;
@@ -1083,18 +1082,17 @@ DebugJS.prototype = {
       ctx.mainPanel.appendChild(ctx.logHeaderPanel);
     }
 
-    if (ctx.options.useClearButton) {
+    if (opt.useClearButton) {
       ctx.clearBtn = ctx.createButton(ctx, ctx.headPanel, '[CLR]');
       ctx.clearBtn.onclick = DebugJS.ctx.onClr;
     }
 
-    // LogFilter
-    if (ctx.options.useLogFilter) {
+    if (opt.useLogFilter) {
       ctx.createLogFilter(ctx);
     }
 
     // Log
-    if (ctx.options.useLogFilter) {
+    if (opt.useLogFilter) {
       ctx.logPanelHeightAdjust = ' - 1em';
     } else {
       ctx.logPanelHeightAdjust = '';
@@ -1110,11 +1108,10 @@ DebugJS.prototype = {
       return;
     }
 
-    // Clock
-    if (ctx.options.useClock) {
+    if (opt.useClock) {
       ctx.clockLabel = document.createElement('span');
       ctx.clockLabel.style.marginLeft = '2px';
-      ctx.clockLabel.style.color = ctx.options.clockColor;
+      ctx.clockLabel.style.color = opt.clockColor;
       ctx.clockLabel.style.fontSize = fontSize;
       ctx.headPanel.appendChild(ctx.clockLabel);
       ctx.setIntervalL(ctx);
@@ -1122,32 +1119,31 @@ DebugJS.prototype = {
 
     // -- R to L
     // X Button
-    if (ctx.options.togglableShowHide) {
+    if (opt.togglableShowHide) {
       ctx.closeBtn = ctx.createButton(ctx, ctx.headPanel, 'x');
       ctx.closeBtn.style.float = 'right';
       ctx.closeBtn.style.position = 'relative';
       ctx.closeBtn.style.top = '-1px';
       ctx.closeBtn.style.marginRight = '2px';
       ctx.closeBtn.style.color = '#888';
-      ctx.closeBtn.style.fontSize = (18 * ctx.options.zoom) + 'px';
+      ctx.closeBtn.style.fontSize = (18 * opt.zoom) + 'px';
       ctx.closeBtn.onmouseover = new Function('this.style.color=\'#d88\';');
       ctx.closeBtn.onmouseout = new Function('this.style.color=\'#888\';');
       ctx.closeBtn.onclick = new Function('DebugJS.ctx.closeDebugWindow();');
     }
 
-    // WinCtrlButton
     if ((ctx.status & DebugJS.STATE_DYNAMIC) &&
         (ctx.status & DebugJS.STATE_RESIZABLE) &&
-        (ctx.options.useWinCtrlButton)) {
+        (opt.useWinCtrlButton)) {
       ctx.winCtrlBtnPanel = document.createElement('span');
       ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
 
-    if ((ctx.status & DebugJS.STATE_DYNAMIC) && (ctx.options.usePinButton)) {
+    if ((ctx.status & DebugJS.STATE_DYNAMIC) && (opt.usePinButton)) {
       ctx.pinBtn = ctx.createHeaderButton('pinBtn', 'P', 3, fontSize, DebugJS.ctx.toggleDraggable, 'STATE_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
 
-    if (ctx.options.useSuspendLogButton) {
+    if (opt.useSuspendLogButton) {
       ctx.suspendLogBtn = ctx.createHeaderButton('suspendLogBtn', '/', 3, fontSize, DebugJS.ctx.toggleLogSuspend, 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
     }
 
@@ -1155,8 +1151,7 @@ DebugJS.prototype = {
       ctx.preserveLogBtn = ctx.createHeaderButton('preserveLogBtn', '*', 5, fontSize, DebugJS.ctx.toggleLogPreserve, 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
     }
 
-    // Stopwatch
-    if (ctx.options.useStopWatch) {
+    if (opt.useStopWatch) {
       ctx.swPanel = document.createElement('span');
       ctx.swPanel.style.float = 'right';
       ctx.swPanel.style.marginLeft = '3px';
@@ -1171,36 +1166,35 @@ DebugJS.prototype = {
     ctx.extBtn = ctx.createHeaderButton('extBtn', ctx.extBtnLabel, 2, null, DebugJS.ctx.toggleExtPanelMode, 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
     ctx.extBtn.style.display = 'none';
 
-    if (ctx.options.useTools) {
+    if (opt.useTools) {
       ctx.toolsBtn = ctx.createHeaderButton('toolsBtn', 'TOOL', 2, null, DebugJS.ctx.toggleToolsMode, 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
 
-    if (ctx.options.useScriptEditor) {
+    if (opt.useScriptEditor) {
       ctx.scriptBtn = ctx.createHeaderButton('scriptBtn', 'JS', 2, null, DebugJS.ctx.toggleScriptMode, 'STATE_SCRIPT', 'JS_BTN_COLOR', false);
     }
 
-    if (ctx.options.useElementInfo) {
+    if (opt.useElementInfo) {
       ctx.elmInfoBtn = ctx.createHeaderButton('elmInfoBtn', 'DOM', 3, null, DebugJS.ctx.toggleElmInfoMode, 'STATE_ELEMENT_INSPECTING', 'DOM_BTN_COLOR', false);
     }
 
-    if (ctx.options.useHtmlSrc) {
+    if (opt.useHtmlSrc) {
       ctx.htmlSrcBtn = ctx.createHeaderButton('htmlSrcBtn', 'HTM', 3, null, DebugJS.ctx.toggleHtmlSrcMode, 'STATE_HTML_SRC', 'HTML_BTN_COLOR', false);
     }
 
-    if (ctx.options.useSystemInfo) {
+    if (opt.useSystemInfo) {
       ctx.sysInfoBtn = ctx.createHeaderButton('sysInfoBtn', 'SYS', 3, null, DebugJS.ctx.toggleSystemInfoMode, 'STATE_SYSTEM_INFO', 'SYS_BTN_COLOR', false);
     }
 
-    // ScreenMeasureButton
-    if (ctx.options.useScreenMeasure) {
+    if (opt.useScreenMeasure) {
       var measureBtn = document.createElement('span');
       measureBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
       measureBtn.style.display = 'inline-block';
       measureBtn.style.float = 'right';
-      measureBtn.style.marginTop = ((ctx.options.zoom <= 1) ? 1 : (2 * ctx.options.zoom)) + 'px';
+      measureBtn.style.marginTop = ((opt.zoom <= 1) ? 1 : (2 * opt.zoom)) + 'px';
       measureBtn.style.marginLeft = '3px';
-      measureBtn.style.width = (10 * ctx.options.zoom) + 'px';
-      measureBtn.style.height = (7 * ctx.options.zoom) + 'px';
+      measureBtn.style.width = (10 * opt.zoom) + 'px';
+      measureBtn.style.height = (7 * opt.zoom) + 'px';
       measureBtn.innerText = ' ';
       measureBtn.onclick = DebugJS.ctx.toggleMeasureMode;
       measureBtn.onmouseover = new Function('DebugJS.ctx.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BTN_COLOR + '\';');
@@ -1210,8 +1204,7 @@ DebugJS.prototype = {
     }
     // -- R to L
 
-    // LED
-    if (ctx.options.useLed) {
+    if (opt.useLed) {
       ctx.ledPanel = document.createElement('span');
       ctx.ledPanel.className = ctx.id + '-sys-info';
       ctx.ledPanel.style.float = 'right';
@@ -1219,42 +1212,38 @@ DebugJS.prototype = {
       ctx.infoPanel.appendChild(ctx.ledPanel);
     }
 
-    // WindowSize
-    if (ctx.options.useWindowSizeInfo) {
+    if (opt.useWindowSizeInfo) {
       ctx.windowSizeLabel = ctx.createSysInfoLabel();
       ctx.clientSizeLabel = ctx.createSysInfoLabel();
       ctx.bodySizeLabel = ctx.createSysInfoLabel();
       ctx.scrollPosLabel = ctx.createSysInfoLabel();
     }
 
-    // MouseStatus
-    if (ctx.options.useMouseStatusInfo) {
+    if (opt.useMouseStatusInfo) {
       ctx.mousePosLabel = ctx.createSysInfoLabel();
       ctx.mouseClickLabel = ctx.createSysInfoLabel();
     }
 
-    if ((ctx.options.useWindowSizeInfo) || (ctx.options.useMouseStatusInfo)) {
+    if ((opt.useWindowSizeInfo) || (opt.useMouseStatusInfo)) {
       ctx.infoPanel.appendChild(document.createElement('br'));
     }
 
-    // KeyStatus
-    if (ctx.options.useKeyStatusInfo) {
+    if (opt.useKeyStatusInfo) {
       ctx.keyDownLabel = ctx.createSysInfoLabel();
       ctx.keyPressLabel = ctx.createSysInfoLabel();
       ctx.keyUpLabel = ctx.createSysInfoLabel();
     }
 
-    // MessageDisplay
-    if (ctx.options.useMsgDisplay) {
+    if (opt.useMsgDisplay) {
       var msgLabel = ctx.createSysInfoLabel();
-      msgLabel.style.float = ctx.options.msgDisplayPos;
+      msgLabel.style.float = opt.msgDisplayPos;
       msgLabel.style.position = 'absolute';
       msgLabel.style.marginRight = '0';
       msgLabel.style.right = '5px';
       msgLabel.style.border = '0';
       msgLabel.style.padding = '0 1px';
-      msgLabel.style.background = ctx.options.msgDisplayBackground;
-      msgLabel.style.color = ctx.options.fontColor;
+      msgLabel.style.background = opt.msgDisplayBackground;
+      msgLabel.style.color = opt.fontColor;
       msgLabel.style.whiteSpace = 'pre-wrap';
       msgLabel.style.wordBreak = 'break-all';
       msgLabel.style.overflow = 'hidden';
@@ -1262,12 +1251,11 @@ DebugJS.prototype = {
       ctx.msgLabel = msgLabel;
     }
 
-    // CommandLine
-    if (ctx.options.useCommandLine) {
+    if (opt.useCommandLine) {
       ctx.cmdPanel = document.createElement('div');
       ctx.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
       ctx.winBody.appendChild(ctx.cmdPanel);
-      ctx.cmdPanel.innerHTML = '<span style="color:' + ctx.options.promptColor + '">$</span>';
+      ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + '">$</span>';
       var cmdLine = document.createElement('input');
       cmdLine.style.setProperty('min-height', fontSize, 'important');
       cmdLine.style.setProperty('width', 'calc(100% - ' + ctx.computedFontSize + 'px)', 'important');
@@ -1279,9 +1267,9 @@ DebugJS.prototype = {
       cmdLine.style.setProperty('outline', 'none', 'important');
       cmdLine.style.setProperty('box-shadow', 'none', 'important');
       cmdLine.style.setProperty('background', 'transparent', 'important');
-      cmdLine.style.setProperty('color', ctx.options.fontColor, 'important');
+      cmdLine.style.setProperty('color', opt.fontColor, 'important');
       cmdLine.style.setProperty('font-size', fontSize, 'important');
-      cmdLine.style.setProperty('font-family', ctx.options.fontFamily, 'important');
+      cmdLine.style.setProperty('font-family', opt.fontFamily, 'important');
       ctx.cmdPanel.appendChild(cmdLine);
       ctx.cmdLine = cmdLine;
       ctx.initHistory(ctx);
@@ -1337,40 +1325,41 @@ DebugJS.prototype = {
   },
 
   initDebugWindow: function(ctx) {
+    var opt = ctx.options;
     if (ctx.isAllFeaturesDisabled(ctx)) return;
-    if (ctx.options.useLogFilter) ctx.updateLogFilterButtons();
+    if (opt.useLogFilter) ctx.updateLogFilterButtons();
     if (ctx.status & DebugJS.STATE_SHOW_CLOCK) ctx.updateClockLabel();
-    if (ctx.options.useScreenMeasure) ctx.updateMeasureBtn(ctx);
-    if (ctx.options.useSystemInfo) ctx.updateSysInfoBtn(ctx);
-    if (ctx.options.useElementInfo) ctx.updateElmInfoBtn(ctx);
-    if (ctx.options.useHtmlSrc) ctx.updateHtmlSrcBtn(ctx);
-    if (ctx.options.useScriptEditor) ctx.updateScriptBtn(ctx);
-    if (ctx.options.useTools) ctx.updateToolsBtn(ctx);
+    if (opt.useScreenMeasure) ctx.updateMeasureBtn(ctx);
+    if (opt.useSystemInfo) ctx.updateSysInfoBtn(ctx);
+    if (opt.useElementInfo) ctx.updateElmInfoBtn(ctx);
+    if (opt.useHtmlSrc) ctx.updateHtmlSrcBtn(ctx);
+    if (opt.useScriptEditor) ctx.updateScriptBtn(ctx);
+    if (opt.useTools) ctx.updateToolsBtn(ctx);
     if (ctx.extPanel) ctx.updateExtBtn(ctx);
-    if (ctx.options.useStopWatch) {
+    if (opt.useStopWatch) {
       ctx.updateSwBtnPanel(ctx);
       ctx.updateSwPanel();
     }
-    if ((ctx.status & DebugJS.STATE_DYNAMIC) && (ctx.options.usePinButton)) {
+    if ((ctx.status & DebugJS.STATE_DYNAMIC) && (opt.usePinButton)) {
       ctx.updatePinBtn(ctx);
     }
     if (ctx.preserveLogBtn) ctx.updatePreserveLogBtn(ctx);
-    if (ctx.options.useSuspendLogButton) ctx.updateSuspendLogBtn(ctx);
-    if ((ctx.status & DebugJS.STATE_RESIZABLE) && (ctx.options.useWinCtrlButton)) {
+    if (opt.useSuspendLogButton) ctx.updateSuspendLogBtn(ctx);
+    if ((ctx.status & DebugJS.STATE_RESIZABLE) && (opt.useWinCtrlButton)) {
       ctx.updateWinCtrlBtnPanel();
     }
-    if (ctx.options.useMouseStatusInfo) {
+    if (opt.useMouseStatusInfo) {
       ctx.updateMousePosLabel();
       ctx.updateMouseClickLabel();
     }
-    if (ctx.options.useWindowSizeInfo) {
+    if (opt.useWindowSizeInfo) {
       ctx.updateWindowSizeLabel();
       ctx.updateClientSizeLabel();
       ctx.updateBodySizeLabel();
       ctx.updateScrollPosLabel();
     }
-    if (ctx.options.useLed) ctx.updateLedPanel();
-    if (ctx.options.useMsgDisplay) ctx.updateMsgLabel();
+    if (opt.useLed) ctx.updateLedPanel();
+    if (opt.useMsgDisplay) ctx.updateMsgLabel();
   },
 
   createButton: function(ctx, base, label) {
@@ -1540,43 +1529,47 @@ DebugJS.prototype = {
 
   setWindowPosition: function(pos, dbgWinWidth, dbgWinHeight) {
     var ctx = DebugJS.ctx;
+    var opt = ctx.options;
+    var top, left;
     switch (pos) {
       case 'se':
-        ctx.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - ctx.options.adjPosY) + 'px';
-        ctx.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - ctx.options.adjPosX) + 'px';
+        top = (document.documentElement.clientHeight - dbgWinHeight - opt.adjPosY) + 'px';
+        left = (document.documentElement.clientWidth - dbgWinWidth - opt.adjPosX) + 'px';
         break;
       case 'ne':
-        ctx.dbgWin.style.top = ctx.options.adjPosY + 'px';
-        ctx.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - ctx.options.adjPosX) + 'px';
+        top = opt.adjPosY + 'px';
+        left = (document.documentElement.clientWidth - dbgWinWidth - opt.adjPosX) + 'px';
         break;
       case 'c':
-        ctx.dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-        ctx.dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
+        top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+        left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'sw':
-        ctx.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - ctx.options.adjPosY) + 'px';
-        ctx.dbgWin.style.left = ctx.options.adjPosX + 'px';
+        top = (document.documentElement.clientHeight - dbgWinHeight - opt.adjPosY) + 'px';
+        left = opt.adjPosX + 'px';
         break;
       case 'n':
-        ctx.dbgWin.style.top = ctx.options.adjPosY + 'px';
-        ctx.dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
+        top = opt.adjPosY + 'px';
+        left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'e':
-        ctx.dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-        ctx.dbgWin.style.left = (document.documentElement.clientWidth - dbgWinWidth - ctx.options.adjPosX) + 'px';
+        top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+        left = (document.documentElement.clientWidth - dbgWinWidth - opt.adjPosX) + 'px';
         break;
       case 's':
-        ctx.dbgWin.style.top = (document.documentElement.clientHeight - dbgWinHeight - ctx.options.adjPosY) + 'px';
-        ctx.dbgWin.style.left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
+        top = (document.documentElement.clientHeight - dbgWinHeight - opt.adjPosY) + 'px';
+        left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'w':
-        ctx.dbgWin.style.top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-        ctx.dbgWin.style.left = ctx.options.adjPosX + 'px';
+        top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+        left = opt.adjPosX + 'px';
         break;
       default:
-        ctx.dbgWin.style.top = ctx.options.adjPosY + 'px';
-        ctx.dbgWin.style.left = ctx.options.adjPosX + 'px';
+        top = opt.adjPosY + 'px';
+        left = opt.adjPosX + 'px';
     }
+    ctx.dbgWin.style.top = top;
+    ctx.dbgWin.style.left = left;
   },
 
   updateClockLabel: function() {
@@ -1611,10 +1604,10 @@ DebugJS.prototype = {
   },
 
   updateMouseClickLabel: function() {
-    var str = '<span style="color:' + this.mouseClick0 + ';margin-right:2px;">0</span>' +
-              '<span style="color:' + this.mouseClick1 + ';margin-right:2px;">1</span>' +
-              '<span style="color:' + this.mouseClick2 + '">2</span>';
-    this.mouseClickLabel.innerHTML = 'CLICK:' + str;
+    var s = '<span style="color:' + this.mouseClick0 + ';margin-right:2px;">0</span>' +
+            '<span style="color:' + this.mouseClick1 + ';margin-right:2px;">1</span>' +
+            '<span style="color:' + this.mouseClick2 + '">2</span>';
+    this.mouseClickLabel.innerHTML = 'CLICK:' + s;
   },
 
   updateKeyDownLabel: function() {
@@ -1790,13 +1783,14 @@ DebugJS.prototype = {
 
   updateLogFilterButtons: function() {
     var ctx = DebugJS.ctx;
-    ctx.filterBtnAll.style.color = ((ctx.logFilter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? DebugJS.ctx.options.btnColor : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnStd.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_LOG) ? DebugJS.ctx.options.fontColor : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnVrb.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_VRB) ? DebugJS.ctx.options.logColorV : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnDbg.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_DBG) ? DebugJS.ctx.options.logColorD : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnInf.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_INF) ? DebugJS.ctx.options.logColorI : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnWrn.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_WRN) ? DebugJS.ctx.options.logColorW : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnErr.style.color = (ctx.logFilter & DebugJS.LOG_FILTER_ERR) ? DebugJS.ctx.options.logColorE : DebugJS.COLOR_INACTIVE;
+    var filter = ctx.logFilter;
+    ctx.filterBtnAll.style.color = ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? DebugJS.ctx.options.btnColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnStd.style.color = (filter & DebugJS.LOG_FILTER_LOG) ? DebugJS.ctx.options.fontColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnVrb.style.color = (filter & DebugJS.LOG_FILTER_VRB) ? DebugJS.ctx.options.logColorV : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnDbg.style.color = (filter & DebugJS.LOG_FILTER_DBG) ? DebugJS.ctx.options.logColorD : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnInf.style.color = (filter & DebugJS.LOG_FILTER_INF) ? DebugJS.ctx.options.logColorI : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnWrn.style.color = (filter & DebugJS.LOG_FILTER_WRN) ? DebugJS.ctx.options.logColorW : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnErr.style.color = (filter & DebugJS.LOG_FILTER_ERR) ? DebugJS.ctx.options.logColorE : DebugJS.COLOR_INACTIVE;
   },
 
   onchangeLogFilter: function() {
@@ -2107,11 +2101,11 @@ DebugJS.prototype = {
   },
 
   getLogMsgs: function(ctx) {
+    var logs = '';
     var buf = ctx.msgBuf.getAll();
     var cnt = ctx.msgBuf.count();
     var len = buf.length;
     var lineCnt = cnt - len;
-    var logs = '';
     var filter = ctx.filterText;
     var fltCase = ctx.filterCase;
     if (!fltCase) {
@@ -2120,7 +2114,6 @@ DebugJS.prototype = {
     for (var i = 0; i < len; i++) {
       lineCnt++;
       var data = buf[i];
-      if (data == undefined) break;
       var msg = data.msg;
       if (filter != '') {
         try {
@@ -2214,6 +2207,7 @@ DebugJS.prototype = {
 
   keyHandler: function(e) {
     var ctx = DebugJS.ctx;
+    var opt = ctx.options;
     switch (e.keyCode) {
       case 9: // Tab
         if ((ctx.status & DebugJS.STATE_TOOLS) && (DebugJS.ctx.toolsActiveFunction & DebugJS.TOOLS_ACTIVE_FNC_FILE)) {
@@ -2316,11 +2310,11 @@ DebugJS.prototype = {
         }
         break;
 
-      case ctx.options.keyAssign.key:
-        if (((ctx.options.keyAssign.shift == undefined) || (e.shiftKey == ctx.options.keyAssign.shift)) &&
-            ((ctx.options.keyAssign.ctrl == undefined) || (e.ctrlKey == ctx.options.keyAssign.ctrl)) &&
-            ((ctx.options.keyAssign.alt == undefined) || (e.altKey == ctx.options.keyAssign.alt)) &&
-            ((ctx.options.keyAssign.meta == undefined) || (e.metaKey == ctx.options.keyAssign.meta))) {
+      case opt.keyAssign.key:
+        if (((opt.keyAssign.shift == undefined) || (e.shiftKey == opt.keyAssign.shift)) &&
+            ((opt.keyAssign.ctrl == undefined) || (e.ctrlKey == opt.keyAssign.ctrl)) &&
+            ((opt.keyAssign.alt == undefined) || (e.altKey == opt.keyAssign.alt)) &&
+            ((opt.keyAssign.meta == undefined) || (e.metaKey == opt.keyAssign.meta))) {
           if ((ctx.status & DebugJS.STATE_DYNAMIC) && (ctx.isOutOfWindow(ctx))) {
             ctx.resetToOriginalPosition(ctx);
           } else if (ctx.status & DebugJS.STATE_VISIBLE) {
@@ -6617,55 +6611,54 @@ DebugJS.getElmHexColor = function(color) {
 };
 
 DebugJS.RingBuffer = function(len) {
-  if (len == undefined) len = 0;
   this.buffer = new Array(len);
+  this.len = len;
   this.cnt = 0;
 };
 
 DebugJS.RingBuffer.prototype = {
   add: function(data) {
-    var newIdx = (this.cnt % this.buffer.length);
-    this.buffer[newIdx] = data;
+    var idx = this.cnt % this.len;
+    this.buffer[idx] = data;
     this.cnt++;
   },
 
-  set: function(index, data) {
-    this.buffer[index] = data;
+  set: function(idx, data) {
+    this.buffer[idx] = data;
   },
 
-  get: function(index) {
-    if (this.buffer.length < this.cnt) {
-      index += this.cnt;
+  get: function(idx) {
+    if (this.len < this.cnt) {
+      idx += this.cnt;
     }
-    index %= this.buffer.length;
-    return this.buffer[index];
+    idx %= this.len;
+    return this.buffer[idx];
   },
 
   getAll: function() {
-    var allBuf = [];
-    var bufLen = this.buffer.length;
+    var buf = [];
+    var len = this.len;
     var pos = 0;
-    if (this.cnt > bufLen) {
-      pos = (this.cnt % bufLen);
+    if (this.cnt > len) {
+      pos = (this.cnt % len);
     }
-    for (var i = 0; i < bufLen; i++) {
-      if (pos >= bufLen) {
+    for (var i = 0; i < len; i++) {
+      if (pos >= len) {
         pos = 0;
       }
       if (this.buffer[pos] == undefined) {
         break;
       } else {
-        allBuf[i] = this.buffer[pos];
+        buf[i] = this.buffer[pos];
         pos++;
       }
     }
-    return allBuf;
+    return buf;
   },
 
   clear: function() {
-    this.buffer = new Array(this.buffer.length);
+    this.buffer = new Array(this.len);
     this.cnt = 0;
-    return;
   },
 
   count: function() {
@@ -6673,12 +6666,12 @@ DebugJS.RingBuffer.prototype = {
   },
 
   lastIndex: function() {
-    var lastIdx = (this.cnt - 1) % this.buffer.length;
-    return lastIdx;
+    var idx = (this.cnt - 1) % this.len;
+    return idx;
   },
 
   getSize: function() {
-    return this.buffer.length;
+    return this.len;
   }
 };
 
