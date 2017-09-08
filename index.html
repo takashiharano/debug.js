@@ -364,16 +364,6 @@ function errorDemo() {
   fakeError
 }
 
-function sleep(ms) {
-  ms |= 0;
-  var d1 = (new Date()).getTime();
-  while (true) {
-    var d2 = (new Date()).getTime();
-    if (d2 - d1 > ms) {
-      break;
-    }
-  }
-}
 
 function sleepDemo() {
   var ms = document.getElementById('sleep-text').value;
@@ -386,7 +376,7 @@ function doSleep() {
   if (ms > 10) {
     ms -= 10;
   }
-  sleep(ms);
+  dbg.sleep(ms);
   log('sleep end');
 }
 
@@ -481,7 +471,7 @@ function httpDemo() {
     userAgent: userAgent
   };
 
-  dbg.httpRequest(request, httpCallback);
+  dbg.http(request, httpCallback);
 }
 
 function httpCallback(xhr) {
@@ -1088,7 +1078,12 @@ If you want to change the debugger settings, explicitly call for initialization 
     <td>
       Callback function which is called when file load has been completed<br>
 <pre class="eg">Function format:
-function onFileLoaded(file, content, isB64) {}</pre>
+  function onFileLoaded(file, content, isB64) {}
+
+  file   : meta info (MIME Type, Size, Modified date)
+  content: File content
+  isB64  : true = Base64 encoded / false = Binary ArrayBuffer
+</pre>
     </td>
     <td>null</td>
   </tr>
@@ -1222,6 +1217,22 @@ log.t('foo')
     <td class="name">log.clear</td>
     <td></td>
     <td>Clear log message</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.suspend</td>
+    <td></td>
+    <td>
+      Suspend log output <button class="demo-button2" onclick="log.suspend();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">log.resume</td>
+    <td></td>
+    <td>
+      Resume log output <button class="demo-button2" onclick="log.resume();">DEMO</button>
+    </td>
   </tr>
 
   <tr>
@@ -1673,8 +1684,8 @@ max: maximum length
 
   <tr>
     <td class="name">
-      DebugJS.httpRequest<br>
-      <span class="alias">( dbg.httpRequest )</span>
+      DebugJS.http<br>
+      <span class="alias">( dbg.http )</span>
     </td>
     <td>
       arg1: request<br>
@@ -1698,11 +1709,6 @@ max: maximum length
 <pre>
 dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="width:30px" value="500">);<button class="demo-button2" onclick="dbg.wd.start(document.getElementById('wd-demo-val-text').value);">DEMO</button>
 </pre>
-
-<pre>
-sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2 button-red" onclick="sleepDemo();">Sleep</button>
-</pre>
-
     </td>
   </tr>
 
@@ -1715,6 +1721,22 @@ sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="
     </td>
     <td>
       Stop watchdog timer<button class="demo-button2" onclick="dbg.wd.stop();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.sleep<br>
+      <span class="alias">( dbg.sleep )</span>
+    </td>
+    <td>
+      ms
+    </td>
+    <td>
+      Causes the currently executing thread to sleep<br>
+<pre>
+sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2" onclick="sleepDemo();">Sleep</button>
+</pre>
     </td>
   </tr>
 
@@ -2894,7 +2916,7 @@ console.timeEnd('timer3');<br>
   userAgent: '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:550px;">'
 };
 
-dbg.httpRequest(request, httpCallback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
+dbg.http(request, httpCallback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
 
 function httpCallback(xhr) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
