@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709110104';
+  this.v = '201709110734';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -681,6 +681,7 @@ DebugJS.prototype = {
 
   initStyles: function(ctx) {
     var opt = ctx.options;
+    var fontSize = ctx.computedFontSize + 'px';
     var styles = {};
     if (DebugJS.getBrowserType().name == 'Firefox') {
       styles['#' + ctx.id] = {
@@ -698,14 +699,14 @@ DebugJS.prototype = {
       'border': 'initial',
       'background': 'initial',
       'color': opt.fontColor,
-      'font-size': ctx.computedFontSize + 'px',
+      'font-size': fontSize,
       'font-family': opt.fontFamily
     };
 
     styles['#' + ctx.id + ' pre'] = {
       'margin': '0 !important',
       'color': opt.fontColor + ' !important',
-      'font-size': ctx.computedFontSize + 'px !important',
+      'font-size': fontSize + ' !important',
       'font-family': opt.fontFamily + ' !important',
       'white-space': 'pre-wrap !important',
       'word-break': 'break-all !important',
@@ -783,7 +784,7 @@ DebugJS.prototype = {
     styles['.' + ctx.id + '-overlay-panel pre'] = {
       'padding': '0 1px',
       'color': opt.fontColor + ' !important',
-      'font-size': ctx.computedFontSize + 'px !important',
+      'font-size': fontSize + ' !important',
       'font-family': opt.fontFamily + ' !important'
     };
 
@@ -817,7 +818,7 @@ DebugJS.prototype = {
 
     styles['.' + ctx.id + '-showhide-btn'] = {
       'color': '#0a0',
-      'font-size': ctx.computedFontSize + 'px',
+      'font-size': fontSize,
       'font-weight': 'bold'
     };
 
@@ -833,7 +834,7 @@ DebugJS.prototype = {
       'box-shadow': 'none !important',
       'background': 'transparent !important',
       'color': opt.fontColor + ' !important',
-      'font-size': ctx.computedFontSize + 'px !important',
+      'font-size': fontSize + ' !important',
       'font-family': opt.fontFamily + ' !important'
     };
 
@@ -847,7 +848,7 @@ DebugJS.prototype = {
     };
 
     styles['.' + ctx.id + '-txt-tbl td'] = {
-      'font-size': ctx.computedFontSize + 'px !important',
+      'font-size': fontSize + ' !important',
       'line-height': '1em !important',
     };
 
@@ -860,7 +861,7 @@ DebugJS.prototype = {
       'margin': '0',
       'line-height': '1em',
       'color': opt.fontColor,
-      'font-size': ctx.computedFontSize + 'px',
+      'font-size': fontSize,
       'font-weight': 'normal',
       'font-family': opt.fontFamily
     };
@@ -882,7 +883,7 @@ DebugJS.prototype = {
       'outline': 'none !important',
       'background': 'transparent !important',
       'color': '#fff !important',
-      'font-size': ctx.computedFontSize + 'px !important',
+      'font-size': fontSize + ' !important',
       'font-family': opt.fontFamily + ' !important',
       'overflow': 'auto !important',
       'resize': 'none !important'
@@ -1274,14 +1275,14 @@ DebugJS.prototype = {
       ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + '">$</span>';
       var cmdLine = document.createElement('input');
       cmdLine.style.setProperty('min-height', fontSize, 'important');
-      cmdLine.style.setProperty('width', 'calc(100% - ' + ctx.computedFontSize + 'px)', 'important');
+      cmdLine.style.setProperty('width', 'calc(100% - ' + fontSize + ')', 'important');
       cmdLine.style.setProperty('margin', '0 0 0 2px', 'important');
-      cmdLine.style.setProperty('padding', '1px', 'important');
       cmdLine.style.setProperty('border', '0', 'important');
       cmdLine.style.setProperty('border-bottom', 'solid 1px #888', 'important');
       cmdLine.style.setProperty('border-radius', '0', 'important');
       cmdLine.style.setProperty('outline', 'none', 'important');
       cmdLine.style.setProperty('box-shadow', 'none', 'important');
+      cmdLine.style.setProperty('padding', '1px', 'important');
       cmdLine.style.setProperty('background', 'transparent', 'important');
       cmdLine.style.setProperty('color', opt.fontColor, 'important');
       cmdLine.style.setProperty('font-size', fontSize, 'important');
