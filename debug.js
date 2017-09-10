@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709101510';
+  this.v = '201709101823';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -306,10 +306,10 @@ var DebugJS = DebugJS || function() {
     {cmd: 'jquery', fnc: this.cmdJquery, desc: 'Displays what version of jQuery is loaded'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
-    {cmd: 'launch', fnc: this.cmdLaunch, desc: 'Launch a function', usage: 'launch [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
     {cmd: 'load', fnc: this.cmdLoad, desc: 'Load logs into the debug window', usage: 'load json-data'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
+    {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
@@ -6199,17 +6199,6 @@ DebugJS.prototype = {
     }
   },
 
-  cmdLaunch: function(arg, tbl) {
-    var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var func = args[0];
-    var subfnc = args[1];
-    var opt = args[2];
-    if ((func == '') || (!ctx.launchFunc(ctx, func, subfnc, opt))) {
-      DebugJS.printUsage(tbl.usage);
-    }
-  },
-
   cmdLed: function(arg, tbl) {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
@@ -6220,6 +6209,17 @@ DebugJS.prototype = {
 
   cmdMsg: function(arg, tbl) {
     DebugJS.ctx.setMsg(arg);
+  },
+
+  cmdOpen: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var func = args[0];
+    var subfnc = args[1];
+    var opt = args[2];
+    if ((func == '') || (!ctx.launchFunc(ctx, func, subfnc, opt))) {
+      DebugJS.printUsage(tbl.usage);
+    }
   },
 
   cmdP: function(arg, tbl) {
