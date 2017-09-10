@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709102330';
+  this.v = '201709110104';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -369,20 +369,20 @@ DebugJS.STATE_STOPWATCH_RUNNING = 1 << 11;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 12;
 DebugJS.STATE_WD = 1 << 13;
 DebugJS.STATE_EXT_PANEL = 1 << 14;
-DebugJS.UI_ST_VISIBLE = 1 << 1;
-DebugJS.UI_ST_DYNAMIC = 1 << 2;
-DebugJS.UI_ST_SHOW_CLOCK = 1 << 3;
-DebugJS.UI_ST_DRAGGABLE = 1 << 5;
-DebugJS.UI_ST_DRAGGING = 1 << 6;
-DebugJS.UI_ST_RESIZABLE = 1 << 7;
-DebugJS.UI_ST_RESIZING = 1 << 8;
-DebugJS.UI_ST_RESIZING_N = 1 << 9;
-DebugJS.UI_ST_RESIZING_E = 1 << 10;
-DebugJS.UI_ST_RESIZING_S = 1 << 11;
-DebugJS.UI_ST_RESIZING_W = 1 << 12;
+DebugJS.UI_ST_VISIBLE = 1;
+DebugJS.UI_ST_DYNAMIC = 1 << 1;
+DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
+DebugJS.UI_ST_DRAGGABLE = 1 << 3;
+DebugJS.UI_ST_DRAGGING = 1 << 4;
+DebugJS.UI_ST_RESIZABLE = 1 << 5;
+DebugJS.UI_ST_RESIZING = 1 << 6;
+DebugJS.UI_ST_RESIZING_N = 1 << 7;
+DebugJS.UI_ST_RESIZING_E = 1 << 8;
+DebugJS.UI_ST_RESIZING_S = 1 << 9;
+DebugJS.UI_ST_RESIZING_W = 1 << 10;
 DebugJS.UI_ST_RESIZING_ALL = DebugJS.UI_ST_RESIZING | DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E | DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W;
-DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 13;
-DebugJS.UI_ST_NEED_TO_SCROLL = 1 << 14;
+DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 11;
+DebugJS.UI_ST_NEED_TO_SCROLL = 1 << 12;
 DebugJS.TOOL_ST_SW_CU_RUNNING = 1;
 DebugJS.TOOL_ST_SW_CU_END = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RUNNING = 1 << 2;
@@ -576,27 +576,39 @@ DebugJS.prototype = {
       }
     }
 
+    if (ctx.msgBuf.getSize() != ctx.options.bufsize) {
+      ctx.initBuf(ctx);
+    }
+
+    if (ctx.options.mode == 'noui') {
+      // balse
+      ctx.removeEventHandlers(ctx);
+      ctx.init = DebugJS.z2;
+      DebugJS.init = DebugJS.z1;
+      ctx.status |= DebugJS.STATE_INITIALIZED;
+      return false;
+    }
+    if (!ctx.bodyEl) {
+      return false;
+    }
+
+    ctx.initUi(ctx, restoreOption);
+    ctx.initCommandTable(ctx);
+    ctx.status |= DebugJS.STATE_INITIALIZED;
+    ctx.initExtension(ctx);
+    ctx.printLogMsg();
+    return true;
+  },
+
+  initUi: function(ctx, restoreOption) {
+    ctx.initUiStatus(ctx, ctx.options);
     ctx.computedMinW = DebugJS.DBGWIN_MIN_W * ctx.options.zoom;
     ctx.computedMinH = DebugJS.DBGWIN_MIN_H * ctx.options.zoom;
     ctx.computedFontSize = Math.round(ctx.options.fontSize * ctx.options.zoom);
     ctx.computedWidth = Math.round(ctx.options.width * ctx.options.zoom);
 
-    if (!ctx.bodyEl) {
-      return false;
-    }
-
-    ctx.initStatus(ctx, ctx.options);
-    ctx.initCommandTable(ctx);
-
     // Debug Window
-    if (ctx.options.mode == 'noui') {
-      ctx.removeEventHandler(ctx);
-      // balse
-      ctx.init = DebugJS.z2;
-      DebugJS.init = DebugJS.z1;
-      ctx.status |= DebugJS.STATE_INITIALIZED;
-      return false;
-    } else if (ctx.options.target == null) {
+    if (ctx.options.target == null) {
       ctx.id = ctx.DEFAULT_ELM_ID;
       ctx.dbgWin = document.createElement('div');
       ctx.dbgWin.id = ctx.id;
@@ -624,10 +636,6 @@ DebugJS.prototype = {
     ctx.dbgWin.style.fontSize = ctx.computedFontSize + 'px',
     ctx.dbgWin.style.fontFamily = ctx.options.fontFamily;
     ctx.dbgWin.style.opacity = ctx.options.opacity;
-
-    if (ctx.msgBuf.getSize() != ctx.options.bufsize) {
-      ctx.initBuf(ctx);
-    }
 
     ctx.createPanels(ctx);
 
@@ -669,10 +677,6 @@ DebugJS.prototype = {
       ctx.reopenFeatures(ctx, restoreOption.status);
       ctx.restoreDbgWinSize(ctx, restoreOption.sizeStatus);
     }
-    ctx.status |= DebugJS.STATE_INITIALIZED;
-    ctx.initExtension(ctx);
-    ctx.printLogMsg();
-    return true;
   },
 
   initStyles: function(ctx) {
@@ -991,7 +995,7 @@ DebugJS.prototype = {
     }
   },
 
-  removeEventHandler: function(ctx) {
+  removeEventHandlers: function(ctx) {
     window.removeEventListener('keydown', ctx.keyHandler, true);
     window.removeEventListener('mousedown', ctx.onMouseDown, true);
     window.removeEventListener('mousemove', ctx.onMouseMove, true);
@@ -1003,7 +1007,7 @@ DebugJS.prototype = {
     window.removeEventListener('keyup', ctx.onKeyUp, true);
   },
 
-  initStatus: function(ctx, options) {
+  initUiStatus: function(ctx, options) {
     if (ctx.options.target == null) {
       ctx.uiStatus |= DebugJS.UI_ST_DYNAMIC;
       ctx.uiStatus |= DebugJS.UI_ST_DRAGGABLE;
@@ -1350,7 +1354,7 @@ DebugJS.prototype = {
     if (ctx.extPanel) ctx.updateExtBtn(ctx);
     if (opt.useStopWatch) {
       ctx.updateSwBtnPanel(ctx);
-      ctx.updateSwPanel();
+      ctx.updateSwLabel();
     }
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (opt.usePinButton)) {
       ctx.updatePinBtn(ctx);
@@ -1686,7 +1690,7 @@ DebugJS.prototype = {
     ctx.swBtnPanel.innerHTML = btns;
   },
 
-  updateSwPanel: function() {
+  updateSwLabel: function() {
     var ctx = DebugJS.ctx;
     ctx.updateStopWatch();
     if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
@@ -1695,7 +1699,7 @@ DebugJS.prototype = {
       ctx.swLabel.innerHTML = ctx.swElapsedTimeDisp;
     }
     if (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
-      setTimeout(ctx.updateSwPanel, DebugJS.UPDATE_INTERVAL_H);
+      setTimeout(ctx.updateSwLabel, DebugJS.UPDATE_INTERVAL_H);
     }
   },
 
@@ -1922,6 +1926,7 @@ DebugJS.prototype = {
     ctx.saveSizeAndPos(ctx);
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
     ctx.updateWinCtrlBtnPanel();
+    ctx.disableTextSelect(ctx);
   },
 
   doResize: function(ctx, e) {
@@ -1992,6 +1997,7 @@ DebugJS.prototype = {
   endResize: function(ctx) {
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZING_ALL;
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
+    ctx.enableTextSelect(ctx);
   },
 
   resizeMainHeight: function() {
@@ -2096,7 +2102,7 @@ DebugJS.prototype = {
     ctx.status |= DebugJS.STATE_STOPWATCH_RUNNING;
     ctx.swStartTime = (new Date()).getTime() - ctx.swElapsedTime;
     ctx.updateStopWatch();
-    ctx.updateSwPanel();
+    ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
   },
 
@@ -2115,7 +2121,7 @@ DebugJS.prototype = {
     ctx.swStartTime = (new Date()).getTime();
     ctx.swElapsedTime = 0;
     ctx.swElapsedTimeDisp = DebugJS.getTimerStr(ctx.swElapsedTime);
-    ctx.updateSwPanel();
+    ctx.updateSwLabel();
   },
 
   updateStopWatch: function() {
