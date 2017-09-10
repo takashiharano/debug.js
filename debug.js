@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709101823';
+  this.v = '201709101907';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -318,6 +318,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
+    {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch start|stop|reset'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
@@ -6381,6 +6382,16 @@ DebugJS.prototype = {
     } else {
       DebugJS.log.e(name + ' is invalid property name.');
     }
+  },
+
+  cmdSleep: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var ms = args[0];
+    if ((ms == '') || isNaN(ms)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    DebugJS.sleep(ms);
   },
 
   cmdTimeCalc: function(arg) {
