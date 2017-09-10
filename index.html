@@ -702,7 +702,7 @@ If you want to change the debugger settings, explicitly call for initialization 
   <tr>
     <td class="name">lines</td>
     <td>Number of lines to display</td>
-    <td>17</td>
+    <td>18</td>
   </tr>
 
   <tr>
@@ -714,7 +714,7 @@ If you want to change the debugger settings, explicitly call for initialization 
   <tr>
     <td class="name">width</td>
     <td>Debug window size (px)</td>
-    <td>500</td>
+    <td>532</td>
   </tr>
 
   <tr>
@@ -1702,7 +1702,7 @@ max: maximum length
       <span class="alias">( dbg.wd.start )</span>
     </td>
     <td>
-      arg: time interval<span class="annotation">(opt)</span>
+      arg: timeout<span class="annotation">(opt)</span>
     </td>
     <td>
       Start watchdog timer<br>
@@ -1827,6 +1827,26 @@ $ bin 128 8
 
 $ bin (1 + 2) 8
 -&gt; <span style="color:#ccc">0000 00</span>11 (2 bits)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">close</td>
+    <td>
+      function<br>
+   </td>
+    <td>
+      Close a function<br>
+<pre class="eg">
+function
+  measure: Screen Measure
+  sys    : System Info
+  html   : HTML Source Viewer
+  dom    : Element Info
+  js     : JavaScript Editor
+  tool   : Tools
+  ext    : Extension Panel
 </pre>
     </td>
   </tr>
@@ -2033,12 +2053,13 @@ Option:<br>
       Launch a function<br>
 <pre class="eg">
 function
-  sys : System Info
-  html: HTML Source Viewer
-  dom : Element Info
-  js  : JavaScript Editor
-  tool: Tools
-  ext : Extension Panel
+  measure: Screen Measure
+  sys    : System Info
+  html   : HTML Source Viewer
+  dom    : Element Info
+  js     : JavaScript Editor
+  tool   : Tools
+  ext    : Extension Panel
 
 sub function (for tools)
   text: Text Checker
@@ -2253,7 +2274,7 @@ $ uri -d abc%3Adef
     <td class="name">watchdog</td>
     <td>
       arg1: start / stop<br>
-      arg2: time interval (ms)<span class="annotation">(opt)</span>
+      arg2: timeout (ms)<span class="annotation">(opt)</span>
     </td>
     <td>
       Start/Stop Watchdog timer<br>
