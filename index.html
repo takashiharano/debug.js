@@ -433,7 +433,8 @@ function onFileLoaded(file, content, isB64) {
   } else {
     var buf = new Uint8Array(content);
     var b = '';
-    for (var i = 0; i < buf.length; i++) {
+    var len = (buf.length > 128 ? 128 : buf.length);
+    for (var i = 0; i < len; i++) {
       b += ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase()) + ' ';
     }
     log(b);
@@ -2947,9 +2948,9 @@ console.timeEnd('timer3');<br>
   userAgent: '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:550px;">'
 };
 
-dbg.http(request, httpCallback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
+dbg.http(request, callback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
 
-function httpCallback(xhr) {
+function callback(xhr) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
     log.e('cannot load: ' + statusMsg);
