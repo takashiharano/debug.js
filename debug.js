@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709101408';
+  this.v = '201709101425';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3924,6 +3924,7 @@ DebugJS.prototype = {
     ctx.status &= ~DebugJS.STATE_TOOLS;
     DebugJS.delArray(ctx.featStack, DebugJS.STATE_TOOLS);
     ctx.updateToolsBtn(ctx);
+    ctx.switchToolsFunction(0);
   },
 
   updateToolsButtons: function() {
@@ -3938,35 +3939,35 @@ DebugJS.prototype = {
   switchToolsFunction: function(kind, param) {
     var ctx = DebugJS.ctx;
     if (kind & DebugJS.TOOLS_FNC_TIMER) {
-      ctx.enableTimer(param);
+      ctx.openTimer(param);
     } else {
-      ctx.disableTimer();
+      ctx.closeTimer();
     }
     if (kind & DebugJS.TOOLS_FNC_TEXT) {
-      ctx.enableTextChecker();
+      ctx.openTextChecker();
     } else {
-      ctx.disableTextChecker();
+      ctx.closeTextChecker();
     }
     if (kind & DebugJS.TOOLS_FNC_HTML) {
-      ctx.enableHtmlEditor();
+      ctx.openHtmlEditor();
     } else {
-      ctx.disableHtmlEditor();
+      ctx.closeHtmlEditor();
     }
     if (kind & DebugJS.TOOLS_FNC_FILE) {
-      ctx.enableFileLoader(param);
+      ctx.openFileLoader(param);
     } else {
-      ctx.disableFileLoader();
+      ctx.closeFileLoader();
     }
     if (kind & DebugJS.TOOLS_FNC_MEMO) {
-      ctx.enableMemoEditor();
+      ctx.openMemoEditor();
     } else {
-      ctx.disableMemoEditor();
+      ctx.closeMemoEditor();
     }
     if (kind) ctx.toolsActiveFunction = kind;
     ctx.updateToolsButtons();
   },
 
-  enableTimer: function(mode) {
+  openTimer: function(mode) {
     var ctx = DebugJS.ctx;
     if (ctx.timerBasePanel == null) {
       var baseFontSize = ctx.computedFontSize;
@@ -4180,7 +4181,7 @@ DebugJS.prototype = {
     return btn;
   },
 
-  disableTimerUpDwnButton: function() {
+  closeTimerUpDwnButton: function() {
     var ctx = DebugJS.ctx;
     var btn = document.getElementsByClassName(ctx.id + '-timerupdwn');
     for (var i = 0; btn.length; i++) {
@@ -4618,7 +4619,7 @@ DebugJS.prototype = {
     return label;
   },
 
-  disableTimer: function() {
+  closeTimer: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TIMER) &&
         (ctx.timerBasePanel != null)) {
@@ -4637,7 +4638,7 @@ DebugJS.prototype = {
     btn.style.color = DebugJS.COLOR_INACTIVE;
   },
 
-  enableTextChecker: function() {
+  openTextChecker: function() {
     var ctx = DebugJS.ctx;
     if (ctx.txtChkPanel == null) {
       var defaultFontSize = ctx.computedFontSize;
@@ -4797,7 +4798,7 @@ DebugJS.prototype = {
     DebugJS.ctx.txtChk.style.setProperty('font-family', fontFamily, 'important');
   },
 
-  disableTextChecker: function() {
+  closeTextChecker: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TEXT) &&
         (ctx.txtChkPanel != null)) {
@@ -4805,7 +4806,7 @@ DebugJS.prototype = {
     }
   },
 
-  enableFileLoader: function(format) {
+  openFileLoader: function(format) {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize + 'px';
     if (ctx.fileLoaderPanel == null) {
@@ -4923,7 +4924,7 @@ DebugJS.prototype = {
     }
   },
 
-  disableFileLoader: function() {
+  closeFileLoader: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_FILE) &&
         (ctx.fileLoaderPanel != null)) {
@@ -5210,7 +5211,7 @@ DebugJS.prototype = {
     ctx.loadFile();
   },
 
-  enableHtmlEditor: function() {
+  openHtmlEditor: function() {
     var ctx = DebugJS.ctx;
     if (ctx.htmlPrevBasePanel == null) {
       ctx.htmlPrevBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
@@ -5272,7 +5273,7 @@ DebugJS.prototype = {
     DebugJS.ctx.htmlPrevPrevPanel.innerHTML = DebugJS.ctx.htmlPrevBuf;
   },
 
-  disableHtmlEditor: function() {
+  closeHtmlEditor: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_HTML) &&
         (ctx.htmlPrevBasePanel != null)) {
@@ -5280,7 +5281,7 @@ DebugJS.prototype = {
     }
   },
 
-  enableMemoEditor: function() {
+  openMemoEditor: function() {
     var ctx = DebugJS.ctx;
     if (ctx.memoBasePanel == null) {
       ctx.memoBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
@@ -5323,7 +5324,7 @@ DebugJS.prototype = {
     DebugJS.log.s('Saved.');
   },
 
-  disableMemoEditor: function() {
+  closeMemoEditor: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_MEMO) &&
         (ctx.memoBasePanel != null)) {
