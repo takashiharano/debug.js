@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709101500';
+  this.v = '201709101510';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4619,7 +4619,7 @@ DebugJS.prototype = {
       } else {
         dot = ((tm.sss < 500) ? '&nbsp;' : '.');
       }
-      str = style1 + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.options.fontColor + ';font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>' + style2;
+      str = style1 + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>' + style2;
     }
     var label = '<div style="color:' + ctx.options.fontColor + ';font-size:' + fontSize + 'px">' + str + '</div>';
     return label;
