@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709101425';
+  this.v = '201709101500';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3918,13 +3918,13 @@ DebugJS.prototype = {
   },
 
   closeTools: function(ctx) {
-    if ((ctx.toolsPanel != null) && (ctx.toolsPanel.parentNode)) {
+    if (ctx.toolsPanel != null) {
       ctx.removeOverlayPanelFull(ctx.toolsPanel);
+      ctx.switchToolsFunction(0);
     }
     ctx.status &= ~DebugJS.STATE_TOOLS;
     DebugJS.delArray(ctx.featStack, DebugJS.STATE_TOOLS);
     ctx.updateToolsBtn(ctx);
-    ctx.switchToolsFunction(0);
   },
 
   updateToolsButtons: function() {
@@ -3965,6 +3965,12 @@ DebugJS.prototype = {
     }
     if (kind) ctx.toolsActiveFunction = kind;
     ctx.updateToolsButtons();
+  },
+
+  removeToolFuncPanel: function(ctx, panel) {
+    if (panel.parentNode) {
+      ctx.toolsBodyPanel.removeChild(panel);
+    }
   },
 
   openTimer: function(mode) {
@@ -4623,7 +4629,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TIMER) &&
         (ctx.timerBasePanel != null)) {
-      ctx.toolsBodyPanel.removeChild(ctx.timerBasePanel);
+      ctx.removeToolFuncPanel(ctx, ctx.timerBasePanel);
       ctx.setIntervalL(ctx);
     }
   },
@@ -4802,7 +4808,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TEXT) &&
         (ctx.txtChkPanel != null)) {
-      ctx.toolsBodyPanel.removeChild(ctx.txtChkPanel);
+      ctx.removeToolFuncPanel(ctx, ctx.txtChkPanel);
     }
   },
 
@@ -4928,7 +4934,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_FILE) &&
         (ctx.fileLoaderPanel != null)) {
-      ctx.toolsBodyPanel.removeChild(ctx.fileLoaderPanel);
+      ctx.removeToolFuncPanel(ctx, ctx.fileLoaderPanel);
     }
   },
 
@@ -5277,7 +5283,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_HTML) &&
         (ctx.htmlPrevBasePanel != null)) {
-      ctx.toolsBodyPanel.removeChild(ctx.htmlPrevBasePanel);
+      ctx.removeToolFuncPanel(ctx, ctx.htmlPrevBasePanel);
     }
   },
 
@@ -5328,7 +5334,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_MEMO) &&
         (ctx.memoBasePanel != null)) {
-      ctx.toolsBodyPanel.removeChild(ctx.memoBasePanel);
+      ctx.removeToolFuncPanel(ctx, ctx.memoBasePanel);
     }
   },
 
@@ -5417,7 +5423,9 @@ DebugJS.prototype = {
   },
 
   removeOverlayPanelFull: function(panel) {
-    DebugJS.ctx.mainPanel.removeChild(panel);
+    if (panel.parentNode) {
+      DebugJS.ctx.mainPanel.removeChild(panel);
+    }
   },
 
   insertSnippet: function(n) {
@@ -6656,7 +6664,7 @@ DebugJS.prototype = {
 
     var pnls = ctx.extPanels;
     if (pnls.length > 0) {
-      ctx.extBtn.style.display = 'block';
+      if (ctx.extBtn) ctx.extBtn.style.display = 'block';
       for (var i = 0; i < pnls.length; i++) {
         var p = pnls[i];
         if (p.base == null) {
