@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709110734';
+  this.v = '201709112340';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -339,6 +339,7 @@ var DebugJS = DebugJS || function() {
     dumpvallen: {value: 256, restriction: /^[0-9]+$/},
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
     hexdumplimit: {value: 102400, restriction: /^[0-9]+$/},
+    hexdumpfoot: {value: 16, restriction: /^[0-9]+$/},
     wdt: {value: 500, restriction: /^[0-9]+$/}
   };
   this.extBtn = null;
@@ -4981,6 +4982,11 @@ DebugJS.prototype = {
     if (!file) {
       return;
     }
+    if ((file.size == 0) && (file.type == '')) {
+      var html = ctx.getFileInfo(file);
+      ctx.updateFilePreview(html);
+      return;
+    }
 
     ctx.fileLoadProgress.style.width = '0%';
     ctx.fileLoadProgress.textContent = '0%';
@@ -5055,22 +5061,16 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var limit = ctx.properties.prevlimit.value;
     var content = (ctx.fileReader.result == null) ? '' : ctx.fileReader.result;
-    var dt = DebugJS.getDateTime(file.lastModifiedDate);
-    var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
     var preview = '';
-    if (file.size > 0) {
-      if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
+    if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
+      if (file.size > 0) {
         preview = ctx.getContentPreview(file, content);
-      } else {
-        var buf = new Uint8Array(content);
-        preview = '\n' + ctx.getHexDump(buf);
       }
+    } else {
+      var buf = new Uint8Array(content);
+      preview = '\n' + ctx.getHexDump(buf);
     }
-    var html = 'file    : ' + file.name + '\n' +
-    'type    : ' + file.type + '\n' +
-    'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
-    'modified: ' + fileDate + '\n' +
-    preview + '\n';
+    var html = ctx.getFileInfo(file) + preview + '\n';
     if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
       if (file.size <= limit) {
         html += content;
@@ -5085,6 +5085,16 @@ DebugJS.prototype = {
       var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64);
       cb(file, content, isB64);
     }
+  },
+
+  getFileInfo: function(file) {
+    var dt = DebugJS.getDateTime(file.lastModifiedDate);
+    var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
+    var str = 'file    : ' + file.name + '\n' +
+    'type    : ' + file.type + '\n' +
+    'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
+    'modified: ' + fileDate + '\n';
+    return str;
   },
 
   getContentPreview: function(file, contentB64) {
@@ -5122,7 +5132,9 @@ DebugJS.prototype = {
 
   getHexDump: function(buf) {
     var ctx = DebugJS.ctx;
-    var limit = ctx.properties.hexdumplimit.value;
+    var limit = ctx.properties.hexdumplimit.value | 0;
+    var footRow = ctx.properties.hexdumpfoot.value | 0;
+    var footLen = 0x10 * footRow;
     var bLen = buf.length;
     var len = ((bLen > limit) ? limit : bLen);
     if (len % 0x10 != 0) {
@@ -5134,15 +5146,18 @@ DebugJS.prototype = {
       hexDump += ctx.printDump(i, buf, len);
     }
     if (bLen > limit) {
-      if (bLen - limit > 0x10) {
+      if (bLen - limit > (0x10 * footRow)) {
         hexDump += '\n<span style="color:#ccc">...</span>';
       }
       var rem = (bLen % 0x10);
-      var start = (rem == 0 ? (bLen - 0x10) : (bLen - rem));
-      var end = start + 0x10;
+      var start = (rem == 0 ? (bLen - footLen) : ((bLen - rem) - (0x10 * (footRow - 1))));
+      if (start < len) {
+        rem = ((len - start) % 0x10);
+        start = len + rem;
+      }
       hexDump += ctx.dumpAddr(start);
-      for (i = start; i < end; i++) {
-        hexDump += ctx.printDump(i, buf, end);
+      for (i = start; i < bLen; i++) {
+        hexDump += ctx.printDump(i, buf, bLen);
       }
     }
     hexDump += '</pre>';
