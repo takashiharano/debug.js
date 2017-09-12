@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709122154';
+  this.v = '201709130058';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -268,8 +268,8 @@ var DebugJS = DebugJS || function() {
   this.initHeight = 0;
   this.orgSizePos = {w: 0, h: 0, t: 0, l: 0};
   this.expandModeOrg = {w: 0, h: 0, t: 0, l: 0};
-  this.windowExpandHeight = DebugJS.DBGWIN_EXPAND_H * this.DEFAULT_OPTIONS.zoom;
-  this.windowExpandCnt = 0;
+  this.winExpandHeight = DebugJS.DBGWIN_EXPAND_H * this.DEFAULT_OPTIONS.zoom;
+  this.winExpandCnt = 0;
   this.clickedPosX = 0;
   this.clickedPosY = 0;
   this.prevOffsetTop = 0;
@@ -287,7 +287,7 @@ var DebugJS = DebugJS || function() {
   this.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
   this.sizeStatus = 0;
   this.logFilter = DebugJS.LOG_FILTER_ALL;
-  this.toolsActiveFunction = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
+  this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
@@ -394,7 +394,6 @@ DebugJS.TOOL_TIMER_MODE_CLOCK = 0;
 DebugJS.TOOL_TIMER_MODE_SW_CU = 1;
 DebugJS.TOOL_TIMER_MODE_SW_CD = 2;
 DebugJS.TOOL_TIMER_BTN_COLOR = '#eee';
-DebugJS.LOG_FILTER_CASE_BTN_COLOR = '#fff';
 DebugJS.LOG_FILTER_LOG = 0x1;
 DebugJS.LOG_FILTER_VRB = 0x2;
 DebugJS.LOG_FILTER_DBG = 0x4;
@@ -582,7 +581,6 @@ DebugJS.prototype = {
     }
 
     if (ctx.options.mode == 'noui') {
-      // balse
       ctx.removeEventHandlers(ctx);
       ctx.init = DebugJS.z2;
       DebugJS.init = DebugJS.z1;
@@ -644,7 +642,7 @@ DebugJS.prototype = {
     }
 
     ctx.initStyles(ctx);
-    ctx.initDebugWindow(ctx);
+    ctx.initDbgWin(ctx);
     ctx.setupEventHandler(ctx);
 
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
@@ -656,7 +654,7 @@ DebugJS.prototype = {
         // move to initial window position
         ctx.initWidth = ctx.win.offsetWidth;
         ctx.initHeight = ctx.win.offsetHeight;
-        ctx.resetDebugWindowSizePos();
+        ctx.resetDbgWinSizePos();
         ctx.updateWinCtrlBtnPanel();
 
         if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
@@ -671,7 +669,7 @@ DebugJS.prototype = {
       ctx.initWidth = ctx.win.offsetWidth - DebugJS.WIN_ADJUST;
       ctx.initHeight = ctx.win.offsetHeight - DebugJS.WIN_ADJUST;
     }
-    ctx.windowExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.options.zoom;
+    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.options.zoom;
     if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom(ctx);
       ctx.reopenFeatures(ctx, restoreOption.status);
@@ -1078,7 +1076,6 @@ DebugJS.prototype = {
       ctx.winBody.appendChild(ctx.infoPanel);
     }
 
-    // Main
     ctx.mainPanel = document.createElement('div');
     if (opt.useLogFilter) {
       ctx.mainPanel.style.height = (opt.lines + 1) + '.1em';
@@ -1105,7 +1102,6 @@ DebugJS.prototype = {
       ctx.createLogFilter(ctx);
     }
 
-    // Log
     if (opt.useLogFilter) {
       ctx.logPanelHeightAdjust = ' - 1em';
     } else {
@@ -1132,7 +1128,6 @@ DebugJS.prototype = {
     }
 
     // -- R to L
-    // X Button
     if (opt.togglableShowHide) {
       ctx.closeBtn = ctx.createButton(ctx, ctx.headPanel, 'x');
       ctx.closeBtn.style.float = 'right';
@@ -1143,7 +1138,7 @@ DebugJS.prototype = {
       ctx.closeBtn.style.fontSize = (18 * opt.zoom) + 'px';
       ctx.closeBtn.onmouseover = new Function('this.style.color=\'#d88\';');
       ctx.closeBtn.onmouseout = new Function('this.style.color=\'#888\';');
-      ctx.closeBtn.onclick = new Function('DebugJS.ctx.closeDebugWindow();');
+      ctx.closeBtn.onclick = new Function('DebugJS.ctx.closeDbgWin();');
     }
 
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) &&
@@ -1339,7 +1334,7 @@ DebugJS.prototype = {
     }
   },
 
-  initDebugWindow: function(ctx) {
+  initDbgWin: function(ctx) {
     var opt = ctx.options;
     if (ctx.isAllFeaturesDisabled(ctx)) return;
     if (opt.useLogFilter) ctx.updateLogFilterButtons();
@@ -1451,8 +1446,8 @@ DebugJS.prototype = {
     ctx.filterCaseBtn.style.marginLeft = '2px';
     ctx.filterCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
     ctx.filterCaseBtn.style.color = DebugJS.COLOR_INACTIVE;
-    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.LOG_FILTER_CASE_BTN_COLOR;');
-    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.LOG_FILTER_CASE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
+    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.ctx.options.fontColor;');
+    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.ctx.options.fontColor : DebugJS.COLOR_INACTIVE;');
   },
 
   createLogFilterButton: function(type, btnobj, color) {
@@ -1525,11 +1520,11 @@ DebugJS.prototype = {
     } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED) {
       ctx.setWindowSize('max');
     } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED2) {
-      ctx.expandDebugWindow2(ctx);
+      ctx.expandDbgWin2(ctx);
     }
   },
 
-  setWindowPosition: function(pos, dbgWinWidth, dbgWinHeight) {
+  setWinPos: function(pos, dbgWinWidth, dbgWinHeight) {
     var ctx = DebugJS.ctx;
     var opt = ctx.options;
     var top, left;
@@ -1723,15 +1718,15 @@ DebugJS.prototype = {
   updateWinCtrlBtnPanel: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.winCtrlBtnPanel) return;
-    var fn = 'DebugJS.ctx.expandDebugWindow(true);';
+    var fn = 'DebugJS.ctx.expandDbgWin(true);';
     var btn = '&#x25A1;';
     if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
-      fn = 'DebugJS.ctx.restoreDebugWindow();';
+      fn = 'DebugJS.ctx.restoreDbgWin();';
       btn = '&#x2750;';
     }
     fn += 'DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();';
     var b = '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.options.zoom) + 'px;font-size:' + (16 * ctx.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.options.zoom + 'px;margin-right:' + ctx.options.zoom + 'px;font-size:' + (30 * ctx.options.zoom) + 'px;color:#888" onclick="DebugJS.ctx.resetDebugWindowSizePos();DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.options.zoom + 'px;margin-right:' + ctx.options.zoom + 'px;font-size:' + (30 * ctx.options.zoom) + 'px;color:#888" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
     ctx.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -1807,7 +1802,7 @@ DebugJS.prototype = {
   toggleFilterCase: function() {
     var ctx = DebugJS.ctx;
     ctx.filterCase = (ctx.filterCase ? false : true);
-    ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.LOG_FILTER_CASE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.ctx.options.fontColor : DebugJS.COLOR_INACTIVE);
     ctx.onchangeLogFilter();
   },
 
@@ -1896,9 +1891,9 @@ DebugJS.prototype = {
           (el == ctx.filePreviewWrapper) ||
           (el == ctx.toolsPanel) ||
           (el == ctx.extBodyPanel)) {
-        var scrollW = 17;
+        var scrollBarW = 17;
         var rect = el.getBoundingClientRect();
-        var scrollL = rect.left + rect.width - scrollW;
+        var scrollL = rect.left + rect.width - scrollBarW;
         var scrollR = rect.left + rect.width;
         if ((e.clientX >= scrollL) && (e.clientX <= scrollR)) {
           return false;
@@ -2261,7 +2256,7 @@ DebugJS.prototype = {
             kind = DebugJS.TOOLS_FNC_MEMO;
             break;
           case undefined:
-            kind = ctx.toolsActiveFunction;
+            kind = ctx.toolsActiveFnc;
             break;
           default:
             return false;
@@ -2361,7 +2356,6 @@ DebugJS.prototype = {
         break;
       case 'ext':
         f = DebugJS.STATE_EXT_PANEL;
-        break;
     }
     return (ctx.openFeature(ctx, f, subfnc, opt));
   },
@@ -2371,7 +2365,7 @@ DebugJS.prototype = {
     var opt = ctx.options;
     switch (e.keyCode) {
       case 9: // Tab
-        if ((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_FILE)) {
+        if ((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) {
           ctx.switchFileScreen();
           e.preventDefault();
         }
@@ -2396,7 +2390,7 @@ DebugJS.prototype = {
         if (ctx.closeTopFeature(ctx)) {
           break;
         }
-        ctx.hideDebugWindow(ctx);
+        ctx.hideDbgWin(ctx);
         break;
 
       case 38: // Up
@@ -2455,12 +2449,11 @@ DebugJS.prototype = {
           if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWindow(ctx))) {
             ctx.resetToOriginalPosition(ctx);
           } else if (ctx.uiStatus & DebugJS.UI_ST_VISIBLE) {
-            ctx.closeDebugWindow();
+            ctx.closeDbgWin();
           } else {
-            ctx.showDebugWindow();
+            ctx.showDbgWin();
           }
         }
-        break;
     }
   },
 
@@ -2501,7 +2494,7 @@ DebugJS.prototype = {
     ctx.updateBodySizeLabel();
     if (ctx.uiStatus & DebugJS.UI_ST_VISIBLE) {
       if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) {
-        ctx.adjustDebugWindowPos(ctx);
+        ctx.adjustDbgWinPos(ctx);
       } else {
         ctx.adjustWindowMax(ctx);
       }
@@ -2543,7 +2536,7 @@ DebugJS.prototype = {
       case 2:
         ctx.mouseClick2 = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {
-          if (ctx.isOnDebugWindow(posX, posY)) {
+          if (ctx.isOnDbgWin(posX, posY)) {
             if ((DebugJS.el) && (DebugJS.el != ctx.targetElm)) {
               ctx.showElementInfo(DebugJS.el);
               ctx.updateTargetElm(DebugJS.el);
@@ -2553,7 +2546,6 @@ DebugJS.prototype = {
             ctx.captureElm(pointedElm);
           }
         }
-        break;
     }
     if (ctx.options.useMouseStatusInfo) {
       ctx.updateMouseClickLabel();
@@ -2593,7 +2585,6 @@ DebugJS.prototype = {
         break;
       case 2:
         ctx.mouseClick2 = DebugJS.COLOR_INACTIVE;
-        break;
     }
     if (ctx.options.useMouseStatusInfo) {
       ctx.updateMouseClickLabel();
@@ -2614,13 +2605,13 @@ DebugJS.prototype = {
           (sizePos.h > DebugJS.DBGWIN_EXPAND_H2)) {
         ctx.setWindowSize('expand');
       } else {
-        ctx.expandDebugWindow2(ctx);
+        ctx.expandDbgWin2(ctx);
       }
     }
     ctx.focusCmdLine();
   },
 
-  expandDebugWindow: function(auto) {
+  expandDbgWin: function(auto) {
     var ctx = DebugJS.ctx;
     var sizePos = ctx.getSelfSizePos();
     ctx.saveSizeAndPos(ctx);
@@ -2660,10 +2651,10 @@ DebugJS.prototype = {
     }
 
     if ((auto) && (sizePos.w >= DebugJS.DBGWIN_EXPAND_W) && (sizePos.h >= DebugJS.DBGWIN_EXPAND_H)) {
-      ctx.setDebugWindowFull(ctx);
+      ctx.setDbgWinFull(ctx);
     } else {
-      ctx.setDebugWindowPos(t, l);
-      ctx.setDebugWindowSize(w, h);
+      ctx.setDbgWinPos(t, l);
+      ctx.setDbgWinSize(w, h);
       ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
       if ((w == clientW) && (h == clientH)) {
         ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
@@ -2677,7 +2668,7 @@ DebugJS.prototype = {
     }
   },
 
-  expandDebugWindow2: function(ctx) {
+  expandDbgWin2: function(ctx) {
     var sizePos = ctx.getSelfSizePos();
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
@@ -2696,29 +2687,29 @@ DebugJS.prototype = {
       t = clientH - DebugJS.DBGWIN_EXPAND_H2;
     }
     ctx.saveSizeAndPos(ctx);
-    ctx.setDebugWindowPos(t, l);
-    ctx.setDebugWindowSize(w, h);
+    ctx.setDbgWinPos(t, l);
+    ctx.setDbgWinSize(w, h);
     ctx.sizeStatus = DebugJS.SIZE_ST_EXPANDED2;
     ctx.updateWinCtrlBtnPanel();
   },
 
-  setDebugWindowFull: function(ctx) {
+  setDbgWinFull: function(ctx) {
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
     var t = 0, l = 0;
-    ctx.setDebugWindowPos(t, l);
-    ctx.setDebugWindowSize(w, h);
+    ctx.setDbgWinPos(t, l);
+    ctx.setDbgWinSize(w, h);
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
     ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
   },
 
-  setDebugWindowPos: function(t, l) {
+  setDbgWinPos: function(t, l) {
     var ctx = DebugJS.ctx;
     if (t > DebugJS.DBGWIN_POS_NONE) ctx.win.style.top = t + 'px';
     if (l > DebugJS.DBGWIN_POS_NONE) ctx.win.style.left = l + 'px';
   },
 
-  setDebugWindowSize: function(w, h) {
+  setDbgWinSize: function(w, h) {
     var ctx = DebugJS.ctx;
     if (w > 0) ctx.win.style.width = w + 'px';
     if (h > 0) ctx.win.style.height = h + 'px';
@@ -2726,9 +2717,9 @@ DebugJS.prototype = {
     ctx.resizeImgPreview();
   },
 
-  adjustDebugWindowPos: function(ctx) {
+  adjustDbgWinPos: function(ctx) {
     var sizePos = ctx.getSelfSizePos();
-    ctx.setWindowPosition(ctx.options.position, sizePos.w, sizePos.h);
+    ctx.setWinPos(ctx.options.position, sizePos.w, sizePos.h);
   },
 
   adjustWindowMax: function(ctx) {
@@ -2763,33 +2754,33 @@ DebugJS.prototype = {
     ctx.orgSizePos.l = DebugJS.DBGWIN_POS_NONE;
   },
 
-  restoreDebugWindow: function() {
+  restoreDbgWin: function() {
     var ctx = DebugJS.ctx;
     var w = ctx.orgSizePos.w;
     var h = ctx.orgSizePos.h;
     var t = ctx.orgSizePos.t;
     var l = ctx.orgSizePos.l;
-    ctx.setDebugWindowSize(w, h);
-    ctx.setDebugWindowPos(t, l);
+    ctx.setDbgWinSize(w, h);
+    ctx.setDbgWinPos(t, l);
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
     if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) {
-      ctx.adjustDebugWindowPos(ctx);
+      ctx.adjustDbgWinPos(ctx);
     }
   },
 
-  resetDebugWindowSizePos: function() {
+  resetDbgWinSizePos: function() {
     var ctx = DebugJS.ctx;
     var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
     var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
-    ctx.setWindowPosition(ctx.options.position, ctx.initWidth, ctx.initHeight);
-    ctx.setDebugWindowSize(w, h);
+    ctx.setWinPos(ctx.options.position, ctx.initWidth, ctx.initHeight);
+    ctx.setDbgWinSize(w, h);
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     ctx.saveExpandModeOrgSizeAndPos(ctx);
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) {
       ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJUST;
-      ctx.adjustDebugWindowPos(ctx);
+      ctx.adjustDbgWinPos(ctx);
     }
   },
 
@@ -2806,13 +2797,13 @@ DebugJS.prototype = {
 
   resetToOriginalPosition: function(ctx) {
     var sizePos = ctx.getSelfSizePos();
-    ctx.setWindowPosition(ctx.options.position, sizePos.w, sizePos.h);
+    ctx.setWinPos(ctx.options.position, sizePos.w, sizePos.h);
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) {
       ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJUST;
     }
   },
 
-  showDebugWindow: function() {
+  showDbgWin: function() {
     var ctx = DebugJS.ctx;
     if (ctx.win == null) return;
     ctx.win.style.display = 'block';
@@ -2820,7 +2811,7 @@ DebugJS.prototype = {
     if ((ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) ||
        ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWindow(ctx)))) {
       ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJUST;
-      ctx.adjustDebugWindowPos(ctx);
+      ctx.adjustDbgWinPos(ctx);
     } else {
       ctx.adjustWindowMax(ctx);
     }
@@ -2831,18 +2822,18 @@ DebugJS.prototype = {
     ctx.resizeMainHeight();
   },
 
-  showDebugWindowOnError: function(ctx) {
+  showDbgWinOnError: function(ctx) {
     if ((ctx.errStatus) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
       if (((ctx.options.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
           ((ctx.options.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
           ((ctx.options.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG))) {
-        ctx.showDebugWindow();
+        ctx.showDbgWin();
         ctx.errStatus = DebugJS.ERR_STATE_NONE;
       }
     }
   },
 
-  hideDebugWindow: function(ctx) {
+  hideDbgWin: function(ctx) {
     if ((!ctx.options.togglableShowHide) || (!ctx.win)) return;
     ctx.errStatus = DebugJS.ERR_STATE_NONE;
     ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
@@ -2850,7 +2841,7 @@ DebugJS.prototype = {
     ctx.win.style.display = 'none';
   },
 
-  closeDebugWindow: function() {
+  closeDbgWin: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_MEASURE) {
       ctx.closeScreenMeasure(ctx);
@@ -2858,7 +2849,7 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {
       ctx.closeElmInfo(ctx);
     }
-    ctx.hideDebugWindow(ctx);
+    ctx.hideDbgWin(ctx);
   },
 
   focusCmdLine: function() {
@@ -2869,7 +2860,7 @@ DebugJS.prototype = {
   startMeasure: function(ctx, e) {
     var posX = e.clientX;
     var posY = e.clientY;
-    if (ctx.isOnDebugWindow(posX, posY)) return;
+    if (ctx.isOnDbgWin(posX, posY)) return;
 
     ctx.status |= DebugJS.STATE_MEASURING;
     ctx.clickedPosX = posX;
@@ -3437,7 +3428,7 @@ DebugJS.prototype = {
     }
     var posX = e.clientX;
     var posY = e.clientY;
-    if (ctx.isOnDebugWindow(posX, posY)) return;
+    if (ctx.isOnDbgWin(posX, posY)) return;
     var el = document.elementFromPoint(posX, posY);
     if (el != ctx.targetElm) {
       ctx.showElementInfo(el);
@@ -3899,7 +3890,7 @@ DebugJS.prototype = {
     }
     ctx.addOverlayPanelFull(ctx.toolsPanel);
     ctx.resizeImgPreview();
-    ctx.switchToolsFunction(ctx.toolsActiveFunction);
+    ctx.switchToolsFunction(ctx.toolsActiveFnc);
     ctx.updateToolsButtons();
     ctx.updateToolsBtn(ctx);
   },
@@ -3923,7 +3914,7 @@ DebugJS.prototype = {
     btn.style.marginRight = '4px';
     btn.onclick = new Function('DebugJS.ctx.switchToolsFunction(DebugJS.' + state + ');');
     btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.SBPNL_COLOR_ACTIVE;');
-    btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.toolsActiveFunction & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;');
+    btn.onmouseout = new Function('DebugJS.ctx.' + btnobj + '.style.color=(DebugJS.ctx.toolsActiveFnc & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;');
     return btn;
   },
 
@@ -3939,11 +3930,11 @@ DebugJS.prototype = {
 
   updateToolsButtons: function() {
     var ctx = DebugJS.ctx;
-    ctx.timerBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
-    ctx.txtChkBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
-    ctx.htmlPrevBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
-    ctx.fileLoaderBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
-    ctx.memoBtn.style.color = (ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_MEMO) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.timerBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.txtChkBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.htmlPrevBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.fileLoaderBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.memoBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_MEMO) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
   },
 
   switchToolsFunction: function(kind, param) {
@@ -3973,7 +3964,7 @@ DebugJS.prototype = {
     } else {
       ctx.closeMemoEditor();
     }
-    if (kind) ctx.toolsActiveFunction = kind;
+    if (kind) ctx.toolsActiveFnc = kind;
     ctx.updateToolsButtons();
   },
 
@@ -4637,7 +4628,7 @@ DebugJS.prototype = {
 
   closeTimer: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TIMER) &&
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) &&
         (ctx.timerBasePanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.timerBasePanel);
       ctx.setIntervalL(ctx);
@@ -4816,7 +4807,7 @@ DebugJS.prototype = {
 
   closeTextChecker: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_TEXT) &&
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) &&
         (ctx.txtChkPanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.txtChkPanel);
     }
@@ -4942,7 +4933,7 @@ DebugJS.prototype = {
 
   closeFileLoader: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_FILE) &&
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) &&
         (ctx.fileLoaderPanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.fileLoaderPanel);
     }
@@ -5113,7 +5104,7 @@ DebugJS.prototype = {
   resizeImgPreview: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.STATE_TOOLS)) ||
-        (!(DebugJS.ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_FILE)) ||
+        (!(DebugJS.ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) ||
         (!(ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64))) {
       return;
     }
@@ -5305,7 +5296,7 @@ DebugJS.prototype = {
 
   closeHtmlEditor: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_HTML) &&
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) &&
         (ctx.htmlPrevBasePanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.htmlPrevBasePanel);
     }
@@ -5356,7 +5347,7 @@ DebugJS.prototype = {
 
   closeMemoEditor: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFunction & DebugJS.TOOLS_FNC_MEMO) &&
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_MEMO) &&
         (ctx.memoBasePanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.memoBasePanel);
     }
@@ -5595,7 +5586,7 @@ DebugJS.prototype = {
     return {base: base, head: head, body: body};
   },
 
-  isOnDebugWindow: function(x, y) {
+  isOnDbgWin: function(x, y) {
     var sizePos = DebugJS.ctx.getSelfSizePos();
     if (((x >= sizePos.x1) && (x <= sizePos.x2)) && ((y >= sizePos.y1) && (y <= sizePos.y2))) {
       return true;
@@ -5642,7 +5633,7 @@ DebugJS.prototype = {
       ctx.setSelfSizeH(ctx, height);
       sizePos = ctx.getSelfSizePos();
       if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) {
-        ctx.adjustDebugWindowPos(ctx);
+        ctx.adjustDbgWinPos(ctx);
       } else {
         if (sizePos.y2 > clientH) {
           if (clientH < (height + ctx.options.adjPosY)) {
@@ -5657,10 +5648,10 @@ DebugJS.prototype = {
   },
 
   expandHightIfNeeded: function(ctx) {
-    if (ctx.windowExpandCnt == 0) {
-      ctx.expandHight(ctx, ctx.windowExpandHeight);
+    if (ctx.winExpandCnt == 0) {
+      ctx.expandHight(ctx, ctx.winExpandHeight);
     }
-    ctx.windowExpandCnt++;
+    ctx.winExpandCnt++;
   },
 
   resetExpandedHeight: function(ctx) {
@@ -5671,14 +5662,14 @@ DebugJS.prototype = {
       ctx.resizeImgPreview();
       ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
       if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) {
-        ctx.adjustDebugWindowPos(ctx);
+        ctx.adjustDbgWinPos(ctx);
       }
     }
   },
 
   resetExpandedHeightIfNeeded: function(ctx) {
-    ctx.windowExpandCnt--;
-    if (ctx.windowExpandCnt == 0) {
+    ctx.winExpandCnt--;
+    if (ctx.winExpandCnt == 0) {
       ctx.resetExpandedHeight(ctx);
     }
   },
@@ -5896,7 +5887,7 @@ DebugJS.prototype = {
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     ctx.closeAllFeatures(ctx);
-    ctx.toolsActiveFunction = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
+    ctx.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
     if (ctx.options.useSuspendLogButton) {
       ctx.status &= ~DebugJS.STATE_LOG_SUSPENDING;
       ctx.updateSuspendLogBtn(ctx);
@@ -5919,14 +5910,14 @@ DebugJS.prototype = {
         ctx.enableDraggable(ctx);
       }
       if (!ctx.options.mode == 'kiosk') {
-        ctx.resetDebugWindowSizePos();
+        ctx.resetDbgWinSizePos();
         ctx.updateWinCtrlBtnPanel();
       }
     }
     ctx.scriptBuf = '';
     ctx.filterText = '';
     if (ctx.filterInput) ctx.filterInput.value = '';
-    ctx.closeDebugWindow();
+    ctx.closeDbgWin();
     ctx.clearMessage();
     ctx.logFilter = DebugJS.LOG_FILTER_ALL;
     ctx.updateLogFilterButtons();
@@ -6270,7 +6261,7 @@ DebugJS.prototype = {
       case 'nw':
       case 'c':
         var sizePos = ctx.getSelfSizePos();
-        ctx.setWindowPosition(pos, sizePos.w, sizePos.h);
+        ctx.setWinPos(pos, sizePos.w, sizePos.h);
         break;
       default:
         DebugJS.printUsage(tbl.usage);
@@ -6549,7 +6540,7 @@ DebugJS.prototype = {
       case 'min':
         ctx.saveSize(ctx);
         ctx.savePosNone(ctx);
-        ctx.setDebugWindowSize(ctx.computedMinW, ctx.computedMinH);
+        ctx.setDbgWinSize(ctx.computedMinW, ctx.computedMinH);
         ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
         ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
         ctx.sizeStatus = DebugJS.SIZE_ST_MIN;
@@ -6558,34 +6549,33 @@ DebugJS.prototype = {
       case 'normal':
         var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
         var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
-        ctx.setDebugWindowSize(w, h);
+        ctx.setDbgWinSize(w, h);
         ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
         ctx.updateWinCtrlBtnPanel();
         ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
         break;
       case 'max':
-        ctx.expandDebugWindow(false);
+        ctx.expandDbgWin(false);
         ctx.updateWinCtrlBtnPanel();
         break;
       case 'full':
         ctx.saveSizeAndPos(ctx);
-        ctx.setDebugWindowFull(ctx);
+        ctx.setDbgWinFull(ctx);
         ctx.updateWinCtrlBtnPanel();
         break;
       case 'expand':
-        ctx.expandDebugWindow(true);
+        ctx.expandDbgWin(true);
         ctx.updateWinCtrlBtnPanel();
         break;
       case 'restore':
         if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
-          ctx.restoreDebugWindow();
+          ctx.restoreDbgWin();
           ctx.updateWinCtrlBtnPanel();
         }
         break;
       case 'reset':
-        ctx.resetDebugWindowSizePos();
+        ctx.resetDbgWinSizePos();
         ctx.updateWinCtrlBtnPanel();
-        break;
     }
   },
 
@@ -7970,7 +7960,6 @@ DebugJS.getRandom = function(type, min, max) {
       break;
     case DebugJS.RANDOM_TYPE_STR:
       random = DebugJS.getRandomString(min, max);
-      break;
   }
   return random;
 };
@@ -8177,7 +8166,6 @@ DebugJS.browserColoring = function(name) {
       str = '<span style="color:#86c8e8">Safa</span>' +
             '<span style="color:#dd5651">r</span>' +
             '<span style="color:#ececec">i</span>';
-      break;
   }
   return str;
 };
@@ -8374,7 +8362,6 @@ DebugJS.dumpLog = function(type, b64) {
           break;
         case DebugJS.LOG_TYPE_SYS:
           type = 'SYS';
-          break;
       }
       l += data.time + '\t' + type + '\t' + data.msg + '\n';
     }
@@ -8457,15 +8444,15 @@ DebugJS.onError = function(e) {
     }
   }
   DebugJS.log.e(msg);
-  ctx.showDebugWindowOnError(ctx);
+  ctx.showDbgWinOnError(ctx);
 };
 
 DebugJS.show = function() {
-  DebugJS.ctx.showDebugWindow();
+  DebugJS.ctx.showDbgWin();
 };
 
 DebugJS.hide = function() {
-  DebugJS.ctx.closeDebugWindow();
+  DebugJS.ctx.closeDbgWin();
 };
 
 DebugJS.log = function(m) {
@@ -8563,7 +8550,7 @@ DebugJS.time.check = function(timerName) {
 DebugJS.stopwatch = function() {
   var ctx = DebugJS.ctx;
   if ((ctx.win == null) || !(ctx.options.useTools)) return false;
-  ctx.showDebugWindow();
+  ctx.showDbgWin();
   ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'timer', 'cu');
   return true;
 };
@@ -8700,7 +8687,7 @@ DebugJS._init = function() {
 DebugJS.init = function(options) {
   DebugJS.ctx.init(options, null);
 };
-// ---- ---- ---- ----
+
 var log = function(m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log(m);
@@ -8711,7 +8698,7 @@ log.e = function(m) {
   if (ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.e(m);
   ctx.errStatus |= DebugJS.ERR_STATE_LOG;
-  ctx.showDebugWindowOnError(ctx);
+  ctx.showDbgWinOnError(ctx);
 };
 
 log.w = function(m) {
@@ -8801,7 +8788,7 @@ DebugJS.start = function() {
   }
 };
 
-DebugJS.disable = function() {
+DebugJS.balse = function() {
   log = DebugJS.z1;
   log.e = DebugJS.z1;
   log.w = DebugJS.z1;
@@ -8819,6 +8806,7 @@ DebugJS.disable = function() {
   DebugJS.cmd = DebugJS.z2;
   DebugJS.countElements = DebugJS.z2;
   DebugJS.init = DebugJS.z1;
+  DebugJS.dumpLog = DebugJS.z2;
   DebugJS.show = DebugJS.z0;
   DebugJS.hide = DebugJS.z0;
   DebugJS.http = DebugJS.z2;
@@ -8875,5 +8863,5 @@ var time = time || DebugJS.time;
 if (DebugJS.ENABLE) {
   DebugJS.start();
 } else {
-  DebugJS.disable();
+  DebugJS.balse();
 }
