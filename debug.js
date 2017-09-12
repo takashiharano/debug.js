@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709120745';
+  this.v = '201709122154';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -89,7 +89,7 @@ var DebugJS = DebugJS || function() {
   this.bodyEl = null;
   this.bodyCursor = '';
   this.styleEl = null;
-  this.dbgWin = null;
+  this.win = null;
   this.winBody = null;
   this.headPanel = null;
   this.infoPanel = null;
@@ -544,13 +544,13 @@ DebugJS.prototype = {
     ctx.bodyEl = document.body;
     ctx.closeAllFeatures(ctx);
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-      if (ctx.dbgWin != null) {
-        for (var i = ctx.dbgWin.childNodes.length - 1; i >= 0; i--) {
-          ctx.dbgWin.removeChild(ctx.dbgWin.childNodes[i]);
+      if (ctx.win != null) {
+        for (var i = ctx.win.childNodes.length - 1; i >= 0; i--) {
+          ctx.win.removeChild(ctx.win.childNodes[i]);
         }
-        ctx.bodyEl.removeChild(ctx.dbgWin);
+        ctx.bodyEl.removeChild(ctx.win);
         ctx.timerBasePanel = null;
-        ctx.dbgWin = null;
+        ctx.win = null;
       }
     }
 
@@ -610,32 +610,32 @@ DebugJS.prototype = {
 
     if (ctx.options.target == null) {
       ctx.id = ctx.DEFAULT_ELM_ID;
-      ctx.dbgWin = document.createElement('div');
-      ctx.dbgWin.id = ctx.id;
-      ctx.dbgWin.style.position = 'fixed';
-      ctx.dbgWin.style.zIndex = 0x7fffffff;
-      ctx.dbgWin.style.width = ctx.computedWidth + 'px';
-      ctx.dbgWin.style.boxShadow = DebugJS.WIN_SHADOW + 'px ' + DebugJS.WIN_SHADOW + 'px 10px rgba(0,0,0,.3)';
-      ctx.bodyEl.appendChild(ctx.dbgWin);
+      ctx.win = document.createElement('div');
+      ctx.win.id = ctx.id;
+      ctx.win.style.position = 'fixed';
+      ctx.win.style.zIndex = 0x7fffffff;
+      ctx.win.style.width = ctx.computedWidth + 'px';
+      ctx.win.style.boxShadow = DebugJS.WIN_SHADOW + 'px ' + DebugJS.WIN_SHADOW + 'px 10px rgba(0,0,0,.3)';
+      ctx.bodyEl.appendChild(ctx.win);
       if (ctx.options.mode == 'kiosk') {
         ctx.setupKioskMode(ctx);
       }
     } else {
       ctx.id = ctx.options.target;
-      ctx.dbgWin = document.getElementById(ctx.id);
-      ctx.dbgWin.style.position = 'relative';
+      ctx.win = document.getElementById(ctx.id);
+      ctx.win.style.position = 'relative';
     }
-    ctx.dbgWin.style.display = 'block';
-    ctx.dbgWin.style.padding = DebugJS.WIN_BORDER + 'px';
-    ctx.dbgWin.style.lineHeight = '1em';
-    ctx.dbgWin.style.boxSizing = 'content-box';
-    ctx.dbgWin.style.border = ctx.options.border;
-    ctx.dbgWin.style.borderRadius = ctx.options.borderRadius;
-    ctx.dbgWin.style.background = ctx.options.background;
-    ctx.dbgWin.style.color = ctx.options.fontColor;
-    ctx.dbgWin.style.fontSize = ctx.computedFontSize + 'px',
-    ctx.dbgWin.style.fontFamily = ctx.options.fontFamily;
-    ctx.dbgWin.style.opacity = ctx.options.opacity;
+    ctx.win.style.display = 'block';
+    ctx.win.style.padding = DebugJS.WIN_BORDER + 'px';
+    ctx.win.style.lineHeight = '1em';
+    ctx.win.style.boxSizing = 'content-box';
+    ctx.win.style.border = ctx.options.border;
+    ctx.win.style.borderRadius = ctx.options.borderRadius;
+    ctx.win.style.background = ctx.options.background;
+    ctx.win.style.color = ctx.options.fontColor;
+    ctx.win.style.fontSize = ctx.computedFontSize + 'px',
+    ctx.win.style.fontFamily = ctx.options.fontFamily;
+    ctx.win.style.opacity = ctx.options.opacity;
 
     ctx.createPanels(ctx);
 
@@ -654,8 +654,8 @@ DebugJS.prototype = {
         ctx.setupMove(ctx);
 
         // move to initial window position
-        ctx.initWidth = ctx.dbgWin.offsetWidth;
-        ctx.initHeight = ctx.dbgWin.offsetHeight;
+        ctx.initWidth = ctx.win.offsetWidth;
+        ctx.initHeight = ctx.win.offsetHeight;
         ctx.resetDebugWindowSizePos();
         ctx.updateWinCtrlBtnPanel();
 
@@ -664,12 +664,12 @@ DebugJS.prototype = {
         }
 
         if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
-          ctx.dbgWin.style.display = 'none';
+          ctx.win.style.display = 'none';
         }
       }
     } else {
-      ctx.initWidth = ctx.dbgWin.offsetWidth - DebugJS.WIN_ADJUST;
-      ctx.initHeight = ctx.dbgWin.offsetHeight - DebugJS.WIN_ADJUST;
+      ctx.initWidth = ctx.win.offsetWidth - DebugJS.WIN_ADJUST;
+      ctx.initHeight = ctx.win.offsetHeight - DebugJS.WIN_ADJUST;
     }
     ctx.windowExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.options.zoom;
     if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
@@ -715,11 +715,9 @@ DebugJS.prototype = {
 
     styles['.' + ctx.id + '-btn'] = {
       'color': opt.btnColor,
-      'text-decoration': 'none'
     };
 
     styles['.' + ctx.id + '-btn:hover'] = {
-      'text-decoration': 'none',
       'text-shadow': '0 0 3px',
       'cursor': 'pointer'
     };
@@ -1029,10 +1027,10 @@ DebugJS.prototype = {
 
   setupKioskMode: function(ctx) {
     ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
-    ctx.dbgWin.style.top = 0;
-    ctx.dbgWin.style.left = 0;
-    ctx.dbgWin.style.width = document.documentElement.clientWidth + 'px';
-    ctx.dbgWin.style.height = document.documentElement.clientHeight + 'px';
+    ctx.win.style.top = 0;
+    ctx.win.style.left = 0;
+    ctx.win.style.width = document.documentElement.clientWidth + 'px';
+    ctx.win.style.height = document.documentElement.clientHeight + 'px';
 
     ctx.options.togglableShowHide = false;
     ctx.options.usePinButton = false;
@@ -1065,7 +1063,7 @@ DebugJS.prototype = {
     var fontSize = ctx.computedFontSize + 'px';
 
     ctx.winBody = document.createElement('div');
-    ctx.dbgWin.appendChild(ctx.winBody);
+    ctx.win.appendChild(ctx.winBody);
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) {
       ctx.winBody.style.cursor = 'default';
     }
@@ -1274,19 +1272,19 @@ DebugJS.prototype = {
       ctx.winBody.appendChild(ctx.cmdPanel);
       ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + '">$</span>';
       var cmdLine = document.createElement('input');
-      cmdLine.style.setProperty('min-height', fontSize, 'important');
-      cmdLine.style.setProperty('width', 'calc(100% - ' + fontSize + ')', 'important');
-      cmdLine.style.setProperty('margin', '0 0 0 2px', 'important');
-      cmdLine.style.setProperty('border', '0', 'important');
-      cmdLine.style.setProperty('border-bottom', 'solid 1px #888', 'important');
-      cmdLine.style.setProperty('border-radius', '0', 'important');
-      cmdLine.style.setProperty('outline', 'none', 'important');
-      cmdLine.style.setProperty('box-shadow', 'none', 'important');
-      cmdLine.style.setProperty('padding', '1px', 'important');
-      cmdLine.style.setProperty('background', 'transparent', 'important');
-      cmdLine.style.setProperty('color', opt.fontColor, 'important');
-      cmdLine.style.setProperty('font-size', fontSize, 'important');
-      cmdLine.style.setProperty('font-family', opt.fontFamily, 'important');
+      ctx.setStyle(cmdLine, 'min-height', fontSize);
+      ctx.setStyle(cmdLine, 'width', 'calc(100% - ' + fontSize + ')');
+      ctx.setStyle(cmdLine, 'margin', '0 0 0 2px');
+      ctx.setStyle(cmdLine, 'border', '0');
+      ctx.setStyle(cmdLine, 'border-bottom', 'solid 1px #888');
+      ctx.setStyle(cmdLine, 'border-radius', '0');
+      ctx.setStyle(cmdLine, 'outline', 'none');
+      ctx.setStyle(cmdLine, 'box-shadow', 'none');
+      ctx.setStyle(cmdLine, 'padding', '1px');
+      ctx.setStyle(cmdLine, 'background', 'transparent');
+      ctx.setStyle(cmdLine, 'color', opt.fontColor);
+      ctx.setStyle(cmdLine, 'font-size', fontSize);
+      ctx.setStyle(cmdLine, 'font-family', opt.fontFamily);
       ctx.cmdPanel.appendChild(cmdLine);
       ctx.cmdLine = cmdLine;
       ctx.initHistory(ctx);
@@ -1298,44 +1296,44 @@ DebugJS.prototype = {
       var resizeN = ctx.createResizeSideArea('ns-resize', DebugJS.UI_ST_RESIZING_N, '100%', '6px');
       resizeN.style.top = '-3px';
       resizeN.style.left = '0';
-      ctx.dbgWin.appendChild(resizeN);
+      ctx.win.appendChild(resizeN);
     }
 
     var resizeE = ctx.createResizeSideArea('ew-resize', DebugJS.UI_ST_RESIZING_E, '6px', '100%');
     resizeE.style.top = '0';
     resizeE.style.right = '-3px';
-    ctx.dbgWin.appendChild(resizeE);
+    ctx.win.appendChild(resizeE);
 
     var resizeS = ctx.createResizeSideArea('ns-resize', DebugJS.UI_ST_RESIZING_S, '100%', '6px');
     resizeS.style.bottom = '-3px';
     resizeS.style.left = '0';
-    ctx.dbgWin.appendChild(resizeS);
+    ctx.win.appendChild(resizeS);
 
     var resizeSE = ctx.createResizeCornerArea('nwse-resize', DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_E);
     resizeSE.style.bottom = '-3px';
     resizeSE.style.right = '-3px';
-    ctx.dbgWin.appendChild(resizeSE);
+    ctx.win.appendChild(resizeSE);
 
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
       var resizeW = ctx.createResizeSideArea('ew-resize', DebugJS.UI_ST_RESIZING_W, '6px', '100%');
       resizeW.style.top = '0';
       resizeW.style.left = '-3px';
-      ctx.dbgWin.appendChild(resizeW);
+      ctx.win.appendChild(resizeW);
 
       var resizeNW = ctx.createResizeCornerArea('nwse-resize', DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_W);
       resizeNW.style.top = '-3px';
       resizeNW.style.left = '-3px';
-      ctx.dbgWin.appendChild(resizeNW);
+      ctx.win.appendChild(resizeNW);
 
       var resizeNE = ctx.createResizeCornerArea('nesw-resize', DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E);
       resizeNE.style.top = '-3px';
       resizeNE.style.right = '-3px';
-      ctx.dbgWin.appendChild(resizeNE);
+      ctx.win.appendChild(resizeNE);
 
       var resizeSW = ctx.createResizeCornerArea('nesw-resize', DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W);
       resizeSW.style.bottom = '-3px';
       resizeSW.style.left = '-3px';
-      ctx.dbgWin.appendChild(resizeSW);
+      ctx.win.appendChild(resizeSW);
 
       ctx.winBody.ondblclick = ctx.onDbgWinDblClick;
     }
@@ -1416,12 +1414,12 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var textInput = document.createElement('input');
     textInput.className = ctx.id + '-txt-text';
-    textInput.style.setProperty('width', width, 'important');
-    textInput.style.setProperty('min-height', ctx.computedFontSize + 'px', 'important');
-    textInput.style.setProperty('margin', '0', 'important');
-    textInput.style.setProperty('padding', '0', 'important');
-    textInput.style.setProperty('color', color, 'important');
-    if (textAlign) textInput.style.setProperty('text-align', textAlign, 'important');
+    ctx.setStyle(textInput, 'width', width);
+    ctx.setStyle(textInput, 'min-height', ctx.computedFontSize + 'px');
+    ctx.setStyle(textInput, 'margin', '0');
+    ctx.setStyle(textInput, 'padding', '0');
+    ctx.setStyle(textInput, 'color', color);
+    if (textAlign) ctx.setStyle(textInput, 'text-align', textAlign);
     textInput.value = value;
     textInput.oninput = inputHandler;
     return textInput;
@@ -1444,9 +1442,9 @@ DebugJS.prototype = {
 
     var filterWidth = 'calc(100% - 27em)';
     ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.options.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
-    ctx.filterInput.style.setProperty('position', 'relative', 'important');
-    ctx.filterInput.style.setProperty('top', '-2px', 'important');
-    ctx.filterInput.style.setProperty('margin-left', '2px', 'important');
+    ctx.setStyle(ctx.filterInput, 'position', 'relative');
+    ctx.setStyle(ctx.filterInput, 'top', '-2px');
+    ctx.setStyle(ctx.filterInput, 'margin-left', '2px');
     ctx.logHeaderPanel.appendChild(ctx.filterInput);
 
     ctx.filterCaseBtn = ctx.createButton(ctx, ctx.logHeaderPanel, 'Aa');
@@ -1494,12 +1492,12 @@ DebugJS.prototype = {
       ctx.toolsBodyPanel.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
     }
     if (ctx.fileLoaderPanel != null) {
-      ctx.fileInput.style.setProperty('width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)', 'important');
-      ctx.fileInput.style.setProperty('min-height', (20 * ctx.options.zoom) + 'px', 'important');
-      ctx.fileInput.style.setProperty('font-size', fontSize, 'important');
-      ctx.filePreviewWrapper.style.setProperty('height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)', 'important');
-      ctx.filePreviewWrapper.style.setProperty('font-size', fontSize, 'important');
-      ctx.filePreview.style.setProperty('font-size', fontSize, 'important');
+      ctx.setStyle(ctx.fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
+      ctx.setStyle(ctx.fileInput, 'min-height', (20 * ctx.options.zoom) + 'px');
+      ctx.setStyle(ctx.fileInput, 'font-size', fontSize);
+      ctx.setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
+      ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
+      ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
       ctx.fileLoaderFooter.style.height = (ctx.computedFontSize + 3) + 'px';
       ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
       ctx.fileLoadProgress.style.fontSize = (ctx.computedFontSize * 0.8) + 'px';
@@ -1572,8 +1570,8 @@ DebugJS.prototype = {
         top = opt.adjPosY + 'px';
         left = opt.adjPosX + 'px';
     }
-    ctx.dbgWin.style.top = top;
-    ctx.dbgWin.style.left = left;
+    ctx.win.style.top = top;
+    ctx.win.style.left = left;
   },
 
   updateClockLabel: function() {
@@ -1739,7 +1737,7 @@ DebugJS.prototype = {
 
   printLogMsg: function() {
     var ctx = DebugJS.ctx;
-    if (!ctx.dbgWin) return;
+    if (!ctx.win) return;
     var html = '<pre style="padding:0 3px">' + ctx.getLogMsgs(ctx) + '</pre>';
     ctx.logPanel.innerHTML = html;
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
@@ -1837,6 +1835,10 @@ DebugJS.prototype = {
     }
   },
 
+  setStyle: function(el, name, val) {
+    el.style.setProperty(name, val, 'important');
+  },
+
   setIntervalL: function(ctx) {
     if (ctx.clockUpdIntHCnt > 0) {
       ctx.clockUpdIntHCnt--;
@@ -1864,8 +1866,8 @@ DebugJS.prototype = {
     ctx.uiStatus |= DebugJS.UI_ST_DRAGGING;
     ctx.winBody.style.cursor = 'move';
     ctx.disableTextSelect(ctx);
-    ctx.prevOffsetTop = e.clientY - ctx.dbgWin.offsetTop;
-    ctx.prevOffsetLeft = e.clientX - ctx.dbgWin.offsetLeft;
+    ctx.prevOffsetTop = e.clientY - ctx.win.offsetTop;
+    ctx.prevOffsetLeft = e.clientX - ctx.win.offsetLeft;
     if (!document.all) {
        window.getSelection().removeAllRanges();
     }
@@ -1909,8 +1911,8 @@ DebugJS.prototype = {
   doMove: function(ctx, e) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
-    ctx.dbgWin.style.top = e.clientY - ctx.prevOffsetTop + 'px';
-    ctx.dbgWin.style.left = e.clientX - ctx.prevOffsetLeft + 'px';
+    ctx.win.style.top = e.clientY - ctx.prevOffsetTop + 'px';
+    ctx.win.style.left = e.clientX - ctx.prevOffsetLeft + 'px';
   },
 
   endMove: function(ctx) {
@@ -1948,9 +1950,9 @@ DebugJS.prototype = {
         h = ctx.computedMinH;
       } else {
         t = ctx.orgSizePos.t - moveY;
-        ctx.dbgWin.style.top = t + 'px';
+        ctx.win.style.top = t + 'px';
       }
-      ctx.dbgWin.style.height = h + 'px';
+      ctx.win.style.height = h + 'px';
       if (ctx.logPanel.scrollTop != 0) {
         ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
       }
@@ -1963,16 +1965,16 @@ DebugJS.prototype = {
         w = ctx.computedMinW;
       } else {
         l = ctx.orgSizePos.l - moveX;
-        ctx.dbgWin.style.left = l + 'px';
+        ctx.win.style.left = l + 'px';
       }
-      ctx.dbgWin.style.width = w + 'px';
+      ctx.win.style.width = w + 'px';
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_E) {
       moveX = currentX - ctx.clickedPosX;
       w = ctx.orgSizePos.w + moveX;
       if (w < ctx.computedMinW) w = ctx.computedMinW;
-      ctx.dbgWin.style.width = w + 'px';
+      ctx.win.style.width = w + 'px';
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_S) {
@@ -1985,7 +1987,7 @@ DebugJS.prototype = {
       } else if (h < ctx.computedMinH) {
         h = ctx.computedMinH;
       }
-      ctx.dbgWin.style.height = h + 'px';
+      ctx.win.style.height = h + 'px';
       if (ctx.logPanel.scrollTop != 0) {
         ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
       }
@@ -2006,7 +2008,7 @@ DebugJS.prototype = {
     var headPanelH = (ctx.headPanel) ? ctx.headPanel.offsetHeight : 0;
     var infoPanelH = (ctx.infoPanel) ? ctx.infoPanel.offsetHeight : 0;
     var cmdPanelH = (ctx.cmdPanel) ? ctx.cmdPanel.offsetHeight : 0;
-    var mainPanelHeight = ctx.dbgWin.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WIN_ADJUST;
+    var mainPanelHeight = ctx.win.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WIN_ADJUST;
     ctx.mainPanel.style.height = mainPanelHeight + 'px';
   },
 
@@ -2439,8 +2441,8 @@ DebugJS.prototype = {
 
       case 112: // F1
         if ((e.ctrlKey) && (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC)) {
-          ctx.dbgWin.style.top = 0;
-          ctx.dbgWin.style.left = 0;
+          ctx.win.style.top = 0;
+          ctx.win.style.left = 0;
           ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
         }
         break;
@@ -2712,14 +2714,14 @@ DebugJS.prototype = {
 
   setDebugWindowPos: function(t, l) {
     var ctx = DebugJS.ctx;
-    if (t > DebugJS.DBGWIN_POS_NONE) ctx.dbgWin.style.top = t + 'px';
-    if (l > DebugJS.DBGWIN_POS_NONE) ctx.dbgWin.style.left = l + 'px';
+    if (t > DebugJS.DBGWIN_POS_NONE) ctx.win.style.top = t + 'px';
+    if (l > DebugJS.DBGWIN_POS_NONE) ctx.win.style.left = l + 'px';
   },
 
   setDebugWindowSize: function(w, h) {
     var ctx = DebugJS.ctx;
-    if (w > 0) ctx.dbgWin.style.width = w + 'px';
-    if (h > 0) ctx.dbgWin.style.height = h + 'px';
+    if (w > 0) ctx.win.style.width = w + 'px';
+    if (h > 0) ctx.win.style.height = h + 'px';
     ctx.resizeMainHeight();
     ctx.resizeImgPreview();
   },
@@ -2731,10 +2733,10 @@ DebugJS.prototype = {
 
   adjustWindowMax: function(ctx) {
     if ((ctx.sizeStatus == DebugJS.SIZE_ST_FULL_W) || (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH)) {
-      ctx.dbgWin.style.width = document.documentElement.clientWidth + 'px';
+      ctx.win.style.width = document.documentElement.clientWidth + 'px';
     }
     if ((ctx.sizeStatus == DebugJS.SIZE_ST_FULL_H) || (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH)) {
-      ctx.dbgWin.style.height = document.documentElement.clientHeight + 'px';
+      ctx.win.style.height = document.documentElement.clientHeight + 'px';
     }
     ctx.resizeMainHeight();
     ctx.resizeImgPreview();
@@ -2747,13 +2749,13 @@ DebugJS.prototype = {
 
   saveSize: function(ctx) {
     var shadow = (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
-    ctx.orgSizePos.w = (ctx.dbgWin.offsetWidth + DebugJS.WIN_BORDER - shadow);
-    ctx.orgSizePos.h = (ctx.dbgWin.offsetHeight + DebugJS.WIN_BORDER - shadow);
+    ctx.orgSizePos.w = (ctx.win.offsetWidth + DebugJS.WIN_BORDER - shadow);
+    ctx.orgSizePos.h = (ctx.win.offsetHeight + DebugJS.WIN_BORDER - shadow);
   },
 
   savePos: function(ctx) {
-    ctx.orgSizePos.t = ctx.dbgWin.offsetTop;
-    ctx.orgSizePos.l = ctx.dbgWin.offsetLeft;
+    ctx.orgSizePos.t = ctx.win.offsetTop;
+    ctx.orgSizePos.l = ctx.win.offsetLeft;
   },
 
   savePosNone: function(ctx) {
@@ -2796,8 +2798,7 @@ DebugJS.prototype = {
     var sizePos = ctx.getSelfSizePos();
     if ((sizePos.x1 > document.documentElement.clientWidth) ||
         (sizePos.y1 > document.documentElement.clientHeight) ||
-        (sizePos.x2 < 0) ||
-        (sizePos.y2 < 0)) {
+        (sizePos.x2 < 0) || (sizePos.y2 < 0)) {
       ret = true;
     }
     return ret;
@@ -2813,8 +2814,8 @@ DebugJS.prototype = {
 
   showDebugWindow: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.dbgWin == null) return;
-    ctx.dbgWin.style.display = 'block';
+    if (ctx.win == null) return;
+    ctx.win.style.display = 'block';
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     if ((ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) ||
        ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWindow(ctx)))) {
@@ -2842,11 +2843,11 @@ DebugJS.prototype = {
   },
 
   hideDebugWindow: function(ctx) {
-    if ((!ctx.options.togglableShowHide) || (!ctx.dbgWin)) return;
+    if ((!ctx.options.togglableShowHide) || (!ctx.win)) return;
     ctx.errStatus = DebugJS.ERR_STATE_NONE;
     ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
     ctx.uiStatus &= ~DebugJS.UI_ST_VISIBLE;
-    ctx.dbgWin.style.display = 'none';
+    ctx.win.style.display = 'none';
   },
 
   closeDebugWindow: function() {
@@ -2996,10 +2997,10 @@ DebugJS.prototype = {
     ctx.sysTimePanel.style.marginRight = '4px';
     ctx.sysTimePanel.color = '#fff';
     ctx.sysInfoPanel.appendChild(ctx.sysTimePanel);
-    ctx.updateSystemTime();
     ctx.sysInfoPanelBody = document.createElement('div');
     ctx.sysInfoPanelBody.style.top = ctx.computedFontSize;
     ctx.sysInfoPanel.appendChild(ctx.sysInfoPanelBody);
+    ctx.updateSystemTime();
   },
 
   updateSystemTime: function() {
@@ -3583,7 +3584,6 @@ DebugJS.prototype = {
       } else {
         html += '<span style="color:#aaa">' + el.dataset + '</span>';
       }
-
       var htmlSrc = el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['htmlSrc']);
       html += DebugJS.addPropSeparator(ctx) +
@@ -3591,7 +3591,6 @@ DebugJS.prototype = {
     }
     html += '</pre>';
     ctx.elmInfoBodyPanel.innerHTML = html;
-
     ctx.showAllElmNum();
   },
 
@@ -4160,8 +4159,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var txt = document.createElement('input');
     txt.className = ctx.id + '-timer-input';
-    txt.style.setProperty('font-size', fontSize + 'px', 'important');
-    if (width) txt.style.setProperty('width', width, 'important');
+    ctx.setStyle(txt, 'font-size', fontSize + 'px');
+    if (width) ctx.setStyle(txt, 'width', width);
     txt.value = val;
     base.appendChild(txt);
     return txt;
@@ -4668,15 +4667,15 @@ DebugJS.prototype = {
 
       var txtPadding = 4;
       var txtChk = document.createElement('input');
-      txtChk.style.setProperty('width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)', 'important');
-      txtChk.style.setProperty('min-height', (20 * ctx.options.zoom) + 'px', 'important');
-      txtChk.style.setProperty('margin-bottom', '8px', 'important');
-      txtChk.style.setProperty('padding', txtPadding + 'px', 'important');
-      txtChk.style.setProperty('border', '0', 'important');
-      txtChk.style.setProperty('border-radius', '0', 'important');
-      txtChk.style.setProperty('outline', 'none', 'important');
-      txtChk.style.setProperty('font-size', defaultFontSize + 'px', 'important');
-      txtChk.style.setProperty('font-family', defaultFontFamily, 'important');
+      ctx.setStyle(txtChk, 'width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)');
+      ctx.setStyle(txtChk, 'min-height', (20 * ctx.options.zoom) + 'px');
+      ctx.setStyle(txtChk, 'margin-bottom', '8px');
+      ctx.setStyle(txtChk, 'padding', txtPadding + 'px');
+      ctx.setStyle(txtChk, 'border', '0');
+      ctx.setStyle(txtChk, 'border-radius', '0');
+      ctx.setStyle(txtChk, 'outline', 'none');
+      ctx.setStyle(txtChk, 'font-size', defaultFontSize + 'px');
+      ctx.setStyle(txtChk, 'font-family', defaultFontFamily);
       txtChk.value = 'ABCDEFG.abcdefg 12345-67890_!?';
       ctx.txtChkPanel.appendChild(txtChk);
       ctx.txtChk = txtChk;
@@ -4736,7 +4735,7 @@ DebugJS.prototype = {
     ctx.txtChkRangeFgG.value = rgb10.g;
     ctx.txtChkRangeFgB.value = rgb10.b;
     ctx.onChangeFgColor(null);
-    ctx.txtChk.style.setProperty('color', rgb16, 'important');
+    ctx.setStyle(ctx.txtChk, 'color', rgb16);
   },
 
   onChangeBgRGB: function() {
@@ -4747,7 +4746,7 @@ DebugJS.prototype = {
     ctx.txtChkRangeBgG.value = rgb10.g;
     ctx.txtChkRangeBgB.value = rgb10.b;
     ctx.onChangeBgColor(null);
-    ctx.txtChk.style.setProperty('background', rgb16, 'important');
+    ctx.setStyle(ctx.txtChk, 'background', rgb16);
   },
 
   onChangeFgColor: function(callFromRange) {
@@ -4761,7 +4760,7 @@ DebugJS.prototype = {
     ctx.txtChkLabelFgB.innerText = fgB;
     if (callFromRange) {
       ctx.txtChkInputFgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      ctx.txtChk.style.setProperty('color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')', 'important');
+      ctx.setStyle(ctx.txtChk, 'color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')');
     }
   },
 
@@ -4776,7 +4775,7 @@ DebugJS.prototype = {
     ctx.txtChkLabelBgB.innerText = bgB;
     if (callFromRange) {
       ctx.txtChkInputBgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      ctx.txtChk.style.setProperty('background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')', 'important');
+      ctx.setStyle(ctx.txtChk, 'background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')');
     }
   },
 
@@ -4785,7 +4784,7 @@ DebugJS.prototype = {
     var fontSize = ctx.txtChkFontSizeInput.value;
     ctx.txtChkFontSizeRange.value = fontSize;
     ctx.onChangeFontSize(null);
-    ctx.txtChk.style.setProperty('font-size', fontSize + 'px', 'important');
+    ctx.setStyle(ctx.txtChk, 'font-size', fontSize + 'px');
   },
 
   onChangeFontSize: function(callFromRange) {
@@ -4794,14 +4793,14 @@ DebugJS.prototype = {
     fontSize = ctx.txtChkFontSizeRange.value;
     if (callFromRange) {
       ctx.txtChkFontSizeInput.value = fontSize;
-      ctx.txtChk.style.setProperty('font-size', fontSize + 'px', 'important');
+      ctx.setStyle(ctx.txtChk, 'font-size', fontSize + 'px');
     }
   },
 
   onChangeFontWeight: function() {
     var ctx = DebugJS.ctx;
     var fontWeight = ctx.txtChkFontWeightRange.value;
-    ctx.txtChk.style.setProperty('font-weight', fontWeight, 'important');
+    ctx.setStyle(ctx.txtChk, 'font-weight', fontWeight);
     if (fontWeight == 400) {
       fontWeight += '(normal)';
     } else if (fontWeight == 700) {
@@ -4812,7 +4811,7 @@ DebugJS.prototype = {
 
   onChangeFontFamily: function(font) {
     var fontFamily = font.value;
-    DebugJS.ctx.txtChk.style.setProperty('font-family', fontFamily, 'important');
+    DebugJS.ctx.setStyle(DebugJS.ctx.txtChk, 'font-family', fontFamily);
   },
 
   closeTextChecker: function() {
@@ -4831,15 +4830,15 @@ DebugJS.prototype = {
 
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
-      fileInput.style.setProperty('width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)', 'important');
-      fileInput.style.setProperty('min-height', (20 * ctx.options.zoom) + 'px', 'important');
-      fileInput.style.setProperty('margin', '0 0 4px 0', 'important');
-      fileInput.style.setProperty('padding', '1px', 'important');
-      fileInput.style.setProperty('border', '0', 'important');
-      fileInput.style.setProperty('border-radius', '0', 'important');
-      fileInput.style.setProperty('outline', 'none', 'important');
-      fileInput.style.setProperty('font-size', fontSize, 'important');
-      fileInput.style.setProperty('font-family', ctx.options.fontFamily + 'px', 'important');
+      ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
+      ctx.setStyle(fileInput, 'min-height', (20 * ctx.options.zoom) + 'px');
+      ctx.setStyle(fileInput, 'margin', '0 0 4px 0');
+      ctx.setStyle(fileInput, 'padding', '1px');
+      ctx.setStyle(fileInput, 'border', '0');
+      ctx.setStyle(fileInput, 'border-radius', '0');
+      ctx.setStyle(fileInput, 'outline', 'none');
+      ctx.setStyle(fileInput, 'font-size', fontSize);
+      ctx.setStyle(fileInput, 'font-family', ctx.options.fontFamily + 'px');
       fileInput.addEventListener('change', ctx.handleFileSelect, false);
       ctx.fileLoaderPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
@@ -4872,23 +4871,23 @@ DebugJS.prototype = {
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelB64);
 
       ctx.filePreviewWrapper = document.createElement('div');
-      ctx.filePreviewWrapper.style.setProperty('width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)', 'important');
-      ctx.filePreviewWrapper.style.setProperty('height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)', 'important');
-      ctx.filePreviewWrapper.style.setProperty('margin-bottom', '4px', 'important');
-      ctx.filePreviewWrapper.style.setProperty('padding', '2px', 'important');
-      ctx.filePreviewWrapper.style.setProperty('border', '1px dotted #ccc', 'important');
-      ctx.filePreviewWrapper.style.setProperty('font-size', fontSize, 'important');
-      ctx.filePreviewWrapper.style.setProperty('font-family', ctx.options.fontFamily + 'px', 'important');
-      ctx.filePreviewWrapper.style.setProperty('overflow', 'auto', 'important');
+      ctx.setStyle(ctx.filePreviewWrapper, 'width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)');
+      ctx.setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
+      ctx.setStyle(ctx.filePreviewWrapper, 'margin-bottom', '4px');
+      ctx.setStyle(ctx.filePreviewWrapper, 'padding', '2px');
+      ctx.setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
+      ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
+      ctx.setStyle(ctx.filePreviewWrapper, 'font-family', ctx.options.fontFamily + 'px');
+      ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
       ctx.filePreviewWrapper.addEventListener('dragover', ctx.handleDragOver, false);
       ctx.filePreviewWrapper.addEventListener('drop', ctx.handleFileDrop, false);
       ctx.fileLoaderPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
-      ctx.filePreview.style.setProperty('background', 'transparent', 'important');
-      ctx.filePreview.style.setProperty('color', ctx.options.fontColor, 'important');
-      ctx.filePreview.style.setProperty('font-size', fontSize, 'important');
-      ctx.filePreview.style.setProperty('font-family', ctx.options.fontFamily + 'px', 'important');
+      ctx.setStyle(ctx.filePreview, 'background', 'transparent');
+      ctx.setStyle(ctx.filePreview, 'color', ctx.options.fontColor);
+      ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
+      ctx.setStyle(ctx.filePreview, 'font-family', ctx.options.fontFamily + 'px');
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
       ctx.filePreview.innerText = 'Drop a file here';
 
@@ -5264,7 +5263,7 @@ DebugJS.prototype = {
 
       ctx.htmlPrevEditor = document.createElement('textarea');
       ctx.htmlPrevEditor.className = ctx.id + '-editor';
-      ctx.htmlPrevEditor.style.setProperty('height', 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)', 'important');
+      ctx.setStyle(ctx.htmlPrevEditor, 'height', 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)');
       ctx.htmlPrevEditor.onblur = ctx.saveHtmlBuf;
       ctx.htmlPrevEditor.value = ctx.htmlPrevBuf;
       ctx.htmlPrevBasePanel.appendChild(ctx.htmlPrevEditor);
@@ -5328,7 +5327,7 @@ DebugJS.prototype = {
       ctx.memoBasePanel.appendChild(ctx.memoEditorPanel);
       ctx.memoEditor = document.createElement('textarea');
       ctx.memoEditor.className = ctx.id + '-editor';
-      ctx.memoEditor.style.setProperty('height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)', 'important');
+      ctx.setStyle(ctx.memoEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
       ctx.memoBasePanel.appendChild(ctx.memoEditor);
       if (DebugJS.LS_AVAILABLE) {
         ctx.loadMemo(ctx);
@@ -5606,26 +5605,26 @@ DebugJS.prototype = {
 
   getSelfSizePos: function() {
     var ctx = DebugJS.ctx;
-    var rect = ctx.dbgWin.getBoundingClientRect();
+    var rect = ctx.win.getBoundingClientRect();
     var resizeBoxSize = 6;
     var sizePos = {};
-    sizePos.w = ctx.dbgWin.clientWidth;
-    sizePos.h = ctx.dbgWin.clientHeight;
+    sizePos.w = ctx.win.clientWidth;
+    sizePos.h = ctx.win.clientHeight;
     sizePos.x1 = rect.left - resizeBoxSize / 2;
     sizePos.y1 = rect.top - resizeBoxSize / 2;
-    sizePos.x2 = sizePos.x1 + ctx.dbgWin.clientWidth + resizeBoxSize + DebugJS.WIN_BORDER;
-    sizePos.y2 = sizePos.y1 + ctx.dbgWin.clientHeight + resizeBoxSize + DebugJS.WIN_BORDER;
+    sizePos.x2 = sizePos.x1 + ctx.win.clientWidth + resizeBoxSize + DebugJS.WIN_BORDER;
+    sizePos.y2 = sizePos.y1 + ctx.win.clientHeight + resizeBoxSize + DebugJS.WIN_BORDER;
     return sizePos;
   },
 
   setSelfSizeW: function(ctx, w) {
-    ctx.dbgWin.style.width = w + 'px';
+    ctx.win.style.width = w + 'px';
     ctx.resizeMainHeight();
     ctx.resizeImgPreview();
   },
 
   setSelfSizeH: function(ctx, h) {
-    ctx.dbgWin.style.height = h + 'px';
+    ctx.win.style.height = h + 'px';
     ctx.resizeMainHeight();
     ctx.resizeImgPreview();
   },
@@ -5647,10 +5646,10 @@ DebugJS.prototype = {
       } else {
         if (sizePos.y2 > clientH) {
           if (clientH < (height + ctx.options.adjPosY)) {
-            ctx.dbgWin.style.top = 0;
+            ctx.win.style.top = 0;
           } else {
             var top = clientH - height - ctx.options.adjPosY;
-            ctx.dbgWin.style.top = top + 'px';
+            ctx.win.style.top = top + 'px';
           }
         }
       }
@@ -5666,8 +5665,8 @@ DebugJS.prototype = {
 
   resetExpandedHeight: function(ctx) {
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-      ctx.dbgWin.style.width = ctx.expandModeOrg.w + 'px';
-      ctx.dbgWin.style.height = ctx.expandModeOrg.h + 'px';
+      ctx.win.style.width = ctx.expandModeOrg.w + 'px';
+      ctx.win.style.height = ctx.expandModeOrg.h + 'px';
       ctx.resizeMainHeight();
       ctx.resizeImgPreview();
       ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
@@ -5686,10 +5685,10 @@ DebugJS.prototype = {
 
   saveExpandModeOrgSizeAndPos: function(ctx) {
     var shadow = (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
-    ctx.expandModeOrg.w = (ctx.dbgWin.offsetWidth + DebugJS.WIN_BORDER - shadow);
-    ctx.expandModeOrg.h = (ctx.dbgWin.offsetHeight + DebugJS.WIN_BORDER - shadow);
-    ctx.expandModeOrg.t = ctx.dbgWin.offsetTop;
-    ctx.expandModeOrg.l = ctx.dbgWin.offsetLeft;
+    ctx.expandModeOrg.w = (ctx.win.offsetWidth + DebugJS.WIN_BORDER - shadow);
+    ctx.expandModeOrg.h = (ctx.win.offsetHeight + DebugJS.WIN_BORDER - shadow);
+    ctx.expandModeOrg.t = ctx.win.offsetTop;
+    ctx.expandModeOrg.l = ctx.win.offsetLeft;
   },
 
   turnLed: function(pos, active) {
@@ -8563,7 +8562,7 @@ DebugJS.time.check = function(timerName) {
 
 DebugJS.stopwatch = function() {
   var ctx = DebugJS.ctx;
-  if ((ctx.dbgWin == null) || !(ctx.options.useTools)) return false;
+  if ((ctx.win == null) || !(ctx.options.useTools)) return false;
   ctx.showDebugWindow();
   ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'timer', 'cu');
   return true;
