@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709130058';
+  this.v = '201709130740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -156,7 +156,7 @@ var DebugJS = DebugJS || function() {
   this.timerStartStopBtnCdInp = null;
   this.txtChkBtn = null;
   this.txtChkPanel = null;
-  this.txtChk = null;
+  this.txtChkTxt = null;
   this.txtChkFontSizeRange = null;
   this.txtChkFontSizeInput = null;
   this.txtChkFontWeightRange = null;
@@ -175,6 +175,7 @@ var DebugJS = DebugJS || function() {
   this.txtChkLabelBgR = null;
   this.txtChkLabelBgG = null;
   this.txtChkLabelBgB = null;
+  this.txtChkTargetEl = null;
   this.fileLoaderBtn = null;
   this.fileLoaderPanel = null;
   this.fileInput = null;
@@ -4657,19 +4658,21 @@ DebugJS.prototype = {
       ctx.txtChkPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
       var txtPadding = 4;
-      var txtChk = document.createElement('input');
-      ctx.setStyle(txtChk, 'width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)');
-      ctx.setStyle(txtChk, 'min-height', (20 * ctx.options.zoom) + 'px');
-      ctx.setStyle(txtChk, 'margin-bottom', '8px');
-      ctx.setStyle(txtChk, 'padding', txtPadding + 'px');
-      ctx.setStyle(txtChk, 'border', '0');
-      ctx.setStyle(txtChk, 'border-radius', '0');
-      ctx.setStyle(txtChk, 'outline', 'none');
-      ctx.setStyle(txtChk, 'font-size', defaultFontSize + 'px');
-      ctx.setStyle(txtChk, 'font-family', defaultFontFamily);
-      txtChk.value = 'ABCDEFG.abcdefg 12345-67890_!?';
-      ctx.txtChkPanel.appendChild(txtChk);
-      ctx.txtChk = txtChk;
+      var txtChkTxt = document.createElement('input');
+      ctx.setStyle(txtChkTxt, 'width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)');
+      ctx.setStyle(txtChkTxt, 'min-height', (20 * ctx.options.zoom) + 'px');
+      ctx.setStyle(txtChkTxt, 'margin-bottom', '8px');
+      ctx.setStyle(txtChkTxt, 'padding', txtPadding + 'px');
+      ctx.setStyle(txtChkTxt, 'border', '0');
+      ctx.setStyle(txtChkTxt, 'border-radius', '0');
+      ctx.setStyle(txtChkTxt, 'outline', 'none');
+      ctx.setStyle(txtChkTxt, 'font-size', defaultFontSize + 'px');
+      ctx.setStyle(txtChkTxt, 'font-family', defaultFontFamily);
+      txtChkTxt.value = 'ABCDEFG.abcdefg 12345-67890_!?';
+      txtChkTxt.onmousedown = ctx.onTxtChkMouseDown;
+      ctx.txtChkPanel.appendChild(txtChkTxt);
+      ctx.txtChkTxt = txtChkTxt;
+      ctx.txtChkTargetEl = txtChkTxt;
 
       ctx.txtChkCtrl = document.createElement('div');
       ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
@@ -4718,6 +4721,15 @@ DebugJS.prototype = {
     }
   },
 
+  onTxtChkMouseDown: function(e) {
+    if (e.button == 2) {
+      if (DebugJS.el) {
+        DebugJS.ctx.txtChkTargetEl = DebugJS.el;
+       DebugJS.ctx.txtChkTxt.value = 'Target el has been changed to ' + Object.prototype.toString.call(DebugJS.el);
+      }
+    }
+  },
+
   onChangeFgRGB: function() {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputFgRGB.value;
@@ -4726,7 +4738,7 @@ DebugJS.prototype = {
     ctx.txtChkRangeFgG.value = rgb10.g;
     ctx.txtChkRangeFgB.value = rgb10.b;
     ctx.onChangeFgColor(null);
-    ctx.setStyle(ctx.txtChk, 'color', rgb16);
+    ctx.setStyle(ctx.txtChkTargetEl, 'color', rgb16);
   },
 
   onChangeBgRGB: function() {
@@ -4737,7 +4749,7 @@ DebugJS.prototype = {
     ctx.txtChkRangeBgG.value = rgb10.g;
     ctx.txtChkRangeBgB.value = rgb10.b;
     ctx.onChangeBgColor(null);
-    ctx.setStyle(ctx.txtChk, 'background', rgb16);
+    ctx.setStyle(ctx.txtChkTargetEl, 'background', rgb16);
   },
 
   onChangeFgColor: function(callFromRange) {
@@ -4751,7 +4763,7 @@ DebugJS.prototype = {
     ctx.txtChkLabelFgB.innerText = fgB;
     if (callFromRange) {
       ctx.txtChkInputFgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      ctx.setStyle(ctx.txtChk, 'color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')');
+      ctx.setStyle(ctx.txtChkTargetEl, 'color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')');
     }
   },
 
@@ -4766,7 +4778,7 @@ DebugJS.prototype = {
     ctx.txtChkLabelBgB.innerText = bgB;
     if (callFromRange) {
       ctx.txtChkInputBgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      ctx.setStyle(ctx.txtChk, 'background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')');
+      ctx.setStyle(ctx.txtChkTargetEl, 'background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')');
     }
   },
 
@@ -4775,7 +4787,7 @@ DebugJS.prototype = {
     var fontSize = ctx.txtChkFontSizeInput.value;
     ctx.txtChkFontSizeRange.value = fontSize;
     ctx.onChangeFontSize(null);
-    ctx.setStyle(ctx.txtChk, 'font-size', fontSize + 'px');
+    ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + 'px');
   },
 
   onChangeFontSize: function(callFromRange) {
@@ -4784,14 +4796,14 @@ DebugJS.prototype = {
     fontSize = ctx.txtChkFontSizeRange.value;
     if (callFromRange) {
       ctx.txtChkFontSizeInput.value = fontSize;
-      ctx.setStyle(ctx.txtChk, 'font-size', fontSize + 'px');
+      ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + 'px');
     }
   },
 
   onChangeFontWeight: function() {
     var ctx = DebugJS.ctx;
     var fontWeight = ctx.txtChkFontWeightRange.value;
-    ctx.setStyle(ctx.txtChk, 'font-weight', fontWeight);
+    ctx.setStyle(ctx.txtChkTargetEl, 'font-weight', fontWeight);
     if (fontWeight == 400) {
       fontWeight += '(normal)';
     } else if (fontWeight == 700) {
@@ -4802,7 +4814,7 @@ DebugJS.prototype = {
 
   onChangeFontFamily: function(font) {
     var fontFamily = font.value;
-    DebugJS.ctx.setStyle(DebugJS.ctx.txtChk, 'font-family', fontFamily);
+    DebugJS.ctx.setStyle(DebugJS.ctx.txtChkTargetEl, 'font-family', fontFamily);
   },
 
   closeTextChecker: function() {
