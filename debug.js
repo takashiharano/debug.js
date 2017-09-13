@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709132158';
+  this.v = '201709140110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8656,8 +8656,69 @@ DebugJS.stopwatch.log = function(msg) {
 };
 
 DebugJS.cmd = function(c, echo) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.ctx._execCmd(c, echo);
+};
+
+DebugJS.bat = function(b) {
+  b = b.replace(/(\r?\n|\r)/g, '\n');
+  DebugJS.bat.ctrl = {echo: true};
+  DebugJS.bat.cmds = b.split('\n');
+  DebugJS.bat.idx = 0;
+  if (DebugJS.bat.tid != 0) {
+    clearTimeout(DebugJS.bat.tid);
+  }
+  DebugJS.bat.exec();
+};
+
+DebugJS.bat.cmds = [];
+DebugJS.bat.ctrl = {echo: true};
+DebugJS.bat.idx = 0;
+DebugJS.bat.tid = 0;
+
+DebugJS.bat.exec = function() {
+  DebugJS.bat.tid = 0;
+  for (; DebugJS.bat.idx < DebugJS.bat.cmds.length; DebugJS.bat.idx++) {
+    var c = DebugJS.bat.cmds[DebugJS.bat.idx];
+    switch (DebugJS.bat.prepro(c)) {
+      case 1:
+        continue;
+      case 2:
+        DebugJS.bat.idx++;
+        return;
+    }
+    DebugJS.ctx._execCmd(c, DebugJS.bat.ctrl.echo);
+  }
+};
+
+DebugJS.bat.prepro = function(cmd) {
+  var c = DebugJS.omitLeadingWhiteSpace(cmd);
+  if (c == '') {
+    return 1;
+  }
+  if (cmd.match(/^\s*#/)) {
+    return 1;
+  }
+  if (c == '@echo off') {
+    DebugJS.bat.ctrl.echo = false;
+    return 1;
+  } else if (c == '@echo on') {
+    DebugJS.bat.ctrl.echo = true;
+    return 1;
+  }
+  var a = DebugJS.splitArgs(cmd);
+  if (a[0] == 'wait') {
+    var w = a[1] | 0;
+    DebugJS.bat.preproEcho(cmd);
+    DebugJS.bat.tid = setTimeout(DebugJS.bat.exec, w);
+    return 2;
+  }
+  return 0;
+};
+
+DebugJS.bat.preproEcho = function(c) {
+  if (DebugJS.bat.ctrl.echo) {
+    DebugJS.log.s(c);
+  }
 };
 
 DebugJS.led = function(v) {
@@ -8863,6 +8924,7 @@ DebugJS.balse = function() {
   log.suspend = DebugJS.z0;
   log.resume = DebugJS.z0;
   DebugJS.cmd = DebugJS.z2;
+  DebugJS.bat = DebugJS.z1;
   DebugJS.countElements = DebugJS.z2;
   DebugJS.init = DebugJS.z1;
   DebugJS.dumpLog = DebugJS.z2;

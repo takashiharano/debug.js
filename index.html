@@ -75,6 +75,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .inline-text-input{border:none !important;border-bottom:1px solid #aaa !important;border-radius:0 !important;background:transparent;color:#fff !important;font-family:Consolas;}
 .inline-text-input-wh{color:#333 !important;}
 .demo-textarea{width:500px;height:50px;border:1px solid #666;background:transparent;color:#fff;font-size:14px;font-family:Consolas;}
+.demo-textarea2{width:500px;height:150px;border:1px solid #666;background:transparent;color:#333;font-size:14px;font-family:Consolas;}
 .overlay-root{position:relative;}
 .overlay{position:absolute;top:0;left:0;white-space:nowrap;}
 .overlay-val{padding:2px;border-radius:4px;background:rgba(0,102,238,0.5); }
@@ -446,6 +447,11 @@ function onWatchdogTimeout(elapsed) {
   dbg.show();
   wdtCount++;
   log('count = ' + wdtCount + ' / elapsed = ' + elapsed);
+}
+
+function batDemo() {
+  var cmds = document.getElementById("bat-demo-text").value;
+  dbg.bat(cmds);
 }
 
 function httpDemo() {
@@ -1374,6 +1380,42 @@ dbg.countElements('tagName');
     <td>
       Command execution<br>
       echo: true = print command line / false = silent<span class="annotation">(default)</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.bat<br>
+      <span class="alias">( dbg.bat )</span>
+    </td>
+    <td>
+      commands
+    </td>
+    <td>
+      Multi command execution<br><br>
+<pre class="eg">
+&lt;textarea id="commands"&gt;
+<textarea id="bat-demo-text" class="demo-textarea2">
+# comment
+rgb 0 191 255
+
+@echo off
+echo Hello, World!
+
+@echo on
+base64 -e ABC
+10:00 + 17:00
+
+led 0xf
+wait 500
+led 0xf0
+wait 500
+led 0
+</textarea>
+
+var commands = document.getElementById('commands').value;
+dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</button>
+</pre>
     </td>
   </tr>
 
