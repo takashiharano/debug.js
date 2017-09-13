@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709130740';
+  this.v = '201709132031';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -297,6 +297,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'dumplog', fnc: this.cmdDumpLog, desc: 'Dump the log buffer'},
+    {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'execute', fnc: this.cmdExecute, desc: 'Execute the edited JavaScript code'},
     {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -542,7 +543,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var keepStatus = ((restoreOption && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) ? true : false);
     ctx.bodyEl = document.body;
-    ctx.closeAllFeatures(ctx);
+    ctx.finalizeFeatures(ctx);
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
       if (ctx.win != null) {
         for (var i = ctx.win.childNodes.length - 1; i >= 0; i--) {
@@ -2320,12 +2321,16 @@ DebugJS.prototype = {
     return ctx.closeFeature(ctx, f);
   },
 
-  closeAllFeatures: function(ctx) {
+  finalizeFeatures: function(ctx) {
     if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGING) || (ctx.uiStatus & DebugJS.UI_ST_RESIZING)) {
       ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
       ctx.endResize(ctx);
     }
-    if (ctx.status & DebugJS.STATE_MEASURE) {ctx.closeScreenMeasure(ctx, true);}
+    ctx.closeAllFeatures(ctx, true);
+  },
+
+  closeAllFeatures: function(ctx, silent) {
+    if (ctx.status & DebugJS.STATE_MEASURE) {ctx.closeScreenMeasure(ctx, silent);}
     if (ctx.status & DebugJS.STATE_SYS_INFO) {ctx.closeSystemInfo(ctx);}
     if (ctx.status & DebugJS.STATE_HTML_SRC) {ctx.closeHtmlSrc(ctx);}
     if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {ctx.closeElmInfo(ctx);}
@@ -3539,6 +3544,7 @@ DebugJS.prototype = {
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
       'disabled  : ' + DebugJS.setStyleIfObjNotAvailable(el.disabled, true) + '\n' +
+      'contentEditable: ' + el.contentEditable + '\n' +
       DebugJS.addPropSeparator(ctx) +
       'href      : ' + href + '\n' +
       'src       : ' + src + '\n' +
@@ -5852,8 +5858,12 @@ DebugJS.prototype = {
         break;
       case 'ext':
         f = DebugJS.STATE_EXT_PANEL;
+        break;
+      case 'all':
+        ctx.closeAllFeatures(ctx);
+        return;
     }
-    if (func == 0) {
+    if (f == 0) {
       DebugJS.printUsage(tbl.usage);
     } else {
       ctx.closeFeature(ctx, f);
@@ -5883,6 +5893,10 @@ DebugJS.prototype = {
     DebugJS.log.res(l);
   },
 
+  cmdEcho: function(arg, tbl) {
+    DebugJS.log(arg);
+  },
+
   cmdElements: function(arg, tbl) {
     arg = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
     if ((arg == '-h') || (arg == '--help')) {
@@ -5898,7 +5912,7 @@ DebugJS.prototype = {
 
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    ctx.closeAllFeatures(ctx);
+    ctx.finalizeFeatures(ctx);
     ctx.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
     if (ctx.options.useSuspendLogButton) {
       ctx.status &= ~DebugJS.STATE_LOG_SUSPENDING;
@@ -6605,7 +6619,7 @@ DebugJS.prototype = {
       };
       ctx.saveCountDownTimerVal();
       ctx.featStackBak = ctx.featStack.concat();
-      ctx.closeAllFeatures(ctx);
+      ctx.finalizeFeatures(ctx);
       ctx.setWindowSize('normal');
       ctx.init({zoom: zoom}, restoreOption);
     }
