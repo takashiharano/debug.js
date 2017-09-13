@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709132031';
+  this.v = '201709132158';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -363,15 +363,16 @@ DebugJS.STATE_MEASURE = 1 << 2;
 DebugJS.STATE_MEASURING = 1 << 3;
 DebugJS.STATE_SYS_INFO = 1 << 4;
 DebugJS.STATE_ELM_INSPECTING = 1 << 5;
-DebugJS.STATE_TOOLS = 1 << 6;
-DebugJS.STATE_SCRIPT = 1 << 7;
-DebugJS.STATE_HTML_SRC = 1 << 8;
-DebugJS.STATE_LOG_SUSPENDING = 1 << 9;
-DebugJS.STATE_LOG_PRESERVED = 1 << 10;
-DebugJS.STATE_STOPWATCH_RUNNING = 1 << 11;
-DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 12;
-DebugJS.STATE_WD = 1 << 13;
-DebugJS.STATE_EXT_PANEL = 1 << 14;
+DebugJS.STATE_ELM_EDIT = 1 << 6;
+DebugJS.STATE_TOOLS = 1 << 7;
+DebugJS.STATE_SCRIPT = 1 << 8;
+DebugJS.STATE_HTML_SRC = 1 << 9;
+DebugJS.STATE_LOG_SUSPENDING = 1 << 10;
+DebugJS.STATE_LOG_PRESERVED = 1 << 11;
+DebugJS.STATE_STOPWATCH_RUNNING = 1 << 12;
+DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 13;
+DebugJS.STATE_WD = 1 << 14;
+DebugJS.STATE_EXT_PANEL = 1 << 15;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -3740,9 +3741,22 @@ DebugJS.prototype = {
   },
 
   captureElm: function(elm) {
+    var ctx = DebugJS.ctx;
     DebugJS.el = elm;
-    if (DebugJS._AVAILABLE) _ = DebugJS.el;
-    DebugJS.log.s('&lt;' + DebugJS.el.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
+    if (DebugJS._AVAILABLE) _ = elm;
+    if (ctx.status & DebugJS.STATE_ELM_EDIT) {
+      ctx.updateEditable(ctx, elm);
+    }
+    DebugJS.log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
+  },
+
+  updateEditable: function(ctx, el) {
+    if ((ctx.txtChkTargetEl) && (ctx.txtChkTargetEl.contentEditableBak)) {
+      ctx.txtChkTargetEl.contentEditable = ctx.txtChkTargetEl.contentEditableBak;
+    }
+    ctx.txtChkTargetEl = el;
+    ctx.txtChkTargetEl.contentEditableBak = el.contentEditable;
+    ctx.txtChkTargetEl.contentEditable = true;
   },
 
   getEvtHandlerStr: function(handler, name) {
@@ -4655,84 +4669,103 @@ DebugJS.prototype = {
   openTextChecker: function() {
     var ctx = DebugJS.ctx;
     if (ctx.txtChkPanel == null) {
-      var defaultFontSize = ctx.computedFontSize;
-      var defaultFontFamily = 'Consolas';
-      var defaultFontWeight = 400;
-      var defaultFgRGB16 = 'fff';
-      var defaultBgRGB16 = '000';
-      var panelPadding = 2;
-      ctx.txtChkPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
-
-      var txtPadding = 4;
-      var txtChkTxt = document.createElement('input');
-      ctx.setStyle(txtChkTxt, 'width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)');
-      ctx.setStyle(txtChkTxt, 'min-height', (20 * ctx.options.zoom) + 'px');
-      ctx.setStyle(txtChkTxt, 'margin-bottom', '8px');
-      ctx.setStyle(txtChkTxt, 'padding', txtPadding + 'px');
-      ctx.setStyle(txtChkTxt, 'border', '0');
-      ctx.setStyle(txtChkTxt, 'border-radius', '0');
-      ctx.setStyle(txtChkTxt, 'outline', 'none');
-      ctx.setStyle(txtChkTxt, 'font-size', defaultFontSize + 'px');
-      ctx.setStyle(txtChkTxt, 'font-family', defaultFontFamily);
-      txtChkTxt.value = 'ABCDEFG.abcdefg 12345-67890_!?';
-      txtChkTxt.onmousedown = ctx.onTxtChkMouseDown;
-      ctx.txtChkPanel.appendChild(txtChkTxt);
-      ctx.txtChkTxt = txtChkTxt;
-      ctx.txtChkTargetEl = txtChkTxt;
-
-      ctx.txtChkCtrl = document.createElement('div');
-      ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
-      var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
-      '<input value="' + defaultFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">px' +
-      '<br>' +
-      'font-family: <input value="' + defaultFontFamily + '" class="' + ctx.id + '-txt-text" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
-      'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
-      '<table class="' + ctx.id + '-txt-tbl">' +
-      '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="' + ctx.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>' +
-      '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-r" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-r"></span></td></tr>' +
-      '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-g" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-g"></span></td></tr>' +
-      '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-b" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-b"></span></td></tr>' +
-      '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="' + ctx.id + '-txt-text" value="' + defaultBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>' +
-      '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-r" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-r"></span></td></tr>' +
-      '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-g" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-g"></span></td></tr>' +
-      '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-b" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-b"></span></td></tr>' +
-      '</tbale>';
-      ctx.txtChkCtrl.innerHTML = html;
-
-      ctx.txtChkFontSizeRange = document.getElementById(ctx.id + '-fontsize-range');
-      ctx.txtChkFontSizeInput = document.getElementById(ctx.id + '-font-size');
-      ctx.txtChkFontWeightRange = document.getElementById(ctx.id + '-fontweight-range');
-      ctx.txtChkFontWeightLabel = document.getElementById(ctx.id + '-font-weight');
-      ctx.txtChkInputFgRGB = document.getElementById(ctx.id + '-fg-rgb');
-      ctx.txtChkRangeFgR = document.getElementById(ctx.id + '-fg-range-r');
-      ctx.txtChkRangeFgG = document.getElementById(ctx.id + '-fg-range-g');
-      ctx.txtChkRangeFgB = document.getElementById(ctx.id + '-fg-range-b');
-      ctx.txtChkLabelFgR = document.getElementById(ctx.id + '-fg-r');
-      ctx.txtChkLabelFgG = document.getElementById(ctx.id + '-fg-g');
-      ctx.txtChkLabelFgB = document.getElementById(ctx.id + '-fg-b');
-      ctx.txtChkInputBgRGB = document.getElementById(ctx.id + '-bg-rgb');
-      ctx.txtChkRangeBgR = document.getElementById(ctx.id + '-bg-range-r');
-      ctx.txtChkRangeBgG = document.getElementById(ctx.id + '-bg-range-g');
-      ctx.txtChkRangeBgB = document.getElementById(ctx.id + '-bg-range-b');
-      ctx.txtChkLabelBgR = document.getElementById(ctx.id + '-bg-r');
-      ctx.txtChkLabelBgG = document.getElementById(ctx.id + '-bg-g');
-      ctx.txtChkLabelBgB = document.getElementById(ctx.id + '-bg-b');
-
-      ctx.onChangeFontSizeTxt();
-      ctx.onChangeFontWeight();
-      ctx.onChangeFgRGB();
-      ctx.onChangeBgRGB();
+      ctx.createTxtChkPanel(ctx);
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.txtChkPanel);
     }
   },
 
-  onTxtChkMouseDown: function(e) {
-    if (e.button == 2) {
+  createTxtChkPanel: function(ctx) {
+    var defaultFontSize = ctx.computedFontSize;
+    var defaultFontFamily = 'Consolas';
+    var defaultFontWeight = 400;
+    var defaultFgRGB16 = 'fff';
+    var defaultBgRGB16 = '000';
+    var panelPadding = 2;
+    ctx.txtChkPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
+
+    var txtPadding = 4;
+    var txtChkTxt = document.createElement('input');
+    ctx.setStyle(txtChkTxt, 'width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)');
+    ctx.setStyle(txtChkTxt, 'min-height', (20 * ctx.options.zoom) + 'px');
+    ctx.setStyle(txtChkTxt, 'margin-bottom', '8px');
+    ctx.setStyle(txtChkTxt, 'padding', txtPadding + 'px');
+    ctx.setStyle(txtChkTxt, 'border', '0');
+    ctx.setStyle(txtChkTxt, 'border-radius', '0');
+    ctx.setStyle(txtChkTxt, 'outline', 'none');
+    ctx.setStyle(txtChkTxt, 'font-size', defaultFontSize + 'px');
+    ctx.setStyle(txtChkTxt, 'font-family', defaultFontFamily);
+    txtChkTxt.value = 'ABCDEFG.abcdefg 12345-67890_!?';
+    ctx.txtChkPanel.appendChild(txtChkTxt);
+    ctx.txtChkTxt = txtChkTxt;
+    ctx.txtChkTargetEl = txtChkTxt;
+
+    ctx.txtChkCtrl = document.createElement('div');
+    ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
+    var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
+    '<input value="' + defaultFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">px' +
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.options.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">el</span>' +
+    '<br>' +
+    'font-family: <input value="' + defaultFontFamily + '" class="' + ctx.id + '-txt-text" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
+    'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
+    '<table class="' + ctx.id + '-txt-tbl">' +
+    '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="' + ctx.id + '-txt-text" value="' + defaultFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>' +
+    '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-r" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-r"></span></td></tr>' +
+    '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-g" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-g"></span></td></tr>' +
+    '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-b" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-b"></span></td></tr>' +
+    '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="' + ctx.id + '-txt-text" value="' + defaultBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>' +
+    '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-r" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-r"></span></td></tr>' +
+    '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-g" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-g"></span></td></tr>' +
+    '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-b" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-b"></span></td></tr>' +
+    '</tbale>';
+    ctx.txtChkCtrl.innerHTML = html;
+
+    ctx.txtChkFontSizeRange = document.getElementById(ctx.id + '-fontsize-range');
+    ctx.txtChkFontSizeInput = document.getElementById(ctx.id + '-font-size');
+    ctx.txtChkFontWeightRange = document.getElementById(ctx.id + '-fontweight-range');
+    ctx.txtChkFontWeightLabel = document.getElementById(ctx.id + '-font-weight');
+    ctx.txtChkInputFgRGB = document.getElementById(ctx.id + '-fg-rgb');
+    ctx.txtChkRangeFgR = document.getElementById(ctx.id + '-fg-range-r');
+    ctx.txtChkRangeFgG = document.getElementById(ctx.id + '-fg-range-g');
+    ctx.txtChkRangeFgB = document.getElementById(ctx.id + '-fg-range-b');
+    ctx.txtChkLabelFgR = document.getElementById(ctx.id + '-fg-r');
+    ctx.txtChkLabelFgG = document.getElementById(ctx.id + '-fg-g');
+    ctx.txtChkLabelFgB = document.getElementById(ctx.id + '-fg-b');
+    ctx.txtChkInputBgRGB = document.getElementById(ctx.id + '-bg-rgb');
+    ctx.txtChkRangeBgR = document.getElementById(ctx.id + '-bg-range-r');
+    ctx.txtChkRangeBgG = document.getElementById(ctx.id + '-bg-range-g');
+    ctx.txtChkRangeBgB = document.getElementById(ctx.id + '-bg-range-b');
+    ctx.txtChkLabelBgR = document.getElementById(ctx.id + '-bg-r');
+    ctx.txtChkLabelBgG = document.getElementById(ctx.id + '-bg-g');
+    ctx.txtChkLabelBgB = document.getElementById(ctx.id + '-bg-b');
+
+    ctx.onChangeFontSizeTxt();
+    ctx.onChangeFontWeight();
+    ctx.onChangeFgRGB();
+    ctx.onChangeBgRGB();
+  },
+
+  toggleElmEditable: function(btn) {
+    var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.STATE_ELM_EDIT) {
+      ctx.status &= ~DebugJS.STATE_ELM_EDIT;
+      btn.style.color = DebugJS.COLOR_INACTIVE;
+      ctx.updateEditable(ctx, ctx.txtChkTxt);
+    } else {
+      ctx.status |= DebugJS.STATE_ELM_EDIT;
+      btn.style.color = ctx.options.btnColor;
       if (DebugJS.el) {
-        DebugJS.ctx.txtChkTargetEl = DebugJS.el;
-       DebugJS.ctx.txtChkTxt.value = 'Target el has been changed to ' + Object.prototype.toString.call(DebugJS.el);
+        ctx.updateEditable(ctx, DebugJS.el);
       }
+    }
+  },
+
+  updateElBtn: function(btn) {
+    var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.STATE_ELM_EDIT) {
+      btn.style.color = ctx.options.btnColor;
+    } else {
+      btn.style.color = DebugJS.COLOR_INACTIVE;
     }
   },
 
