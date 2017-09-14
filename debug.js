@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709140110';
+  this.v = '201709150117';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -292,6 +292,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Execute a loaded batch script'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -319,6 +320,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
@@ -3006,11 +3008,12 @@ DebugJS.prototype = {
     if (!(ctx.status & DebugJS.STATE_SYS_INFO)) {
       return;
     }
-    var sysTime = (new Date()).getTime();
-    var sysTimeBin = DebugJS.formatBin(parseInt(sysTime).toString(2), false, 1);
+    var now = new Date();
+    var sysTime = now.getTime();
+    var sysTimeBin = DebugJS.formatBin(sysTime.toString(2), false, 1);
     var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(DebugJS.getDateTime(sysTime)) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         RAW</span>  (new Date()).getTime() = ' + sysTime + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin + '</pre>';
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin + '\n</pre>';
     ctx.sysTimePanel.innerHTML = html;
     setTimeout(ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
@@ -3114,6 +3117,8 @@ DebugJS.prototype = {
     var docOncontextmenu = ctx.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
     var html = '<pre>';
+    var offset = (new Date()).getTimezoneOffset();
+    html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.getTimeOffsetStr(offset) + ')\n';
     html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">screen.</span>     : ' + screenSize + '\n';
     html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n';
     html += DebugJS.addPropSeparator(ctx);
@@ -5038,7 +5043,7 @@ DebugJS.prototype = {
     ctx.fileReader.onloadstart = ctx.onFileLoadStart;
     ctx.fileReader.onload = (function(theFile) {
       return function(e) {
-        ctx.onFileLoadCompleted(theFile, e);
+        ctx.onFileLoaded(theFile, e);
       };
     })(file);
 
@@ -5097,26 +5102,14 @@ DebugJS.prototype = {
     ctx.updateFilePreview('LOADING...');
   },
 
-  onFileLoadCompleted: function(file, e) {
+  onFileLoaded: function(file, e) {
     var ctx = DebugJS.ctx;
-    var limit = ctx.properties.prevlimit.value;
     var content = (ctx.fileReader.result == null) ? '' : ctx.fileReader.result;
-    var preview = '';
+    var html;
     if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
-      if (file.size > 0) {
-        preview = ctx.getContentPreview(file, content);
-      }
+      html = ctx.onFileLoadedB64(ctx, file, content);
     } else {
-      var buf = new Uint8Array(content);
-      preview = '\n' + ctx.getHexDump(buf);
-    }
-    var html = ctx.getFileInfo(file) + preview + '\n';
-    if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
-      if (file.size <= limit) {
-        html += content;
-      } else {
-        html += '<span style="color:' + ctx.options.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
-      }
+      html = ctx.onFileLoadedBin(ctx, file, content);
     }
     ctx.updateFilePreview(html);
     setTimeout(ctx.fileLoadFinalize, 1000);
@@ -5127,6 +5120,53 @@ DebugJS.prototype = {
     }
   },
 
+  onFileLoadedBin: function(ctx, file, content) {
+    var buf = new Uint8Array(content);
+    var preview = '\n' + ctx.getHexDump(buf);
+    var html = ctx.getFileInfo(file) + preview + '\n';
+    return html;
+  },
+
+  onFileLoadedB64: function(ctx, file, b64content) {
+    var html = ctx.getFileInfo(file);
+    var preview = '';
+    if (file.size > 0) {
+      if (file.type.match(/image\//)) {
+        var ctxSizePos = ctx.getSelfSizePos();
+        preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
+      } else if (file.type.match(/text\//)) {
+        var contents = b64content.split(',');
+        var decoded = DebugJS.decodeBase64(contents[1]);
+        decoded = DebugJS.escTags(decoded);
+        preview = '<span style="color:#0f0">' + decoded + '</span>\n';
+        html += ctx.batProcess(ctx, decoded);
+      }
+    }
+    html += preview + '\n';
+    var limit = ctx.properties.prevlimit.value;
+    if (file.size <= limit) {
+      html += b64content;
+    } else {
+      html += '<span style="color:' + ctx.options.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
+    }
+    return html;
+  },
+
+  batProcess: function(ctx, content) {
+    var batHead = '#[BAT]';
+    var btn = '';
+    if (content.substr(0, batHead.length) == batHead) {
+      DebugJS.bat.store(content);
+      btn = ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.execBat();', '[EXEC]') + '<br>';
+    }
+    return btn;
+  },
+
+  execBat: function() {
+    DebugJS.ctx.closeAllFeatures(DebugJS.ctx);
+    DebugJS.bat.run();
+  },
+
   getFileInfo: function(file) {
     var dt = DebugJS.getDateTime(file.lastModifiedDate);
     var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
@@ -5135,21 +5175,6 @@ DebugJS.prototype = {
     'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
     'modified: ' + fileDate + '\n';
     return str;
-  },
-
-  getContentPreview: function(file, contentB64) {
-    var ctx = DebugJS.ctx;
-    var preview = '';
-    if (file.type.match(/image\//)) {
-      var ctxSizePos = ctx.getSelfSizePos();
-      preview = '<img src="' + contentB64 + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
-    } else if (file.type.match(/text\//)) {
-      var contents = contentB64.split(',');
-      var decodedContent = DebugJS.decodeBase64(contents[1]);
-      decodedContent = DebugJS.escTags(decodedContent);
-      preview = '<span style="color:#0f0">' + decodedContent + '</span>\n';
-    }
-    return preview;
   },
 
   resizeImgPreview: function() {
@@ -5852,6 +5877,10 @@ DebugJS.prototype = {
     DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
   },
 
+  cmdBat: function(arg, tbl) {
+    DebugJS.bat.run();
+  },
+
   cmdBin: function(arg, tbl) {
     var data = DebugJS.ctx.radixCmd(arg, tbl);
     if (data == null) {
@@ -6423,6 +6452,21 @@ DebugJS.prototype = {
     }
   },
 
+  cmdScrollLog: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var pos = args[0];
+    if (pos == 'top') {
+      pos = 0;
+    } else if (pos == 'bottom') {
+      pos = ctx.logPanel.scrollHeight;
+    } else if ((pos == '') || isNaN(pos)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    ctx.logPanel.scrollTop = pos;
+  },
+
   cmdSelf: function(arg, tbl) {
     var sizePos = DebugJS.ctx.getSelfSizePos();
     var str = 'width : ' + sizePos.w + '\n' +
@@ -6969,6 +7013,7 @@ DebugJS.getDateTime = function(dt) {
     dt = new Date(dt);
   }
   var time = dt.getTime();
+  var offset = dt.getTimezoneOffset();
   var yyyy = dt.getFullYear();
   var mm = dt.getMonth() + 1;
   var dd = dt.getDate();
@@ -6984,7 +7029,7 @@ DebugJS.getDateTime = function(dt) {
   if (ss < 10) ss = '0' + ss;
   if (ms < 10) {ms = '00' + ms;}
   else if (ms < 100) {ms = '0' + ms;}
-  var dateTime = {time: time, yyyy: yyyy, mm: mm, dd: dd, hh: hh, mi: mi, ss: ss, sss: ms, wday: wd};
+  var dateTime = {time: time, offset: offset, yyyy: yyyy, mm: mm, dd: dd, hh: hh, mi: mi, ss: ss, sss: ms, wday: wd};
   return dateTime;
 };
 
@@ -8380,6 +8425,19 @@ DebugJS.delArray = function(arr, v) {
   }
 };
 
+DebugJS.getTimeOffsetStr = function(v) {
+  var s = '-';
+  if (v < 0) {
+    v *= (-1);
+    s = '+';
+  }
+  var to = v / 60;
+  var h = to | 0;
+  var m = v - h * 60;
+  var str = s + ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2);
+  return str;
+};
+
 DebugJS.sleep = function(ms) {
   ms |= 0;
   var t1 = (new Date()).getTime();
@@ -8660,14 +8718,8 @@ DebugJS.cmd = function(c, echo) {
 };
 
 DebugJS.bat = function(b) {
-  b = b.replace(/(\r?\n|\r)/g, '\n');
-  DebugJS.bat.ctrl = {echo: true};
-  DebugJS.bat.cmds = b.split('\n');
-  DebugJS.bat.idx = 0;
-  if (DebugJS.bat.tid != 0) {
-    clearTimeout(DebugJS.bat.tid);
-  }
-  DebugJS.bat.exec();
+  DebugJS.store(b);
+  DebugJS.bat.run();
 };
 
 DebugJS.bat.cmds = [];
@@ -8675,19 +8727,39 @@ DebugJS.bat.ctrl = {echo: true};
 DebugJS.bat.idx = 0;
 DebugJS.bat.tid = 0;
 
+DebugJS.bat.store = function(b) {
+  b = b.replace(/(\r?\n|\r)/g, '\n');
+  DebugJS.bat.cmds = b.split('\n');
+};
+
+DebugJS.bat.run = function() {
+  DebugJS.bat.idx = 0;
+  if (DebugJS.bat.tid != 0) {
+    clearTimeout(DebugJS.bat.tid);
+  }
+  DebugJS.bat.ctrl = {echo: true};
+  DebugJS.bat.exec();
+};
+
 DebugJS.bat.exec = function() {
   DebugJS.bat.tid = 0;
-  for (; DebugJS.bat.idx < DebugJS.bat.cmds.length; DebugJS.bat.idx++) {
-    var c = DebugJS.bat.cmds[DebugJS.bat.idx];
-    switch (DebugJS.bat.prepro(c)) {
-      case 1:
-        continue;
-      case 2:
-        DebugJS.bat.idx++;
-        return;
-    }
-    DebugJS.ctx._execCmd(c, DebugJS.bat.ctrl.echo);
+  if (DebugJS.bat.idx >= DebugJS.bat.cmds.length) {
+    return;
   }
+  var c = DebugJS.bat.cmds[DebugJS.bat.idx];
+  DebugJS.bat.idx++;
+  switch (DebugJS.bat.prepro(c)) {
+    case 1:
+      DebugJS.bat.next();
+    case 2:
+      return;
+  }
+  DebugJS.ctx._execCmd(c, DebugJS.bat.ctrl.echo);
+  DebugJS.bat.next();
+};
+
+DebugJS.bat.next = function() {
+  DebugJS.bat.tid = setTimeout(DebugJS.bat.exec, 0);
 };
 
 DebugJS.bat.prepro = function(cmd) {
@@ -8698,7 +8770,9 @@ DebugJS.bat.prepro = function(cmd) {
   if (cmd.match(/^\s*#/)) {
     return 1;
   }
-  if (c == '@echo off') {
+   if (c == 'bat') {
+    return 1;
+  } else if (c == '@echo off') {
     DebugJS.bat.ctrl.echo = false;
     return 1;
   } else if (c == '@echo on') {
