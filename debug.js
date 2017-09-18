@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709151957';
+  this.v = '201709190119';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -304,6 +304,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'help', fnc: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'hex', fnc: this.cmdHex, desc: 'Convert a number to hexadecimal', usage: 'hex num digit'},
+    {cmd: 'hide', fnc: this.cmdHide, desc: 'Hide debug window'},
     {cmd: 'history', fnc: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
     {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
@@ -323,6 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
+    {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch start|stop|reset'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
@@ -6121,6 +6123,10 @@ DebugJS.prototype = {
     return data;
   },
 
+  cmdHide: function(arg, tbl) {
+    DebugJS.ctx.closeDbgWin();
+  },
+
   cmdHistory: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.parseArgs(arg);
@@ -6499,6 +6505,10 @@ DebugJS.prototype = {
     } else {
       DebugJS.log.e(name + ' is invalid property name.');
     }
+  },
+
+  cmdShow: function(arg, tbl) {
+    DebugJS.ctx.showDbgWin();
   },
 
   cmdSleep: function(arg, tbl) {
