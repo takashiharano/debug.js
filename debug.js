@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709190119';
+  this.v = '201709190743';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -316,7 +316,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
-    {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
@@ -325,6 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
+    {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'winsize width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch start|stop|reset'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
@@ -5159,7 +5160,7 @@ DebugJS.prototype = {
     var btn = '';
     if (content.substr(0, batHead.length) == batHead) {
       DebugJS.bat.store(content);
-      btn = ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.execBat();', '[EXEC]') + '<br>';
+      btn = ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.execBat();', '[EXEC]') + '<br><br>';
     }
     return btn;
   },
@@ -6358,7 +6359,16 @@ DebugJS.prototype = {
         ctx.setWinPos(pos, sizePos.w, sizePos.h);
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        args = DebugJS.splitArgs(arg);
+        var x = args[0];
+        var y = args[1];
+        if (isNaN(x) || isNaN(y)) {
+          DebugJS.printUsage(tbl.usage);
+          return;
+        }
+        x |= 0;
+        y |= 0;
+        DebugJS.ctx.setDbgWinPos(y, x);
     }
   },
 
@@ -6509,6 +6519,22 @@ DebugJS.prototype = {
 
   cmdShow: function(arg, tbl) {
     DebugJS.ctx.showDbgWin();
+  },
+
+  cmdSize: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var w = args[0];
+    var h = args[1];
+    if (isNaN(w) || isNaN(h)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    w |= 0;
+    h |= 0;
+    if (w < ctx.computedMinW) w = ctx.computedMinW;
+    if (h < ctx.computedMinH) h = ctx.computedMinH;
+    ctx.setDbgWinSize(w, h);
   },
 
   cmdSleep: function(arg, tbl) {
