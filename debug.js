@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709200115';
+  this.v = '201709200126';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -308,7 +308,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'history', fnc: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
     {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
-    {cmd: 'jquery', fnc: this.cmdJquery, desc: 'Displays what version of jQuery is loaded'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
@@ -6270,14 +6269,6 @@ DebugJS.prototype = {
       } else {
         DebugJS.printUsage(tbl.usage);
       }
-    }
-  },
-
-  cmdJquery: function(arg, tbl) {
-    if (typeof jQuery == 'undefined') {
-      DebugJS.log.w('jQuery is not loaded.');
-    } else {
-      DebugJS.log('jQuery v' + jQuery.fn.jquery);
     }
   },
 
