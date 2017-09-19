@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709200025';
+  this.v = '201709200115';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -585,7 +585,11 @@ DebugJS.prototype = {
     }
 
     if (ctx.msgBuf.getSize() != ctx.options.bufsize) {
-      ctx.initBuf(ctx);
+      if (!(ctx.status & DebugJS.STATE_LOG_PRESERVED) ||
+          ((ctx.status & DebugJS.STATE_LOG_PRESERVED) &&
+           (ctx.msgBuf.getSize() < ctx.options.bufsize))) {
+        ctx.initBuf(ctx);
+      }
     }
 
     if (ctx.options.mode == 'noui') {
@@ -8541,12 +8545,16 @@ DebugJS.dumpLog = function(type, b64) {
 };
 
 DebugJS.loadLog = function(json, b64) {
+  var ctx = DebugJS.ctx;
   if (b64) json = DebugJS.decodeBase64(json);
   var buf = JSON.parse(json);
+  if (ctx.msgBuf.getSize() < buf.length) {
+    ctx.msgBuf = new DebugJS.RingBuffer(buf.length);
+  }
   for (var i = 0; i < buf.length; i++) {
     var bf = buf[i];
     bf.msg = DebugJS.decodeBase64(bf.msg);
-    DebugJS.ctx.msgBuf.add(bf);
+    ctx.msgBuf.add(bf);
   }
 };
 
