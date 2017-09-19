@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709200126';
+  this.v = '201709200732';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8101,21 +8101,21 @@ DebugJS.getRandom = function(type, min, max) {
       max = 0x7fffffff;
     } else if (type == DebugJS.RANDOM_TYPE_STR) {
       min = 1;
-      max = DebugJS.RANDOM_STRING_DEFAULT_MAX_LEN;
+      max = DebugJS.RANDOM_STR_DFLT_MAX_LEN;
     }
   }
   var random;
   switch (type) {
     case DebugJS.RANDOM_TYPE_NUM:
-      random = DebugJS.getRandomNumber(min, max);
+      random = DebugJS.getRandomNum(min, max);
       break;
     case DebugJS.RANDOM_TYPE_STR:
-      random = DebugJS.getRandomString(min, max);
+      random = DebugJS.getRandomStr(min, max);
   }
   return random;
 };
 
-DebugJS.getRandomNumber = function(min, max) {
+DebugJS.getRandomNum = function(min, max) {
   var minDigit = (min + '').length;
   var maxDigit = (max + '').length;
   var digit = Math.floor(Math.random() * (maxDigit - minDigit + 1)) + minDigit;
@@ -8128,16 +8128,16 @@ DebugJS.getRandomNumber = function(min, max) {
 };
 
 DebugJS.getRandomCharater = function() {
-  var ch = String.fromCharCode(DebugJS.getRandomNumber(0x20, 0x7e));
+  var ch = String.fromCharCode(DebugJS.getRandomNum(0x20, 0x7e));
   return ch;
 };
 
-DebugJS.RANDOM_STRING_DEFAULT_MAX_LEN = 10;
-DebugJS.RANDOM_STRING_MAX_LEN = 1024;
-DebugJS.getRandomString = function(min, max) {
-  if (min > DebugJS.RANDOM_STRING_MAX_LEN) min = DebugJS.RANDOM_STRING_MAX_LEN;
-  if (max > DebugJS.RANDOM_STRING_MAX_LEN) max = DebugJS.RANDOM_STRING_MAX_LEN;
-  var len = DebugJS.getRandomNumber(min, max);
+DebugJS.RANDOM_STR_DFLT_MAX_LEN = 10;
+DebugJS.RANDOM_STR_MAX_LEN = 1024;
+DebugJS.getRandomStr = function(min, max) {
+  if (min > DebugJS.RANDOM_STR_MAX_LEN) min = DebugJS.RANDOM_STR_MAX_LEN;
+  if (max > DebugJS.RANDOM_STR_MAX_LEN) max = DebugJS.RANDOM_STR_MAX_LEN;
+  var len = DebugJS.getRandomNum(min, max);
   var str = '';
   for (var i = 0; i < len; i++) {
     var ch;
@@ -9051,6 +9051,7 @@ DebugJS.balse = function() {
   DebugJS.cmd = DebugJS.z2;
   DebugJS.bat = DebugJS.z1;
   DebugJS.countElements = DebugJS.z2;
+  DebugJS.getHtml = DebugJS.z1;
   DebugJS.init = DebugJS.z1;
   DebugJS.dumpLog = DebugJS.z2;
   DebugJS.show = DebugJS.z0;
