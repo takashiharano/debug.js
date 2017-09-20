@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709200732';
+  this.v = '201709210030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8507,27 +8507,27 @@ DebugJS.dumpLog = function(type, b64) {
       l.msg = DebugJS.encodeBase64(l.msg);
       b.push(l);
     } else {
-      var type = 'LOG';
+      var lv = 'LOG';
       switch (data.type) {
         case DebugJS.LOG_TYPE_ERR:
-          type = 'ERR';
+          lv = 'ERR';
           break;
         case DebugJS.LOG_TYPE_WRN:
-          type = 'WRN';
+          lv = 'WRN';
           break;
         case DebugJS.LOG_TYPE_INF:
-          type = 'INF';
+          lv = 'INF';
           break;
         case DebugJS.LOG_TYPE_DBG:
-          type = 'DBG';
+          lv = 'DBG';
           break;
         case DebugJS.LOG_TYPE_VRB:
-          type = 'VRB';
+          lv = 'VRB';
           break;
         case DebugJS.LOG_TYPE_SYS:
-          type = 'SYS';
+          lv = 'SYS';
       }
-      l += data.time + '\t' + type + '\t' + data.msg + '\n';
+      l += data.time + '\t' + lv + '\t' + data.msg + '\n';
     }
   }
   if (type == 'json') l = JSON.stringify(b);
@@ -9005,7 +9005,38 @@ log.resume = function() {
   DebugJS.ctx.resumeLog();
 };
 
+log.root = function(m) {
+  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (window.opener) {
+    window.opener.log.root(m);
+  } else if (window.top.opener) {
+    window.top.opener.log.root(m);
+  } else {
+    window.top.DebugJS.log(m);
+  }
+};
+
+log.root.fn = function(lv, m) {
+  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (window.opener) {
+    window.opener.log[lv].root(m);
+  } else if (window.top.opener) {
+    window.top.opener.log[lv].root(m);
+  } else {
+    window.top.DebugJS.log[lv](m);
+  }
+};
+
+DebugJS.rootFncs = function() {
+  var fn = ['v', 'd', 'i', 'w', 'e'];
+  for (var i = 0; i < fn.length; i++) {
+    var lv = fn[i];
+    log[lv].root = (DebugJS.ENABLE ? log.root.fn.bind(undefined, lv) : DebugJS.z1);
+  }
+};
+
 DebugJS.start = function() {
+  DebugJS.rootFncs();
   DebugJS.ctx = DebugJS.ctx || new DebugJS();
   DebugJS.el = null;
   if (!window._) DebugJS._AVAILABLE = true;
@@ -9048,6 +9079,7 @@ DebugJS.balse = function() {
   log.res.err = DebugJS.z1;
   log.suspend = DebugJS.z0;
   log.resume = DebugJS.z0;
+  log.root = DebugJS.z1;
   DebugJS.cmd = DebugJS.z2;
   DebugJS.bat = DebugJS.z1;
   DebugJS.countElements = DebugJS.z2;
