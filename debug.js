@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709220019';
+  this.v = '201709220737';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -325,7 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
-    {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'winsize width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch start|stop|reset'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
@@ -1529,9 +1529,9 @@ DebugJS.prototype = {
 
   restoreDbgWinSize: function(ctx, sizeStatus) {
     if (sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
-      ctx.setWindowSize('full');
+      ctx.setWinSize('full');
     } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED) {
-      ctx.setWindowSize('max');
+      ctx.setWinSize('max');
     } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED2) {
       ctx.expandDbgWin2(ctx);
     }
@@ -2470,7 +2470,7 @@ DebugJS.prototype = {
             ((opt.keyAssign.ctrl == undefined) || (e.ctrlKey == opt.keyAssign.ctrl)) &&
             ((opt.keyAssign.alt == undefined) || (e.altKey == opt.keyAssign.alt)) &&
             ((opt.keyAssign.meta == undefined) || (e.metaKey == opt.keyAssign.meta))) {
-          if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWindow(ctx))) {
+          if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWin(ctx))) {
             ctx.resetToOriginalPosition(ctx);
           } else if (ctx.uiStatus & DebugJS.UI_ST_VISIBLE) {
             ctx.closeDbgWin();
@@ -2520,7 +2520,7 @@ DebugJS.prototype = {
       if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) {
         ctx.adjustDbgWinPos(ctx);
       } else {
-        ctx.adjustWindowMax(ctx);
+        ctx.adjustWinMax(ctx);
       }
       ctx.resizeMainHeight();
     }
@@ -2622,12 +2622,12 @@ DebugJS.prototype = {
       return;
     }
     if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
-      ctx.setWindowSize('restore');
+      ctx.setWinSize('restore');
     } else {
       var sizePos = ctx.getSelfSizePos();
       if ((sizePos.w > DebugJS.DBGWIN_EXPAND_W2) ||
           (sizePos.h > DebugJS.DBGWIN_EXPAND_H2)) {
-        ctx.setWindowSize('expand');
+        ctx.setWinSize('expand');
       } else {
         ctx.expandDbgWin2(ctx);
       }
@@ -2746,7 +2746,7 @@ DebugJS.prototype = {
     ctx.setWinPos(ctx.options.position, sizePos.w, sizePos.h);
   },
 
-  adjustWindowMax: function(ctx) {
+  adjustWinMax: function(ctx) {
     if ((ctx.sizeStatus == DebugJS.SIZE_ST_FULL_W) || (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH)) {
       ctx.win.style.width = document.documentElement.clientWidth + 'px';
     }
@@ -2808,7 +2808,7 @@ DebugJS.prototype = {
     }
   },
 
-  isOutOfWindow: function(ctx) {
+  isOutOfWin: function(ctx) {
     var ret = false;
     var sizePos = ctx.getSelfSizePos();
     if ((sizePos.x1 > document.documentElement.clientWidth) ||
@@ -2833,11 +2833,11 @@ DebugJS.prototype = {
     ctx.win.style.display = 'block';
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     if ((ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) ||
-       ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWindow(ctx)))) {
+       ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWin(ctx)))) {
       ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJUST;
       ctx.adjustDbgWinPos(ctx);
     } else {
-      ctx.adjustWindowMax(ctx);
+      ctx.adjustWinMax(ctx);
     }
     if (ctx.uiStatus & DebugJS.UI_ST_NEED_TO_SCROLL) {
       ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
@@ -6681,14 +6681,14 @@ DebugJS.prototype = {
       case 'expand':
       case 'restore':
       case 'reset':
-        DebugJS.ctx.setWindowSize(size);
+        DebugJS.ctx.setWinSize(size);
         break;
       default:
         DebugJS.printUsage(tbl.usage);
     }
   },
 
-  setWindowSize: function(opt) {
+  setWinSize: function(opt) {
     var ctx = DebugJS.ctx;
     switch (opt) {
       case 'min':
@@ -6748,7 +6748,7 @@ DebugJS.prototype = {
       ctx.saveCountDownTimerVal();
       ctx.featStackBak = ctx.featStack.concat();
       ctx.finalizeFeatures(ctx);
-      ctx.setWindowSize('normal');
+      ctx.setWinSize('normal');
       ctx.init({zoom: zoom}, restoreOption);
     }
   },
@@ -8881,7 +8881,7 @@ DebugJS.bat.prepro = function(cmd) {
 };
 
 DebugJS.bat.preproEcho = function(c) {
-  if (DebugJS.bat.ctrl.echo) {
+  if (DebugJS.bat.ctrl.echo && !DebugJS.bat.ctrl.tmpEchoOff) {
     DebugJS.log.s(c);
   }
 };
