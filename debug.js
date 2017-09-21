@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709212232';
+  this.v = '201709220019';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -378,6 +378,7 @@ DebugJS.STATE_STOPWATCH_RUNNING = 1 << 12;
 DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 13;
 DebugJS.STATE_WD = 1 << 14;
 DebugJS.STATE_EXT_PANEL = 1 << 15;
+DebugJS.STATE_SIGINT = 1 << 16;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -2450,6 +2451,7 @@ DebugJS.prototype = {
 
       case 67: // C
         if ((e.ctrlKey) && (document.activeElement == ctx.cmdLine)) {
+          ctx.status |= DebugJS.STATE_SIGINT;
           DebugJS.log.s(ctx.cmdLine.value + '^C');
           ctx.cmdLine.value = '';
         }
@@ -8802,6 +8804,7 @@ DebugJS.bat.store = function(b) {
 };
 
 DebugJS.bat.run = function() {
+  DebugJS.ctx.status &= ~DebugJS.STATE_SIGINT;
   DebugJS.bat.idx = 0;
   if (DebugJS.bat.tid != 0) {
     clearTimeout(DebugJS.bat.tid);
@@ -8811,7 +8814,12 @@ DebugJS.bat.run = function() {
 };
 
 DebugJS.bat.exec = function() {
+  var ctx = DebugJS.ctx;
   DebugJS.bat.tid = 0;
+  if (ctx.status & DebugJS.STATE_SIGINT) {
+    ctx.status &= ~DebugJS.STATE_SIGINT;
+    return;
+  }
   if (DebugJS.bat.idx >= DebugJS.bat.cmds.length) {
     return;
   }
@@ -8826,7 +8834,7 @@ DebugJS.bat.exec = function() {
   }
   var echoFlg = (DebugJS.bat.ctrl.echo && !DebugJS.bat.ctrl.tmpEchoOff);
   DebugJS.bat.ctrl.tmpEchoOff = false;
-  DebugJS.ctx._execCmd(c, echoFlg);
+  ctx._execCmd(c, echoFlg);
   DebugJS.bat.next();
 };
 
