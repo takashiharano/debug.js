@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709212022';
+  this.v = '201709212232';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -264,6 +264,7 @@ var DebugJS = DebugJS || function() {
   this.CMD_HISTORY_MAX = this.DEFAULT_OPTIONS.cmdHistoryMax;
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
   this.cmdTmp = '';
+  this.cmdEchoFlg = true;
   this.timers = {};
   this.initWidth = 0;
   this.initHeight = 0;
@@ -5825,16 +5826,20 @@ DebugJS.prototype = {
       }
     }
     ctx.saveHistory(ctx, cl);
-    ctx._execCmd(cl, true);
+    ctx._execCmd(cl, ctx.cmdEchoFlg);
   },
 
   _execCmd: function(str, echo) {
     var ctx = DebugJS.ctx;
-    if (echo) {
-      var echoStr = str;
-      echoStr = DebugJS.escTags(echoStr);
-      echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
-      DebugJS.log.s(echoStr);
+    if (str.charAt(0) == '@') {
+      str = str.substr(1);
+    } else {
+      if (echo) {
+        var echoStr = str;
+        echoStr = DebugJS.escTags(echoStr);
+        echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
+        DebugJS.log.s(echoStr);
+      }
     }
     var cmd, arg;
     var cmds = DebugJS.splitCmdLineInTwo(str);
@@ -5968,6 +5973,13 @@ DebugJS.prototype = {
   },
 
   cmdEcho: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    if (args[0] == 'off') {
+      ctx.cmdEchoFlg = false;
+    } else if (args[0] == 'on') {
+      ctx.cmdEchoFlg = true;
+    }
     DebugJS.log(arg);
   },
 
@@ -8780,7 +8792,7 @@ DebugJS.bat = function(b) {
 };
 
 DebugJS.bat.cmds = [];
-DebugJS.bat.ctrl = {echo: true};
+DebugJS.bat.ctrl = {echo: true, tmpEchoOff: false};
 DebugJS.bat.idx = 0;
 DebugJS.bat.tid = 0;
 
@@ -8809,9 +8821,12 @@ DebugJS.bat.exec = function() {
     case 1:
       DebugJS.bat.next();
     case 2:
+      DebugJS.bat.ctrl.tmpEchoOff = false;
       return;
   }
-  DebugJS.ctx._execCmd(c, DebugJS.bat.ctrl.echo);
+  var echoFlg = (DebugJS.bat.ctrl.echo && !DebugJS.bat.ctrl.tmpEchoOff);
+  DebugJS.bat.ctrl.tmpEchoOff = false;
+  DebugJS.ctx._execCmd(c, echoFlg);
   DebugJS.bat.next();
 };
 
@@ -8820,25 +8835,36 @@ DebugJS.bat.next = function() {
 };
 
 DebugJS.bat.prepro = function(cmd) {
-  var c = DebugJS.omitLeadingWhiteSpace(cmd);
+  var cmds = DebugJS.splitCmdLineInTwo(cmd);
+  var c = cmds[0];
+  var a = DebugJS.splitArgs(cmds[1]);
+  if (c.charAt(0) == '@') {
+    c = c.substr(1);
+    DebugJS.bat.ctrl.tmpEchoOff = true;
+  }
   if (c == '') {
     return 1;
   }
-  if (cmd.match(/^\s*#/)) {
+  if (c.charAt(0) == '#') {
     return 1;
   }
    if (c == 'bat') {
     return 1;
-  } else if (c == '@echo off') {
-    DebugJS.bat.ctrl.echo = false;
-    return 1;
-  } else if (c == '@echo on') {
-    DebugJS.bat.ctrl.echo = true;
+  } else if (c == 'echo') {
+    if (a[0] == 'off') {
+      DebugJS.bat.ctrl.echo = false;
+      return 1;
+    } else if (a[0] == 'on') {
+      DebugJS.bat.ctrl.echo = true;
+      return 1;
+    }
+  }
+  if (c == 'nop') {
+    DebugJS.log('');
     return 1;
   }
-  var a = DebugJS.splitArgs(cmd);
-  if (a[0] == 'wait') {
-    var w = a[1] | 0;
+  if (c == 'wait') {
+    var w = a[0] | 0;
     DebugJS.bat.preproEcho(cmd);
     DebugJS.bat.tid = setTimeout(DebugJS.bat.exec, w);
     return 2;
