@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709210030';
+  this.v = '201709212022';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1943,10 +1943,16 @@ DebugJS.prototype = {
     var currentY = e.clientY;
     var moveX, moveY, t, l, w, h;
 
-    if (!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC)) {
-      if (currentX > document.documentElement.clientWidth) {
-        currentX = document.documentElement.clientWidth;
-      }
+    if (currentX > document.documentElement.clientWidth) {
+      currentX = document.documentElement.clientWidth;
+    } else if (currentX < 0) {
+      currentX = 0;
+    }
+
+    if (currentY > document.documentElement.clientHeight) {
+      currentY = document.documentElement.clientHeight;
+    } else if (currentY < 0) {
+      currentY = 0;
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_N) {
