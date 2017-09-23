@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709220737';
+  this.v = '201709231030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -79,8 +79,6 @@ var DebugJS = DebugJS || function() {
     cdTimerDefaultVal: {hh: '00', mi: '03', ss: '00', sss: '000'},
     disableAllCommands: false,
     disableAllFeatures: false,
-    onFileLoaded: null,
-    onWatchdogTimeout: null,
     mode: '',
     target: null
   };
@@ -356,6 +354,10 @@ var DebugJS = DebugJS || function() {
   this.extBodyPanel = null;
   this.extPanels = [];
   this.extActivePanel = -1;
+  this.evtListener = {
+    'fileloaded': [],
+    'watchdog': []
+  };
   this.setupDefaultOptions();
 };
 DebugJS.ENABLE = true;
@@ -5128,10 +5130,12 @@ DebugJS.prototype = {
     }
     ctx.updateFilePreview(html);
     setTimeout(ctx.fileLoadFinalize, 1000);
-    var cb = ctx.options.onFileLoaded;
-    if (cb) {
-      var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64);
-      cb(file, content, isB64);
+    for (var i = 0; i < ctx.evtListener.fileloaded.length; i++) {
+      var cb = ctx.evtListener.fileloaded[i];
+      if (cb) {
+        var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64);
+        cb(file, content, isB64);
+      }
     }
   },
 
@@ -8784,6 +8788,10 @@ DebugJS.stopwatch.log = function(msg) {
   DebugJS.log(m);
 };
 
+DebugJS.addEventListener = function(type, listener) {
+  DebugJS.ctx.evtListener[type].push(listener);
+};
+
 DebugJS.cmd = function(c, echo) {
   DebugJS.ctx._execCmd(c, echo);
 };
@@ -8945,8 +8953,10 @@ DebugJS.wd.pet = function() {
   var elapsed = now - DebugJS.wd.wdPetTime;
   if (elapsed > ctx.properties.wdt.value) {
     DebugJS.log.w('watchdog bark! (' + elapsed + 'ms)');
-    var cb = ctx.options.onWatchdogTimeout;
-    if (cb) cb(elapsed);
+    for (var i = 0; i < ctx.evtListener.watchdog.length; i++) {
+      var cb = ctx.evtListener.watchdog[i];
+      if (cb) cb(elapsed);
+    }
   }
   DebugJS.wd.wdPetTime = now;
   DebugJS.wd.wdTmId = setTimeout(DebugJS.wd.pet, DebugJS.wd.INTERVAL);

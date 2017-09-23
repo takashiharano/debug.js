@@ -90,6 +90,9 @@ DebugJS.init({visible:true});
 //DebugJS.init({mode:'noui'});
 //DebugJS.init({target:'debug'});
 
+//dbg.addEventListener('watchdog', onWatchdogTimeout);
+//dbg.addEventListener('fileloaded', onFileLoaded);
+
 var options1 = {
   visible: true,
   keyAssign: {
@@ -166,13 +169,6 @@ var options4 = {
   useClearButton: true
 };
 //DebugJS.init(options4);
-
-var options5 = {
-  visible: false,
-  onFileLoaded: onFileLoaded,
-  onWatchdogTimeout: onWatchdogTimeout
-};
-//DebugJS.init(options5);
 
 //log.t('init start');
 log('Here is the log output example!');
@@ -1082,31 +1078,6 @@ If you want to change the debugger settings, explicitly call for initialization 
   </tr>
 
   <tr>
-    <td class="name">onFileLoaded</td>
-    <td>
-      Callback function which is called when file load has been completed<br>
-<pre class="eg">Function format:
-  function onFileLoaded(file, content, isB64) {}
-
-  file   : meta info (MIME Type, Size, Modified date)
-  content: File content
-  isB64  : true = Base64 encoded / false = Binary ArrayBuffer
-</pre>
-    </td>
-    <td>null</td>
-  </tr>
-
-  <tr>
-    <td class="name">onWatchdogTimeout</td>
-    <td>
-      Callback function which is called when the watchdog timer has been timed out.<br>
-<pre class="eg">Function format:
-function onWatchdogTimeout(elapsed) {}</pre>
-    </td>
-    <td>null</td>
-  </tr>
-
-  <tr>
     <td class="name">mode</td>
     <td>
       "kiosk" : Make the debugger window go full screen<br>
@@ -1357,6 +1328,35 @@ time.check()
 time.check('timer1')
 -&gt; A string like "00:01:23.456" will be returned.
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.addEventListener<br>
+      <span class="alias">( dbg.addEventListener )</span>
+    </td>
+    <td>
+      arg1: type<br>
+      arg2: listener
+    </td>
+    <td>
+Adds the specified EventListener function to the list of event listeners for the specified event type.<br>
+<br>
+      type: <b>fileloaded</b><br>
+Callback function which is called when file load has been completed<br>
+<pre class="eg">Function format:
+  function onFileLoaded(file, content, isB64) {}
+
+  file   : meta info (MIME Type, Size, Modified date)
+  content: File content
+  isB64  : true = Base64 encoded / false = Binary ArrayBuffer
+</pre>
+<br>
+      type: <b>watchdog</b><br>
+      Callback function which is called when the watchdog timer has been timed out.<br>
+<pre class="eg">Function format:
+  function onWatchdogTimeout(elapsed) {}</pre>
     </td>
   </tr>
 
