@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709242332';
+  this.v = '201709250110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -290,7 +290,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run|list|clear'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run|list|clear [start-end]'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -5923,7 +5923,13 @@ DebugJS.prototype = {
     var args = DebugJS.splitArgs(arg);
     switch (args[0]) {
       case 'run':
-        DebugJS.bat.run();
+        var sl = 0, el = 0;
+        if (args[1]) {
+          var ln = args[1].split('-');
+          sl = ln[0] | 0;
+          el = ln[1] | 0;
+        }
+        DebugJS.bat.run(sl, el);
         break;
       case 'list':
         if (DebugJS.bat.cmds.length == 0) {
@@ -8936,14 +8942,15 @@ DebugJS.cmd = function(c, echo) {
   DebugJS.ctx._execCmd(c, echo);
 };
 
-DebugJS.bat = function(b) {
+DebugJS.bat = function(b, sl, el) {
   DebugJS.bat.store(b);
-  DebugJS.bat.run();
+  DebugJS.bat.run(sl, el);
 };
 
 DebugJS.bat.cmds = [];
 DebugJS.bat.ctrl = {
   pc: 0,
+  endPc: 0,
   echo: true,
   tmpEchoOff: false,
   cont: false
@@ -8973,19 +8980,32 @@ DebugJS.bat.parseLabels = function() {
   }
 };
 
-DebugJS.bat.run = function() {
+DebugJS.bat.run = function(sl, el) {
+  if (DebugJS.bat.cmds.length == 0) {
+    DebugJS.log('no batch loaded');
+    return;
+  }
+  sl = (sl | 0) - 1; if (sl < 0) sl = 0;
+  if (sl >= DebugJS.bat.cmds.length) {
+    DebugJS.log.e('out of range (1-' + DebugJS.bat.cmds.length + ')');
+    return;
+  }
+  el = (el | 0) - 1; if (el < 0) el = 0;
+  if (el < sl) {
+    el = DebugJS.bat.cmds.length - 1;
+  } else if (el >= DebugJS.bat.cmds.length) {
+    el = DebugJS.bat.cmds.length - 1;
+  }
   DebugJS.ctx.status &= ~DebugJS.STATE_SIGINT;
-  DebugJS.bat.ctrl.pc = 0;
+  DebugJS.bat.ctrl.pc = sl;
+  DebugJS.bat.ctrl.endPc = (el == 0 ? DebugJS.bat.cmds.length - 1 : el);
   if (DebugJS.bat.tid != 0) {
     clearTimeout(DebugJS.bat.tid);
+    DebugJS.bat.tid = 0;
   }
   DebugJS.bat.ctrl.echo = true;
 
-  if (DebugJS.bat.cmds.length == 0) {
-    DebugJS.log('no batch loaded');
-  } else {
-    DebugJS.bat.exec();
-  }
+  DebugJS.bat.exec();
 };
 
 DebugJS.bat.exec = function() {
@@ -8996,7 +9016,7 @@ DebugJS.bat.exec = function() {
     DebugJS.bat.finalize();
     return;
   }
-  if (DebugJS.bat.ctrl.pc >= DebugJS.bat.cmds.length) {
+  if (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc) {
     return;
   }
   var c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
@@ -9047,7 +9067,8 @@ DebugJS.bat.prepro = function(cmd) {
       }
       break;
     case 'exit':
-       ctrl.pc = DebugJS.bat.cmds.length;
+      ctrl.pc = DebugJS.bat.cmds.length;
+      DebugJS.bat.preproEcho(cmd);
       return 1;
     case 'goto':
       var idx = DebugJS.bat.labels[a[0]];
@@ -9091,6 +9112,10 @@ DebugJS.bat.finalize = function() {
   c.pc = 0;
   c.echo = true;
   c.cont = false;
+  if (DebugJS.bat.tid != 0) {
+    clearTimeout(DebugJS.bat.tid);
+    DebugJS.bat.tid = 0;
+  }
 };
 
 DebugJS.bat.clear = function() {
