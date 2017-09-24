@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709231030';
+  this.v = '201709241518';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -76,7 +76,6 @@ var DebugJS = DebugJS || function() {
     useCommandLine: true,
     cmdHistoryMax: 100,
     timerLineColor: '#0cf',
-    cdTimerDefaultVal: {hh: '00', mi: '03', ss: '00', sss: '000'},
     disableAllCommands: false,
     disableAllFeatures: false,
     mode: '',
@@ -325,7 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
-    {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch start|stop|reset'},
+    {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -345,6 +344,7 @@ var DebugJS = DebugJS || function() {
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
     hexdumplimit: {value: 102400, restriction: /^[0-9]+$/},
     hexdumpfoot: {value: 16, restriction: /^[0-9]+$/},
+    timer: {value: '00:03:00.000', restriction: /.*/},
     wdt: {value: 500, restriction: /^[0-9]+$/}
   };
   this.extBtn = null;
@@ -608,6 +608,7 @@ DebugJS.prototype = {
 
     ctx.initUi(ctx, restoreOption);
     ctx.initCommandTable(ctx);
+    ctx.initSetPropsCb(ctx);
     ctx.status |= DebugJS.STATE_INITIALIZED;
     ctx.initExtension(ctx);
     ctx.printLogMsg();
@@ -935,6 +936,10 @@ DebugJS.prototype = {
     for (; i < oldSize; i++) {
       ctx.msgBuf.add(buf[i]);
     }
+  },
+
+  initSetPropsCb: function(ctx) {
+    ctx.properties.timer.cb = ctx.setPropTimerCb;
   },
 
   createResizeSideArea: function(cursor, state, width, height) {
@@ -3938,6 +3943,11 @@ DebugJS.prototype = {
     ctx.updateToolsBtn(ctx);
   },
 
+  isAvailableTools: function(ctx) {
+    if ((ctx.win == null) || !(ctx.options.useTools)) return false;
+    return true;
+  },
+
   createToolsPanel: function(ctx) {
     var defaultFontSize = ctx.computedFontSize;
     var p = ctx.createSubBasePanel(ctx);
@@ -4154,13 +4164,13 @@ DebugJS.prototype = {
     ctx.timerStopWatchCdInput.style.margin = '0';
     ctx.timerStopWatchCdInput.style.lineHeight = baseFontSize + 'px';
     basePanel.appendChild(ctx.timerStopWatchCdInput);
-    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.hh, baseFontSize);
+    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).hh, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, ':');
-    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.mi, baseFontSize);
+    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).mi, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, ':');
-    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.ss, baseFontSize);
+    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).ss, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, '.', msFontSize);
-    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, ctx.options.cdTimerDefaultVal.sss, msFontSize, '2em');
+    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).sss, msFontSize, '2em');
 
     var timerDwnBtns = document.createElement('div');
     var marginT = fontSize * 0.8;
@@ -4196,6 +4206,7 @@ DebugJS.prototype = {
     ctx.setStyle(txt, 'font-size', fontSize + 'px');
     if (width) ctx.setStyle(txt, 'width', width);
     txt.value = val;
+    txt.oninput = ctx.updatePropTimer;
     base.appendChild(txt);
     return txt;
   },
@@ -4265,6 +4276,23 @@ DebugJS.prototype = {
     ctx.drawStopWatchCd();
   },
 
+  setPropTimerCb: function(v) {
+    var ctx = DebugJS.ctx;
+    var tm = DebugJS.timestr2struct(v);
+    if (ctx.timerStopWatchCdInput) {
+      ctx.timerTxtHH.value = tm.hh;
+      ctx.timerTxtMI.value = tm.mi;
+      ctx.timerTxtSS.value = tm.ss;
+      ctx.timerTxtSSS.value = tm.sss;
+    }
+    return DebugJS.getTimeStr(tm);
+  },
+
+  updatePropTimer: function(v) {
+    var ctx = DebugJS.ctx;
+    ctx.properties.timer.value = ctx.timerTxtHH.value + ':' + ctx.timerTxtMI.value + ':' + ctx.timerTxtSS.value + '.' + ctx.timerTxtSSS.value;
+  },
+
   calcTimeupTimeInp: function() {
     var ctx = DebugJS.ctx;
     var timeupHH = (ctx.timerTxtHH.value | 0) * 60 * 60 * 1000;
@@ -4282,18 +4310,7 @@ DebugJS.prototype = {
     ctx.timerTxtMI.value = tm.mi;
     ctx.timerTxtSS.value = tm.ss;
     ctx.timerTxtSSS.value = tm.sss;
-  },
-
-  saveCountDownTimerVal: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.timerStopWatchCdInput) {
-      ctx.options.cdTimerDefaultVal = {
-        hh: ctx.timerTxtHH.value,
-        mi: ctx.timerTxtMI.value,
-        ss: ctx.timerTxtSS.value,
-        sss: ctx.timerTxtSSS.value
-      };
-    }
+    ctx.updatePropTimer();
   },
 
   toggleTimerMode: function() {
@@ -4465,6 +4482,7 @@ DebugJS.prototype = {
 
   updateTimerSwBtnsCu: function() {
     var ctx = DebugJS.ctx;
+    if (!ctx.timerStartStopBtnCu) return;
     var btn = (ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING) ? '||' : '>>';
     ctx.timerStartStopBtnCu.innerText = btn;
     ctx.updateTimerLapBtnCu();
@@ -4601,6 +4619,7 @@ DebugJS.prototype = {
 
   updateTimerSwBtnsCd: function() {
     var ctx = DebugJS.ctx;
+    if (!ctx.timerStartStopBtnCd) return;
     var btn = (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) ? '||' : '>>';
     ctx.timerStartStopBtnCd.innerText = btn;
     ctx.timerStartStopBtnCdInp.innerText = btn;
@@ -6278,7 +6297,7 @@ DebugJS.prototype = {
       var json = DebugJS.omitLeadingWhiteSpace(arg);
       var lv = 0;
       var jsnFlg = true;
-      if (json.substr(0, 1) == '-') {
+      if (json.charAt(0) == '-') {
         var opt = json.match(/-p\s/);
         if (opt != null) jsnFlg = false;
         opt = json.match(/-l(\d+)/);
@@ -6530,6 +6549,12 @@ DebugJS.prototype = {
         }
       }
       ctx.properties[name].value = value;
+      if (ctx.properties[name].cb) {
+        var ret = ctx.properties[name].cb(value);
+        if (ret != undefined) {
+          ctx.properties[name].value = ret;
+        }
+      }
       DebugJS.log.res(value);
     } else {
       DebugJS.log.e(name + ' is invalid property name.');
@@ -6625,7 +6650,29 @@ DebugJS.prototype = {
   cmdStopwatch: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
-    switch (args[0]) {
+    var sw = 0;
+    var op = args[0];
+    if (args[0].substr(0, 2) == 'sw') {
+      sw = args[0].charAt(2) | 0;
+      op = args[1];
+    }
+
+    var ret = false;
+    if (sw == 0) {
+      ret = ctx.cmdStopwatch0(ctx, op);
+    } else if (sw == 1) {
+      ret = ctx.cmdStopwatch1(ctx, op);
+    } else if (sw == 2) {
+      ret = ctx.cmdStopwatch2(ctx, op);
+    }
+
+    if (!ret) {
+      DebugJS.printUsage(tbl.usage);
+    }
+  },
+
+  cmdStopwatch0: function(ctx, op) {
+    switch (op) {
       case 'start':
         ctx.startStopWatch();
         break;
@@ -6636,8 +6683,54 @@ DebugJS.prototype = {
         ctx.resetStopWatch();
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        return false;
     }
+    return true;
+  },
+
+  cmdStopwatch1: function(ctx, op) {
+    if (!ctx.isAvailableTools(ctx)) return false;
+    switch (op) {
+      case 'start':
+        ctx.startTimerStopWatchCu();
+        break;
+      case 'stop':
+        ctx.stopTimerStopWatchCu();
+        break;
+      case 'reset':
+        ctx.resetTimerStopWatchCu();
+        break;
+      case 'split':
+        ctx.splitTimerStopWatchCu();
+        break;
+      case 'end':
+        ctx.endTimerStopWatchCu();
+        break;
+      default:
+        return false;
+    }
+    return true;
+  },
+
+  cmdStopwatch2: function(ctx, op) {
+    if (!ctx.isAvailableTools(ctx)) return false;
+    switch (op) {
+      case 'start':
+        ctx.startTimerStopWatchCd();
+        break;
+      case 'stop':
+        ctx.stopTimerStopWatchCd();
+        break;
+      case 'reset':
+        ctx.resetTimerStopWatchCd();
+        break;
+      case 'split':
+        ctx.splitTimerStopWatchCd();
+        break;
+      default:
+        return false;
+    }
+    return true;
   },
 
   cmdUnicode: function(arg, tbl) {
@@ -6749,7 +6842,6 @@ DebugJS.prototype = {
         status: ctx.status,
         sizeStatus: ctx.sizeStatus
       };
-      ctx.saveCountDownTimerVal();
       ctx.featStackBak = ctx.featStack.concat();
       ctx.finalizeFeatures(ctx);
       ctx.setWinSize('normal');
@@ -7115,6 +7207,16 @@ DebugJS.getLogTime = function() {
   return t;
 };
 
+DebugJS.getTimerStr = function(ms) {
+  var tm = DebugJS.ms2struct(ms, true);
+  var ret = tm.hh + ':' + tm.mi + ':' + tm.ss + '.' + tm.sss;
+  return ret;
+};
+
+DebugJS.getTimeStr = function(st) {
+  return st.hh + ':' + st.mi + ':' + st.ss + '.' + st.sss;
+};
+
 DebugJS.ms2struct = function(ms, format) {
   var wk = ms;
   var sign = false;
@@ -7154,10 +7256,28 @@ DebugJS.ms2struct = function(ms, format) {
   return tm;
 };
 
-DebugJS.getTimerStr = function(ms) {
-  var tm = DebugJS.ms2struct(ms, true);
-  var ret = tm.hh + ':' + tm.mi + ':' + tm.ss + '.' + tm.sss;
-  return ret;
+DebugJS.timestr2struct = function(str) {
+  var wk = str.split(':');
+  var h = wk[0];
+  var mi = (wk[1] == undefined ? '' : wk[1]);
+  var s = (wk[2] == undefined ? '' : wk[2]);
+  var ss = s.split('.')[0];
+  var sss = s.split('.')[1];
+  if (sss == undefined) sss = '';
+  mi = DebugJS.nan2zero(mi);
+  ss = DebugJS.nan2zero(ss);
+  sss = DebugJS.nan2zero(sss);
+  var st = {
+    hh: DebugJS.nan2zero(h),
+    mi: ('00' + mi).slice(-2),
+    ss: ('00' + ss).slice(-2),
+    sss: ('000' + sss).slice(-3)
+  };
+  return st;
+};
+
+DebugJS.nan2zero = function(v) {
+  return (isNaN(v) ? 0 : v);
 };
 
 DebugJS.checkModKey = function(e) {
@@ -8741,7 +8861,7 @@ DebugJS.time.check = function(timerName) {
 
 DebugJS.stopwatch = function() {
   var ctx = DebugJS.ctx;
-  if ((ctx.win == null) || !(ctx.options.useTools)) return false;
+  if (!ctx.isAvailableTools(ctx)) return false;
   ctx.showDbgWin();
   ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'timer', 'cu');
   return true;
@@ -8769,7 +8889,7 @@ DebugJS.stopwatch.end = function(m) {
 };
 
 DebugJS.stopwatch.split = function(m) {
-  if (DebugJS.stopwatch()) {
+  if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
     m = DebugJS.TIMER_NAME_SW_CU + ': %t(⊿%lt)' + (m == undefined ? '' : ' ' + m);
     DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU, false, m);
   }
