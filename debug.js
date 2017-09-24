@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709250110';
+  this.v = '201709250133';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9107,6 +9107,15 @@ DebugJS.bat.list = function() {
   return s;
 };
 
+DebugJS.bat.terminate = function() {
+  DebugJS.ctx.status |= DebugJS.STATE_SIGINT;
+};
+
+DebugJS.bat.clear = function() {
+  DebugJS.bat.cmds = [];
+  DebugJS.bat.finalize();
+};
+
 DebugJS.bat.finalize = function() {
   var c = DebugJS.bat.ctrl;
   c.pc = 0;
@@ -9116,11 +9125,6 @@ DebugJS.bat.finalize = function() {
     clearTimeout(DebugJS.bat.tid);
     DebugJS.bat.tid = 0;
   }
-};
-
-DebugJS.bat.clear = function() {
-  DebugJS.bat.cmds = [];
-  DebugJS.bat.finalize();
 };
 
 DebugJS.bat.save = function(b) {
@@ -9384,6 +9388,9 @@ DebugJS.balse = function() {
   log.root = DebugJS.z1;
   DebugJS.cmd = DebugJS.z2;
   DebugJS.bat = DebugJS.z1;
+  DebugJS.bat.list = DebugJS.z0;
+  DebugJS.bat.terminate = DebugJS.z0;
+  DebugJS.bat.clear = DebugJS.z0;
   DebugJS.countElements = DebugJS.z2;
   DebugJS.getHtml = DebugJS.z1;
   DebugJS.init = DebugJS.z1;
