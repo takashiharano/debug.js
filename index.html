@@ -20,7 +20,6 @@
 <script src="dummy2.js"></script>
 <script src="dummy3.js"></script>
 -->
-
 <style>
 html, body {width:100%; margin:0; color:#333; font-size:18px; font-family:Arial, sans-serif;}
 a {color:#00f; text-decoration:none;}
@@ -82,14 +81,14 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .overlay-val{padding:2px;border-radius:4px;background:rgba(0,102,238,0.5); }
 </style>
 <script>
-DebugJS.init({visible:true});
-//DebugJS.wd.start(500);
+dbg.init({visible:true});
+//dbg.wd.start(500);
 
-//DebugJS.init({visible: true, zoom: '1.4'});
-//DebugJS.init({visible: true, bufsize: 10});
-//DebugJS.init({mode:'kiosk',zoom:2});
-//DebugJS.init({mode:'noui'});
-//DebugJS.init({target:'debug'});
+//dbg.init({visible: true, zoom: '1.4'});
+//dbg.init({visible: true, bufsize: 10});
+//dbg.init({mode:'kiosk',zoom:2});
+//dbg.init({mode:'noui'});
+//dbg.init({target:'debug'});
 
 //dbg.addEventListener('watchdog', onWatchdogTimeout);
 //dbg.addEventListener('fileloaded', onFileLoaded);
@@ -114,7 +113,7 @@ var options1 = {
   //position: 'nw'
   disableAllCommands: true
 };
-//DebugJS.init(options1);
+//dbg.init(options1);
 
 var options2 = {
   visible: true,
@@ -126,7 +125,7 @@ var options2 = {
   //useTools: true,
   //resizable: false
 };
-//DebugJS.init(options2);
+//dbg.init(options2);
 
 var options3 = {
   target: 'debug',
@@ -138,7 +137,7 @@ var options3 = {
   disableAllFeatures: true,
   useClearButton: true
 };
-//DebugJS.init(options3);
+//dbg.init(options3);
 
 var options4 = {
   target: 'debug',
@@ -169,7 +168,7 @@ var options4 = {
   msgDisplayBackground: 'rgba(168,168,168,0.2)',
   useClearButton: true
 };
-//DebugJS.init(options4);
+//dbg.init(options4);
 
 //log.t('init start');
 log('Here is the log output example!');
@@ -557,7 +556,7 @@ function buftest(size) {
     visible: true,
     bufsize: size
   };
-  DebugJS.init(opt);
+  dbg.init(opt);
 }
 </script>
 </head>

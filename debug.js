@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709250133';
+  this.v = '201709250700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -335,7 +335,7 @@ var DebugJS = DebugJS || function() {
   ];
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
-  this.options = null;
+  this.opt = null;
   this.errStatus = DebugJS.ERR_STATE_NONE;
   this.properties = {
     esc: {value: 'enable', restriction: /^enable$|^disable$/},
@@ -547,10 +547,10 @@ DebugJS.z2 = function(x, xx) {};
 DebugJS.z3 = function(x, xx, xxx) {};
 
 DebugJS.prototype = {
-  init: function(options, restoreOption) {
+  init: function(opt, restoreOpt) {
     if (!DebugJS.ENABLE) {return false;}
     var ctx = DebugJS.ctx;
-    var keepStatus = ((restoreOption && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) ? true : false);
+    var keepStatus = ((restoreOpt && (restoreOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) ? true : false);
     ctx.bodyEl = document.body;
     ctx.finalizeFeatures(ctx);
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
@@ -570,15 +570,15 @@ DebugJS.prototype = {
       ctx.uiStatus = 0;
     }
 
-    if ((ctx.options == null) || ((options != null) && (!keepStatus)) || (options === undefined)) {
+    if ((ctx.opt == null) || ((opt != null) && (!keepStatus)) || (opt === undefined)) {
       ctx.setupDefaultOptions();
     }
-    if (options) {
-      for (var key1 in options) {
-        for (var key2 in ctx.options) {
+    if (opt) {
+      for (var key1 in opt) {
+        for (var key2 in ctx.opt) {
           if (key1 == key2) {
-            ctx.options[key1] = options[key1];
-            if ((key1 == 'disableAllFeatures') && (options[key1])) {
+            ctx.opt[key1] = opt[key1];
+            if ((key1 == 'disableAllFeatures') && (opt[key1])) {
               ctx.disableAllFeatures(ctx);
             }
             break;
@@ -587,15 +587,15 @@ DebugJS.prototype = {
       }
     }
 
-    if (ctx.msgBuf.getSize() != ctx.options.bufsize) {
+    if (ctx.msgBuf.getSize() != ctx.opt.bufsize) {
       if (!(ctx.status & DebugJS.STATE_LOG_PRESERVED) ||
           ((ctx.status & DebugJS.STATE_LOG_PRESERVED) &&
-           (ctx.msgBuf.getSize() < ctx.options.bufsize))) {
+           (ctx.msgBuf.getSize() < ctx.opt.bufsize))) {
         ctx.initBuf(ctx);
       }
     }
 
-    if (ctx.options.mode == 'noui') {
+    if (ctx.opt.mode == 'noui') {
       ctx.removeEventHandlers(ctx);
       ctx.init = DebugJS.z2;
       DebugJS.init = DebugJS.z1;
@@ -606,7 +606,7 @@ DebugJS.prototype = {
       return false;
     }
 
-    ctx.initUi(ctx, restoreOption);
+    ctx.initUi(ctx, restoreOpt);
     ctx.initCommandTable(ctx);
     ctx.initSetPropsCb(ctx);
     ctx.status |= DebugJS.STATE_INITIALIZED;
@@ -615,14 +615,14 @@ DebugJS.prototype = {
     return true;
   },
 
-  initUi: function(ctx, restoreOption) {
-    ctx.initUiStatus(ctx, ctx.options);
-    ctx.computedMinW = DebugJS.DBGWIN_MIN_W * ctx.options.zoom;
-    ctx.computedMinH = DebugJS.DBGWIN_MIN_H * ctx.options.zoom;
-    ctx.computedFontSize = Math.round(ctx.options.fontSize * ctx.options.zoom);
-    ctx.computedWidth = Math.round(ctx.options.width * ctx.options.zoom);
+  initUi: function(ctx, restoreOpt) {
+    ctx.initUiStatus(ctx, ctx.opt);
+    ctx.computedMinW = DebugJS.DBGWIN_MIN_W * ctx.opt.zoom;
+    ctx.computedMinH = DebugJS.DBGWIN_MIN_H * ctx.opt.zoom;
+    ctx.computedFontSize = Math.round(ctx.opt.fontSize * ctx.opt.zoom);
+    ctx.computedWidth = Math.round(ctx.opt.width * ctx.opt.zoom);
 
-    if (ctx.options.target == null) {
+    if (ctx.opt.target == null) {
       ctx.id = ctx.DEFAULT_ELM_ID;
       ctx.win = document.createElement('div');
       ctx.win.id = ctx.id;
@@ -631,11 +631,11 @@ DebugJS.prototype = {
       ctx.win.style.width = ctx.computedWidth + 'px';
       ctx.win.style.boxShadow = DebugJS.WIN_SHADOW + 'px ' + DebugJS.WIN_SHADOW + 'px 10px rgba(0,0,0,.3)';
       ctx.bodyEl.appendChild(ctx.win);
-      if (ctx.options.mode == 'kiosk') {
+      if (ctx.opt.mode == 'kiosk') {
         ctx.setupKioskMode(ctx);
       }
     } else {
-      ctx.id = ctx.options.target;
+      ctx.id = ctx.opt.target;
       ctx.win = document.getElementById(ctx.id);
       ctx.win.style.position = 'relative';
     }
@@ -643,13 +643,13 @@ DebugJS.prototype = {
     ctx.win.style.padding = DebugJS.WIN_BORDER + 'px';
     ctx.win.style.lineHeight = '1em';
     ctx.win.style.boxSizing = 'content-box';
-    ctx.win.style.border = ctx.options.border;
-    ctx.win.style.borderRadius = ctx.options.borderRadius;
-    ctx.win.style.background = ctx.options.background;
-    ctx.win.style.color = ctx.options.fontColor;
+    ctx.win.style.border = ctx.opt.border;
+    ctx.win.style.borderRadius = ctx.opt.borderRadius;
+    ctx.win.style.background = ctx.opt.background;
+    ctx.win.style.color = ctx.opt.fontColor;
     ctx.win.style.fontSize = ctx.computedFontSize + 'px',
-    ctx.win.style.fontFamily = ctx.options.fontFamily;
-    ctx.win.style.opacity = ctx.options.opacity;
+    ctx.win.style.fontFamily = ctx.opt.fontFamily;
+    ctx.win.style.opacity = ctx.opt.opacity;
 
     ctx.createPanels(ctx);
 
@@ -662,7 +662,7 @@ DebugJS.prototype = {
     ctx.setupEventHandler(ctx);
 
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-      if (ctx.options.mode == 'kiosk') {
+      if (ctx.opt.mode == 'kiosk') {
         ctx.focusCmdLine();
       } else {
         ctx.setupMove(ctx);
@@ -673,7 +673,7 @@ DebugJS.prototype = {
         ctx.resetDbgWinSizePos();
         ctx.updateWinCtrlBtnPanel();
 
-        if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
+        if ((restoreOpt != null) && (restoreOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
           ctx.focusCmdLine();
         }
 
@@ -685,16 +685,16 @@ DebugJS.prototype = {
       ctx.initWidth = ctx.win.offsetWidth - DebugJS.WIN_ADJUST;
       ctx.initHeight = ctx.win.offsetHeight - DebugJS.WIN_ADJUST;
     }
-    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.options.zoom;
-    if ((restoreOption != null) && (restoreOption.cause == DebugJS.INIT_CAUSE_ZOOM)) {
+    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.opt.zoom;
+    if ((restoreOpt != null) && (restoreOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom(ctx);
-      ctx.reopenFeatures(ctx, restoreOption.status);
-      ctx.restoreDbgWinSize(ctx, restoreOption.sizeStatus);
+      ctx.reopenFeatures(ctx, restoreOpt.status);
+      ctx.restoreDbgWinSize(ctx, restoreOpt.sizeStatus);
     }
   },
 
   initStyles: function(ctx) {
-    var opt = ctx.options;
+    var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
     var styles = {};
     if (DebugJS.getBrowserType().name == 'Firefox') {
@@ -930,7 +930,7 @@ DebugJS.prototype = {
   initBuf: function(ctx) {
     var buf = DebugJS.ctx.msgBuf.getAll();
     var oldSize = buf.length;
-    var newSize = ctx.options.bufsize;
+    var newSize = ctx.opt.bufsize;
     var i = ((oldSize > newSize) ? (oldSize - newSize) : 0);
     ctx.msgBuf = new DebugJS.RingBuffer(newSize);
     for (; i < oldSize; i++) {
@@ -976,8 +976,8 @@ DebugJS.prototype = {
   },
 
   setupDefaultOptions: function() {
-    this.options = {};
-    DebugJS.deepCopy(this.DEFAULT_OPTIONS, this.options);
+    this.opt = {};
+    DebugJS.deepCopy(this.DEFAULT_OPTIONS, this.opt);
   },
 
   setupEventHandler: function(ctx) {
@@ -987,14 +987,14 @@ DebugJS.prototype = {
 
     if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ||
         (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) ||
-        (ctx.options.useMouseStatusInfo) ||
-        (ctx.options.useScreenMeasure)) {
+        (ctx.opt.useMouseStatusInfo) ||
+        (ctx.opt.useScreenMeasure)) {
       window.addEventListener('mousedown', ctx.onMouseDown, true);
       window.addEventListener('mousemove', ctx.onMouseMove, true);
       window.addEventListener('mouseup', ctx.onMouseUp, true);
     }
 
-    if (ctx.options.useWindowSizeInfo) {
+    if (ctx.opt.useWindowSizeInfo) {
       window.addEventListener('resize', ctx.onResize, true);
       ctx.onResize();
 
@@ -1002,7 +1002,7 @@ DebugJS.prototype = {
       ctx.onScroll();
     }
 
-    if (ctx.options.useKeyStatusInfo) {
+    if (ctx.opt.useKeyStatusInfo) {
       window.addEventListener('keydown', ctx.onKeyDown, true);
       ctx.updateKeyDownLabel();
       window.addEventListener('keypress', ctx.onKeyPress, true);
@@ -1024,23 +1024,23 @@ DebugJS.prototype = {
     window.removeEventListener('keyup', ctx.onKeyUp, true);
   },
 
-  initUiStatus: function(ctx, options) {
-    if (ctx.options.target == null) {
+  initUiStatus: function(ctx, opt) {
+    if (ctx.opt.target == null) {
       ctx.uiStatus |= DebugJS.UI_ST_DYNAMIC;
       ctx.uiStatus |= DebugJS.UI_ST_DRAGGABLE;
     }
-    if ((ctx.options.visible) || (ctx.options.target != null)) {
+    if ((ctx.opt.visible) || (ctx.opt.target != null)) {
       ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     } else if (ctx.errStatus) {
-      if (((ctx.options.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
-          ((ctx.options.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
-          ((ctx.options.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG))) {
+      if (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
+          ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
+          ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG))) {
         ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
         ctx.errStatus = DebugJS.ERR_STATE_NONE;
       }
     }
-    if (ctx.options.resizable) ctx.uiStatus |= DebugJS.UI_ST_RESIZABLE;
-    if (ctx.options.useClock) ctx.uiStatus |= DebugJS.UI_ST_SHOW_CLOCK;
+    if (ctx.opt.resizable) ctx.uiStatus |= DebugJS.UI_ST_RESIZABLE;
+    if (ctx.opt.useClock) ctx.uiStatus |= DebugJS.UI_ST_SHOW_CLOCK;
   },
 
   setupKioskMode: function(ctx) {
@@ -1050,12 +1050,12 @@ DebugJS.prototype = {
     ctx.win.style.width = document.documentElement.clientWidth + 'px';
     ctx.win.style.height = document.documentElement.clientHeight + 'px';
 
-    ctx.options.togglableShowHide = false;
-    ctx.options.usePinButton = false;
-    ctx.options.useWinCtrlButton = false;
-    ctx.options.useScreenMeasure = false;
-    ctx.options.useHtmlSrc = false;
-    ctx.options.useElementInfo = false;
+    ctx.opt.togglableShowHide = false;
+    ctx.opt.usePinButton = false;
+    ctx.opt.useWinCtrlButton = false;
+    ctx.opt.useScreenMeasure = false;
+    ctx.opt.useHtmlSrc = false;
+    ctx.opt.useElementInfo = false;
 
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
@@ -1064,20 +1064,20 @@ DebugJS.prototype = {
   disableAllFeatures: function(ctx) {
     var len = DebugJS.FEATURES.length;
     for (var i = 0; i < len; i++) {
-      ctx.options[DebugJS.FEATURES[i]] = false;
+      ctx.opt[DebugJS.FEATURES[i]] = false;
     }
   },
 
   isAllFeaturesDisabled: function(ctx) {
     var len = DebugJS.FEATURES.length;
     for (var i = 0; i < len; i++) {
-      if (ctx.options[DebugJS.FEATURES[i]]) return false;
+      if (ctx.opt[DebugJS.FEATURES[i]]) return false;
     }
     return true;
   },
 
   createPanels: function(ctx) {
-    var opt = ctx.options;
+    var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
 
     ctx.winBody = document.createElement('div');
@@ -1355,7 +1355,7 @@ DebugJS.prototype = {
   },
 
   initDbgWin: function(ctx) {
-    var opt = ctx.options;
+    var opt = ctx.opt;
     if (ctx.isAllFeaturesDisabled(ctx)) return;
     if (opt.useLogFilter) ctx.updateLogFilterButtons();
     if (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK) ctx.updateClockLabel();
@@ -1404,7 +1404,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var btn = ctx.createButton(ctx, ctx.headPanel, label);
     btn.style.float = 'right';
-    btn.style.marginLeft = (marginLeft * ctx.options.zoom) + 'px';
+    btn.style.marginLeft = (marginLeft * ctx.opt.zoom) + 'px';
     if (fontSize) btn.style.fontSize = fontSize;
     btn.onclick = handler;
     btn.style.color = DebugJS.COLOR_INACTIVE;
@@ -1451,12 +1451,12 @@ DebugJS.prototype = {
 
     ctx.filterInputLabel = document.createElement('span');
     ctx.filterInputLabel.style.marginLeft = '4px';
-    ctx.filterInputLabel.style.color = ctx.options.sysInfoColor;
+    ctx.filterInputLabel.style.color = ctx.opt.sysInfoColor;
     ctx.filterInputLabel.innerText = 'Filter:';
     ctx.logHeaderPanel.appendChild(ctx.filterInputLabel);
 
     var filterWidth = 'calc(100% - 27em)';
-    ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.options.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
+    ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.opt.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
     ctx.setStyle(ctx.filterInput, 'position', 'relative');
     ctx.setStyle(ctx.filterInput, 'top', '-2px');
     ctx.setStyle(ctx.filterInput, 'margin-left', '2px');
@@ -1466,8 +1466,8 @@ DebugJS.prototype = {
     ctx.filterCaseBtn.style.marginLeft = '2px';
     ctx.filterCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
     ctx.filterCaseBtn.style.color = DebugJS.COLOR_INACTIVE;
-    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.ctx.options.fontColor;');
-    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.ctx.options.fontColor : DebugJS.COLOR_INACTIVE;');
+    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.ctx.opt.fontColor;');
+    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.ctx.opt.fontColor : DebugJS.COLOR_INACTIVE;');
   },
 
   createLogFilterButton: function(type, btnobj, color) {
@@ -1476,7 +1476,7 @@ DebugJS.prototype = {
     var btn = ctx.createButton(ctx, ctx.logHeaderPanel, label);
     btn.style.marginLeft = '2px';
     btn.onclick = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FILTER_' + type + ');');
-    btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.ctx.options.' + color + ';');
+    btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.ctx.opt.' + color + ';');
     btn.onmouseout = ctx.updateLogFilterButtons;
     return btn;
   },
@@ -1484,7 +1484,7 @@ DebugJS.prototype = {
   initCommandTable: function(ctx) {
     ctx.CMD_TBL = [];
     for (var i = 0; i < ctx.INT_CMD_TBL.length; i++) {
-      if (ctx.options.disableAllCommands) {
+      if (ctx.opt.disableAllCommands) {
         if (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_SYSTEM) {
           ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
         }
@@ -1492,7 +1492,7 @@ DebugJS.prototype = {
         if (!(!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) &&
                (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
             (!((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) &&
-             (ctx.options.mode == 'kiosk') &&
+             (ctx.opt.mode == 'kiosk') &&
              (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_NO_KIOSK)))) {
           ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
         }
@@ -1508,7 +1508,7 @@ DebugJS.prototype = {
     }
     if (ctx.fileLoaderPanel != null) {
       ctx.setStyle(ctx.fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
-      ctx.setStyle(ctx.fileInput, 'min-height', (20 * ctx.options.zoom) + 'px');
+      ctx.setStyle(ctx.fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
       ctx.setStyle(ctx.fileInput, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
@@ -1546,7 +1546,7 @@ DebugJS.prototype = {
 
   setWinPos: function(pos, dbgWinWidth, dbgWinHeight) {
     var ctx = DebugJS.ctx;
-    var opt = ctx.options;
+    var opt = ctx.opt;
     var top, left;
     switch (pos) {
       case 'se':
@@ -1669,7 +1669,7 @@ DebugJS.prototype = {
   },
 
   updateMeasureBtn: function(ctx) {
-    ctx.measureBtn.style.border = 'solid ' + ctx.options.zoom + 'px ' + ((ctx.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.measureBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   updateSysInfoBtn: function(ctx) {
@@ -1698,7 +1698,7 @@ DebugJS.prototype = {
 
   updateSwBtnPanel: function(ctx) {
     var btn = (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
-    var margin = (2 * ctx.options.zoom) + 'px';
+    var margin = (2 * ctx.opt.zoom) + 'px';
     var btns = ctx.createBtnHtml(ctx, 'margin-right:' + margin, 'DebugJS.ctx.resetStopWatch();', '0') +
                ctx.createBtnHtml(ctx, 'margin-right:' + margin, 'DebugJS.ctx.startStopStopWatch();', btn);
     ctx.swBtnPanel.innerHTML = btns;
@@ -1708,7 +1708,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.updateStopWatch();
     if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
-      ctx.swLabel.innerHTML = '<span style="color:' + ctx.options.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>';
+      ctx.swLabel.innerHTML = '<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>';
     } else {
       ctx.swLabel.innerHTML = ctx.swElapsedTimeDisp;
     }
@@ -1745,8 +1745,8 @@ DebugJS.prototype = {
       btn = '&#x2750;';
     }
     fn += 'DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();';
-    var b = '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.options.zoom) + 'px;font-size:' + (16 * ctx.options.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.options.zoom + 'px;margin-right:' + ctx.options.zoom + 'px;font-size:' + (30 * ctx.options.zoom) + 'px;color:#888" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
+    var b = '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.opt.zoom) + 'px;font-size:' + (16 * ctx.opt.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.opt.zoom + 'px;margin-right:' + ctx.opt.zoom + 'px;font-size:' + (30 * ctx.opt.zoom) + 'px;color:#888" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">-</span>';
     ctx.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -1804,13 +1804,13 @@ DebugJS.prototype = {
   updateLogFilterButtons: function() {
     var ctx = DebugJS.ctx;
     var filter = ctx.logFilter;
-    ctx.filterBtnAll.style.color = ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? ctx.options.btnColor : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnStd.style.color = (filter & DebugJS.LOG_FILTER_LOG) ? ctx.options.fontColor : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnVrb.style.color = (filter & DebugJS.LOG_FILTER_VRB) ? ctx.options.logColorV : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnDbg.style.color = (filter & DebugJS.LOG_FILTER_DBG) ? ctx.options.logColorD : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnInf.style.color = (filter & DebugJS.LOG_FILTER_INF) ? ctx.options.logColorI : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnWrn.style.color = (filter & DebugJS.LOG_FILTER_WRN) ? ctx.options.logColorW : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnErr.style.color = (filter & DebugJS.LOG_FILTER_ERR) ? ctx.options.logColorE : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnAll.style.color = ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnStd.style.color = (filter & DebugJS.LOG_FILTER_LOG) ? ctx.opt.fontColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnVrb.style.color = (filter & DebugJS.LOG_FILTER_VRB) ? ctx.opt.logColorV : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnDbg.style.color = (filter & DebugJS.LOG_FILTER_DBG) ? ctx.opt.logColorD : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnInf.style.color = (filter & DebugJS.LOG_FILTER_INF) ? ctx.opt.logColorI : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnWrn.style.color = (filter & DebugJS.LOG_FILTER_WRN) ? ctx.opt.logColorW : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnErr.style.color = (filter & DebugJS.LOG_FILTER_ERR) ? ctx.opt.logColorE : DebugJS.COLOR_INACTIVE;
   },
 
   onchangeLogFilter: function() {
@@ -1822,7 +1822,7 @@ DebugJS.prototype = {
   toggleFilterCase: function() {
     var ctx = DebugJS.ctx;
     ctx.filterCase = (ctx.filterCase ? false : true);
-    ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.ctx.options.fontColor : DebugJS.COLOR_INACTIVE);
+    ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.ctx.opt.fontColor : DebugJS.COLOR_INACTIVE);
     ctx.onchangeLogFilter();
   },
 
@@ -2185,7 +2185,7 @@ DebugJS.prototype = {
       }
       var line = '';
       var lineNum = '';
-      if ((ctx.options.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
+      if ((ctx.opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
         var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var lineNumPadding = '';
         for (var j = 0; j < diffDigits; j++) {
@@ -2193,25 +2193,25 @@ DebugJS.prototype = {
         }
         lineNum = lineNumPadding + lineCnt + ': ';
       }
-      var m = (((ctx.options.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
+      var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
       switch (data.type) {
         case DebugJS.LOG_TYPE_DBG:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.options.logColorD + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.opt.logColorD + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_INF:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + ctx.options.logColorI + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + ctx.opt.logColorI + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_ERR:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + ctx.options.logColorE + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + ctx.opt.logColorE + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_WRN:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + ctx.options.logColorW + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + ctx.opt.logColorW + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_VRB:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) line += lineNum + '<span style="color:' + ctx.options.logColorV + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) line += lineNum + '<span style="color:' + ctx.opt.logColorV + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_SYS:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="color:' + ctx.options.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="color:' + ctx.opt.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_MLT:
           if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
@@ -2392,7 +2392,7 @@ DebugJS.prototype = {
 
   keyHandler: function(e) {
     var ctx = DebugJS.ctx;
-    var opt = ctx.options;
+    var opt = ctx.opt;
     switch (e.keyCode) {
       case 9: // Tab
         if ((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) {
@@ -2557,7 +2557,7 @@ DebugJS.prototype = {
           ctx.startMeasure(ctx, e);
         }
         if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
-          DebugJS.log('<span style="color:' + ctx.options.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
+          DebugJS.log('<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
           ctx.resetStopWatch();
         }
         break;
@@ -2578,14 +2578,14 @@ DebugJS.prototype = {
           }
         }
     }
-    if (ctx.options.useMouseStatusInfo) {
+    if (ctx.opt.useMouseStatusInfo) {
       ctx.updateMouseClickLabel();
     }
   },
 
   onMouseMove: function(e) {
     var ctx = DebugJS.ctx;
-    if (ctx.options.useMouseStatusInfo) {
+    if (ctx.opt.useMouseStatusInfo) {
       ctx.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
       ctx.updateMousePosLabel();
     }
@@ -2617,7 +2617,7 @@ DebugJS.prototype = {
       case 2:
         ctx.mouseClick2 = DebugJS.COLOR_INACTIVE;
     }
-    if (ctx.options.useMouseStatusInfo) {
+    if (ctx.opt.useMouseStatusInfo) {
       ctx.updateMouseClickLabel();
     }
   },
@@ -2750,7 +2750,7 @@ DebugJS.prototype = {
 
   adjustDbgWinPos: function(ctx) {
     var sizePos = ctx.getSelfSizePos();
-    ctx.setWinPos(ctx.options.position, sizePos.w, sizePos.h);
+    ctx.setWinPos(ctx.opt.position, sizePos.w, sizePos.h);
   },
 
   adjustWinMax: function(ctx) {
@@ -2804,7 +2804,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
     var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
-    ctx.setWinPos(ctx.options.position, ctx.initWidth, ctx.initHeight);
+    ctx.setWinPos(ctx.opt.position, ctx.initWidth, ctx.initHeight);
     ctx.setDbgWinSize(w, h);
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     ctx.saveExpandModeOrgSizeAndPos(ctx);
@@ -2828,7 +2828,7 @@ DebugJS.prototype = {
 
   resetToOriginalPosition: function(ctx) {
     var sizePos = ctx.getSelfSizePos();
-    ctx.setWinPos(ctx.options.position, sizePos.w, sizePos.h);
+    ctx.setWinPos(ctx.opt.position, sizePos.w, sizePos.h);
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) {
       ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJUST;
     }
@@ -2855,9 +2855,9 @@ DebugJS.prototype = {
 
   showDbgWinOnError: function(ctx) {
     if ((ctx.errStatus) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
-      if (((ctx.options.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
-          ((ctx.options.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
-          ((ctx.options.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG))) {
+      if (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
+          ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
+          ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG))) {
         ctx.showDbgWin();
         ctx.errStatus = DebugJS.ERR_STATE_NONE;
       }
@@ -2865,7 +2865,7 @@ DebugJS.prototype = {
   },
 
   hideDbgWin: function(ctx) {
-    if ((!ctx.options.togglableShowHide) || (!ctx.win)) return;
+    if ((!ctx.opt.togglableShowHide) || (!ctx.win)) return;
     ctx.errStatus = DebugJS.ERR_STATE_NONE;
     ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
     ctx.uiStatus &= ~DebugJS.UI_ST_VISIBLE;
@@ -2968,10 +2968,10 @@ DebugJS.prototype = {
       originY = 'bottom';
       endPointY = 'top';
     }
-    var size = '<span style="font-family:' + ctx.options.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + (deltaX | 0) + ' H=' + (deltaY | 0) + '</span>';
-    var origin = '<span style="font-family:' + ctx.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px">x=' + ctx.clickedPosX + ',y=' + ctx.clickedPosY + '</span>';
+    var size = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + (deltaX | 0) + ' H=' + (deltaY | 0) + '</span>';
+    var origin = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px">x=' + ctx.clickedPosX + ',y=' + ctx.clickedPosY + '</span>';
     var endPoint = '';
-    //endPoint = '<span style="font-family:' + ctx.options.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px">x=' + currentPosX + ',y=' + currentPosY + '</span>';
+    //endPoint = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px">x=' + currentPosX + ',y=' + currentPosY + '</span>';
     ctx.measureBox.innerHTML = origin + size + endPoint;
   },
 
@@ -3678,10 +3678,10 @@ DebugJS.prototype = {
     }
     if (el) {
       ctx.targetElm = el;
-      ctx.elmPrevBtn.style.color = ctx.options.btnColor;
-      ctx.elmNextBtn.style.color = ctx.options.btnColor;
-      ctx.elmUpdateBtn.style.color = ctx.options.btnColor;
-      ctx.elmCapBtn.style.color = ctx.options.btnColor;
+      ctx.elmPrevBtn.style.color = ctx.opt.btnColor;
+      ctx.elmNextBtn.style.color = ctx.opt.btnColor;
+      ctx.elmUpdateBtn.style.color = ctx.opt.btnColor;
+      ctx.elmCapBtn.style.color = ctx.opt.btnColor;
     }
   },
 
@@ -3741,7 +3741,7 @@ DebugJS.prototype = {
 
   updateElmSelectBtn: function() {
     var ctx = DebugJS.ctx;
-    ctx.elmSelectBtn.style.color = (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? ctx.options.btnColor : DebugJS.COLOR_INACTIVE;
+    ctx.elmSelectBtn.style.color = (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
   },
 
   toggleElmHighlightMode: function() {
@@ -3758,7 +3758,7 @@ DebugJS.prototype = {
 
   updateElmHighlightBtn: function() {
     var ctx = DebugJS.ctx;
-    ctx.elmHighlightBtn.style.color = (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? ctx.options.btnColor : DebugJS.COLOR_INACTIVE;
+    ctx.elmHighlightBtn.style.color = (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
   },
 
   exportTargetElm: function() {
@@ -3861,7 +3861,7 @@ DebugJS.prototype = {
     ctx.htmlSrcUpdBtn = ctx.createButton(ctx, ctx.htmlSrcHeaderPanel, 'UPDATE');
     ctx.htmlSrcUpdBtn.style.float = 'right';
     ctx.htmlSrcUpdBtn.style.marginLeft = '4px';
-    ctx.htmlSrcUpdBtn.style.color = ctx.options.btnColor;
+    ctx.htmlSrcUpdBtn.style.color = ctx.opt.btnColor;
     ctx.htmlSrcUpdBtn.onclick = ctx.showHtmlSrc;
 
     ctx.htmlSrcBodyPanel = document.createElement('div');
@@ -3944,7 +3944,7 @@ DebugJS.prototype = {
   },
 
   isAvailableTools: function(ctx) {
-    if ((ctx.win == null) || !(ctx.options.useTools)) return false;
+    if ((ctx.win == null) || !(ctx.opt.useTools)) return false;
     return true;
   },
 
@@ -4063,13 +4063,13 @@ DebugJS.prototype = {
     var btnFontSize = fontSize * 3;
     ctx.timerClockSubPanel = document.createElement('div');
 
-    var marginB = 20 * ctx.options.zoom;
+    var marginB = 20 * ctx.opt.zoom;
     ctx.timerClockLabel = document.createElement('div');
     ctx.timerClockLabel.style.marginBottom = marginB + 'px';
     ctx.timerClockSubPanel.appendChild(ctx.timerClockLabel);
 
     var btns = document.createElement('div');
-    btns.style.borderTop = 'solid 2px ' + ctx.options.timerLineColor;
+    btns.style.borderTop = 'solid 2px ' + ctx.opt.timerLineColor;
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
     btns.style.fontSize = btnFontSize + 'px';
@@ -4090,14 +4090,14 @@ DebugJS.prototype = {
     var btnFontSize = fontSize * 3;
     panel.basePanel = document.createElement('div');
 
-    var marginT = 40 * ctx.options.zoom;
-    var marginB = 39 * ctx.options.zoom;
+    var marginT = 40 * ctx.opt.zoom;
+    var marginB = 39 * ctx.opt.zoom;
     panel.stopWatchLabel = document.createElement('div');
     panel.stopWatchLabel.style.margin = marginT + 'px 0 ' + marginB + 'px 0';
     panel.basePanel.appendChild(panel.stopWatchLabel);
 
     var btns = document.createElement('div');
-    btns.style.borderTop = 'solid 2px ' + ctx.options.timerLineColor;
+    btns.style.borderTop = 'solid 2px ' + ctx.opt.timerLineColor;
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
     btns.style.fontSize = btnFontSize + 'px';
@@ -4174,7 +4174,7 @@ DebugJS.prototype = {
 
     var timerDwnBtns = document.createElement('div');
     var marginT = fontSize * 0.8;
-    var marginB = fontSize * 1.2 + ctx.options.zoom;
+    var marginB = fontSize * 1.2 + ctx.opt.zoom;
     timerDwnBtns.style.margin = '-' + marginT + 'px 0 ' + marginB + 'px 0';
     timerDwnBtns.style.fontSize = btnFontSize + 'px';
     timerDwnBtns.style.lineHeight = btnFontSize + 'px';
@@ -4185,7 +4185,7 @@ DebugJS.prototype = {
     basePanel.appendChild(timerDwnBtns);
 
     var btns = document.createElement('div');
-    btns.style.borderTop = 'solid 2px ' + ctx.options.timerLineColor;
+    btns.style.borderTop = 'solid 2px ' + ctx.opt.timerLineColor;
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
     btns.style.fontSize = btnFontSize + 'px';
@@ -4387,16 +4387,16 @@ DebugJS.prototype = {
     var fontSize = ctx.computedFontSize * 8;
     var dtFontSize = fontSize * 0.45;
     var msFontSize = fontSize * 0.65;
-    var marginT = 20 * ctx.options.zoom;
-    var marginB = 10 * ctx.options.zoom;
+    var marginT = 20 * ctx.opt.zoom;
+    var marginB = 10 * ctx.opt.zoom;
     var dot = '.';
     if (tm.sss > 500) {
       dot = '&nbsp;';
     }
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + '">' + DebugJS.WDAYS[tm.wday] + '</span>';
-    var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (msFontSize / 5) + 'px;color:' + ctx.options.fontColor + ';font-size:' + msFontSize + 'px">' + tm.ss + dot + '</span>';
-    var label = '<div style="color:' + ctx.options.fontColor + ';font-size:' + dtFontSize + 'px">' + date + '</div>' +
-                '<div style="color:' + ctx.options.fontColor + ';font-size:' + fontSize + 'px;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
+    var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (msFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">' + tm.ss + dot + '</span>';
+    var label = '<div style="color:' + ctx.opt.fontColor + ';font-size:' + dtFontSize + 'px">' + date + '</div>' +
+                '<div style="color:' + ctx.opt.fontColor + ';font-size:' + fontSize + 'px;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
     return label;
   },
 
@@ -4516,7 +4516,7 @@ DebugJS.prototype = {
     var color = DebugJS.TOOL_TIMER_BTN_COLOR;
     if (ctx.timerSwTimeCdContinue) {
       if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
-        color = ctx.options.timerColorExpr;
+        color = ctx.opt.timerColorExpr;
       }
     } else {
       color = '#888';
@@ -4559,7 +4559,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var color = '#fff';
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
-      color = ctx.options.timerColorExpr;
+      color = ctx.opt.timerColorExpr;
     }
     var t = DebugJS.TIMER_NAME_SW_CD + ': ' +
             '<span style="color:' + color + '">' +
@@ -4649,13 +4649,13 @@ DebugJS.prototype = {
       if (now.sss > 500) {
         str = '&nbsp;<span style="font-size:' + msFontSize + 'px">' + '&nbsp;</span>';
       } else {
-        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.options.fontColor + ';font-size:' + msFontSize + 'px">.' + tm.sss + '</span>';
+        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">.' + tm.sss + '</span>';
       }
     } else {
       var dot = ((tm.sss < 500) ? '.' : '&nbsp;');
-      str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.options.fontColor + ';font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>';
+      str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>';
     }
-    var label = '<div style="color:' + ctx.options.fontColor + ';font-size:' + fontSize + 'px">' + str + '</div>';
+    var label = '<div style="color:' + ctx.opt.fontColor + ';font-size:' + fontSize + 'px">' + str + '</div>';
     return label;
   },
 
@@ -4669,7 +4669,7 @@ DebugJS.prototype = {
       if (now.sss > 500) {
         str = '&nbsp;<span style="font-size:' + msFontSize + 'px">' + '&nbsp;</span>';
       } else {
-        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.options.fontColor + ';font-size:' + msFontSize + 'px">.' + tm.sss + '</span>';
+        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">.' + tm.sss + '</span>';
       }
     } else {
       var dot;
@@ -4677,14 +4677,14 @@ DebugJS.prototype = {
       var style2 = '';
       if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
         dot = ((tm.sss < 500) ? '.' : '&nbsp;');
-        style1 = '<span style="color:' + ctx.options.timerColorExpr + '">';
+        style1 = '<span style="color:' + ctx.opt.timerColorExpr + '">';
         style2 = '</span>';
       } else {
         dot = ((tm.sss < 500) ? '&nbsp;' : '.');
       }
       str = style1 + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>' + style2;
     }
-    var label = '<div style="color:' + ctx.options.fontColor + ';font-size:' + fontSize + 'px">' + str + '</div>';
+    var label = '<div style="color:' + ctx.opt.fontColor + ';font-size:' + fontSize + 'px">' + str + '</div>';
     return label;
   },
 
@@ -4728,7 +4728,7 @@ DebugJS.prototype = {
     var txtPadding = 4;
     var txtChkTxt = document.createElement('input');
     ctx.setStyle(txtChkTxt, 'width', 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)');
-    ctx.setStyle(txtChkTxt, 'min-height', (20 * ctx.options.zoom) + 'px');
+    ctx.setStyle(txtChkTxt, 'min-height', (20 * ctx.opt.zoom) + 'px');
     ctx.setStyle(txtChkTxt, 'margin-bottom', '8px');
     ctx.setStyle(txtChkTxt, 'padding', txtPadding + 'px');
     ctx.setStyle(txtChkTxt, 'border', '0');
@@ -4745,7 +4745,7 @@ DebugJS.prototype = {
     ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
     var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
     '<input value="' + defaultFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">px' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.options.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">el</span>' +
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">el</span>' +
     '<br>' +
     'font-family: <input value="' + defaultFontFamily + '" class="' + ctx.id + '-txt-text" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
@@ -4794,7 +4794,7 @@ DebugJS.prototype = {
       ctx.updateEditable(ctx, ctx.txtChkTxt);
     } else {
       ctx.status |= DebugJS.STATE_ELM_EDIT;
-      btn.style.color = ctx.options.btnColor;
+      btn.style.color = ctx.opt.btnColor;
       if (DebugJS.el) {
         ctx.updateEditable(ctx, DebugJS.el);
       }
@@ -4804,7 +4804,7 @@ DebugJS.prototype = {
   updateElBtn: function(btn) {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_ELM_EDIT) {
-      btn.style.color = ctx.options.btnColor;
+      btn.style.color = ctx.opt.btnColor;
     } else {
       btn.style.color = DebugJS.COLOR_INACTIVE;
     }
@@ -4914,14 +4914,14 @@ DebugJS.prototype = {
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
       ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
-      ctx.setStyle(fileInput, 'min-height', (20 * ctx.options.zoom) + 'px');
+      ctx.setStyle(fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
       ctx.setStyle(fileInput, 'margin', '0 0 4px 0');
       ctx.setStyle(fileInput, 'padding', '1px');
       ctx.setStyle(fileInput, 'border', '0');
       ctx.setStyle(fileInput, 'border-radius', '0');
       ctx.setStyle(fileInput, 'outline', 'none');
       ctx.setStyle(fileInput, 'font-size', fontSize);
-      ctx.setStyle(fileInput, 'font-family', ctx.options.fontFamily + 'px');
+      ctx.setStyle(fileInput, 'font-family', ctx.opt.fontFamily + 'px');
       fileInput.addEventListener('change', ctx.handleFileSelect, false);
       ctx.fileLoaderPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
@@ -4960,7 +4960,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'padding', '2px');
       ctx.setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
-      ctx.setStyle(ctx.filePreviewWrapper, 'font-family', ctx.options.fontFamily + 'px');
+      ctx.setStyle(ctx.filePreviewWrapper, 'font-family', ctx.opt.fontFamily + 'px');
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
       ctx.filePreviewWrapper.addEventListener('dragover', ctx.handleDragOver, false);
       ctx.filePreviewWrapper.addEventListener('drop', ctx.handleFileDrop, false);
@@ -4968,9 +4968,9 @@ DebugJS.prototype = {
 
       ctx.filePreview = document.createElement('pre');
       ctx.setStyle(ctx.filePreview, 'background', 'transparent');
-      ctx.setStyle(ctx.filePreview, 'color', ctx.options.fontColor);
+      ctx.setStyle(ctx.filePreview, 'color', ctx.opt.fontColor);
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
-      ctx.setStyle(ctx.filePreview, 'font-family', ctx.options.fontFamily + 'px');
+      ctx.setStyle(ctx.filePreview, 'font-family', ctx.opt.fontFamily + 'px');
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
       ctx.filePreview.innerText = 'Drop a file here';
 
@@ -4996,7 +4996,7 @@ DebugJS.prototype = {
       ctx.fileLoadProgress.style.border = 'none';
       ctx.fileLoadProgress.style.background = '#00f';
       ctx.fileLoadProgress.style.fontSize = (ctx.computedFontSize * 0.8) + 'px';
-      ctx.fileLoadProgress.style.fontFamily = ctx.options.fontFamily + 'px';
+      ctx.fileLoadProgress.style.fontFamily = ctx.opt.fontFamily + 'px';
       ctx.fileLoadProgress.innerText = '0%';
       ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
 
@@ -5185,7 +5185,7 @@ DebugJS.prototype = {
     if (file.size <= limit) {
       html += b64content;
     } else {
-      html += '<span style="color:' + ctx.options.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
+      html += '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
     }
     return html;
   },
@@ -5491,7 +5491,7 @@ DebugJS.prototype = {
     ctx.scriptPanel.className = ctx.id + '-overlay-panel';
     var html = '<div class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' +
     'style="position:relative;top:-1px;float:right;' +
-    'font-size:' + (18 * ctx.options.zoom) + 'px;color:#888" ' +
+    'font-size:' + (18 * ctx.opt.zoom) + 'px;color:#888" ' +
     'onclick="DebugJS.ctx.closeScriptEditor();" ' +
     'onmouseover="this.style.color=\'#d88\';" ' +
     'onmouseout="this.style.color=\'#888\';">x</div>' +
@@ -5750,10 +5750,10 @@ DebugJS.prototype = {
         ctx.adjustDbgWinPos(ctx);
       } else {
         if (sizePos.y2 > clientH) {
-          if (clientH < (height + ctx.options.adjPosY)) {
+          if (clientH < (height + ctx.opt.adjPosY)) {
             ctx.win.style.top = 0;
           } else {
-            var top = clientH - height - ctx.options.adjPosY;
+            var top = clientH - height - ctx.opt.adjPosY;
             ctx.win.style.top = top + 'px';
           }
         }
@@ -5880,7 +5880,7 @@ DebugJS.prototype = {
       }
     }
 
-    if ((found) || (ctx.options.disableAllCommands)) {
+    if ((found) || (ctx.opt.disableAllCommands)) {
       return;
     }
 
@@ -6049,7 +6049,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.finalizeFeatures(ctx);
     ctx.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
-    if (ctx.options.useSuspendLogButton) {
+    if (ctx.opt.useSuspendLogButton) {
       ctx.status &= ~DebugJS.STATE_LOG_SUSPENDING;
       ctx.updateSuspendLogBtn(ctx);
     }
@@ -6067,10 +6067,10 @@ DebugJS.prototype = {
     ctx.setLed(0);
     ctx.setMsg('');
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-      if (ctx.options.usePinButton) {
+      if (ctx.opt.usePinButton) {
         ctx.enableDraggable(ctx);
       }
-      if (!ctx.options.mode == 'kiosk') {
+      if (!ctx.opt.mode == 'kiosk') {
         ctx.resetDbgWinSizePos();
         ctx.updateWinCtrlBtnPanel();
       }
@@ -6093,7 +6093,7 @@ DebugJS.prototype = {
         str += '<tr><td>' + ctx.CMD_TBL[i].cmd + '</td><td>' + ctx.CMD_TBL[i].desc + '</td></tr>';
       }
     }
-    if (!ctx.options.disableAllCommands) {
+    if (!ctx.opt.disableAllCommands) {
       len = ctx.EXT_CMD_TBL.length;
       if (len > 0) {
         str += '<tr><td colspan="2">' +
@@ -6218,7 +6218,7 @@ DebugJS.prototype = {
 
   initHistory: function(ctx) {
     if (ctx.cmdHistoryBuf == null) {
-      ctx.CMD_HISTORY_MAX = ctx.options.cmdHistoryMax;
+      ctx.CMD_HISTORY_MAX = ctx.opt.cmdHistoryMax;
       ctx.cmdHistoryBuf = new DebugJS.RingBuffer(ctx.CMD_HISTORY_MAX);
     }
     if (DebugJS.LS_AVAILABLE) {
@@ -6281,11 +6281,11 @@ DebugJS.prototype = {
     var cmds = ctx.cmdHistoryBuf.getAll();
     ctx.clearHistory();
     for (var i = 0; i < cmds.length; i++) {
-      if (cmds.length < ctx.options.cmdHistoryMax) {
+      if (cmds.length < ctx.opt.cmdHistoryMax) {
         if (i != (idx - 1)) {
           ctx.saveHistory(ctx, cmds[i]);
         }
-      } else if (cmds.length >= ctx.options.cmdHistoryMax) {
+      } else if (cmds.length >= ctx.opt.cmdHistoryMax) {
         if (i != (idx - 2)) {
           ctx.saveHistory(ctx, cmds[i]);
         }
@@ -6860,8 +6860,8 @@ DebugJS.prototype = {
     var zoom = args.data;
     if (zoom == '') {
       DebugJS.printUsage(tbl.usage);
-    } else if (zoom != ctx.options.zoom) {
-      var restoreOption = {
+    } else if (zoom != ctx.opt.zoom) {
+      var restoreOpt = {
         cause: DebugJS.INIT_CAUSE_ZOOM,
         status: ctx.status,
         sizeStatus: ctx.sizeStatus
@@ -6869,7 +6869,7 @@ DebugJS.prototype = {
       ctx.featStackBak = ctx.featStack.concat();
       ctx.finalizeFeatures(ctx);
       ctx.setWinSize('normal');
-      ctx.init({zoom: zoom}, restoreOption);
+      ctx.init({zoom: zoom}, restoreOpt);
     }
   },
 
@@ -7764,7 +7764,7 @@ DebugJS.convRGB16to10 = function(rgb16) {
     g16 += g16;
     b16 += b16;
   } else {
-    return {rgb: '<span style="color:' + DebugJS.ctx.options.logColorE + '">invalid value</span>'};
+    return {rgb: '<span style="color:' + DebugJS.ctx.opt.logColorE + '">invalid value</span>'};
   }
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
@@ -7779,7 +7779,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
   rgb10 = rgb10.replace(/\s{2,}/g, ' ');
   var rgb10s = rgb10.split(' ', 3);
   if ((rgb10s.length != 3) || ((rgb10s[0] < 0) || (rgb10s[0] > 255)) || ((rgb10s[1] < 0) || (rgb10s[1] > 255)) || ((rgb10s[2] < 0) || (rgb10s[2] > 255))) {
-    return {rgb: '<span style="color:' + DebugJS.ctx.options.logColorE + '">invalid value</span>'};
+    return {rgb: '<span style="color:' + DebugJS.ctx.opt.logColorE + '">invalid value</span>'};
   }
   var r16 = ('0' + parseInt(rgb10s[0]).toString(16)).slice(-2);
   var g16 = ('0' + parseInt(rgb10s[1]).toString(16)).slice(-2);
@@ -8083,7 +8083,7 @@ DebugJS.timeStart = function(timerName, msg) {
     str = _timerName + ': timer started';
   } else {
     str = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' +
-          ctx.options.timerColor + '">00:00:00.000</span>');
+          ctx.opt.timerColor + '">00:00:00.000</span>');
   }
 
   DebugJS.log(str);
@@ -8140,7 +8140,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
 
   var prevSplit = ctx.timers[_timerName].split;
   var t = DebugJS.getElapsedTimeStr(ctx.timers[_timerName].start, now);
-  var dt = '<span style="color:' + ctx.options.timerColor + '">' + t + '</span>';
+  var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
 
   if (isEnd) {
     delete ctx.timers[_timerName];
@@ -8155,7 +8155,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
   var dtLap = '';
   if (prevSplit) {
     var tLap = DebugJS.getElapsedTimeStr(prevSplit, now);
-    dtLap = '<span style="color:' + ctx.options.timerColor + '">' + tLap + '</span>';
+    dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
   } else {
     if (!isEnd) {
       dtLap = dt;
@@ -8209,8 +8209,8 @@ DebugJS.timeLog = function(msg, timerName) {
     t = '00:00:00.000';
     tLap = t;
   }
-  var dt = '<span style="color:' + ctx.options.timerColor + '">' + t + '</span>';
-  var dtLap = '<span style="color:' + ctx.options.timerColor + '">' + tLap + '</span>';
+  var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
+  var dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
   var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   DebugJS.log(str);
 };
@@ -8232,7 +8232,7 @@ DebugJS.timeList = function() {
   } else {
     l = '<table>';
     for (var key in ctx.timers) {
-      l += '<tr><td>' + key + '</td><td><span style="color:' + ctx.options.timerColor + '">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
+      l += '<tr><td>' + key + '</td><td><span style="color:' + ctx.opt.timerColor + '">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
     }
     l += '</table>';
   }
@@ -8834,14 +8834,14 @@ DebugJS.log.p = function(o, l, m) {
 DebugJS.log.res = function(m) {
   m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encStringIfNeeded(m);
-  var msg = '<span style="color:' + DebugJS.ctx.options.promptColor + '">&gt;</span> ' + m;
+  var msg = '<span style="color:' + DebugJS.ctx.opt.promptColor + '">&gt;</span> ' + m;
   DebugJS.log(msg);
 };
 
 DebugJS.log.res.err = function(m) {
   m = DebugJS.setStyleIfObjNotAvailable(m);
   m = DebugJS.encStringIfNeeded(m);
-  var msg = '<span style="color:' + DebugJS.ctx.options.promptColorE + '">&gt;</span> ' + m;
+  var msg = '<span style="color:' + DebugJS.ctx.opt.promptColorE + '">&gt;</span> ' + m;
   DebugJS.log(msg);
 };
 
@@ -8929,7 +8929,7 @@ DebugJS.stopwatch.reset = function() {
 
 DebugJS.stopwatch.log = function(msg) {
   var t = DebugJS.getTimerStr(DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU));
-  var m = DebugJS.TIMER_NAME_SW_CU + ': <span style="color:' + DebugJS.ctx.options.timerColor + '">' + t + '</span>';
+  var m = DebugJS.TIMER_NAME_SW_CU + ': <span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>';
   if (msg != undefined) m += ' ' + msg;
   DebugJS.log(m);
 };
@@ -9235,8 +9235,8 @@ DebugJS._init = function() {
   }
 };
 
-DebugJS.init = function(options) {
-  DebugJS.ctx.init(options, null);
+DebugJS.init = function(opt) {
+  DebugJS.ctx.init(opt, null);
 };
 
 var log = function(m) {
