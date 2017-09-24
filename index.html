@@ -48,6 +48,7 @@ pre {margin: 4px 0; font-family:Consolas;}
 .code {width:750px; margin:8px 0; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
 .eg1 {margin-bottom:-4px; font-size:14px;font-style:italic;}
 .emphasis {color:#eee;}
+.comment {color:#aaa;}
 .button-100 {width:100px !important;}
 .dl-button {position:relative; width:105px; height:25px; margin:0; font-size:14px;}
 .demo-button {position:relative; width:74px; height:22px; margin:0; font-size:14px; background:#04a; color:#aaa}
@@ -2419,6 +2420,75 @@ $ uri -d abc%3Adef
 </table>
 <br>
 
+<div class="caption">// Batch dedicated commands</div>
+<table class="desc-table">
+  <tr>
+    <th>Name</th>
+    <th>Arguments</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">cont</td>
+    <td>on/off</td>
+    <td>
+      Set/Unset continue flag.<br>The batch script will be continued after page unload/load.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">exit</td>
+    <td></td>
+    <td>
+      Terminate the execution of the batch script
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">goto</td>
+    <td>label</td>
+    <td>
+      Jump to the label
+
+<pre class="eg">
+:foo
+goto foo
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">nop</td>
+    <td></td>
+    <td>
+      No operation (The same behavior as press enter key without command input)
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">wait</td>
+    <td>ms</td>
+    <td>
+      Wait the specified milli seconds.
+    </td>
+  </tr>
+</table>
+<br>
+
+<b>Batch File Format</b>
+<pre class="code" style="margin-bottom:2px">
+<span class="emphasis">#[BAT] <span class="comment">Batch file must be started with this signature</span>
+# comment
+:label
+command
+JavaScript code</span>
+</pre>
+<br>
+<b>Load and Execute</b><br>
+TOOL =&gt; &lt;FILE&gt; =&gt; Base64 =&gt; Select/Drop a file =&gt; [EXECUTE]
+<br>
+<br>
+
 <div class="caption">// Calculation / Conversion</div>
 The debugger can perform the following calculation/conversion on the command-line.
 <table class="desc-table">
@@ -3107,7 +3177,7 @@ function callback(xhr) {
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value='"'></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">file</span><input type="file" id="input-file" name="input-file" style="width:180px;"></div>
       <div style="margin-bottom:5px;">
-        <input type="submit" class="button-100" value="Submit" onsubmit="return false;">
+        <input type="submit" id="sbmt-btn" class="button-100" value="Submit" onsubmit="return false;">
         <input type="button" class="button-100" value="BUTTON">
         <button type="button" class="button-100">button</button>
       </div>
@@ -3117,8 +3187,9 @@ function callback(xhr) {
   <div style="width:400px;height:170px;border:1px solid #ccc;padding:4px;background:#fdfdff;overflow:auto;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV<br><div style="width:800px;height:300px;">123</div></div>
 </div>
 <div>
-<a href="//debugjs.net/" rel="nofollow">DummyLink1</a>&nbsp;
-<a href="//debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" rel="nofollow">DummyLink2</a>
+<a href="//debugjs.net/" rel="nofollow">Link1</a>&nbsp;
+<a href="//debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" rel="nofollow">Link2</a>
+<a href="index.html" rel="nofollow">Link3</a>&nbsp;
 </div>
 </div><!-- dummy__body -->
 </div><!-- content -->
