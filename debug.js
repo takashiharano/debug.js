@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709260035';
+  this.v = '201709260740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -330,7 +330,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
     {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
-    {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC}
   ];
   this.CMD_TBL = [];
@@ -563,13 +563,11 @@ DebugJS.prototype = {
         ctx.win = null;
       }
     }
-
     if (!keepStatus) {
       var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_WD;
       ctx.status &= preserveStatus;
       ctx.uiStatus = 0;
     }
-
     if ((ctx.opt == null) || ((opt != null) && (!keepStatus)) || (opt === undefined)) {
       ctx.setupDefaultOptions();
     }
@@ -586,7 +584,6 @@ DebugJS.prototype = {
         }
       }
     }
-
     if (ctx.msgBuf.getSize() != ctx.opt.bufsize) {
       if (!(ctx.status & DebugJS.STATE_LOG_PRESERVED) ||
           ((ctx.status & DebugJS.STATE_LOG_PRESERVED) &&
@@ -594,7 +591,6 @@ DebugJS.prototype = {
         ctx.initBuf(ctx);
       }
     }
-
     if (ctx.opt.mode == 'noui') {
       ctx.removeEventHandlers(ctx);
       ctx.init = DebugJS.z2;
@@ -605,7 +601,6 @@ DebugJS.prototype = {
     if (!ctx.bodyEl) {
       return false;
     }
-
     ctx.initUi(ctx, restoreOpt);
     ctx.initCommandTable(ctx);
     ctx.initSetPropsCb(ctx);
@@ -8362,11 +8357,11 @@ DebugJS.onHttpRequestDone = function(xhr) {
 };
 
 DebugJS.encodeURIString = function(data) {
-  var encData = encodeURIComponent(data);
-  encData = encData.replace(/%20/g, '+');
-  encData = encData.replace(/%3D/gi, '=');
-  encData = encData.replace(/%26/g, '&');
-  return encData;
+  var str = encodeURIComponent(data);
+  str = str.replace(/%20/g, '+');
+  str = str.replace(/%3D/gi, '=');
+  str = str.replace(/%26/g, '&');
+  return str;
 };
 
 DebugJS.getLanguages = function(indent) {
