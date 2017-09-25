@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709251947';
+  this.v = '201709252002';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6783,7 +6783,7 @@ DebugJS.prototype = {
         break;
       default:
         if (ctx.status & DebugJS.STATE_WD) {
-          DebugJS.log('Running (' + ctx.properties.wdt.value + 'ms)');
+          DebugJS.log('Running ' + ctx.properties.wdt.value + 'ms: ' + DebugJS.wd.cnt);
         } else {
           DebugJS.log('Not Running');
         }
@@ -9194,12 +9194,14 @@ DebugJS.wd = {};
 DebugJS.wd.INTERVAL = 50;
 DebugJS.wd.wdTmId = 0;
 DebugJS.wd.wdPetTime = 0;
+DebugJS.wd.cnt = 0;
 
 DebugJS.wd.start = function(interval) {
   var ctx = DebugJS.ctx;
   interval |= 0;
   if (interval > 0) ctx.properties.wdt.value = interval;
   ctx.status |= DebugJS.STATE_WD;
+  DebugJS.wd.cnt = 0;
   DebugJS.wd.wdPetTime = (new Date()).getTime();
   DebugJS.log.s('Start watchdog (' + ctx.properties.wdt.value + 'ms)');
   if (DebugJS.wd.wdTmId > 0) clearTimeout(DebugJS.wd.wdTmId);
@@ -9212,6 +9214,7 @@ DebugJS.wd.pet = function() {
   var now = (new Date()).getTime();
   var elapsed = now - DebugJS.wd.wdPetTime;
   if (elapsed > ctx.properties.wdt.value) {
+    DebugJS.wd.cnt++;
     DebugJS.log.w('watchdog bark! (' + elapsed + 'ms)');
     for (var i = 0; i < ctx.evtListener.watchdog.length; i++) {
       var cb = ctx.evtListener.watchdog[i];
