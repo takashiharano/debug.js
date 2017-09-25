@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709250700';
+  this.v = '201709251947';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8935,7 +8935,11 @@ DebugJS.stopwatch.log = function(msg) {
 };
 
 DebugJS.addEventListener = function(type, listener) {
-  DebugJS.ctx.evtListener[type].push(listener);
+  if (DebugJS.ctx.evtListener[type] == undefined) {
+    DebugJS.log.e(type + ': no such event');
+  } else {
+    DebugJS.ctx.evtListener[type].push(listener);
+  }
 };
 
 DebugJS.cmd = function(c, echo) {
