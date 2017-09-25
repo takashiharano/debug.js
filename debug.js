@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709252002';
+  this.v = '201709260035';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2186,12 +2186,12 @@ DebugJS.prototype = {
       var line = '';
       var lineNum = '';
       if ((ctx.opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
-        var diffDigits = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
-        var lineNumPadding = '';
-        for (var j = 0; j < diffDigits; j++) {
-          lineNumPadding = lineNumPadding + '0';
+        var diff = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
+        var pdng = '';
+        for (var j = 0; j < diff; j++) {
+          pdng += '0';
         }
-        lineNum = lineNumPadding + lineCnt + ': ';
+        lineNum = pdng + lineCnt + ': ';
       }
       var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
       switch (data.type) {
@@ -8954,9 +8954,11 @@ DebugJS.bat = function(b, sl, el) {
 DebugJS.bat.cmds = [];
 DebugJS.bat.ctrl = {
   pc: 0,
+  startPc: 0,
   endPc: 0,
   echo: true,
   tmpEchoOff: false,
+  cmnt: false,
   cont: false
 };
 DebugJS.bat.labels = {};
@@ -9001,14 +9003,15 @@ DebugJS.bat.run = function(sl, el) {
     el = DebugJS.bat.cmds.length - 1;
   }
   DebugJS.ctx.status &= ~DebugJS.STATE_SIGINT;
-  DebugJS.bat.ctrl.pc = sl;
+  DebugJS.bat.ctrl.pc = 0;
+  DebugJS.bat.ctrl.startPc = sl;
   DebugJS.bat.ctrl.endPc = (el == 0 ? DebugJS.bat.cmds.length - 1 : el);
   if (DebugJS.bat.tid != 0) {
     clearTimeout(DebugJS.bat.tid);
     DebugJS.bat.tid = 0;
   }
   DebugJS.bat.ctrl.echo = true;
-
+  DebugJS.bat.ctrl.cmnt = false;
   DebugJS.bat.exec();
 };
 
@@ -9034,7 +9037,9 @@ DebugJS.bat.exec = function() {
   }
   var echoFlg = (DebugJS.bat.ctrl.echo && !DebugJS.bat.ctrl.tmpEchoOff);
   DebugJS.bat.ctrl.tmpEchoOff = false;
-  ctx._execCmd(c, echoFlg);
+  if (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.startPc) {
+    ctx._execCmd(c, echoFlg);
+  }
   DebugJS.bat.next();
 };
 
@@ -9054,6 +9059,17 @@ DebugJS.bat.prepro = function(cmd) {
   if ((c.charAt(0) == '#') || (c.charAt(0) == ':')) {
     return 1;
   }
+  if (cmd.slice(-2) == '*/') {
+    ctrl.cmnt = false;
+    return 1;
+  }
+  if (ctrl.cmnt == true) {
+    return 1;
+  }
+  if (cmd.substr(0, 2) == '/*') {
+    ctrl.cmnt = true;
+    return 1;
+  }
   switch (c) {
     case 'nop':
       DebugJS.log('');
@@ -9070,6 +9086,11 @@ DebugJS.bat.prepro = function(cmd) {
         return 1;
       }
       break;
+  }
+  if (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.startPc) {
+    return 1;
+  }
+  switch (c) {
     case 'exit':
       ctrl.pc = DebugJS.bat.cmds.length;
       DebugJS.bat.preproEcho(cmd);
@@ -9101,12 +9122,18 @@ DebugJS.bat.list = function() {
   var s = '';
   var cmds = DebugJS.bat.cmds;
   for (var i = 0; i <= cmds.length; i++) {
+    var n = i + 1;
+    var diff = DebugJS.digits(cmds.length) - DebugJS.digits(n);
+    var pdng = '';
+    for (var j = 0; j < diff; j++) {
+      pdng += '0';
+    }
     if (i == DebugJS.bat.ctrl.pc) {
       s += '>';
     } else {
       s += ' ';
     }
-    s += ' ' + (cmds[i] == undefined ? '' : cmds[i]) + '\n';
+    s += ' ' + (cmds[i] == undefined ? '' : pdng + n + ': ' + cmds[i]) + '\n';
   }
   return s;
 };
@@ -9125,6 +9152,7 @@ DebugJS.bat.finalize = function() {
   c.pc = 0;
   c.echo = true;
   c.cont = false;
+  c.cmnt = false;
   if (DebugJS.bat.tid != 0) {
     clearTimeout(DebugJS.bat.tid);
     DebugJS.bat.tid = 0;
