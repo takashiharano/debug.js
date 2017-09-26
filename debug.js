@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709262226';
+  this.v = '201709270141';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8950,8 +8950,10 @@ DebugJS.bat.ctrl = {
   echo: true,
   tmpEchoOff: false,
   cmnt: false,
+  js: false,
   cont: false
 };
+DebugJS.bat.js = '';
 DebugJS.bat.labels = {};
 DebugJS.bat.tid = 0;
 
@@ -9024,6 +9026,8 @@ DebugJS.bat.run = function(s, e) {
   }
   DebugJS.bat.ctrl.echo = true;
   DebugJS.bat.ctrl.cmnt = false;
+  DebugJS.bat.ctrl.js = false;
+  DebugJS.bat.js = '';
   DebugJS.bat.exec();
 };
 
@@ -9068,14 +9072,14 @@ DebugJS.bat.prepro = function(cmd) {
     c = c.substr(1);
     ctrl.tmpEchoOff = true;
   }
-  if ((c.charAt(0) == '#') || (c.charAt(0) == ':')) {
+  if ((c.charAt(0) == '#') || (c.substr(0, 2) == '//') || (c.charAt(0) == ':')) {
     return 1;
   }
   if (cmd.slice(-2) == '*/') {
     ctrl.cmnt = false;
     return 1;
   }
-  if (ctrl.cmnt == true) {
+  if (ctrl.cmnt) {
     return 1;
   }
   if (cmd.substr(0, 2) == '/*') {
@@ -9098,6 +9102,14 @@ DebugJS.bat.prepro = function(cmd) {
         return 1;
       }
       break;
+    case '!js!':
+      if (ctrl.js) {
+        ctrl.js = false;
+      } else {
+        ctrl.js = true;
+        DebugJS.bat.execJs();
+      }
+      return 1;
   }
   if (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.startPc) {
     return 1;
@@ -9120,8 +9132,29 @@ DebugJS.bat.prepro = function(cmd) {
       DebugJS.bat.preproEcho(cmd);
       DebugJS.bat.tid = setTimeout(DebugJS.bat.exec, w);
       return 2;
-   }
+  }
+  if (ctrl.js) {
+    DebugJS.bat.ctrl.pc--;
+    DebugJS.bat.execJs();
+    return 1;
+  }
   return 0;
+};
+
+DebugJS.bat.execJs = function() {
+  while ((DebugJS.bat.ctrl.pc >= DebugJS.bat.ctrl.startPc) &&
+         (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.endPc)) {
+    c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
+    DebugJS.bat.ctrl.pc++;
+    if (c != '!js!') {
+      DebugJS.bat.js += c + '\n';
+    }
+    if ((c == '!js!') || (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc)) {
+      eval(DebugJS.bat.js);
+      DebugJS.bat.ctrl.js = false;
+      return;
+    }
+  }
 };
 
 DebugJS.bat.preproEcho = function(c) {
@@ -9165,6 +9198,8 @@ DebugJS.bat.finalize = function() {
   c.echo = true;
   c.cont = false;
   c.cmnt = false;
+  c.js = false;
+  DebugJS.bat.js = '';
   if (DebugJS.bat.tid != 0) {
     clearTimeout(DebugJS.bat.tid);
     DebugJS.bat.tid = 0;
