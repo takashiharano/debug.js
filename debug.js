@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709270739';
+  this.v = '201709270744';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8970,6 +8970,7 @@ DebugJS.bat.store = function(b) {
 
 DebugJS.bat.parseLabels = function() {
   var cmds = DebugJS.bat.cmds;
+  DebugJS.bat.labels = {};
   for (var i = 0; i < cmds.length; i++) {
     var c = cmds[i];
     if ((c.charAt(0) == ':') && c.length >= 2) {
