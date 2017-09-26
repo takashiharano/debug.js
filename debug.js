@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709270141';
+  this.v = '201709270739';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9150,7 +9150,11 @@ DebugJS.bat.execJs = function() {
       DebugJS.bat.js += c + '\n';
     }
     if ((c == '!js!') || (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc)) {
-      eval(DebugJS.bat.js);
+      try {
+        eval(DebugJS.bat.js);
+      } catch (e) {
+        DebugJS.log.e(e);
+      }
       DebugJS.bat.ctrl.js = false;
       return;
     }
