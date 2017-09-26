@@ -458,6 +458,13 @@ function batDemo2() {
   dbg.bat(cmds, sl, el);
 }
 
+function batDemo3() {
+  var cmds = document.getElementById("bat-demo-text").value;
+  var sl = document.getElementById("bat-sl2-text").value;
+  var el = document.getElementById("bat-el2-text").value;
+  dbg.bat(cmds, sl, el);
+}
+
 function httpDemo() {
   var url = document.getElementById('http-url-text').value;
   var method = document.getElementById('http-method-text').value;
@@ -1443,8 +1450,11 @@ base64 -e ABC
 
 nop
 
+:led1
 led 0xf
 wait 500
+
+:led2
 led 0xf0
 wait 500
 led 0
@@ -1453,6 +1463,8 @@ led 0
 var commands = document.getElementById('commands').value;
 dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</button>
 dbg.bat(commands, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="6">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="10">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
+dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value="led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value="led2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
+
 </pre>
     </td>
   </tr>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709260740';
+  this.v = '201709262226';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5918,12 +5918,8 @@ DebugJS.prototype = {
     var args = DebugJS.splitArgs(arg);
     switch (args[0]) {
       case 'run':
-        var sl = 0, el = 0;
-        if (args[1]) {
-          var ln = args[1].split('-');
-          sl = ln[0] | 0;
-          el = ln[1] | 0;
-        }
+        var sl = args[1];
+        var el = args[2];
         DebugJS.bat.run(sl, el);
         break;
       case 'list':
@@ -8981,19 +8977,40 @@ DebugJS.bat.parseLabels = function() {
   }
 };
 
-DebugJS.bat.run = function(sl, el) {
+DebugJS.bat.run = function(s, e) {
   if (DebugJS.bat.cmds.length == 0) {
     DebugJS.log('no batch loaded');
     return;
   }
-  sl = (sl | 0) - 1; if (sl < 0) sl = 0;
+  var sl, el;
+  if (s == undefined) {
+    sl = 0;
+  } else if (isNaN(s)) {
+    sl = DebugJS.bat.labels[s];
+    if (sl == undefined) {
+      DebugJS.log.e(s + ': no such label');
+      return;
+    }
+  } else {
+    sl = (s | 0) - 1; if (sl < 0) sl = 0;
+  }
   if (sl >= DebugJS.bat.cmds.length) {
     DebugJS.log.e('out of range (1-' + DebugJS.bat.cmds.length + ')');
     return;
   }
-  el = (el | 0) - 1; if (el < 0) el = 0;
-  if (el < sl) {
+  if (e == undefined) {
     el = DebugJS.bat.cmds.length - 1;
+  } else if (isNaN(e)) {
+    el = DebugJS.bat.labels[e];
+    if (el == undefined) {
+      DebugJS.log.e(e + ': no such label');
+      return;
+    }
+  } else {
+    el = (e | 0) - 1; if (el < 0) el = 0;
+  }
+  if (el < sl) {
+    el = sl;
   } else if (el >= DebugJS.bat.cmds.length) {
     el = DebugJS.bat.cmds.length - 1;
   }
@@ -9095,7 +9112,7 @@ DebugJS.bat.prepro = function(cmd) {
       if (idx == undefined) {
         DebugJS.log.e('L' + ctrl.pc + ': no such label (' + a[0] + ')');
       } else {
-        ctrl.pc = DebugJS.bat.labels[a[0]];
+        ctrl.pc = idx;
       }
       return 1;
     case 'wait':
