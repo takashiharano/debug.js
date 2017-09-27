@@ -2261,6 +2261,38 @@ $ p -a objectName
   </tr>
 
   <tr>
+    <td class="name">point</td>
+    <td>coordinate / element / operation</td>
+    <td>
+      Show the pointer to the specified coordinate
+<pre class="eg">
+$ point 100 200
+-&gt; Show the pointer to x=100px, y=200px
+
+$ point +10 +20
+$ point -10 -20
+-&gt; Move the pointer from current position
+
+$ point #id
+$ point .className
+$ point .className index
+$ point tagName
+$ point tagName index
+-&gt; Point the specified element
+
+$ point hide
+-&gt; Hide the pointer
+
+$ point show
+-&gt; Show the pointer
+
+$ point click
+-&gt; Click the current position
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">pos</td>
     <td>position</td>
     <td>

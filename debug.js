@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709272238';
+  this.v = '201709280105';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -313,6 +313,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class|tagName [idx]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -3475,6 +3476,10 @@ DebugJS.prototype = {
       DebugJS.dom = el;
       var computedStyle = window.getComputedStyle(el);
       var rect = el.getBoundingClientRect();
+      var rectT = Math.round(rect.top);
+      var rectL = Math.round(rect.left);
+      var rectR = Math.round(rect.right);
+      var rectB = Math.round(rect.bottom);
       var MAX_LEN = 50;
       var text = '';
       if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
@@ -3550,12 +3555,12 @@ DebugJS.prototype = {
       '            -weight: ' + computedStyle.fontWeight + '\n' +
       '            -style : ' + computedStyle.fontStyle + '\n' +
       DebugJS.addPropSeparator(ctx) +
-      'size      : W:' + el.clientWidth + ' x H:' + el.clientHeight + ' px\n' +
+      'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
       'location  : <span style="color:#aaa">winOffset + pageOffset = pos (computedStyle)</span>\n' +
-      '            top   : ' + Math.round(rect.top) + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
-      '            left  : ' + Math.round(rect.left) + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
-      '            right : ' + Math.round(rect.right) + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.right + window.pageXOffset) + ' px (' + computedStyle.right + ')\n' +
-      '            bottom: ' + Math.round(rect.bottom) + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.bottom + window.pageYOffset) + ' px (' + computedStyle.bottom + ')\n' +
+      '            top   : ' + rectT + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
+      '            left  : ' + rectL + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
+      '            right : ' + rectR + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.right + window.pageXOffset) + ' px (' + computedStyle.right + ')\n' +
+      '            bottom: ' + rectB + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.bottom + window.pageYOffset) + ' px (' + computedStyle.bottom + ')\n' +
       'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
       'overflow  : ' + computedStyle.overflow + '\n' +
       'opacity   : ' + computedStyle.opacity + '\n' +
@@ -6391,6 +6396,33 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.execCmdP(arg);
+    }
+  },
+
+  cmdPoint: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var x = args[0];
+    var y = args[1];
+    if (x.charAt(0) == '#') {
+      DebugJS.pointById(x.substr(1));
+    } else if (x.charAt(0) == '.') {
+      DebugJS.pointByClassName(x.substr(1), y);
+    } else if (x == 'click') {
+      DebugJS.point.click();
+    } else if (x == 'hide') {
+      DebugJS.point.hide();
+    } else if (x == 'show') {
+      DebugJS.point.show();
+    } else {
+      if (x == '') {
+        var pos = DebugJS.point.getPos();
+        DebugJS.log('x=' + pos.x + ', y=' + pos.y);
+        DebugJS.printUsage(tbl.usage);
+      } else if (isNaN(x)) {
+        DebugJS.pointByTagName(x, y);
+      } else {
+        DebugJS.point(x, y);
+      }
     }
   },
 
@@ -9262,6 +9294,144 @@ DebugJS.msg = function(val) {
 
 DebugJS.msg.clear = function() {
   DebugJS.ctx.setMsg('');
+};
+
+DebugJS.point = function(x, y) {
+  x += ''; y += '';
+  if (DebugJS.point.ptr == null) {
+    DebugJS.point.createPtr();
+  }
+  var pos = DebugJS.point.getPos();
+  if (x.charAt(0) == '+') {
+    pos.x += (x.substr(1) | 0);
+  } else if (x.charAt(0) == '-') {
+    pos.x -= (x.substr(1) | 0);
+  } else {
+    pos.x = x | 0;
+  }
+  if (y.charAt(0) == '+') {
+    pos.y += (y.substr(1) | 0);
+  } else if (y.charAt(0) == '-') {
+    pos.y -= (y.substr(1) | 0);
+  } else {
+    pos.y = y | 0;
+  }
+  var ptr = DebugJS.point.ptr;
+  ptr.style.top = pos.y + 'px';
+  ptr.style.left = pos.x + 'px';
+  document.body.appendChild(ptr);
+};
+DebugJS.point.ptr = null;
+DebugJS.point.createPtr = function() {
+  var ptr = document.createElement('img');
+  ptr.style.position = 'fixed';
+  ptr.style.width = '12px';
+  ptr.style.height = '19px';
+  ptr.style.top = 0;
+  ptr.style.left = 0;
+  ptr.style.zIndex = 0x7fffffff;
+  ptr.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAATCAMAAACTKxybAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAD9QTFRFCwsY9PT3S0xX1tbYKCg04eHjLCw4wsLJMzM/zs7S+Pn7Q0ROs7S86OjqLi468PDzYWJsGBgkQkNN////////FEPnZwAAABV0Uk5T//////////////////////////8AK9l96gAAAF5JREFUeNpMzlcOwDAIA1Cyulcw9z9rQ0aLv3iSZUFZ/lBmC7DFL8WniqGGro6mgY0NcLMBTjZA4gpXBjQKRwf2vuZIJqSpotziZ3gFkxYiwlXQvvIByweJzyryCjAA+AIPnHnE+0kAAAAASUVORK5CYII=';
+  document.body.appendChild(ptr);
+  DebugJS.point.ptr = ptr;
+};
+DebugJS.point.show = function() {
+  var ptr = DebugJS.point.ptr;
+  if (ptr == null) {
+    DebugJS.point.createPtr();
+  } else {
+    document.body.appendChild(ptr);
+  }
+};
+DebugJS.point.hide = function() {
+  var ptr = DebugJS.point.ptr;
+  if ((ptr != null) && (ptr.parentNode)) {
+    document.body.removeChild(ptr);
+  }
+};
+DebugJS.point.getPos = function() {
+  var ptr = DebugJS.point.ptr;
+  var pos = {x: 0, y: 0};
+  if (ptr != null) {
+    pos.x = ptr.style.left.replace('px', '') | 0;
+    pos.y = ptr.style.top.replace('px', '') | 0;
+  }
+  return pos;
+};
+DebugJS.point.click = function() {
+  var ptr = DebugJS.point.ptr;
+  if ((ptr == null) || (!ptr.parentNode)) {
+    return;
+  }
+  var pos = DebugJS.point.getPos();
+  document.body.removeChild(ptr);
+  var el = document.elementFromPoint(pos.x, pos.y);
+  document.body.appendChild(ptr);
+  if (el) {
+    el.click();
+  }
+};
+
+DebugJS.pointById = function(id) {
+  var ps = DebugJS.getElPosSize('#' + id);
+  if (ps != null) {
+    DebugJS.pointCenter(ps);
+  }
+};
+DebugJS.pointByClassName = function(nm, idx) {
+  var ps = DebugJS.getElPosSize('.' + nm, idx);
+  if (ps != null) {
+    DebugJS.pointCenter(ps);
+  }
+};
+DebugJS.pointByTagName = function(nm, idx) {
+  var ps = DebugJS.getElPosSize(nm, idx);
+  if (ps != null) {
+    DebugJS.pointCenter(ps);
+  }
+};
+DebugJS.pointCenter = function(ps) {
+  var x = ps.x;
+  var y = ps.y;
+  if (ps.w > 1) {
+    x = x + ps.w / 2;
+  }
+  if (ps.h > 1) {
+    y = y + ps.h / 2;
+  }
+  DebugJS.point(x, y);
+};
+
+DebugJS.getElPosSize = function(el, idx) {
+  if (typeof el === 'string') {
+    idx |= 0;
+    if (el.charAt(0) == '#') {
+      var id = el.substr(1);
+      el = document.getElementById(id);
+    } else if (el.charAt(0) == '.') {
+      var nm = el.substr(1);
+      var els = document.getElementsByClassName(nm);
+      el = els.item(idx);
+    } else {
+      var tag = el;
+      var els = document.getElementsByTagName(tag);
+      el = els.item(idx);
+    }
+  }
+  if (!el) {
+    return null;
+  }
+  var rect = el.getBoundingClientRect();
+  var rectT = Math.round(rect.top);
+  var rectL = Math.round(rect.left);
+  var rectR = Math.round(rect.right);
+  var rectB = Math.round(rect.bottom);
+  var ps = {
+    x: Math.round(rect.left),
+    y: Math.round(rect.top),
+    w: ((rectR - rectL) + 1),
+    h: ((rectB - rectT) + 1)
+  };
+  return ps;
 };
 
 DebugJS.random = function(min, max) {
