@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709270744';
+  this.v = '201709272238';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9103,7 +9103,7 @@ DebugJS.bat.prepro = function(cmd) {
         return 1;
       }
       break;
-    case '!js!':
+    case '!__js__!':
       if (ctrl.js) {
         ctrl.js = false;
       } else {
@@ -9121,6 +9121,7 @@ DebugJS.bat.prepro = function(cmd) {
       DebugJS.bat.preproEcho(cmd);
       return 1;
     case 'goto':
+      ctrl.startPc = 0;
       var idx = DebugJS.bat.labels[a[0]];
       if (idx == undefined) {
         DebugJS.log.e('L' + ctrl.pc + ': no such label (' + a[0] + ')');
@@ -9147,10 +9148,10 @@ DebugJS.bat.execJs = function() {
          (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.endPc)) {
     c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
     DebugJS.bat.ctrl.pc++;
-    if (c != '!js!') {
+    if (c != '!__js__!') {
       DebugJS.bat.js += c + '\n';
     }
-    if ((c == '!js!') || (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc)) {
+    if ((c == '!__js__!') || (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc)) {
       try {
         eval(DebugJS.bat.js);
       } catch (e) {
@@ -9229,6 +9230,7 @@ DebugJS.bat.load = function() {
   var bt = JSON.parse(b);
   DebugJS.bat.ctrl = bt.ctrl;
   DebugJS.bat.cmds = bt.cmds;
+  DebugJS.bat.parseLabels();
   if (DebugJS.bat.ctrl.cont) {
     DebugJS.bat.exec();
   }
@@ -9266,7 +9268,7 @@ DebugJS.random = function(min, max) {
   return DebugJS.getRandom(DebugJS.RANDOM_TYPE_NUM, min, max);
 };
 
-DebugJS.random.string = function(min, max) {
+DebugJS.randomStr = function(min, max) {
   return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
 };
 
