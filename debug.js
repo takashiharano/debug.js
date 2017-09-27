@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709280105';
+  this.v = '201709280221';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8983,6 +8983,7 @@ DebugJS.bat.ctrl = {
   tmpEchoOff: false,
   cmnt: false,
   js: false,
+  lock: 0,
   cont: false
 };
 DebugJS.bat.js = '';
@@ -9060,6 +9061,7 @@ DebugJS.bat.run = function(s, e) {
   DebugJS.bat.ctrl.echo = true;
   DebugJS.bat.ctrl.cmnt = false;
   DebugJS.bat.ctrl.js = false;
+  DebugJS.bat.ctrl.lock = 0;
   DebugJS.bat.js = '';
   DebugJS.bat.exec();
 };
@@ -9073,6 +9075,9 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc) {
+    return;
+  }
+  if (DebugJS.bat.isLocked()) {
     return;
   }
   var c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
@@ -9094,6 +9099,15 @@ DebugJS.bat.exec = function() {
 
 DebugJS.bat.next = function() {
   DebugJS.bat.tid = setTimeout(DebugJS.bat.exec, 0);
+};
+
+DebugJS.bat.isLocked = function() {
+  if (DebugJS.bat.ctrl.lock == 0) {
+    return false;
+  } else {
+    DebugJS.bat.tid = setTimeout(DebugJS.bat.exec, 50);
+    return true;
+  }
 };
 
 DebugJS.bat.prepro = function(cmd) {
@@ -9201,6 +9215,17 @@ DebugJS.bat.preproEcho = function(c) {
   }
 };
 
+DebugJS.bat.lock = function() {
+  DebugJS.bat.ctrl.lock++;
+};
+
+DebugJS.bat.unlock = function() {
+  DebugJS.bat.ctrl.lock--;
+  if (DebugJS.bat.ctrl.lock < 0) {
+    DebugJS.bat.ctrl.lock = 0;
+  }
+};
+
 DebugJS.bat.list = function() {
   var s = '';
   var cmds = DebugJS.bat.cmds;
@@ -9236,6 +9261,7 @@ DebugJS.bat.finalize = function() {
   c.echo = true;
   c.cont = false;
   c.cmnt = false;
+  c.lock = 0;
   c.js = false;
   DebugJS.bat.js = '';
   if (DebugJS.bat.tid != 0) {
