@@ -1818,6 +1818,28 @@ max: maximum length
 
   <tr>
     <td class="name">
+      DebugJS.getElPosSize<br>
+      <span class="alias">( dbg.getElPosSize )</span>
+    </td>
+    <td>
+      DOM element object / #id / .className / tagName
+    </td>
+    <td>
+      Get the position and size of the specified DOM element<br><br>
+      e.g.,)
+<pre class="eg">
+{
+ x: 504,
+ y: 77,
+ w: 269,
+ h: 94
+}
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.http<br>
       <span class="alias">( dbg.http )</span>
     </td>
@@ -2141,6 +2163,23 @@ http head https://debugjs.net/test/
 
 w/ User Auth
 http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">input</td>
+    <td>
+      arg1: text<br>
+      arg2: #id<br>
+      arg3: "data"<br>
+      arg4: speed <span class="annotation">ms</span><br>
+      arg5: maxStep<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Input a value into an element
+<pre class="eg">
+$ input text #text1 "abc 123" 100
+</pre>
     </td>
   </tr>
 
@@ -3275,7 +3314,8 @@ function callback(xhr) {
 <div style="height:225px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text</span><input id="inputtext1" name="input1" style="width:220px;" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" style="width:220px;"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" name="pass1" style="width:220px;"></div>
       <div style="margin-bottom:5px;">
         <select name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">
