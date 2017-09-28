@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709282133';
+  this.v = '201709282207';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -510,7 +510,7 @@ DebugJS.SNIPPET = [
 'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
 '',
 '',
-'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.toHex(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    setTimeout(ledTest, speed);\n  } else {\n    dbg.led.all(false);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
+'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.toHex(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    setTimeout(ledTest, speed);\n  } else {\n    dbg.led(0);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
 '// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
@@ -9353,14 +9353,6 @@ DebugJS.led.off = function(pos) {
   DebugJS.ctx.turnLed(pos, false);
 };
 
-DebugJS.led.all = function(flg) {
-  if (flg) {
-    DebugJS.ctx.setLed(0xff);
-  } else {
-    DebugJS.ctx.setLed(0);
-  }
-};
-
 DebugJS.msg = function(val) {
   DebugJS.ctx.setMsg(val);
 };
@@ -9824,7 +9816,6 @@ DebugJS.balse = function() {
   DebugJS.led = DebugJS.z1;
   DebugJS.led.on = DebugJS.z1;
   DebugJS.led.off = DebugJS.z1;
-  DebugJS.led.all = DebugJS.z1;
   DebugJS.msg = DebugJS.z1;
   DebugJS.msg.clear = DebugJS.z0;
   DebugJS.stopwatch = DebugJS.z0;

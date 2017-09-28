@@ -1626,22 +1626,6 @@ dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width
 
   <tr>
     <td class="name">
-      DebugJS.led.all<br>
-      <span class="alias">( dbg.led.all )</span>
-    </td>
-    <td>flag</td>
-    <td>
-      Turn on/off all indicator<br>
-      flag: true = Turn on / false = Turn off<br><br>
-<pre>
-dbg.led.all(true); <button class="demo-button2" onclick="dbg.led.all(true);">DEMO</button>
-dbg.led.all(false); <button class="demo-button2" onclick="dbg.led.all(false);">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">
       DebugJS.loadLog<br>
       <span class="alias">( dbg.loadLog )</span>
     </td>
@@ -2292,7 +2276,7 @@ $ p -a objectName
       Show the pointer to the specified coordinate
 <pre class="eg">
 $ point 100 200
--&gt; Show the pointer to x=100px, y=200px
+-&gt; Show the pointer at x=100px, y=200px
 
 $ point +10 +20
 $ point -10 -20
@@ -2597,7 +2581,7 @@ goto foo
 
 <b>Batch File Format</b>
 <pre class="code" style="margin-bottom:2px">
-<span class="emphasis">#[BAT] <span class="comment">Batch file must be started with this signature</span>
+<span class="emphasis">#[BAT] <span class="comment">Batch file must be started with this signature.</span>
 # comment
 
 // comment
@@ -2610,9 +2594,9 @@ goto foo
 
 command
 
-!js!
+!__js__!
 JavaScript Code;
-!js!</span>
+!__js__!</span>
 </pre>
 <br>
 <b>Load and Execute</b><br>
