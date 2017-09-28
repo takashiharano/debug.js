@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709282038';
+  this.v = '201709282133';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9259,21 +9259,37 @@ DebugJS.bat.unlock = function() {
 
 DebugJS.bat.list = function() {
   var s = '';
+  var js = false;
   var cmds = DebugJS.bat.cmds;
   for (var i = 0; i <= cmds.length; i++) {
+    var cmd = cmds[i];
     var n = i + 1;
     var diff = DebugJS.digits(cmds.length) - DebugJS.digits(n);
     var pdng = '';
     for (var j = 0; j < diff; j++) {
       pdng += '0';
     }
+    if (cmd == '!__js__!') {
+      if (!js) {
+        s += '<span style="color:#0ff">';
+      }
+    }
     if (i == DebugJS.bat.ctrl.pc) {
       s += '>';
     } else {
       s += ' ';
     }
-    s += ' ' + (cmds[i] == undefined ? '' : pdng + n + ': ' + cmds[i]) + '\n';
+    s += ' ' + (cmd == undefined ? '' : pdng + n + ': ' + cmd) + '\n';
+    if (cmd == '!__js__!') {
+      if (js) {
+        s += '</span>';
+        js = false;
+      } else {
+        js = true;
+      }
+    }
   }
+  if (js) {s += '</span>';}
   return s;
 };
 
