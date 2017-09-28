@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709280221';
+  this.v = '201709282038';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -290,7 +290,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run|list|clear [start-end]'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run|list|clear|status [start] [end]'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -313,7 +313,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class|tagName [idx]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class [idx]|tagName [idx]|move ...'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -5938,6 +5938,9 @@ DebugJS.prototype = {
       case 'clear':
         DebugJS.bat.clear();
         break;
+      case 'status':
+        DebugJS.log.p(DebugJS.bat.ctrl);
+        break;
       default:
         DebugJS.printUsage(tbl.usage);
     }
@@ -6403,6 +6406,7 @@ DebugJS.prototype = {
     var args = DebugJS.splitArgs(arg);
     var x = args[0];
     var y = args[1];
+    var idx, step, speed;
     if (x.charAt(0) == '#') {
       DebugJS.pointById(x.substr(1));
     } else if (x.charAt(0) == '.') {
@@ -6413,6 +6417,33 @@ DebugJS.prototype = {
       DebugJS.point.hide();
     } else if (x == 'show') {
       DebugJS.point.show();
+    } else if (x == 'move') {
+      var target = args[1];
+      if (target.charAt(0) == '#') {
+        step = args[2];
+        speed = args[3];
+        DebugJS.point.moveToId(target.substr(1), step, speed);
+      } else if (target.charAt(0) == '.') {
+        idx = args[2];
+        step = args[3];
+        speed = args[4];
+        DebugJS.point.moveToClassName(target.substr(1), idx, step, speed);
+      } else {
+        if (args[1] == '') {
+          DebugJS.printUsage(tbl.usage);
+        } else if (isNaN(target)) {
+          idx = args[2];
+          step = args[3];
+          speed = args[4];
+          DebugJS.point.moveToTagName(target, idx, step, speed);
+        } else {
+          x = args[1];
+          y = args[2];
+          step = args[3];
+          speed = args[4];
+          DebugJS.point.move(x, y, step, speed);
+        }
+      }
     } else {
       if (x == '') {
         var pos = DebugJS.point.getPos();
@@ -9393,7 +9424,66 @@ DebugJS.point.click = function() {
   var el = document.elementFromPoint(pos.x, pos.y);
   document.body.appendChild(ptr);
   if (el) {
+    el.focus();
     el.click();
+  }
+};
+
+DebugJS.point.move = function(x, y, step, speed) {
+  var dst = DebugJS.point.move.dstPos;
+  dst.x = x | 0;
+  dst.y = y | 0;
+  step |= 0;
+  speed |= 0;
+  DebugJS.point.move.speed = speed;
+  var ps = DebugJS.point.getPos();
+  if (x >= ps.x) {
+    DebugJS.point.move.mvX = step;
+  } else {
+    DebugJS.point.move.mvX = step * (-1);
+  }
+  if (y >= ps.y) {
+    DebugJS.point.move.mvY = step;
+  } else {
+    DebugJS.point.move.mvY = step * (-1);
+  }
+  if (DebugJS.point.move.tmid > 0) {
+    DebugJS.bat.unlock();
+    clearTimeout(DebugJS.point.move.tmid);
+    DebugJS.point.move.tmid = 0;
+  }
+  DebugJS.bat.lock();
+  DebugJS.point._move();
+};
+DebugJS.point.move.dstPos = {x: 0, y: 0};
+DebugJS.point.move.step = 1;
+DebugJS.point.move.speed = 50;
+DebugJS.point.move.tmid = 0;
+DebugJS.point._move = function() {
+  DebugJS.point.move.tmid = 0;
+  if ((DebugJS.point.move.mvX == 0) && (DebugJS.point.move.mvY == 0)) {
+    DebugJS.bat.unlock();
+    return;
+  }
+  var dst = DebugJS.point.move.dstPos;
+  var mvX = DebugJS.point.move.mvX;
+  var mvY = DebugJS.point.move.mvY;
+  var ps = DebugJS.point.getPos();
+  var x = ps.x;
+  var y = ps.y;
+  x += mvX;
+  if (((mvX < 0) && (x < dst.x)) || ((mvX >= 0) && (x > dst.x))) {
+    x = dst.x;
+  }
+  y += mvY;
+  if (((mvY < 0) && (y < dst.y)) || ((mvY >= 0) && (y > dst.y))) {
+    y = dst.y;
+  }
+  DebugJS.point(x, y);
+  if ((x == dst.x) && (y == dst.y)) {
+    DebugJS.bat.unlock();
+  } else {
+    DebugJS.point.move.tmid = setTimeout(DebugJS.point._move, DebugJS.point.move.speed);
   }
 };
 
@@ -9416,6 +9506,10 @@ DebugJS.pointByTagName = function(nm, idx) {
   }
 };
 DebugJS.pointCenter = function(ps) {
+  var p = DebugJS.getCenterPos(ps);
+  DebugJS.point(p.x, p.y);
+};
+DebugJS.getCenterPos = function(ps) {
   var x = ps.x;
   var y = ps.y;
   if (ps.w > 1) {
@@ -9424,7 +9518,35 @@ DebugJS.pointCenter = function(ps) {
   if (ps.h > 1) {
     y = y + ps.h / 2;
   }
-  DebugJS.point(x, y);
+  return {x: x, y: y};
+};
+
+DebugJS.point.moveToId = function(id, step, speed) {
+  var ps = DebugJS.getElPosSize('#' + id);
+  if (ps) {
+    var p = DebugJS.getCenterPos(ps);
+    if (p) {
+      DebugJS.point.move(p.x, p.y, step, speed);
+    }
+  }
+};
+DebugJS.point.moveToClassName = function(nm, idx, step, speed) {
+  var ps = DebugJS.getElPosSize('.' + nm, idx);
+  if (ps) {
+    var p = DebugJS.getCenterPos(ps);
+    if (p) {
+      DebugJS.point.move(p.x, p.y, step, speed);
+    }
+  }
+};
+DebugJS.point.moveToTagName = function(nm, idx, step, speed) {
+  var ps = DebugJS.getElPosSize(nm, idx);
+  if (ps) {
+    var p = DebugJS.getCenterPos(ps);
+    if (p) {
+      DebugJS.point.move(p.x, p.y, step, speed);
+    }
+  }
 };
 
 DebugJS.getElPosSize = function(el, idx) {
