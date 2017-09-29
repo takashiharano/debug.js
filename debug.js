@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709290125';
+  this.v = '201709291950';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -566,7 +566,7 @@ DebugJS.prototype = {
       }
     }
     if (!keepStatus) {
-      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_WD;
+      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_WD | DebugJS.STATE_BAT_RUNNING;
       ctx.status &= preserveStatus;
       ctx.uiStatus = 0;
     }
