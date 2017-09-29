@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709291950';
+  this.v = '201709300000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9473,6 +9473,8 @@ DebugJS.point.move = function(x, y, step, speed) {
   var dst = DebugJS.point.move.dstPos;
   dst.x = x | 0;
   dst.y = y | 0;
+  if (step == undefined) step = 10;
+  if (speed == undefined) speed = 10;
   step |= 0;
   speed |= 0;
   DebugJS.point.move.speed = speed;
