@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710011912';
+  this.v = '201710012210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6345,18 +6345,21 @@ DebugJS.prototype = {
   cmdInput: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
     var type = args[0];
+    var txt, speed, max;
     if (type == 'text') {
       var id = args[1];
       var qstr = DebugJS.getQuotedStr(arg);
       if (qstr == null) {
-        DebugJS.printUsage(tbl.usage);
-        return;
+        txt = args[2];
+        speed = args[3];
+        max = args[4];
+      } else {
+        txt = qstr.str;
+        var a = arg.substr(qstr.nextIdx);
+        var ags = DebugJS.splitArgs(a);
+        speed = ags[0];
+        max = ags[1];
       }
-      var txt = qstr.str;
-      var a = arg.substr(qstr.nextIdx);
-      var ags = DebugJS.splitArgs(a);
-      var speed = ags[0];
-      var max = ags[1];
       DebugJS.inputText(id, txt, speed, max);
     } else {
       DebugJS.printUsage(tbl.usage);
@@ -9659,7 +9662,9 @@ DebugJS.inputText = function(el, txt, speed, max) {
     clearTimeout(data.tmid);
     data.tmid = 0;
   }
-  data.txt = txt;
+  var reg = /\\n/g;
+  data.txt = txt.replace(reg, '\n');
+  if ((speed == undefined) || (speed == '')) speed = 30;
   data.speed = speed | 0;
   data.max = max | 0;
   if (typeof el === 'string') {
@@ -9682,7 +9687,8 @@ DebugJS._inputText = function() {
     data.i = data.txt.length;
   }
   data.tmid = 0;
-  data.el.value = data.txt.substr(0, data.i);
+  var txt = data.txt.substr(0, data.i);
+  data.el.value = txt;
   if (data.i < data.txt.length) {
     data.tmid = setTimeout(DebugJS._inputText, data.speed);
   } else {

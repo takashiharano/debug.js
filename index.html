@@ -2635,6 +2635,7 @@ goto foo
 <b>Batch File Format</b>
 <pre class="code" style="margin-bottom:2px">
 <span class="emphasis">#[BAT] <span class="comment">Batch file must be started with this signature.</span>
+
 # comment
 
 // comment
@@ -3332,7 +3333,7 @@ function callback(xhr) {
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" style="width:220px;"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" name="pass1" style="width:220px;"></div>
       <div style="margin-bottom:5px;">
-        <select name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">
+        <select id="select1" name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">
           <option value="1">opt1</option>
           <option value="2">opt2</option>
           <option value="3">opt3</option>
@@ -3344,6 +3345,8 @@ function callback(xhr) {
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value="<tag>&lt;tag&gt;"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value="'"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value='"'></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">checkbox1</span><input type="checkbox" id="checkbox1" value="chk"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">radio1</span><input type="radio" id="radio1" name="radiogrp1" value="1">1 <input type="radio" id="radio1" name="radiogrp1" value="2">2 <input type="radio" id="radio3" name="radiogrp1" value="3">3</div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">file</span><input type="file" id="input-file" name="input-file" style="width:180px;"></div>
       <div style="margin-bottom:5px;">
         <input type="submit" id="sbmt-btn" class="button-100" value="Submit" onsubmit="return false;">
@@ -3352,6 +3355,7 @@ function callback(xhr) {
       </div>
     </form>
   </div>
+  <textarea id="textarea1" style="width:400px; height:150px;"></textarea>
   <div id="dummy1" data-foo="abc" data-bar="123" data-buz-qux="xyz">data-attribute</div>
   <div style="width:400px;height:170px;border:1px solid #ccc;padding:4px;background:#fdfdff;overflow:auto;" onclick="alert('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');" onkeypress="alert('onkeypress12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[100]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[200]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[300]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[400]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345[500]');">DIV<br><div style="width:800px;height:300px;">123</div></div>
 </div>
