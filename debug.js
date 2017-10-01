@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201709300000';
+  this.v = '201710011912';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -117,8 +117,6 @@ var DebugJS = DebugJS || function() {
   this.elmHighlightBtn = null;
   this.elmUpdateBtn = null;
   this.elmCapBtn = null;
-  this.elmUpdateInputLabel = null;
-  this.elmUpdateInputLabel2 = null;
   this.elmUpdateInput = null;
   this.elmNumPanel = null;
   this.elmInfoBodyPanel = null;
@@ -199,10 +197,11 @@ var DebugJS = DebugJS || function() {
   this.htmlPrevEditorPanel = null;
   this.htmlPrevEditor = null;
   this.htmlPrevBuf = '';
-  this.memoBtn = null;
-  this.memoBasePanel = null;
-  this.memoEditorPanel = null;
-  this.memoEditor = null;
+  this.batBtn = null;
+  this.batBasePanel = null;
+  this.batEditorPanel = null;
+  this.batTextEditor = null;
+  this.batRunBtn = null;
   this.swBtnPanel = null;
   this.swLabel = null;
   this.swStartTime = 0;
@@ -312,7 +311,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
     {cmd: 'load', fnc: this.cmdLoad, desc: 'Load logs into the debug window', usage: 'load json-data'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
-    {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|memo]|[idx] [clock|cu|cd]|[b64|bin]'},
+    {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class [idx]|tagName [idx]|move ...'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
@@ -432,7 +431,7 @@ DebugJS.TOOLS_FNC_TIMER = 0x1;
 DebugJS.TOOLS_FNC_TEXT = 0x2;
 DebugJS.TOOLS_FNC_HTML = 0x4;
 DebugJS.TOOLS_FNC_FILE = 0x8;
-DebugJS.TOOLS_FNC_MEMO = 0x10;
+DebugJS.TOOLS_FNC_BAT = 0x10;
 DebugJS.TOOLS_DFLT_ACTIVE_FNC = DebugJS.TOOLS_FNC_TIMER;
 DebugJS.FILE_LOAD_FORMAT_BIN = 0;
 DebugJS.FILE_LOAD_FORMAT_B64 = 1;
@@ -1437,6 +1436,13 @@ DebugJS.prototype = {
     return textInput;
   },
 
+  createLabel: function(text, base) {
+    var label = document.createElement('span');
+    label.innerText = text;
+    base.appendChild(label);
+    return label;
+  },
+
   createLogFilter: function(ctx) {
     ctx.filterBtnAll = ctx.createLogFilterButton('ALL', 'filterBtnAll', 'btnColor');
     ctx.filterBtnStd = ctx.createLogFilterButton('LOG', 'filterBtnStd', 'fontColor');
@@ -2275,8 +2281,8 @@ DebugJS.prototype = {
               param = DebugJS.FILE_LOAD_FORMAT_BIN;
             }
             break;
-          case 'memo':
-            kind = DebugJS.TOOLS_FNC_MEMO;
+          case 'bat':
+            kind = DebugJS.TOOLS_FNC_BAT;
             break;
           case undefined:
             kind = ctx.toolsActiveFnc;
@@ -2455,7 +2461,7 @@ DebugJS.prototype = {
 
       case 67: // C
         if ((e.ctrlKey) && (document.activeElement == ctx.cmdLine)) {
-          ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+          DebugJS.bat.stop();
           DebugJS.log.s(ctx.cmdLine.value + '^C');
           ctx.cmdLine.value = '';
         }
@@ -3390,20 +3396,16 @@ DebugJS.prototype = {
     ctx.elmUpdateBtn.style.color = DebugJS.COLOR_INACTIVE;
 
     var UPDATE_COLOR = '#ccc';
-    ctx.elmUpdateInputLabel = document.createElement('span');
-    ctx.elmUpdateInputLabel.style.marginRight = '0px';
-    ctx.elmUpdateInputLabel.style.color = UPDATE_COLOR;
-    ctx.elmUpdateInputLabel.innerText = ':';
-    ctx.elmInfoHeaderPanel.appendChild(ctx.elmUpdateInputLabel);
+    var label1 = ctx.createLabel(':', ctx.elmInfoHeaderPanel);
+    label1.style.marginRight = '0px';
+    label1.style.color = UPDATE_COLOR;
 
     ctx.elmUpdateInput = ctx.createTextInput('30px', 'right', UPDATE_COLOR, ctx.elmUpdateInterval, ctx.onchangeElmUpdateInterval);
     ctx.elmInfoHeaderPanel.appendChild(ctx.elmUpdateInput);
 
-    ctx.elmUpdateInputLabel2 = document.createElement('span');
-    ctx.elmUpdateInputLabel2.style.marginLeft = '2px';
-    ctx.elmUpdateInputLabel2.style.color = UPDATE_COLOR;
-    ctx.elmUpdateInputLabel2.innerText = 'ms';
-    ctx.elmInfoHeaderPanel.appendChild(ctx.elmUpdateInputLabel2);
+    var label2 = ctx.createLabel('ms', ctx.elmInfoHeaderPanel);
+    label2.style.marginLeft = '2px';
+    label2.style.color = UPDATE_COLOR;
 
     ctx.elmNumPanel = document.createElement('span');
     ctx.elmNumPanel.style.float = 'right';
@@ -3959,7 +3961,7 @@ DebugJS.prototype = {
     ctx.txtChkBtn = ctx.createToolsHeaderButton('TEXT', 'TOOLS_FNC_TEXT', 'txtChkBtn');
     ctx.htmlPrevBtn = ctx.createToolsHeaderButton('HTML', 'TOOLS_FNC_HTML', 'htmlPrevBtn');
     ctx.fileLoaderBtn = ctx.createToolsHeaderButton('FILE', 'TOOLS_FNC_FILE', 'fileLoaderBtn');
-    ctx.memoBtn = ctx.createToolsHeaderButton('MEMO', 'TOOLS_FNC_MEMO', 'memoBtn');
+    ctx.batBtn = ctx.createToolsHeaderButton('BAT', 'TOOLS_FNC_BAT', 'batBtn');
   },
 
   createToolsHeaderButton: function(label, state, btnobj) {
@@ -3988,7 +3990,7 @@ DebugJS.prototype = {
     ctx.txtChkBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
     ctx.htmlPrevBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
     ctx.fileLoaderBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
-    ctx.memoBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_MEMO) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+    ctx.batBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
   },
 
   switchToolsFunction: function(kind, param) {
@@ -4013,10 +4015,10 @@ DebugJS.prototype = {
     } else {
       ctx.closeFileLoader();
     }
-    if (kind & DebugJS.TOOLS_FNC_MEMO) {
-      ctx.openMemoEditor();
+    if (kind & DebugJS.TOOLS_FNC_BAT) {
+      ctx.openBatEditor();
     } else {
-      ctx.closeMemoEditor();
+      ctx.closeBatEditor();
     }
     if (kind) ctx.toolsActiveFnc = kind;
     ctx.updateToolsButtons();
@@ -5195,15 +5197,10 @@ DebugJS.prototype = {
     var batHead = '#[BAT]';
     var btn = '';
     if (content.substr(0, batHead.length) == batHead) {
-      DebugJS.bat.store(content);
-      btn = ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.execBat();', '[EXEC]') + '<br><br>';
+      DebugJS.bat.setBat(content);
+      ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
     }
     return btn;
-  },
-
-  execBat: function() {
-    DebugJS.ctx.closeAllFeatures(DebugJS.ctx);
-    DebugJS.bat.run();
   },
 
   getFileInfo: function(file) {
@@ -5417,54 +5414,76 @@ DebugJS.prototype = {
     }
   },
 
-  openMemoEditor: function() {
+  openBatEditor: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.memoBasePanel == null) {
-      ctx.memoBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
-      ctx.memoEditorPanel = document.createElement('div');
-      var html = '<span style="color:#ccc">Memo</span>';
-      if (DebugJS.LS_AVAILABLE) {
-        html += ctx.createBtnHtml(ctx, 'float:right;margin-right:4px', 'DebugJS.ctx.saveMemo();DebugJS.ctx.memoEditor.focus();', '[SAVE]');
-      } else {
-        html += '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove ' + ctx.id + '-btn-disabled" style="float:right;margin-right:4px">[SAVE]</span>' +
-        '<span style="float:right;margin-right:4px;color:#caa">Save function (localStorage) is not available.</span>';
-      }
-      ctx.memoEditorPanel.innerHTML = html;
-      ctx.memoBasePanel.appendChild(ctx.memoEditorPanel);
-      ctx.memoEditor = document.createElement('textarea');
-      ctx.memoEditor.className = ctx.id + '-editor';
-      ctx.setStyle(ctx.memoEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
-      ctx.memoBasePanel.appendChild(ctx.memoEditor);
-      if (DebugJS.LS_AVAILABLE) {
-        ctx.loadMemo(ctx);
-      }
+    if (ctx.batBasePanel == null) {
+      var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
+      ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[RUN]');
+      ctx.batRunBtn.onclick = new Function('DebugJS.ctx.startStopBat();');
+      ctx.createLabel(' S:', basePanel);
+      ctx.batStartTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
+      basePanel.appendChild(ctx.batStartTxt);
+      ctx.createLabel(' E:', basePanel);
+      ctx.batEndTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
+      basePanel.appendChild(ctx.batEndTxt);
+      ctx.batTextEditor = document.createElement('textarea');
+      ctx.batTextEditor.className = ctx.id + '-editor';
+      ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
+      basePanel.appendChild(ctx.batTextEditor);
+      ctx.batBasePanel = basePanel;
+      ctx.setBatTxt(ctx);
+      ctx.updateBatRunBtn();
     } else {
-      ctx.toolsBodyPanel.appendChild(ctx.memoBasePanel);
+      ctx.toolsBodyPanel.appendChild(ctx.batBasePanel);
     }
-    ctx.memoEditor.focus();
+    ctx.batTextEditor.focus();
   },
 
-  loadMemo: function(ctx) {
-    var memo = localStorage.getItem('DebugJS-memo');
-    if (memo == null) memo = '';
-    ctx.memoEditor.value = memo;
-  },
-
-  saveMemo: function() {
-    var memo = DebugJS.ctx.memoEditor.value;
-    if (memo != '') {
-      localStorage.setItem('DebugJS-memo', memo);
-    } else {
-      localStorage.removeItem('DebugJS-memo');
-    }
-    DebugJS.log.s('Saved.');
-  },
-
-  closeMemoEditor: function() {
+  startStopBat: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_MEMO) &&
-        (ctx.memoBasePanel != null)) {
-      ctx.removeToolFuncPanel(ctx, ctx.memoBasePanel);
+    if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
+      DebugJS.bat.stop();
+    } else {
+      ctx.execBat(ctx);
+    }
+  },
+
+  updateBatRunBtn: function() {
+    var ctx = DebugJS.ctx;
+    if (!ctx.batRunBtn) return;
+    var label = 'RUN';
+    var color = '#0f0';
+    if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
+      label = 'STOP';
+      color = '#f66';
+    }
+    ctx.batRunBtn.innerText = '[' + label + ']';
+    ctx.batRunBtn.style.color = color;
+  },
+
+  setBatTxt: function(ctx) {
+    var b = '';
+    var cmds = DebugJS.bat.cmds;
+    for (var i = 0; i < cmds.length; i++) {
+      b += cmds[i] + '\n';
+   }
+   ctx.batTextEditor.value = b;
+  },
+
+  execBat: function(ctx) {
+    DebugJS.bat.store(DebugJS.ctx.batTextEditor.value);
+    var s = ctx.batStartTxt.value;
+    var e = ctx.batEndTxt.value;
+    if (s == '') s = undefined;
+    if (e == '') e = undefined;
+    DebugJS.bat.run(s, e);
+  },
+
+  closeBatEditor: function() {
+    var ctx = DebugJS.ctx;
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) &&
+        (ctx.batBasePanel != null)) {
+      ctx.removeToolFuncPanel(ctx, ctx.batBasePanel);
     }
   },
 
@@ -9032,7 +9051,7 @@ DebugJS.cmd = function(c, echo) {
 };
 
 DebugJS.bat = function(b, sl, el) {
-  DebugJS.bat.store(b);
+  DebugJS.bat.setBat(b);
   DebugJS.bat.run(sl, el);
 };
 
@@ -9051,6 +9070,13 @@ DebugJS.bat.ctrl = {
 DebugJS.bat.js = '';
 DebugJS.bat.labels = {};
 DebugJS.bat.tmid = 0;
+
+DebugJS.bat.setBat = function(b) {
+  if (DebugJS.ctx.batTextEditor) {
+    DebugJS.ctx.batTextEditor.value = b;
+  }
+  DebugJS.bat.store(b);
+};
 
 DebugJS.bat.store = function(b) {
   b = b.replace(/(\r?\n|\r)/g, '\n');
@@ -9113,6 +9139,7 @@ DebugJS.bat.run = function(s, e) {
     el = DebugJS.bat.cmds.length - 1;
   }
   DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
+  DebugJS.ctx.updateBatRunBtn();
   DebugJS.bat.ctrl.pc = 0;
   DebugJS.bat.ctrl.startPc = sl;
   DebugJS.bat.ctrl.endPc = (el == 0 ? DebugJS.bat.cmds.length - 1 : el);
@@ -9136,7 +9163,7 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc) {
-    ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+    DebugJS.bat.stop();
     return;
   }
   if (DebugJS.bat.isLocked()) {
@@ -9324,8 +9351,9 @@ DebugJS.bat.list = function() {
   return s;
 };
 
-DebugJS.bat.terminate = function() {
+DebugJS.bat.stop = function() {
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+  DebugJS.ctx.updateBatRunBtn();
 };
 
 DebugJS.bat.clear = function() {
@@ -9903,7 +9931,7 @@ DebugJS.balse = function() {
   DebugJS.cmd = DebugJS.z2;
   DebugJS.bat = DebugJS.z1;
   DebugJS.bat.list = DebugJS.z0;
-  DebugJS.bat.terminate = DebugJS.z0;
+  DebugJS.bat.stop = DebugJS.z0;
   DebugJS.bat.clear = DebugJS.z0;
   DebugJS.countElements = DebugJS.z2;
   DebugJS.getHtml = DebugJS.z1;

@@ -1471,6 +1471,20 @@ dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style=
 
   <tr>
     <td class="name">
+      DebugJS.bat.run<br>
+      <span class="alias">( dbg.bat.run )</span>
+    </td>
+    <td>
+      arg1: start line<span class="annotation">(opt)</span><br>
+      arg2: end line<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Execute a loaded batch script <button class="demo-button2" onclick="dbg.bat.run();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.bat.list<br>
       <span class="alias">( dbg.bat.list )</span>
     </td>
@@ -1517,12 +1531,12 @@ dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style=
 
   <tr>
     <td class="name">
-      DebugJS.bat.terminate<br>
-      <span class="alias">( dbg.bat.terminate )</span>
+      DebugJS.bat.stop<br>
+      <span class="alias">( dbg.bat.stop )</span>
     </td>
     <td></td>
     <td>
-      Terminate the batch execution <button class="demo-button2" onclick="dbg.bat.terminate();">DEMO</button>
+      Terminate the batch execution <button class="demo-button2" onclick="dbg.bat.stop();">DEMO</button>
     </td>
   </tr>
 
@@ -2248,7 +2262,7 @@ sub function (for tools)
   text: Text Checker
   file: File Loader
   html: HTML Editor
-  memo: Memo
+  bat: Batch editor
 
 sub function (for ext)
   panel index
@@ -2337,7 +2351,7 @@ $ point show
 $ point click
 -&gt; Click the current position
 
-$ point move x y 10<span class="annotation">step(px)</span> 10<span class="annotation">speed(ms)</span>
+$ point move x y 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
 $ point move #id 10 10
 $ point move .className 0<span class="annotation">index</span> 10 10
 $ point move tagName 0 10 10
