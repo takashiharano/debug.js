@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710012300';
+  this.v = '201710020732';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7064,8 +7064,8 @@ DebugJS.prototype = {
     } catch (e) {
       DebugJS.log.e(e);
       var baseURI = document.baseURI;
-      var regexp = new RegExp('^' + baseURI + '(.*?)');
-      if (!url.match(regexp)) {
+      var reg = new RegExp('^' + baseURI + '(.*?)');
+      if (!url.match(reg)) {
         DebugJS.log.w('Cross-Origin Request\nsource : ' + baseURI + '\nrequest: ' + url);
       }
     }
