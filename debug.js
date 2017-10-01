@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710012210';
+  this.v = '201710012300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -289,7 +289,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run|list|clear|status [start] [end]'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run|list|status|stop|clear [start] [end]'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -320,6 +320,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
+    {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select #id "value"'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
@@ -5958,9 +5959,6 @@ DebugJS.prototype = {
         var s = DebugJS.bat.list();
         DebugJS.log.mlt(s);
         break;
-      case 'clear':
-        DebugJS.bat.clear();
-        break;
       case 'status':
         var st = '\n';
         if (DebugJS.bat.cmds.length == 0) {
@@ -5969,6 +5967,12 @@ DebugJS.prototype = {
           st += ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
         }
         DebugJS.log.p(DebugJS.bat.ctrl, 0, st);
+        break;
+      case 'stop':
+        DebugJS.bat.stop();
+        break;
+      case 'clear':
+        DebugJS.bat.clear();
         break;
       default:
         DebugJS.printUsage(tbl.usage);
@@ -6650,6 +6654,19 @@ DebugJS.prototype = {
       return;
     }
     ctx.logPanel.scrollTop = pos;
+  },
+
+  cmdSelect: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var id = args[0];
+    var val;
+    var qstr = DebugJS.getQuotedStr(arg);
+    if (qstr == null) {
+      val = args[1];
+    } else {
+      val = qstr.str;
+    }
+    DebugJS.selectOption(id, val);
   },
 
   cmdSelf: function(arg, tbl) {
@@ -9282,6 +9299,7 @@ DebugJS.bat.prepro = function(cmd) {
 };
 
 DebugJS.bat.execJs = function() {
+  DebugJS.bat.js = '';
   while ((DebugJS.bat.ctrl.pc >= DebugJS.bat.ctrl.startPc) &&
          (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.endPc)) {
     c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
@@ -9709,6 +9727,29 @@ DebugJS.inputText.finalize = function() {
   data.i = 0;
 };
 DebugJS.inputText.data = {el: null, txt: '', speed: 0, max: 0, i: 0, tmid: 0};
+
+DebugJS.selectOption = function(el, val) {
+  var select = null;
+  if (typeof el === 'string') {
+    select = document.querySelector(el);
+    if (!select) {
+      DebugJS.log.e('element not found: ' + el);
+    }
+  } else {
+    select = el;
+  }
+  if (!select) {
+    DebugJS.log.e('element is ' + select);
+    return;
+  }
+  for (var i = 0; i < select.options.length; i++) {
+    if (select.options[i].value == val) {
+      select.options[i].selected = true;
+      return;
+    }
+  }
+  DebugJS.log.w(val + ': no such option');
+};
 
 DebugJS.getQuotedStr = function(str) {
   var ret = null;
