@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710030000';
+  this.v = '201710030040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -204,6 +204,7 @@ var DebugJS = DebugJS || function() {
   this.batTextEditor = null;
   this.batRunBtn = null;
   this.batCurPc = null;
+  this.batTotalLine = null;
   this.swBtnPanel = null;
   this.swLabel = null;
   this.swStartTime = 0;
@@ -5441,13 +5442,13 @@ DebugJS.prototype = {
       basePanel.appendChild(ctx.batEndTxt);
       ctx.createLabel(' L:', basePanel);
       ctx.batCurPc = ctx.createLabel('0', basePanel);
+      ctx.createLabel(' / ', basePanel);
+      ctx.batTotalLine = ctx.createLabel('0', basePanel);
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
-
       ctx.batTextEditor.addEventListener('dragover', ctx.handleDragOver, false);
       ctx.batTextEditor.addEventListener('drop', ctx.handleBatFileDrop, false);
-
       basePanel.appendChild(ctx.batTextEditor);
       ctx.batBasePanel = basePanel;
       ctx.setBatTxt(ctx);
@@ -5527,6 +5528,12 @@ DebugJS.prototype = {
     }
     if (DebugJS.ctx.batCurPc) {
       DebugJS.ctx.batCurPc.innerText = pdng + pc;
+    }
+  },
+
+  updateTotalLine: function() {
+    if (DebugJS.ctx.batTotalLine) {
+      DebugJS.ctx.batTotalLine.innerText = DebugJS.bat.cmds.length;
     }
   },
 
@@ -9161,6 +9168,7 @@ DebugJS.bat.store = function(b) {
   }
   DebugJS.bat.parseLabels();
   DebugJS.bat.finalize();
+  DebugJS.ctx.updateTotalLine();
 };
 
 DebugJS.bat.parseLabels = function() {
