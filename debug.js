@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710022130';
+  this.v = '201710030000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -186,6 +186,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoadCancelBtn = null;
   this.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_B64;
   this.fileLoaderFile = null;
+  this.fileLoaderSysCb = null;
   this.fileReader = null;
   this.scriptBtn = null;
   this.scriptPanel = null;
@@ -4937,7 +4938,7 @@ DebugJS.prototype = {
       ctx.fileLoaderRadioBin.name = ctx.id + '-load-type';
       ctx.fileLoaderRadioBin.style.marginLeft = '10px';
       ctx.fileLoaderRadioBin.value = 'binary';
-      ctx.fileLoaderRadioBin.onchange = ctx.loadFile;
+      ctx.fileLoaderRadioBin.onchange = ctx.loadFileBin;
       ctx.fileLoaderRadioBin.checked = true;
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioBin);
       ctx.fileLoaderLabelBin = document.createElement('label');
@@ -4951,7 +4952,7 @@ DebugJS.prototype = {
       ctx.fileLoaderRadioB64.name = ctx.id + '-load-type';
       ctx.fileLoaderRadioB64.style.marginLeft = '10px';
       ctx.fileLoaderRadioB64.value = 'base64';
-      ctx.fileLoaderRadioB64.onchange = ctx.loadFile;
+      ctx.fileLoaderRadioB64.onchange = ctx.loadFileB64;
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioB64);
       ctx.fileLoaderLabelB64 = document.createElement('label');
       ctx.fileLoaderLabelB64.htmlFor = ctx.id + '-load-type-b64';
@@ -5023,7 +5024,7 @@ DebugJS.prototype = {
         ctx.fileLoaderRadioB64.checked = false;
       }
       if (ctx.fileLoadFormat != format) {
-        ctx.loadFile();
+        ctx.loadFile(format);
       }
     }
   },
@@ -5037,9 +5038,11 @@ DebugJS.prototype = {
   },
 
   handleFileSelect: function(e) {
+    var ctx = DebugJS.ctx;
     if (e.target.files) {
       DebugJS.ctx.fileLoaderFile = e.target.files[0];
-      DebugJS.ctx.loadFile();
+      var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FORMAT_B64 : DebugJS.FILE_LOAD_FORMAT_BIN);
+      ctx.loadFile(format);
     } else {
       DebugJS.log.e('unsupported');
     }
@@ -5052,17 +5055,27 @@ DebugJS.prototype = {
   },
 
   handleFileDrop: function(e) {
+    var ctx = DebugJS.ctx;
     e.stopPropagation();
     e.preventDefault();
     if (e.dataTransfer.files) {
-      DebugJS.ctx.fileLoaderFile = e.dataTransfer.files[0];
-      DebugJS.ctx.loadFile();
+      ctx.fileLoaderFile = e.dataTransfer.files[0];
+      var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FORMAT_B64 : DebugJS.FILE_LOAD_FORMAT_BIN);
+      ctx.loadFile(format);
     } else {
       DebugJS.log.e('unsupported');
     }
   },
 
-  loadFile: function() {
+  loadFileBin: function() {
+    DebugJS.ctx.loadFile(DebugJS.FILE_LOAD_FORMAT_BIN);
+  },
+
+  loadFileB64: function() {
+    DebugJS.ctx.loadFile(DebugJS.FILE_LOAD_FORMAT_B64);
+  },
+
+  loadFile: function(format) {
     var ctx = DebugJS.ctx;
     var file = ctx.fileLoaderFile;
     if (!file) {
@@ -5088,7 +5101,7 @@ DebugJS.prototype = {
       };
     })(file);
 
-    if (ctx.fileLoaderRadioB64.checked) {
+    if (format == DebugJS.FILE_LOAD_FORMAT_B64) {
       ctx.fileLoadFormat = DebugJS.FILE_LOAD_FORMAT_B64;
       ctx.fileReader.readAsDataURL(file);
     } else {
@@ -5104,12 +5117,14 @@ DebugJS.prototype = {
   },
 
   onAbortLoadFile: function(e) {
+    DebugJS.ctx.fileLoaderSysCb = null;
     DebugJS.ctx.updateFilePreview('File read cancelled.');
     setTimeout(DebugJS.ctx.fileLoadFinalize, 1000);
   },
 
   fileLoadErrorHandler: function(e) {
     var ctx = DebugJS.ctx;
+    ctx.fileLoaderSysCb = null;
     switch (e.target.error.code) {
       case e.target.error.NOT_FOUND_ERR:
         ctx.updateFilePreview('NOT_FOUND_ERR');
@@ -5180,9 +5195,11 @@ DebugJS.prototype = {
       } else if (file.type.match(/text\//)) {
         var contents = b64content.split(',');
         var decoded = DebugJS.decodeBase64(contents[1]);
-        html += ctx.batProcess(ctx, decoded);
-        decoded = DebugJS.escTags(decoded);
-        preview = '<span style="color:#0f0">' + decoded + '</span>\n';
+        var escDecoded = DebugJS.escTags(decoded);
+        preview = '<span style="color:#0f0">' + escDecoded + '</span>\n';
+        if (ctx.fileLoaderSysCb) {
+          ctx.fileLoaderSysCb(ctx, decoded);
+        }
       }
     }
     html += preview + '\n';
@@ -5192,17 +5209,8 @@ DebugJS.prototype = {
     } else {
       html += '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
     }
+    ctx.fileLoaderSysCb = null;
     return html;
-  },
-
-  batProcess: function(ctx, content) {
-    var batHead = '#[BAT]';
-    var btn = '';
-    if (content.substr(0, batHead.length) == batHead) {
-      DebugJS.bat.setBat(content);
-      ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
-    }
-    return btn;
   },
 
   getFileInfo: function(file) {
@@ -5338,12 +5346,15 @@ DebugJS.prototype = {
 
   switchFileScreen: function() {
     var ctx = DebugJS.ctx;
+    var format;
     if (ctx.fileLoaderRadioB64.checked) {
       ctx.fileLoaderRadioBin.checked = true;
+      format = DebugJS.FILE_LOAD_FORMAT_BIN;
     } else {
       ctx.fileLoaderRadioB64.checked = true;
+      format = DebugJS.FILE_LOAD_FORMAT_B64;
     }
-    ctx.loadFile();
+    ctx.loadFile(format);
   },
 
   openHtmlEditor: function() {
@@ -5433,6 +5444,10 @@ DebugJS.prototype = {
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
+
+      ctx.batTextEditor.addEventListener('dragover', ctx.handleDragOver, false);
+      ctx.batTextEditor.addEventListener('drop', ctx.handleBatFileDrop, false);
+
       basePanel.appendChild(ctx.batTextEditor);
       ctx.batBasePanel = basePanel;
       ctx.setBatTxt(ctx);
@@ -5441,6 +5456,26 @@ DebugJS.prototype = {
       ctx.toolsBodyPanel.appendChild(ctx.batBasePanel);
     }
     ctx.batTextEditor.focus();
+  },
+
+  handleBatFileDrop: function(e) {
+    var ctx = DebugJS.ctx;
+    ctx.switchToolsFunction(DebugJS.TOOLS_FNC_FILE);
+    e.stopPropagation();
+    e.preventDefault();
+    if (e.dataTransfer.files) {
+      ctx.fileLoaderFile = e.dataTransfer.files[0];
+      ctx.fileLoaderRadioB64.checked = true;
+      ctx.fileLoaderSysCb = ctx.onBatLoaded;
+      ctx.loadFile(DebugJS.FILE_LOAD_FORMAT_B64);
+    } else {
+      DebugJS.log.e('unsupported');
+    }
+  },
+
+  onBatLoaded: function(ctx, content) {
+    DebugJS.bat.setBat(content);
+    ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
 
   startStopBat: function() {
@@ -5490,7 +5525,9 @@ DebugJS.prototype = {
     for (var i = 0; i < diff; i++) {
       pdng += '0';
     }
-    DebugJS.ctx.batCurPc.innerText = pdng + pc;
+    if (DebugJS.ctx.batCurPc) {
+      DebugJS.ctx.batCurPc.innerText = pdng + pc;
+    }
   },
 
   closeBatEditor: function() {
