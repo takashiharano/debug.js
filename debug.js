@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710020732';
+  this.v = '201710022130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -202,6 +202,7 @@ var DebugJS = DebugJS || function() {
   this.batEditorPanel = null;
   this.batTextEditor = null;
   this.batRunBtn = null;
+  this.batCurPc = null;
   this.swBtnPanel = null;
   this.swLabel = null;
   this.swStartTime = 0;
@@ -5421,12 +5422,14 @@ DebugJS.prototype = {
       var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
       ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[RUN]');
       ctx.batRunBtn.onclick = new Function('DebugJS.ctx.startStopBat();');
-      ctx.createLabel(' S:', basePanel);
+      ctx.createLabel(' FROM:', basePanel);
       ctx.batStartTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batStartTxt);
-      ctx.createLabel(' E:', basePanel);
+      ctx.createLabel(' TO:', basePanel);
       ctx.batEndTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batEndTxt);
+      ctx.createLabel(' L:', basePanel);
+      ctx.batCurPc = ctx.createLabel('0', basePanel);
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
@@ -5478,6 +5481,16 @@ DebugJS.prototype = {
     if (s == '') s = undefined;
     if (e == '') e = undefined;
     DebugJS.bat.run(s, e);
+  },
+
+  updateCurPc: function() {
+    var pc = DebugJS.bat.ctrl.pc;
+    var diff = DebugJS.digits(DebugJS.bat.cmds.length) - DebugJS.digits(pc);
+    var pdng = '';
+    for (var i = 0; i < diff; i++) {
+      pdng += '0';
+    }
+    DebugJS.ctx.batCurPc.innerText = pdng + pc;
   },
 
   closeBatEditor: function() {
@@ -7826,11 +7839,15 @@ DebugJS.checkJson = function(json) {
 };
 
 DebugJS.digits = function(x) {
-  var digit = 0;
-  while (x != 0) {
-    x = (x / 10) | 0; digit++;
+  var d = 0;
+  if (x == 0) {
+    d = 1;
+  } else {
+    while (x != 0) {
+      x = (x / 10) | 0; d++;
+    }
   }
-  return digit;
+  return d;
 };
 
 DebugJS.parseInt = function(v) {
@@ -9161,6 +9178,7 @@ DebugJS.bat.run = function(s, e) {
   DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
   DebugJS.ctx.updateBatRunBtn();
   DebugJS.bat.ctrl.pc = 0;
+  DebugJS.ctx.updateCurPc();
   DebugJS.bat.ctrl.startPc = sl;
   DebugJS.bat.ctrl.endPc = (el == 0 ? DebugJS.bat.cmds.length - 1 : el);
   if (DebugJS.bat.tmid != 0) {
@@ -9191,6 +9209,7 @@ DebugJS.bat.exec = function() {
   }
   var c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
   DebugJS.bat.ctrl.pc++;
+  DebugJS.ctx.updateCurPc();
   switch (DebugJS.bat.prepro(c)) {
     case 1:
       DebugJS.bat.next();
@@ -9273,6 +9292,7 @@ DebugJS.bat.prepro = function(cmd) {
   switch (c) {
     case 'exit':
       ctrl.pc = DebugJS.bat.cmds.length;
+      DebugJS.ctx.updateCurPc();
       DebugJS.bat.preproEcho(cmd);
       return 1;
     case 'goto':
@@ -9282,6 +9302,7 @@ DebugJS.bat.prepro = function(cmd) {
         DebugJS.log.e('L' + ctrl.pc + ': no such label (' + a[0] + ')');
       } else {
         ctrl.pc = idx;
+        DebugJS.ctx.updateCurPc();
       }
       return 1;
     case 'wait':
@@ -9292,6 +9313,7 @@ DebugJS.bat.prepro = function(cmd) {
   }
   if (ctrl.js) {
     DebugJS.bat.ctrl.pc--;
+    DebugJS.ctx.updateCurPc();
     DebugJS.bat.execJs();
     return 1;
   }
@@ -9304,6 +9326,7 @@ DebugJS.bat.execJs = function() {
          (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.endPc)) {
     c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
     DebugJS.bat.ctrl.pc++;
+    DebugJS.ctx.updateCurPc();
     if (c != '!__js__!') {
       DebugJS.bat.js += c + '\n';
     }
@@ -9385,6 +9408,7 @@ DebugJS.bat.clear = function() {
 DebugJS.bat.finalize = function() {
   var c = DebugJS.bat.ctrl;
   c.pc = 0;
+  DebugJS.ctx.updateCurPc();
   c.echo = true;
   c.cont = false;
   c.cmnt = false;
