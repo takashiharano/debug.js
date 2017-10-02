@@ -2648,9 +2648,7 @@ goto foo
 
 <b>Batch File Format</b>
 <pre class="code" style="margin-bottom:2px">
-<span class="emphasis">#[BAT] <span class="comment">Batch file must be started with this signature.</span>
-
-# comment
+<span class="emphasis"># comment
 
 // comment
 
@@ -3345,7 +3343,7 @@ function callback(xhr) {
     <form name="f1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" style="width:220px;"></div>
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" name="pass1" style="width:220px;"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" id="pass1" name="pass1" style="width:220px;"></div>
       <div style="margin-bottom:5px;">
         <select id="select1" name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">
           <option value="1">opt1</option>
@@ -3360,7 +3358,7 @@ function callback(xhr) {
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value="'"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value='"'></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">checkbox1</span><input type="checkbox" id="checkbox1" value="chk"></div>
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">radio1</span><input type="radio" id="radio1" name="radiogrp1" value="1">1 <input type="radio" id="radio1" name="radiogrp1" value="2">2 <input type="radio" id="radio3" name="radiogrp1" value="3">3</div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">radio1</span><input type="radio" id="radio1" name="radiogrp1" value="1">1 <input type="radio" id="radio2" name="radiogrp1" value="2">2 <input type="radio" id="radio3" name="radiogrp1" value="3">3</div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">file</span><input type="file" id="input-file" name="input-file" style="width:180px;"></div>
       <div style="margin-bottom:5px;">
         <input type="submit" id="sbmt-btn" class="button-100" value="Submit" onsubmit="return false;">
