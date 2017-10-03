@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710031830';
+  this.v = '201710032153';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -203,6 +203,8 @@ var DebugJS = DebugJS || function() {
   this.batEditorPanel = null;
   this.batTextEditor = null;
   this.batRunBtn = null;
+  this.batStartTxt = null;
+  this.batEndTxt = null;
   this.batCurPc = null;
   this.batTotalLine = null;
   this.swBtnPanel = null;
@@ -323,6 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
+    {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin px(x)|left|center|right|current px(y)|top|middle|bottom|current'},
     {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select #id "value"'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
@@ -1616,7 +1619,7 @@ DebugJS.prototype = {
   },
 
   updateBodySizeLabel: function() {
-    this.bodySizeLabel.innerText = 'BODY:w=' + this.bodyEl.clientWidth + ',h=' + document.body.clientHeight;
+    this.bodySizeLabel.innerText = 'BODY:w=' + this.bodyEl.clientWidth + ',h=' + this.bodyEl.clientHeight;
   },
 
   updateScrollPosLabel: function() {
@@ -6714,6 +6717,48 @@ DebugJS.prototype = {
     ctx.logPanel.scrollTop = pos;
   },
 
+  cmdScrollWin: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var posX = args[0];
+    var posY = args[1];
+    if (posX == 'left') {
+      posX = 0;
+    } else if (posX == 'center') {
+      window.scroll(ctx.bodyEl.clientWidth, window.scrollY);
+      posX = window.scrollX / 2;
+    } else if (posX == 'right') {
+      posX = ctx.bodyEl.clientWidth;
+    } else if (posX == 'current') {
+      posX = window.scrollX;
+    } else if (posX.charAt(0) == '+') {
+      posX = window.scrollX + (posX.substr(1) | 0);
+    } else if (posX.charAt(0) == '-') {
+      posX = window.scrollX - (posX.substr(1) | 0);
+    } else if ((posX == '') || isNaN(posX)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    if (posY == 'top') {
+      posY = 0;
+    } else if (posY == 'middle') {
+      window.scroll(window.scrollX, ctx.bodyEl.clientHeight);
+      posY = window.scrollY / 2;
+    } else if (posY == 'bottom') {
+      posY = ctx.bodyEl.clientHeight;
+    } else if (posY == 'current') {
+      posY = window.scrollY;
+    } else if (posY.charAt(0) == '+') {
+      posY = window.scrollY + (posY.substr(1) | 0);
+    } else if (posY.charAt(0) == '-') {
+      posY = window.scrollY - (posY.substr(1) | 0);
+    } else if ((posY == '') || isNaN(posY)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    window.scroll(posX, posY);
+  },
+
   cmdSelect: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
     var id = args[0];
@@ -9650,18 +9695,24 @@ DebugJS.point._move = function() {
 
 DebugJS.pointById = function(id) {
   var ps = DebugJS.getElPosSize('#' + id);
+  DebugJS.scrollToTarget(ps);
+  ps = DebugJS.getElPosSize('#' + id);
   if (ps != null) {
     DebugJS.pointCenter(ps);
   }
 };
 DebugJS.pointByClassName = function(nm, idx) {
   var ps = DebugJS.getElPosSize('.' + nm, idx);
+  DebugJS.scrollToTarget(ps);
+  ps = DebugJS.getElPosSize('.' + nm, idx);
   if (ps != null) {
     DebugJS.pointCenter(ps);
   }
 };
 DebugJS.pointByTagName = function(nm, idx) {
   var ps = DebugJS.getElPosSize(nm, idx);
+  DebugJS.scrollToTarget(ps);
+  ps = DebugJS.getElPosSize(nm, idx);
   if (ps != null) {
     DebugJS.pointCenter(ps);
   }
@@ -9684,15 +9735,21 @@ DebugJS.getCenterPos = function(ps) {
 
 DebugJS.point.moveToId = function(id, step, speed) {
   var ps = DebugJS.getElPosSize('#' + id);
-  if (ps) {
-    var p = DebugJS.getCenterPos(ps);
-    if (p) {
-      DebugJS.point.move(p.x, p.y, step, speed);
-    }
-  }
+  DebugJS.scrollToTarget(ps);
+  ps = DebugJS.getElPosSize('#' + id);
+  DebugJS.point.moveToElement(ps);
 };
 DebugJS.point.moveToClassName = function(nm, idx, step, speed) {
   var ps = DebugJS.getElPosSize('.' + nm, idx);
+  DebugJS.scrollToTarget(ps);
+  ps = DebugJS.getElPosSize('.' + nm, idx);
+  DebugJS.point.moveToElement(ps);
+};
+DebugJS.point.moveToTagName = function(nm, idx, step, speed) {
+  var ps = DebugJS.getElPosSize(nm, idx);
+  DebugJS.point.moveToElement(ps);
+};
+DebugJS.point.moveToElement = function(ps, step, speed) {
   if (ps) {
     var p = DebugJS.getCenterPos(ps);
     if (p) {
@@ -9700,14 +9757,17 @@ DebugJS.point.moveToClassName = function(nm, idx, step, speed) {
     }
   }
 };
-DebugJS.point.moveToTagName = function(nm, idx, step, speed) {
-  var ps = DebugJS.getElPosSize(nm, idx);
-  if (ps) {
-    var p = DebugJS.getCenterPos(ps);
-    if (p) {
-      DebugJS.point.move(p.x, p.y, step, speed);
-    }
+
+DebugJS.scrollToTarget = function(ps) {
+  if (!ps) return;
+  var x = 0, y = 0;
+  if ((ps.x < 0) || ((ps.x + ps.w) > document.documentElement.clientWidth)) {
+    x = ps.x;
   }
+  if ((ps.y < 0) || ((ps.y + ps.h) > document.documentElement.clientHeight)) {
+    y = ps.y;
+  }
+  window.scrollBy(x, y);
 };
 
 DebugJS.getElPosSize = function(el, idx) {

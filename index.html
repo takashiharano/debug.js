@@ -1101,7 +1101,7 @@ If you want to change the debugger settings, explicitly call for initialization 
 </table>
 <br>
 
-<div class="caption">// Methods</div>
+<div class="caption" id="methods">// Methods</div>
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -1951,7 +1951,7 @@ debug.js will not use aliases in case of those that are already defined.
 </div>
 <br>
 
-<div class="caption">// Commands</div>
+<div class="caption" id="commands">// Commands</div>
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -2431,9 +2431,28 @@ $ rgb 255 255 255
 
   <tr>
     <td class="name">scrolllog</td>
-    <td>top|px|bottom</td>
-    <td>Set log scroll position</td>
+    <td>position</td>
+    <td>
+      Set log scroll position<br>
+      top|px|bottom
+    </td>
   </tr>
+
+  <tr>
+    <td class="name">scrollwin</td>
+    <td>
+      arg1: position x<br>
+      arg2: position y
+    </td>
+    <td>
+      Set window scroll position<br>
+      x: [+|-]px|left|center|right|current<br>
+      y: [+|-]px|top|middle|bottom|current<br><br>
+      w/ "+" / "-" : the offset in pixels.<br>
+      w/o "+" / "-" : absolute position in pixels.
+    </td>
+  </tr>
+
 
   <tr>
     <td class="name">select</td>
@@ -2591,7 +2610,7 @@ $ uri -d abc%3Adef
 </table>
 <br>
 
-<div class="caption">// Batch dedicated commands</div>
+<div class="caption" id="batch-commands">// Batch dedicated commands</div>
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -2670,7 +2689,7 @@ TOOL =&gt; &lt;FILE&gt; =&gt; Base64 =&gt; Select/Drop a file =&gt; [EXECUTE]
 <br>
 <br>
 
-<div class="caption">// Calculation / Conversion</div>
+<div class="caption" id="calculation">// Calculation / Conversion</div>
 The debugger can perform the following calculation/conversion on the command-line.
 <table class="desc-table">
   <tr>
@@ -2760,7 +2779,7 @@ $ U+6F22 U+5B57
 </table>
 <br>
 
-<div class="caption">// Features</div>
+<div class="caption" id="features">// Features</div>
 <table class="desc-table">
   <tr>
     <th>Button</th>
@@ -2832,7 +2851,7 @@ $ U+6F22 U+5B57
 </table>
 <br>
 
-<div class="caption">// Extension</div>
+<div class="caption" id="extension">// Extension</div>
 You can define your own commands and panels like below.<br>
 <br>
 
@@ -2929,7 +2948,7 @@ and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sam
 
 <div id="debug" style="margin:20px 0 10px 0;"></div>
 
-<div class="caption">// DEMO</div>
+<div class="caption" id="demo">// DEMO</div>
 
 <!-- ********************************************************************** -->
 <div class="caption2">log</div>
