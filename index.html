@@ -27,7 +27,7 @@ a:hover {text-decoration:underline;}
 select {width:80px; height:30px; font-size:16px;}
 button, input[type="button"], input[type="submit"] {width:200px; height:40px; border:none; border-radius:4px; outline:none; font-size:16px; font-weight:bold; margin:4px 4px 12px 4px; color:#fff; background:#0068cc; transition:all 0.2s ease;}
 button:hover, input[type="button"]:hover, input[type="submit"]:hover {cursor:pointer; background:#00a8ff; color:#fff; transition:all 0.2s ease;}
-input, input[type="text"], textarea, select {font-size: 16px; padding: 3px; color: #333; vertical-align: middle; border: 1px solid #ccc; border-radius: 3px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); transition: border linear 0.1s, box-shadow linear 0.1s;}
+input, input[type="text"], textarea, select {padding: 3px; color: #333; font-size: 16px; font-family:Consolas; vertical-align: middle; border: 1px solid #ccc; border-radius: 3px; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); transition: border linear 0.1s, box-shadow linear 0.1s;}
 input:focus,input[type="text"]:focus,textarea:focus, select:focus {border-color:#51a7e8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
 pre {margin: 4px 0; font-family:Consolas;}
 #header-line {width:100%; height:10px; color:#fff; background:#08f;}
@@ -74,8 +74,8 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .showhide-button:hover {cursor:pointer;}
 .inline-text-input{border:none !important;border-bottom:1px solid #aaa !important;border-radius:0 !important;background:transparent;color:#fff !important;font-family:Consolas;}
 .inline-text-input-wh{color:#333 !important;}
-.demo-textarea{width:500px;height:50px;border:1px solid #666;background:transparent;color:#fff;font-size:14px;font-family:Consolas;}
-.demo-textarea2{width:500px;height:150px;border:1px solid #666;background:transparent;color:#333;font-size:14px;font-family:Consolas;}
+.demo-textarea{width:500px;height:50px;border:1px solid #666;background:transparent;color:#fff;font-size:14px;}
+.demo-textarea2{width:500px;height:150px;border:1px solid #666;background:transparent;color:#333;font-size:14px;}
 .overlay-root{position:relative;}
 .overlay{position:absolute;top:0;left:0;white-space:nowrap;}
 .overlay-val{padding:2px;border-radius:4px;background:rgba(0,102,238,0.5); }
@@ -253,12 +253,12 @@ var ledDemoData = [
   {fnc: function() {dbg.led.on(5);}, delay: 100},
   {fnc: function() {dbg.led.on(6);}, delay: 100},
   {fnc: function() {dbg.led.on(7);}, delay: 1000},
-  {fnc: function() {dbg.led.all(false);}, delay: 200},
-  {fnc: function() {dbg.led.all(true);}, delay: 200},
-  {fnc: function() {dbg.led.all(false);}, delay: 200},
-  {fnc: function() {dbg.led.all(true);}, delay: 200},
-  {fnc: function() {dbg.led.all(false);}, delay: 200},
-  {fnc: function() {dbg.led.all(true);}, delay: 1000},
+  {fnc: function() {dbg.led(0);}, delay: 200},
+  {fnc: function() {dbg.led(0xff);}, delay: 200},
+  {fnc: function() {dbg.led(0);}, delay: 200},
+  {fnc: function() {dbg.led(0xff);}, delay: 200},
+  {fnc: function() {dbg.led(0);}, delay: 200},
+  {fnc: function() {dbg.led(0xff);}, delay: 1000},
   {fnc: function() {dbg.led.off(3);dbg.led.off(4);}, delay: 100},
   {fnc: function() {dbg.led.off(2);dbg.led.off(5);}, delay: 100},
   {fnc: function() {dbg.led.off(1);dbg.led.off(6);}, delay: 100},
@@ -620,7 +620,7 @@ log(message);
   &lt;/script&gt;
 &lt;/head&gt;
 &lt;body&gt;
-  &lt;button onclick="foo();"&gt;DEMO&lt;/button&gt; <button class="demo-button" onclick="foo();">DEMO</button>
+  &lt;button onclick="foo();"&gt;DEMO&lt;/button&gt; <button id="log-demo-btn" class="demo-button" onclick="foo();">DEMO</button>
 &lt;/body&gt;
 &lt;/html&gt;
 </pre><br>
@@ -3250,7 +3250,7 @@ dbg.cmd('base64 -d xxx')<br>
 
 <tr>
 <td>
-<button onclick="ledDemo();">demo</button>
+<button id="led-demo-btn" onclick="ledDemo();">demo</button>
 </td>
 </tr>
 
