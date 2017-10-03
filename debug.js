@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710030040';
+  this.v = '201710031830';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5443,7 +5443,7 @@ DebugJS.prototype = {
       ctx.createLabel(' L:', basePanel);
       ctx.batCurPc = ctx.createLabel('0', basePanel);
       ctx.createLabel(' / ', basePanel);
-      ctx.batTotalLine = ctx.createLabel('0', basePanel);
+      ctx.batTotalLine = ctx.createLabel(DebugJS.bat.cmds.length, basePanel);
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
@@ -5452,6 +5452,7 @@ DebugJS.prototype = {
       basePanel.appendChild(ctx.batTextEditor);
       ctx.batBasePanel = basePanel;
       ctx.setBatTxt(ctx);
+      ctx.updateCurPc();
       ctx.updateBatRunBtn();
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.batBasePanel);
