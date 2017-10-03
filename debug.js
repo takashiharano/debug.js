@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710032153';
+  this.v = '201710032313';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9734,21 +9734,44 @@ DebugJS.getCenterPos = function(ps) {
 };
 
 DebugJS.point.moveToId = function(id, step, speed) {
+  var data = {id: id, step: step, speed: speed};
   var ps = DebugJS.getElPosSize('#' + id);
-  DebugJS.scrollToTarget(ps);
-  ps = DebugJS.getElPosSize('#' + id);
-  DebugJS.point.moveToElement(ps);
+  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToId, data)) {
+    return;
+  }
+  DebugJS.point._moveToId(data);
 };
+DebugJS.point._moveToId = function(data) {
+  var ps = DebugJS.getElPosSize('#' + data.id);
+  DebugJS.point.moveToElement(ps, data.step, data.speed);
+};
+
 DebugJS.point.moveToClassName = function(nm, idx, step, speed) {
+  var data = {nm: nm, idx: idx, step: step, speed: speed};
   var ps = DebugJS.getElPosSize('.' + nm, idx);
-  DebugJS.scrollToTarget(ps);
-  ps = DebugJS.getElPosSize('.' + nm, idx);
-  DebugJS.point.moveToElement(ps);
+  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToClassName, data)) {
+    return;
+  }
+  DebugJS.point._moveToClassName(data);
 };
+DebugJS.point._moveToClassName = function(data) {
+  var ps = DebugJS.getElPosSize('.' + data.nm, data.idx);
+  DebugJS.point.moveToElement(ps, data.step, data.speed);
+};
+
 DebugJS.point.moveToTagName = function(nm, idx, step, speed) {
-  var ps = DebugJS.getElPosSize(nm, idx);
-  DebugJS.point.moveToElement(ps);
+  var data = {nm: nm, idx: idx, step: step, speed: speed};
+  var ps = DebugJS.getElPosSize(data.nm, data.idx);
+  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToTagName, data)) {
+    return;
+  }
+  DebugJS.point._moveToTagName(data);
 };
+DebugJS.point._moveToTagName = function(data) {
+  var ps = DebugJS.getElPosSize(data.nm, data.idx);
+  DebugJS.point.moveToElement(ps, data.step, data.speed);
+};
+
 DebugJS.point.moveToElement = function(ps, step, speed) {
   if (ps) {
     var p = DebugJS.getCenterPos(ps);
@@ -9758,16 +9781,93 @@ DebugJS.point.moveToElement = function(ps, step, speed) {
   }
 };
 
-DebugJS.scrollToTarget = function(ps) {
+DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
   if (!ps) return;
-  var x = 0, y = 0;
+  var d = DebugJS.scrollToTarget.data;
+  if (d.tmid > 0) {
+    clearTimeout(d.tmid);
+    d.tmid = 0;
+    DebugJS.bat.unlock();
+  }
+  d.dstX = 0;
+  d.dstY = 0;
+  if (step > 0) {
+    d.step = step | 0;
+  } else {
+    d.step = DebugJS.scrollToTarget.DFLT_STEP;
+  }
+  d.speed = speed | 0;
+  d.cb = cb;
+  d.arg = arg;
   if ((ps.x < 0) || ((ps.x + ps.w) > document.documentElement.clientWidth)) {
-    x = ps.x;
+    d.dstX = ps.x;
   }
   if ((ps.y < 0) || ((ps.y + ps.h) > document.documentElement.clientHeight)) {
-    y = ps.y;
+    d.dstY = ps.y;
   }
-  window.scrollBy(x, y);
+  if ((d.dstX != 0) || (d.dstY != 0)) {
+    if (step == undefined) {
+      window.scrollBy(d.dstX, d.dstY);
+      return false;
+    } else {
+      DebugJS.bat.lock();
+      DebugJS._scrollToTarget();
+      return true;
+    }
+  }
+  return false;
+};
+DebugJS.scrollToTarget.DFLT_STEP = 300;
+DebugJS.scrollToTarget.DFLT_SPEED = 10;
+DebugJS.scrollToTarget.data = {
+  dstX: 0,
+  dstY: 0,
+  step: DebugJS.scrollToTarget.DFLT_STEP,
+  speed: DebugJS.scrollToTarget.DFLT_SPEED,
+  tmid: 0,
+  cb: null,
+  arg: null
+};
+
+DebugJS._scrollToTarget = function() {
+  var d = DebugJS.scrollToTarget.data;
+  d.tmid = 0;
+  var step = d.step;
+  if (d.dstX < 0) {
+    if ((d.dstX * (-1)) < step) {
+      step = d.dstX * (-1);
+    }
+    d.dstX += step;
+    step *= (-1);
+  } else {
+    if (d.dstX < step) {
+      step = d.dstX;
+    }
+    d.dstX -= step;
+  }
+
+  var step = d.step;
+  if (d.dstY < 0) {
+    if ((d.dstY * (-1)) < step) {
+      step = d.dstY * (-1);
+    }
+    d.dstY += step;
+    step *= (-1);
+  } else {
+    if (d.dstY < step) {
+      step = d.dstY;
+    }
+    d.dstY -= step;
+  }
+  window.scrollBy(step, step);
+  if ((d.dstX != 0) || (d.dstY != 0)) {
+    d.tmid = setTimeout(DebugJS._scrollToTarget, d.speed);
+  } else {
+    if (d.cb) {
+      d.cb(d.arg);
+    }
+    DebugJS.bat.unlock();
+  }
 };
 
 DebugJS.getElPosSize = function(el, idx) {
@@ -9806,9 +9906,9 @@ DebugJS.getElPosSize = function(el, idx) {
 DebugJS.inputText = function(el, txt, speed, max) {
   var data = DebugJS.inputText.data;
   if (data.tmid > 0) {
-    DebugJS.bat.unlock();
     clearTimeout(data.tmid);
     data.tmid = 0;
+    DebugJS.bat.unlock();
   }
   var reg = /\\n/g;
   data.txt = txt.replace(reg, '\n');
