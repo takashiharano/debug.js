@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710040030';
+  this.v = '201710050122';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -319,7 +319,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'opacity', fnc: this.cmdOpacity, desc: 'Set the level of transparency of the debug window', usage: 'opacity 0.1-1'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class [idx]|tagName [idx]|move ...'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class [idx]|tagName [idx]|move|hint msg|show|hide|clear ...'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -6548,7 +6548,9 @@ DebugJS.prototype = {
       DebugJS.point.show();
     } else if (x == 'move') {
       var target = args[1];
-      if (target.charAt(0) == '#') {
+      if (target == undefined) {
+        DebugJS.printUsage(tbl.usage);
+      } else if (target.charAt(0) == '#') {
         step = args[2];
         speed = args[3];
         DebugJS.point.moveToId(target.substr(1), step, speed);
@@ -6572,6 +6574,20 @@ DebugJS.prototype = {
           speed = args[4];
           DebugJS.point.move(x, y, step, speed);
         }
+      }
+    } else if (x == 'hint') {
+      var op = args[1];
+      if (op == 'msg') {
+        var msg = DebugJS.splitCmdLineInTwo(DebugJS.splitCmdLineInTwo(arg)[1])[1];
+        DebugJS.point.hint(msg);
+      } else if (op == 'hide') {
+        DebugJS.point.hint.hide();
+      } else if (op == 'show') {
+        DebugJS.point.hint.show();
+      } else if (op == 'clear') {
+        DebugJS.point.hint.clear();
+      } else {
+        DebugJS.printUsage(tbl.usage);
       }
     } else {
       if (x == '') {
@@ -9592,13 +9608,17 @@ DebugJS.point = function(x, y) {
   ptr.style.top = pos.y + 'px';
   ptr.style.left = pos.x + 'px';
   document.body.appendChild(ptr);
+
+  DebugJS.point.hint.move();
 };
 DebugJS.point.ptr = null;
+DebugJS.point.ptrW = 12;
+DebugJS.point.ptrH = 19;
 DebugJS.point.createPtr = function() {
   var ptr = document.createElement('img');
   ptr.style.position = 'fixed';
-  ptr.style.width = '12px';
-  ptr.style.height = '19px';
+  ptr.style.width = DebugJS.point.ptrW + 'px';
+  ptr.style.height = DebugJS.point.ptrH + 'px';
   ptr.style.top = 0;
   ptr.style.left = 0;
   ptr.style.zIndex = 0x7fffffff;
@@ -9613,12 +9633,16 @@ DebugJS.point.show = function() {
   } else {
     document.body.appendChild(ptr);
   }
+  if (DebugJS.point.hint.st.visible) {
+    DebugJS.point.hint.show();
+  }
 };
 DebugJS.point.hide = function() {
   var ptr = DebugJS.point.ptr;
   if ((ptr != null) && (ptr.parentNode)) {
     document.body.removeChild(ptr);
   }
+  DebugJS.point.hint.hide(true);
 };
 DebugJS.point.getPos = function() {
   var ptr = DebugJS.point.ptr;
@@ -9635,9 +9659,18 @@ DebugJS.point.click = function() {
     return;
   }
   var pos = DebugJS.point.getPos();
+  var hint = DebugJS.point.hint.area;
+  var hintFlg = false;
+  if (hint && (hint.parentNode)) {
+    hintFlg = true;
+    document.body.removeChild(hint);
+  }
   document.body.removeChild(ptr);
   var el = document.elementFromPoint(pos.x, pos.y);
   document.body.appendChild(ptr);
+  if (hintFlg) {
+    document.body.appendChild(hint);
+  }
   if (el) {
     el.focus();
     el.click();
@@ -9706,27 +9739,33 @@ DebugJS.point._move = function() {
 
 DebugJS.pointById = function(id) {
   var ps = DebugJS.getElPosSize('#' + id);
+  if (!ps) {
+    DebugJS.log.e('#' + id + ': element not found');
+    return;
+  }
   DebugJS.scrollToTarget(ps);
   ps = DebugJS.getElPosSize('#' + id);
-  if (ps != null) {
-    DebugJS.pointCenter(ps);
-  }
+  DebugJS.pointCenter(ps);
 };
 DebugJS.pointByClassName = function(nm, idx) {
   var ps = DebugJS.getElPosSize('.' + nm, idx);
+  if (!ps) {
+    DebugJS.log.e('.' + nm + '[' + idx + ']: element not found');
+    return;
+  }
   DebugJS.scrollToTarget(ps);
   ps = DebugJS.getElPosSize('.' + nm, idx);
-  if (ps != null) {
-    DebugJS.pointCenter(ps);
-  }
+  DebugJS.pointCenter(ps);
 };
 DebugJS.pointByTagName = function(nm, idx) {
   var ps = DebugJS.getElPosSize(nm, idx);
+  if (!ps) {
+    DebugJS.log.e(nm + '[' + idx + ']: element not found');
+    return;
+  }
   DebugJS.scrollToTarget(ps);
   ps = DebugJS.getElPosSize(nm, idx);
-  if (ps != null) {
-    DebugJS.pointCenter(ps);
-  }
+  DebugJS.pointCenter(ps);
 };
 DebugJS.pointCenter = function(ps) {
   var p = DebugJS.getCenterPos(ps);
@@ -9747,6 +9786,10 @@ DebugJS.getCenterPos = function(ps) {
 DebugJS.point.moveToId = function(id, step, speed) {
   var data = {id: id, step: step, speed: speed};
   var ps = DebugJS.getElPosSize('#' + id);
+  if (!ps) {
+    DebugJS.log.e('#' + id + ': element not found');
+    return;
+  }
   if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToId, data)) {
     return;
   }
@@ -9760,6 +9803,10 @@ DebugJS.point._moveToId = function(data) {
 DebugJS.point.moveToClassName = function(nm, idx, step, speed) {
   var data = {nm: nm, idx: idx, step: step, speed: speed};
   var ps = DebugJS.getElPosSize('.' + nm, idx);
+  if (!ps) {
+    DebugJS.log.e('.' + nm + ': element not found');
+    return;
+  }
   if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToClassName, data)) {
     return;
   }
@@ -9773,6 +9820,10 @@ DebugJS.point._moveToClassName = function(data) {
 DebugJS.point.moveToTagName = function(nm, idx, step, speed) {
   var data = {nm: nm, idx: idx, step: step, speed: speed};
   var ps = DebugJS.getElPosSize(data.nm, data.idx);
+  if (!ps) {
+    DebugJS.log.e(nm + '[' + idx + ']: element not found');
+    return;
+  }
   if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToTagName, data)) {
     return;
   }
@@ -9790,6 +9841,114 @@ DebugJS.point.moveToElement = function(ps, step, speed) {
       DebugJS.point.move(p.x, p.y, step, speed);
     }
   }
+};
+
+DebugJS.point.hint = function(msg) {
+  if (DebugJS.point.hint.area == null) {
+    DebugJS.point.hint.createArea();
+  }
+  var area = DebugJS.point.hint.area;
+  var reg = /\\n/g;
+  msg = msg.replace(reg, '\n');
+  DebugJS.point.hint.pre.innerHTML = msg;
+  DebugJS.point.hint.st.hasMsg = true;
+  DebugJS.point.hint.show();
+};
+DebugJS.point.hint.area = null;
+DebugJS.point.hint.pre = null;
+DebugJS.point.hint.fontSize = 12;
+DebugJS.point.hint.shadow = 8;
+DebugJS.point.hint.st = {
+  visible: false,
+  hasMsg: false
+};
+DebugJS.point.hint.createArea = function() {
+  var el = document.createElement('div');
+  el.style.position = 'fixed';
+  el.style.display = 'inline-block';
+  el.style.padding = '4px 8px';
+  el.style.boxSizing = 'content-box';
+  el.style.zIndex = 0x7fffffff;
+  el.style.boxShadow = DebugJS.point.hint.shadow + 'px ' + DebugJS.point.hint.shadow + 'px 10px rgba(0,0,0,.3)';
+  el.style.borderRadius = '3px';
+  el.style.background = 'rgba(0,0,0,0.65)';
+  el.style.color = '#fff';
+  el.style.fontSize = DebugJS.point.hint.fontSize + 'px',
+  el.style.fontFamily = 'Consolas, monospace';
+  var pre = document.createElement('pre');
+  pre.style.margin = 0;
+  pre.style.padding = 0;
+  el.appendChild(pre);
+  DebugJS.point.hint.pre = pre;
+  document.body.appendChild(el);
+  DebugJS.point.hint.area = el;
+};
+DebugJS.point.hint.move = function() {
+  var area = DebugJS.point.hint.area;
+  if (!area) return;
+  var clientW = document.documentElement.clientWidth;
+  var clientH = document.documentElement.clientHeight;
+  var pos = DebugJS.point.getPos();
+  var ps = DebugJS.getElPosSize(area);
+  var y = (pos.y - ps.h - 2);
+  if (y < 0) {
+    if (ps.h > pos.y) {
+      y = pos.y + DebugJS.point.ptrH;
+    } else {
+      y = 0;
+    }
+  }
+  var x = pos.x;
+  if (x < 0) {
+    x = 0;
+  }
+  if ((y + ps.h) > pos.y) {
+    x = pos.x + DebugJS.point.ptrW;
+  }
+  if ((x + ps.w) > clientW) {
+    if (ps.w < clientW) {
+      x = clientW - ps.w;
+    } else {
+      x = 0;
+    }
+  }
+  if ((y + ps.h) > clientH) {
+    if (ps.h < clientH) {
+      y = clientH - ps.h;
+    } else {
+      y = 0;
+    }
+  }
+  area.style.top = y + 'px';
+  area.style.left = x + 'px';
+};
+DebugJS.point.hint.show = function() {
+  if (!DebugJS.point.hint.st.hasMsg) return;
+  var area = DebugJS.point.hint.area;
+  if (area == null) {
+    DebugJS.point.hint.createArea();
+  } else {
+    document.body.appendChild(area);
+  }
+  DebugJS.point.hint.st.visible = true;
+  DebugJS.point.hint.move();
+};
+DebugJS.point.hint.hide = function(hold) {
+  var area = DebugJS.point.hint.area;
+  if ((area != null) && (area.parentNode)) {
+    document.body.removeChild(area);
+  }
+  if (!hold) {
+    DebugJS.point.hint.st.visible = false;
+  }
+};
+DebugJS.point.hint.clear = function() {
+  var area = DebugJS.point.hint.area;
+  if (area != null) {
+    DebugJS.point.hint.pre.innerHTML = '';
+    DebugJS.point.hint.hide();
+  }
+  DebugJS.point.hint.st.hasMsg = false;
 };
 
 DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
