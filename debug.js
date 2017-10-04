@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710050122';
+  this.v = '201710050735';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6425,8 +6425,9 @@ DebugJS.prototype = {
         var ags = DebugJS.splitArgs(a);
         speed = ags[0];
         max = ags[1];
+        start = ags[2];
       }
-      DebugJS.inputText(id, txt, speed, max);
+      DebugJS.inputText(id, txt, speed, max, start);
     } else {
       DebugJS.printUsage(tbl.usage);
     }
@@ -10071,7 +10072,7 @@ DebugJS.getElPosSize = function(el, idx) {
   return ps;
 };
 
-DebugJS.inputText = function(el, txt, speed, max) {
+DebugJS.inputText = function(el, txt, speed, max, start) {
   var data = DebugJS.inputText.data;
   if (data.tmid > 0) {
     clearTimeout(data.tmid);
@@ -10083,6 +10084,9 @@ DebugJS.inputText = function(el, txt, speed, max) {
   if ((speed == undefined) || (speed == '')) speed = 30;
   data.speed = speed | 0;
   data.max = max | 0;
+  if (start != undefined) {
+    data.i = start | 0;
+  }
   if (typeof el === 'string') {
     data.el = document.querySelector(el);
     if (!data.el) {
