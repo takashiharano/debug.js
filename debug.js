@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710050735';
+  this.v = '201710052100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10072,7 +10072,7 @@ DebugJS.getElPosSize = function(el, idx) {
   return ps;
 };
 
-DebugJS.inputText = function(el, txt, speed, max, start) {
+DebugJS.inputText = function(el, txt, speed, start, end) {
   var data = DebugJS.inputText.data;
   if (data.tmid > 0) {
     clearTimeout(data.tmid);
@@ -10083,10 +10083,8 @@ DebugJS.inputText = function(el, txt, speed, max, start) {
   data.txt = txt.replace(reg, '\n');
   if ((speed == undefined) || (speed == '')) speed = 30;
   data.speed = speed | 0;
-  data.max = max | 0;
-  if (start != undefined) {
-    data.i = start | 0;
-  }
+  data.i = start | 0;
+  data.end = end | 0;
   if (typeof el === 'string') {
     data.el = document.querySelector(el);
     if (!data.el) {
@@ -10103,7 +10101,7 @@ DebugJS.inputText = function(el, txt, speed, max, start) {
 DebugJS._inputText = function() {
   var data = DebugJS.inputText.data;
   data.i++;
-  if ((data.max > 0) && (data.i >= data.max)) {
+  if ((data.end > 0) && (data.i >= data.end)) {
     data.i = data.txt.length;
   }
   data.tmid = 0;
@@ -10125,10 +10123,10 @@ DebugJS.inputText.finalize = function() {
   data.el = null;
   data.txt = '';
   data.speed = 0;
-  data.max = 0;
+  data.end = 0;
   data.i = 0;
 };
-DebugJS.inputText.data = {el: null, txt: '', speed: 0, max: 0, i: 0, tmid: 0};
+DebugJS.inputText.data = {el: null, txt: '', speed: 0, end: 0, i: 0, tmid: 0};
 
 DebugJS.selectOption = function(el, val) {
   var select = null;
