@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710052100';
+  this.v = '201710060120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -203,6 +203,7 @@ var DebugJS = DebugJS || function() {
   this.batEditorPanel = null;
   this.batTextEditor = null;
   this.batRunBtn = null;
+  this.batStopBtn = null;
   this.batStartTxt = null;
   this.batEndTxt = null;
   this.batCurPc = null;
@@ -319,7 +320,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'opacity', fnc: this.cmdOpacity, desc: 'Set the level of transparency of the debug window', usage: 'opacity 0.1-1'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class [idx]|tagName [idx]|move|hint msg|show|hide|clear ...'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class [idx]|tagName [idx]|center|move|hint msg|show|hide|clear ...'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -390,6 +391,7 @@ DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 13;
 DebugJS.STATE_WD = 1 << 14;
 DebugJS.STATE_EXT_PANEL = 1 << 15;
 DebugJS.STATE_BAT_RUNNING = 1 << 16;
+DebugJS.STATE_BAT_PAUSE = 1 << 17;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -5436,8 +5438,11 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.batBasePanel == null) {
       var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
-      ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[RUN]');
-      ctx.batRunBtn.onclick = new Function('DebugJS.ctx.startStopBat();');
+      ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[ RUN ]');
+      ctx.batRunBtn.onclick = new Function('DebugJS.ctx.startPauseBat();');
+      ctx.batStopBtn = ctx.createButton(ctx, basePanel, '[STOP]');
+      ctx.batStopBtn.style.color = '#f66';
+      ctx.batStopBtn.onclick = new Function('DebugJS.bat.stop();');
       ctx.createLabel(' FROM:', basePanel);
       ctx.batStartTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batStartTxt);
@@ -5484,10 +5489,16 @@ DebugJS.prototype = {
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
 
-  startStopBat: function() {
+  startPauseBat: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
-      DebugJS.bat.stop();
+      if (ctx.status & DebugJS.STATE_BAT_PAUSE) {
+        ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
+        ctx.updateBatRunBtn();
+        DebugJS.bat.exec();
+      } else {
+        DebugJS.bat.pause();
+      }
     } else {
       ctx.execBat(ctx);
     }
@@ -5496,11 +5507,12 @@ DebugJS.prototype = {
   updateBatRunBtn: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.batRunBtn) return;
-    var label = 'RUN';
+    var label = ' RUN ';
     var color = '#0f0';
-    if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
-      label = 'STOP';
-      color = '#f66';
+    if ((ctx.status & DebugJS.STATE_BAT_RUNNING) &&
+        (!(ctx.status & DebugJS.STATE_BAT_PAUSE))) {
+      label = 'PAUSE';
+      color = '#ff0';
     }
     ctx.batRunBtn.innerText = '[' + label + ']';
     ctx.batRunBtn.style.color = color;
@@ -6560,6 +6572,11 @@ DebugJS.prototype = {
         step = args[3];
         speed = args[4];
         DebugJS.point.moveToClassName(target.substr(1), idx, step, speed);
+      } else if (target == 'center') {
+        var p = DebugJS.getScreenCenter();
+        step = args[2];
+        speed = args[3];
+        DebugJS.point.move(p.x, p.y, step, speed);
       } else {
         if (args[1] == '') {
           DebugJS.printUsage(tbl.usage);
@@ -6590,6 +6607,9 @@ DebugJS.prototype = {
       } else {
         DebugJS.printUsage(tbl.usage);
       }
+    } else if (x == 'center') {
+      var p = DebugJS.getScreenCenter();
+      DebugJS.point(p.x, p.y);
     } else {
       if (x == '') {
         var pos = DebugJS.point.getPos();
@@ -9219,12 +9239,12 @@ DebugJS.bat.ctrl = {
   tmpEchoOff: false,
   cmnt: false,
   js: false,
+  tmid: 0,
   lock: 0,
   cont: false
 };
 DebugJS.bat.js = '';
 DebugJS.bat.labels = {};
-DebugJS.bat.tmid = 0;
 
 DebugJS.bat.setBat = function(b) {
   if (DebugJS.ctx.batTextEditor) {
@@ -9300,9 +9320,9 @@ DebugJS.bat.run = function(s, e) {
   DebugJS.ctx.updateCurPc();
   DebugJS.bat.ctrl.startPc = sl;
   DebugJS.bat.ctrl.endPc = (el == 0 ? DebugJS.bat.cmds.length - 1 : el);
-  if (DebugJS.bat.tmid != 0) {
-    clearTimeout(DebugJS.bat.tmid);
-    DebugJS.bat.tmid = 0;
+  if (DebugJS.bat.ctrl.tmid != 0) {
+    clearTimeout(DebugJS.bat.ctrl.tmid);
+    DebugJS.bat.ctrl.tmid = 0;
   }
   DebugJS.bat.ctrl.echo = true;
   DebugJS.bat.ctrl.cmnt = false;
@@ -9314,7 +9334,10 @@ DebugJS.bat.run = function(s, e) {
 
 DebugJS.bat.exec = function() {
   var ctx = DebugJS.ctx;
-  DebugJS.bat.tmid = 0;
+  DebugJS.bat.ctrl.tmid = 0;
+  if (ctx.status & DebugJS.STATE_BAT_PAUSE) {
+    return;
+  }
   if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
     DebugJS.bat.finalize();
     return;
@@ -9345,14 +9368,14 @@ DebugJS.bat.exec = function() {
 };
 
 DebugJS.bat.next = function() {
-  DebugJS.bat.tmid = setTimeout(DebugJS.bat.exec, 0);
+  DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
 
 DebugJS.bat.isLocked = function() {
   if (DebugJS.bat.ctrl.lock == 0) {
     return false;
   } else {
-    DebugJS.bat.tmid = setTimeout(DebugJS.bat.exec, 50);
+    DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 50);
     return true;
   }
 };
@@ -9427,7 +9450,7 @@ DebugJS.bat.prepro = function(cmd) {
     case 'wait':
       var w = a[0] | 0;
       DebugJS.bat.preproEcho(cmd);
-      DebugJS.bat.tmid = setTimeout(DebugJS.bat.exec, w);
+      ctrl.tmid = setTimeout(DebugJS.bat.exec, w);
       return 2;
   }
   if (ctrl.js) {
@@ -9514,8 +9537,14 @@ DebugJS.bat.list = function() {
   return s;
 };
 
+DebugJS.bat.pause = function() {
+  DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE;
+  DebugJS.ctx.updateBatRunBtn();
+};
+
 DebugJS.bat.stop = function() {
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   DebugJS.ctx.updateBatRunBtn();
 };
 
@@ -9534,9 +9563,9 @@ DebugJS.bat.finalize = function() {
   c.lock = 0;
   c.js = false;
   DebugJS.bat.js = '';
-  if (DebugJS.bat.tmid != 0) {
-    clearTimeout(DebugJS.bat.tmid);
-    DebugJS.bat.tmid = 0;
+  if (c.tmid != 0) {
+    clearTimeout(c.tmid);
+    c.tmid = 0;
   }
 };
 
@@ -10039,39 +10068,6 @@ DebugJS._scrollToTarget = function() {
   }
 };
 
-DebugJS.getElPosSize = function(el, idx) {
-  if (typeof el === 'string') {
-    idx |= 0;
-    if (el.charAt(0) == '#') {
-      var id = el.substr(1);
-      el = document.getElementById(id);
-    } else if (el.charAt(0) == '.') {
-      var nm = el.substr(1);
-      var els = document.getElementsByClassName(nm);
-      el = els.item(idx);
-    } else {
-      var tag = el;
-      var els = document.getElementsByTagName(tag);
-      el = els.item(idx);
-    }
-  }
-  if (!el) {
-    return null;
-  }
-  var rect = el.getBoundingClientRect();
-  var rectT = Math.round(rect.top);
-  var rectL = Math.round(rect.left);
-  var rectR = Math.round(rect.right);
-  var rectB = Math.round(rect.bottom);
-  var ps = {
-    x: Math.round(rect.left),
-    y: Math.round(rect.top),
-    w: ((rectR - rectL) + 1),
-    h: ((rectB - rectT) + 1)
-  };
-  return ps;
-};
-
 DebugJS.inputText = function(el, txt, speed, start, end) {
   var data = DebugJS.inputText.data;
   if (data.tmid > 0) {
@@ -10149,6 +10145,47 @@ DebugJS.selectOption = function(el, val) {
     }
   }
   DebugJS.log.w(val + ': no such option');
+};
+
+DebugJS.getElPosSize = function(el, idx) {
+  if (typeof el === 'string') {
+    idx |= 0;
+    if (el.charAt(0) == '#') {
+      var id = el.substr(1);
+      el = document.getElementById(id);
+    } else if (el.charAt(0) == '.') {
+      var nm = el.substr(1);
+      var els = document.getElementsByClassName(nm);
+      el = els.item(idx);
+    } else {
+      var tag = el;
+      var els = document.getElementsByTagName(tag);
+      el = els.item(idx);
+    }
+  }
+  if (!el) {
+    return null;
+  }
+  var rect = el.getBoundingClientRect();
+  var rectT = Math.round(rect.top);
+  var rectL = Math.round(rect.left);
+  var rectR = Math.round(rect.right);
+  var rectB = Math.round(rect.bottom);
+  var ps = {
+    x: Math.round(rect.left),
+    y: Math.round(rect.top),
+    w: ((rectR - rectL) + 1),
+    h: ((rectB - rectT) + 1)
+  };
+  return ps;
+};
+
+DebugJS.getScreenCenter = function() {
+  var p = {
+    x: (document.documentElement.clientWidth / 2),
+    y: (document.documentElement.clientHeight / 2)
+  };
+  return p;
 };
 
 DebugJS.getQuotedStr = function(str) {

@@ -2351,6 +2351,9 @@ $ point tagName
 $ point tagName index
 -&gt; Point the specified element
 
+$ point center
+-&gt; Point the screen center
+
 $ point hide
 -&gt; Hide the pointer
 
@@ -2361,9 +2364,10 @@ $ point click
 -&gt; Click the current position
 
 $ point move x y 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
-$ point move #id 10 10
-$ point move .className 0<span class="annotation">index</span> 10 10
-$ point move tagName 0 10 10
+$ point move #id
+$ point move .className 0<span class="annotation">index</span>
+$ point move tagName 0<span class="annotation">index</span>
+$ point move center
 -&gt; Move the pointer from the current position to the specified position
 
 $ point hint msg hello!
