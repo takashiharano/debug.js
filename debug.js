@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710062219';
+  this.v = '201710081323';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1768,7 +1768,71 @@ DebugJS.prototype = {
   printLogMsg: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.win) return;
-    var html = '<pre style="padding:0 3px">' + ctx.getLogMsgs(ctx) + '</pre>';
+    var buf = ctx.msgBuf.getAll();
+    var cnt = ctx.msgBuf.count();
+    var len = buf.length;
+    var lineCnt = cnt - len;
+    var filter = ctx.filterText;
+    var fltCase = ctx.filterCase;
+    if (!fltCase) {
+      filter = filter.toLowerCase();
+    }
+    var logs = '';
+    for (var i = 0; i < len; i++) {
+      lineCnt++;
+      var data = buf[i];
+      var msg = data.msg;
+      if (filter != '') {
+        try {
+          var pos = (fltCase ? msg.indexOf(filter) : msg.toLowerCase().indexOf(filter));
+          if (pos != -1) {
+            var key = msg.substr(pos, filter.length);
+            var hl = '<span class="' + ctx.id + '-txt-hl">' + key + '</span>';
+            msg = msg.replace(key, hl, 'ig');
+          } else {
+            continue;
+          }
+        } catch (e) {}
+      }
+      var line = '';
+      var lineNum = '';
+      if ((ctx.opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
+        var diff = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
+        var pdng = '';
+        for (var j = 0; j < diff; j++) {
+          pdng += '0';
+        }
+        lineNum = pdng + lineCnt + ': ';
+      }
+      var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
+      switch (data.type) {
+        case DebugJS.LOG_TYPE_DBG:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.opt.logColorD + '">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_INF:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + ctx.opt.logColorI + '">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_ERR:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + ctx.opt.logColorE + '">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_WRN:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + ctx.opt.logColorW + '">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_VRB:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) line += lineNum + '<span style="color:' + ctx.opt.logColorV + '">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_SYS:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="color:' + ctx.opt.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
+          break;
+        case DebugJS.LOG_TYPE_MLT:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
+          break;
+        default:
+          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + m + '\n';
+      }
+      logs += line;
+    }
+    var html = '<pre style="padding:0 3px">' + logs + '</pre>';
     ctx.logPanel.innerHTML = html;
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
@@ -2169,74 +2233,6 @@ DebugJS.prototype = {
     var swCurrentTime = (new Date()).getTime();
     ctx.swElapsedTime = swCurrentTime - ctx.swStartTime;
     ctx.swElapsedTimeDisp = DebugJS.getTimerStr(ctx.swElapsedTime);
-  },
-
-  getLogMsgs: function(ctx) {
-    var logs = '';
-    var buf = ctx.msgBuf.getAll();
-    var cnt = ctx.msgBuf.count();
-    var len = buf.length;
-    var lineCnt = cnt - len;
-    var filter = ctx.filterText;
-    var fltCase = ctx.filterCase;
-    if (!fltCase) {
-      filter = filter.toLowerCase();
-    }
-    for (var i = 0; i < len; i++) {
-      lineCnt++;
-      var data = buf[i];
-      var msg = data.msg;
-      if (filter != '') {
-        try {
-          var pos = (fltCase ? msg.indexOf(filter) : msg.toLowerCase().indexOf(filter));
-          if (pos != -1) {
-            var key = msg.substr(pos, filter.length);
-            var hl = '<span class="' + ctx.id + '-txt-hl">' + key + '</span>';
-            msg = msg.replace(key, hl, 'ig');
-          } else {
-            continue;
-          }
-        } catch (e) {}
-      }
-      var line = '';
-      var lineNum = '';
-      if ((ctx.opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
-        var diff = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
-        var pdng = '';
-        for (var j = 0; j < diff; j++) {
-          pdng += '0';
-        }
-        lineNum = pdng + lineCnt + ': ';
-      }
-      var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
-      switch (data.type) {
-        case DebugJS.LOG_TYPE_DBG:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.opt.logColorD + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_INF:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + ctx.opt.logColorI + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_ERR:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + ctx.opt.logColorE + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_WRN:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + ctx.opt.logColorW + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_VRB:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) line += lineNum + '<span style="color:' + ctx.opt.logColorV + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_SYS:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="color:' + ctx.opt.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_MLT:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
-          break;
-        default:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + m + '\n';
-      }
-      logs += line;
-    }
-    return logs;
   },
 
   collapseLogPanel: function(ctx) {
