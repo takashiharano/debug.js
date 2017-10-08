@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710081323';
+  this.v = '201710090018';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1140,6 +1140,8 @@ DebugJS.prototype = {
     ctx.logPanel.style.height = 'calc(100%' + ctx.logPanelHeightAdjust + ')';
     ctx.logPanel.style.padding = '0';
     ctx.logPanel.style.overflow = 'auto';
+    ctx.logPanel.addEventListener('dragover', ctx.handleDragOver, false);
+    ctx.logPanel.addEventListener('drop', ctx.handleFileDropOnLogPanel, false);
     ctx.mainPanel.appendChild(ctx.logPanel);
 
     if (ctx.isAllFeaturesDisabled(ctx)) {
@@ -1838,6 +1840,12 @@ DebugJS.prototype = {
     if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
       ctx.uiStatus |= DebugJS.UI_ST_NEED_TO_SCROLL;
     }
+  },
+
+  handleFileDropOnLogPanel: function(e) {
+    var ctx = DebugJS.ctx;
+    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, null);
   },
 
   onClr: function() {
@@ -4980,7 +4988,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'font-family', ctx.opt.fontFamily + 'px');
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
       ctx.filePreviewWrapper.addEventListener('dragover', ctx.handleDragOver, false);
-      ctx.filePreviewWrapper.addEventListener('drop', ctx.handleFileDrop, false);
+      ctx.filePreviewWrapper.addEventListener('drop', ctx.handleFileDropOnFileViewer, false);
       ctx.fileLoaderPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
@@ -5065,13 +5073,18 @@ DebugJS.prototype = {
     e.dataTransfer.dropEffect = 'copy';
   },
 
-  handleFileDrop: function(e) {
+  handleFileDropOnFileViewer: function(e) {
     var ctx = DebugJS.ctx;
+    var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FORMAT_B64 : DebugJS.FILE_LOAD_FORMAT_BIN);
+    ctx.handleFileDrop(ctx, e, format, null);
+  },
+
+  handleFileDrop: function(ctx, e, format, cb) {
     e.stopPropagation();
     e.preventDefault();
     if (e.dataTransfer.files) {
       ctx.fileLoaderFile = e.dataTransfer.files[0];
-      var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FORMAT_B64 : DebugJS.FILE_LOAD_FORMAT_BIN);
+      ctx.fileLoaderSysCb = cb;
       ctx.loadFile(format);
     } else {
       DebugJS.log.e('unsupported');
@@ -5461,7 +5474,7 @@ DebugJS.prototype = {
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
       ctx.batTextEditor.addEventListener('dragover', ctx.handleDragOver, false);
-      ctx.batTextEditor.addEventListener('drop', ctx.handleBatFileDrop, false);
+      ctx.batTextEditor.addEventListener('drop', ctx.handleFileDropOnBat, false);
       basePanel.appendChild(ctx.batTextEditor);
       ctx.batBasePanel = basePanel;
       ctx.setBatTxt(ctx);
@@ -5473,19 +5486,10 @@ DebugJS.prototype = {
     ctx.batTextEditor.focus();
   },
 
-  handleBatFileDrop: function(e) {
+  handleFileDropOnBat: function(e) {
     var ctx = DebugJS.ctx;
-    ctx.switchToolsFunction(DebugJS.TOOLS_FNC_FILE);
-    e.stopPropagation();
-    e.preventDefault();
-    if (e.dataTransfer.files) {
-      ctx.fileLoaderFile = e.dataTransfer.files[0];
-      ctx.fileLoaderRadioB64.checked = true;
-      ctx.fileLoaderSysCb = ctx.onBatLoaded;
-      ctx.loadFile(DebugJS.FILE_LOAD_FORMAT_B64);
-    } else {
-      DebugJS.log.e('unsupported');
-    }
+    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onBatLoaded);
   },
 
   onBatLoaded: function(ctx, content) {
