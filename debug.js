@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710091923';
+  this.v = '201710092111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -333,6 +333,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select #id "value"'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
+    {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Sets the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
     {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
@@ -6887,6 +6888,30 @@ DebugJS.prototype = {
     }
   },
 
+  cmdSetAttr: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var sel = args[0];
+    var idx = 0;
+    var nm = args[1];
+    var vl = args[2];
+    if (args[3] != undefined) {
+      idx = args[1];
+      nm = args[2];
+      vl = args[3];
+    }
+    if ((sel == '') || (nm == undefined) || (vl == undefined)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var el = DebugJS.getElement(sel, idx);
+    if (!el) {
+      DebugJS.log.e('element not found: ' + sel);
+      return;
+    }
+    el.setAttribute(nm, vl);
+  },
+
   cmdShow: function(arg, tbl) {
     DebugJS.ctx.showDbgWin();
   },
@@ -10196,21 +10221,27 @@ DebugJS.selectOption = function(el, val) {
   DebugJS.log.w(val + ': no such option');
 };
 
+DebugJS.getElement = function(selector, idx) {
+  idx |= 0;
+  var el = null;
+  if (selector.charAt(0) == '#') {
+    var id = selector.substr(1);
+    el = document.getElementById(id);
+  } else if (selector.charAt(0) == '.') {
+    var nm = selector.substr(1);
+    var els = document.getElementsByClassName(nm);
+    el = els.item(idx);
+  } else {
+    var tag = selector;
+    var els = document.getElementsByTagName(tag);
+    el = els.item(idx);
+  }
+  return el;
+};
+
 DebugJS.getElPosSize = function(el, idx) {
   if (typeof el === 'string') {
-    idx |= 0;
-    if (el.charAt(0) == '#') {
-      var id = el.substr(1);
-      el = document.getElementById(id);
-    } else if (el.charAt(0) == '.') {
-      var nm = el.substr(1);
-      var els = document.getElementsByClassName(nm);
-      el = els.item(idx);
-    } else {
-      var tag = el;
-      var els = document.getElementsByTagName(tag);
-      el = els.item(idx);
-    }
+    el = DebugJS.getElement(el, idx);
   }
   if (!el) {
     return null;

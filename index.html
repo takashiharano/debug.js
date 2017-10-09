@@ -1832,6 +1832,27 @@ max: maximum length
 
   <tr>
     <td class="name">
+      DebugJS.getElement<br>
+      <span class="alias">( dbg.getElement )</span>
+    </td>
+    <td>
+      arg1: #id / .className / tagName<br>
+      arg2: index<span class="alias">(opt)</span>
+    </td>
+    <td>
+      Get an DOM element object of the specified selector<br><br>
+      e.g.,)
+<pre class="eg">
+dbg.getElement('#id');
+dbg.getElement('.className', 0);
+dbg.getElement('tagName', 1);
+</pre><br>
+Returns an DOM element or null if an element with the specified selector is not in the document.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.getElPosSize<br>
       <span class="alias">( dbg.getElPosSize )</span>
     </td>
@@ -2511,6 +2532,24 @@ $ select #id "1"
     <td>
       Set a property value.<br>
       <span class="annotation">See also "props" command.</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">setattr</td>
+    <td>
+      arg1: selectpr<br>
+      arg2: index<span class="annotation">(opt)</span><br>
+      arg3: property-name<br>
+      arg4: value
+    </td>
+    <td>
+      Sets the value of an attribute on the specified element.<br><br>
+e.g.,)<br>
+<pre class="eg">
+$ setattr #id disabled true
+$ setattr .className 1 disabled true
+</pre>
     </td>
   </tr>
 
