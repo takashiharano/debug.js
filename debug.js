@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710092111';
+  this.v = '201710100023';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5067,8 +5067,6 @@ DebugJS.prototype = {
       DebugJS.ctx.fileLoaderFile = e.target.files[0];
       var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FORMAT_B64 : DebugJS.FILE_LOAD_FORMAT_BIN);
       ctx.loadFile(format);
-    } else {
-      DebugJS.log.e('unsupported');
     }
   },
 
@@ -5087,12 +5085,10 @@ DebugJS.prototype = {
   handleFileDrop: function(ctx, e, format, cb) {
     e.stopPropagation();
     e.preventDefault();
-    if (e.dataTransfer.files) {
+    if (e.dataTransfer.files && (e.dataTransfer.files.length > 0)) {
       ctx.fileLoaderFile = e.dataTransfer.files[0];
       ctx.fileLoaderSysCb = cb;
       ctx.loadFile(format);
-    } else {
-      DebugJS.log.e('unsupported');
     }
   },
 
@@ -5221,7 +5217,7 @@ DebugJS.prototype = {
       if (file.type.match(/image\//)) {
         var ctxSizePos = ctx.getSelfSizePos();
         preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
-      } else if (file.type.match(/text\//)) {
+      } else if ((file.type.match(/text\//)) || (file.name.match(/\.js$|\.java$/))) {
         var contents = b64content.split(',');
         var decoded = DebugJS.decodeBase64(contents[1]);
         var escDecoded = DebugJS.escTags(decoded);
