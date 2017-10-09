@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710090018';
+  this.v = '201710091232';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -178,6 +178,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoaderRadioB64 = null;
   this.fileLoaderLabelBin = null;
   this.fileLoaderRadioBin = null;
+  this.fileReloadBtn = null;
   this.filePreviewWrapper = null;
   this.filePreview = null;
   this.fileLoaderFooter = null;
@@ -4938,7 +4939,7 @@ DebugJS.prototype = {
 
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
-      ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
+      ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 15.5) + 'px)');
       ctx.setStyle(fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
       ctx.setStyle(fileInput, 'margin', '0 0 4px 0');
       ctx.setStyle(fileInput, 'padding', '1px');
@@ -4955,7 +4956,7 @@ DebugJS.prototype = {
       ctx.fileLoaderRadioBin.type = 'radio';
       ctx.fileLoaderRadioBin.id = ctx.id + '-load-type-bin';
       ctx.fileLoaderRadioBin.name = ctx.id + '-load-type';
-      ctx.fileLoaderRadioBin.style.marginLeft = '10px';
+      ctx.fileLoaderRadioBin.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       ctx.fileLoaderRadioBin.value = 'binary';
       ctx.fileLoaderRadioBin.onchange = ctx.loadFileBin;
       ctx.fileLoaderRadioBin.checked = true;
@@ -4969,7 +4970,7 @@ DebugJS.prototype = {
       ctx.fileLoaderRadioB64.type = 'radio';
       ctx.fileLoaderRadioB64.id = ctx.id + '-load-type-b64';
       ctx.fileLoaderRadioB64.name = ctx.id + '-load-type';
-      ctx.fileLoaderRadioB64.style.marginLeft = '10px';
+      ctx.fileLoaderRadioB64.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       ctx.fileLoaderRadioB64.value = 'base64';
       ctx.fileLoaderRadioB64.onchange = ctx.loadFileB64;
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioB64);
@@ -4977,6 +4978,11 @@ DebugJS.prototype = {
       ctx.fileLoaderLabelB64.htmlFor = ctx.id + '-load-type-b64';
       ctx.fileLoaderLabelB64.innerText = 'Base64';
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelB64);
+
+      var reloadBtn = ctx.createButton(ctx, ctx.fileLoaderPanel, 'Reload');
+      reloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      reloadBtn.onclick = ctx.reloadFile;
+      ctx.fileReloadBtn = reloadBtn;
 
       ctx.filePreviewWrapper = document.createElement('div');
       ctx.setStyle(ctx.filePreviewWrapper, 'width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)');
@@ -5381,6 +5387,17 @@ DebugJS.prototype = {
     ctx.loadFile(format);
   },
 
+  reloadFile: function() {
+    var ctx = DebugJS.ctx;
+    var format;
+    if (ctx.fileLoaderRadioB64.checked) {
+      format = DebugJS.FILE_LOAD_FORMAT_B64;
+    } else {
+      format = DebugJS.FILE_LOAD_FORMAT_BIN;
+    }
+    ctx.loadFile(format);
+  },
+
   openHtmlEditor: function() {
     var ctx = DebugJS.ctx;
     if (ctx.htmlPrevBasePanel == null) {
@@ -5456,10 +5473,10 @@ DebugJS.prototype = {
     if (ctx.batBasePanel == null) {
       var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
       ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[ RUN ]');
-      ctx.batRunBtn.onclick = new Function('DebugJS.ctx.startPauseBat();');
+      ctx.batRunBtn.onclick = DebugJS.ctx.startPauseBat;
       ctx.batStopBtn = ctx.createButton(ctx, basePanel, '[STOP]');
       ctx.batStopBtn.style.color = '#f66';
-      ctx.batStopBtn.onclick = new Function('DebugJS.bat.stop();');
+      ctx.batStopBtn.onclick = DebugJS.bat.stop;
       ctx.createLabel(' FROM:', basePanel);
       ctx.batStartTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batStartTxt);
