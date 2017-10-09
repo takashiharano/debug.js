@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710091232';
+  this.v = '201710091923';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1797,7 +1797,6 @@ DebugJS.prototype = {
           }
         } catch (e) {}
       }
-      var line = '';
       var lineNum = '';
       if ((ctx.opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
         var diff = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
@@ -1810,30 +1809,29 @@ DebugJS.prototype = {
       var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
       switch (data.type) {
         case DebugJS.LOG_TYPE_DBG:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) line += lineNum + '<span style="color:' + ctx.opt.logColorD + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) logs += lineNum + '<span style="color:' + ctx.opt.logColorD + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_INF:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) line += lineNum + '<span style="color:' + ctx.opt.logColorI + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) logs += lineNum + '<span style="color:' + ctx.opt.logColorI + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_ERR:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) line += lineNum + '<span style="color:' + ctx.opt.logColorE + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) logs += lineNum + '<span style="color:' + ctx.opt.logColorE + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_WRN:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) line += lineNum + '<span style="color:' + ctx.opt.logColorW + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) logs += lineNum + '<span style="color:' + ctx.opt.logColorW + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_VRB:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) line += lineNum + '<span style="color:' + ctx.opt.logColorV + '">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) logs += lineNum + '<span style="color:' + ctx.opt.logColorV + '">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_SYS:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="color:' + ctx.opt.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) logs += lineNum + '<span style="color:' + ctx.opt.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
           break;
         case DebugJS.LOG_TYPE_MLT:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + '<span style="display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) logs += lineNum + '<span style="display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
           break;
         default:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) line += lineNum + m + '\n';
+          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) logs += lineNum + m + '\n';
       }
-      logs += line;
     }
     var html = '<pre style="padding:0 3px">' + logs + '</pre>';
     ctx.logPanel.innerHTML = html;
@@ -6042,34 +6040,35 @@ DebugJS.prototype = {
 
   cmdBat: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
+    var bat = DebugJS.bat;
     switch (args[0]) {
       case 'run':
         var sl = args[1];
         var el = args[2];
-        DebugJS.bat.run(sl, el);
+        bat.run(sl, el);
         break;
       case 'list':
-        if (DebugJS.bat.cmds.length == 0) {
+        if (bat.cmds.length == 0) {
           DebugJS.log('no batch loaded');
           break;
         }
-        var s = DebugJS.bat.list();
+        var s = bat.list();
         DebugJS.log.mlt(s);
         break;
       case 'status':
         var st = '\n';
-        if (DebugJS.bat.cmds.length == 0) {
+        if (bat.cmds.length == 0) {
          st += 'no batch loaded';
         } else {
           st += ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
         }
-        DebugJS.log.p(DebugJS.bat.ctrl, 0, st);
+        DebugJS.log.p(bat.ctrl, 0, st);
         break;
       case 'stop':
-        DebugJS.bat.stop();
+        bat.stop();
         break;
       case 'clear':
-        DebugJS.bat.clear();
+        bat.clear();
         break;
       default:
         DebugJS.printUsage(tbl.usage);
@@ -9288,14 +9287,15 @@ DebugJS.bat.setBat = function(b) {
 };
 
 DebugJS.bat.store = function(b) {
+  var bat = DebugJS.bat;
   b = b.replace(/(\r?\n|\r)/g, '\n');
-  DebugJS.bat.cmds = b.split('\n');
-  var last = DebugJS.bat.cmds.pop();
+  bat.cmds = b.split('\n');
+  var last = bat.cmds.pop();
   if (last != '') {
-    DebugJS.bat.cmds.push(last);
+    bat.cmds.push(last);
   }
-  DebugJS.bat.parseLabels();
-  DebugJS.bat.finalize();
+  bat.parseLabels();
+  bat.finalize();
   DebugJS.ctx.updateTotalLine();
 };
 
@@ -9312,7 +9312,8 @@ DebugJS.bat.parseLabels = function() {
 };
 
 DebugJS.bat.run = function(s, e) {
-  if (DebugJS.bat.cmds.length == 0) {
+  var bat = DebugJS.bat;
+  if (bat.cmds.length == 0) {
     DebugJS.log('no batch loaded');
     return;
   }
@@ -9320,7 +9321,7 @@ DebugJS.bat.run = function(s, e) {
   if (s == undefined) {
     sl = 0;
   } else if (isNaN(s)) {
-    sl = DebugJS.bat.labels[s];
+    sl = bat.labels[s];
     if (sl == undefined) {
       DebugJS.log.e(s + ': no such label');
       return;
@@ -9328,14 +9329,14 @@ DebugJS.bat.run = function(s, e) {
   } else {
     sl = (s | 0) - 1; if (sl < 0) sl = 0;
   }
-  if (sl >= DebugJS.bat.cmds.length) {
-    DebugJS.log.e('out of range (1-' + DebugJS.bat.cmds.length + ')');
+  if (sl >= bat.cmds.length) {
+    DebugJS.log.e('out of range (1-' + bat.cmds.length + ')');
     return;
   }
   if (e == undefined) {
-    el = DebugJS.bat.cmds.length - 1;
+    el = bat.cmds.length - 1;
   } else if (isNaN(e)) {
-    el = DebugJS.bat.labels[e];
+    el = bat.labels[e];
     if (el == undefined) {
       DebugJS.log.e(e + ': no such label');
       return;
@@ -9345,60 +9346,63 @@ DebugJS.bat.run = function(s, e) {
   }
   if (el < sl) {
     el = sl;
-  } else if (el >= DebugJS.bat.cmds.length) {
-    el = DebugJS.bat.cmds.length - 1;
+  } else if (el >= bat.cmds.length) {
+    el = bat.cmds.length - 1;
   }
   DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
   DebugJS.ctx.updateBatRunBtn();
-  DebugJS.bat.ctrl.pc = 0;
+  var ctrl = bat.ctrl;
+  ctrl.pc = 0;
   DebugJS.ctx.updateCurPc();
-  DebugJS.bat.ctrl.startPc = sl;
-  DebugJS.bat.ctrl.endPc = (el == 0 ? DebugJS.bat.cmds.length - 1 : el);
-  if (DebugJS.bat.ctrl.tmid != 0) {
-    clearTimeout(DebugJS.bat.ctrl.tmid);
-    DebugJS.bat.ctrl.tmid = 0;
+  ctrl.startPc = sl;
+  ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
+  if (ctrl.tmid != 0) {
+    clearTimeout(ctrl.tmid);
+    ctrl.tmid = 0;
   }
-  DebugJS.bat.ctrl.echo = true;
-  DebugJS.bat.ctrl.cmnt = false;
-  DebugJS.bat.ctrl.js = false;
-  DebugJS.bat.ctrl.lock = 0;
-  DebugJS.bat.js = '';
-  DebugJS.bat.exec();
+  ctrl.echo = true;
+  ctrl.cmnt = false;
+  ctrl.js = false;
+  ctrl.lock = 0;
+  bat.js = '';
+  bat.exec();
 };
 
 DebugJS.bat.exec = function() {
   var ctx = DebugJS.ctx;
-  DebugJS.bat.ctrl.tmid = 0;
+  var bat = DebugJS.bat;
+  var ctrl = bat.ctrl;
+  ctrl.tmid = 0;
   if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_CMD_PAUSE)) {
     return;
   }
   if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
-    DebugJS.bat.finalize();
+    bat.finalize();
     return;
   }
-  if (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc) {
-    DebugJS.bat.stop();
+  if (ctrl.pc > ctrl.endPc) {
+    bat.stop();
     return;
   }
-  if (DebugJS.bat.isLocked()) {
+  if (bat.isLocked()) {
     return;
   }
-  var c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
-  DebugJS.bat.ctrl.pc++;
+  var c = bat.cmds[ctrl.pc];
+  ctrl.pc++;
   DebugJS.ctx.updateCurPc();
-  switch (DebugJS.bat.prepro(c)) {
+  switch (bat.prepro(c)) {
     case 1:
-      DebugJS.bat.next();
+      bat.next();
     case 2:
-      DebugJS.bat.ctrl.tmpEchoOff = false;
+      ctrl.tmpEchoOff = false;
       return;
   }
-  var echoFlg = (DebugJS.bat.ctrl.echo && !DebugJS.bat.ctrl.tmpEchoOff);
-  DebugJS.bat.ctrl.tmpEchoOff = false;
-  if (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.startPc) {
+  var echoFlg = (ctrl.echo && !ctrl.tmpEchoOff);
+  ctrl.tmpEchoOff = false;
+  if (ctrl.pc > ctrl.startPc) {
     ctx._execCmd(c, echoFlg);
   }
-  DebugJS.bat.next();
+  bat.next();
 };
 
 DebugJS.bat.next = function() {
@@ -9416,7 +9420,8 @@ DebugJS.bat.isLocked = function() {
 
 DebugJS.bat.prepro = function(cmd) {
   var cmds = DebugJS.splitCmdLineInTwo(cmd);
-  var ctrl = DebugJS.bat.ctrl;
+  var bat = DebugJS.bat;
+  var ctrl = bat.ctrl;
   var c = cmds[0];
   var a = DebugJS.splitArgs(cmds[1]);
   if (c.charAt(0) == '@') {
@@ -9458,22 +9463,22 @@ DebugJS.bat.prepro = function(cmd) {
         ctrl.js = false;
       } else {
         ctrl.js = true;
-        DebugJS.bat.execJs();
+        bat.execJs();
       }
       return 1;
   }
-  if (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.startPc) {
+  if (ctrl.pc <= ctrl.startPc) {
     return 1;
   }
   switch (c) {
     case 'exit':
-      ctrl.pc = DebugJS.bat.cmds.length;
+      ctrl.pc = bat.cmds.length;
       DebugJS.ctx.updateCurPc();
-      DebugJS.bat.preproEcho(cmd);
+      bat.preproEcho(cmd);
       return 1;
     case 'goto':
       ctrl.startPc = 0;
-      var idx = DebugJS.bat.labels[a[0]];
+      var idx = bat.labels[a[0]];
       if (idx == undefined) {
         DebugJS.log.e('L' + ctrl.pc + ': no such label (' + a[0] + ')');
       } else {
@@ -9483,36 +9488,38 @@ DebugJS.bat.prepro = function(cmd) {
       return 1;
     case 'wait':
       var w = a[0] | 0;
-      DebugJS.bat.preproEcho(cmd);
-      ctrl.tmid = setTimeout(DebugJS.bat.exec, w);
+      bat.preproEcho(cmd);
+      ctrl.tmid = setTimeout(bat.exec, w);
       return 2;
   }
   if (ctrl.js) {
-    DebugJS.bat.ctrl.pc--;
+    ctrl.pc--;
     DebugJS.ctx.updateCurPc();
-    DebugJS.bat.execJs();
+    bat.execJs();
     return 1;
   }
   return 0;
 };
 
 DebugJS.bat.execJs = function() {
-  DebugJS.bat.js = '';
-  while ((DebugJS.bat.ctrl.pc >= DebugJS.bat.ctrl.startPc) &&
-         (DebugJS.bat.ctrl.pc <= DebugJS.bat.ctrl.endPc)) {
-    c = DebugJS.bat.cmds[DebugJS.bat.ctrl.pc];
-    DebugJS.bat.ctrl.pc++;
+  var bat = DebugJS.bat;
+  var ctrl = bat.ctrl;
+  bat.js = '';
+  while ((ctrl.pc >= ctrl.startPc) &&
+         (ctrl.pc <= ctrl.endPc)) {
+    c = bat.cmds[ctrl.pc];
+    ctrl.pc++;
     DebugJS.ctx.updateCurPc();
     if (c != '!__js__!') {
-      DebugJS.bat.js += c + '\n';
+      bat.js += c + '\n';
     }
-    if ((c == '!__js__!') || (DebugJS.bat.ctrl.pc > DebugJS.bat.ctrl.endPc)) {
+    if ((c == '!__js__!') || (ctrl.pc > ctrl.endPc)) {
       try {
-        eval(DebugJS.bat.js);
+        eval(bat.js);
       } catch (e) {
         DebugJS.log.e(e);
       }
-      DebugJS.bat.ctrl.js = false;
+      ctrl.js = false;
       return;
     }
   }
@@ -9529,9 +9536,10 @@ DebugJS.bat.lock = function() {
 };
 
 DebugJS.bat.unlock = function() {
-  DebugJS.bat.ctrl.lock--;
-  if (DebugJS.bat.ctrl.lock < 0) {
-    DebugJS.bat.ctrl.lock = 0;
+  var ctrl = DebugJS.bat.ctrl;
+  ctrl.lock--;
+  if (ctrl.lock < 0) {
+    ctrl.lock = 0;
   }
 };
 
@@ -9625,12 +9633,13 @@ DebugJS.bat.load = function() {
   localStorage.removeItem('DebugJS-bat');
   if (b == null) return;
   var bt = JSON.parse(b);
-  DebugJS.bat.ctrl = bt.ctrl;
-  DebugJS.bat.cmds = bt.cmds;
-  DebugJS.bat.parseLabels();
-  if (DebugJS.bat.ctrl.cont) {
+  var bat = DebugJS.bat;
+  bat.ctrl = bt.ctrl;
+  bat.cmds = bt.cmds;
+  bat.parseLabels();
+  if (bat.ctrl.cont) {
     DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
-    DebugJS.bat.exec();
+    bat.exec();
   }
 };
 
