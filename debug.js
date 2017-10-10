@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710100023';
+  this.v = '201710102047';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -179,6 +179,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoaderLabelBin = null;
   this.fileLoaderRadioBin = null;
   this.fileReloadBtn = null;
+  this.fileClrBtn = null;
   this.filePreviewWrapper = null;
   this.filePreview = null;
   this.fileLoaderFooter = null;
@@ -357,6 +358,10 @@ var DebugJS = DebugJS || function() {
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
     hexdumplimit: {value: 102400, restriction: /^[0-9]+$/},
     hexdumpfoot: {value: 16, restriction: /^[0-9]+$/},
+    pointstep: {value: DebugJS.point.move.step, restriction: /^[0-9]+$/},
+    pointspeed: {value: DebugJS.point.move.speed, restriction: /^[0-9]+$/},
+    inputtextspeed: {value: 30, restriction: /^[0-9]+$/},
+    wait: {value: 500, restriction: /^[0-9]+$/},
     timer: {value: '00:03:00.000', restriction: /.*/},
     wdt: {value: 500, restriction: /^[0-9]+$/}
   };
@@ -1845,7 +1850,14 @@ DebugJS.prototype = {
   handleFileDropOnLogPanel: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
-    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, null);
+    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onFileLoadedFromLogPanel);
+  },
+
+  onFileLoadedFromLogPanel: function(ctx, content) {
+    var batHead = '#!BAT!';
+    if (content.substr(0, batHead.length) == batHead) {
+      ctx.onBatLoaded(ctx, content);
+    }
   },
 
   onClr: function() {
@@ -4938,7 +4950,7 @@ DebugJS.prototype = {
 
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
-      ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 15.5) + 'px)');
+      ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 19) + 'px)');
       ctx.setStyle(fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
       ctx.setStyle(fileInput, 'margin', '0 0 4px 0');
       ctx.setStyle(fileInput, 'padding', '1px');
@@ -4983,6 +4995,11 @@ DebugJS.prototype = {
       reloadBtn.onclick = ctx.reloadFile;
       ctx.fileReloadBtn = reloadBtn;
 
+      var reloadBtn = ctx.createButton(ctx, ctx.fileLoaderPanel, 'Clear');
+      reloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      reloadBtn.onclick = ctx.clearFile;
+      ctx.fileClrBtn = reloadBtn;
+
       ctx.filePreviewWrapper = document.createElement('div');
       ctx.setStyle(ctx.filePreviewWrapper, 'width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)');
       ctx.setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
@@ -5002,7 +5019,6 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreview, 'font-family', ctx.opt.fontFamily + 'px');
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
-      ctx.filePreview.innerText = 'Drop a file here';
 
       ctx.fileLoaderFooter = document.createElement('div');
       ctx.fileLoaderFooter.style.width = 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)';
@@ -5035,6 +5051,8 @@ DebugJS.prototype = {
       ctx.fileLoadCancelBtn.style.top = '2px';
       ctx.fileLoadCancelBtn.style.float = 'right';
       ctx.fileLoadCancelBtn.onclick = ctx.cancelLoadFile;
+
+      ctx.clearFile();
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.fileLoaderPanel);
     }
@@ -5391,6 +5409,13 @@ DebugJS.prototype = {
       format = DebugJS.FILE_LOAD_FORMAT_BIN;
     }
     ctx.loadFile(format);
+  },
+
+  clearFile: function() {
+    var ctx = DebugJS.ctx;
+    ctx.fileLoaderFile = null;
+    ctx.fileReader = null;
+    ctx.filePreview.innerText = 'Drop a file here';
   },
 
   openHtmlEditor: function() {
@@ -9301,6 +9326,9 @@ DebugJS.bat.js = '';
 DebugJS.bat.labels = {};
 
 DebugJS.bat.setBat = function(b) {
+  if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
+    DebugJS.bat.stop();
+  }
   if (DebugJS.ctx.batTextEditor) {
     DebugJS.ctx.batTextEditor.value = b;
   }
@@ -9414,6 +9442,7 @@ DebugJS.bat.exec = function() {
   switch (bat.prepro(c)) {
     case 1:
       bat.next();
+      return;
     case 2:
       ctrl.tmpEchoOff = false;
       return;
@@ -9440,6 +9469,7 @@ DebugJS.bat.isLocked = function() {
 };
 
 DebugJS.bat.prepro = function(cmd) {
+  var ctx = DebugJS.ctx;
   var cmds = DebugJS.splitCmdLineInTwo(cmd);
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
@@ -9494,7 +9524,7 @@ DebugJS.bat.prepro = function(cmd) {
   switch (c) {
     case 'exit':
       ctrl.pc = bat.cmds.length;
-      DebugJS.ctx.updateCurPc();
+      ctx.updateCurPc();
       bat.preproEcho(cmd);
       return 1;
     case 'goto':
@@ -9504,18 +9534,21 @@ DebugJS.bat.prepro = function(cmd) {
         DebugJS.log.e('L' + ctrl.pc + ': no such label (' + a[0] + ')');
       } else {
         ctrl.pc = idx;
-        DebugJS.ctx.updateCurPc();
+        ctx.updateCurPc();
       }
       return 1;
     case 'wait':
       var w = a[0] | 0;
+      if (a[0] == '') {
+        w = ctx.properties.wait.value;
+      }
       bat.preproEcho(cmd);
       ctrl.tmid = setTimeout(bat.exec, w);
       return 2;
   }
   if (ctrl.js) {
     ctrl.pc--;
-    DebugJS.ctx.updateCurPc();
+    ctx.updateCurPc();
     bat.execJs();
     return 1;
   }
@@ -9781,8 +9814,8 @@ DebugJS.point.move = function(x, y, step, speed) {
   var dst = DebugJS.point.move.dstPos;
   dst.x = x | 0;
   dst.y = y | 0;
-  if (step == undefined) step = 10;
-  if (speed == undefined) speed = 10;
+  if (step == undefined) step = DebugJS.ctx.properties.pointstep.value;
+  if (speed == undefined) speed = DebugJS.ctx.properties.pointspeed.value;
   step |= 0;
   speed |= 0;
   DebugJS.point.move.speed = speed;
@@ -9806,8 +9839,8 @@ DebugJS.point.move = function(x, y, step, speed) {
   DebugJS.point._move();
 };
 DebugJS.point.move.dstPos = {x: 0, y: 0};
-DebugJS.point.move.step = 1;
-DebugJS.point.move.speed = 50;
+DebugJS.point.move.step = 10;
+DebugJS.point.move.speed = 10;
 DebugJS.point.move.tmid = 0;
 DebugJS.point._move = function() {
   DebugJS.point.move.tmid = 0;
@@ -10147,7 +10180,7 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
   }
   var reg = /\\n/g;
   data.txt = txt.replace(reg, '\n');
-  if ((speed == undefined) || (speed == '')) speed = 30;
+  if ((speed == undefined) || (speed == '')) speed = DebugJS.ctx.properties.inputtextspeed.value;
   data.speed = speed | 0;
   data.i = start | 0;
   data.end = end | 0;
