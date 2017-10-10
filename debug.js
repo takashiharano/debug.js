@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710102047';
+  this.v = '201710102106';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -297,7 +297,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run|list|status|stop|clear [start] [end]'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run [start] [end]|pause|stop|list|status|clear'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -6061,13 +6061,19 @@ DebugJS.prototype = {
   },
 
   cmdBat: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
     var bat = DebugJS.bat;
     switch (args[0]) {
       case 'run':
-        var sl = args[1];
-        var el = args[2];
-        bat.run(sl, el);
+        if ((ctx.status & DebugJS.STATE_BAT_RUNNING) &&
+            (ctx.status & DebugJS.STATE_BAT_PAUSE)) {
+          bat.resume();
+        } else {
+          var sl = args[1];
+          var el = args[2];
+          bat.run(sl, el);
+        }
         break;
       case 'list':
         if (bat.cmds.length == 0) {
@@ -6082,9 +6088,12 @@ DebugJS.prototype = {
         if (bat.cmds.length == 0) {
          st += 'no batch loaded';
         } else {
-          st += ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
+          st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
         }
         DebugJS.log.p(bat.ctrl, 0, st);
+        break;
+      case 'pause':
+        bat.pause();
         break;
       case 'stop':
         bat.stop();
