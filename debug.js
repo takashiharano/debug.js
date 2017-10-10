@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710102106';
+  this.v = '201710102145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5235,7 +5235,8 @@ DebugJS.prototype = {
       if (file.type.match(/image\//)) {
         var ctxSizePos = ctx.getSelfSizePos();
         preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
-      } else if ((file.type.match(/text\//)) || (file.name.match(/\.js$|\.java$/))) {
+      } else if ((file.type.match(/text\//)) ||
+                 (file.name.match(/\.bat$|\.java$|\.js$|\.md$/))) {
         var contents = b64content.split(',');
         var decoded = DebugJS.decodeBase64(contents[1]);
         var escDecoded = DebugJS.escTags(decoded);
@@ -6891,6 +6892,7 @@ DebugJS.prototype = {
 
   cmdSet: function(arg, tbl) {
     var ctx = DebugJS.ctx;
+    var props = ctx.properties;
     var args = DebugJS.splitArgs(arg);
     var name = args[0];
     var value = ((args[1] == undefined) ? '' : args[1]);
@@ -6898,18 +6900,18 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    if (ctx.properties[name] != undefined) {
-      if (ctx.properties[name].restriction != undefined) {
-        if (!value.match(ctx.properties[name].restriction)) {
+    if (props[name] != undefined) {
+      if (props[name].restriction != undefined) {
+        if (!value.match(props[name].restriction)) {
           DebugJS.log.e(value + ' is invalid.');
           return;
         }
       }
-      ctx.properties[name].value = value;
-      if (ctx.properties[name].cb) {
-        var ret = ctx.properties[name].cb(value);
+      props[name].value = value;
+      if (props[name].cb) {
+        var ret = props[name].cb(value);
         if (ret != undefined) {
-          ctx.properties[name].value = ret;
+          props[name].value = ret;
         }
       }
       DebugJS.log.res(value);
@@ -9820,47 +9822,49 @@ DebugJS.point.click = function() {
 };
 
 DebugJS.point.move = function(x, y, step, speed) {
-  var dst = DebugJS.point.move.dstPos;
+  var point = DebugJS.point;
+  var dst = point.move.dstPos;
   dst.x = x | 0;
   dst.y = y | 0;
   if (step == undefined) step = DebugJS.ctx.properties.pointstep.value;
   if (speed == undefined) speed = DebugJS.ctx.properties.pointspeed.value;
   step |= 0;
   speed |= 0;
-  DebugJS.point.move.speed = speed;
-  var ps = DebugJS.point.getPos();
+  point.move.speed = speed;
+  var ps = point.getPos();
   if (x >= ps.x) {
-    DebugJS.point.move.mvX = step;
+    point.move.mvX = step;
   } else {
-    DebugJS.point.move.mvX = step * (-1);
+    point.move.mvX = step * (-1);
   }
   if (y >= ps.y) {
-    DebugJS.point.move.mvY = step;
+    point.move.mvY = step;
   } else {
-    DebugJS.point.move.mvY = step * (-1);
+    point.move.mvY = step * (-1);
   }
-  if (DebugJS.point.move.tmid > 0) {
+  if (point.move.tmid > 0) {
     DebugJS.bat.unlock();
-    clearTimeout(DebugJS.point.move.tmid);
-    DebugJS.point.move.tmid = 0;
+    clearTimeout(point.move.tmid);
+    point.move.tmid = 0;
   }
   DebugJS.bat.lock();
-  DebugJS.point._move();
+  point._move();
 };
 DebugJS.point.move.dstPos = {x: 0, y: 0};
 DebugJS.point.move.step = 10;
 DebugJS.point.move.speed = 10;
 DebugJS.point.move.tmid = 0;
 DebugJS.point._move = function() {
-  DebugJS.point.move.tmid = 0;
-  if ((DebugJS.point.move.mvX == 0) && (DebugJS.point.move.mvY == 0)) {
+  var point = DebugJS.point;
+  point.move.tmid = 0;
+  if ((point.move.mvX == 0) && (point.move.mvY == 0)) {
     DebugJS.bat.unlock();
     return;
   }
-  var dst = DebugJS.point.move.dstPos;
-  var mvX = DebugJS.point.move.mvX;
-  var mvY = DebugJS.point.move.mvY;
-  var ps = DebugJS.point.getPos();
+  var dst = point.move.dstPos;
+  var mvX = point.move.mvX;
+  var mvY = point.move.mvY;
+  var ps = point.getPos();
   var x = ps.x;
   var y = ps.y;
   x += mvX;
@@ -9875,7 +9879,7 @@ DebugJS.point._move = function() {
   if ((x == dst.x) && (y == dst.y)) {
     DebugJS.bat.unlock();
   } else {
-    DebugJS.point.move.tmid = setTimeout(DebugJS.point._move, DebugJS.point.move.speed);
+    point.move.tmid = setTimeout(point._move, point.move.speed);
   }
 };
 
@@ -9986,15 +9990,16 @@ DebugJS.point.moveToElement = function(ps, step, speed) {
 };
 
 DebugJS.point.hint = function(msg) {
-  if (DebugJS.point.hint.area == null) {
-    DebugJS.point.hint.createArea();
+  var hint = DebugJS.point.hint;
+  if (hint.area == null) {
+    hint.createArea();
   }
-  var area = DebugJS.point.hint.area;
+  var area = hint.area;
   var reg = /\\n/g;
   msg = msg.replace(reg, '\n');
-  DebugJS.point.hint.pre.innerHTML = msg;
-  DebugJS.point.hint.st.hasMsg = true;
-  DebugJS.point.hint.show();
+  hint.pre.innerHTML = msg;
+  hint.st.hasMsg = true;
+  hint.show();
 };
 DebugJS.point.hint.area = null;
 DebugJS.point.hint.pre = null;
@@ -10005,37 +10010,39 @@ DebugJS.point.hint.st = {
   hasMsg: false
 };
 DebugJS.point.hint.createArea = function() {
+  var hint = DebugJS.point.hint;
   var el = document.createElement('div');
   el.style.position = 'fixed';
   el.style.display = 'inline-block';
   el.style.padding = '4px 8px';
   el.style.boxSizing = 'content-box';
   el.style.zIndex = 0x7fffffff;
-  el.style.boxShadow = DebugJS.point.hint.shadow + 'px ' + DebugJS.point.hint.shadow + 'px 10px rgba(0,0,0,.3)';
+  el.style.boxShadow = hint.shadow + 'px ' + hint.shadow + 'px 10px rgba(0,0,0,.3)';
   el.style.borderRadius = '3px';
   el.style.background = 'rgba(0,0,0,0.65)';
   el.style.color = '#fff';
-  el.style.fontSize = DebugJS.point.hint.fontSize + 'px',
+  el.style.fontSize = hint.fontSize + 'px',
   el.style.fontFamily = 'Consolas, monospace';
   var pre = document.createElement('pre');
   pre.style.margin = 0;
   pre.style.padding = 0;
   el.appendChild(pre);
-  DebugJS.point.hint.pre = pre;
+  hint.pre = pre;
   document.body.appendChild(el);
-  DebugJS.point.hint.area = el;
+  hint.area = el;
 };
 DebugJS.point.hint.move = function() {
-  var area = DebugJS.point.hint.area;
+  var point = DebugJS.point;
+  var area = point.hint.area;
   if (!area) return;
   var clientW = document.documentElement.clientWidth;
   var clientH = document.documentElement.clientHeight;
-  var pos = DebugJS.point.getPos();
+  var pos = point.getPos();
   var ps = DebugJS.getElPosSize(area);
   var y = (pos.y - ps.h - 2);
   if (y < 0) {
     if (ps.h > pos.y) {
-      y = pos.y + DebugJS.point.ptrH;
+      y = pos.y + point.ptrH;
     } else {
       y = 0;
     }
@@ -10045,7 +10052,7 @@ DebugJS.point.hint.move = function() {
     x = 0;
   }
   if ((y + ps.h) > pos.y) {
-    x = pos.x + DebugJS.point.ptrW;
+    x = pos.x + point.ptrW;
   }
   if ((x + ps.w) > clientW) {
     if (ps.w < clientW) {
@@ -10065,15 +10072,16 @@ DebugJS.point.hint.move = function() {
   area.style.left = x + 'px';
 };
 DebugJS.point.hint.show = function() {
-  if (!DebugJS.point.hint.st.hasMsg) return;
-  var area = DebugJS.point.hint.area;
+  var point = DebugJS.point;
+  if (!point.hint.st.hasMsg) return;
+  var area = point.hint.area;
   if (area == null) {
-    DebugJS.point.hint.createArea();
+    point.hint.createArea();
   } else {
     document.body.appendChild(area);
   }
-  DebugJS.point.hint.st.visible = true;
-  DebugJS.point.hint.move();
+  point.hint.st.visible = true;
+  point.hint.move();
 };
 DebugJS.point.hint.hide = function(hold) {
   var area = DebugJS.point.hint.area;
@@ -10085,12 +10093,13 @@ DebugJS.point.hint.hide = function(hold) {
   }
 };
 DebugJS.point.hint.clear = function() {
-  var area = DebugJS.point.hint.area;
+  var point = DebugJS.point;
+  var area = point.hint.area;
   if (area != null) {
-    DebugJS.point.hint.pre.innerHTML = '';
-    DebugJS.point.hint.hide();
+    point.hint.pre.innerHTML = '';
+    point.hint.hide();
   }
-  DebugJS.point.hint.st.hasMsg = false;
+  point.hint.st.hasMsg = false;
 };
 
 DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
@@ -10335,37 +10344,40 @@ DebugJS.wd.cnt = 0;
 
 DebugJS.wd.start = function(interval) {
   var ctx = DebugJS.ctx;
+  var wd = DebugJS.wd;
   interval |= 0;
   if (interval > 0) ctx.properties.wdt.value = interval;
   ctx.status |= DebugJS.STATE_WD;
-  DebugJS.wd.cnt = 0;
-  DebugJS.wd.wdPetTime = (new Date()).getTime();
+  wd.cnt = 0;
+  wd.wdPetTime = (new Date()).getTime();
   DebugJS.log.s('Start watchdog (' + ctx.properties.wdt.value + 'ms)');
-  if (DebugJS.wd.wdTmId > 0) clearTimeout(DebugJS.wd.wdTmId);
-  DebugJS.wd.wdTmId = setTimeout(DebugJS.wd.pet, DebugJS.wd.INTERVAL);
+  if (wd.wdTmId > 0) clearTimeout(wd.wdTmId);
+  wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);
 };
 
 DebugJS.wd.pet = function() {
   var ctx = DebugJS.ctx;
   if (!(ctx.status & DebugJS.STATE_WD)) return;
+  var wd = DebugJS.wd;
   var now = (new Date()).getTime();
-  var elapsed = now - DebugJS.wd.wdPetTime;
+  var elapsed = now - wd.wdPetTime;
   if (elapsed > ctx.properties.wdt.value) {
-    DebugJS.wd.cnt++;
+    wd.cnt++;
     DebugJS.log.w('watchdog bark! (' + elapsed + 'ms)');
     for (var i = 0; i < ctx.evtListener.watchdog.length; i++) {
       var cb = ctx.evtListener.watchdog[i];
       if (cb) cb(elapsed);
     }
   }
-  DebugJS.wd.wdPetTime = now;
-  DebugJS.wd.wdTmId = setTimeout(DebugJS.wd.pet, DebugJS.wd.INTERVAL);
+  wd.wdPetTime = now;
+  wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);
 };
 
 DebugJS.wd.stop = function() {
-  if (DebugJS.wd.wdTmId > 0) {
-    clearTimeout(DebugJS.wd.wdTmId);
-    DebugJS.wd.wdTmId = 0;
+  var wd = DebugJS.wd;
+  if (wd.wdTmId > 0) {
+    clearTimeout(wd.wdTmId);
+    wd.wdTmId = 0;
   }
   DebugJS.ctx.status &= ~DebugJS.STATE_WD;
   DebugJS.log.s('Stop watchdog');
