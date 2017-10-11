@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710112350';
+  this.v = '201710120037';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,7 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|show|hide|#id|.class [idx]|tagName [idx]|center|move|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|show|hide|#id|.class [idx]|tagName [idx]|center|move|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -6645,6 +6645,9 @@ DebugJS.prototype = {
       DebugJS.pointByClassName(x.substr(1), y);
     } else if (x == 'click') {
       point.click();
+    } else if (x == 'rclick') {
+      speed = args[1];
+      point.rclick(speed);
     } else if (x == 'hide') {
       point.hide();
     } else if (x == 'show') {
@@ -9873,27 +9876,40 @@ DebugJS.point.click = function() {
   if ((ptr == null) || (!ptr.parentNode)) {
     return;
   }
+  var el = DebugJS.point.getElementFromCurrentPos();
+  if (el) {
+    el.focus();
+    el.click();
+  }
+};
+DebugJS.point.rclick = function(speed) {
+  var ptr = DebugJS.point.ptr;
+  if ((ptr == null) || (!ptr.parentNode)) {
+    return;
+  }
+  var el = DebugJS.point.getElementFromCurrentPos();
+  if (!el) return;
+  el.focus();
+  DebugJS.event.rclick(el, speed);
+};
+DebugJS.point.getElementFromCurrentPos = function() {
+  var ptr = DebugJS.point.ptr;
+  if ((ptr == null) || (!ptr.parentNode)) {
+    return null;
+  }
   var hint = DebugJS.point.hint.area;
   var hintFlg = false;
   if (hint && (hint.parentNode)) {
     hintFlg = true;
     document.body.removeChild(hint);
   }
-  var el = DebugJS.point.getElementFromCurrentPos();
-  if (hintFlg) {
-    document.body.appendChild(hint);
-  }
-  if (el) {
-    el.focus();
-    el.click();
-  }
-};
-DebugJS.point.getElementFromCurrentPos = function() {
-  var ptr = DebugJS.point.ptr;
   document.body.removeChild(ptr);
   var pos = DebugJS.point.getPos();
   var el = document.elementFromPoint(pos.x, pos.y);
   document.body.appendChild(ptr);
+  if (hintFlg) {
+    document.body.appendChild(hint);
+  }
   return el;
 };
 
@@ -10397,6 +10413,32 @@ DebugJS.event.dispatch = function(el, idx) {
 DebugJS.event.clear = function() {
   DebugJS.event.evt = null;
 };
+DebugJS.event.rclick = function(target, speed) {
+  var rclick = DebugJS.event.rclick;
+  if (rclick.tmid > 0) {
+    clearTimeout(rclick.tmid);
+    rclick.tmid = 0;
+    DebugJS.event.rclickUp();
+  }
+  var e = document.createEvent('Events');
+  e.initEvent('mousedown', true, true);
+  e.button = 2;
+  target.dispatchEvent(e);
+  rclick.target = target;
+  if (speed == undefined) speed = 100;
+  rclick.tmid = setTimeout(DebugJS.event.rclickUp, speed);
+};
+DebugJS.event.rclickUp = function() {
+  var rclick = DebugJS.event.rclick;
+  rclick.tmid = 0;
+  var e = document.createEvent('Events');
+  e.initEvent('mouseup', true, true);
+  e.button = 2;
+  rclick.target.dispatchEvent(e);
+  rclick.target = null;
+};
+DebugJS.event.rclick.target = null;
+DebugJS.event.rclick.tmid = 0;
 
 DebugJS.getElement = function(selector, idx) {
   if (typeof selector != 'string') {
