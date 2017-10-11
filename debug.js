@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710112323';
+  this.v = '201710112350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9873,16 +9873,13 @@ DebugJS.point.click = function() {
   if ((ptr == null) || (!ptr.parentNode)) {
     return;
   }
-  var pos = DebugJS.point.getPos();
   var hint = DebugJS.point.hint.area;
   var hintFlg = false;
   if (hint && (hint.parentNode)) {
     hintFlg = true;
     document.body.removeChild(hint);
   }
-  document.body.removeChild(ptr);
-  var el = document.elementFromPoint(pos.x, pos.y);
-  document.body.appendChild(ptr);
+  var el = DebugJS.point.getElementFromCurrentPos();
   if (hintFlg) {
     document.body.appendChild(hint);
   }
@@ -9890,6 +9887,14 @@ DebugJS.point.click = function() {
     el.focus();
     el.click();
   }
+};
+DebugJS.point.getElementFromCurrentPos = function() {
+  var ptr = DebugJS.point.ptr;
+  document.body.removeChild(ptr);
+  var pos = DebugJS.point.getPos();
+  var el = document.elementFromPoint(pos.x, pos.y);
+  document.body.appendChild(ptr);
+  return el;
 };
 
 DebugJS.point.move = function(x, y, step, speed) {
@@ -10370,6 +10375,10 @@ DebugJS.event.dispatch = function(el, idx) {
     target = window;
   } else if (el == 'document') {
     target = document;
+  } else if (el == 'active') {
+    target = document.activeElement;
+  } else if (el == 'point') {
+    target = DebugJS.point.getElementFromCurrentPos();
   } else {
     target = DebugJS.getElement(el, idx);
   }
