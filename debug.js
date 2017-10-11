@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710110730';
+  this.v = '201710112323';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -305,6 +305,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'dumplog', fnc: this.cmdDumpLog, desc: 'Dump the log buffer'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
+    {cmd: 'event', fnc: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'execute', fnc: this.cmdExecute, desc: 'Execute the edited JavaScript code'},
     {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'help', fnc: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -6201,6 +6202,35 @@ DebugJS.prototype = {
     }
   },
 
+  cmdEvent: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var op = args[0];
+    switch (op) {
+      case 'create':
+        if (args[1]) {
+          DebugJS.event.create(args[1]);
+          return;
+        }
+        break;
+      case 'set':
+        if (args[1]) {
+          DebugJS.event.set(args[1], args[2]);
+          return;
+        }
+        break;
+      case 'dispatch':
+        if (args[1]) {
+          DebugJS.event.dispatch(args[1], args[2]);
+          return;
+        }
+        break;
+      case 'clear':
+        DebugJS.event.clear();
+        return;
+    }
+    DebugJS.printUsage(tbl.usage);
+  },
+
   cmdExecute: function(arg, tbl) {
     DebugJS.ctx.execScript();
   },
@@ -10311,7 +10341,58 @@ DebugJS.selectOption = function(el, val) {
   DebugJS.log.w(val + ': no such option');
 };
 
+DebugJS.event = {};
+DebugJS.event.evt = null;
+DebugJS.event.create = function(type) {
+  var e = document.createEvent('Events');
+  e.initEvent(type, true, true);
+  DebugJS.event.evt = e;
+  return e;
+};
+DebugJS.event.set = function(prop, val) {
+  var e = DebugJS.event.evt;
+  if (e) {
+    if (typeof val === 'string') {
+      if (val.charAt(0) == '"') {
+        val = val.substr(1, val.length - 2);
+      } else {
+        val |= 0;
+      }
+    }
+    e[prop] = val;
+  } else {
+    DebugJS.log.e('event is not created');
+  }
+};
+DebugJS.event.dispatch = function(el, idx) {
+  var target;
+  if (el == 'window') {
+    target = window;
+  } else if (el == 'document') {
+    target = document;
+  } else {
+    target = DebugJS.getElement(el, idx);
+  }
+  if (!target) {
+    DebugJS.log.e('target is not found');
+    return false;
+  }
+  var e = DebugJS.event.evt;
+  if (e) {
+    return target.dispatchEvent(e);
+  } else {
+    DebugJS.log.e('event is not created');
+    return false;
+  }
+};
+DebugJS.event.clear = function() {
+  DebugJS.event.evt = null;
+};
+
 DebugJS.getElement = function(selector, idx) {
+  if (typeof selector != 'string') {
+    return selector;
+  }
   idx |= 0;
   var el = null;
   if (selector.charAt(0) == '#') {
@@ -10330,9 +10411,7 @@ DebugJS.getElement = function(selector, idx) {
 };
 
 DebugJS.getElPosSize = function(el, idx) {
-  if (typeof el === 'string') {
-    el = DebugJS.getElement(el, idx);
-  }
+  el = DebugJS.getElement(el, idx);
   if (!el) {
     return null;
   }

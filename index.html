@@ -2135,6 +2135,36 @@ Total 9</pre></td>
   </tr>
 
   <tr>
+    <td class="name">event</td>
+    <td>
+      arg1: operation<br>
+      arg2: tartget<br>
+      arg3: value
+    </td>
+    <td>
+      Manipulate an event.
+<pre class="eg">
+
+Create New Event
+$ event create mousedown
+
+Set Properties
+$ event set button 0
+$ event set propertyName "value"<span class="annotation">quoted value is treated as a string</span>
+
+Dispatch to a target
+$ event dispatch window<span class="annotation">target</span>
+$ event dispatch #id<span class="annotation">target</span>
+$ event dispatch .className<span class="annotation">target</span> 0<span class="annotation">index(opt)</span>
+$ event dispatch tagName<span class="annotation">target</span> 0<span class="annotation">index(opt)</span>
+
+Clear the event object
+$ event clear
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">execute</td>
     <td></td>
     <td>Execute the edited JavaScript code.</td>
