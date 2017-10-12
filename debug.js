@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710130030';
+  this.v = '201710130050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9922,11 +9922,8 @@ DebugJS.point.contextmenu = function() {
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
   el.focus();
-  var e = new MouseEvent('contextmenu', {
-    bubbles: true,
-    cancelable: true,
-    view: window
-  });
+  var e = document.createEvent('Events');
+  e.initEvent('contextmenu', true, true);
   el.dispatchEvent(e);
 };
 DebugJS.point.move = function(x, y, step, speed) {
