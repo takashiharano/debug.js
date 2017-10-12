@@ -3541,7 +3541,16 @@ function callback(xhr) {
 <a href="//debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" rel="nofollow">Link2</a>
 <a href="index.html" rel="nofollow">Link3</a>&nbsp;
 </div>
-<div id="evttest" style="display:inline-block; width:415px; height:50px; background:#dff;" onclick="log('> click');" onmousedown="log('> mousedown');" onmouseup="log('> mouseup');" oncontextmenu="log('> contextmenu');">event test</div>
+<div id="evttest" style="display:inline-block; width:415px; height:50px; background:#dff;" 
+onclick="log.i('> click');" 
+onmousedown="log.i('> mousedown');" 
+onmousemove="log.i('> mousemove');" 
+onmouseup="log.i('> mouseup');" 
+onclick="log.i('> click');"
+onkeydown="log.i('> keydown');"
+onkeypress="log.i('> keypress');"
+onkeyup="log.i('> keyup');"
+oncontextmenu="log.i('> contextmenu');">event test</div>
 </div><!-- dummy__body -->
 </div><!-- content -->
 </div><!-- main -->
