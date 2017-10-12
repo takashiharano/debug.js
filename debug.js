@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710120037';
+  this.v = '201710122107';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,7 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|show|hide|#id|.class [idx]|tagName [idx]|center|move|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|#id|.class [idx]|tagName [idx]|center|move|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -6648,6 +6648,8 @@ DebugJS.prototype = {
     } else if (x == 'rclick') {
       speed = args[1];
       point.rclick(speed);
+    } else if (x == 'contextmenu') {
+      point.contextmenu();
     } else if (x == 'hide') {
       point.hide();
     } else if (x == 'show') {
@@ -9912,24 +9914,53 @@ DebugJS.point.getElementFromCurrentPos = function() {
   }
   return el;
 };
-
+DebugJS.point.contextmenu = function() {
+  var ptr = DebugJS.point.ptr;
+  if ((ptr == null) || (!ptr.parentNode)) {
+    return;
+  }
+  var el = DebugJS.point.getElementFromCurrentPos();
+  if (!el) return;
+  el.focus();
+  var e = new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    view: window
+  });
+  el.dispatchEvent(e);
+};
 DebugJS.point.move = function(x, y, step, speed) {
+  x += ''; y += '';
   var point = DebugJS.point;
+  var pos = point.getPos();
   var dst = point.move.dstPos;
-  dst.x = x | 0;
-  dst.y = y | 0;
+  if (x.charAt(0) == '+') {
+    dst.x = pos.x + (x.substr(1) | 0);
+  } else if (x.charAt(0) == '-') {
+    dst.x = pos.x - (x.substr(1) | 0);
+  } else {
+    dst.x = x | 0;
+  }
+  if (y.charAt(0) == '+') {
+    dst.y = pos.y + (y.substr(1) | 0);
+  } else if (y.charAt(0) == '-') {
+    dst.y = pos.y - (y.substr(1) | 0);
+  } else {
+    dst.y = y | 0;
+  }
+  if (dst.x < 0) dst.x = 0;
+  if (dst.y < 0) dst.y = 0;
   if (step == undefined) step = DebugJS.ctx.properties.pointstep.value;
   if (speed == undefined) speed = DebugJS.ctx.properties.pointspeed.value;
   step |= 0;
   speed |= 0;
   point.move.speed = speed;
-  var ps = point.getPos();
-  if (x >= ps.x) {
+  if (dst.x >= pos.x) {
     point.move.mvX = step;
   } else {
     point.move.mvX = step * (-1);
   }
-  if (y >= ps.y) {
+  if (dst.y >= pos.y) {
     point.move.mvY = step;
   } else {
     point.move.mvY = step * (-1);
@@ -9957,17 +9988,30 @@ DebugJS.point._move = function() {
   var dst = move.dstPos;
   var mvX = move.mvX;
   var mvY = move.mvY;
-  var ps = point.getPos();
-  var x = ps.x;
-  var y = ps.y;
-  x += mvX;
-  if (((mvX < 0) && (x < dst.x)) || ((mvX >= 0) && (x > dst.x))) {
-    x = dst.x;
+  var pos = point.getPos();
+  var x = pos.x + mvX;
+  var y = pos.y + mvY;
+
+  if (mvX < 0) {
+    if (x < dst.x) {
+      x = dst.x;
+    }
+  } else {
+    if (x > dst.x) {
+      x = dst.x;
+    }
   }
-  y += mvY;
-  if (((mvY < 0) && (y < dst.y)) || ((mvY >= 0) && (y > dst.y))) {
-    y = dst.y;
+
+  if (mvY < 0) {
+    if (y < dst.y) {
+      y = dst.y;
+    }
+  } else {
+    if (y > dst.y) {
+      y = dst.y;
+    }
   }
+
   DebugJS.point(x, y);
   if ((x == dst.x) && (y == dst.y)) {
     DebugJS.bat.unlock();

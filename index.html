@@ -2451,12 +2451,19 @@ $ point click
 $ point rclick 10<span class="annotation">click speed in ms (opt:default=100)</span>
 -&gt; Right click the current position
 
+$ point contexstmenu
+-&gt; Dispatch the contextmenu event to the current position
+
 $ point move x y 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
 $ point move #id
 $ point move .className 0<span class="annotation">index</span>
 $ point move tagName 0<span class="annotation">index</span>
 $ point move center
 -&gt; Move the pointer from the current position to the specified position
+
+$ point move +100 +200 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
+$ point move -100 -200 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
+-&gt; Move the pointer to the specified position (relative)
 
 $ point hint msg hello!
 -&gt; Show a message at the pointer position
@@ -3494,9 +3501,9 @@ function callback(xhr) {
 <!-- ********************************************************************** -->
 <span id="dummy__button" class="showhide-button" onclick="showHideByName('dummy')">&gt;</span>
 <span id="dummy__partial-body">Dummy elements for DOM Element Inspection Test</span>
-<div id="dummy__body" style="display:none;">
+<div id="dummy__body" style="display:none; height:510px;">
 <div class="caption2">Dummy elements for DOM Element Inspection Test</div>
-<div style="height:225px;margin-top:10px;font-size:12px;">
+<div style="height:370px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;" onfocus="log('inputtext1: onfocus');" onblur="log('inputtext1: onblur');" oninput="log('inputtext1: oninput ' + this.value);"></div>
@@ -3534,6 +3541,7 @@ function callback(xhr) {
 <a href="//debugjs.net/#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" rel="nofollow">Link2</a>
 <a href="index.html" rel="nofollow">Link3</a>&nbsp;
 </div>
+<div id="evttest" style="display:inline-block; width:415px; height:50px; background:#dff;" onclick="log('> click');" onmousedown="log('> mousedown');" onmouseup="log('> mouseup');" oncontextmenu="log('> contextmenu');">event test</div>
 </div><!-- dummy__body -->
 </div><!-- content -->
 </div><!-- main -->
