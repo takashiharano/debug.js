@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710130101';
+  this.v = '201710130130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6643,13 +6643,11 @@ DebugJS.prototype = {
       DebugJS.pointById(x.substr(1));
     } else if (x.charAt(0) == '.') {
       DebugJS.pointByClassName(x.substr(1), y);
-    } else if (x == 'click') {
-      point.click();
+    } else if ((x == 'click') || (x == 'focus') || (x == 'blur') || (x == 'contextmenu')) {
+      point.event(x);
     } else if (x == 'rclick') {
       speed = args[1];
-      point.rclick(speed);
-    } else if (x == 'contextmenu') {
-      point.contextmenu();
+      point.event(x, speed);
     } else if (x == 'hide') {
       point.hide();
     } else if (x == 'show') {
@@ -9873,26 +9871,50 @@ DebugJS.point.getPos = function() {
   }
   return pos;
 };
-DebugJS.point.click = function() {
-  var ptr = DebugJS.point.ptr;
+DebugJS.point.event = function(type, opt) {
+  var point = DebugJS.point;
+  var ptr = point.ptr;
   if ((ptr == null) || (!ptr.parentNode)) {
     return;
   }
-  var el = DebugJS.point.getElementFromCurrentPos();
-  if (el) {
-    el.focus();
-    el.click();
+  var el = point.getElementFromCurrentPos();
+  if (!el) return;
+  switch (type) {
+    case 'click':
+      point.click(el);
+      break;
+    case 'rclick':
+      point.rclick(el, opt);
+      break;
+    case 'focus':
+      point.focus(el);
+      break;
+    case 'blur':
+      point.blur(el);
+      break;
+    case 'contextmenu':
+      point.contextmenu(el);
   }
 };
-DebugJS.point.rclick = function(speed) {
-  var ptr = DebugJS.point.ptr;
-  if ((ptr == null) || (!ptr.parentNode)) {
-    return;
-  }
-  var el = DebugJS.point.getElementFromCurrentPos();
-  if (!el) return;
+DebugJS.point.click = function(el) {
+  el.focus();
+  el.click();
+};
+DebugJS.point.rclick = function(el, speed) {
   el.focus();
   DebugJS.event.rclick(el, speed);
+};
+DebugJS.point.focus = function(el) {
+  el.focus();
+};
+DebugJS.point.blur = function(el) {
+  el.blur();
+};
+DebugJS.point.contextmenu = function(el) {
+  el.focus();
+  var e = document.createEvent('Events');
+  e.initEvent('contextmenu', true, true);
+  el.dispatchEvent(e);
 };
 DebugJS.point.getElementFromCurrentPos = function() {
   var ptr = DebugJS.point.ptr;
@@ -9913,18 +9935,6 @@ DebugJS.point.getElementFromCurrentPos = function() {
     document.body.appendChild(hint);
   }
   return el;
-};
-DebugJS.point.contextmenu = function() {
-  var ptr = DebugJS.point.ptr;
-  if ((ptr == null) || (!ptr.parentNode)) {
-    return;
-  }
-  var el = DebugJS.point.getElementFromCurrentPos();
-  if (!el) return;
-  el.focus();
-  var e = document.createEvent('Events');
-  e.initEvent('contextmenu', true, true);
-  el.dispatchEvent(e);
 };
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
