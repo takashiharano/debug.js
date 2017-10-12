@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710122107';
+  this.v = '201710130030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10241,7 +10241,7 @@ DebugJS.point.hint.clear = function() {
 };
 
 DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
-  if (!ps) return;
+  if (!ps) return false;
   var d = DebugJS.scrollToTarget.data;
   if (d.tmid > 0) {
     clearTimeout(d.tmid);
@@ -10250,25 +10250,44 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
   }
   d.dstX = 0;
   d.dstY = 0;
-  if (step > 0) {
-    d.step = step | 0;
-  } else {
-    d.step = DebugJS.scrollToTarget.DFLT_STEP;
-  }
   d.speed = speed | 0;
   d.cb = cb;
   d.arg = arg;
   if ((ps.x < 0) || ((ps.x + ps.w) > document.documentElement.clientWidth)) {
     d.dstX = ps.x;
   }
-  if ((ps.y < 0) || ((ps.y + ps.h) > document.documentElement.clientHeight)) {
-    d.dstY = ps.y;
+
+  var clientH = document.documentElement.clientHeight;
+  var bodyH = document.body.clientHeight;
+  var absScreenBottomT = bodyH - clientH;
+  var absScreenBottomB = bodyH;
+  var scrollBottom = absScreenBottomT;
+  var relTargetPosYinScreen = (ps.y + window.pageYOffset) - scrollBottom;
+  var absTargetPosYinDoc = ps.y + window.pageYOffset;
+  if (ps.y < 0) {
+    if ((ps.y + window.pageYOffset) < (clientH / 2)) {
+      d.dstY = window.pageYOffset * (-1);
+    } else {
+      d.dstY = ps.y + (clientH / 2);
+    }
+  } else if ((ps.y + ps.h) > clientH) {
+    if ((absTargetPosYinDoc >= absScreenBottomT) && (absTargetPosYinDoc <= absScreenBottomB)) {
+      d.dstY = scrollBottom;
+    } else {
+      d.dstY = ps.y - (clientH / 2);
+    }
   }
+
   if ((d.dstX != 0) || (d.dstY != 0)) {
     if (step == undefined) {
       window.scrollBy(d.dstX, d.dstY);
       return false;
     } else {
+      if (step > 0) {
+        d.step = step | 0;
+      } else {
+        d.step = DebugJS.scrollToTarget.DFLT_STEP;
+      }
       DebugJS.bat.lock();
       DebugJS._scrollToTarget();
       return true;
