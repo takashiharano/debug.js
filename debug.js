@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710130050';
+  this.v = '2017101300059';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10265,7 +10265,7 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
     if ((ps.y + window.pageYOffset) < (clientH / 2)) {
       d.dstY = window.pageYOffset * (-1);
     } else {
-      d.dstY = ps.y + (clientH / 2);
+      d.dstY = ps.y - (clientH / 2);
     }
   } else if ((ps.y + ps.h) > clientH) {
     if ((absTargetPosYinDoc >= absScreenBottomT) && (absTargetPosYinDoc <= absScreenBottomB)) {
