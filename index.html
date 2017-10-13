@@ -2410,9 +2410,12 @@ $ p -a objectName
   <tr>
     <td class="name">pause</td>
     <td>
+     -u<span class="annotation">(opt)</span>
     </td>
     <td>
-     Suspends processing of batch file
+     Suspends processing of batch file.<br>
+     Click or press any key to continue.<br>
+     -u option requires "resume" command to resume.
     </td>
   </tr>
 
@@ -2538,6 +2541,15 @@ min: minimun number / length
 
 max: maximum number / length
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">resume</td>
+    <td>
+    </td>
+    <td>
+     Resume a batch process which suspended by "pause -u" command.
     </td>
   </tr>
 

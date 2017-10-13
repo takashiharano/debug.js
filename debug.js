@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710130130';
+  this.v = '201710140000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -329,6 +329,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
+    {cmd: 'resume', fnc: this.cmdResume, desc: 'Resume a suspended batch process'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
     {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin px(x)|left|center|right|current px(y)|top|middle|bottom|current'},
@@ -402,6 +403,7 @@ DebugJS.STATE_EXT_PANEL = 1 << 15;
 DebugJS.STATE_BAT_RUNNING = 1 << 16;
 DebugJS.STATE_BAT_PAUSE = 1 << 17;
 DebugJS.STATE_CMD_PAUSE = 1 << 18;
+DebugJS.STATE_CMD_PAUSE_U = 1 << 19;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -5732,6 +5734,7 @@ DebugJS.prototype = {
         ret = DebugJS.encString(ret);
       }
       DebugJS.log.res(ret);
+      return ret;
     } catch (e) {
       DebugJS.log.e(e);
     }
@@ -6017,9 +6020,7 @@ DebugJS.prototype = {
     var found = false;
     for (var i = 0, len = ctx.CMD_TBL.length; i < len; i++) {
       if (cmd == ctx.CMD_TBL[i].cmd) {
-        found = true;
-        ctx.CMD_TBL[i].fnc(arg, ctx.CMD_TBL[i]);
-        break;
+        return ctx.CMD_TBL[i].fnc(arg, ctx.CMD_TBL[i]);
       }
     }
 
@@ -6054,7 +6055,7 @@ DebugJS.prototype = {
     }
 
     if (!found) {
-      ctx.execCode(str);
+      return ctx.execCode(str);
     }
   },
 
@@ -6629,8 +6630,14 @@ DebugJS.prototype = {
   },
 
   cmdPause: function(arg, tbl) {
-    DebugJS.ctx.status |= DebugJS.STATE_CMD_PAUSE;
-    DebugJS.log('Click or press any key to continue...');
+    var args = DebugJS.parseArgs(arg);
+    if (args.opt == 'u') {
+      DebugJS.ctx.status |= DebugJS.STATE_CMD_PAUSE_U;
+      DebugJS.log('Input "resume" to continue...');
+    } else {
+      DebugJS.ctx.status |= DebugJS.STATE_CMD_PAUSE;
+      DebugJS.log('Click or press any key to continue...');
+    }
   },
 
   cmdPoint: function(arg, tbl) {
@@ -6821,6 +6828,10 @@ DebugJS.prototype = {
     } else {
       return false;
     }
+  },
+
+  cmdResume: function(arg, tbl) {
+    DebugJS.cmd.resume('u');
   },
 
   cmdRGB: function(arg, tbl) {
@@ -9350,11 +9361,15 @@ DebugJS.addEventListener = function(type, listener) {
 };
 
 DebugJS.cmd = function(c, echo) {
-  DebugJS.ctx._execCmd(c, echo);
+  return DebugJS.ctx._execCmd(c, echo);
 };
 
-DebugJS.cmd.resume = function() {
-  DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE;
+DebugJS.cmd.resume = function(opt) {
+  if (opt == 'u') {
+    DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE_U;
+  } else {
+    DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE;
+  }
   DebugJS.log('Resumed.');
   DebugJS.bat.exec();
 };
@@ -9477,7 +9492,7 @@ DebugJS.bat.exec = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
-  if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_CMD_PAUSE)) {
+  if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_CMD_PAUSE) || (ctx.status & DebugJS.STATE_CMD_PAUSE_U)) {
     return;
   }
   if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
