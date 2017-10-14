@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710140000';
+  this.v = '201710142357';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -223,7 +223,7 @@ var DebugJS = DebugJS || function() {
   this.winCtrlBtnPanel = null;
   this.closeBtn = null;
   this.mousePosLabel = null;
-  this.mousePos = 'x=-,y=-';
+  this.mousePos = {x: '-', y: '-'};
   this.mouseClickLabel = null;
   this.mouseClick0 = DebugJS.COLOR_INACTIVE;
   this.mouseClick1 = DebugJS.COLOR_INACTIVE;
@@ -1620,7 +1620,6 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var dt = DebugJS.getDateTime();
     var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
-    //t += (dt.sss < 500) ? ' ' : '.';
     ctx.clockLabel.innerText = t;
     if (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK) {
       setTimeout(ctx.updateClockLabel, ctx.clockUpdInt);
@@ -1644,7 +1643,7 @@ DebugJS.prototype = {
   },
 
   updateMousePosLabel: function() {
-    this.mousePosLabel.innerText = 'POS:' + this.mousePos;
+    this.mousePosLabel.innerText = 'POS:x=' + this.mousePos.x + ',y=' + this.mousePos.y;
   },
 
   updateMouseClickLabel: function() {
@@ -2626,7 +2625,8 @@ DebugJS.prototype = {
   onMouseMove: function(e) {
     var ctx = DebugJS.ctx;
     if (ctx.opt.useMouseStatusInfo) {
-      ctx.mousePos = 'x=' + e.clientX + ',y=' + e.clientY;
+      ctx.mousePos.x = e.clientX;
+      ctx.mousePos.y = e.clientY;
       ctx.updateMousePosLabel();
     }
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, e);
@@ -6641,6 +6641,7 @@ DebugJS.prototype = {
   },
 
   cmdPoint: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
     var point = DebugJS.point;
     var x = args[0];
@@ -6650,11 +6651,6 @@ DebugJS.prototype = {
       DebugJS.pointById(x.substr(1));
     } else if (x.charAt(0) == '.') {
       DebugJS.pointByClassName(x.substr(1), y);
-    } else if ((x == 'click') || (x == 'focus') || (x == 'blur') || (x == 'contextmenu')) {
-      point.event(x);
-    } else if (x == 'rclick') {
-      speed = args[1];
-      point.event(x, speed);
     } else if (x == 'hide') {
       point.hide();
     } else if (x == 'show') {
@@ -6677,6 +6673,10 @@ DebugJS.prototype = {
         step = args[2];
         speed = args[3];
         point.move(p.x, p.y, step, speed);
+      } else if (target == 'mouse') {
+        step = args[2];
+        speed = args[3];
+        point.move(ctx.mousePos.x, ctx.mousePos.y, step, speed);
       } else {
         if (args[1] == '') {
           DebugJS.printUsage(tbl.usage);
@@ -6696,7 +6696,7 @@ DebugJS.prototype = {
     } else if (x == 'hint') {
       var op = args[1];
       if (op == 'msg') {
-        var msg = DebugJS.splitCmdLineInTwo(DebugJS.splitCmdLineInTwo(arg)[1])[1];
+        var msg = DebugJS.getArgsFrom(arg, 3);
         point.hint(msg);
       } else if (op == 'hide') {
         point.hint.hide();
@@ -6720,6 +6720,18 @@ DebugJS.prototype = {
       }
       if (src == 'default') src = '';
       DebugJS.point.cursor(src, w, h);
+    } else if ((x == 'click') || (x == 'focus') || (x == 'blur') || (x == 'contextmenu')) {
+      point.event(x);
+    } else if (x == 'rclick') {
+      speed = args[1];
+      point.event(x, speed);
+    } else if (x == 'getprop') {
+      return point.getProp(args[1]);
+    } else if (x == 'setprop') {
+      var v = DebugJS.getArgsFrom(arg, 3);
+      point.setProp(args[1], v);
+    } else if (x == 'mouse') {
+      DebugJS.point(ctx.mousePos.x, ctx.mousePos.y);
     } else {
       if (x == '') {
         var pos = point.getPos();
@@ -7520,6 +7532,15 @@ DebugJS.splitCmdLineInTwo = function(str) {
   return res;
 };
 
+// " 1  2  3  4 " (3)-> " 3  4 "
+DebugJS.getArgsFrom = function(str, n) {
+  var res = str;
+  for (var i = 1; i < n; i++) {
+    res = DebugJS.splitCmdLineInTwo(res)[1];
+  }
+  return res;
+};
+
 // " 1  2 3  4 " -> [0]="1" [1]="2" [2]="3" [3]="4"
 DebugJS.splitArgs = function(arg) {
   var wkArg = arg.replace(/\s{2,}/g, ' ');
@@ -7589,6 +7610,17 @@ DebugJS.escEncString = function(str) {
   str = DebugJS.escTags(str);
   str = DebugJS.encString(str);
   return str;
+};
+
+DebugJS.styleValue = function(v) {
+  var s = v;
+  if (typeof s === 'string') {
+    s = DebugJS.escTags(s);
+    s = DebugJS.encString(s);
+  } else {
+    s = DebugJS.setStyleIfObjNotAvailable(s);
+  }
+  return s;
 };
 
 DebugJS.getDateTime = function(dt) {
@@ -9950,6 +9982,29 @@ DebugJS.point.getElementFromCurrentPos = function() {
     document.body.appendChild(hint);
   }
   return el;
+};
+DebugJS.point.getProp = function(prop) {
+  var point = DebugJS.point;
+  var ptr = point.ptr;
+  if ((ptr == null) || (!ptr.parentNode)) {
+    return;
+  }
+  var el = point.getElementFromCurrentPos();
+  if (!el) return;
+  var v = el[prop];
+  DebugJS.log(DebugJS.styleValue(v));
+  return v;
+};
+DebugJS.point.setProp = function(prop, val) {
+  var point = DebugJS.point;
+  var ptr = point.ptr;
+  if ((ptr == null) || (!ptr.parentNode)) {
+    return;
+  }
+  var el = point.getElementFromCurrentPos();
+  if (!el) return;
+  el[prop] = val;
+  DebugJS.log(val);
 };
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';

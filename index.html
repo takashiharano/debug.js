@@ -2439,8 +2439,9 @@ $ point tagName
 $ point tagName index
 -&gt; Point the specified element
 
-$ point center
--&gt; Point the screen center
+$ point center <span class="annotation">Center of the screen</span>
+$ point mouse <span class="annotation">Current mouse position</span>
+-&gt; Point the specified position
 
 $ point hide
 -&gt; Hide the pointer
@@ -2461,7 +2462,8 @@ $ point move x y 10<span class="annotation">step px(opt)</span> 10<span class="a
 $ point move #id
 $ point move .className 0<span class="annotation">index</span>
 $ point move tagName 0<span class="annotation">index</span>
-$ point move center
+$ point move center <span class="annotation">Center of the screen</span>
+$ point move mouse <span class="annotation">Current mouse position</span>
 -&gt; Move the pointer from the current position to the specified position
 
 $ point move +100 +200 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
@@ -2485,6 +2487,12 @@ $ point cursor data:image/png;base64,&lt;base64-encoded-image-data&gt; 20<span c
 
 $ point cursor default
 -&gt; Change the cursor image to default cursor
+
+$ point getprop <i>propertyName</i>
+-&gt; Get property value of the element at the current pointed position
+
+$ point setprop <i>propertyName</i> <i>value</i>
+-&gt; Set property value of the element at the current pointed position
 </pre>
     </td>
   </tr>
