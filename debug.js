@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710151312';
+  this.v = '201710152227';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -325,7 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|#id|.class [idx]|tagName [idx]|center|move|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|#id|.class [idx]|tagName [idx]|center|mouse|move|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -1815,7 +1815,7 @@ DebugJS.prototype = {
         }
         lineNum = pdng + lineCnt + ': ';
       }
-      var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (data.time + ' ' + msg) : msg);
+      var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (DebugJS.getLogTime(data.time) + ' ' + msg) : msg);
       switch (data.type) {
         case DebugJS.LOG_TYPE_DBG:
           if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) logs += lineNum + '<span style="color:' + ctx.opt.logColorD + '">' + m + '</span>\n';
@@ -7690,8 +7690,8 @@ DebugJS.getDateTimeStr = function(d) {
   return (d.yyyy + '-' + d.mm + '-' + d.dd + ' ' + DebugJS.WDAYS[d.wday] + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss);
 };
 
-DebugJS.getLogTime = function() {
-  var d = DebugJS.getDateTime();
+DebugJS.getLogTime = function(t) {
+  var d = DebugJS.getDateTime(t);
   return d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
 };
 
@@ -9320,7 +9320,7 @@ DebugJS.log.mlt = function(m) {
 
 DebugJS.log.out = function(m, type) {
   m = DebugJS.setStyleIfObjNotAvailable(m);
-  var data = {type: type, time: DebugJS.getLogTime(), msg: m};
+  var data = {type: type, time: (new Date()).getTime(), msg: m};
   DebugJS.ctx.msgBuf.add(data);
   if (!(DebugJS.ctx.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS._init()) {return;}
