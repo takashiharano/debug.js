@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710142357';
+  this.v = '201710151312';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -206,6 +206,7 @@ var DebugJS = DebugJS || function() {
   this.batTextEditor = null;
   this.batRunBtn = null;
   this.batStopBtn = null;
+  this.batResumeBtn = null;
   this.batStartTxt = null;
   this.batEndTxt = null;
   this.batCurPc = null;
@@ -5496,6 +5497,9 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.batBasePanel == null) {
       var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
+      ctx.batResumeBtn = ctx.createButton(ctx, basePanel, '[RESUME]');
+      ctx.batResumeBtn.style.float = 'right';
+      ctx.batResumeBtn.onclick = DebugJS.bat.stop;
       ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[ RUN ]');
       ctx.batRunBtn.onclick = DebugJS.ctx.startPauseBat;
       ctx.batStopBtn = ctx.createButton(ctx, basePanel, '[STOP]');
@@ -5513,7 +5517,7 @@ DebugJS.prototype = {
       ctx.batTotalLine = ctx.createLabel(DebugJS.bat.cmds.length, basePanel);
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
-      ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px)');
+      ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 2) + 'px)');
       ctx.batTextEditor.addEventListener('dragover', ctx.handleDragOver, false);
       ctx.batTextEditor.addEventListener('drop', ctx.handleFileDropOnBat, false);
       basePanel.appendChild(ctx.batTextEditor);
@@ -5521,6 +5525,7 @@ DebugJS.prototype = {
       ctx.setBatTxt(ctx);
       ctx.updateCurPc();
       ctx.updateBatRunBtn();
+      ctx.updateBatResumeBtn();
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.batBasePanel);
     }
@@ -5563,6 +5568,19 @@ DebugJS.prototype = {
     }
     ctx.batRunBtn.innerText = '[' + label + ']';
     ctx.batRunBtn.style.color = color;
+  },
+
+  updateBatResumeBtn: function() {
+    var ctx = DebugJS.ctx;
+    if (!ctx.batResumeBtn) return;
+    var color = DebugJS.COLOR_INACTIVE;
+    var handler = null;
+    if (ctx.status & DebugJS.STATE_CMD_PAUSE_U) {
+      color = ctx.opt.btnColor;
+      handler = ctx.cmdResume;
+    }
+    ctx.batResumeBtn.style.color = color;
+    ctx.batResumeBtn.onclick = handler;
   },
 
   setBatTxt: function(ctx) {
@@ -6633,7 +6651,8 @@ DebugJS.prototype = {
     var args = DebugJS.parseArgs(arg);
     if (args.opt == 'u') {
       DebugJS.ctx.status |= DebugJS.STATE_CMD_PAUSE_U;
-      DebugJS.log('Input "resume" to continue...');
+      DebugJS.log('Type "resume" to continue...');
+      DebugJS.ctx.updateBatResumeBtn();
     } else {
       DebugJS.ctx.status |= DebugJS.STATE_CMD_PAUSE;
       DebugJS.log('Click or press any key to continue...');
@@ -9399,6 +9418,7 @@ DebugJS.cmd = function(c, echo) {
 DebugJS.cmd.resume = function(opt) {
   if (opt == 'u') {
     DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE_U;
+    DebugJS.ctx.updateBatResumeBtn();
   } else {
     DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE;
   }
@@ -9747,6 +9767,7 @@ DebugJS.bat.resume = function() {
 };
 
 DebugJS.bat.stop = function() {
+  DebugJS.cmd.resume('u');
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   DebugJS.ctx.updateBatRunBtn();
