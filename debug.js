@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710152227';
+  this.v = '201710160744';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9648,6 +9648,7 @@ DebugJS.bat.prepro = function(cmd) {
       ctrl.pc = bat.cmds.length;
       ctx.updateCurPc();
       bat.preproEcho(cmd);
+      bat.stop();
       return 1;
     case 'goto':
       ctrl.startPc = 0;
@@ -9767,7 +9768,8 @@ DebugJS.bat.resume = function() {
 };
 
 DebugJS.bat.stop = function() {
-  DebugJS.cmd.resume('u');
+  DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE_U;
+  DebugJS.ctx.updateBatResumeBtn();
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   DebugJS.ctx.updateBatRunBtn();
