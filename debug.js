@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710170131';
+  this.v = '201710170740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6658,7 +6658,7 @@ DebugJS.prototype = {
       } else if (args.opt == 'key') {
         var key = args.data;
         DebugJS.bat.ctrl.pauseKey = key;
-        DebugJS.log('Type "resume -key ' + key + '" to continue...');
+        DebugJS.log('Type "resume" or "resume -key ' + key + '" to continue...');
       } else {
         DebugJS.printUsage(tbl.usage);
         return;
