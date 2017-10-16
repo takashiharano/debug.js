@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710160744';
+  this.v = '201710170007';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,13 +324,13 @@ var DebugJS = DebugJS || function() {
     {cmd: 'opacity', fnc: this.cmdOpacity, desc: 'Set the level of transparency of the debug window', usage: 'opacity 0.1-1'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
-    {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file'},
+    {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key]'},
     {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|#id|.class [idx]|tagName [idx]|center|mouse|move|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
-    {cmd: 'resume', fnc: this.cmdResume, desc: 'Resume a suspended batch process'},
+    {cmd: 'resume', fnc: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
     {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin px(x)|left|center|right|current px(y)|top|middle|bottom|current'},
@@ -403,8 +403,8 @@ DebugJS.STATE_WD = 1 << 14;
 DebugJS.STATE_EXT_PANEL = 1 << 15;
 DebugJS.STATE_BAT_RUNNING = 1 << 16;
 DebugJS.STATE_BAT_PAUSE = 1 << 17;
-DebugJS.STATE_CMD_PAUSE = 1 << 18;
-DebugJS.STATE_CMD_PAUSE_U = 1 << 19;
+DebugJS.STATE_BAT_PAUSE_CMD = 1 << 18;
+DebugJS.STATE_BAT_PAUSE_CMD_KEY = 1 << 19;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -2427,8 +2427,8 @@ DebugJS.prototype = {
   keyHandler: function(e) {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
-    if (ctx.status & DebugJS.STATE_CMD_PAUSE) {
-      DebugJS.cmd.resume();
+    if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
+      DebugJS.bat._resume('cmd');
     }
     switch (e.keyCode) {
       case 9: // Tab
@@ -2597,8 +2597,8 @@ DebugJS.prototype = {
           DebugJS.log('<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
           ctx.resetStopWatch();
         }
-        if (DebugJS.ctx.status & DebugJS.STATE_CMD_PAUSE) {
-          DebugJS.cmd.resume();
+        if (DebugJS.ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
+          DebugJS.bat._resume('cmd');
         }
         break;
       case 1:
@@ -5499,7 +5499,6 @@ DebugJS.prototype = {
       var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
       ctx.batResumeBtn = ctx.createButton(ctx, basePanel, '[RESUME]');
       ctx.batResumeBtn.style.float = 'right';
-      ctx.batResumeBtn.onclick = DebugJS.bat.stop;
       ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[ RUN ]');
       ctx.batRunBtn.onclick = DebugJS.ctx.startPauseBat;
       ctx.batStopBtn = ctx.createButton(ctx, basePanel, '[STOP]');
@@ -5547,7 +5546,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
       if (ctx.status & DebugJS.STATE_BAT_PAUSE) {
-        DebugJS.bat.resume();
+        DebugJS.bat._resume();
       } else {
         DebugJS.bat.pause();
       }
@@ -5575,12 +5574,16 @@ DebugJS.prototype = {
     if (!ctx.batResumeBtn) return;
     var color = DebugJS.COLOR_INACTIVE;
     var handler = null;
-    if (ctx.status & DebugJS.STATE_CMD_PAUSE_U) {
+    if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
       color = ctx.opt.btnColor;
-      handler = ctx.cmdResume;
+      handler = ctx.batResume;
     }
     ctx.batResumeBtn.style.color = color;
     ctx.batResumeBtn.onclick = handler;
+  },
+
+  batResume: function() {
+    DebugJS.bat._resume('cmd-key');
   },
 
   setBatTxt: function(ctx) {
@@ -6089,7 +6092,7 @@ DebugJS.prototype = {
       case 'run':
         if ((ctx.status & DebugJS.STATE_BAT_RUNNING) &&
             (ctx.status & DebugJS.STATE_BAT_PAUSE)) {
-          bat.resume();
+          bat._resume();
         } else {
           var sl = args[1];
           var el = args[2];
@@ -6649,12 +6652,21 @@ DebugJS.prototype = {
 
   cmdPause: function(arg, tbl) {
     var args = DebugJS.parseArgs(arg);
-    if (args.opt == 'u') {
-      DebugJS.ctx.status |= DebugJS.STATE_CMD_PAUSE_U;
-      DebugJS.log('Type "resume" to continue...');
+    if (args.opt) {
+      if (args.opt == 'u') {
+        DebugJS.log('Type "resume" to continue...');
+      } else if (args.opt == 'key') {
+        var key = args.data;
+        DebugJS.bat.ctrl.pauseKey = key;
+        DebugJS.log('Type "resume -key ' + key + '" to continue...');
+      } else {
+        DebugJS.printUsage(tbl.usage);
+        return;
+      }
+      DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD_KEY;
       DebugJS.ctx.updateBatResumeBtn();
     } else {
-      DebugJS.ctx.status |= DebugJS.STATE_CMD_PAUSE;
+      DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD;
       DebugJS.log('Click or press any key to continue...');
     }
   },
@@ -6862,7 +6874,15 @@ DebugJS.prototype = {
   },
 
   cmdResume: function(arg, tbl) {
-    DebugJS.cmd.resume('u');
+    var args = DebugJS.parseArgs(arg);
+    if (arg == '') {
+      DebugJS.bat._resume('cmd-key');
+    } else if (args.opt == 'key') {
+      var key = args.data;
+      DebugJS.bat.resume(key);
+    } else {
+      DebugJS.printUsage(tbl.usage);
+    }
   },
 
   cmdRGB: function(arg, tbl) {
@@ -9415,17 +9435,6 @@ DebugJS.cmd = function(c, echo) {
   return DebugJS.ctx._execCmd(c, echo);
 };
 
-DebugJS.cmd.resume = function(opt) {
-  if (opt == 'u') {
-    DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE_U;
-    DebugJS.ctx.updateBatResumeBtn();
-  } else {
-    DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE;
-  }
-  DebugJS.log('Resumed.');
-  DebugJS.bat.exec();
-};
-
 DebugJS.bat = function(b, sl, el) {
   DebugJS.bat.setBat(b);
   DebugJS.bat.run(sl, el);
@@ -9442,6 +9451,7 @@ DebugJS.bat.ctrl = {
   js: false,
   tmid: 0,
   lock: 0,
+  pauseKey: null,
   cont: false
 };
 DebugJS.bat.js = '';
@@ -9544,7 +9554,7 @@ DebugJS.bat.exec = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
-  if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_CMD_PAUSE) || (ctx.status & DebugJS.STATE_CMD_PAUSE_U)) {
+  if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY)) {
     return;
   }
   if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
@@ -9760,15 +9770,32 @@ DebugJS.bat.pause = function() {
   DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE;
   DebugJS.ctx.updateBatRunBtn();
 };
-
-DebugJS.bat.resume = function() {
-  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
-  DebugJS.ctx.updateBatRunBtn();
+DebugJS.bat.resume = function(key) {
+  if (key == undefined) {
+    DebugJS.bat._resume();
+  } else if (key == DebugJS.bat.ctrl.pauseKey) {
+    DebugJS.bat._resume('cmd-key');
+  }
+};
+DebugJS.bat._resume = function(trigger) {
+  if (trigger) {
+    if (trigger == 'cmd') {
+      DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD;
+    } else if (trigger == 'cmd-key') {
+      DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+      DebugJS.bat.ctrl.pauseKey = null;
+      DebugJS.ctx.updateBatResumeBtn();
+    }
+    DebugJS.log('Resumed.');
+  } else {
+    DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
+    DebugJS.ctx.updateBatRunBtn();
+  }
   DebugJS.bat.exec();
 };
 
 DebugJS.bat.stop = function() {
-  DebugJS.ctx.status &= ~DebugJS.STATE_CMD_PAUSE_U;
+  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
   DebugJS.ctx.updateBatResumeBtn();
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
   DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
@@ -9788,6 +9815,7 @@ DebugJS.bat.finalize = function() {
   c.cont = false;
   c.cmnt = false;
   c.lock = 0;
+  c.pauseKey = null;
   c.js = false;
   DebugJS.bat.js = '';
   if (c.tmid != 0) {

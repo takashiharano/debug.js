@@ -1499,7 +1499,9 @@ dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style=
       DebugJS.bat.resume<br>
       <span class="alias">( dbg.bat.resume )</span>
     </td>
-    <td></td>
+    <td>
+      key<span class="annotation">(opt)</span>
+    </td>
     <td>
       Resume the batch execution <button class="demo-button2" onclick="dbg.bat.resume();">DEMO</button>
     </td>
@@ -2410,12 +2412,14 @@ $ p -a objectName
   <tr>
     <td class="name">pause</td>
     <td>
-     -u<span class="annotation">(opt)</span>
+     -u<span class="annotation">(opt)</span><br>
+     -key <i>key</i><span class="annotation">(opt)</span>
     </td>
     <td>
      Suspends processing of batch file.<br>
      Click or press any key to continue.<br>
-     -u option requires "resume" command to resume.
+     -u option requires "resume" command to resume.<br>
+     -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.
     </td>
   </tr>
 
@@ -2555,9 +2559,11 @@ max: maximum number / length
   <tr>
     <td class="name">resume</td>
     <td>
+      -key <i>key</i><span class="annotation">(opt)</span>
     </td>
     <td>
-     Resume a batch process which suspended by "pause -u" command.
+     Resume a batch process which suspended by "pause -u" command.<br>
+     -key option resumes the batch process corresponding to the same key by "pause -key" command.
     </td>
   </tr>
 
@@ -2598,7 +2604,6 @@ $ rgb 255 255 255
       w/o "+" / "-" : absolute position in pixels.
     </td>
   </tr>
-
 
   <tr>
     <td class="name">select</td>
