@@ -1566,6 +1566,62 @@ dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style=
 
   <tr>
     <td class="name">
+      DebugJS.point.hint<br>
+      <span class="alias">( dbg.point.hint )</span>
+    </td>
+    <td>message</td>
+    <td>
+      Show/Update a message at the pointer position.
+<pre class="eg">
+dbg.point.hint('<input type="text" id="point-hint-text" class="demo-text" style="width:200px;" value="Hello, World!">'); <button class="demo-button2" onclick="dbg.point.hint(document.getElementById('point-hint-text').value);">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.point.hint.show<br>
+      <span class="alias">( dbg.point.hint.show )</span>
+    </td>
+    <td></td>
+    <td>
+      Show a message at the pointer position.
+<pre class="eg">
+dbg.point.hint.show(); <button class="demo-button2" onclick="dbg.point.hint.show();">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.point.hint.hide<br>
+      <span class="alias">( dbg.point.hint.hide )</span>
+    </td>
+    <td></td>
+    <td>
+      Hide the message at the pointer position.
+<pre class="eg">
+dbg.point.hint.hide(); <button class="demo-button2" onclick="dbg.point.hint.hide();">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.point.hint.clear<br>
+      <span class="alias">( dbg.point.hint.clear )</span>
+    </td>
+    <td></td>
+    <td>
+      Clear the message at the pointer position.
+<pre class="eg">
+dbg.point.hint.clear(); <button class="demo-button2" onclick="dbg.point.hint.clear();">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.getKeys<br>
       <span class="alias">( dbg.getKeys )</span>
     </td>
