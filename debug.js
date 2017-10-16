@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710170027';
+  this.v = '201710170131';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10261,6 +10261,7 @@ DebugJS.point.moveToElement = function(ps, step, speed) {
 };
 
 DebugJS.point.hint = function(msg) {
+  var RESUME = '<span class="' + DebugJS.ctx.id + '-btn ' + DebugJS.ctx.id + '-nomove" onclick="DebugJS.ctx.batResume();">[RESUME]</span>';
   var hint = DebugJS.point.hint;
   if (hint.area == null) {
     hint.createArea();
@@ -10268,6 +10269,7 @@ DebugJS.point.hint = function(msg) {
   var area = hint.area;
   var reg = /\\n/g;
   msg = msg.replace(reg, '\n');
+  msg = msg.replace(/!RESUME!/, RESUME);
   hint.pre.innerHTML = msg;
   hint.st.hasMsg = true;
   hint.show();
