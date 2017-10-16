@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710170007';
+  this.v = '201710170027';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6199,7 +6199,7 @@ DebugJS.prototype = {
     if (DebugJS.omitLeadingAndTrailingWhiteSpace(arg) == '-b64') {
       l = DebugJS.dumpLog('json', true);
     } else {
-      l = DebugJS.dumpLog('json');
+      l = DebugJS.dumpLog('json', false);
     }
     DebugJS.log.res(l);
   },
@@ -7715,6 +7715,11 @@ DebugJS.getLogTime = function(t) {
   return d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
 };
 
+DebugJS.getLogDateTime = function(t) {
+  var d = DebugJS.getDateTime(t);
+  return d.yyyy + '-' + d.mm + '-' + d.dd + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
+};
+
 DebugJS.getTimerStr = function(ms) {
   var tm = DebugJS.ms2struct(ms, true);
   return tm.hh + ':' + tm.mi + ':' + tm.ss + '.' + tm.sss;
@@ -9151,14 +9156,15 @@ DebugJS.sleep = function(ms) {
   }
 };
 
-DebugJS.dumpLog = function(type, b64) {
+DebugJS.dumpLog = function(type, b64, formatTime) {
   var buf = DebugJS.ctx.msgBuf.getAll();
   var b = [];
   var l = '';
   for (var i = 0; i < buf.length; i++) {
     var data = buf[i];
+    var time = (formatTime ? DebugJS.getLogDateTime(data.time) : data.time);
     if (type == 'json') {
-      l = {type: data.type, time: data.time, msg: data.msg};
+      l = {type: data.type, time: time, msg: data.msg};
       l.msg = DebugJS.encodeBase64(l.msg);
       b.push(l);
     } else {
@@ -9182,7 +9188,7 @@ DebugJS.dumpLog = function(type, b64) {
         case DebugJS.LOG_TYPE_SYS:
           lv = 'SYS';
       }
-      l += data.time + '\t' + lv + '\t' + data.msg + '\n';
+      l += time + '\t' + lv + '\t' + data.msg + '\n';
     }
   }
   if (type == 'json') l = JSON.stringify(b);
@@ -10914,7 +10920,7 @@ DebugJS.balse = function() {
   DebugJS.countElements = DebugJS.z2;
   DebugJS.getHtml = DebugJS.z1;
   DebugJS.init = DebugJS.z1;
-  DebugJS.dumpLog = DebugJS.z2;
+  DebugJS.dumpLog = DebugJS.z3;
   DebugJS.show = DebugJS.z0;
   DebugJS.hide = DebugJS.z0;
   DebugJS.http = DebugJS.z2;

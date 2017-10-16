@@ -1828,11 +1828,25 @@ max: maximum length
       <span class="alias">( dbg.dumpLog )</span>
     </td>
     <td>
-      arg1: type<span class="annotation">'json' / 'text'</span><br>
-      arg2: base64 enode<span class="annotation">(opt) default: false</span>
+      arg1: type<br>
+      arg2: base64 enode<span class="annotation">(opt)</span><br>
+      arg3: format time<span class="annotation">(opt)</span>
     </td>
     <td>
-      Export the log buffer in JSON format / plain text format
+      Export the log buffer in JSON format / plain text format<br><br>
+<pre class="eg">type: 'json' / 'text'
+
+base64:
+ true: The result will be encoded in Base64
+ false: Plain text (default)
+
+format time:
+ true:  The time format will be human-readable foamrt.
+        e.g.,) 2017-10-17 12:34:56.789
+ false: The numeric value corresponding to the time for 
+        the logged time according to universal time. (default)
+        e.g.,) 1508211296789
+</pre>
     </td>
   </tr>
 
