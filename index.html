@@ -439,6 +439,16 @@ function onFileLoaded(file, content, isB64) {
   }
 }
 
+function onContextMenu(e) {
+  log.i('contextmenu');
+  setTimeout(testFunc, 1000);
+}
+
+function testFunc() {
+  log('testFunc');
+  dbg.bat.resume('aaa');
+}
+
 var wdtCount = 0;
 function onWatchdogTimeout(elapsed) {
   dbg.show();
@@ -3655,7 +3665,7 @@ onclick="log.i('> click');"
 onkeydown="log.i('> keydown');"
 onkeypress="log.i('> keypress');"
 onkeyup="log.i('> keyup');"
-oncontextmenu="log.i('> contextmenu');">event test</div>
+oncontextmenu="onContextMenu();">event test</div>
 </div><!-- dummy__body -->
 </div><!-- content -->
 </div><!-- main -->
