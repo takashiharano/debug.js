@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710170740';
+  this.v = '201710172157';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -325,7 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key]'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|#id|.class [idx]|tagName [idx]|center|mouse|move|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -6678,7 +6678,9 @@ DebugJS.prototype = {
     var x = args[0];
     var y = args[1];
     var idx, step, speed;
-    if (x.charAt(0) == '#') {
+    if (x == 'init') {
+      point.init();
+    } else if (x.charAt(0) == '#') {
       DebugJS.pointById(x.substr(1));
     } else if (x.charAt(0) == '.') {
       DebugJS.pointByClassName(x.substr(1), y);
@@ -6761,6 +6763,9 @@ DebugJS.prototype = {
     } else if (x == 'setprop') {
       var v = DebugJS.getArgsFrom(arg, 3);
       point.setProp(args[1], v);
+    } else if (x == 'verify') {
+      var v = DebugJS.getArgsFrom(arg, 3);
+      point.verify(args[1], v);
     } else if (x == 'mouse') {
       DebugJS.point(ctx.mousePos.x, ctx.mousePos.y);
     } else {
@@ -9921,6 +9926,11 @@ DebugJS.point.createPtr = function() {
   document.body.appendChild(ptr);
   DebugJS.point.ptr = ptr;
 };
+DebugJS.point.init = function() {
+  DebugJS.point(0, 0);
+  DebugJS.point.hint.clear();
+  DebugJS.point.hide();
+};
 DebugJS.point.show = function() {
   var point = DebugJS.point;
   var ptr = point.ptr;
@@ -10062,6 +10072,36 @@ DebugJS.point.setProp = function(prop, val) {
   if (!el) return;
   el[prop] = val;
   DebugJS.log(val);
+};
+DebugJS.point.verify = function(prop, val) {
+  var point = DebugJS.point;
+  var ptr = point.ptr;
+  if ((ptr == null) || (!ptr.parentNode)) {
+    return;
+  }
+  var el = point.getElementFromCurrentPos();
+  if (!el) return;
+  var reg = /\\n/g;
+  val = val.replace(reg, '\n');
+  var res = '[';
+  var got = el[prop];
+  if (got == val) {
+    res += '<span style="color:#0f0">OK</span>';
+  } else {
+    res += '<span style="color:#f66">NG</span>';
+  }
+  var echoVal = val;
+  echoVal = DebugJS.styleValue(echoVal);
+  echoVal = echoVal.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+  var echoGot = got;
+  if (typeof echoGot === 'string') {
+    echoGot = DebugJS.styleValue(echoGot);
+    echoGot = echoGot.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+  } else {
+    echoGot = DebugJS.styleValue(echoGot);
+  }
+  res += '] Exp=' + echoVal + ' : Got=' + echoGot;
+  DebugJS.log(res);
 };
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
