@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710172157';
+  this.v = '201710180750';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10083,6 +10083,7 @@ DebugJS.point.verify = function(prop, val) {
   if (!el) return;
   var reg = /\\n/g;
   val = val.replace(reg, '\n');
+  val = eval(val);
   var res = '[';
   var got = el[prop];
   if (got == val) {
@@ -10091,8 +10092,12 @@ DebugJS.point.verify = function(prop, val) {
     res += '<span style="color:#f66">NG</span>';
   }
   var echoVal = val;
-  echoVal = DebugJS.styleValue(echoVal);
-  echoVal = echoVal.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+  if (typeof echoVal === 'string') {
+    echoVal = DebugJS.styleValue(echoVal);
+    echoVal = echoVal.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+  } else {
+    echoVal = DebugJS.styleValue(echoVal);
+  }
   var echoGot = got;
   if (typeof echoGot === 'string') {
     echoGot = DebugJS.styleValue(echoGot);
