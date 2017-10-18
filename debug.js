@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710180750';
+  this.v = '201710181902';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9921,7 +9921,7 @@ DebugJS.point.createPtr = function() {
   ptr.style.height = DebugJS.point.ptrH + 'px';
   ptr.style.top = 0;
   ptr.style.left = 0;
-  ptr.style.zIndex = 0x7fffffff;
+  ptr.style.zIndex = 0x7ffffffe;
   ptr.src = DebugJS.point.CURSOR_DFLT;
   document.body.appendChild(ptr);
   DebugJS.point.ptr = ptr;
@@ -10031,6 +10031,7 @@ DebugJS.point.contextmenu = function(el) {
   el.dispatchEvent(e);
 };
 DebugJS.point.getElementFromCurrentPos = function() {
+  var ctx = DebugJS.ctx;
   var ptr = DebugJS.point.ptr;
   if ((ptr == null) || (!ptr.parentNode)) {
     return null;
@@ -10039,14 +10040,20 @@ DebugJS.point.getElementFromCurrentPos = function() {
   var hintFlg = false;
   if (hint && (hint.parentNode)) {
     hintFlg = true;
-    document.body.removeChild(hint);
+    ctx.bodyEl.removeChild(hint);
   }
-  document.body.removeChild(ptr);
+  ctx.bodyEl.removeChild(ptr);
   var pos = DebugJS.point.getPos();
+  if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
+    ctx.bodyEl.removeChild(ctx.win);
+  }
   var el = document.elementFromPoint(pos.x, pos.y);
-  document.body.appendChild(ptr);
+  if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
+    ctx.bodyEl.appendChild(ctx.win);
+  }
+  ctx.bodyEl.appendChild(ptr);
   if (hintFlg) {
-    document.body.appendChild(hint);
+    ctx.bodyEl.appendChild(hint);
   }
   return el;
 };
@@ -10083,30 +10090,34 @@ DebugJS.point.verify = function(prop, val) {
   if (!el) return;
   var reg = /\\n/g;
   val = val.replace(reg, '\n');
-  val = eval(val);
-  var res = '[';
-  var got = el[prop];
-  if (got == val) {
-    res += '<span style="color:#0f0">OK</span>';
-  } else {
-    res += '<span style="color:#f66">NG</span>';
+  try {
+    val = eval(val);
+    var res = '[';
+    var got = el[prop];
+    if (got == val) {
+      res += '<span style="color:#0f0">OK</span>';
+    } else {
+      res += '<span style="color:#f66">NG</span>';
+    }
+    var echoVal = val;
+    if (typeof echoVal === 'string') {
+      echoVal = DebugJS.styleValue(echoVal);
+      echoVal = echoVal.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+    } else {
+      echoVal = DebugJS.styleValue(echoVal);
+    }
+    var echoGot = got;
+    if (typeof echoGot === 'string') {
+      echoGot = DebugJS.styleValue(echoGot);
+      echoGot = echoGot.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+    } else {
+      echoGot = DebugJS.styleValue(echoGot);
+    }
+    res += '] Exp=' + echoVal + ' : Got=' + echoGot;
+    DebugJS.log(res);
+  } catch (e) {
+    DebugJS.log.e(e);
   }
-  var echoVal = val;
-  if (typeof echoVal === 'string') {
-    echoVal = DebugJS.styleValue(echoVal);
-    echoVal = echoVal.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
-  } else {
-    echoVal = DebugJS.styleValue(echoVal);
-  }
-  var echoGot = got;
-  if (typeof echoGot === 'string') {
-    echoGot = DebugJS.styleValue(echoGot);
-    echoGot = echoGot.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
-  } else {
-    echoGot = DebugJS.styleValue(echoGot);
-  }
-  res += '] Exp=' + echoVal + ' : Got=' + echoGot;
-  DebugJS.log(res);
 };
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
@@ -10334,7 +10345,7 @@ DebugJS.point.hint.createArea = function() {
   el.style.display = 'inline-block';
   el.style.padding = '4px 8px';
   el.style.boxSizing = 'content-box';
-  el.style.zIndex = 0x7fffffff;
+  el.style.zIndex = 0x7ffffffe;
   el.style.boxShadow = hint.shadow + 'px ' + hint.shadow + 'px 10px rgba(0,0,0,.3)';
   el.style.borderRadius = '3px';
   el.style.background = 'rgba(0,0,0,0.65)';
