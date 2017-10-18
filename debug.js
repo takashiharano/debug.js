@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710190739';
+  this.v = '201710190743';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9111,7 +9111,7 @@ DebugJS.escSpclChr = function(str) {
 DebugJS.html2text = function(html) {
   var d = document.createElement('div');
   d.innerHTML = html;
-  var t = d.innerText 
+  var t = d.innerText;
   return t;
 };
 
