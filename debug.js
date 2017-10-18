@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710190015';
+  this.v = '201710190720';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10112,11 +10112,11 @@ DebugJS.point.verify = function(prop, method, val) {
   if (!el) return;
   var reg = /\\n/g;
   val = val.replace(reg, '\n');
+  var cnt = DebugJS.test.cnt;
+  var res = '[';
   try {
     val = eval(val);
-    var res = '[';
     var got = el[prop];
-    var cnt = DebugJS.test.cnt;
     if (((method == 'eq') && (got == val)) ||
         ((method == 'ne') && (got != val))) {
       cnt.ok++;
@@ -10140,11 +10140,11 @@ DebugJS.point.verify = function(prop, method, val) {
       echoGot = DebugJS.styleValue(echoGot);
     }
     res += '] Exp=' + echoVal + ' ' + method + ' Got=' + echoGot;
-    DebugJS.log(res);
   } catch (e) {
     cnt.err++;
-    DebugJS.log.e(e);
+    res += '<span style="color:#ff0">ERR</span>] ' + e;
   }
+  DebugJS.log(res);
 };
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
