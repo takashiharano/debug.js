@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710181902';
+  this.v = '201710190000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -342,6 +342,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|result'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -6764,8 +6765,8 @@ DebugJS.prototype = {
       var v = DebugJS.getArgsFrom(arg, 3);
       point.setProp(args[1], v);
     } else if (x == 'verify') {
-      var v = DebugJS.getArgsFrom(arg, 3);
-      point.verify(args[1], v);
+      var v = DebugJS.getArgsFrom(arg, 4);
+      point.verify(args[1], args[2], v);
     } else if (x == 'mouse') {
       DebugJS.point(ctx.mousePos.x, ctx.mousePos.y);
     } else {
@@ -7116,6 +7117,22 @@ DebugJS.prototype = {
     }
     DebugJS.log.res(ret);
     return true;
+  },
+
+  cmdTest: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var op = args[0];
+    switch (op) {
+      case 'init':
+        DebugJS.test.init();
+        DebugJS.log('Test has been initialized.');
+        break;
+      case 'result':
+        DebugJS.log(DebugJS.test.result());
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+    }
   },
 
   cmdTimer: function(arg, tbl) {
@@ -10080,10 +10097,14 @@ DebugJS.point.setProp = function(prop, val) {
   el[prop] = val;
   DebugJS.log(val);
 };
-DebugJS.point.verify = function(prop, val) {
+DebugJS.point.verify = function(prop, method, val) {
   var point = DebugJS.point;
   var ptr = point.ptr;
   if ((ptr == null) || (!ptr.parentNode)) {
+    return;
+  }
+  if ((method != 'eq') && (method != 'ne')) {
+    DebugJS.log.e('unknown verify method: ' + method);
     return;
   }
   var el = point.getElementFromCurrentPos();
@@ -10094,9 +10115,13 @@ DebugJS.point.verify = function(prop, val) {
     val = eval(val);
     var res = '[';
     var got = el[prop];
-    if (got == val) {
+    var cnt = DebugJS.test.cnt;
+    if (((method == 'eq') && (got == val)) ||
+        ((method == 'ne') && (got != val))) {
+      cnt.ok++;
       res += '<span style="color:#0f0">OK</span>';
     } else {
+      cnt.ng++;
       res += '<span style="color:#f66">NG</span>';
     }
     var echoVal = val;
@@ -10113,9 +10138,10 @@ DebugJS.point.verify = function(prop, val) {
     } else {
       echoGot = DebugJS.styleValue(echoGot);
     }
-    res += '] Exp=' + echoVal + ' : Got=' + echoGot;
+    res += '] Exp=' + echoVal + ' ' + method + ' Got=' + echoGot;
     DebugJS.log(res);
   } catch (e) {
+    cnt.err++;
     DebugJS.log.e(e);
   }
 };
@@ -10326,6 +10352,7 @@ DebugJS.point.hint = function(msg) {
   var reg = /\\n/g;
   msg = msg.replace(reg, '\n');
   msg = msg.replace(/!RESUME!/, RESUME);
+  msg = msg.replace(/!TEST_RESULT!/, DebugJS.test.result());
   hint.pre.innerHTML = msg;
   hint.st.hasMsg = true;
   hint.show();
@@ -10694,6 +10721,20 @@ DebugJS.event.rclickUp = function() {
 };
 DebugJS.event.rclick.target = null;
 DebugJS.event.rclick.tmid = 0;
+
+DebugJS.test = {};
+DebugJS.test.cnt = {ok: 0, ng: 0, err: 0};
+DebugJS.test.init = function() {
+  var cnt = DebugJS.test.cnt;
+  cnt.ok = 0;
+  cnt.ng = 0;
+  cnt.err = 0;
+};
+DebugJS.test.result = function() {
+  var cnt = DebugJS.test.cnt;
+  var total = cnt.ok + cnt.ng + cnt.err;
+  return '<span style="color:#0f0">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:#f66">NG</span>:' + cnt.ng + ' <span style="color:#ff0">ERR</span>:' + cnt.err;
+};
 
 DebugJS.getElement = function(selector, idx) {
   if (typeof selector != 'string') {
