@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710190720';
+  this.v = '201710190739';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -567,9 +567,9 @@ DebugJS.FEATURES = [
   'useCommandLine'
 ];
 DebugJS.z0 = function() {};
-DebugJS.z1 = function(x) {};
-DebugJS.z2 = function(x, xx) {};
-DebugJS.z3 = function(x, xx, xxx) {};
+DebugJS.z1 = function(a) {};
+DebugJS.z2 = function(a, b) {};
+DebugJS.z3 = function(a, b, c) {};
 
 DebugJS.prototype = {
   init: function(opt, restoreOpt) {
@@ -9106,6 +9106,13 @@ DebugJS.escSpclChr = function(str) {
   txt = txt.replace(/</g, '&lt;');
   txt = txt.replace(/>/g, '&gt;');
   return txt;
+};
+
+DebugJS.html2text = function(html) {
+  var d = document.createElement('div');
+  d.innerHTML = html;
+  var t = d.innerText 
+  return t;
 };
 
 DebugJS.addClass = function(el, name) {
