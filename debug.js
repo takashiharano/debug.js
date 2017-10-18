@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710190000';
+  this.v = '201710190015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10067,6 +10067,7 @@ DebugJS.point.getElementFromCurrentPos = function() {
   var el = document.elementFromPoint(pos.x, pos.y);
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
     ctx.bodyEl.appendChild(ctx.win);
+    ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
   }
   ctx.bodyEl.appendChild(ptr);
   if (hintFlg) {
