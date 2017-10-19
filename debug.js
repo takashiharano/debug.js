@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710192211';
+  this.v = '201710200107';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -631,7 +631,7 @@ DebugJS.prototype = {
     ctx.initSetPropsCb(ctx);
     ctx.status |= DebugJS.STATE_INITIALIZED;
     ctx.initExtension(ctx);
-    ctx.printLogMsg();
+    ctx.printLogs();
     return true;
   },
 
@@ -1778,7 +1778,7 @@ DebugJS.prototype = {
     ctx.winCtrlBtnPanel.innerHTML = b;
   },
 
-  printLogMsg: function() {
+  printLogs: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.win) return;
     var buf = ctx.msgBuf.getAll();
@@ -1865,14 +1865,14 @@ DebugJS.prototype = {
   },
 
   onClr: function() {
-    DebugJS.ctx.clearMessage();
+    DebugJS.ctx.clearLogs();
     DebugJS.ctx.focusCmdLine();
   },
 
-  clearMessage: function() {
+  clearLogs: function() {
     var ctx = DebugJS.ctx;
     ctx.msgBuf.clear();
-    ctx.printLogMsg();
+    ctx.printLogs();
   },
 
   toggleLogFilter: function(filter) {
@@ -1901,7 +1901,7 @@ DebugJS.prototype = {
       }
     }
     ctx.updateLogFilterButtons();
-    ctx.printLogMsg();
+    ctx.printLogs();
   },
 
   updateLogFilterButtons: function() {
@@ -1919,7 +1919,7 @@ DebugJS.prototype = {
   onchangeLogFilter: function() {
     var ctx = DebugJS.ctx;
     ctx.filterText = ctx.filterInput.value;
-    ctx.printLogMsg();
+    ctx.printLogs();
   },
 
   toggleFilterCase: function() {
@@ -6183,7 +6183,7 @@ DebugJS.prototype = {
   },
 
   cmdCls: function(arg, tbl) {
-    DebugJS.ctx.clearMessage();
+    DebugJS.ctx.clearLogs();
   },
 
   cmdDate: function(arg, tbl) {
@@ -6292,7 +6292,7 @@ DebugJS.prototype = {
     ctx.filterText = '';
     if (ctx.filterInput) ctx.filterInput.value = '';
     ctx.closeDbgWin();
-    ctx.clearMessage();
+    ctx.clearLogs();
     ctx.logFilter = DebugJS.LOG_FILTER_ALL;
     ctx.updateLogFilterButtons();
   },
@@ -6914,7 +6914,7 @@ DebugJS.prototype = {
           default:
             DebugJS.loadLog(args.data);
         }
-        DebugJS.ctx.printLogMsg();
+        DebugJS.ctx.printLogs();
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -9379,7 +9379,7 @@ DebugJS.log.out = function(m, type) {
   if (!(DebugJS.ctx.status & DebugJS.STATE_INITIALIZED)) {
     if (!DebugJS._init()) {return;}
   }
-  DebugJS.ctx.printLogMsg();
+  DebugJS.ctx.printLogs();
 };
 
 DebugJS.time = {};
@@ -10932,7 +10932,7 @@ log.stack = function() {
 
 log.clear = function() {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.ctx.clearMessage();
+  DebugJS.ctx.clearLogs();
 };
 
 log.suspend = function() {
