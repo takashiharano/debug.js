@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710200107';
+  this.v = '201710210121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7831,22 +7831,23 @@ DebugJS.execCmdP = function(arg) {
   var noMaxLimit = false;
   var valLenLimit = DebugJS.ctx.properties.dumpvallen.value;
   if (opt != null) {
-    start = 1;
+    start = 2;
     levelLimit = opt[1];
   } else {
     if (args[0] == '-a') {
-      start = 1;
+      start = 2;
       noMaxLimit = true;
     }
   }
-  for (var i = start, len = args.length; i < len; i++) {
-    if (args[i] == '') continue;
-    var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.objDump(' + args[i] + ', false, ' + levelLimit + ', ' + noMaxLimit + ', ' + valLenLimit + ');DebugJS.log.mlt(DebugJS.buf);';
-    try {
-      eval(cmd);
-    } catch (e) {
-      DebugJS.log.e(e);
-    }
+  var obj = DebugJS.getArgsFrom(arg, start);
+  var exp = obj;
+  exp = exp.replace(/"/g, '\\"');
+  var cmd = 'DebugJS.buf=DebugJS.objDump(' + obj + ', false, ' + levelLimit + ', ' + noMaxLimit + ', ' + valLenLimit + ');' +
+            'DebugJS.log.mlt(DebugJS.buf);';
+  try {
+    eval(cmd);
+  } catch (e) {
+    DebugJS.log.e(e);
   }
 };
 
