@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710210121';
+  this.v = '201710211507';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -342,7 +342,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
-    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|result'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|case|count|result'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -7122,13 +7122,27 @@ DebugJS.prototype = {
   cmdTest: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
     var op = args[0];
+    var test = DebugJS.test;
     switch (op) {
       case 'init':
-        DebugJS.test.init();
+        test.init();
         DebugJS.log('Test has been initialized.');
         break;
+      case 'case':
+        var n = DebugJS.getArgsFrom(arg, 2);
+        try {
+          n = eval(n);
+          if (n == undefined) n = '';
+          test.setCase(n + '');
+        } catch (e) {
+          DebugJS.log.e(e);
+        }
+        break;
+      case 'count':
+        DebugJS.log(test.count());
+        break;
       case 'result':
-        DebugJS.log(DebugJS.test.result());
+        DebugJS.log(test.result());
         break;
       default:
         DebugJS.printUsage(tbl.usage);
@@ -10119,18 +10133,16 @@ DebugJS.point.verify = function(prop, method, val) {
   if (!el) return;
   var reg = /\\n/g;
   val = val.replace(reg, '\n');
-  var cnt = DebugJS.test.cnt;
-  var res = '[';
+  var test = DebugJS.test;
+  var status, detail;
   try {
     val = eval(val);
     var got = el[prop];
     if (((method == 'eq') && (got == val)) ||
         ((method == 'ne') && (got != val))) {
-      cnt.ok++;
-      res += '<span style="color:#0f0">OK</span>';
+      status = test.STATUS_OK;
     } else {
-      cnt.ng++;
-      res += '<span style="color:#f66">NG</span>';
+      status = test.STATUS_NG;
     }
     var echoVal = val;
     if (typeof echoVal === 'string') {
@@ -10146,12 +10158,14 @@ DebugJS.point.verify = function(prop, method, val) {
     } else {
       echoGot = DebugJS.styleValue(echoGot);
     }
-    res += '] Exp=' + echoVal + ' ' + method + ' Got=' + echoGot;
+    detail = 'Exp=' + echoVal + ' ' + method + ' Got=' + echoGot;
   } catch (e) {
-    cnt.err++;
-    res += '<span style="color:#ff0">ERR</span>] ' + e;
+    status = test.STATUS_ERR;
+    detail = e;
   }
-  DebugJS.log(res);
+  test.addResult(status, detail);
+  var str = test.getResultStr(status, detail);
+  DebugJS.log(str);
 };
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
@@ -10360,7 +10374,7 @@ DebugJS.point.hint = function(msg) {
   var reg = /\\n/g;
   msg = msg.replace(reg, '\n');
   msg = msg.replace(/!RESUME!/, RESUME);
-  msg = msg.replace(/!TEST_RESULT!/, DebugJS.test.result());
+  msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count());
   hint.pre.innerHTML = msg;
   hint.st.hasMsg = true;
   hint.show();
@@ -10731,17 +10745,79 @@ DebugJS.event.rclick.target = null;
 DebugJS.event.rclick.tmid = 0;
 
 DebugJS.test = {};
+DebugJS.test.STATUS_OK = 0;
+DebugJS.test.STATUS_NG = 1;
+DebugJS.test.STATUS_ERR = 2;
 DebugJS.test.cnt = {ok: 0, ng: 0, err: 0};
-DebugJS.test.init = function() {
-  var cnt = DebugJS.test.cnt;
-  cnt.ok = 0;
-  cnt.ng = 0;
-  cnt.err = 0;
+DebugJS.test.executingTestCase = '';
+DebugJS.test.res = {
+  cnt: {ok: 0, ng: 0, err: 0},
+  results: {'': []}
 };
-DebugJS.test.result = function() {
-  var cnt = DebugJS.test.cnt;
+DebugJS.test.init = function() {
+  DebugJS.test.executingTestCase = '';
+  var res = DebugJS.test.res;
+  res.cnt.ok = 0;
+  res.cnt.ng = 0;
+  res.cnt.err = 0;
+  res.results = {'': []};
+};
+DebugJS.test.addResult = function(status, detail) {
+  var test = DebugJS.test;
+  switch (status) {
+    case test.STATUS_OK:
+      test.res.cnt.ok++;
+      break;
+    case test.STATUS_NG:
+      test.res.cnt.ng++;
+      break;
+    case test.STATUS_ERR:
+      test.res.cnt.err++;
+  }
+  test.res.results[test.executingTestCase].push({status: status, detail: detail});
+};
+DebugJS.test.setCase = function(name) {
+  var test = DebugJS.test;
+  var res = test.res;
+  test.executingTestCase = name;
+  if (res.results[name] == undefined) {
+    res.results[name] = [];
+  }
+};
+DebugJS.test.getResultStr = function(res, detail) {
+  var test = DebugJS.test;
+  var str = '[';
+  switch (res) {
+    case test.STATUS_OK:
+      str += '<span style="color:#0f0">OK</span>';
+      break;
+    case test.STATUS_NG:
+      str += '<span style="color:#f66">NG</span>';
+      break;
+    case test.STATUS_ERR:
+      str += '<span style="color:#ff0">ERR</span>';
+  }
+  str += '] ' + detail;
+  return str;
+};
+DebugJS.test.count = function() {
+  var cnt = DebugJS.test.res.cnt;
   var total = cnt.ok + cnt.ng + cnt.err;
   return '<span style="color:#0f0">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:#f66">NG</span>:' + cnt.ng + ' <span style="color:#ff0">ERR</span>:' + cnt.err;
+};
+DebugJS.test.result = function() {
+  var test = DebugJS.test;
+  var str = 'Test Result\nSummary: ' + test.count() + '\n';
+  for (name in test.res.results) {
+    var caseName = name;
+    if (caseName == '') caseName = '<span style="color:#ccc">&lt;No Test Case Name&gt;</span>';
+    str += '\nCase: ' + caseName + '\n';
+    for (var i = 0; i < test.res.results[name].length; i++) {
+      var result = test.res.results[name][i];
+      str += ' ' + test.getResultStr(result.status, result.detail) + '\n';
+    }
+  }
+  return str;
 };
 
 DebugJS.getElement = function(selector, idx) {
