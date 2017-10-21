@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710211507';
+  this.v = '201710211750';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -325,7 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key]'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -342,7 +342,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
-    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|case|count|result'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|case name|count|result'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -6543,10 +6543,10 @@ DebugJS.prototype = {
         var a = arg.substr(qstr.nextIdx);
         var ags = DebugJS.splitArgs(a);
         speed = ags[0];
-        max = ags[1];
-        start = ags[2];
+        start = ags[1];
+        max = ags[2];
       }
-      DebugJS.inputText(id, txt, speed, max, start);
+      DebugJS.inputText(id, txt, speed, start, max);
     } else {
       DebugJS.printUsage(tbl.usage);
     }
@@ -6768,7 +6768,20 @@ DebugJS.prototype = {
       var v = DebugJS.getArgsFrom(arg, 4);
       point.verify(args[1], args[2], v);
     } else if (x == 'mouse') {
-      DebugJS.point(ctx.mousePos.x, ctx.mousePos.y);
+      point(ctx.mousePos.x, ctx.mousePos.y);
+    } else if (x == 'text') {
+      var el = point.getElementFromCurrentPos();
+      if ((!el) || ((el.nodeName != 'INPUT') && (el.nodeName != 'TEXTAREA'))) {
+        DebugJS.log.w('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
+        return;
+      }
+      var txt = DebugJS.getArgsFrom(arg, 2);
+      try {
+        txt = eval(txt) + '';
+        DebugJS.inputText(el, txt);
+      } catch (e) {
+        DebugJS.log.e(e);
+      }
     } else {
       if (x == '') {
         var pos = point.getPos();
@@ -10025,10 +10038,6 @@ DebugJS.point.getPos = function() {
 };
 DebugJS.point.event = function(type, opt) {
   var point = DebugJS.point;
-  var ptr = point.ptr;
-  if ((ptr == null) || (!ptr.parentNode)) {
-    return;
-  }
   var el = point.getElementFromCurrentPos();
   if (!el) return;
   switch (type) {
@@ -10097,39 +10106,24 @@ DebugJS.point.getElementFromCurrentPos = function() {
   return el;
 };
 DebugJS.point.getProp = function(prop) {
-  var point = DebugJS.point;
-  var ptr = point.ptr;
-  if ((ptr == null) || (!ptr.parentNode)) {
-    return;
-  }
-  var el = point.getElementFromCurrentPos();
+  var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
   var v = el[prop];
   DebugJS.log(DebugJS.styleValue(v));
   return v;
 };
 DebugJS.point.setProp = function(prop, val) {
-  var point = DebugJS.point;
-  var ptr = point.ptr;
-  if ((ptr == null) || (!ptr.parentNode)) {
-    return;
-  }
-  var el = point.getElementFromCurrentPos();
+  var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
   el[prop] = val;
   DebugJS.log(val);
 };
 DebugJS.point.verify = function(prop, method, val) {
-  var point = DebugJS.point;
-  var ptr = point.ptr;
-  if ((ptr == null) || (!ptr.parentNode)) {
-    return;
-  }
   if ((method != 'eq') && (method != 'ne')) {
     DebugJS.log.e('unknown verify method: ' + method);
     return;
   }
-  var el = point.getElementFromCurrentPos();
+  var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
   var reg = /\\n/g;
   val = val.replace(reg, '\n');
