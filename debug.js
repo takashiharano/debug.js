@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710211934';
+  this.v = '201710212009';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6210,10 +6210,17 @@ DebugJS.prototype = {
     var args = DebugJS.splitArgs(arg);
     if (args[0] == 'off') {
       ctx.cmdEchoFlg = false;
+      return;
     } else if (args[0] == 'on') {
       ctx.cmdEchoFlg = true;
+      return;
     }
-    DebugJS.log(arg);
+    try {
+      var str = eval(arg) + '';
+      DebugJS.log(str);
+    } catch (e) {
+      DebugJS.log.e(e);
+    }
   },
 
   cmdElements: function(arg, tbl) {

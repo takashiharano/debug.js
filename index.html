@@ -1452,7 +1452,7 @@ dbg.countElements('tagName');
 rgb 0 191 255
 
 @echo off
-echo Hello, World!
+echo "Hello, World!"
 
 @echo on
 base64 -e ABC
@@ -2207,6 +2207,36 @@ $ dumplog
 
 $ dumplog -b64
 -&gt; export in base64 encoded JSON format
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      echo<br>
+    </td>
+    <td>
+      string or expression
+    </td>
+    <td>
+      Display the ARGs on the log window
+<pre class="eg">
+$ echo "abc"
+-&gt; echo "abc"
+   abc
+
+$ @echo "abc"
+-&gt; abc
+
+$ echo 1 + 2
+-&gt; echo 1 + 2
+   3
+
+$ echo off
+-&gt; Command echo will be turned off
+
+$ echo on
+-&gt; Command echo will be turned on
 </pre>
     </td>
   </tr>
