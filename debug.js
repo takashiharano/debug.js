@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710212009';
+  this.v = '201710212300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9417,6 +9417,21 @@ DebugJS.log.out = function(m, type) {
   DebugJS.ctx.printLogs();
 };
 
+DebugJS.stack = function() {
+  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  var stk;
+  try {
+   DebugJS.a.b;
+  } catch (e) {
+    stk = e.stack;
+  }
+  stk = stk.replace(/^TypeError.*\n/, '');
+  stk = stk.replace(/^\s+at\s.*\n/, '');
+  stk = stk.replace(/^DebugJS\.stack@.*\n/, '');
+  stk = 'Stack:\n' + stk;
+  DebugJS.log(stk);
+};
+
 DebugJS.time = {};
 DebugJS.time.start = function(timerName, msg) {
   DebugJS.timeStart(timerName, msg);
@@ -11014,12 +11029,6 @@ log.res.err = function(m) {
   DebugJS.log.res.err(m);
 };
 
-log.stack = function() {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  var err = new Error();
-  DebugJS.log(err.stack);
-};
-
 log.clear = function() {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.ctx.clearLogs();
@@ -11101,7 +11110,6 @@ DebugJS.balse = function() {
   log.v = DebugJS.z1;
   log.t = DebugJS.z2;
   log.p = DebugJS.z3;
-  log.stack = DebugJS.z0;
   log.clear = DebugJS.z0;
   log.res = DebugJS.z1;
   log.res.err = DebugJS.z1;
@@ -11125,6 +11133,7 @@ DebugJS.balse = function() {
   DebugJS.led.off = DebugJS.z1;
   DebugJS.msg = DebugJS.z1;
   DebugJS.msg.clear = DebugJS.z0;
+  DebugJS.stack = DebugJS.z0;
   DebugJS.stopwatch = DebugJS.z0;
   DebugJS.stopwatch.start = DebugJS.z0;
   DebugJS.stopwatch.stop = DebugJS.z0;

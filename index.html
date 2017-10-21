@@ -449,6 +449,18 @@ function testFunc() {
   dbg.bat.resume('aaa');
 }
 
+function printStackDemo() {
+  printStackDemo1();
+}
+
+function printStackDemo1() {
+  printStackDemo2();
+}
+
+function printStackDemo2() {
+  dbg.stack();
+}
+
 var wdtCount = 0;
 function onWatchdogTimeout(elapsed) {
   dbg.show();
@@ -1221,12 +1233,6 @@ log.t('foo')
   </tr>
 
   <tr>
-    <td class="name">log.stack</td>
-    <td></td>
-    <td>Output stack trace</td>
-  </tr>
-
-  <tr>
     <td class="name">log.clear</td>
     <td></td>
     <td>Clear log message</td>
@@ -1984,6 +1990,17 @@ Returns an DOM element or null if an element with the specified selector is not 
  h: 94
 }
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.stack<br>
+      <span class="alias">( dbg.stack )</span>
+    </td>
+    <td></td>
+    <td>
+      Print stack trace <button class="demo-button2" onclick="printStackDemo();">DEMO</button>
     </td>
   </tr>
 
@@ -3337,11 +3354,6 @@ result log<br>
 <td>
 error result log<br>
 <button onclick="log.res.err(logMessageText.value);">log.res.err()</button>
-</td>
-
-<td>
-print stack<br>
-<button onclick="log.stack();">log.stack()</button>
 </td>
 
 <td>
