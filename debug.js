@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710211848';
+  this.v = '201710211934';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10359,7 +10359,10 @@ DebugJS.point.moveToElement = function(ps, step, speed) {
 };
 
 DebugJS.point.hint = function(msg) {
-  var RESUME = '<span class="' + DebugJS.ctx.id + '-btn ' + DebugJS.ctx.id + '-nomove" onclick="DebugJS.ctx.batResume();">[RESUME]</span>';
+  var BTN_PREFIX = '<span class="' + DebugJS.ctx.id + '-btn ' + DebugJS.ctx.id + '-nomove" ';
+  var BTN_SUFFIX = '</span>';
+  var RESUME = BTN_PREFIX + 'onclick="DebugJS.ctx.batResume();">[RESUME]' + BTN_SUFFIX;
+  var CLOSE = BTN_PREFIX + 'onclick="DebugJS.point.hide();">[CLOSE]' + BTN_SUFFIX;
   var hint = DebugJS.point.hint;
   if (hint.area == null) {
     hint.createArea();
@@ -10370,6 +10373,7 @@ DebugJS.point.hint = function(msg) {
   msg = msg.replace(/!RESUME!/, RESUME);
   msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count());
   msg = msg.replace(/!TEST_RESULT!/, DebugJS.test.result());
+  msg = msg.replace(/!CLOSE!/, CLOSE);
   hint.pre.innerHTML = msg;
   hint.st.hasMsg = true;
   hint.show();
@@ -10387,6 +10391,9 @@ DebugJS.point.hint.createArea = function() {
   var el = document.createElement('div');
   el.style.position = 'fixed';
   el.style.display = 'inline-block';
+  el.style.maxWidth = '100vw';
+  el.style.maxHeight = '100vh';
+  el.style.overflow = 'auto';
   el.style.padding = '4px 8px';
   el.style.boxSizing = 'content-box';
   el.style.zIndex = 0x7ffffffe;
