@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710211750';
+  this.v = '201710211848';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10369,6 +10369,7 @@ DebugJS.point.hint = function(msg) {
   msg = msg.replace(reg, '\n');
   msg = msg.replace(/!RESUME!/, RESUME);
   msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count());
+  msg = msg.replace(/!TEST_RESULT!/, DebugJS.test.result());
   hint.pre.innerHTML = msg;
   hint.st.hasMsg = true;
   hint.show();
@@ -10393,11 +10394,11 @@ DebugJS.point.hint.createArea = function() {
   el.style.borderRadius = '3px';
   el.style.background = 'rgba(0,0,0,0.65)';
   el.style.color = '#fff';
-  el.style.fontSize = hint.fontSize + 'px',
-  el.style.fontFamily = 'Consolas, monospace';
+  el.style.fontSize = hint.fontSize + 'px';
   var pre = document.createElement('pre');
   pre.style.margin = 0;
   pre.style.padding = 0;
+  pre.style.fontFamily = 'Consolas, monospace';
   el.appendChild(pre);
   hint.pre = pre;
   document.body.appendChild(el);
@@ -10746,7 +10747,7 @@ DebugJS.test.cnt = {ok: 0, ng: 0, err: 0};
 DebugJS.test.executingTestCase = '';
 DebugJS.test.res = {
   cnt: {ok: 0, ng: 0, err: 0},
-  results: {'': []}
+  results: {}
 };
 DebugJS.test.init = function() {
   DebugJS.test.executingTestCase = '';
@@ -10754,7 +10755,7 @@ DebugJS.test.init = function() {
   res.cnt.ok = 0;
   res.cnt.ng = 0;
   res.cnt.err = 0;
-  res.results = {'': []};
+  res.results = {};
 };
 DebugJS.test.addResult = function(status, detail) {
   var test = DebugJS.test;
@@ -10768,7 +10769,9 @@ DebugJS.test.addResult = function(status, detail) {
     case test.STATUS_ERR:
       test.res.cnt.err++;
   }
-  test.res.results[test.executingTestCase].push({status: status, detail: detail});
+  var caseName = test.executingTestCase;
+  test.setCase(caseName);
+  test.res.results[caseName].push({status: status, detail: detail});
 };
 DebugJS.test.setCase = function(name) {
   var test = DebugJS.test;
@@ -10804,7 +10807,9 @@ DebugJS.test.result = function() {
   var str = 'Test Result\nSummary: ' + test.count() + '\n';
   for (name in test.res.results) {
     var caseName = name;
-    if (caseName == '') caseName = '<span style="color:#ccc">&lt;No Test Case Name&gt;</span>';
+    if (name == '') {
+      caseName = '<span style="color:#ccc">&lt;No Test Case Name&gt;</span>';
+    }
     str += '\nCase: ' + caseName + '\n';
     for (var i = 0; i < test.res.results[name].length; i++) {
       var result = test.res.results[name][i];
