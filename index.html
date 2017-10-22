@@ -2751,7 +2751,13 @@ $ rgb 255 255 255
       x: [+|-]px|left|center|right|current<br>
       y: [+|-]px|top|middle|bottom|current<br><br>
       w/ "+" / "-" : the offset in pixels.<br>
-      w/o "+" / "-" : absolute position in pixels.
+      w/o "+" / "-" : absolute position in pixels.<br>
+
+<br>
+The command with "move" makes gradually adjust the position of the scroll
+<pre class="eg">
+$ scrollwin move 100 5000
+</pre>
     </td>
   </tr>
 
@@ -3013,6 +3019,12 @@ goto foo
 :label
 
 command
+
+${name} = command
+<span class="annotation">Command result will be set to the variable ${name}.</span>
+
+command arg ${name} ...
+<span class="annotation">The variable ${name} will be replaced to its value.</span>
 
 !__js__!
 JavaScript Code;

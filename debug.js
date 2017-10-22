@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710221757';
+  this.v = '201710222050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6982,43 +6982,75 @@ DebugJS.prototype = {
   cmdScrollWin: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
+    var op = args[0];
     var posX = args[0];
     var posY = args[1];
+    if (op == 'move') {
+      posX = args[1];
+      posY = args[2];
+    }
+
+    var x = ctx.cmdScrollWinGetX(posX);
+    if (x == undefined) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+
+    var y = ctx.cmdScrollWinGetY(posY);
+    if (y == undefined) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+
+    if (op == 'move') {
+      DebugJS.scrollTo(x, y);
+    } else {
+      window.scroll(x, y);
+    }
+  },
+
+  cmdScrollWinGetX: function(posX) {
+    var x;
     if (posX == 'left') {
-      posX = 0;
+      x = 0;
     } else if (posX == 'center') {
-      window.scroll(ctx.bodyEl.clientWidth, window.scrollY);
-      posX = window.scrollX / 2;
+      x = document.body.clientWidth / 2;
     } else if (posX == 'right') {
-      posX = ctx.bodyEl.clientWidth;
+      x = document.body.clientWidth;
     } else if (posX == 'current') {
-      posX = window.scrollX;
+      x = window.scrollX;
     } else if (posX.charAt(0) == '+') {
-      posX = window.scrollX + (posX.substr(1) | 0);
+      x = window.scrollX + (posX.substr(1) | 0);
     } else if (posX.charAt(0) == '-') {
-      posX = window.scrollX - (posX.substr(1) | 0);
+      x = window.scrollX - (posX.substr(1) | 0);
     } else if ((posX == '') || isNaN(posX)) {
-      DebugJS.printUsage(tbl.usage);
-      return;
+      x = undefined;
+    } else {
+      x = posX;
     }
+    return x;
+  },
+
+  cmdScrollWinGetY: function(posY) {
+    var y;
     if (posY == 'top') {
-      posY = 0;
+      y = 0;
     } else if (posY == 'middle') {
-      window.scroll(window.scrollX, ctx.bodyEl.clientHeight);
-      posY = window.scrollY / 2;
+      y = (document.body.clientHeight - document.documentElement.clientHeight) / 2;
     } else if (posY == 'bottom') {
-      posY = ctx.bodyEl.clientHeight;
+      y = document.body.clientHeight;
     } else if (posY == 'current') {
-      posY = window.scrollY;
+      y = window.scrollY;
     } else if (posY.charAt(0) == '+') {
-      posY = window.scrollY + (posY.substr(1) | 0);
+      y = window.scrollY + (posY.substr(1) | 0);
     } else if (posY.charAt(0) == '-') {
-      posY = window.scrollY - (posY.substr(1) | 0);
+      y = window.scrollY - (posY.substr(1) | 0);
     } else if ((posY == '') || isNaN(posY)) {
-      DebugJS.printUsage(tbl.usage);
-      return;
+      y = undefined;
+    } else {
+      y = posY;
     }
-    window.scroll(posX, posY);
+    return y;
   },
 
   cmdSelect: function(arg, tbl) {
@@ -10563,6 +10595,23 @@ DebugJS.point.hint.clear = function() {
   point.hint.st.hasMsg = false;
 };
 
+DebugJS.scrollTo = function(x, y) {
+  var d = DebugJS.scrollToTarget.data;
+  if (d.tmid > 0) {
+    clearTimeout(d.tmid);
+    d.tmid = 0;
+    DebugJS.bat.unlock();
+  }
+  d.dstX = x - DebugJS.ctx.scrollPosX;
+  d.dstY = y - DebugJS.ctx.scrollPosY;
+  d.step = DebugJS.scrollToTarget.DFLT_STEP;
+  d.speed = DebugJS.scrollToTarget.DFLT_SPEED;
+
+  DebugJS.bat.lock();
+  DebugJS._scrollToTarget();
+  return true;
+};
+
 DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
   if (!ps) return false;
   var d = DebugJS.scrollToTarget.data;
@@ -10632,33 +10681,33 @@ DebugJS.scrollToTarget.data = {
 DebugJS._scrollToTarget = function() {
   var d = DebugJS.scrollToTarget.data;
   d.tmid = 0;
-  var step = d.step;
+  var stepX = d.step;
   if (d.dstX < 0) {
-    if ((d.dstX * (-1)) < step) {
-      step = d.dstX * (-1);
+    if ((d.dstX * (-1)) < stepX) {
+      stepX = d.dstX * (-1);
     }
-    d.dstX += step;
-    step *= (-1);
+    d.dstX += stepX;
+    stepX *= (-1);
   } else {
-    if (d.dstX < step) {
-      step = d.dstX;
+    if (d.dstX < stepX) {
+      stepX = d.dstX;
     }
-    d.dstX -= step;
+    d.dstX -= stepX;
   }
-  var step = d.step;
+  var stepY = d.step;
   if (d.dstY < 0) {
-    if ((d.dstY * (-1)) < step) {
-      step = d.dstY * (-1);
+    if ((d.dstY * (-1)) < stepY) {
+      stepY = d.dstY * (-1);
     }
-    d.dstY += step;
-    step *= (-1);
+    d.dstY += stepY;
+    stepY *= (-1);
   } else {
-    if (d.dstY < step) {
-      step = d.dstY;
+    if (d.dstY < stepY) {
+      stepY = d.dstY;
     }
-    d.dstY -= step;
+    d.dstY -= stepY;
   }
-  window.scrollBy(step, step);
+  window.scrollBy(stepX, stepY);
   if ((d.dstX != 0) || (d.dstY != 0)) {
     d.tmid = setTimeout(DebugJS._scrollToTarget, d.speed);
   } else {
