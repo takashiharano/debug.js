@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710212300';
+  this.v = '201710221757';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -353,6 +353,7 @@ var DebugJS = DebugJS || function() {
   ];
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
+  this.CMDVAL = {};
   this.opt = null;
   this.errStatus = DebugJS.ERR_STATE_NONE;
   this.properties = {
@@ -6024,8 +6025,10 @@ DebugJS.prototype = {
 
   _execCmd: function(str, echo) {
     var ctx = DebugJS.ctx;
+    var setValName = null;
+    var cmdline = str;
     if (str.charAt(0) == '@') {
-      str = str.substr(1);
+      cmdline = str.substr(1);
     } else {
       if (echo) {
         var echoStr = str;
@@ -6035,50 +6038,67 @@ DebugJS.prototype = {
       }
     }
     var cmd, arg;
-    var cmds = DebugJS.splitCmdLineInTwo(str);
+    var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     cmd = cmds[0];
-    arg = cmds[1];
 
-    var found = false;
+    var valName = DebugJS.getCmdValName(cmd, true);
+    if (valName != null) {
+      var vStartPos = cmdline.indexOf(valName);
+      var restCmd = cmdline.substr(vStartPos + valName.length + 1);
+      if (restCmd.match(/^\s*=/)) {
+        cmdline = restCmd.substr(restCmd.indexOf('=') + 1);
+        setValName = valName;
+      }
+    }
+    cmdline = DebugJS.replaceCmdValName(cmdline);
+
+    var ret = ctx.__execCmd(ctx, cmdline);
+    if (setValName != null) {
+      ctx.CMDVAL[setValName] = ret;
+    }
+  },
+
+  __execCmd: function(ctx, cmdline) {
+    var cmds = DebugJS.splitCmdLineInTwo(cmdline);
+    var cmd = cmds[0];
+    var arg = cmds[1];
+
     for (var i = 0, len = ctx.CMD_TBL.length; i < len; i++) {
       if (cmd == ctx.CMD_TBL[i].cmd) {
         return ctx.CMD_TBL[i].fnc(arg, ctx.CMD_TBL[i]);
       }
     }
 
-    if ((found) || (ctx.opt.disableAllCommands)) {
+    if (ctx.opt.disableAllCommands) {
       return;
     }
 
     for (var i = 0, len = ctx.EXT_CMD_TBL.length; i < len; i++) {
       if (cmd == ctx.EXT_CMD_TBL[i].cmd) {
-        found = true;
-        ctx.EXT_CMD_TBL[i].fnc(arg, ctx.EXT_CMD_TBL[i]);
-        break;
+        return ctx.EXT_CMD_TBL[i].fnc(arg, ctx.EXT_CMD_TBL[i]);
       }
     }
 
-    if ((!found) && (str.match(/^\s*http/))) {
-      DebugJS.ctx.doHttpRequest('GET', str);
+    if (cmdline.match(/^\s*http/)) {
+      DebugJS.ctx.doHttpRequest('GET', cmdline);
       return;
     }
 
-    if (!found) {
-      found = ctx.cmdRadixConv(str);
+    var found = ctx.cmdRadixConv(cmdline);
+    if (found) {
+      return cmd;
     }
 
-    if (!found) {
-      found = ctx.cmdTimeCalc(str);
+    var ret = ctx.cmdTimeCalc(cmdline);
+    if (ret != null) {
+      return ret;
     }
 
-    if ((!found) && (str.match(/^\s*U\+/i))) {
-      ctx.cmdUnicode('-d ' + str);
-      return;
+    if (cmdline.match(/^\s*U\+/i)) {
+      return ctx.cmdUnicode('-d ' + cmdline);
     }
 
-    if (!found) {
-      return ctx.execCode(str);
-    }
+    return ctx.execCode(cmdline);
   },
 
   cmdBase64: function(arg, tbl) {
@@ -6267,6 +6287,7 @@ DebugJS.prototype = {
 
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
+    ctx.CMDVAL = {};
     ctx.finalizeFeatures(ctx);
     ctx.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
     if (ctx.opt.useSuspendLogButton) {
@@ -6681,6 +6702,7 @@ DebugJS.prototype = {
 
   cmdPoint: function(arg, tbl) {
     var ctx = DebugJS.ctx;
+    var ret;
     var args = DebugJS.splitArgs(arg);
     var point = DebugJS.point;
     var x = args[0];
@@ -6767,13 +6789,13 @@ DebugJS.prototype = {
       speed = args[1];
       point.event(x, speed);
     } else if (x == 'getprop') {
-      return point.getProp(args[1]);
+      ret = point.getProp(args[1]);
     } else if (x == 'setprop') {
       var v = DebugJS.getArgsFrom(arg, 3);
       point.setProp(args[1], v);
     } else if (x == 'verify') {
       var v = DebugJS.getArgsFrom(arg, 4);
-      point.verify(args[1], args[2], v);
+      ret = point.verify(args[1], args[2], v);
     } else if (x == 'mouse') {
       point(ctx.mousePos.x, ctx.mousePos.y);
     } else if (x == 'text') {
@@ -6800,6 +6822,7 @@ DebugJS.prototype = {
         DebugJS.point(x, y);
       }
     }
+    return ret;
   },
 
   cmdPos: function(arg, tbl) {
@@ -7107,9 +7130,10 @@ DebugJS.prototype = {
   },
 
   cmdTimeCalc: function(arg) {
+    var ret = null;
     var wkArg = arg.replace(/\s{2,}/g, ' ');
     if (!wkArg.match(/\d{1,}:{1}\d{2}/)) {
-      return false;
+      return ret;
     }
     wkArg = wkArg.replace(/\s/g, '');
     var op;
@@ -7120,23 +7144,23 @@ DebugJS.prototype = {
     }
     var vals = wkArg.split(op);
     if (vals.length < 2) {
-      return false;
+      return ret;
     }
     var timeL = DebugJS.str2ms(vals[0]);
     var timeR = DebugJS.str2ms(vals[1]);
     if ((timeL == null) || (timeR == null)) {
-      DebugJS.log.e('Invalid time format');
-      return true;
+      ret = 'Invalid time format';
+      DebugJS.log.e(ret);
+      return ret;
     }
     var byTheDay = (vals[2] == undefined);
-    var ret;
     if (op == '-') {
       ret = DebugJS.subTime(timeL, timeR, byTheDay);
     } else if (op == '+') {
       ret = DebugJS.addTime(timeL, timeR, byTheDay);
     }
     DebugJS.log.res(ret);
-    return true;
+    return ret;
   },
 
   cmdTest: function(arg, tbl) {
@@ -7279,11 +7303,11 @@ DebugJS.prototype = {
   },
 
   cmdUnicode: function(arg, tbl) {
-    DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
+    return DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
   },
 
   cmdUri: function(arg, tbl) {
-    DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeUri, DebugJS.encodeUri, DebugJS.decodeUri);
+    return DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeUri, DebugJS.encodeUri, DebugJS.decodeUri);
   },
 
   cmdV: function(arg, tbl) {
@@ -7396,7 +7420,7 @@ DebugJS.prototype = {
 
   execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc, defaultFunc) {
     var args = DebugJS.parseArgs(arg);
-    var res = '';
+    var ret = '';
     if (args.data == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -7404,20 +7428,21 @@ DebugJS.prototype = {
         switch (args.opt) {
           case '':
           case 'e':
-            res = encodeFunc(args.dataRaw);
+            ret = encodeFunc(args.dataRaw);
             break;
           case 'd':
-            res = decodeFunc(args.dataRaw);
+            ret = decodeFunc(args.dataRaw);
             break;
           default:
             DebugJS.printUsage(tbl.usage);
         }
-        res = DebugJS.encStringIfNeeded(res);
-        DebugJS.log.res(res);
+        ret = DebugJS.encStringIfNeeded(ret);
+        DebugJS.log.res(ret);
       } catch (e) {
         DebugJS.log.e(e);
       }
     }
+    return ret;
   },
 
   doHttpRequest: function(method, arg) {
@@ -7610,6 +7635,30 @@ DebugJS.RingBuffer.prototype = {
 
   getSize: function() {
     return this.len;
+  }
+};
+
+DebugJS.getCmdValName = function(v, head) {
+  var m = '\\$\\{(.+?)\\}';
+  if (head) {
+    m = '^' + m;
+  }
+  var re = new RegExp(m);
+  var r = re.exec(v);
+  if (r == null) {
+    return null;
+  }
+  return r[1];
+};
+
+DebugJS.replaceCmdValName = function(v) {
+  while (true) {
+    var name = DebugJS.getCmdValName(v);
+    if (name == null) {
+      return v;
+    }
+    var re = new RegExp('\\$\\{(.+?)\\}', 'g');
+    v = v.replace(re, DebugJS.ctx.CMDVAL[name] + '');
   }
 };
 
@@ -10141,16 +10190,24 @@ DebugJS.point.setProp = function(prop, val) {
   DebugJS.log(val);
 };
 DebugJS.point.verify = function(prop, method, val) {
+  var test = DebugJS.test;
+  var status = test.STATUS_ERR;
+  var detail;
   if ((method != 'eq') && (method != 'ne')) {
-    DebugJS.log.e('unknown verify method: ' + method);
-    return;
+    detail = 'unknown verify method: ' + method;
+    DebugJS.log.e(detail);
+    test.addResult(status, detail);
+    return status;
   }
   var el = DebugJS.point.getElementFromCurrentPos();
-  if (!el) return;
+  if (!el) {
+    detail = 'element not found';
+    DebugJS.log.e(detail);
+    test.addResult(status, detail);
+    return status;
+  }
   var reg = /\\n/g;
   val = val.replace(reg, '\n');
-  var test = DebugJS.test;
-  var status, detail;
   try {
     val = eval(val);
     var got = el[prop];
@@ -10182,6 +10239,7 @@ DebugJS.point.verify = function(prop, method, val) {
   test.addResult(status, detail);
   var str = test.getResultStr(status, detail);
   DebugJS.log(str);
+  return status;
 };
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
@@ -10769,9 +10827,9 @@ DebugJS.event.rclick.target = null;
 DebugJS.event.rclick.tmid = 0;
 
 DebugJS.test = {};
-DebugJS.test.STATUS_OK = 0;
-DebugJS.test.STATUS_NG = 1;
-DebugJS.test.STATUS_ERR = 2;
+DebugJS.test.STATUS_OK = 'OK';
+DebugJS.test.STATUS_NG = 'NG';
+DebugJS.test.STATUS_ERR = 'ERR';
 DebugJS.test.cnt = {ok: 0, ng: 0, err: 0};
 DebugJS.test.executingTestCase = '';
 DebugJS.test.res = {
