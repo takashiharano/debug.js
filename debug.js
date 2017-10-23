@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710232330';
+  this.v = '201710240118';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1070,14 +1070,12 @@ DebugJS.prototype = {
     ctx.win.style.left = 0;
     ctx.win.style.width = document.documentElement.clientWidth + 'px';
     ctx.win.style.height = document.documentElement.clientHeight + 'px';
-
     ctx.opt.togglableShowHide = false;
     ctx.opt.usePinButton = false;
     ctx.opt.useWinCtrlButton = false;
     ctx.opt.useScreenMeasure = false;
     ctx.opt.useHtmlSrc = false;
     ctx.opt.useElementInfo = false;
-
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
   },
@@ -6989,19 +6987,16 @@ DebugJS.prototype = {
       posX = args[1];
       posY = args[2];
     }
-
     var x = ctx.cmdScrollWinGetX(posX);
     if (x == undefined) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-
     var y = ctx.cmdScrollWinGetY(posY);
     if (y == undefined) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-
     if (op == 'move') {
       DebugJS.scrollTo(x, y);
     } else {
@@ -10608,7 +10603,6 @@ DebugJS.scrollTo = function(x, y) {
   d.dstY = y - DebugJS.ctx.scrollPosY;
   d.step = DebugJS.scrollToTarget.DFLT_STEP;
   d.speed = DebugJS.scrollToTarget.DFLT_SPEED;
-
   DebugJS.bat.lock();
   DebugJS._scrollToTarget();
   return true;
