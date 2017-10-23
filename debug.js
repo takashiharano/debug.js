@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710222050';
+  this.v = '201710232330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9667,6 +9667,7 @@ DebugJS.bat.run = function(s, e) {
   if (s == undefined) {
     sl = 0;
   } else if (isNaN(s)) {
+    if (s.charAt(0) == ':') s = s.substr(1);
     sl = bat.labels[s];
     if (sl == undefined) {
       DebugJS.log.e(s + ': no such label');
@@ -9682,6 +9683,7 @@ DebugJS.bat.run = function(s, e) {
   if (e == undefined) {
     el = bat.cmds.length - 1;
   } else if (isNaN(e)) {
+    if (e.charAt(0) == ':') e = e.substr(1);
     el = bat.labels[e];
     if (el == undefined) {
       DebugJS.log.e(e + ': no such label');
@@ -10919,19 +10921,18 @@ DebugJS.test.setCase = function(name) {
 };
 DebugJS.test.getResultStr = function(res, detail) {
   var test = DebugJS.test;
-  var str = '[';
+  var color;
   switch (res) {
     case test.STATUS_OK:
-      str += '<span style="color:#0f0">OK</span>';
+      color = '#0f0';
       break;
     case test.STATUS_NG:
-      str += '<span style="color:#f66">NG</span>';
+      color = '#f66';
       break;
     case test.STATUS_ERR:
-      str += '<span style="color:#ff0">ERR</span>';
+      color = '#ff0';
   }
-  str += '] ' + detail;
-  return str;
+  return '[<span style="color:' + color + '">' + res + '</span>] ' + detail;
 };
 DebugJS.test.count = function() {
   var cnt = DebugJS.test.res.cnt;
