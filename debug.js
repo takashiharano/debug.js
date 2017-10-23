@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710240118';
+  this.v = '201710240740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6054,6 +6054,7 @@ DebugJS.prototype = {
     if (setValName != null) {
       ctx.CMDVAL[setValName] = ret;
     }
+    return ret;
   },
 
   __execCmd: function(ctx, cmdline) {
@@ -6211,6 +6212,7 @@ DebugJS.prototype = {
     } else {
       DebugJS.log.res(d);
     }
+    return d;
   },
 
   cmdDumpLog: function(arg, tbl) {
