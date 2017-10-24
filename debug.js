@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710250050';
+  this.v = '201710250121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10029,6 +10029,26 @@ DebugJS.bat.load = function() {
     DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
     bat.exec();
   }
+};
+DebugJS.bat.isRunning = function() {
+  if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
+    return true;
+  } else {
+    return false;
+  }
+};
+DebugJS.bat.status = function() {
+  var ctx = DebugJS.ctx;
+  var st = 'STOPPED';
+  if (ctx.status & DebugJS.STATE_BAT_PAUSE) {
+    st = 'PAUSED';
+  } else if ((ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) ||
+             (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY)) {
+    st = 'PAUSED2';
+  } else if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
+    st = 'RUNNING';
+  }
+  return st;
 };
 
 DebugJS.led = function(v) {
