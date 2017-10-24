@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710240740';
+  this.v = '201710242254';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -740,6 +740,7 @@ DebugJS.prototype = {
 
     styles['#' + ctx.id + ' pre'] = {
       'margin': '0 !important',
+      'line-height': '1em !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important',
       'font-family': opt.fontFamily + ' !important',
@@ -943,6 +944,20 @@ DebugJS.prototype = {
       'background': 'transparent !important',
       'color': '#fff !important',
       'font-family': opt.fontFamily + ' !important'
+    };
+
+    styles['.' + ctx.id + '-hint'] = {
+      'position': 'fixed !important',
+      'display': 'inline-block !important',
+      'max-width': 'calc(100vw - 35px) !important',
+      'max-height': 'calc(100vh - 35px) !important',
+      'overflow': 'auto !important',
+      'padding': '4px 8px !important',
+      'box-sizing': 'content-box !important',
+      'z-index': '0x7ffffffe !important',
+      'box-shadow': '8px 8px 10px rgba(0,0,0,.3) !important',
+      'border-radius': '3px !important',
+      'background': 'rgba(0,0,0,0.65) !important',
     };
 
     ctx.applyStyles(ctx, styles);
@@ -2333,7 +2348,7 @@ DebugJS.prototype = {
         if (idx == undefined) idx = ctx.extActivePanel;
         if (idx < 0) idx = 0;
         if (idx >= ctx.extPanels.length) {
-          DebugJS.log.e('no such panel');
+          DebugJS.log.e('no such panel: ' + idx + ' (0-' + (ctx.extPanels.length - 1) + ')');
           return false;
         }
         if (!(ctx.status & DebugJS.STATE_EXT_PANEL)) {
@@ -9587,7 +9602,7 @@ DebugJS.stopwatch.log = function(msg) {
 
 DebugJS.addEventListener = function(type, listener) {
   if (DebugJS.ctx.evtListener[type] == undefined) {
-    DebugJS.log.e(type + ': no such event');
+    DebugJS.log.e('no such event: ' + type);
   } else {
     DebugJS.ctx.evtListener[type].push(listener);
   }
@@ -9667,7 +9682,7 @@ DebugJS.bat.run = function(s, e) {
     if (s.charAt(0) == ':') s = s.substr(1);
     sl = bat.labels[s];
     if (sl == undefined) {
-      DebugJS.log.e(s + ': no such label');
+      DebugJS.log.e('no such label: ' + s);
       return;
     }
   } else {
@@ -9683,7 +9698,7 @@ DebugJS.bat.run = function(s, e) {
     if (e.charAt(0) == ':') e = e.substr(1);
     el = bat.labels[e];
     if (el == undefined) {
-      DebugJS.log.e(e + ': no such label');
+      DebugJS.log.e('no such label: ' + e);
       return;
     }
   } else {
@@ -10491,32 +10506,22 @@ DebugJS.point.hint = function(msg) {
 };
 DebugJS.point.hint.area = null;
 DebugJS.point.hint.pre = null;
-DebugJS.point.hint.fontSize = 12;
-DebugJS.point.hint.shadow = 8;
 DebugJS.point.hint.st = {
   visible: false,
   hasMsg: false
 };
 DebugJS.point.hint.createArea = function() {
+  var ctx = DebugJS.ctx;
   var hint = DebugJS.point.hint;
   var el = document.createElement('div');
-  el.style.position = 'fixed';
-  el.style.display = 'inline-block';
-  el.style.maxWidth = '100vw';
-  el.style.maxHeight = '100vh';
-  el.style.overflow = 'auto';
-  el.style.padding = '4px 8px';
-  el.style.boxSizing = 'content-box';
-  el.style.zIndex = 0x7ffffffe;
-  el.style.boxShadow = hint.shadow + 'px ' + hint.shadow + 'px 10px rgba(0,0,0,.3)';
-  el.style.borderRadius = '3px';
-  el.style.background = 'rgba(0,0,0,0.65)';
-  el.style.color = '#fff';
-  el.style.fontSize = hint.fontSize + 'px';
+  el.className = ctx.id + '-hint';
   var pre = document.createElement('pre');
-  pre.style.margin = 0;
-  pre.style.padding = 0;
-  pre.style.fontFamily = 'Consolas, monospace';
+  ctx.setStyle(pre, 'margin', 0);
+  ctx.setStyle(pre, 'padding', 0);
+  ctx.setStyle(pre, 'line-height', '1.2');
+  ctx.setStyle(pre, 'color', ctx.opt.fontColor);
+  ctx.setStyle(pre, 'font-size', '12px');
+  ctx.setStyle(pre, 'font-family', ctx.opt.fontFamily);
   el.appendChild(pre);
   hint.pre = pre;
   document.body.appendChild(el);
@@ -10792,7 +10797,7 @@ DebugJS.selectOption = function(el, val) {
       return;
     }
   }
-  DebugJS.log.w(val + ': no such option');
+  DebugJS.log.w('no such option: ' + val);
 };
 
 DebugJS.event = {};
