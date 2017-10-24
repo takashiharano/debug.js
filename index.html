@@ -3703,7 +3703,7 @@ function callback(xhr) {
   <div style="float:left;margin-right:20px;">
     <form name="f1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;"></div>
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" style="width:220px;" onfocus="log('inputtext2: onfocus');" onblur="log('inputtext2: onblur');" oninput="log('inputtext2: oninput ' + this.value);"></div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" maxlength="10" style="width:220px;" onfocus="log('inputtext2: onfocus');" onblur="log('inputtext2: onblur');" oninput="log('inputtext2: oninput ' + this.value);"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" id="pass1" name="pass1" style="width:220px;"></div>
       <div style="margin-bottom:5px;">
         <select id="select1" name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">

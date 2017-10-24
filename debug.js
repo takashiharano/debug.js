@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710242254';
+  this.v = '201710250050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3603,6 +3603,7 @@ DebugJS.prototype = {
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
       'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['elBorder']) + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
+      'lineHeight: ' + computedStyle.lineHeight + '\n' +
       DebugJS.addPropSeparator(ctx) +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
       'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
@@ -3627,6 +3628,7 @@ DebugJS.prototype = {
       'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
+      'maxLength : ' + DebugJS.setStyleIfObjNotAvailable(el.maxLength) + '\n' +
       'disabled  : ' + DebugJS.setStyleIfObjNotAvailable(el.disabled, true) + '\n' +
       'contentEditable: ' + el.contentEditable + '\n' +
       DebugJS.addPropSeparator(ctx) +
