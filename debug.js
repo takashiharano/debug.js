@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710252342';
+  this.v = '201710260720';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10256,6 +10256,12 @@ DebugJS.point.verify = function(prop, method, val) {
   var test = DebugJS.test;
   var status = test.STATUS_ERR;
   var detail;
+  if (prop == undefined) {
+    detail = 'property name is undefined';
+    DebugJS.log.e(detail);
+    test.addResult(status, detail);
+    return status;
+  }
   if ((method != 'eq') && (method != 'ne')) {
     detail = 'unknown verify method: ' + method;
     DebugJS.log.e(detail);

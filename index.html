@@ -2661,10 +2661,10 @@ $ point getprop <i>propertyName</i>
 $ point setprop <i>propertyName</i> <i>value</i>
 -&gt; Set property value of the element at the current pointed position
 
-$ point verify <i>propertyName</i> <i>value</i>
+$ point verify eq|ne <i>propertyName</i> <i>value</i>
 -&gt; Verify a property value of the element at the current pointed position
   e.g.,)
-  $ point verify value 123
+  $ point verify eq value 123
   [<span style="color:#0c0">OK</span>] Exp="123" : Got="123"
   [<span style="color:#f00">NG</span>] Exp="123" : Got="456"
 
