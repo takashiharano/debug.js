@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710250121';
+  this.v = '201710252110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -954,7 +954,7 @@ DebugJS.prototype = {
       'overflow': 'auto !important',
       'padding': '4px 8px !important',
       'box-sizing': 'content-box !important',
-      'z-index': '0x7ffffffe !important',
+      'z-index': 0x7ffffffe + ' !important',
       'box-shadow': '8px 8px 10px rgba(0,0,0,.3) !important',
       'border-radius': '3px !important',
       'background': 'rgba(0,0,0,0.65) !important',
