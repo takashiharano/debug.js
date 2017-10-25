@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710252110';
+  this.v = '201710252342';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6728,9 +6728,9 @@ DebugJS.prototype = {
     if (x == 'init') {
       point.init();
     } else if (x.charAt(0) == '#') {
-      DebugJS.pointById(x.substr(1));
+      DebugJS.pointById(x);
     } else if (x.charAt(0) == '.') {
-      DebugJS.pointByClassName(x.substr(1), y);
+      DebugJS.pointBySelector(x, y);
     } else if (x == 'hide') {
       point.hide();
     } else if (x == 'show') {
@@ -6747,7 +6747,7 @@ DebugJS.prototype = {
         idx = args[2];
         step = args[3];
         speed = args[4];
-        point.moveToClassName(target.substr(1), idx, step, speed);
+        point.moveToSelector(target, idx, step, speed);
       } else if (target == 'center') {
         var p = DebugJS.getScreenCenter();
         step = args[2];
@@ -6764,7 +6764,7 @@ DebugJS.prototype = {
           idx = args[2];
           step = args[3];
           speed = args[4];
-          point.moveToTagName(target, idx, step, speed);
+          point.moveToSelector(target, idx, step, speed);
         } else {
           x = args[1];
           y = args[2];
@@ -6834,7 +6834,7 @@ DebugJS.prototype = {
         DebugJS.log('x=' + pos.x + ', y=' + pos.y);
         DebugJS.printUsage(tbl.usage);
       } else if (isNaN(x)) {
-        DebugJS.pointByTagName(x, y);
+        DebugJS.pointBySelector(x, y);
       } else {
         DebugJS.point(x, y);
       }
@@ -8219,15 +8219,10 @@ DebugJS.countElements = function(selector, showDetail) {
   var element = null;
   var elmList = [];
   var total = 0;
-  switch (selector.charAt(0)) {
-    case '#':
-      element = document.getElementById(selector.substr(1));
-      break;
-    case '.':
-      elmList = document.getElementsByClassName(selector.substr(1));
-      break;
-    default:
-      elmList = document.getElementsByTagName(selector);
+  if (selector.charAt(0) == '#') {
+    element = document.getElementById(selector.substr(1));
+  } else {
+    elmList = document.querySelectorAll(selector);
   }
   if (element) {
     DebugJS.getChildElements(element, elmList);
@@ -10401,33 +10396,23 @@ DebugJS.point._move = function() {
 };
 
 DebugJS.pointById = function(id) {
-  var ps = DebugJS.getElPosSize('#' + id);
+  var ps = DebugJS.getElPosSize(id);
   if (!ps) {
-    DebugJS.log.e('#' + id + ': element not found');
+    DebugJS.log.e(id + ': element not found');
     return;
   }
   DebugJS.scrollToTarget(ps);
-  ps = DebugJS.getElPosSize('#' + id);
+  ps = DebugJS.getElPosSize(id);
   DebugJS.pointCenter(ps);
 };
-DebugJS.pointByClassName = function(nm, idx) {
-  var ps = DebugJS.getElPosSize('.' + nm, idx);
+DebugJS.pointBySelector = function(selector, idx) {
+  var ps = DebugJS.getElPosSize(selector, idx);
   if (!ps) {
-    DebugJS.log.e('.' + nm + '[' + idx + ']: element not found');
+    DebugJS.log.e(selector + '[' + idx + ']: element not found');
     return;
   }
   DebugJS.scrollToTarget(ps);
-  ps = DebugJS.getElPosSize('.' + nm, idx);
-  DebugJS.pointCenter(ps);
-};
-DebugJS.pointByTagName = function(nm, idx) {
-  var ps = DebugJS.getElPosSize(nm, idx);
-  if (!ps) {
-    DebugJS.log.e(nm + '[' + idx + ']: element not found');
-    return;
-  }
-  DebugJS.scrollToTarget(ps);
-  ps = DebugJS.getElPosSize(nm, idx);
+  ps = DebugJS.getElPosSize(selector, idx);
   DebugJS.pointCenter(ps);
 };
 DebugJS.pointCenter = function(ps) {
@@ -10463,37 +10448,20 @@ DebugJS.point._moveToId = function(data) {
   DebugJS.point.moveToElement(ps, data.step, data.speed);
 };
 
-DebugJS.point.moveToClassName = function(nm, idx, step, speed) {
-  var data = {nm: nm, idx: idx, step: step, speed: speed};
-  var ps = DebugJS.getElPosSize('.' + nm, idx);
+DebugJS.point.moveToSelector = function(selector, idx, step, speed) {
+  var data = {selector: selector, idx: idx, step: step, speed: speed};
+  var ps = DebugJS.getElPosSize(selector, idx);
   if (!ps) {
-    DebugJS.log.e('.' + nm + ': element not found');
+    DebugJS.log.e(selector + '[' + idx + ']: element not found');
     return;
   }
-  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToClassName, data)) {
+  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToSelector, data)) {
     return;
   }
-  DebugJS.point._moveToClassName(data);
+  DebugJS.point._moveToSelector(data);
 };
-DebugJS.point._moveToClassName = function(data) {
-  var ps = DebugJS.getElPosSize('.' + data.nm, data.idx);
-  DebugJS.point.moveToElement(ps, data.step, data.speed);
-};
-
-DebugJS.point.moveToTagName = function(nm, idx, step, speed) {
-  var data = {nm: nm, idx: idx, step: step, speed: speed};
-  var ps = DebugJS.getElPosSize(data.nm, data.idx);
-  if (!ps) {
-    DebugJS.log.e(nm + '[' + idx + ']: element not found');
-    return;
-  }
-  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToTagName, data)) {
-    return;
-  }
-  DebugJS.point._moveToTagName(data);
-};
-DebugJS.point._moveToTagName = function(data) {
-  var ps = DebugJS.getElPosSize(data.nm, data.idx);
+DebugJS.point._moveToSelector = function(data) {
+  var ps = DebugJS.getElPosSize(data.selector, data.idx);
   DebugJS.point.moveToElement(ps, data.step, data.speed);
 };
 
@@ -10988,14 +10956,9 @@ DebugJS.getElement = function(selector, idx) {
   if (selector.charAt(0) == '#') {
     var id = selector.substr(1);
     el = document.getElementById(id);
-  } else if (selector.charAt(0) == '.') {
-    var nm = selector.substr(1);
-    var els = document.getElementsByClassName(nm);
-    el = els.item(idx);
   } else {
-    var tag = selector;
-    var els = document.getElementsByTagName(tag);
-    el = els.item(idx);
+    var nodeList = document.querySelectorAll(selector);
+    el = nodeList.item(idx);
   }
   return el;
 };
