@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710260720';
+  this.v = '201710261930';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -746,11 +746,11 @@ DebugJS.prototype = {
       'font-family': opt.fontFamily + ' !important',
       'white-space': 'pre-wrap !important',
       'word-break': 'break-all !important',
-      'overflow': 'visible !important',
+      'overflow': 'visible !important'
     };
 
     styles['.' + ctx.id + '-btn'] = {
-      'color': opt.btnColor,
+      'color': opt.btnColor
     };
 
     styles['.' + ctx.id + '-btn:hover'] = {
@@ -768,11 +768,11 @@ DebugJS.prototype = {
     };
 
     styles['.' + ctx.id + '-btn-red'] = {
-      'color': '#a88',
+      'color': '#a88'
     };
 
     styles['.' + ctx.id + '-btn-wh'] = {
-      'color': '#fff',
+      'color': '#fff'
     };
 
     styles['.' + ctx.id + '-sys-info'] = {
@@ -883,7 +883,7 @@ DebugJS.prototype = {
 
     styles['.' + ctx.id + '-txt-tbl td'] = {
       'font-size': fontSize + ' !important',
-      'line-height': '1em !important',
+      'line-height': '1em !important'
     };
 
     styles['.' + ctx.id + '-loading'] = {
@@ -957,7 +957,7 @@ DebugJS.prototype = {
       'z-index': 0x7ffffffe + ' !important',
       'box-shadow': '8px 8px 10px rgba(0,0,0,.3) !important',
       'border-radius': '3px !important',
-      'background': 'rgba(0,0,0,0.65) !important',
+      'background': 'rgba(0,0,0,0.65) !important'
     };
 
     ctx.applyStyles(ctx, styles);
@@ -7524,8 +7524,8 @@ DebugJS.prototype = {
       async: true,
       cache: false,
       user: user,
-      pass: pass,
-      //userAgent: 'Mozilla/5.0 (' + DebugJS.getBrowserType().name + ') DebugJS/1.0'
+      pass: pass
+      //,userAgent: 'Mozilla/5.0 (' + DebugJS.getBrowserType().name + ') DebugJS/1.0'
     };
     try {
       DebugJS.http(request, DebugJS.onHttpRequestDone);
