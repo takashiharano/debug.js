@@ -2623,10 +2623,13 @@ $ point hide
 $ point show
 -&gt; Show the pointer
 
-$ point click
+$ point click 500<span class="annotation">click speed in ms (opt:default=100)</span>
 -&gt; Click the current position
 
-$ point rclick 10<span class="annotation">click speed in ms (opt:default=100)</span>
+$ point cclick 500<span class="annotation">click speed in ms (opt:default=100)</span>
+-&gt; Center click the current position
+
+$ point rclick 500<span class="annotation">click speed in ms (opt:default=100)</span>
 -&gt; Right click the current position
 
 $ point contexstmenu
@@ -2663,7 +2666,13 @@ $ point cursor data:image/png;base64,&lt;base64-encoded-image-data&gt; 20<span c
 -&gt; Change the cursor image
 
 $ point cursor default
--&gt; Change the cursor image to default cursor
+-&gt; Change the cursor image to default cursor (normal pointer image)
+
+$ point cursor pointer
+-&gt; Change the cursor image to pointer cursor (an image of a hand)
+
+$ point cursor none
+-&gt; No cursor is renderd
 
 $ point getprop <i>propertyName</i>
 -&gt; Get property value of the element at the current pointed position
@@ -3777,7 +3786,19 @@ onmouseup="log.i('> mouseup');"
 onkeydown="log.i('> keydown');"
 onkeypress="log.i('> keypress');"
 onkeyup="log.i('> keyup');"
+onfocus="log.i('> focus');"
+onblur="log.i('> blur');"
 oncontextmenu="onContextMenu();">event test</div>
+<input id="eventinput" 
+onclick="log.i('> click');" 
+onmousedown="log.i('> mousedown');"  
+onmouseup="log.i('> mouseup');" 
+onkeydown="log.i('> keydown');"
+onkeypress="log.i('> keypress');"
+onkeyup="log.i('> keyup');"
+onfocus="log.i('> focus');"
+onblur="log.i('> blur');"
+oncontextmenu="log.i('> contextmenu');return false;">
 </div><!-- dummy__body -->
 </div><!-- content -->
 </div><!-- main -->

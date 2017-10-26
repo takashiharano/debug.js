@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710262206';
+  this.v = '201710262330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -325,7 +325,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key]'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -6802,9 +6802,9 @@ DebugJS.prototype = {
       }
       if (src == 'default') src = '';
       point.cursor(src, w, h);
-    } else if ((x == 'click') || (x == 'focus') || (x == 'blur') || (x == 'contextmenu')) {
+    } else if ((x == 'focus') || (x == 'blur') || (x == 'contextmenu')) {
       point.event(x);
-    } else if (x == 'rclick') {
+    } else if ((x == 'click') || (x == 'cclick') || (x == 'rclick')) {
       speed = args[1];
       point.event(x, speed);
     } else if (x == 'getprop') {
@@ -10191,10 +10191,13 @@ DebugJS.point.event = function(type, opt) {
   if (!el) return;
   switch (type) {
     case 'click':
-      point.click(el);
+      point.click(0, el, opt);
+      break;
+    case 'cclick':
+      point.click(1, el, opt);
       break;
     case 'rclick':
-      point.rclick(el, opt);
+      point.click(2, el, opt);
       break;
     case 'focus':
       point.focus(el);
@@ -10206,14 +10209,52 @@ DebugJS.point.event = function(type, opt) {
       point.contextmenu(el);
   }
 };
-DebugJS.point.click = function(el) {
-  el.focus();
-  el.click();
+DebugJS.point.click = function(button, target, speed) {
+  var click = DebugJS.point.click;
+  if (click.tmid[button] > 0) {
+    clearTimeout(click.tmid[button]);
+    click.tmid[button] = 0;
+    DebugJS.point.clickUp(button);
+  }
+  click.target[button] = target;
+  var e = DebugJS.event.create('mousedown');
+  e.button = button;
+  target.dispatchEvent(e);
+  target.focus();
+  if (speed == undefined) speed = 100;
+  click.tmid[button] = setTimeout('DebugJS.point.clickUp(' + button + ')', speed);
 };
-DebugJS.point.rclick = function(el, speed) {
-  el.focus();
-  DebugJS.event.rclick(el, speed);
+DebugJS.point.clickUp = function(n) {
+  var click = DebugJS.point.click;
+  var target = click.target[n];
+  click.tmid[n] = 0;
+  var e = DebugJS.event.create('mouseup');
+  e.button = n;
+  target.dispatchEvent(e);
+  switch (n) {
+    case 0:
+      if (!click.invalid) {
+        target.click();
+      }
+      click.invalid = false;
+      break;
+    case 1:
+      if (click.tmid[0] > 0) {
+        click.invalid = true;
+      }
+      break;
+    case 2:
+      DebugJS.point.contextmenu(target);
+      if (click.tmid[0] > 0) {
+        click.invalid = true;
+      }
+  }
+  click.target[n] = null;
 };
+DebugJS.point.click.target = [null, null, null];
+DebugJS.point.click.tmid = [0, 0, 0];
+DebugJS.point.click.invalid = false;
+
 DebugJS.point.focus = function(el) {
   el.focus();
 };
@@ -10221,7 +10262,6 @@ DebugJS.point.blur = function(el) {
   el.blur();
 };
 DebugJS.point.contextmenu = function(el) {
-  el.focus();
   var e = DebugJS.event.create('contextmenu');
   el.dispatchEvent(e);
 };
@@ -10860,36 +10900,6 @@ DebugJS.event.dispatch = function(el, idx) {
 };
 DebugJS.event.clear = function() {
   DebugJS.event.evt = null;
-};
-DebugJS.event.rclick = function(target, speed) {
-  var rclick = DebugJS.event.rclick;
-  if (rclick.tmid > 0) {
-    clearTimeout(rclick.tmid);
-    rclick.tmid = 0;
-    DebugJS.event.rclickUp();
-  }
-  var e = DebugJS.event.create('mousedown');
-  e.button = 2;
-  target.dispatchEvent(e);
-  rclick.target = target;
-  if (speed == undefined) speed = 100;
-  rclick.tmid = setTimeout(DebugJS.event.rclickUp, speed);
-};
-DebugJS.event.rclickUp = function() {
-  var rclick = DebugJS.event.rclick;
-  rclick.tmid = 0;
-  var e = DebugJS.event.create('mouseup');
-  e.button = 2;
-  rclick.target.dispatchEvent(e);
-  setTimeout(DebugJS.event.contextmenu, 0);
-};
-DebugJS.event.rclick.target = null;
-DebugJS.event.rclick.tmid = 0;
-DebugJS.event.contextmenu = function() {
-  var rclick = DebugJS.event.rclick;
-  var e = DebugJS.event.create('contextmenu');
-  rclick.target.dispatchEvent(e);
-  rclick.target = null;
 };
 
 DebugJS.test = {};
