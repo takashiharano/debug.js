@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710261930';
+  this.v = '201710262009';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10146,6 +10146,10 @@ DebugJS.point.cursor = function(src, w, h) {
     h = point.ptrH;
   } else if (src == 'pointer') {
     src = DebugJS.point.CURSOR_PTR;
+  } else if (src == 'none') {
+    src = DebugJS.point.CURSOR_DFLT;
+    w = 0;
+    h = 0;
   }
   if (w == undefined) {
     w = '';
