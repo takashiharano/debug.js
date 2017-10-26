@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710262009';
+  this.v = '201710262020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10750,7 +10750,7 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
 DebugJS._inputText = function() {
   var data = DebugJS.inputText.data;
   data.i++;
-  if ((data.end > 0) && (data.i >= data.end)) {
+  if ((data.speed == 0) || (data.end > 0) && (data.i >= data.end)) {
     data.i = data.txt.length;
   }
   data.tmid = 0;
