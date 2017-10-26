@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710262330';
+  this.v = '201710270118';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -334,7 +334,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
     {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin px(x)|left|center|right|current px(y)|top|middle|bottom|current'},
-    {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select #id "value"'},
+    {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selector value'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Sets the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
@@ -7070,16 +7070,18 @@ DebugJS.prototype = {
   },
 
   cmdSelect: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
+    var args = DebugJS.splitCmdLineInTwo(arg);
     var id = args[0];
-    var val;
-    var qstr = DebugJS.getQuotedStr(arg);
-    if (qstr == null) {
-      val = args[1];
-    } else {
-      val = qstr.str;
+    if (id == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
     }
-    DebugJS.selectOption(id, val);
+    try {
+      var val = eval(args[1]) + '';
+      DebugJS.selectOption(id, val);
+    } catch (e) {
+      DebugJS.log.e(e);
+    }
   },
 
   cmdSelf: function(arg, tbl) {
@@ -10833,12 +10835,13 @@ DebugJS.selectOption = function(el, val) {
     select = document.querySelector(el);
     if (!select) {
       DebugJS.log.e('element not found: ' + el);
+      return;
     }
   } else {
     select = el;
   }
-  if (!select) {
-    DebugJS.log.e('element is ' + select);
+  if ((!select) || (select.tagName != 'SELECT')) {
+    DebugJS.log.e('element is not select (' + select + ')');
     return;
   }
   for (var i = 0; i < select.options.length; i++) {
@@ -10847,7 +10850,7 @@ DebugJS.selectOption = function(el, val) {
       return;
     }
   }
-  DebugJS.log.w('no such option: ' + val);
+  DebugJS.log.w('no such option value: ' + val);
 };
 
 DebugJS.event = {};
