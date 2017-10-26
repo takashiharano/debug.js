@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710262122';
+  this.v = '201710262206';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10222,8 +10222,7 @@ DebugJS.point.blur = function(el) {
 };
 DebugJS.point.contextmenu = function(el) {
   el.focus();
-  var e = document.createEvent('Events');
-  e.initEvent('contextmenu', true, true);
+  var e = DebugJS.event.create('contextmenu');
   el.dispatchEvent(e);
 };
 DebugJS.point.getElementFromCurrentPos = function() {
@@ -10869,8 +10868,7 @@ DebugJS.event.rclick = function(target, speed) {
     rclick.tmid = 0;
     DebugJS.event.rclickUp();
   }
-  var e = document.createEvent('Events');
-  e.initEvent('mousedown', true, true);
+  var e = DebugJS.event.create('mousedown');
   e.button = 2;
   target.dispatchEvent(e);
   rclick.target = target;
@@ -10880,14 +10878,19 @@ DebugJS.event.rclick = function(target, speed) {
 DebugJS.event.rclickUp = function() {
   var rclick = DebugJS.event.rclick;
   rclick.tmid = 0;
-  var e = document.createEvent('Events');
-  e.initEvent('mouseup', true, true);
+  var e = DebugJS.event.create('mouseup');
   e.button = 2;
   rclick.target.dispatchEvent(e);
-  rclick.target = null;
+  setTimeout(DebugJS.event.contextmenu, 0);
 };
 DebugJS.event.rclick.target = null;
 DebugJS.event.rclick.tmid = 0;
+DebugJS.event.contextmenu = function() {
+  var rclick = DebugJS.event.rclick;
+  var e = DebugJS.event.create('contextmenu');
+  rclick.target.dispatchEvent(e);
+  rclick.target = null;
+};
 
 DebugJS.test = {};
 DebugJS.test.STATUS_OK = 'OK';

@@ -440,7 +440,7 @@ function onFileLoaded(file, content, isB64) {
 }
 
 function onContextMenu(e) {
-  log.i('contextmenu');
+  log.i('> contextmenu');
   setTimeout(testFunc, 1000);
 }
 
@@ -3774,7 +3774,6 @@ function callback(xhr) {
 onclick="log.i('> click');" 
 onmousedown="log.i('> mousedown');"  
 onmouseup="log.i('> mouseup');" 
-onclick="log.i('> click');"
 onkeydown="log.i('> keydown');"
 onkeypress="log.i('> keypress');"
 onkeyup="log.i('> keyup');"
