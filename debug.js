@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710262020';
+  this.v = '201710262122';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -378,6 +378,8 @@ var DebugJS = DebugJS || function() {
   this.extPanels = [];
   this.extActivePanel = -1;
   this.evtListener = {
+    'batstart': [],
+    'batstop': [],
     'fileloaded': [],
     'watchdog': []
   };
@@ -6789,7 +6791,7 @@ DebugJS.prototype = {
       }
     } else if (x == 'center') {
       var p = DebugJS.getScreenCenter();
-      DebugJS.point(p.x, p.y);
+      point(p.x, p.y);
     } else if (x == 'cursor') {
       var src = args[1];
       var w = args[2];
@@ -6799,7 +6801,7 @@ DebugJS.prototype = {
         return;
       }
       if (src == 'default') src = '';
-      DebugJS.point.cursor(src, w, h);
+      point.cursor(src, w, h);
     } else if ((x == 'click') || (x == 'focus') || (x == 'blur') || (x == 'contextmenu')) {
       point.event(x);
     } else if (x == 'rclick') {
@@ -6836,7 +6838,7 @@ DebugJS.prototype = {
       } else if (isNaN(x)) {
         DebugJS.pointBySelector(x, y);
       } else {
-        DebugJS.point(x, y);
+        point(x, y);
       }
     }
     return ret;
@@ -9597,7 +9599,7 @@ DebugJS.stopwatch.log = function(msg) {
   DebugJS.log(m);
 };
 
-DebugJS.addEventListener = function(type, listener) {
+DebugJS.addEvtListener = function(type, listener) {
   if (DebugJS.ctx.evtListener[type] == undefined) {
     DebugJS.log.e('no such event: ' + type);
   } else {
@@ -9667,6 +9669,7 @@ DebugJS.bat.parseLabels = function() {
 };
 
 DebugJS.bat.run = function(s, e) {
+  var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
   if (bat.cmds.length == 0) {
     DebugJS.log('no batch loaded');
@@ -9706,11 +9709,11 @@ DebugJS.bat.run = function(s, e) {
   } else if (el >= bat.cmds.length) {
     el = bat.cmds.length - 1;
   }
-  DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
-  DebugJS.ctx.updateBatRunBtn();
+  ctx.status |= DebugJS.STATE_BAT_RUNNING;
+  ctx.updateBatRunBtn();
   var ctrl = bat.ctrl;
   ctrl.pc = 0;
-  DebugJS.ctx.updateCurPc();
+  ctx.updateCurPc();
   ctrl.startPc = sl;
   ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
   if (ctrl.tmid != 0) {
@@ -9722,6 +9725,10 @@ DebugJS.bat.run = function(s, e) {
   ctrl.js = false;
   ctrl.lock = 0;
   bat.js = '';
+  for (var i = 0; i < ctx.evtListener.batstart.length; i++) {
+    var cb = ctx.evtListener.batstart[i];
+    if (cb) cb();
+  }
   bat.exec();
 };
 
@@ -9954,28 +9961,34 @@ DebugJS.bat.resume = function(key) {
   }
 };
 DebugJS.bat._resume = function(trigger) {
+  var ctx = DebugJS.ctx;
   if (trigger) {
     if (trigger == 'cmd') {
-      DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD;
+      ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD;
     } else if (trigger == 'cmd-key') {
-      DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+      ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
       DebugJS.bat.ctrl.pauseKey = null;
-      DebugJS.ctx.updateBatResumeBtn();
+      ctx.updateBatResumeBtn();
     }
     DebugJS.log('Resumed.');
   } else {
-    DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
-    DebugJS.ctx.updateBatRunBtn();
+    ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
+    ctx.updateBatRunBtn();
   }
   DebugJS.bat.exec();
 };
 
 DebugJS.bat.stop = function() {
-  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
-  DebugJS.ctx.updateBatResumeBtn();
-  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
-  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
-  DebugJS.ctx.updateBatRunBtn();
+  var ctx = DebugJS.ctx;
+  ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+  ctx.updateBatResumeBtn();
+  ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+  ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
+  ctx.updateBatRunBtn();
+  for (var i = 0; i < ctx.evtListener.batstop.length; i++) {
+    var cb = ctx.evtListener.batstop[i];
+    if (cb) cb();
+  }
 };
 
 DebugJS.bat.clear = function() {
@@ -10141,13 +10154,11 @@ DebugJS.point.cursor = function(src, w, h) {
     point.createPtr();
   }
   if (!src) {
-    src = DebugJS.point.CURSOR_DFLT;
-    w = point.ptrW;
-    h = point.ptrH;
+    src = point.CURSOR_DFLT;
   } else if (src == 'pointer') {
-    src = DebugJS.point.CURSOR_PTR;
+    src = point.CURSOR_PTR;
   } else if (src == 'none') {
-    src = DebugJS.point.CURSOR_DFLT;
+    src = point.CURSOR_DFLT;
     w = 0;
     h = 0;
   }

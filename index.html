@@ -90,8 +90,8 @@ dbg.init({visible:true});
 //dbg.init({mode:'noui'});
 //dbg.init({target:'debug'});
 
-//dbg.addEventListener('watchdog', onWatchdogTimeout);
-//dbg.addEventListener('fileloaded', onFileLoaded);
+//dbg.addEvtListener('watchdog', onWatchdogTimeout);
+//dbg.addEvntListener('fileloaded', onFileLoaded);
 
 var options1 = {
   visible: true,
@@ -1355,8 +1355,8 @@ time.check('timer1')
 
   <tr>
     <td class="name">
-      DebugJS.addEventListener<br>
-      <span class="alias">( dbg.addEventListener )</span>
+      DebugJS.addEvtListener<br>
+      <span class="alias">( dbg.addEvtListener )</span>
     </td>
     <td>
       arg1: type<br>
@@ -1364,6 +1364,16 @@ time.check('timer1')
     </td>
     <td>
 Adds the specified EventListener function to the list of event listeners for the specified event type.<br>
+<br>
+      type: <b>batstart</b><br>
+      Callback function which is called before starting batch execution.<br>
+<pre class="eg">Function format:
+  function onBatStart() {}</pre>
+<br>
+      type: <b>batstop</b><br>
+      Callback function which is called after stopped batch execution.<br>
+<pre class="eg">Function format:
+  function onBatStop() {}</pre>
 <br>
       type: <b>fileloaded</b><br>
 Callback function which is called when file load has been completed<br>
