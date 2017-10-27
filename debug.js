@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710270118';
+  this.v = '201710272154';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6672,7 +6672,7 @@ DebugJS.prototype = {
     var args = DebugJS.splitArgs(arg);
     var v = args[0];
     if ((v <= 1) && (v >= 0.1)) {
-      DebugJS.ctx.win.style.opacity = v;
+      DebugJS.opacity(v);
     } else {
       DebugJS.printUsage(tbl.usage);
     }
@@ -9445,6 +9445,15 @@ DebugJS.hide = function() {
   DebugJS.ctx.closeDbgWin();
 };
 
+DebugJS.opacity = function(v) {
+  if (v > 1) {
+    v = 1;
+  } else if (v < 0.1) {
+    v = 0.1;
+  }
+  DebugJS.ctx.win.style.opacity = v;
+};
+
 DebugJS.log = function(m) {
   if (m instanceof Object) {
     DebugJS.log.p(m, 0);
@@ -10318,12 +10327,6 @@ DebugJS.point.verify = function(prop, method, val) {
     test.addResult(status, detail);
     return status;
   }
-  if ((method != 'eq') && (method != 'ne')) {
-    detail = 'unknown verify method: ' + method;
-    DebugJS.log.e(detail);
-    test.addResult(status, detail);
-    return status;
-  }
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) {
     detail = 'element not found';
@@ -10334,15 +10337,55 @@ DebugJS.point.verify = function(prop, method, val) {
   var reg = /\\n/g;
   val = val.replace(reg, '\n');
   try {
-    val = eval(val);
+    if (method != 'regexp') {
+      val = eval(val);
+    }
     var got = el[prop];
-    if (((method == 'eq') && (got == val)) ||
-        ((method == 'ne') && (got != val))) {
-      status = test.STATUS_OK;
+    if (method == '==') {
+      if (got == val) {
+        status = test.STATUS_OK;
+      } else {
+        status = test.STATUS_NG;
+      }
+    } else if (method == '!=') {
+      if (got != val) {
+        status = test.STATUS_OK;
+      } else {
+        status = test.STATUS_NG;
+      }
+    } else if ((method == 'regexp') ||
+        (method == '<') || (method == '<=') ||
+        (method == '>') || (method == '>=')) {
+      var exp;
+      if (method == 'regexp') {
+        val = val.replace(/\\/g, '\\\\');
+        exp = '(new RegExp(\'' + val + '\')).test(\'' + got + '\')';
+      } else {
+        exp = got + method + val;
+      }
+      try {
+        r = eval(exp);
+      } catch (e) {
+        detail = 'failed to evaluate: ' + e;
+        DebugJS.log.e(detail);
+        test.addResult(status, detail);
+        return status;
+      }
+      if (r) {
+        status = test.STATUS_OK;
+      } else {
+        status = test.STATUS_NG;
+      }
     } else {
-      status = test.STATUS_NG;
+      detail = 'unknown verify method: ' + method;
+      DebugJS.log.e(detail);
+      test.addResult(status, detail);
+      return status;
     }
     var echoVal = val;
+    if (method == 'regexp') {
+      echoVal = echoVal.replace(/\\\\/g, '\\');
+    }
     if (typeof echoVal === 'string') {
       echoVal = DebugJS.styleValue(echoVal);
       echoVal = echoVal.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
@@ -10366,6 +10409,7 @@ DebugJS.point.verify = function(prop, method, val) {
   DebugJS.log(str);
   return status;
 };
+
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
   var point = DebugJS.point;

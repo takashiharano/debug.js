@@ -2121,6 +2121,22 @@ sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="
 
   <tr>
     <td class="name">
+      DebugJS.opacity<br>
+      <span class="alias">( dbg.opacity )</span>
+    </td>
+    <td>
+      0.1-1
+    </td>
+    <td>
+      Set the level of transparency of the debug window.<br>
+<pre>
+dbg.opacity(<input type="text" id="opacity-text" value="0.5" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.opacity(document.getElementById('opacity-text').value);">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.init<br>
       <span class="alias">( dbg.init )</span>
     </td>
@@ -2680,12 +2696,20 @@ $ point getprop <i>propertyName</i>
 $ point setprop <i>propertyName</i> <i>value</i>
 -&gt; Set property value of the element at the current pointed position
 
-$ point verify eq|ne <i>propertyName</i> <i>value</i>
+$ point verify <i>propertyName</i> <i>operand</i> <i>value</i>
 -&gt; Verify a property value of the element at the current pointed position
   e.g.,)
-  $ point verify eq value 123
+  $ point verify value == "123"
   [<span style="color:#0c0">OK</span>] Exp="123" : Got="123"
   [<span style="color:#f00">NG</span>] Exp="123" : Got="456"
+
+  $ point verify value == "123"
+  $ point verify value != "123"
+  $ point verify value &lt; "123"
+  $ point verify value &lt;= "123"
+  $ point verify value &gt; "123"
+  $ point verify value &gt;= "123"
+  $ point verify value regexp \d.*\sabc
 
 $ point init
 -&gt; Hide pointer, clear message, point x=0, y=0.
