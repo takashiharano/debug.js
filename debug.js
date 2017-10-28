@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710272355';
+  this.v = '201710281801';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10735,8 +10735,7 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
   var bodyH = document.body.clientHeight;
   var absScreenBottomT = bodyH - clientH;
   var absScreenBottomB = bodyH;
-  var scrollBottom = absScreenBottomT;
-  var relTargetPosYinScreen = (ps.y + window.pageYOffset) - scrollBottom;
+  var relTargetPosYinScreen = (ps.y + window.pageYOffset) - absScreenBottomT;
   var absTargetPosYinDoc = ps.y + window.pageYOffset;
   if (ps.y < 0) {
     if ((ps.y + window.pageYOffset) < (clientH / 2)) {
@@ -10746,7 +10745,7 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
     }
   } else if ((ps.y + ps.h) > clientH) {
     if ((absTargetPosYinDoc >= absScreenBottomT) && (absTargetPosYinDoc <= absScreenBottomB)) {
-      d.dstY = scrollBottom;
+      d.dstY = absScreenBottomB;
     } else {
       d.dstY = ps.y - (clientH / 2);
     }
@@ -10755,7 +10754,6 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
   if ((d.dstX != 0) || (d.dstY != 0)) {
     if (step == undefined) {
       window.scrollBy(d.dstX, d.dstY);
-      return false;
     } else {
       if (step > 0) {
         d.step = step | 0;
@@ -10767,57 +10765,63 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
       return true;
     }
   }
+  DebugJS.scrollToTarget.initData();
   return false;
 };
 DebugJS.scrollToTarget.DFLT_STEP = 300;
 DebugJS.scrollToTarget.DFLT_SPEED = 10;
-DebugJS.scrollToTarget.data = {
-  dstX: 0,
-  dstY: 0,
-  step: DebugJS.scrollToTarget.DFLT_STEP,
-  speed: DebugJS.scrollToTarget.DFLT_SPEED,
-  tmid: 0,
-  cb: null,
-  arg: null
+DebugJS.scrollToTarget.data = {};
+DebugJS.scrollToTarget.initData = function() {
+  var d = DebugJS.scrollToTarget.data;
+  d.dstX = 0;
+  d.dstY = 0;
+  d.step = DebugJS.scrollToTarget.DFLT_STEP;
+  d.speed = DebugJS.scrollToTarget.DFLT_SPEED;
+  d.tmid = 0;
+  d.cb = null;
+  d.arg = null;
 };
+DebugJS.scrollToTarget.initData();
 DebugJS._scrollToTarget = function() {
   var d = DebugJS.scrollToTarget.data;
   d.tmid = 0;
-  var stepX = d.step;
-  if (d.dstX < 0) {
-    if ((d.dstX * (-1)) < stepX) {
-      stepX = d.dstX * (-1);
-    }
-    d.dstX += stepX;
-    stepX *= (-1);
-  } else {
-    if (d.dstX < stepX) {
-      stepX = d.dstX;
-    }
-    d.dstX -= stepX;
-  }
-  var stepY = d.step;
-  if (d.dstY < 0) {
-    if ((d.dstY * (-1)) < stepY) {
-      stepY = d.dstY * (-1);
-    }
-    d.dstY += stepY;
-    stepY *= (-1);
-  } else {
-    if (d.dstY < stepY) {
-      stepY = d.dstY;
-    }
-    d.dstY -= stepY;
-  }
-  window.scrollBy(stepX, stepY);
+
+  var dX = DebugJS.calcDestPosAndStep(d.dstX, d.step);
+  d.dstX = dX.dest;
+
+  var dY = DebugJS.calcDestPosAndStep(d.dstY, d.step);
+  d.dstY = dY.dest;
+
+  window.scrollBy(dX.step, dY.step);
+
   if ((d.dstX != 0) || (d.dstY != 0)) {
     d.tmid = setTimeout(DebugJS._scrollToTarget, d.speed);
   } else {
     if (d.cb) {
       d.cb(d.arg);
     }
+    DebugJS.scrollToTarget.initData();
     DebugJS.bat.unlock();
   }
+};
+DebugJS.calcDestPosAndStep = function(dest, step) {
+  if (dest < 0) {
+    if ((dest * (-1)) < step) {
+      step = dest * (-1);
+    }
+    dest += step;
+    step *= (-1);
+  } else {
+    if (dest < step) {
+      step = dest;
+    }
+    dest -= step;
+  }
+  var d = {
+    dest: dest,
+    step: step
+  };
+  return d;
 };
 
 DebugJS.inputText = function(el, txt, speed, start, end) {
