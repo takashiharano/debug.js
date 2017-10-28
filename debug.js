@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710282230';
+  this.v = '201710282222';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10793,7 +10793,7 @@ DebugJS.scrollToTarget.initData = function() {
   var d = DebugJS.scrollToTarget.data;
   d.dstX = 0;
   d.dstY = 0;
-  d.step = 300;
+  d.step = 100;
   d.speed = 10;
   d.tmid = 0;
   d.cb = null;
