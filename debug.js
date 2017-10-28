@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710281937';
+  this.v = '201710282222';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1170,8 +1170,7 @@ DebugJS.prototype = {
     ctx.logPanel.style.height = 'calc(100%' + ctx.logPanelHeightAdjust + ')';
     ctx.logPanel.style.padding = '0';
     ctx.logPanel.style.overflow = 'auto';
-    ctx.logPanel.addEventListener('dragover', ctx.handleDragOver, false);
-    ctx.logPanel.addEventListener('drop', ctx.handleFileDropOnLogPanel, false);
+    ctx.enableDnDFileLoad(ctx.logPanel, ctx.handleFileDropOnLogPanel);
     ctx.mainPanel.appendChild(ctx.logPanel);
 
     if (ctx.isAllFeaturesDisabled(ctx)) {
@@ -1869,19 +1868,6 @@ DebugJS.prototype = {
     }
   },
 
-  handleFileDropOnLogPanel: function(e) {
-    var ctx = DebugJS.ctx;
-    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
-    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onFileLoadedFromLogPanel);
-  },
-
-  onFileLoadedFromLogPanel: function(ctx, content) {
-    var batHead = '#!BAT!';
-    if (content.substr(0, batHead.length) == batHead) {
-      ctx.onBatLoaded(ctx, content);
-    }
-  },
-
   onClr: function() {
     DebugJS.ctx.clearLogs();
     DebugJS.ctx.focusCmdLine();
@@ -2287,6 +2273,7 @@ DebugJS.prototype = {
   },
 
   openFeature: function(ctx, f, subfnc, opt) {
+    ctx.closeFeature(ctx, f);
     switch (f) {
       case DebugJS.STATE_MEASURE:
         ctx.openScreenMeasure(ctx, opt);
@@ -5034,8 +5021,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreviewWrapper, 'font-family', ctx.opt.fontFamily + 'px');
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
-      ctx.filePreviewWrapper.addEventListener('dragover', ctx.handleDragOver, false);
-      ctx.filePreviewWrapper.addEventListener('drop', ctx.handleFileDropOnFileViewer, false);
+      ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.handleFileDropOnFileViewer);
       ctx.fileLoaderPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
@@ -5133,6 +5119,49 @@ DebugJS.prototype = {
       ctx.fileLoaderSysCb = cb;
       ctx.loadFile(format);
     }
+  },
+
+  enableDnDFileLoad: function(target, cb) {
+    target.addEventListener('dragover', DebugJS.ctx.handleDragOver, false);
+    target.addEventListener('drop', cb, false);
+  },
+
+  handleFileDropOnLogPanel: function(e) {
+    var ctx = DebugJS.ctx;
+    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onFileLoadedFromLogPanel);
+  },
+
+  onFileLoadedFromLogPanel: function(ctx, file, content) {
+    var BAT_HEAD = '#!BAT!';
+    if (content.substr(0, BAT_HEAD.length) == BAT_HEAD) {
+      ctx.onBatLoaded(ctx, file, content);
+    } else if (file.name.match(/\.js$/)) {
+      ctx.onJsLoaded(ctx, file, content);
+    }
+  },
+
+  handleFileDropOnBat: function(e) {
+    var ctx = DebugJS.ctx;
+    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onBatLoaded);
+  },
+
+  onBatLoaded: function(ctx, file, content) {
+    DebugJS.bat.setBat(content);
+    ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
+  },
+
+  handleFileDropOnJS: function(e) {
+    var ctx = DebugJS.ctx;
+    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onJsLoaded);
+  },
+
+  onJsLoaded: function(ctx, file, content) {
+    ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
+    ctx.openFeature(ctx, DebugJS.STATE_SCRIPT);
+    ctx.scriptEditor.value = ctx.scriptBuf = content;
   },
 
   loadFileBin: function() {
@@ -5267,7 +5296,7 @@ DebugJS.prototype = {
         var escDecoded = DebugJS.escTags(decoded);
         preview = '<span style="color:#0f0">' + escDecoded + '</span>\n';
         if (ctx.fileLoaderSysCb) {
-          ctx.fileLoaderSysCb(ctx, decoded);
+          ctx.fileLoaderSysCb(ctx, file, decoded);
         }
       }
     }
@@ -5538,8 +5567,7 @@ DebugJS.prototype = {
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 2) + 'px)');
-      ctx.batTextEditor.addEventListener('dragover', ctx.handleDragOver, false);
-      ctx.batTextEditor.addEventListener('drop', ctx.handleFileDropOnBat, false);
+      ctx.enableDnDFileLoad(ctx.batTextEditor, ctx.handleFileDropOnBat);
       basePanel.appendChild(ctx.batTextEditor);
       ctx.batBasePanel = basePanel;
       ctx.setBatTxt(ctx);
@@ -5550,17 +5578,6 @@ DebugJS.prototype = {
       ctx.toolsBodyPanel.appendChild(ctx.batBasePanel);
     }
     ctx.batTextEditor.focus();
-  },
-
-  handleFileDropOnBat: function(e) {
-    var ctx = DebugJS.ctx;
-    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
-    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onBatLoaded);
-  },
-
-  onBatLoaded: function(ctx, content) {
-    DebugJS.bat.setBat(content);
-    ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
 
   startPauseBat: function() {
@@ -5691,6 +5708,7 @@ DebugJS.prototype = {
     ctx.scriptEditor.className = ctx.id + '-editor';
     ctx.scriptEditor.onblur = ctx.saveScriptBuf;
     ctx.scriptEditor.value = ctx.scriptBuf;
+    ctx.enableDnDFileLoad(ctx.scriptEditor, ctx.handleFileDropOnJS);
     ctx.scriptPanel.appendChild(ctx.scriptEditor);
   },
 
