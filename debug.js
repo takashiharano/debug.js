@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710281905';
+  this.v = '201710281916';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10785,6 +10785,13 @@ DebugJS.scrollToTarget.initData();
 DebugJS._scrollToTarget = function() {
   var d = DebugJS.scrollToTarget.data;
   d.tmid = 0;
+
+  if ((d.step == 0) || (d.speed == 0)) {
+    window.scroll(d.dstX, d.dstY);
+    DebugJS.scrollToTarget.initData();
+    DebugJS.bat.unlock();
+    return;
+  }
 
   var dX = DebugJS.calcDestPosAndStep(d.dstX, d.step);
   d.dstX = dX.dest;
