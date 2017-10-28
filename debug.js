@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710281801';
+  this.v = '201710281905';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -366,6 +366,8 @@ var DebugJS = DebugJS || function() {
     pointstep: {value: DebugJS.point.move.step, restriction: /^[0-9]+$/},
     pointspeed: {value: DebugJS.point.move.speed, restriction: /^[0-9]+$/},
     inputtextspeed: {value: 30, restriction: /^[0-9]+$/},
+    scrollstep: {value: DebugJS.scrollToTarget.data.step, restriction: /^[0-9]+$/},
+    scrollspeed: {value: DebugJS.scrollToTarget.data.speed, restriction: /^[0-9]+$/},
     wait: {value: 500, restriction: /^[0-9]+$/},
     timer: {value: '00:03:00.000', restriction: /.*/},
     wdt: {value: 500, restriction: /^[0-9]+$/}
@@ -10547,7 +10549,7 @@ DebugJS.point.moveToId = function(id, step, speed) {
     DebugJS.log.e('#' + id + ': element not found');
     return;
   }
-  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToId, data)) {
+  if (DebugJS.scrollToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToId, data)) {
     return;
   }
   DebugJS.point._moveToId(data);
@@ -10564,7 +10566,7 @@ DebugJS.point.moveToSelector = function(selector, idx, step, speed) {
     DebugJS.log.e(selector + '[' + idx + ']: element not found');
     return;
   }
-  if (DebugJS.scrollToTarget(ps, DebugJS.scrollToTarget.DFLT_STEP, DebugJS.scrollToTarget.DFLT_SPEED, DebugJS.point._moveToSelector, data)) {
+  if (DebugJS.scrollToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToSelector, data)) {
     return;
   }
   DebugJS.point._moveToSelector(data);
@@ -10707,8 +10709,8 @@ DebugJS.scrollTo = function(x, y) {
   }
   d.dstX = x - DebugJS.ctx.scrollPosX;
   d.dstY = y - DebugJS.ctx.scrollPosY;
-  d.step = DebugJS.scrollToTarget.DFLT_STEP;
-  d.speed = DebugJS.scrollToTarget.DFLT_SPEED;
+  d.step = DebugJS.ctx.properties.scrollstep.value;
+  d.speed = DebugJS.ctx.properties.scrollspeed.value;
   DebugJS.bat.lock();
   DebugJS._scrollToTarget();
   return true;
@@ -10758,7 +10760,7 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
       if (step > 0) {
         d.step = step | 0;
       } else {
-        d.step = DebugJS.scrollToTarget.DFLT_STEP;
+        d.step = DebugJS.ctx.properties.scrollstep.value;
       }
       DebugJS.bat.lock();
       DebugJS._scrollToTarget();
@@ -10768,15 +10770,13 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
   DebugJS.scrollToTarget.initData();
   return false;
 };
-DebugJS.scrollToTarget.DFLT_STEP = 300;
-DebugJS.scrollToTarget.DFLT_SPEED = 10;
 DebugJS.scrollToTarget.data = {};
 DebugJS.scrollToTarget.initData = function() {
   var d = DebugJS.scrollToTarget.data;
   d.dstX = 0;
   d.dstY = 0;
-  d.step = DebugJS.scrollToTarget.DFLT_STEP;
-  d.speed = DebugJS.scrollToTarget.DFLT_SPEED;
+  d.step = 100;
+  d.speed = 10;
   d.tmid = 0;
   d.cb = null;
   d.arg = null;
@@ -11298,11 +11298,14 @@ DebugJS.balse = function() {
   log.suspend = DebugJS.z0;
   log.resume = DebugJS.z0;
   log.root = DebugJS.z1;
+  DebugJS.addEvtListener = DebugJS.z2;
   DebugJS.cmd = DebugJS.z2;
   DebugJS.bat = DebugJS.z1;
   DebugJS.bat.list = DebugJS.z0;
   DebugJS.bat.stop = DebugJS.z0;
-  DebugJS.bat.clear = DebugJS.z0;
+  DebugJS.bat.status = DebugJS.z0;
+  DebugJS.bat.isRunning = DebugJS.z0;
+  DebugJS.bat.isRunning = DebugJS.z0;
   DebugJS.countElements = DebugJS.z2;
   DebugJS.getHtml = DebugJS.z1;
   DebugJS.init = DebugJS.z1;
@@ -11315,6 +11318,7 @@ DebugJS.balse = function() {
   DebugJS.led.off = DebugJS.z1;
   DebugJS.msg = DebugJS.z1;
   DebugJS.msg.clear = DebugJS.z0;
+  DebugJS.opacity = DebugJS.z1;
   DebugJS.stack = DebugJS.z0;
   DebugJS.stopwatch = DebugJS.z0;
   DebugJS.stopwatch.start = DebugJS.z0;
