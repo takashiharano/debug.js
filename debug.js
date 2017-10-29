@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710291238';
+  this.v = '201710291601';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -314,7 +314,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'hide', fnc: this.cmdHide, desc: 'Hide debug window'},
     {cmd: 'history', fnc: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
-    {cmd: 'input', fnc: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" speed maxStep'},
+    {cmd: 'input', fnc: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" speed start end'},
     {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
@@ -6097,6 +6097,7 @@ DebugJS.prototype = {
   },
 
   __execCmd: function(ctx, cmdline) {
+    cmdline = DebugJS.replaceCtrlChr(cmdline);
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
     var arg = cmds[1];
@@ -9259,6 +9260,26 @@ DebugJS.escSpclChr = function(str) {
   return txt;
 };
 
+DebugJS.replaceCtrlChr = function(s, d) {
+  if (d) {
+    s = s.replace(/\\t/g, '\t');
+    s = s.replace(/\\r/g, '\r');
+    s = s.replace(/\\n/g, '\n');
+  } else {
+    s = s.replace(/\t/g, '\\t');
+    s = s.replace(/\r/g, '\\r');
+    s = s.replace(/\n/g, '\\n');
+  }
+  return s;
+};
+
+DebugJS.hlCtrlChr = function(s) {
+  s = s.replace(/\t/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\t</span>');
+  s = s.replace(/\r/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\r</span>');
+  s = s.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+  return s;
+};
+
 DebugJS.html2text = function(html) {
   var p = document.createElement('pre');
   p.innerHTML = html;
@@ -10356,8 +10377,7 @@ DebugJS.point.verify = function(prop, method, val) {
     test.addResult(status, detail);
     return status;
   }
-  var reg = /\\n/g;
-  val = val.replace(reg, '\n');
+  val = DebugJS.replaceCtrlChr(val, true);
   try {
     if (method != 'regexp') {
       val = eval(val);
@@ -10410,18 +10430,24 @@ DebugJS.point.verify = function(prop, method, val) {
     }
     if (typeof echoVal === 'string') {
       echoVal = DebugJS.styleValue(echoVal);
-      echoVal = echoVal.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+      echoVal = DebugJS.hlCtrlChr(echoVal);
     } else {
       echoVal = DebugJS.styleValue(echoVal);
     }
     var echoGot = got;
     if (typeof echoGot === 'string') {
       echoGot = DebugJS.styleValue(echoGot);
-      echoGot = echoGot.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+      echoGot = DebugJS.hlCtrlChr(echoGot);
     } else {
       echoGot = DebugJS.styleValue(echoGot);
     }
-    detail = 'Exp=' + echoVal + ' ' + method + ' Got=' + echoGot;
+    var THRESHOLD = 60;
+    if (((typeof val === 'string') && (val.length >= THRESHOLD)) ||
+        ((typeof got === 'string') && (got.length >= THRESHOLD))) {
+      detail = 'Exp=' + echoVal + ' ' + method + '\n      Got=' + echoGot;
+    } else {
+      detail = 'Exp=' + echoVal + ' ' + method + ' Got=' + echoGot;
+    }
   } catch (e) {
     status = test.STATUS_ERR;
     detail = e;
@@ -10866,8 +10892,8 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
     data.tmid = 0;
     DebugJS.bat.unlock();
   }
-  var reg = /\\n/g;
-  data.txt = txt.replace(reg, '\n');
+  txt = DebugJS.replaceCtrlChr(txt, true);
+  data.txt = txt;
   if ((speed == undefined) || (speed == '')) speed = DebugJS.ctx.properties.inputtextspeed.value;
   data.speed = speed | 0;
   data.i = start | 0;
