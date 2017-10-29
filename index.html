@@ -2450,7 +2450,7 @@ http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
       arg1: text<br>
       arg2: #id<br>
       arg3: "data"<br>
-      arg4: speed <span class="annotation">ms</span><br>
+      arg4: speed <span class="annotation">ms or (min-max)</span><br>
       arg5: startPos<span class="annotation">(opt)</span><br>
       arg6: endStep<span class="annotation">(opt)</span>
     </td>
@@ -2458,6 +2458,9 @@ http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
       Input a value into an element
 <pre class="eg">
 $ input text #text1 "abc 123" 100
+$ input text #text1 "abc 123" 100-200
+$ input text #text1 "abc 123" 100 1 3
+$ input text #text1 "abc 123" 100 2 3
 </pre>
     </td>
   </tr>

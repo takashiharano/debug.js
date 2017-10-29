@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710292218';
+  this.v = '201710300017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -365,7 +365,7 @@ var DebugJS = DebugJS || function() {
     hexdumpfoot: {value: 16, restriction: /^[0-9]+$/},
     pointstep: {value: DebugJS.point.move.step, restriction: /^[0-9]+$/},
     pointspeed: {value: DebugJS.point.move.speed, restriction: /^[0-9]+$/},
-    inputtextspeed: {value: 30, restriction: /^[0-9]+$/},
+    inputtextspeed: {value: 30, restriction: /^[0-9\-]+$/},
     scrollstep: {value: DebugJS.scrollToTarget.data.step, restriction: /^[0-9]+$/},
     scrollspeed: {value: DebugJS.scrollToTarget.data.speed, restriction: /^[0-9]+$/},
     wait: {value: 500, restriction: /^[0-9]+$/},
@@ -7142,9 +7142,10 @@ DebugJS.prototype = {
       return;
     }
     if (props[name] != undefined) {
-      if (props[name].restriction != undefined) {
-        if (!value.match(props[name].restriction)) {
-          DebugJS.log.e(value + ' is invalid.');
+      var restriction = props[name].restriction;
+      if (restriction != undefined) {
+        if (!value.match(restriction)) {
+          DebugJS.log.e(value + ' is invalid. (' + restriction + ')');
           return;
         }
       }
@@ -8963,6 +8964,8 @@ DebugJS.getRandom = function(type, min, max) {
 };
 
 DebugJS.getRandomNum = function(min, max) {
+  min |= 0;
+  max |= 0;
   var minDigit = (min + '').length;
   var maxDigit = (max + '').length;
   var digit = Math.floor(Math.random() * (maxDigit - minDigit + 1)) + minDigit;
@@ -10939,8 +10942,10 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
   }
   txt = DebugJS.replaceCtrlChr(txt, true);
   data.txt = txt;
-  if ((speed == undefined) || (speed == '')) speed = DebugJS.ctx.properties.inputtextspeed.value;
-  data.speed = speed | 0;
+  if ((speed == undefined) || (speed == '')) {
+    speed = DebugJS.ctx.properties.inputtextspeed.value;
+  }
+  data.speed = speed;
   data.i = start | 0;
   data.end = end | 0;
   if (typeof el === 'string') {
@@ -10959,14 +10964,16 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
 DebugJS._inputText = function() {
   var data = DebugJS.inputText.data;
   data.i++;
-  if ((data.speed == 0) || (data.end > 0) && (data.i >= data.end)) {
+  var speed = data.speed;
+  if ((speed == 0) || (data.end > 0) && (data.i >= data.end)) {
     data.i = data.txt.length;
   }
   data.tmid = 0;
   var txt = data.txt.substr(0, data.i);
   data.el.value = txt;
   if (data.i < data.txt.length) {
-    data.tmid = setTimeout(DebugJS._inputText, data.speed);
+    speed = DebugJS.getSpeed(speed);
+    data.tmid = setTimeout(DebugJS._inputText, speed);
   } else {
     DebugJS.inputText.finalize();
     DebugJS.bat.unlock();
@@ -10985,6 +10992,21 @@ DebugJS.inputText.finalize = function() {
   data.i = 0;
 };
 DebugJS.inputText.data = {el: null, txt: '', speed: 0, end: 0, i: 0, tmid: 0};
+
+DebugJS.getSpeed = function(v) {
+  v += '';
+  if (v.indexOf('-') == -1) {
+    return v;
+  }
+  var a = v.split('-');
+  var min = a[0];
+  var max = a[1];
+  if ((min == '') || (max == '')) {
+    return 0;
+  }
+  var s = DebugJS.getRandomNum(min, max);
+  return s;
+};
 
 DebugJS.selectOption = function(el, val) {
   var select = null;
