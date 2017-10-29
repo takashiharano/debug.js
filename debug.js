@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710282222';
+  this.v = '201710291238';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7039,7 +7039,9 @@ DebugJS.prototype = {
       return;
     }
     if (op == 'move') {
-      DebugJS.scrollTo(x, y);
+      var step = args[3];
+      var speed = args[4];
+      DebugJS.scrollTo(x, y, step, speed);
     } else {
       window.scroll(x, y);
     }
@@ -10718,7 +10720,7 @@ DebugJS.point.hint.clear = function() {
   point.hint.st.hasMsg = false;
 };
 
-DebugJS.scrollTo = function(x, y) {
+DebugJS.scrollTo = function(x, y, step, speed) {
   var d = DebugJS.scrollToTarget.data;
   if (d.tmid > 0) {
     clearTimeout(d.tmid);
@@ -10727,8 +10729,16 @@ DebugJS.scrollTo = function(x, y) {
   }
   d.dstX = x - DebugJS.ctx.scrollPosX;
   d.dstY = y - DebugJS.ctx.scrollPosY;
-  d.step = DebugJS.ctx.properties.scrollstep.value | 0;
-  d.speed = DebugJS.ctx.properties.scrollspeed.value | 0;
+  if (step == undefined) {
+    d.step = DebugJS.ctx.properties.scrollstep.value | 0;
+  } else {
+    d.step = step | 0;
+  }
+  if (speed == undefined) {
+    d.speed = DebugJS.ctx.properties.scrollspeed.value | 0;
+  } else {
+    d.speed = speed | 0;
+  }
   DebugJS.bat.lock();
   DebugJS._scrollToTarget();
   return true;
