@@ -2622,11 +2622,11 @@ $ point +10 +20
 $ point -10 -20
 -&gt; Move the pointer from current position
 
-$ point #id
+$ point #id alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 $ point .className
-$ point .className index
+$ point .className index alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 $ point tagName
-$ point tagName index
+$ point tagName index alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 -&gt; Point the specified element
 
 $ point center <span class="annotation">Center of the screen</span>
@@ -2655,9 +2655,9 @@ $ point text "abc123"
 -&gt; Input text into the current position (&lt;input&gt;, &lt;textarea&gt;)
 
 $ point move x y 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
-$ point move #id
-$ point move .className 0<span class="annotation">index</span>
-$ point move tagName 0<span class="annotation">index</span>
+$ point move #id alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
+$ point move .className 0<span class="annotation">index</span> alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
+$ point move tagName 0<span class="annotation">index</span> alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 $ point move center <span class="annotation">Center of the screen</span>
 $ point move mouse <span class="annotation">Current mouse position</span>
 -&gt; Move the pointer from the current position to the specified position
