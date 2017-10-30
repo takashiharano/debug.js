@@ -79,6 +79,8 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .overlay-root{position:relative;}
 .overlay{position:absolute;top:0;left:0;white-space:nowrap;}
 .overlay-val{padding:2px;border-radius:4px;background:rgba(0,102,238,0.5); }
+.file-loader{float:left;width:300px; height:100px; border:dotted 1px #888; overflow:auto;margin-left:2px;}
+.file-content{font-size:12px;}
 </style>
 <script>
 dbg.init({visible:true});
@@ -529,8 +531,40 @@ function httpCallback(xhr) {
   }
 }
 
+function addFileLoadHandler() {
+  var el;
+
+  el = document.getElementById('file-loader-b64');
+  dbg.addFileLoader(el, fileLoaderHandlerB64, 'b64', false);
+
+  el = document.getElementById('file-loader-b64-decoded');
+  dbg.addFileLoader(el, fileLoaderHandlerB64Decoded, 'b64', true);
+
+  el = document.getElementById('file-loader-bin');
+  dbg.addFileLoader(el, fileLoaderHandlerBin, 'bin');
+}
+
+function fileLoaderHandlerB64(file, content) {
+  log('fileLoaderHandlerB64');
+  var el = document.getElementById('file-content-b64');
+  el.innerText = content;
+}
+
+function fileLoaderHandlerB64Decoded(file, content) {
+  log('fileLoaderHandlerB64Decoded');
+  var el = document.getElementById('file-content-b64-decoded');
+  el.innerText = content;
+}
+
+function fileLoaderHandlerBin(file, content) {
+  log('fileLoaderHandlerBin');
+  var el = document.getElementById('file-content-bin');
+  el.innerText = content;
+}
+
 function onReady() {
   //log('ready');
+  addFileLoadHandler();
 }
 
 function onLoad() {
@@ -1864,6 +1898,22 @@ max: maximum length
       Convert HTML to plain text.
     </td>
   </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.addFileLoader<br>
+      <span class="alias">( dbg.addFileLoader )</span>
+    </td>
+    <td>
+      arg1: target element<br>
+      arg2: callback function<br>
+      arg3: mode('b64' or 'bin')<br>
+      arg4: decode</td>
+    <td>
+      Add File Loader Handler
+    </td>
+  </tr>
+
 
   <tr>
     <td class="name">
@@ -3766,7 +3816,7 @@ function callback(xhr) {
 <!-- ********************************************************************** -->
 <span id="dummy__button" class="showhide-button" onclick="showHideByName('dummy')">&gt;</span>
 <span id="dummy__partial-body">Dummy elements for DOM Element Inspection Test</span>
-<div id="dummy__body" style="display:none; height:510px;">
+<div id="dummy__body" style="display:none; height:610px;">
 <div class="caption2">Dummy elements for DOM Element Inspection Test</div>
 <div style="height:370px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
@@ -3816,6 +3866,7 @@ onkeyup="log.i('> keyup');"
 onfocus="log.i('> focus');"
 onblur="log.i('> blur');"
 oncontextmenu="onContextMenu();">event test</div>
+<br>
 <input id="eventinput" 
 onclick="log.i('> click');" 
 onmousedown="log.i('> mousedown');"  
@@ -3826,6 +3877,21 @@ onkeyup="log.i('> keyup');"
 onfocus="log.i('> focus');"
 onblur="log.i('> blur');"
 oncontextmenu="log.i('> contextmenu');return false;">
+<br>
+
+<div id="file-loader-b64" class="file-loader">
+<pre id="file-content-b64" class="file-content">File Loader b64</pre>
+</div>
+
+<div id="file-loader-b64-decoded" class="file-loader">
+<pre id="file-content-b64-decoded" class="file-content">File Loader b64 decoded</pre>
+</div>
+
+<div id="file-loader-bin" class="file-loader">
+<pre id="file-content-bin" class="file-content">File Loader Bin</pre>
+</div>
+
+
 </div><!-- dummy__body -->
 </div><!-- content -->
 </div><!-- main -->
