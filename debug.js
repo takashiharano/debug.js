@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710300017';
+  this.v = '201710310000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1501,7 +1501,7 @@ DebugJS.prototype = {
     ctx.filterInputLabel.innerText = 'Filter:';
     ctx.logHeaderPanel.appendChild(ctx.filterInputLabel);
 
-    var filterWidth = 'calc(100% - 27em)';
+    var filterWidth = 'calc(100% - 27.5em)';
     ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.opt.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
     ctx.setStyle(ctx.filterInput, 'position', 'relative');
     ctx.setStyle(ctx.filterInput, 'top', '-2px');
