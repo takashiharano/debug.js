@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710312155';
+  this.v = '201710312245';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -349,7 +349,11 @@ var DebugJS = DebugJS || function() {
     {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
-    {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC}
+    {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
+    {cmd: 'cont', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'goto', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'nop', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'wait', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
@@ -575,6 +579,7 @@ DebugJS.z0 = function() {};
 DebugJS.z1 = function(a) {};
 DebugJS.z2 = function(a, b) {};
 DebugJS.z3 = function(a, b, c) {};
+DebugJS.z4 = function(a, b, c, d) {};
 
 DebugJS.prototype = {
   init: function(opt, restoreOpt) {
@@ -4973,7 +4978,7 @@ DebugJS.prototype = {
       ctx.setStyle(fileInput, 'outline', 'none');
       ctx.setStyle(fileInput, 'font-size', fontSize);
       ctx.setStyle(fileInput, 'font-family', ctx.opt.fontFamily + 'px');
-      fileInput.addEventListener('change', ctx.handleFileSelect, false);
+      fileInput.addEventListener('change', ctx.onFileSelected, false);
       ctx.fileLoaderPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
 
@@ -5092,7 +5097,7 @@ DebugJS.prototype = {
     }
   },
 
-  handleFileSelect: function(e) {
+  onFileSelected: function(e) {
     var ctx = DebugJS.ctx;
     if (e.target.files) {
       DebugJS.ctx.fileLoaderFile = e.target.files[0];
@@ -5110,10 +5115,18 @@ DebugJS.prototype = {
   handleFileDrop: function(ctx, e, format, cb) {
     e.stopPropagation();
     e.preventDefault();
-    if (e.dataTransfer.files && (e.dataTransfer.files.length > 0)) {
-      ctx.fileLoaderFile = e.dataTransfer.files[0];
-      ctx.fileLoaderSysCb = cb;
-      ctx.loadFile(format);
+    try {
+      if (e.dataTransfer.files) {
+        if (e.dataTransfer.files.length > 0) {
+          ctx.fileLoaderFile = e.dataTransfer.files[0];
+          ctx.fileLoaderSysCb = cb;
+          ctx.loadFile(format);
+        } else {
+          DebugJS.log.w('handleFileDrop() e.dataTransfer.files.length == 0');
+        }
+      }
+    } catch (e) {
+      DebugJS.log.e('handleFileDrop() ' + e);
     }
   },
 
@@ -5242,9 +5255,9 @@ DebugJS.prototype = {
       var ctx = DebugJS.ctx;
       var total = e.total;
       var loaded = e.loaded;
-      var percentLoaded = (total == 0) ? 100 : Math.round((loaded / total) * 100);
-      ctx.fileLoadProgress.style.width = 'calc(' + percentLoaded + '% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
-      ctx.fileLoadProgress.textContent = percentLoaded + '%';
+      var percent = (total == 0) ? 100 : Math.round((loaded / total) * 100);
+      ctx.fileLoadProgress.style.width = 'calc(' + percent + '% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
+      ctx.fileLoadProgress.textContent = percent + '%';
       ctx.updateFilePreview('LOADING...\n' + DebugJS.formatDec(loaded) + ' / ' + DebugJS.formatDec(total) + ' bytes');
     }
   },
@@ -5294,7 +5307,7 @@ DebugJS.prototype = {
         var ctxSizePos = ctx.getSelfSizePos();
         preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
       } else {
-        var ext = ['bat', 'java', 'js', 'md', 'csv', 'log'];
+        var ext = ['bat', 'csv', 'ini', 'java', 'js', 'log', 'md'];
         var re = '';
         for (var i = 0; i < ext.length; i++) {
           if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
@@ -7514,6 +7527,8 @@ DebugJS.prototype = {
       ctx.init({zoom: zoom}, restoreOpt);
     }
   },
+
+  cmdNop: function(arg, tbl) {},
 
   execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc, defaultFunc) {
     var args = DebugJS.parseArgs(arg);
@@ -11509,6 +11524,7 @@ DebugJS.balse = function() {
   log.resume = DebugJS.z0;
   log.root = DebugJS.z1;
   DebugJS.addEvtListener = DebugJS.z2;
+  DebugJS.addFileLoader = DebugJS.z4;
   DebugJS.cmd = DebugJS.z2;
   DebugJS.bat = DebugJS.z1;
   DebugJS.bat.list = DebugJS.z0;
