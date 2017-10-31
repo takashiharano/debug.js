@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201710310734';
+  this.v = '201710312155';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3053,7 +3053,9 @@ DebugJS.prototype = {
 
   createSysInfoPanel: function(ctx) {
     ctx.sysInfoPanel = document.createElement('div');
-    ctx.sysInfoPanel.innerHTML = '<span style="color:' + DebugJS.SYS_BTN_COLOR + '">&lt;SYSTEM INFO&gt;</span>';
+    var html = '<span style="color:' + DebugJS.SYS_BTN_COLOR + '">&lt;SYSTEM INFO&gt;</span>' +
+    '<span style="float:right">v' + ctx.v + '</span>';
+    ctx.sysInfoPanel.innerHTML = html;
     if (DebugJS.SYS_INFO_FULL_OVERLAY) {
       ctx.sysInfoPanel.className = ctx.id + '-overlay-panel-full';
       ctx.addOverlayPanelFull(ctx.sysInfoPanel);
@@ -5182,8 +5184,8 @@ DebugJS.prototype = {
     ctx.fileLoadProgress.textContent = '0%';
 
     ctx.fileReader = new FileReader();
-    ctx.fileReader.onerror = ctx.fileLoadErrorHandler;
-    ctx.fileReader.onprogress = ctx.updateFileLoadProgress;
+    ctx.fileReader.onerror = ctx.onFileLoadError;
+    ctx.fileReader.onprogress = ctx.onFileLoadProgress;
     ctx.fileReader.onabort = ctx.onAbortLoadFile;
     ctx.fileReader.onloadstart = ctx.onFileLoadStart;
     ctx.fileReader.onload = ctx.onFileLoaded;
@@ -5211,26 +5213,31 @@ DebugJS.prototype = {
     setTimeout(DebugJS.ctx.fileLoadFinalize, 1000);
   },
 
-  fileLoadErrorHandler: function(e) {
+  onFileLoadError: function(e) {
     var ctx = DebugJS.ctx;
     ctx.fileLoaderSysCb = null;
     DebugJS.file.finalize();
+    var err;
     switch (e.target.error.code) {
       case e.target.error.NOT_FOUND_ERR:
-        ctx.updateFilePreview('NOT_FOUND_ERR');
+        err = 'NOT_FOUND_ERR';
+        break;
+      case e.target.error.SECURITY_ERR:
+        err = 'SECURITY_ERR';
         break;
       case e.target.error.NOT_READABLE_ERR:
-        ctx.updateFilePreview('NOT_READABLE_ERR');
+        err = 'NOT_READABLE_ERR';
         break;
       case e.target.error.ABORT_ERR:
-        ctx.updateFilePreview('ABORT_ERR');
+        err = 'ABORT_ERR';
         break;
       default:
-        ctx.updateFilePreview('FILE_READ_ERROR');
+        err = 'FILE_READ_ERROR (' + e.target.error.code + ')';
     }
+    ctx.updateFilePreview(err);
   },
 
-  updateFileLoadProgress: function(e) {
+  onFileLoadProgress: function(e) {
     if (e.lengthComputable) {
       var ctx = DebugJS.ctx;
       var total = e.total;
@@ -5286,16 +5293,21 @@ DebugJS.prototype = {
       if (file.type.match(/image\//)) {
         var ctxSizePos = ctx.getSelfSizePos();
         preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
-      } else if ((file.type.match(/text\//)) ||
-                 (file.name.match(/\.bat$|\.java$|\.js$|\.md$/))) {
-        var contents = b64content.split(',');
-        var decoded = DebugJS.decodeBase64(contents[1]);
-        var escDecoded = DebugJS.escTags(decoded);
-        preview = '<span style="color:#0f0">' + escDecoded + '</span>\n';
-        if (ctx.fileLoaderSysCb) {
-          ctx.fileLoaderSysCb(ctx, file, decoded);
+      } else {
+        var ext = ['bat', 'java', 'js', 'md', 'csv', 'log'];
+        var re = '';
+        for (var i = 0; i < ext.length; i++) {
+          if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
         }
-        DebugJS.file.onLoaded(file, b64content);
+        if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name))) {
+          var contents = b64content.split(',');
+          var decoded = DebugJS.decodeBase64(contents[1]);
+          var escDecoded = DebugJS.escTags(decoded);
+          preview = '<span style="color:#0f0">' + escDecoded + '</span>\n';
+          if (ctx.fileLoaderSysCb) {
+            ctx.fileLoaderSysCb(ctx, file, decoded);
+          }
+        }
       }
     }
     html += preview + '\n';
@@ -5305,6 +5317,7 @@ DebugJS.prototype = {
     } else {
       html += '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
     }
+    DebugJS.file.onLoaded(file, b64content);
     return html;
   },
 
