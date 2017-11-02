@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711010010';
+  this.v = '201711030123';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -342,7 +342,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
-    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|case name|count|result'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|case name|count|result|verify got-val method expected-val'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -2337,14 +2337,14 @@ DebugJS.prototype = {
         return true;
       case DebugJS.STATE_EXT_PANEL:
         if (ctx.extPanels.length == 0) {
-          DebugJS.log('no extension panel');
+          DebugJS.log('No extension panel');
           return false;
         }
         var idx = subfnc;
         if (idx == undefined) idx = ctx.extActivePanel;
         if (idx < 0) idx = 0;
         if (idx >= ctx.extPanels.length) {
-          DebugJS.log.e('no such panel: ' + idx + ' (0-' + (ctx.extPanels.length - 1) + ')');
+          DebugJS.log.e('No such panel: ' + idx + ' (0-' + (ctx.extPanels.length - 1) + ')');
           return false;
         }
         if (!(ctx.status & DebugJS.STATE_EXT_PANEL)) {
@@ -5813,10 +5813,11 @@ DebugJS.prototype = {
     if (code == '') return;
     try {
       var ret = eval(code);
-      if (typeof ret === 'string') {
-        ret = DebugJS.encString(ret);
+      var res = ret;
+      if (typeof res === 'string') {
+        res = DebugJS.encString(res);
       }
-      DebugJS.log.res(ret);
+      DebugJS.log.res(res);
       return ret;
     } catch (e) {
       DebugJS.log.e(e);
@@ -6041,7 +6042,7 @@ DebugJS.prototype = {
       DebugJS.ctx.led = eval(val);
       DebugJS.ctx.updateLedPanel();
     } catch (e) {
-      DebugJS.log.e('invalid value');
+      DebugJS.log.e('Invalid value');
     }
   },
 
@@ -6222,7 +6223,7 @@ DebugJS.prototype = {
       ret = DebugJS.convertBin(data);
       DebugJS.log(ret);
     } catch (e) {
-      DebugJS.log.e('invalid value');
+      DebugJS.log.e('Invalid value');
     }
   },
 
@@ -6298,6 +6299,7 @@ DebugJS.prototype = {
       ctx.cmdEchoFlg = true;
       return;
     }
+    arg = DebugJS.decodeEsc(arg);
     try {
       var str = eval(arg) + '';
       DebugJS.log(str);
@@ -6455,7 +6457,7 @@ DebugJS.prototype = {
       ret = '0x' + ret;
       DebugJS.log(ret);
     } catch (e) {
-      DebugJS.log.e('invalid value');
+      DebugJS.log.e('Invalid value');
     }
   },
 
@@ -6479,7 +6481,7 @@ DebugJS.prototype = {
         } else if (args[argLen - 1].match(/\)$/)) {
           expLen = argLen;
         } else {
-          DebugJS.log.e('invalid value');
+          DebugJS.log.e('Invalid value');
           return null;
         }
         exp = '';
@@ -6487,7 +6489,7 @@ DebugJS.prototype = {
           exp += ((i >= 1) ? ' ' : '') + args[i];
         }
       } else {
-        DebugJS.log.e('invalid value');
+        DebugJS.log.e('Invalid value');
         return null;
       }
     }
@@ -6619,24 +6621,14 @@ DebugJS.prototype = {
   },
 
   cmdInput: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
+    var args = DebugJS.splitQuotedArgs(arg);
     var type = args[0];
-    var txt, speed, max;
     if (type == 'text') {
       var id = args[1];
-      var qstr = DebugJS.getQuotedStr(arg);
-      if (qstr == null) {
-        txt = args[2];
-        speed = args[3];
-        max = args[4];
-      } else {
-        txt = qstr.str;
-        var a = arg.substr(qstr.nextIdx);
-        var ags = DebugJS.splitArgs(a);
-        speed = ags[0];
-        start = ags[1];
-        max = ags[2];
-      }
+      var txt = args[2];
+      var speed = args[3];
+      var start = args[4];
+      var max = args[5];
       DebugJS.inputText(id, txt, speed, start, max);
     } else {
       DebugJS.printUsage(tbl.usage);
@@ -6880,7 +6872,6 @@ DebugJS.prototype = {
       }
       var txt = DebugJS.getArgsFrom(arg, 2);
       try {
-        txt = eval(txt) + '';
         DebugJS.inputText(el, txt);
       } catch (e) {
         DebugJS.log.e(e);
@@ -7203,7 +7194,7 @@ DebugJS.prototype = {
     }
     var el = DebugJS.getElement(sel, idx);
     if (!el) {
-      DebugJS.log.e('element not found: ' + sel);
+      DebugJS.log.e('Element not found: ' + sel);
       return;
     }
     el.setAttribute(nm, vl);
@@ -7274,7 +7265,7 @@ DebugJS.prototype = {
   },
 
   cmdTest: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
+    var args = DebugJS.splitQuotedArgs(arg);
     var op = args[0];
     var test = DebugJS.test;
     switch (op) {
@@ -7297,6 +7288,9 @@ DebugJS.prototype = {
         break;
       case 'result':
         DebugJS.log(test.result());
+        break;
+      case 'verify':
+        DebugJS.test.verify(args[1], args[2], args[3], true);
         break;
       default:
         DebugJS.printUsage(tbl.usage);
@@ -7760,6 +7754,10 @@ DebugJS.getCmdValName = function(v, head) {
   if (r == null) {
     return null;
   }
+  var idx = r.index;
+  if ((idx > 0) && ((v.charAt(idx - 1) == '\\'))) {
+      return null;
+  }
   return r[1];
 };
 
@@ -7830,6 +7828,81 @@ DebugJS.parseArgs = function(arg) {
     args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(wkArgs[2]);
   }
   return args;
+};
+
+// ' 1 "abc" "d ef"  "g\"hi" 2 ' -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2
+DebugJS.splitQuotedArgs = function(arg) {
+  var args = [];
+  var from = 0;
+  var start = 0;
+  var len = 0;
+  var searching = true;
+  var quoted = false;
+  var ch = '';
+  var str = '';
+  for (var i = 0; i < arg.length; i++) {
+    len++;
+    ch = arg.charAt(i);
+    switch (ch) {
+      case ' ':
+        if (searching || quoted) {
+          continue;
+        } else {
+          searching = true;
+          str = arg.substr(start, len);
+          args.push(str);
+          searching = true;
+        }
+        break;
+      case '"':
+        if (searching) {
+          start = i;
+          len = 0;
+          searching = false;
+          quoted = true;
+        } else if (quoted) {
+          if ((i > 0) && (arg.charAt(i - 1) == '\\')) {
+            continue;
+          }
+          quoted = false;
+        }
+        break;
+      default:
+        if (searching) {
+          start = i;
+          len = 0;
+          searching = false;
+        }
+    }
+  }
+  len++;
+  if (ch != ' ') {
+    str = arg.substr(start, len);
+    args.push(str);
+  }
+  return args;
+};
+
+DebugJS.indexOfQuote = function(str, from) {
+  if (from == undefined) from = 0;
+  while (from < str.length) {
+    idx = str.indexOf('"', from);
+    if (idx <= 0) {
+      break;
+    }
+    if (idx > 0) {
+      if (str.charAt(idx - 1) == '\\') {
+        from = idx + 1;
+      } else {
+        break;
+      }
+    }
+  }
+  return idx;
+};
+
+DebugJS._indexOfQuote = function(str, from) {
+
 };
 
 DebugJS.omitAllWhiteSpace = function(str) {
@@ -9053,7 +9126,7 @@ DebugJS.http = function(rq, cb) {
 DebugJS.onHttpRequestDone = function(xhr) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
-    DebugJS.log.e('cannot load: ' + statusMsg);
+    DebugJS.log.e('Cannot load: ' + statusMsg);
   } else if ((xhr.status >= 300) && (xhr.status <= 399)) {
     DebugJS.log.w(statusMsg);
   } else if ((xhr.status >= 400) && (xhr.status <= 599)) {
@@ -9766,7 +9839,7 @@ DebugJS.stopwatch.log = function(msg) {
 
 DebugJS.addEvtListener = function(type, listener) {
   if (DebugJS.ctx.evtListener[type] == undefined) {
-    DebugJS.log.e('no such event: ' + type);
+    DebugJS.log.e('No such event: ' + type);
   } else {
     DebugJS.ctx.evtListener[type].push(listener);
   }
@@ -9847,14 +9920,14 @@ DebugJS.bat.run = function(s, e) {
     if (s.charAt(0) == ':') s = s.substr(1);
     sl = bat.labels[s];
     if (sl == undefined) {
-      DebugJS.log.e('no such label: ' + s);
+      DebugJS.log.e('No such label: ' + s);
       return;
     }
   } else {
     sl = (s | 0) - 1; if (sl < 0) sl = 0;
   }
   if (sl >= bat.cmds.length) {
-    DebugJS.log.e('out of range (1-' + bat.cmds.length + ')');
+    DebugJS.log.e('Out of range (1-' + bat.cmds.length + ')');
     return;
   }
   if (e == undefined) {
@@ -9863,7 +9936,7 @@ DebugJS.bat.run = function(s, e) {
     if (e.charAt(0) == ':') e = e.substr(1);
     el = bat.labels[e];
     if (el == undefined) {
-      DebugJS.log.e('no such label: ' + e);
+      DebugJS.log.e('No such label: ' + e);
       return;
     }
   } else {
@@ -10012,7 +10085,7 @@ DebugJS.bat.prepro = function(cmd) {
       ctrl.startPc = 0;
       var idx = bat.labels[a[0]];
       if (idx == undefined) {
-        DebugJS.log.e('L' + ctrl.pc + ': no such label (' + a[0] + ')');
+        DebugJS.log.e('L' + ctrl.pc + ': No such label (' + a[0] + ')');
       } else {
         ctrl.pc = idx;
         ctx.updateCurPc();
@@ -10474,104 +10547,23 @@ DebugJS.point.setProp = function(prop, val) {
   el[prop] = val;
   DebugJS.log(val);
 };
-DebugJS.point.verify = function(prop, method, val) {
-  var test = DebugJS.test;
-  var status = test.STATUS_ERR;
-  var detail;
+DebugJS.point.verify = function(prop, method, exp) {
   if (prop == undefined) {
-    detail = 'property name is undefined';
+    detail = 'Property name is undefined';
     DebugJS.log.e(detail);
-    test.addResult(status, detail);
+    DebugJS.test.addResult(status, detail);
     return status;
   }
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) {
-    detail = 'element not found';
+    detail = 'Element not found';
     DebugJS.log.e(detail);
-    test.addResult(status, detail);
+    DebugJS.test.addResult(status, detail);
     return status;
   }
-  val = DebugJS.replaceCtrlChr(val, true);
-  try {
-    if (method != 'regexp') {
-      val = eval(val);
-    }
-    var got = el[prop];
-    if (method == '==') {
-      if (got == val) {
-        status = test.STATUS_OK;
-      } else {
-        status = test.STATUS_NG;
-      }
-    } else if (method == '!=') {
-      if (got != val) {
-        status = test.STATUS_OK;
-      } else {
-        status = test.STATUS_NG;
-      }
-    } else if ((method == 'regexp') ||
-        (method == '<') || (method == '<=') ||
-        (method == '>') || (method == '>=')) {
-      var exp;
-      if (method == 'regexp') {
-        val = val.replace(/\\/g, '\\\\');
-        exp = '(new RegExp(\'' + val + '\')).test(\'' + got + '\')';
-      } else {
-        exp = got + method + val;
-      }
-      try {
-        r = eval(exp);
-      } catch (e) {
-        detail = 'failed to evaluate: ' + e;
-        DebugJS.log.e(detail);
-        test.addResult(status, detail);
-        return status;
-      }
-      if (r) {
-        status = test.STATUS_OK;
-      } else {
-        status = test.STATUS_NG;
-      }
-    } else {
-      detail = 'unknown verify method: ' + method;
-      DebugJS.log.e(detail);
-      test.addResult(status, detail);
-      return status;
-    }
-    var echoVal = val;
-    if (method == 'regexp') {
-      echoVal = echoVal.replace(/\\\\/g, '\\');
-    }
-    if (typeof echoVal === 'string') {
-      echoVal = DebugJS.styleValue(echoVal);
-      echoVal = DebugJS.hlCtrlChr(echoVal);
-    } else {
-      echoVal = DebugJS.styleValue(echoVal);
-    }
-    var echoGot = got;
-    if (typeof echoGot === 'string') {
-      echoGot = DebugJS.styleValue(echoGot);
-      echoGot = DebugJS.hlCtrlChr(echoGot);
-    } else {
-      echoGot = DebugJS.styleValue(echoGot);
-    }
-    var THRESHOLD = 60;
-    if (((typeof val === 'string') && (val.length >= THRESHOLD)) ||
-        ((typeof got === 'string') && (got.length >= THRESHOLD))) {
-      detail = 'Exp=' + echoVal + ' ' + method + '\n      Got=' + echoGot;
-    } else {
-      detail = 'Exp=' + echoVal + ' ' + method + ' Got=' + echoGot;
-    }
-  } catch (e) {
-    status = test.STATUS_ERR;
-    detail = e;
-  }
-  test.addResult(status, detail);
-  var str = test.getResultStr(status, detail);
-  DebugJS.log(str);
-  return status;
+  var got = el[prop];
+  return DebugJS.test.verify(got, method, exp);
 };
-
 DebugJS.point.move = function(x, y, step, speed) {
   x += ''; y += '';
   var point = DebugJS.point;
@@ -10673,7 +10665,7 @@ DebugJS.point._move = function() {
 DebugJS.pointById = function(id, alignX, alignY) {
   var el = DebugJS.getElement(id);
   if (!el) {
-    DebugJS.log.e(id + ': element not found');
+    DebugJS.log.e(id + ': Element not found');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
@@ -10687,7 +10679,7 @@ DebugJS.pointById = function(id, alignX, alignY) {
 DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var el = DebugJS.getElement(selector, idx);
   if (!el) {
-    DebugJS.log.e(selector + '[' + idx + ']: element not found');
+    DebugJS.log.e(selector + '[' + idx + ']: Element not found');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
@@ -10725,7 +10717,7 @@ DebugJS.point.moveToId = function(id, step, speed, alignX, alignY) {
   };
   var ps = DebugJS.getElPosSize('#' + id);
   if (!ps) {
-    DebugJS.log.e('#' + id + ': element not found');
+    DebugJS.log.e('#' + id + ': Element not found');
     return;
   }
   if (DebugJS.scrollToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToId, data)) {
@@ -10752,7 +10744,7 @@ DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alig
   };
   var ps = DebugJS.getElPosSize(selector, idx);
   if (!ps) {
-    DebugJS.log.e(selector + '[' + idx + ']: element not found');
+    DebugJS.log.e(selector + '[' + idx + ']: Element not found');
     return;
   }
   if (DebugJS.scrollToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToSelector, data)) {
@@ -10788,6 +10780,11 @@ DebugJS.point.hint = function(msg) {
   }
   var area = hint.area;
   var reg = /\\n/g;
+  try {
+    msg = eval(msg) + '';
+  } catch (e) {
+    msg = e + '';
+  }
   msg = msg.replace(reg, '\n');
   msg = msg.replace(/!RESUME!/, RESUME);
   msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count());
@@ -11038,6 +11035,7 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
     data.tmid = 0;
     DebugJS.bat.unlock();
   }
+  txt = eval(txt) + '';
   txt = DebugJS.replaceCtrlChr(txt, true);
   data.txt = txt;
   if ((speed == undefined) || (speed == '')) {
@@ -11049,7 +11047,7 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
   if (typeof el === 'string') {
     data.el = document.querySelector(el);
     if (!data.el) {
-      DebugJS.log.e('element not found: ' + el);
+      DebugJS.log.e('Element not found: ' + el);
     }
   } else {
     data.el = el;
@@ -11111,14 +11109,14 @@ DebugJS.selectOption = function(el, val) {
   if (typeof el === 'string') {
     select = document.querySelector(el);
     if (!select) {
-      DebugJS.log.e('element not found: ' + el);
+      DebugJS.log.e('Element not found: ' + el);
       return;
     }
   } else {
     select = el;
   }
   if ((!select) || (select.tagName != 'SELECT')) {
-    DebugJS.log.e('element is not select (' + select + ')');
+    DebugJS.log.e('Element is not select (' + select + ')');
     return;
   }
   for (var i = 0; i < select.options.length; i++) {
@@ -11127,7 +11125,7 @@ DebugJS.selectOption = function(el, val) {
       return;
     }
   }
-  DebugJS.log.w('no such option value: ' + val);
+  DebugJS.log.w('No such option value: ' + val);
 };
 
 DebugJS.event = {};
@@ -11150,7 +11148,7 @@ DebugJS.event.set = function(prop, val) {
     }
     e[prop] = val;
   } else {
-    DebugJS.log.e('event is not created');
+    DebugJS.log.e('Event is not created');
   }
 };
 DebugJS.event.dispatch = function(el, idx) {
@@ -11167,14 +11165,14 @@ DebugJS.event.dispatch = function(el, idx) {
     target = DebugJS.getElement(el, idx);
   }
   if (!target) {
-    DebugJS.log.e('target is not found');
+    DebugJS.log.e('Target is not found');
     return false;
   }
   var e = DebugJS.event.evt;
   if (e) {
     return target.dispatchEvent(e);
   } else {
-    DebugJS.log.e('event is not created');
+    DebugJS.log.e('Event is not created');
     return false;
   }
 };
@@ -11260,6 +11258,94 @@ DebugJS.test.result = function() {
   }
   return str;
 };
+DebugJS.test.verify = function(got, method, exp, reqEval) {
+  var test = DebugJS.test;
+  var status = test.STATUS_ERR;
+  var detail;
+  if (typeof exp === 'string') {
+    exp = DebugJS.replaceCtrlChr(exp, true);
+  }
+  try {
+    if (method != 'regexp') {
+      exp = eval(exp);
+    }
+    if (reqEval) {
+      got = eval(got);
+    }
+    if (method == '==') {
+      if (got == exp) {
+        status = test.STATUS_OK;
+      } else {
+        status = test.STATUS_NG;
+      }
+    } else if (method == '!=') {
+      if (got != exp) {
+        status = test.STATUS_OK;
+      } else {
+        status = test.STATUS_NG;
+      }
+    } else if ((method == 'regexp') ||
+        (method == '<') || (method == '<=') ||
+        (method == '>') || (method == '>=')) {
+      var evl;
+      if (method == 'regexp') {
+        exp = DebugJS.encodeEsc(exp);
+        evl = '(new RegExp(\'' + exp + '\')).test(\'' + got + '\')';
+      } else {
+        evl = got + method + exp;
+      }
+      try {
+        r = eval(evl);
+      } catch (e) {
+        detail = 'Failed to evaluate: ' + e;
+        DebugJS.log.e(detail);
+        test.addResult(status, detail);
+        return status;
+      }
+      if (r) {
+        status = test.STATUS_OK;
+      } else {
+        status = test.STATUS_NG;
+      }
+    } else {
+      detail = 'Unknown verify method: ' + method;
+      DebugJS.log.e(detail);
+      test.addResult(status, detail);
+      return status;
+    }
+    var echoExp = exp;
+    if (method == 'regexp') {
+      echoExp = DebugJS.decodeEsc(echoExp);
+      echoExp = '<span style="color:#0ff">/</span>' + echoExp + '<span style="color:#0ff">/</span>';
+    } else if (typeof echoExp === 'string') {
+      echoExp = DebugJS.styleValue(echoExp);
+      echoExp = DebugJS.hlCtrlChr(echoExp);
+    } else {
+      echoExp = DebugJS.styleValue(echoExp);
+    }
+    var echoGot = got;
+    if (typeof echoGot === 'string') {
+      echoGot = DebugJS.styleValue(echoGot);
+      echoGot = DebugJS.hlCtrlChr(echoGot);
+    } else {
+      echoGot = DebugJS.styleValue(echoGot);
+    }
+    var THRESHOLD = 60;
+    if (((typeof exp === 'string') && (exp.length >= THRESHOLD)) ||
+        ((typeof got === 'string') && (got.length >= THRESHOLD))) {
+      detail = 'Exp=' + echoExp + ' ' + method + '\n      Got=' + echoGot;
+    } else {
+      detail = 'Exp=' + echoExp + ' ' + method + ' Got=' + echoGot;
+    }
+  } catch (e) {
+    status = test.STATUS_ERR;
+    detail = e;
+  }
+  test.addResult(status, detail);
+  var str = test.getResultStr(status, detail);
+  DebugJS.log(str);
+  return status;
+};
 
 DebugJS.getElement = function(selector, idx) {
   if (typeof selector != 'string') {
@@ -11319,6 +11405,13 @@ DebugJS.getQuotedStr = function(str) {
   return ret;
 };
 
+DebugJS.encodeEsc = function(str) {
+  return str.replace(/\\/g, '\\\\');
+};
+DebugJS.decodeEsc = function(str) {
+  return str.replace(/\\\\/g, '\\');
+};
+
 DebugJS.random = function(min, max) {
   return DebugJS.getRandom(DebugJS.RANDOM_TYPE_NUM, min, max);
 };
@@ -11354,7 +11447,7 @@ DebugJS.wd.pet = function() {
   var elapsed = now - wd.wdPetTime;
   if (elapsed > ctx.properties.wdt.value) {
     wd.cnt++;
-    DebugJS.log.w('watchdog bark! (' + elapsed + 'ms)');
+    DebugJS.log.w('Watchdog bark! (' + elapsed + 'ms)');
     for (var i = 0; i < ctx.evtListener.watchdog.length; i++) {
       var cb = ctx.evtListener.watchdog[i];
       if (cb) cb(elapsed);

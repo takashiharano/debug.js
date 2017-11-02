@@ -621,6 +621,11 @@ function buftest(size) {
   };
   dbg.init(opt);
 }
+
+var utest = {};
+utest.testString = function() {
+  return 'Hello, World!';
+};
 </script>
 </head>
 <body>
@@ -2965,12 +2970,17 @@ $ setattr .className 1 disabled true
   <tr>
     <td class="name">test</td>
     <td>
-      arg1: init / case / count / result<br>
+      arg1: operation type<br>
+      arg2: verify target value<br>
+      arg3: verify method<br>
+      arg4: verify expected value
     </td>
     <td>
-      Manage unit test.<br>
+      Manage unit test.<br><br>
+      [operation type]<br>
       init: Reset the test results.<br>
       case: Set test case name<br>
+      verify: Evaluate a value<br>
       count: Displays the test count.<br>
       result: Displays the test result.
     </td>
