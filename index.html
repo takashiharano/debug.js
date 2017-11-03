@@ -90,6 +90,7 @@ dbg.init({visible:true});
 //dbg.init({visible: true, bufsize: 10});
 //dbg.init({mode:'kiosk',zoom:2});
 //dbg.init({mode:'noui'});
+//dbg.init({lockCode:'abc'});
 //dbg.init({target:'debug'});
 
 //dbg.addEvtListener('watchdog', onWatchdogTimeout);
@@ -1152,6 +1153,17 @@ If you want to change the debugger settings, explicitly call for initialization 
       other : Normal debug window
     </td>
     <td>''</td>
+  </tr>
+
+  <tr>
+    <td class="name">lockCode</td>
+    <td>
+      Lock code string.<br>
+      Run into protected mode and unlock with this code.<br>
+      The debug window will not appear until unlocked.<br>
+      Unlock: [ESC] -> [Ctrl] -> lockCode -> [Enter]
+    </td>
+    <td>null</td>
   </tr>
 
   <tr>

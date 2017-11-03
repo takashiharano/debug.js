@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711031546';
+  this.v = '201711031933';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -79,6 +79,7 @@ var DebugJS = DebugJS || function() {
     disableAllCommands: false,
     disableAllFeatures: false,
     mode: '',
+    lockCode: null,
     target: null
   };
   this.DEFAULT_ELM_ID = '_debug_';
@@ -389,6 +390,7 @@ var DebugJS = DebugJS || function() {
     'fileloaded': [],
     'watchdog': []
   };
+  this.unlockCode = null;
   this.setupDefaultOptions();
 };
 DebugJS.ENABLE = true;
@@ -429,6 +431,7 @@ DebugJS.UI_ST_RESIZING_W = 1 << 10;
 DebugJS.UI_ST_RESIZING_ALL = DebugJS.UI_ST_RESIZING | DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E | DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W;
 DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 11;
 DebugJS.UI_ST_NEED_TO_SCROLL = 1 << 12;
+DebugJS.UI_ST_PROTECTED = 1 << 13;
 DebugJS.TOOL_ST_SW_CU_RUNNING = 1;
 DebugJS.TOOL_ST_SW_CU_END = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RUNNING = 1 << 2;
@@ -646,7 +649,7 @@ DebugJS.prototype = {
   },
 
   initUi: function(ctx, restoreOpt) {
-    ctx.initUiStatus(ctx, ctx.opt);
+    ctx.initUiStatus(ctx, ctx.opt, restoreOpt);
     ctx.computedMinW = DebugJS.DBGWIN_MIN_W * ctx.opt.zoom;
     ctx.computedMinH = DebugJS.DBGWIN_MIN_H * ctx.opt.zoom;
     ctx.computedFontSize = Math.round(ctx.opt.fontSize * ctx.opt.zoom);
@@ -707,7 +710,7 @@ DebugJS.prototype = {
           ctx.focusCmdLine();
         }
 
-        if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
+        if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE) || (ctx.uiStatus & DebugJS.UI_ST_PROTECTED)) {
           ctx.win.style.display = 'none';
         }
       }
@@ -1047,12 +1050,12 @@ DebugJS.prototype = {
       ctx.onScroll();
     }
 
+    window.addEventListener('keydown', ctx.onKeyDown, true);
+    window.addEventListener('keypress', ctx.onKeyPress, true);
+    window.addEventListener('keyup', ctx.onKeyUp, true);
     if (ctx.opt.useKeyStatusInfo) {
-      window.addEventListener('keydown', ctx.onKeyDown, true);
       ctx.updateKeyDownLabel();
-      window.addEventListener('keypress', ctx.onKeyPress, true);
       ctx.updateKeyPressLabel();
-      window.addEventListener('keyup', ctx.onKeyUp, true);
       ctx.updateKeyUpLabel();
     }
   },
@@ -1069,10 +1072,13 @@ DebugJS.prototype = {
     window.removeEventListener('keyup', ctx.onKeyUp, true);
   },
 
-  initUiStatus: function(ctx, opt) {
+  initUiStatus: function(ctx, opt, restoreOpt) {
     if (ctx.opt.target == null) {
       ctx.uiStatus |= DebugJS.UI_ST_DYNAMIC;
       ctx.uiStatus |= DebugJS.UI_ST_DRAGGABLE;
+      if ((ctx.opt.lockCode != null) && (!restoreOpt)) {
+        ctx.uiStatus |= DebugJS.UI_ST_PROTECTED;
+      }
     }
     if ((ctx.opt.visible) || (ctx.opt.target != null)) {
       ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
@@ -2536,30 +2542,78 @@ DebugJS.prototype = {
     }
   },
 
+  procOnProtectedD: function(ctx, e) {
+    switch (e.keyCode) {
+      case 13:
+        if (ctx.unlockCode == ctx.opt.lockCode) {
+          ctx.uiStatus &= ~DebugJS.UI_ST_PROTECTED;
+          ctx.unlockCode = null;
+        }
+        break;
+      case 17:
+        if (ctx.unlockCode == null) {
+          ctx.unlockCode = '';
+        }
+        break;
+      case 27:
+        ctx.unlockCode = null;
+    }
+  },
+
+  procOnProtectedP: function(ctx, e) {
+    if (ctx.unlockCode == null) return;
+    var ch = DebugJS.cnvKey2Ch(e.key);
+    if ((DebugJS.isTypographic(ch))) {
+      ctx.unlockCode += ch;
+    }
+  },
+
   onKeyDown: function(e) {
     var ctx = DebugJS.ctx;
+    if (ctx.opt.useKeyStatusInfo) {
+      ctx.updateStatusInfoOnKeyDown(ctx, e);
+    }
+    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
+      ctx.procOnProtectedD(ctx, e);
+    }
+  },
+
+  onKeyPress: function(e) {
+    var ctx = DebugJS.ctx;
+    if (ctx.opt.useKeyStatusInfo) {
+      ctx.updateStatusInfoOnKeyPress(ctx, e);
+    }
+    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
+      ctx.procOnProtectedP(ctx, e);
+    }
+  },
+
+  onKeyUp: function(e) {
+    var ctx = DebugJS.ctx;
+    if (ctx.opt.useKeyStatusInfo) {
+      ctx.updateStatusInfoOnKeyUp(ctx, e);
+    }
+  },
+
+  updateStatusInfoOnKeyDown: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
     ctx.keyDownCode = e.keyCode + ' ' + modKey;
     ctx.updateKeyDownLabel();
-
     ctx.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
     ctx.updateKeyPressLabel();
-
     ctx.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
     ctx.updateKeyUpLabel();
     ctx.resizeMainHeight();
   },
 
-  onKeyPress: function(e) {
-    var ctx = DebugJS.ctx;
+  updateStatusInfoOnKeyPress: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
-    ctx.keyPressCode = e.keyCode + '(' + String.fromCharCode(e.keyCode) + ') ' + modKey;
+    ctx.keyPressCode = e.keyCode + '(' + e.key + ') ' + modKey;
     ctx.updateKeyPressLabel();
     ctx.resizeMainHeight();
   },
 
-  onKeyUp: function(e) {
-    var ctx = DebugJS.ctx;
+  updateStatusInfoOnKeyUp: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
     ctx.keyUpCode = e.keyCode + ' ' + modKey;
     ctx.updateKeyUpLabel();
@@ -2888,7 +2942,7 @@ DebugJS.prototype = {
 
   showDbgWin: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.win == null) return;
+    if ((ctx.win == null) || (ctx.uiStatus & DebugJS.UI_ST_PROTECTED)) return;
     ctx.win.style.display = 'block';
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     if ((ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJUST) ||
@@ -7951,6 +8005,71 @@ DebugJS.indexOfQuote = function(str, from) {
     }
   }
   return idx;
+};
+
+DebugJS.isCtrlChar = function(ch) {
+  var c = ch.charCodeAt();
+  if (((c >= 0x00) && (c <= 0x1F)) || (c == 0x7F)) {
+    return true;
+  }
+  return false;
+};
+
+DebugJS.isNumeric = function(ch) {
+  var c = ch.charCodeAt();
+  if ((c >= 0x30) && (c <= 0x39)) {
+    return true;
+  }
+  return false;
+};
+
+DebugJS.isAlphabetic = function(ch) {
+  var c = ch.charCodeAt();
+  if (((c >= 0x41) && (c <= 0x5A)) ||
+      ((c >= 0x61) && (c <= 0x7A))) {
+    return true;
+  }
+  return false;
+};
+
+DebugJS.isPunctuation = function(ch) {
+  var c = ch.charCodeAt();
+  if (((c >= 0x20) && (c <= 0x2F)) ||
+      ((c >= 0x3A) && (c <= 0x40)) ||
+      ((c >= 0x5B) && (c <= 0x60)) ||
+      ((c >= 0x7B) && (c <= 0x7E))) {
+    return true;
+  }
+  return false;
+};
+
+DebugJS.isNumAlpha = function(ch) {
+  var c = ch.charCodeAt();
+  if (DebugJS.isNumeric(ch) || DebugJS.isAlphabetic(ch)) {
+    return true;
+  }
+  return false;
+};
+
+DebugJS.isTypographic = function(ch) {
+  var c = ch.charCodeAt();
+  if (DebugJS.isNumAlpha(ch) || DebugJS.isPunctuation(ch)) {
+    return true;
+  }
+  return false;
+};
+
+DebugJS.KEYCH = {
+  Spacebar: ' ',
+  Enter: '\n',
+  Add: '+',
+  Subtract: '-',
+  Multiply: '*',
+  Divide: '/',
+  Del: '.'
+};
+DebugJS.cnvKey2Ch = function(key) {
+  return (DebugJS.KEYCH[key] == undefined ? key : DebugJS.KEYCH[key]);
 };
 
 DebugJS.omitAllWhiteSpace = function(str) {
