@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711030123';
+  this.v = '201711031235';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7899,10 +7899,6 @@ DebugJS.indexOfQuote = function(str, from) {
     }
   }
   return idx;
-};
-
-DebugJS._indexOfQuote = function(str, from) {
-
 };
 
 DebugJS.omitAllWhiteSpace = function(str) {
