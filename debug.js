@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711031933';
+  this.v = '201711032023';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6812,7 +6812,7 @@ DebugJS.prototype = {
   cmdPoint: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var ret;
-    var args = DebugJS.splitArgs(arg);
+    var args = DebugJS.splitQuotedArgs(arg);
     var point = DebugJS.point;
     var x = args[0];
     var y = args[1];
@@ -6879,7 +6879,7 @@ DebugJS.prototype = {
     } else if (x == 'hint') {
       var op = args[1];
       if (op == 'msg') {
-        var msg = DebugJS.getArgsFrom(arg, 3);
+        var msg = args[2];
         point.hint(msg);
       } else if (op == 'hide') {
         point.hint.hide();
@@ -6911,11 +6911,9 @@ DebugJS.prototype = {
     } else if (x == 'getprop') {
       ret = point.getProp(args[1]);
     } else if (x == 'setprop') {
-      var v = DebugJS.getArgsFrom(arg, 3);
-      point.setProp(args[1], v);
+      point.setProp(args[1], args[2]);
     } else if (x == 'verify') {
-      var v = DebugJS.getArgsFrom(arg, 4);
-      ret = point.verify(args[1], args[2], v);
+      ret = point.verify(args[1], args[2], args[3]);
     } else if (x == 'mouse') {
       point(ctx.mousePos.x, ctx.mousePos.y);
     } else if (x == 'text') {
@@ -6924,12 +6922,20 @@ DebugJS.prototype = {
         DebugJS.log.w('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
         return;
       }
-      var txt = DebugJS.getArgsFrom(arg, 2);
+      var txt = args[1];
       try {
         DebugJS.inputText(el, txt);
       } catch (e) {
         DebugJS.log.e(e);
       }
+    } else if (x == 'selectoption') {
+      var el = point.getElementFromCurrentPos();
+      if ((!el) || (el.nodeName != 'SELECT')) {
+        DebugJS.log.w('Pointed area is not a select element (' + (el ? el.nodeName : 'null') + ')');
+        return;
+      }
+      var val = args[1];
+      DebugJS.ctx._cmdSelect(el, val);
     } else {
       if (x == '') {
         var pos = point.getPos();
@@ -7181,6 +7187,10 @@ DebugJS.prototype = {
       return;
     }
     var val = args[1];
+    DebugJS.ctx._cmdSelect(sel, val);
+  },
+
+  _cmdSelect: function(sel, val) {
     try {
       var val = eval(val) + '';
       DebugJS.selectOption(sel, val);
@@ -7329,7 +7339,7 @@ DebugJS.prototype = {
         DebugJS.log('Test has been initialized.');
         break;
       case 'case':
-        var n = DebugJS.getArgsFrom(arg, 2);
+        var n = args[1];
         try {
           n = eval(n);
           if (n == undefined) n = '';
