@@ -2891,13 +2891,15 @@ $ scrollwin move 100 5000
   <tr>
     <td class="name">select</td>
     <td>
-      arg1: #id<br>
+      arg1: selectors<br>
       arg2: "value"<br>
     </td>
     <td>
-      Select an option of select element
+      Select an option of select element<br><br>
+e.g.,)<br>
 <pre class="eg">
 $ select #id "1"
+$ select select:nth-child(1) "abc"
 </pre>
     </td>
   </tr>
@@ -2917,7 +2919,7 @@ $ select #id "1"
   <tr>
     <td class="name">setattr</td>
     <td>
-      arg1: selectpr<br>
+      arg1: selector<br>
       arg2: index<span class="annotation">(opt)</span><br>
       arg3: property-name<br>
       arg4: value
@@ -3837,11 +3839,16 @@ function callback(xhr) {
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" maxlength="10" style="width:220px;" onfocus="log('inputtext2: onfocus');" onblur="log('inputtext2: onblur');" oninput="log('inputtext2: oninput ' + this.value);"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" id="pass1" name="pass1" style="width:220px;"></div>
-      <div style="margin-bottom:5px;">
+      <div id="div-select" style="margin-bottom:5px;">
         <select id="select1" name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">
           <option value="1">opt1</option>
           <option value="2">opt2</option>
           <option value="3">opt3</option>
+        </select><br>
+
+        <select id="select2" name="select1" style="width:255px; height:23px;">
+          <option value="abc">abc</option>
+          <option value="xy z">xy z</option>
         </select>
       </div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">tabindex=1</span><input id="input-tab1" name="input-tab1" style="width:180px;" tabindex="1" accesskey="a"></div>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711031235';
+  this.v = '201711031546';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -334,7 +334,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
     {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin px(x)|left|center|right|current px(y)|top|middle|bottom|current'},
-    {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selector value'},
+    {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors value'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Sets the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
@@ -7120,15 +7120,16 @@ DebugJS.prototype = {
   },
 
   cmdSelect: function(arg, tbl) {
-    var args = DebugJS.splitCmdLineInTwo(arg);
-    var id = args[0];
-    if (id == '') {
+    var args = DebugJS.splitCmdLineInTwoLast(arg);
+    var sel = args[0];
+    if ((sel == '') || (args.length < 2)) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
+    var val = args[1];
     try {
-      var val = eval(args[1]) + '';
-      DebugJS.selectOption(id, val);
+      var val = eval(val) + '';
+      DebugJS.selectOption(sel, val);
     } catch (e) {
       DebugJS.log.e(e);
     }
@@ -7772,29 +7773,6 @@ DebugJS.replaceCmdValName = function(v) {
   }
 };
 
-// " 1  2 3  4 " -> [0]="1" [1]=" 2 3  4 "
-DebugJS.splitCmdLineInTwo = function(str) {
-  var res = [];
-  var strs = str.match(/([^\s]{1,})\s(.*)/);
-  if (strs == null) {
-    res[0] = DebugJS.omitLeadingWhiteSpace(str);
-    res[1] = '';
-  } else {
-    res[0] = strs[1];
-    res[1] = strs[2];
-  }
-  return res;
-};
-
-// " 1  2  3  4 " (3)-> " 3  4 "
-DebugJS.getArgsFrom = function(str, n) {
-  var res = str;
-  for (var i = 1; i < n; i++) {
-    res = DebugJS.splitCmdLineInTwo(res)[1];
-  }
-  return res;
-};
-
 // " 1  2 3  4 " -> [0]="1" [1]="2" [2]="3" [3]="4"
 DebugJS.splitArgs = function(arg) {
   var wkArg = arg.replace(/\s{2,}/g, ' ');
@@ -7806,34 +7784,9 @@ DebugJS.splitArgs = function(arg) {
   return args;
 };
 
-// " 1  2 3  4 "
-// opt: ""
-// data: "1  2 3  4"
-// dataRaw: " 1  2 3  4 "
-//
-// " -a  1  2 3  4 "
-// opt: "a"
-// data: "1  2 3  4"
-// dataRaw: " 1  2 3  4 "
-DebugJS.parseArgs = function(arg) {
-  var args = {opt: '', data: '', dataRaw: ''};
-  var wkArgs = DebugJS.omitLeadingWhiteSpace(arg);
-  wkArgs = wkArgs.match(/-{1}([^\s]*)\s{0,1}(.*)/);
-  if (wkArgs == null) {
-    args.dataRaw = arg;
-    args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
-  } else {
-    args.opt = wkArgs[1];
-    args.dataRaw = wkArgs[2];
-    args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(wkArgs[2]);
-  }
-  return args;
-};
-
 // ' 1 "abc" "d ef"  "g\"hi" 2 ' -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2
 DebugJS.splitQuotedArgs = function(arg) {
   var args = [];
-  var from = 0;
   var start = 0;
   var len = 0;
   var searching = true;
@@ -7881,6 +7834,105 @@ DebugJS.splitQuotedArgs = function(arg) {
     args.push(str);
   }
   return args;
+};
+
+// " 1  2 3  4 " -> [0]="1" [1]=" 2 3  4 "
+DebugJS.splitCmdLineInTwo = function(str) {
+  var res = [];
+  var strs = str.match(/([^\s]{1,})\s(.*)/);
+  if (strs == null) {
+    res[0] = DebugJS.omitLeadingWhiteSpace(str);
+    res[1] = '';
+  } else {
+    res[0] = strs[1];
+    res[1] = strs[2];
+  }
+  return res;
+};
+
+// " 1  2 3  4 " -> [0]="1 2 3" [1]="4"
+DebugJS.splitCmdLineInTwoLast = function(str) {
+  var a = DebugJS.splitQuotedArgs(str);
+  if (a.length == 1) {
+    return a;
+  }
+  var args = [];
+  var a1 = '';
+  for (var i = 0; i < a.length - 1; i++) {
+    if (i > 0) a1 += ' ';
+    a1 += a[i];
+  }
+  args.push(a1);
+  args.push(a[a.length - 1]);
+  return args;
+};
+
+// " 1  2  3  4 " (3)-> " 3  4 "
+DebugJS.getArgsFrom = function(str, n) {
+  var res = str;
+  for (var i = 1; i < n; i++) {
+    res = DebugJS.splitCmdLineInTwo(res)[1];
+  }
+  return res;
+};
+
+// " 1  2 3  4 "
+// opt: ""
+// data: "1  2 3  4"
+// dataRaw: " 1  2 3  4 "
+//
+// " -a  1  2 3  4 "
+// opt: "a"
+// data: "1  2 3  4"
+// dataRaw: " 1  2 3  4 "
+DebugJS.parseArgs = function(arg) {
+  var args = {opt: '', data: '', dataRaw: ''};
+  var wkArgs = DebugJS.omitLeadingWhiteSpace(arg);
+  wkArgs = wkArgs.match(/-{1}([^\s]*)\s{0,1}(.*)/);
+  if (wkArgs == null) {
+    args.dataRaw = arg;
+    args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
+  } else {
+    args.opt = wkArgs[1];
+    args.dataRaw = wkArgs[2];
+    args.data = DebugJS.omitLeadingAndTrailingWhiteSpace(wkArgs[2]);
+  }
+  return args;
+};
+
+DebugJS.getQuotedStr = function(str) {
+  var ret = null;
+  var start = 0;
+  var len = 0;
+  var searching = true;
+  var quoted = false;
+  var ch = '';
+  for (var i = 0; i < str.length; i++) {
+    len++;
+    ch = str.charAt(i);
+    if (ch == '"') {
+      if (searching) {
+        start = i;
+        len = 1;
+        searching = false;
+        quoted = true;
+      } else if (quoted) {
+        if ((i > 0) && (str.charAt(i - 1) == '\\')) {
+          continue;
+        }
+        ret = str.substr(start, len);
+        break;
+      }
+    }
+  }
+  return ret;
+};
+
+DebugJS.encodeEsc = function(str) {
+  return str.replace(/\\/g, '\\\\');
+};
+DebugJS.decodeEsc = function(str) {
+  return str.replace(/\\\\/g, '\\');
 };
 
 DebugJS.indexOfQuote = function(str, from) {
@@ -11386,26 +11438,6 @@ DebugJS.getScreenCenter = function() {
     y: (document.documentElement.clientHeight / 2)
   };
   return p;
-};
-
-DebugJS.getQuotedStr = function(str) {
-  var ret = null;
-  var m = str.match(/\"(.*?)\"/);
-  if (m) {
-    ret = {
-      str: m[1],
-      idx: m.index + 1,
-      nextIdx: m.index + m[0].length
-    };
-  }
-  return ret;
-};
-
-DebugJS.encodeEsc = function(str) {
-  return str.replace(/\\/g, '\\\\');
-};
-DebugJS.decodeEsc = function(str) {
-  return str.replace(/\\\\/g, '\\');
 };
 
 DebugJS.random = function(min, max) {
