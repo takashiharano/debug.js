@@ -2886,7 +2886,9 @@ $ rgb 255 255 255
     <td class="name">scrollwin</td>
     <td>
       arg1: position x<br>
-      arg2: position y
+      arg2: position y<br>
+      arg3: step(px)<br>
+      arg4: speed(ms)
     </td>
     <td>
       Set window scroll position<br>
@@ -2895,10 +2897,16 @@ $ rgb 255 255 255
       w/ "+" / "-" : the offset in pixels.<br>
       w/o "+" / "-" : absolute position in pixels.<br>
 
-<br>
-The command with "move" makes gradually adjust the position of the scroll
 <pre class="eg">
-$ scrollwin move 100 5000
+$ scrollwin +0 bottom
+$ scrollwin 100 5000
+-> Gradually adjust the position (use scrollstep/scrollspeed properties)
+
+$ scrollwin 100 5000 10 20
+-> Gradually adjust the position (x=100, y=5000) by 10px every 20ms.
+
+$ scrollwin 100 5000 0 0
+-> Scroll to the specified position directly
 </pre>
     </td>
   </tr>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711040021';
+  this.v = '201711041057';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -334,7 +334,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'resume', fnc: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
-    {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin px(x)|left|center|right|current px(y)|top|middle|bottom|current'},
+    {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin [+|-]px(x)|left|center|right|current [+|-]px(y)|top|middle|bottom|current [step(px)] [speed(ms)]'},
     {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors value'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
@@ -7110,13 +7110,10 @@ DebugJS.prototype = {
   cmdScrollWin: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
-    var op = args[0];
     var posX = args[0];
     var posY = args[1];
-    if (op == 'move') {
-      posX = args[1];
-      posY = args[2];
-    }
+    var step = args[2];
+    var speed = args[3];
     var x = ctx.cmdScrollWinGetX(posX);
     if (x == undefined) {
       DebugJS.printUsage(tbl.usage);
@@ -7127,12 +7124,10 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    if (op == 'move') {
-      var step = args[3];
-      var speed = args[4];
-      DebugJS.scrollTo(x, y, step, speed);
-    } else {
+    if ((step == '0') || (speed == '0')) {
       window.scroll(x, y);
+    } else {
+      DebugJS.scrollTo(x, y, step, speed);
     }
   },
 
