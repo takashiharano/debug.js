@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711041809';
+  this.v = '201711041840';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7160,6 +7160,7 @@ DebugJS.prototype = {
 
   cmdScrollWinGetX: function(posX) {
     var x;
+    var scrollX = (window.scrollX != undefined ? window.scrollX : window.pageXOffset);
     if (posX == 'left') {
       x = 0;
     } else if (posX == 'center') {
@@ -7167,11 +7168,11 @@ DebugJS.prototype = {
     } else if (posX == 'right') {
       x = document.body.clientWidth;
     } else if (posX == 'current') {
-      x = window.scrollX;
+      x = scrollX;
     } else if (posX.charAt(0) == '+') {
-      x = window.scrollX + (posX.substr(1) | 0);
+      x = scrollX + (posX.substr(1) | 0);
     } else if (posX.charAt(0) == '-') {
-      x = window.scrollX - (posX.substr(1) | 0);
+      x = scrollX - (posX.substr(1) | 0);
     } else if ((posX == '') || isNaN(posX)) {
       x = undefined;
     } else {
@@ -7182,6 +7183,7 @@ DebugJS.prototype = {
 
   cmdScrollWinGetY: function(posY) {
     var y;
+    var scrollY = (window.scrollY != undefined ? window.scrollY : window.pageYOffset);
     if (posY == 'top') {
       y = 0;
     } else if (posY == 'middle') {
@@ -7189,11 +7191,11 @@ DebugJS.prototype = {
     } else if (posY == 'bottom') {
       y = document.body.clientHeight;
     } else if (posY == 'current') {
-      y = window.scrollY;
+      y = scrollY;
     } else if (posY.charAt(0) == '+') {
-      y = window.scrollY + (posY.substr(1) | 0);
+      y = scrollY + (posY.substr(1) | 0);
     } else if (posY.charAt(0) == '-') {
-      y = window.scrollY - (posY.substr(1) | 0);
+      y = scrollY - (posY.substr(1) | 0);
     } else if ((posY == '') || isNaN(posY)) {
       y = undefined;
     } else {
