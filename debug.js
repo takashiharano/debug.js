@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711042005';
+  this.v = '201711050011';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1657,15 +1657,36 @@ DebugJS.prototype = {
   },
 
   updateWindowSizeLabel: function() {
-    this.windowSizeLabel.innerText = 'WIN:w=' + window.outerWidth + ',h=' + window.outerHeight;
+    var ctx = DebugJS.ctx;
+    var w = window.outerWidth;
+    var h = window.outerHeight;
+    ctx.windowSizeLabel.innerText = 'WIN:w=' + w + ',h=' + h;
+    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+      document.getElementById(ctx.id + '-sys-win-w').innerText = w;
+      document.getElementById(ctx.id + '-sys-win-h').innerText = h;
+    }
   },
 
   updateClientSizeLabel: function() {
-    this.clientSizeLabel.innerText = 'CLI:w=' + document.documentElement.clientWidth + ',h=' + document.documentElement.clientHeight;
+    var ctx = DebugJS.ctx;
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.clientHeight;
+    ctx.clientSizeLabel.innerText = 'CLI:w=' + w + ',h=' + h;
+    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+      document.getElementById(ctx.id + '-sys-cli-w').innerText = w;
+      document.getElementById(ctx.id + '-sys-cli-h').innerText = h;
+    }
   },
 
   updateBodySizeLabel: function() {
-    this.bodySizeLabel.innerText = 'BODY:w=' + this.bodyEl.clientWidth + ',h=' + this.bodyEl.clientHeight;
+    var ctx = DebugJS.ctx;
+    var w = this.bodyEl.clientWidth;
+    var h = this.bodyEl.clientHeight;
+    ctx.bodySizeLabel.innerText = 'BODY:w=' + w + ',h=' + h;
+    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+      document.getElementById(ctx.id + '-sys-body-w').innerText = w;
+      document.getElementById(ctx.id + '-sys-body-h').innerText = h;
+    }
   },
 
   updateScrollPosLabel: function() {
@@ -2645,7 +2666,19 @@ DebugJS.prototype = {
       ctx.scrollPosY = window.scrollY;
     }
     ctx.updateScrollPosLabel();
+    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+      ctx.updateSysInfoScrollPosLabel(ctx);
+    }
     ctx.resizeMainHeight();
+  },
+
+  updateSysInfoScrollPosLabel: function(ctx) {
+    document.getElementById(ctx.id + '-sys-scroll-x').innerHTML = DebugJS.setStyleIfObjNotAvailable(window.scrollX);
+    document.getElementById(ctx.id + '-sys-scroll-y').innerHTML = DebugJS.setStyleIfObjNotAvailable(window.scrollY);
+    document.getElementById(ctx.id + '-sys-pgoffset-x').innerText = window.pageXOffset;
+    document.getElementById(ctx.id + '-sys-pgoffset-y').innerText = window.pageYOffset;
+    document.getElementById(ctx.id + '-sys-cli-scroll-x').innerText = document.documentElement.scrollLeft;
+    document.getElementById(ctx.id + '-sys-cli-scroll-y').innerText = document.documentElement.scrollTop;
   },
 
   onMouseDown: function(e) {
@@ -3280,6 +3313,12 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('cookieEnabled', navigator.cookieEnabled);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('window');
+    html += DebugJS.addSysInfoProp('outerWidth   ', window.outerWidth, 'sys-win-w');
+    html += DebugJS.addSysInfoProp('outerHeight  ', window.outerHeight, 'sys-win-h');
+    html += DebugJS.addSysInfoProp('scrollX      ', DebugJS.setStyleIfObjNotAvailable(window.scrollX), 'sys-scroll-x');
+    html += DebugJS.addSysInfoProp('pageXOffset  ', window.pageXOffset, 'sys-pgoffset-x');
+    html += DebugJS.addSysInfoProp('scrollY      ', DebugJS.setStyleIfObjNotAvailable(window.scrollY), 'sys-scroll-y');
+    html += DebugJS.addSysInfoProp('pageYOffset  ', window.pageYOffset, 'sys-pgoffset-y');
     html += DebugJS.addSysInfoProp('onload       ', winOnload);
     html += DebugJS.addSysInfoProp('onunload     ', winOnunload);
     html += DebugJS.addSysInfoProp('onclick      ', winOnclick);
@@ -3297,6 +3336,15 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onerror      ', winOnerror);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('document');
+    html += DebugJS.addSysInfoPropH(' documentElement');
+    html += DebugJS.addSysInfoProp(' clientWidth ', document.documentElement.clientWidth, 'sys-cli-w');
+    html += DebugJS.addSysInfoProp(' clientHeight', document.documentElement.clientHeight, 'sys-cli-h');
+    html += DebugJS.addSysInfoProp(' scrollLeft  ', document.documentElement.scrollLeft, 'sys-cli-scroll-x');
+    html += DebugJS.addSysInfoProp(' scrollTop   ', document.documentElement.scrollTop, 'sys-cli-scroll-y');
+    html += DebugJS.addSysInfoPropH(' body');
+    html += DebugJS.addSysInfoProp(' clientWidth ', document.body.clientWidth, 'sys-body-w');
+    html += DebugJS.addSysInfoProp(' clientHeight', document.body.clientHeight, 'sys-body-h');
+    html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoProp('onclick      ', docOnclick);
     html += DebugJS.addSysInfoProp('onmousedown  ', docOnmousedown);
     html += DebugJS.addSysInfoProp('onmousemove  ', docOnmousemove);
@@ -7755,8 +7803,15 @@ DebugJS.addSysInfoPropH = function(n) {
   return '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">' + n + '.</span>\n';
 };
 
-DebugJS.addSysInfoProp = function(n, v) {
-  return '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> ' + n + '</span>: ' + v + '\n';
+DebugJS.addSysInfoProp = function(n, v, id) {
+  var s = '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> ' + n + '</span>: ';
+  if (id == undefined) {
+    s += v;
+  } else {
+    s += '<span' + (id == undefined ? '' : ' id="' + DebugJS.ctx.id + '-' + id + '"') + '>' + v + '</span>';
+  }
+  s += '\n';
+  return s;
 };
 
 DebugJS.getElmHexColor = function(color) {
