@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711041840';
+  this.v = '201711042005';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10567,6 +10567,7 @@ DebugJS.point.createPtr = function() {
 };
 DebugJS.point.init = function() {
   DebugJS.point(0, 0);
+  DebugJS.point.cursor();
   DebugJS.point.hint.clear();
   DebugJS.point.hide();
 };
@@ -11118,29 +11119,23 @@ DebugJS._scrollWinTo = function() {
   var d = DebugJS.scrollWinTo.data;
   d.tmid = 0;
 
-  if ((d.step == 0) || (d.speed == 0)) {
-    window.scroll(d.dstX, d.dstY);
-    DebugJS.scrollWinTo.initData();
-    DebugJS.bat.unlock();
-    return;
+  if (d.speed == 0) {
+    d.step = 0;
   }
-
   var dX = DebugJS.calcDestPosAndStep(d.dstX, d.step);
   d.dstX = dX.dest;
-
   var dY = DebugJS.calcDestPosAndStep(d.dstY, d.step);
   d.dstY = dY.dest;
-
   window.scrollBy(dX.step, dY.step);
 
-  if ((d.dstX != 0) || (d.dstY != 0)) {
-    d.tmid = setTimeout(DebugJS._scrollWinTo, d.speed);
-  } else {
+  if ((d.dstX == 0) && (d.dstY == 0)) {
     if (d.cb) {
       d.cb(d.arg);
     }
     DebugJS.scrollWinTo.initData();
     DebugJS.bat.unlock();
+  } else {
+    d.tmid = setTimeout(DebugJS._scrollWinTo, d.speed);
   }
 };
 DebugJS.scrollWinTo.data = {};
@@ -11260,13 +11255,13 @@ DebugJS.scrollElTo = function(target, x, y) {
 
 DebugJS.calcDestPosAndStep = function(dest, step) {
   if (dest < 0) {
-    if ((dest * (-1)) < step) {
+    if (((dest * (-1)) < step) || (step == 0)) {
       step = dest * (-1);
     }
     dest += step;
     step *= (-1);
   } else {
-    if (dest < step) {
+    if ((dest < step) || (step == 0)) {
       step = dest;
     }
     dest -= step;
