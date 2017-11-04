@@ -2727,6 +2727,11 @@ $ point text "abc123"
 $ point selectoption "abc123"
 -&gt; Select a &lt;select&gt; option value at the current position
 
+$ point scroll x y
+-&gt; Scroll the current position
+x: [+|-]val | left | center | right | current
+y: [+|-]val | top | middle | bottom | current
+
 $ point move x y 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
 $ point move #id alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 $ point move .className 0<span class="annotation">index</span> alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
@@ -3852,9 +3857,9 @@ function callback(xhr) {
 
 <!-- ********************************************************************** -->
 <span id="dummy__button" class="showhide-button" onclick="showHideByName('dummy')">&gt;</span>
-<span id="dummy__partial-body">Dummy elements for DOM Element Inspection Test</span>
+<span id="dummy__partial-body">Dummy field for DOM Element Test</span>
 <div id="dummy__body" style="display:none; height:650px;">
-<div class="caption2">Dummy elements for DOM Element Inspection Test</div>
+<div class="caption2">Dummy field for DOM Element Test</div>
 <div style="height:370px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
