@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711041352';
+  this.v = '201711041411';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11143,7 +11143,6 @@ DebugJS.scrollWinToTarget = function(ps, step, speed, cb, arg) {
   if ((ps.x < 0) || ((ps.x + ps.w) > document.documentElement.clientWidth)) {
     d.dstX = ps.x;
   }
-
   var clientH = document.documentElement.clientHeight;
   var bodyH = document.body.clientHeight;
   var absScreenBottomT = bodyH - clientH;
@@ -11163,20 +11162,15 @@ DebugJS.scrollWinToTarget = function(ps, step, speed, cb, arg) {
       d.dstY = ps.y - (clientH / 2);
     }
   }
-
   if ((d.dstX != 0) || (d.dstY != 0)) {
-    if (step == undefined) {
-      window.scrollBy(d.dstX, d.dstY);
+    if (step >= 0) {
+      d.step = step | 0;
     } else {
-      if (step >= 0) {
-        d.step = step | 0;
-      } else {
-        d.step = DebugJS.ctx.properties.scrollstep.value | 0;
-      }
-      DebugJS.bat.lock();
-      DebugJS._scrollTo();
-      return true;
+      d.step = DebugJS.ctx.properties.scrollstep.value | 0;
     }
+    DebugJS.bat.lock();
+    DebugJS._scrollTo();
+    return true;
   }
   DebugJS.scrollTo.initData();
   return false;
