@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711050011';
+  this.v = '201711050028';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5249,6 +5249,9 @@ DebugJS.prototype = {
       ctx.onBatLoaded(ctx, file, content);
     } else if (file.name.match(/\.js$/)) {
       ctx.onJsLoaded(ctx, file, content);
+    } else if (file.name.match(/\.json$/)) {
+      DebugJS.execCmdJson(content, true);
+      ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
     }
   },
 
@@ -5409,7 +5412,7 @@ DebugJS.prototype = {
         var ctxSizePos = ctx.getSelfSizePos();
         preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
       } else {
-        var ext = ['bat', 'csv', 'ini', 'java', 'js', 'log', 'md'];
+        var ext = ['bat', 'csv', 'ini', 'java', 'js', 'json', 'log', 'md'];
         var re = '';
         for (var i = 0; i < ext.length; i++) {
           if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
