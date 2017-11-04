@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711041411';
+  this.v = '201711041642';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -333,8 +333,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
     {cmd: 'resume', fnc: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {cmd: 'scrolllog', fnc: this.cmdScrollLog, desc: 'Set log scroll position', usage: 'scrolllog top|px|bottom'},
-    {cmd: 'scrollwin', fnc: this.cmdScrollWin, desc: 'Set window scroll position', usage: 'scrollwin [+|-]px(x)|left|center|right|current [+|-]px(y)|top|middle|bottom|current [step(px)] [speed(ms)]'},
+    {cmd: 'scrollto', fnc: this.cmdScrollTo, desc: 'Set scroll position', usage: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [step(px)] [speed(ms)]'},
     {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors value'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
@@ -7092,28 +7091,42 @@ DebugJS.prototype = {
     }
   },
 
-  cmdScrollLog: function(arg, tbl) {
+  cmdScrollTo: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
-    var pos = args[0];
+    var target = args[0];
+
+    if (target == 'log') {
+      var pos = args[1];
+      ctx._cmdScrollLog(ctx, tbl, pos);
+      return;
+    } else if (target == 'window') {
+      var posX = args[1];
+      var posY = args[2];
+      var step = args[3];
+      var speed = args[4];
+      ctx._cmdScrollWin(ctx, tbl, posX, posY, step, speed);
+      return;
+    }
+    DebugJS.printUsage(tbl.usage);
+  },
+
+  _cmdScrollLog: function(ctx, tbl, pos) {
+    var ctx = DebugJS.ctx;
     if (pos == 'top') {
       pos = 0;
     } else if (pos == 'bottom') {
       pos = ctx.logPanel.scrollHeight;
-    } else if ((pos == '') || isNaN(pos)) {
-      DebugJS.printUsage(tbl.usage);
-      return;
     }
-    ctx.logPanel.scrollTop = pos;
+    if ((pos === '') || isNaN(pos)) {
+      DebugJS.printUsage(tbl.usage);
+    } else {
+      ctx.logPanel.scrollTop = pos;
+    }
   },
 
-  cmdScrollWin: function(arg, tbl) {
+  _cmdScrollWin: function(ctx, tbl, posX, posY, step, speed) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var posX = args[0];
-    var posY = args[1];
-    var step = args[2];
-    var speed = args[3];
     var x = ctx.cmdScrollWinGetX(posX);
     if (x == undefined) {
       DebugJS.printUsage(tbl.usage);
