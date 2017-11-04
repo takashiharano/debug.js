@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711041057';
+  this.v = '201711041352';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -371,8 +371,8 @@ var DebugJS = DebugJS || function() {
     pointstep: {value: DebugJS.point.move.step, restriction: /^[0-9]+$/},
     pointspeed: {value: DebugJS.point.move.speed, restriction: /^[0-9]+$/},
     inputtextspeed: {value: 30, restriction: /^[0-9\-]+$/},
-    scrollstep: {value: DebugJS.scrollToTarget.data.step, restriction: /^[0-9]+$/},
-    scrollspeed: {value: DebugJS.scrollToTarget.data.speed, restriction: /^[0-9]+$/},
+    scrollstep: {value: DebugJS.scrollTo.data.step, restriction: /^[0-9]+$/},
+    scrollspeed: {value: DebugJS.scrollTo.data.speed, restriction: /^[0-9]+$/},
     wait: {value: 500, restriction: /^[0-9]+$/},
     timer: {value: '00:03:00.000', restriction: /.*/},
     wdt: {value: 500, restriction: /^[0-9]+$/}
@@ -10842,7 +10842,7 @@ DebugJS.pointById = function(id, alignX, alignY) {
     return;
   }
   var ps = DebugJS.getElPosSize(el);
-  DebugJS.scrollToTarget(ps);
+  DebugJS.scrollWinToTarget(ps);
   ps = DebugJS.getElPosSize(id);
   if (alignX == undefined) alignX = 0.5;
   if (alignY == undefined) alignY = 0.5;
@@ -10856,7 +10856,7 @@ DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
     return;
   }
   var ps = DebugJS.getElPosSize(el);
-  DebugJS.scrollToTarget(ps);
+  DebugJS.scrollWinToTarget(ps);
   ps = DebugJS.getElPosSize(selector, idx);
   if (alignX == undefined) alignX = 0.5;
   if (alignY == undefined) alignY = 0.5;
@@ -10893,7 +10893,7 @@ DebugJS.point.moveToId = function(id, step, speed, alignX, alignY) {
     DebugJS.log.e('#' + id + ': Element not found');
     return;
   }
-  if (DebugJS.scrollToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToId, data)) {
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToId, data)) {
     return;
   }
   DebugJS.point._moveToId(data);
@@ -10920,7 +10920,7 @@ DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alig
     DebugJS.log.e(selector + '[' + idx + ']: Element not found');
     return;
   }
-  if (DebugJS.scrollToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToSelector, data)) {
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToSelector, data)) {
     return;
   }
   DebugJS.point._moveToSelector(data);
@@ -11063,7 +11063,7 @@ DebugJS.point.hint.clear = function() {
 };
 
 DebugJS.scrollTo = function(x, y, step, speed) {
-  var d = DebugJS.scrollToTarget.data;
+  var d = DebugJS.scrollTo.data;
   if (d.tmid > 0) {
     clearTimeout(d.tmid);
     d.tmid = 0;
@@ -11082,13 +11082,54 @@ DebugJS.scrollTo = function(x, y, step, speed) {
     d.speed = speed | 0;
   }
   DebugJS.bat.lock();
-  DebugJS._scrollToTarget();
+  DebugJS._scrollTo();
   return true;
 };
+DebugJS._scrollTo = function() {
+  var d = DebugJS.scrollTo.data;
+  d.tmid = 0;
 
-DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
+  if ((d.step == 0) || (d.speed == 0)) {
+    window.scroll(d.dstX, d.dstY);
+    DebugJS.scrollTo.initData();
+    DebugJS.bat.unlock();
+    return;
+  }
+
+  var dX = DebugJS.calcDestPosAndStep(d.dstX, d.step);
+  d.dstX = dX.dest;
+
+  var dY = DebugJS.calcDestPosAndStep(d.dstY, d.step);
+  d.dstY = dY.dest;
+
+  window.scrollBy(dX.step, dY.step);
+
+  if ((d.dstX != 0) || (d.dstY != 0)) {
+    d.tmid = setTimeout(DebugJS._scrollTo, d.speed);
+  } else {
+    if (d.cb) {
+      d.cb(d.arg);
+    }
+    DebugJS.scrollTo.initData();
+    DebugJS.bat.unlock();
+  }
+};
+DebugJS.scrollTo.data = {};
+DebugJS.scrollTo.initData = function() {
+  var d = DebugJS.scrollTo.data;
+  d.dstX = 0;
+  d.dstY = 0;
+  d.step = 100;
+  d.speed = 10;
+  d.tmid = 0;
+  d.cb = null;
+  d.arg = null;
+};
+DebugJS.scrollTo.initData();
+
+DebugJS.scrollWinToTarget = function(ps, step, speed, cb, arg) {
   if (!ps) return false;
-  var d = DebugJS.scrollToTarget.data;
+  var d = DebugJS.scrollTo.data;
   if (d.tmid > 0) {
     clearTimeout(d.tmid);
     d.tmid = 0;
@@ -11133,54 +11174,14 @@ DebugJS.scrollToTarget = function(ps, step, speed, cb, arg) {
         d.step = DebugJS.ctx.properties.scrollstep.value | 0;
       }
       DebugJS.bat.lock();
-      DebugJS._scrollToTarget();
+      DebugJS._scrollTo();
       return true;
     }
   }
-  DebugJS.scrollToTarget.initData();
+  DebugJS.scrollTo.initData();
   return false;
 };
-DebugJS.scrollToTarget.data = {};
-DebugJS.scrollToTarget.initData = function() {
-  var d = DebugJS.scrollToTarget.data;
-  d.dstX = 0;
-  d.dstY = 0;
-  d.step = 100;
-  d.speed = 10;
-  d.tmid = 0;
-  d.cb = null;
-  d.arg = null;
-};
-DebugJS.scrollToTarget.initData();
-DebugJS._scrollToTarget = function() {
-  var d = DebugJS.scrollToTarget.data;
-  d.tmid = 0;
 
-  if ((d.step == 0) || (d.speed == 0)) {
-    window.scroll(d.dstX, d.dstY);
-    DebugJS.scrollToTarget.initData();
-    DebugJS.bat.unlock();
-    return;
-  }
-
-  var dX = DebugJS.calcDestPosAndStep(d.dstX, d.step);
-  d.dstX = dX.dest;
-
-  var dY = DebugJS.calcDestPosAndStep(d.dstY, d.step);
-  d.dstY = dY.dest;
-
-  window.scrollBy(dX.step, dY.step);
-
-  if ((d.dstX != 0) || (d.dstY != 0)) {
-    d.tmid = setTimeout(DebugJS._scrollToTarget, d.speed);
-  } else {
-    if (d.cb) {
-      d.cb(d.arg);
-    }
-    DebugJS.scrollToTarget.initData();
-    DebugJS.bat.unlock();
-  }
-};
 DebugJS.calcDestPosAndStep = function(dest, step) {
   if (dest < 0) {
     if ((dest * (-1)) < step) {
