@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711060022';
+  this.v = '201711060033';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5560,7 +5560,7 @@ DebugJS.prototype = {
         html += 'Address    +0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F        ASCII           ';
       }
     } else if (mode == 'dec') {
-      html += 'Address    +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F   ASCII           ';
+      html += 'Address     +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F  ASCII           ';
     } else {
       html += 'Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           ';
     }
