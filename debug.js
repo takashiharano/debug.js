@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711060731';
+  this.v = '201711060743';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5269,6 +5269,9 @@ DebugJS.prototype = {
           ctx.loadFile(format);
         } else {
           DebugJS.log.w('handleFileDrop() e.dataTransfer.files.length == 0');
+          if (cb) {
+            cb(ctx, false, null, null);
+          }
         }
       }
     } catch (e) {
@@ -5287,8 +5290,12 @@ DebugJS.prototype = {
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onFileLoadedFromLogPanel);
   },
 
-  onFileLoadedFromLogPanel: function(ctx, file, content) {
+  onFileLoadedFromLogPanel: function(ctx, success, file, content) {
     var BAT_HEAD = '#!BAT!';
+    if (!success) {
+      ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
+      return;
+    }
     if (content.substr(0, BAT_HEAD.length) == BAT_HEAD) {
       ctx.onBatLoaded(ctx, file, content);
     } else if (file.name.match(/\.js$/)) {
@@ -5305,7 +5312,7 @@ DebugJS.prototype = {
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onBatLoaded);
   },
 
-  onBatLoaded: function(ctx, file, content) {
+  onBatLoaded: function(ctx, success, file, content) {
     DebugJS.bat.setBat(content);
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
@@ -5316,7 +5323,7 @@ DebugJS.prototype = {
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FORMAT_B64, ctx.onJsLoaded);
   },
 
-  onJsLoaded: function(ctx, file, content) {
+  onJsLoaded: function(ctx, success, file, content) {
     ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
     ctx.openFeature(ctx, DebugJS.STATE_SCRIPT);
     ctx.scriptEditor.value = ctx.scriptBuf = content;
@@ -5499,7 +5506,7 @@ DebugJS.prototype = {
           var escDecoded = DebugJS.escTags(decoded);
           preview = '<span style="color:#0f0">' + escDecoded + '</span>\n';
           if (ctx.fileLoaderSysCb) {
-            ctx.fileLoaderSysCb(ctx, file, decoded);
+            ctx.fileLoaderSysCb(ctx, true, file, decoded);
           }
         }
       }
