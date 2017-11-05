@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711052000';
+  this.v = '201711052134';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -278,7 +278,7 @@ var DebugJS = DebugJS || function() {
   this.initHeight = 0;
   this.orgSizePos = {w: 0, h: 0, t: 0, l: 0};
   this.expandModeOrg = {w: 0, h: 0, t: 0, l: 0};
-  this.winExpandHeight = DebugJS.DBGWIN_EXPAND_H * this.DEFAULT_OPTIONS.zoom;
+  this.winExpandHeight = DebugJS.DBGWIN_EXPAND_C_H * this.DEFAULT_OPTIONS.zoom;
   this.winExpandCnt = 0;
   this.clickedPosX = 0;
   this.clickedPosY = 0;
@@ -350,7 +350,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
     {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
-    {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|max|full|expand|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'cont', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
@@ -480,14 +480,14 @@ DebugJS.CMD_ATTR_DISABLED = 0x10;
 DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DBGWIN_MIN_W = 292;
 DebugJS.DBGWIN_MIN_H = 155;
-DebugJS.DBGWIN_EXPAND_W = 960;
-DebugJS.DBGWIN_EXPAND_H = 640;
-DebugJS.DBGWIN_EXPAND_W2 = 800;
-DebugJS.DBGWIN_EXPAND_H2 = 580;
+DebugJS.DBGWIN_EXPAND_C_W = 960;
+DebugJS.DBGWIN_EXPAND_C_H = 640;
+DebugJS.DBGWIN_EXPAND_W = 850;
+DebugJS.DBGWIN_EXPAND_H = 580;
 DebugJS.SIZE_ST_MIN = -1;
 DebugJS.SIZE_ST_NORMAL = 0;
 DebugJS.SIZE_ST_EXPANDED = 1;
-DebugJS.SIZE_ST_EXPANDED2 = 2;
+DebugJS.SIZE_ST_EXPANDED_C = 2;
 DebugJS.SIZE_ST_FULL_W = 4;
 DebugJS.SIZE_ST_FULL_H = 5;
 DebugJS.SIZE_ST_FULL_WH = 6;
@@ -720,7 +720,7 @@ DebugJS.prototype = {
       ctx.initWidth = ctx.win.offsetWidth - DebugJS.WIN_ADJUST;
       ctx.initHeight = ctx.win.offsetHeight - DebugJS.WIN_ADJUST;
     }
-    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_H * ctx.opt.zoom;
+    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_C_H * ctx.opt.zoom;
     if ((restoreOpt != null) && (restoreOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom(ctx);
       ctx.reopenFeatures(ctx, restoreOpt.status);
@@ -1596,10 +1596,10 @@ DebugJS.prototype = {
   restoreDbgWinSize: function(ctx, sizeStatus) {
     if (sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       ctx.setWinSize('full');
+    } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED_C) {
+      ctx.setWinSize('center');
     } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED) {
-      ctx.setWinSize('max');
-    } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED2) {
-      ctx.expandDbgWin2(ctx);
+      ctx._expandDbgWin(ctx);
     }
   },
 
@@ -1817,7 +1817,7 @@ DebugJS.prototype = {
   updateWinCtrlBtnPanel: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.winCtrlBtnPanel) return;
-    var fn = 'DebugJS.ctx.expandDbgWin(true);';
+    var fn = 'DebugJS.ctx.expandDbgWin(\'full\');';
     var btn = '&#x25A1;';
     if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
       fn = 'DebugJS.ctx.restoreDbgWin();';
@@ -2772,97 +2772,121 @@ DebugJS.prototype = {
     if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
       ctx.setWinSize('restore');
     } else {
-      var sizePos = ctx.getSelfSizePos();
-      if ((sizePos.w > DebugJS.DBGWIN_EXPAND_W2) ||
-          (sizePos.h > DebugJS.DBGWIN_EXPAND_H2)) {
-        ctx.setWinSize('expand');
-      } else {
-        ctx.expandDbgWin2(ctx);
-      }
+      ctx.expandDbgWin('expand');
     }
     ctx.focusCmdLine();
   },
 
-  expandDbgWin: function(auto) {
+  expandDbgWin: function(mode) {
     var ctx = DebugJS.ctx;
     var sizePos = ctx.getSelfSizePos();
     ctx.saveSizeAndPos(ctx);
+    switch (mode) {
+      case 'full':
+        ctx.setDbgWinFull(ctx);
+        break;
+      case 'expand':
+        if ((sizePos.w < DebugJS.DBGWIN_EXPAND_W) &&
+            (sizePos.h < DebugJS.DBGWIN_EXPAND_H)) {
+          ctx._expandDbgWin(ctx);
+        } else {
+          ctx._expandDbgWinAuto(ctx, sizePos);
+        }
+        break;
+      case 'center':
+        ctx._expandDbgWinCenter(ctx);
+        break;
+      default:
+        ctx._expandDbgWinAuto(ctx, sizePos);
+    }
+    ctx.updateWinCtrlBtnPanel();
+  },
+
+  _expandDbgWin: function(ctx) {
+    var sizePos = ctx.getSelfSizePos();
+    var clientW = document.documentElement.clientWidth;
+    var clientH = document.documentElement.clientHeight;
+    var expandThresholdW = document.documentElement.clientWidth * 0.6;
+    var expandThresholdH = document.documentElement.clientHeight * 0.6;
+    if ((sizePos.w > expandThresholdW) || (sizePos.h > expandThresholdH)) {
+      ctx.setDbgWinFull(ctx);
+      return;
+    }
+    var l = sizePos.x1 + 3;
+    var t = sizePos.y1 + 3;
+    var w = DebugJS.DBGWIN_EXPAND_W;
+    var h = DebugJS.DBGWIN_EXPAND_H;
+    if (sizePos.x1 > (clientW - sizePos.x2)) {
+      l = (sizePos.x1 - (DebugJS.DBGWIN_EXPAND_W - sizePos.w)) + 1;
+    }
+    if (sizePos.y1 > (clientH - sizePos.y2)) {
+      t = (sizePos.y1 - (DebugJS.DBGWIN_EXPAND_H - sizePos.h)) + 1;
+    }
+    if (l < 0) l = 0;
+    if (clientH < DebugJS.DBGWIN_EXPAND_H) {
+      t = clientH - DebugJS.DBGWIN_EXPAND_H;
+    }
+    ctx.saveSizeAndPos(ctx);
+    ctx.setDbgWinPos(t, l);
+    ctx.setDbgWinSize(w, h);
+    ctx.sizeStatus = DebugJS.SIZE_ST_EXPANDED;
+    ctx.updateWinCtrlBtnPanel();
+  },
+
+  _expandDbgWinAuto: function(ctx, sizePos) {
+    if ((sizePos.w >= DebugJS.DBGWIN_EXPAND_W) && (sizePos.h >= DebugJS.DBGWIN_EXPAND_H)) {
+      ctx.setDbgWinFull(ctx);
+      return;
+    }
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
     var expandThresholdW = document.documentElement.clientWidth * 0.6;
     var expandThresholdH = document.documentElement.clientHeight * 0.6;
     var w = 0, h = 0, t = 0, l = 0;
 
-    if (auto) {
-      if ((DebugJS.DBGWIN_EXPAND_W > clientW) || (sizePos.w > expandThresholdW)) {
-        w = clientW;
-        ctx.sizeStatus |= DebugJS.SIZE_ST_FULL_W;
-        if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sizePos.h > expandThresholdH)) {
-          h = clientH;
-        } else {
-          t = DebugJS.DBGWIN_POS_NONE;
-        }
+    if ((DebugJS.DBGWIN_EXPAND_W > clientW) || (sizePos.w > expandThresholdW)) {
+      w = clientW;
+      ctx.sizeStatus |= DebugJS.SIZE_ST_FULL_W;
+      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sizePos.h > expandThresholdH)) {
+        h = clientH;
       } else {
-        if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sizePos.h > expandThresholdH)) {
-          h = clientH;
-          if ((DebugJS.DBGWIN_EXPAND_W < clientW) && (sizePos.w < expandThresholdW)) {
-            l = DebugJS.DBGWIN_POS_NONE;
-          }
-        } else {
-          w = DebugJS.DBGWIN_EXPAND_W;
-          h = DebugJS.DBGWIN_EXPAND_H;
-          l = clientW / 2 - w / 2;
-          t = clientH / 2 - h / 2;
-        }
+        t = DebugJS.DBGWIN_POS_NONE;
       }
     } else {
-      w = ((DebugJS.DBGWIN_EXPAND_W > clientW) ? clientW : DebugJS.DBGWIN_EXPAND_W);
-      h = ((DebugJS.DBGWIN_EXPAND_H > clientH) ? clientH : DebugJS.DBGWIN_EXPAND_H);
-      l = clientW / 2 - w / 2;
-      t = clientH / 2 - h / 2;
+      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sizePos.h > expandThresholdH)) {
+        h = clientH;
+        if ((DebugJS.DBGWIN_EXPAND_W < clientW) && (sizePos.w < expandThresholdW)) {
+          l = DebugJS.DBGWIN_POS_NONE;
+        }
+      } else {
+        ctx.setDbgWinFull(ctx);
+        return;
+      }
     }
 
-    if ((auto) && (sizePos.w >= DebugJS.DBGWIN_EXPAND_W) && (sizePos.h >= DebugJS.DBGWIN_EXPAND_H)) {
-      ctx.setDbgWinFull(ctx);
-    } else {
-      ctx.setDbgWinPos(t, l);
-      ctx.setDbgWinSize(w, h);
-      ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
-      if ((w == clientW) && (h == clientH)) {
-        ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
-      } else if (w == clientW) {
-        ctx.sizeStatus = DebugJS.SIZE_ST_FULL_W;
-      } else if (h == clientH) {
-        ctx.sizeStatus = DebugJS.SIZE_ST_FULL_H;
-      } else {
-        ctx.sizeStatus = DebugJS.SIZE_ST_EXPANDED;
-      }
+    ctx.setDbgWinPos(t, l);
+    ctx.setDbgWinSize(w, h);
+    ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
+    if ((w == clientW) && (h == clientH)) {
+      ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
+    } else if (w == clientW) {
+      ctx.sizeStatus = DebugJS.SIZE_ST_FULL_W;
+    } else if (h == clientH) {
+      ctx.sizeStatus = DebugJS.SIZE_ST_FULL_H;
     }
   },
 
-  expandDbgWin2: function(ctx) {
-    var sizePos = ctx.getSelfSizePos();
+  _expandDbgWinCenter: function(ctx) {
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
-    var l = sizePos.x1 + 3;
-    var t = sizePos.y1 + 3;
-    var w = DebugJS.DBGWIN_EXPAND_W2;
-    var h = DebugJS.DBGWIN_EXPAND_H2;
-    if (sizePos.x1 > (clientW - sizePos.x2)) {
-      l = (sizePos.x1 - (DebugJS.DBGWIN_EXPAND_W2 - sizePos.w)) + 1;
-    }
-    if (sizePos.y1 > (clientH - sizePos.y2)) {
-      t = (sizePos.y1 - (DebugJS.DBGWIN_EXPAND_H2 - sizePos.h)) + 1;
-    }
-    if (l < 0) l = 0;
-    if (clientH < DebugJS.DBGWIN_EXPAND_H2) {
-      t = clientH - DebugJS.DBGWIN_EXPAND_H2;
-    }
-    ctx.saveSizeAndPos(ctx);
+    var w = DebugJS.DBGWIN_EXPAND_C_W;
+    var h = DebugJS.DBGWIN_EXPAND_C_H;
+    var l = clientW / 2 - w / 2;
+    var t = clientH / 2 - h / 2;
     ctx.setDbgWinPos(t, l);
     ctx.setDbgWinSize(w, h);
-    ctx.sizeStatus = DebugJS.SIZE_ST_EXPANDED2;
-    ctx.updateWinCtrlBtnPanel();
+    ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
+    ctx.sizeStatus = DebugJS.SIZE_ST_EXPANDED_C;
   },
 
   setDbgWinFull: function(ctx) {
@@ -7583,9 +7607,9 @@ DebugJS.prototype = {
     switch (size) {
       case 'min':
       case 'normal':
-      case 'max':
       case 'full':
       case 'expand':
+      case 'center':
       case 'restore':
       case 'reset':
         DebugJS.ctx.setWinSize(size);
@@ -7615,19 +7639,6 @@ DebugJS.prototype = {
         ctx.updateWinCtrlBtnPanel();
         ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
         break;
-      case 'max':
-        ctx.expandDbgWin(false);
-        ctx.updateWinCtrlBtnPanel();
-        break;
-      case 'full':
-        ctx.saveSizeAndPos(ctx);
-        ctx.setDbgWinFull(ctx);
-        ctx.updateWinCtrlBtnPanel();
-        break;
-      case 'expand':
-        ctx.expandDbgWin(true);
-        ctx.updateWinCtrlBtnPanel();
-        break;
       case 'restore':
         if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
           ctx.restoreDbgWin();
@@ -7636,6 +7647,12 @@ DebugJS.prototype = {
         break;
       case 'reset':
         ctx.resetDbgWinSizePos();
+        ctx.updateWinCtrlBtnPanel();
+        break;
+      case 'center':
+      case 'full':
+      case 'expand':
+        ctx.expandDbgWin(opt);
         ctx.updateWinCtrlBtnPanel();
     }
   },
