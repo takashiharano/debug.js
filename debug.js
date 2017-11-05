@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711060017';
+  this.v = '201711060022';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5461,7 +5461,7 @@ DebugJS.prototype = {
     var buf = new Uint8Array(content);
     ctx.fileLoaderBuf = buf;
     DebugJS.file.onLoaded(file, buf);
-    var html = ctx.getBinFilePreviewHtml(ctx, file, buf, ctx.fileLoaderBinMode);
+    var html = ctx.getBinFilePreviewHtml(ctx, file, buf, ctx.fileLoaderBinMode, ctx.fileLoaderNoSpace);
     return html;
   },
 
