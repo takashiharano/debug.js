@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711052134';
+  this.v = '201711052355';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -191,6 +191,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoaderFile = null;
   this.fileLoaderSysCb = null;
   this.fileLoaderBuf = null;
+  this.fileLoaderNoSpace = false;
   this.fileLoaderBinMode = 'hex';
   this.fileReader = null;
   this.scriptBtn = null;
@@ -2897,6 +2898,7 @@ DebugJS.prototype = {
     ctx.setDbgWinSize(w, h);
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
     ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
+    ctx.disableDraggable(ctx);
   },
 
   setDbgWinPos: function(t, l) {
@@ -2956,6 +2958,9 @@ DebugJS.prototype = {
     var h = ctx.orgSizePos.h;
     var t = ctx.orgSizePos.t;
     var l = ctx.orgSizePos.l;
+    if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
+      ctx.enableDraggable(ctx);
+    }
     ctx.setDbgWinSize(w, h);
     ctx.setDbgWinPos(t, l);
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
@@ -2969,6 +2974,9 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
     var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
+    if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
+      ctx.enableDraggable(ctx);
+    }
     ctx.setWinPos(ctx.opt.position, ctx.initWidth, ctx.initHeight);
     ctx.setDbgWinSize(w, h);
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
@@ -5438,6 +5446,17 @@ DebugJS.prototype = {
     ctx.updateFilePreview(html);
   },
 
+  toggleNoSpace: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.fileLoaderNoSpace) {
+      ctx.fileLoaderNoSpace = false;
+    } else {
+      ctx.fileLoaderNoSpace = true;
+    }
+    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, ctx.fileLoaderNoSpace);
+    ctx.updateFilePreview(html);
+  },
+
   onFileLoadedBin: function(ctx, file, content) {
     var buf = new Uint8Array(content);
     ctx.fileLoaderBuf = buf;
@@ -5446,8 +5465,8 @@ DebugJS.prototype = {
     return html;
   },
 
-  getBinFilePreviewHtml: function(ctx, file, buf, mode) {
-    var html = ctx.getFileInfo(file) + ctx.getBinDumpHtml(buf, mode) + '\n';
+  getBinFilePreviewHtml: function(ctx, file, buf, mode, nospace) {
+    var html = ctx.getFileInfo(file) + ctx.getBinDumpHtml(buf, mode, nospace) + '\n';
     return html;
   },
 
@@ -5514,22 +5533,32 @@ DebugJS.prototype = {
     imgPreview.style.maxHeight = maxH + 'px';
   },
 
-  getBinDumpHtml: function(buf, mode) {
+  getBinDumpHtml: function(buf, mode, nospace) {
     if (buf == null) return '';
     var ctx = DebugJS.ctx;
     var limit = ctx.properties.hexdumplimit.value | 0;
     var lastRows = ctx.properties.hexdumplastrows.value | 0;
     var lastLen = 0x10 * lastRows;
     var bLen = buf.length;
+    if (limit == 0) {
+      limit = bLen;
+    }
     var len = ((bLen > limit) ? limit : bLen);
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
     var html = '<pre style="white-space:pre !important">';
-    html += ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.toggleBinMode()', '[' + mode.toUpperCase() + ']') + '\n';
-    html += '<span style="background:#0cf;color:#000">';
+    html += ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.toggleBinMode()', '[' + mode.toUpperCase() + ']') + ' ';
     if (mode == 'bin') {
-      html += 'Address    +0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F        ASCII           ';
+      html += ctx.createBtnHtml(ctx, (nospace ? 'color:' + DebugJS.COLOR_INACTIVE : ''), 'DebugJS.ctx.toggleNoSpace()', '[SP]');
+    }
+    html += '\n<span style="background:#0cf;color:#000">';
+    if (mode == 'bin') {
+      if (nospace) {
+        html += 'Address    +0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F        ASCII           ';
+      } else {
+        html += 'Address    +0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F        ASCII           ';
+      }
     } else if (mode == 'dec') {
       html += 'Address    +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F   ASCII           ';
     } else {
@@ -5538,29 +5567,31 @@ DebugJS.prototype = {
     html += '</span>';
     html += DebugJS.dumpAddr(0);
     for (var i = 0; i < len; i++) {
-      html += ctx.getDump(mode, i, buf, len);
+      html += ctx.getDump(mode, i, buf, len, nospace);
     }
     if (bLen > limit) {
       if (bLen - limit > (0x10 * lastRows)) {
         html += '\n<span style="color:#ccc">...</span>';
       }
-      var rem = (bLen % 0x10);
-      var start = (rem == 0 ? (bLen - lastLen) : ((bLen - rem) - (0x10 * (lastRows - 1))));
-      if (start < len) {
-        rem = ((len - start) % 0x10);
-        start = len + rem;
-      }
-      var end = bLen + (rem == 0 ? 0 : (0x10 - rem));
-      html += DebugJS.dumpAddr(start);
-      for (i = start; i < end; i++) {
-        html += ctx.getDump(mode, i, buf, end);
+      if (lastRows > 0) {
+        var rem = (bLen % 0x10);
+        var start = (rem == 0 ? (bLen - lastLen) : ((bLen - rem) - (0x10 * (lastRows - 1))));
+        if (start < len) {
+          rem = ((len - start) % 0x10);
+          start = len + rem;
+        }
+        var end = bLen + (rem == 0 ? 0 : (0x10 - rem));
+        html += DebugJS.dumpAddr(start);
+        for (i = start; i < end; i++) {
+          html += ctx.getDump(mode, i, buf, end, nospace);
+        }
       }
     }
     html += '</pre>';
     return html;
   },
 
-  getDump: function(mode, i, buf, len) {
+  getDump: function(mode, i, buf, len, nospace) {
     var b;
     if (mode == 'bin') {
       b = DebugJS.dumpBin(i, buf);
@@ -5574,10 +5605,12 @@ DebugJS.prototype = {
       if ((i + 1) < len) {
         b += DebugJS.dumpAddr(i + 1);
       }
-    } else if ((i + 1) % 8 == 0) {
-      b += '  ';
-    } else {
-      b += ' ';
+    } else if (!nospace) {
+      if ((i + 1) % 8 == 0) {
+        b += '  ';
+      } else {
+        b += ' ';
+      }
     }
     return b;
   },
