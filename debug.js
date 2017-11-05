@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711060011';
+  this.v = '201711060017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5605,7 +5605,7 @@ DebugJS.prototype = {
       if ((i + 1) < len) {
         b += DebugJS.dumpAddr(i + 1);
       }
-    } else if (!nospace) {
+    } else if ((mode != 'bin') || (!nospace)) {
       if ((i + 1) % 8 == 0) {
         b += '  ';
       } else {
