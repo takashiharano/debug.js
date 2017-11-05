@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711060033';
+  this.v = '201711060731';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2254,6 +2254,14 @@ DebugJS.prototype = {
     ctx.updatePinBtn(ctx);
   },
 
+  enableResize: function(ctx) {
+    ctx.uiStatus |= DebugJS.UI_ST_RESIZABLE;
+  },
+
+  disableResize: function(ctx) {
+    ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
+  },
+
   startStopStopWatch: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
@@ -2899,6 +2907,7 @@ DebugJS.prototype = {
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
     ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
     ctx.disableDraggable(ctx);
+    ctx.disableResize(ctx);
   },
 
   setDbgWinPos: function(t, l) {
@@ -2960,6 +2969,7 @@ DebugJS.prototype = {
     var l = ctx.orgSizePos.l;
     if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       ctx.enableDraggable(ctx);
+      ctx.enableResize(ctx);
     }
     ctx.setDbgWinSize(w, h);
     ctx.setDbgWinPos(t, l);
