@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711050028';
+  this.v = '201711051440';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6324,11 +6324,9 @@ DebugJS.prototype = {
     if (data == null) {
       return;
     }
-    try {
-      ret = DebugJS.convertBin(data);
+    ret = DebugJS.convertBin(data);
+    if (ret != undefined) {
       DebugJS.log(ret);
-    } catch (e) {
-      DebugJS.log.e('Invalid value');
     }
   },
 
@@ -8907,7 +8905,13 @@ DebugJS.convertBin = function(data) {
   if (digit == 0) {
     digit = DebugJS.DEFAULT_UNIT;
   }
-  var val = eval(data.exp);
+  var val;
+  try {
+    val = eval(data.exp);
+  } catch (e) {
+    DebugJS.log.e('Invalid value: ' + e);
+    return;
+  }
   var v2 = parseInt(val).toString(2);
   var v2len = v2.length;
   var loop = ((digit > v2len) ? digit : v2len);
@@ -11338,7 +11342,11 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
     data.tmid = 0;
     DebugJS.bat.unlock();
   }
-  txt = eval(txt) + '';
+  try {
+    txt = eval(txt) + '';
+  } catch (e) {
+    DebugJS.log.e('inputText(): ' + e);
+  }
   txt = DebugJS.replaceCtrlChr(txt, true);
   data.txt = txt;
   if ((speed == undefined) || (speed == '')) {
@@ -11347,17 +11355,12 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
   data.speed = speed;
   data.i = start | 0;
   data.end = end | 0;
-  if (typeof el === 'string') {
-    data.el = document.querySelector(el);
-    if (!data.el) {
-      DebugJS.log.e('Element not found: ' + el);
-    }
-  } else {
-    data.el = el;
-  }
+  data.el = DebugJS.getElement(el);
   if (data.el) {
     DebugJS.bat.lock();
     DebugJS._inputText();
+  } else {
+    DebugJS.log.e('Element not found: ' + el);
   }
 };
 DebugJS._inputText = function() {
@@ -11409,16 +11412,12 @@ DebugJS.getSpeed = function(v) {
 
 DebugJS.selectOption = function(el, val) {
   var select = null;
-  if (typeof el === 'string') {
-    select = document.querySelector(el);
-    if (!select) {
-      DebugJS.log.e('Element not found: ' + el);
-      return;
-    }
-  } else {
-    select = el;
+  select = DebugJS.getElement(el);
+  if (!select) {
+    DebugJS.log.e('Element not found: ' + el);
+    return;
   }
-  if ((!select) || (select.tagName != 'SELECT')) {
+  if (select.tagName != 'SELECT') {
     DebugJS.log.e('Element is not select (' + select + ')');
     return;
   }
@@ -11667,9 +11666,7 @@ DebugJS.getElement = function(selector, idx) {
 };
 
 DebugJS.getElPosSize = function(el, idx) {
-  if (typeof el == 'string') {
-    el = DebugJS.getElement(el, idx);
-  }
+  el = DebugJS.getElement(el, idx);
   if (!el) {
     return null;
   }
