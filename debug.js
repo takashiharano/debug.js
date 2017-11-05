@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711052355';
+  this.v = '201711060011';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5442,7 +5442,7 @@ DebugJS.prototype = {
       default:
         ctx.fileLoaderBinMode = 'bin';
     }
-    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode);
+    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, ctx.fileLoaderNoSpace);
     ctx.updateFilePreview(html);
   },
 
