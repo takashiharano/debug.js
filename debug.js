@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711051737';
+  this.v = '201711052000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -367,7 +367,7 @@ var DebugJS = DebugJS || function() {
     dumplimit: {value: 1000, restriction: /^[0-9]+$/},
     dumpvallen: {value: 256, restriction: /^[0-9]+$/},
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
-    hexdumplimit: {value: 102400, restriction: /^[0-9]+$/},
+    hexdumplimit: {value: 1048576, restriction: /^[0-9]+$/},
     hexdumplastrows: {value: 16, restriction: /^[0-9]+$/},
     pointstep: {value: DebugJS.point.move.step, restriction: /^[0-9]+$/},
     pointspeed: {value: DebugJS.point.move.speed, restriction: /^[0-9]+$/},
@@ -5400,10 +5400,15 @@ DebugJS.prototype = {
 
   toggleBinMode: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.fileLoaderBinMode == 'hex') {
-      ctx.fileLoaderBinMode = 'bin';
-    } else {
-      ctx.fileLoaderBinMode = 'hex';
+    switch (ctx.fileLoaderBinMode) {
+      case 'bin':
+        ctx.fileLoaderBinMode = 'dec';
+        break;
+      case 'dec':
+        ctx.fileLoaderBinMode = 'hex';
+        break;
+      default:
+        ctx.fileLoaderBinMode = 'bin';
     }
     var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode);
     ctx.updateFilePreview(html);
@@ -5497,10 +5502,12 @@ DebugJS.prototype = {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
     var html = '<pre style="white-space:pre !important">';
-    html += ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.toggleBinMode()', '[' + (mode == 'bin' ? 'BIN' : 'HEX') + ']') + '\n';
+    html += ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.toggleBinMode()', '[' + mode.toUpperCase() + ']') + '\n';
     html += '<span style="background:#0cf;color:#000">';
     if (mode == 'bin') {
       html += 'Address    +0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F        ASCII           ';
+    } else if (mode == 'dec') {
+      html += 'Address    +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F   ASCII           ';
     } else {
       html += 'Address    +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F  ASCII           ';
     }
@@ -5533,6 +5540,8 @@ DebugJS.prototype = {
     var b;
     if (mode == 'bin') {
       b = DebugJS.dumpBin(i, buf);
+    } else if (mode == 'dec') {
+      b = DebugJS.dumpDec(i, buf);
     } else {
       b = DebugJS.dumpHex(i, buf);
     }
@@ -9616,12 +9625,16 @@ DebugJS.dumpAddr = function(i) {
   return b;
 };
 
-DebugJS.dumpHex = function(i, buf) {
-  return ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase());
-};
-
 DebugJS.dumpBin = function(i, buf) {
   return ((buf[i] == undefined) ? '        ' : ('0000000' + buf[i].toString(2)).slice(-8));
+};
+
+DebugJS.dumpDec = function(i, buf) {
+  return ((buf[i] == undefined) ? '   ' : ('  ' + buf[i].toString()).slice(-3));
+};
+
+DebugJS.dumpHex = function(i, buf) {
+  return ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase());
 };
 
 DebugJS.dumpAscii = function(pos, buf, len) {
