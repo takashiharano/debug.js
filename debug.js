@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711062245';
+  this.v = '201711070718';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -191,8 +191,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoaderFile = null;
   this.fileLoaderSysCb = null;
   this.fileLoaderBuf = null;
-  this.fileLoaderBinMode = 'hex';
-  this.fileLoaderBinViewOpt = {addr: true, space: true, ascii: true},
+  this.fileLoaderBinViewOpt = {mode :'hex', addr: true, space: true, ascii: true},
   this.fileReader = null;
   this.scriptBtn = null;
   this.scriptPanel = null;
@@ -1945,14 +1944,15 @@ DebugJS.prototype = {
 
   updateLogFilterButtons: function() {
     var ctx = DebugJS.ctx;
+    var opt = ctx.opt;
     var filter = ctx.logFilter;
-    ctx.filterBtnAll.style.color = ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnStd.style.color = (filter & DebugJS.LOG_FILTER_LOG) ? ctx.opt.fontColor : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnVrb.style.color = (filter & DebugJS.LOG_FILTER_VRB) ? ctx.opt.logColorV : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnDbg.style.color = (filter & DebugJS.LOG_FILTER_DBG) ? ctx.opt.logColorD : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnInf.style.color = (filter & DebugJS.LOG_FILTER_INF) ? ctx.opt.logColorI : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnWrn.style.color = (filter & DebugJS.LOG_FILTER_WRN) ? ctx.opt.logColorW : DebugJS.COLOR_INACTIVE;
-    ctx.filterBtnErr.style.color = (filter & DebugJS.LOG_FILTER_ERR) ? ctx.opt.logColorE : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnAll.style.color = ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? opt.btnColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnStd.style.color = (filter & DebugJS.LOG_FILTER_LOG) ? opt.fontColor : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnVrb.style.color = (filter & DebugJS.LOG_FILTER_VRB) ? opt.logColorV : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnDbg.style.color = (filter & DebugJS.LOG_FILTER_DBG) ? opt.logColorD : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnInf.style.color = (filter & DebugJS.LOG_FILTER_INF) ? opt.logColorI : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnWrn.style.color = (filter & DebugJS.LOG_FILTER_WRN) ? opt.logColorW : DebugJS.COLOR_INACTIVE;
+    ctx.filterBtnErr.style.color = (filter & DebugJS.LOG_FILTER_ERR) ? opt.logColorE : DebugJS.COLOR_INACTIVE;
   },
 
   onchangeLogFilter: function() {
@@ -5109,6 +5109,7 @@ DebugJS.prototype = {
 
   openFileLoader: function(format) {
     var ctx = DebugJS.ctx;
+    var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
     if (ctx.fileLoaderPanel == null) {
       ctx.fileLoaderPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
@@ -5116,14 +5117,14 @@ DebugJS.prototype = {
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
       ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 19) + 'px)');
-      ctx.setStyle(fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
+      ctx.setStyle(fileInput, 'min-height', (20 * opt.zoom) + 'px');
       ctx.setStyle(fileInput, 'margin', '0 0 4px 0');
       ctx.setStyle(fileInput, 'padding', '1px');
       ctx.setStyle(fileInput, 'border', '0');
       ctx.setStyle(fileInput, 'border-radius', '0');
       ctx.setStyle(fileInput, 'outline', 'none');
       ctx.setStyle(fileInput, 'font-size', fontSize);
-      ctx.setStyle(fileInput, 'font-family', ctx.opt.fontFamily + 'px');
+      ctx.setStyle(fileInput, 'font-family', opt.fontFamily + 'px');
       fileInput.addEventListener('change', ctx.onFileSelected, false);
       ctx.fileLoaderPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
@@ -5172,16 +5173,16 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'padding', '2px');
       ctx.setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
-      ctx.setStyle(ctx.filePreviewWrapper, 'font-family', ctx.opt.fontFamily + 'px');
+      ctx.setStyle(ctx.filePreviewWrapper, 'font-family', opt.fontFamily + 'px');
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
       ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.handleFileDropOnFileViewer);
       ctx.fileLoaderPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
       ctx.setStyle(ctx.filePreview, 'background', 'transparent');
-      ctx.setStyle(ctx.filePreview, 'color', ctx.opt.fontColor);
+      ctx.setStyle(ctx.filePreview, 'color', opt.fontColor);
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
-      ctx.setStyle(ctx.filePreview, 'font-family', ctx.opt.fontFamily + 'px');
+      ctx.setStyle(ctx.filePreview, 'font-family', opt.fontFamily + 'px');
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
 
       ctx.fileLoaderFooter = document.createElement('div');
@@ -5206,7 +5207,7 @@ DebugJS.prototype = {
       ctx.fileLoadProgress.style.border = 'none';
       ctx.fileLoadProgress.style.background = '#00f';
       ctx.fileLoadProgress.style.fontSize = (ctx.computedFontSize * 0.8) + 'px';
-      ctx.fileLoadProgress.style.fontFamily = ctx.opt.fontFamily + 'px';
+      ctx.fileLoadProgress.style.fontFamily = opt.fontFamily + 'px';
       ctx.fileLoadProgress.innerText = '0%';
       ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
 
@@ -5451,18 +5452,18 @@ DebugJS.prototype = {
 
   toggleBinMode: function() {
     var ctx = DebugJS.ctx;
-    switch (ctx.fileLoaderBinMode) {
+    var opt = ctx.fileLoaderBinViewOpt;
+    switch (opt.mode) {
       case 'bin':
-        ctx.fileLoaderBinMode = 'dec';
+        opt.mode = 'dec';
         break;
       case 'dec':
-        ctx.fileLoaderBinMode = 'hex';
+        opt.mode = 'hex';
         break;
       default:
-        ctx.fileLoaderBinMode = 'bin';
+        opt.mode = 'bin';
     }
-    var opt = ctx.fileLoaderBinViewOpt;
-    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, opt.addr, opt.space, opt.ascii);
+    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
@@ -5486,7 +5487,7 @@ DebugJS.prototype = {
     } else {
       opt[key] = true;
     }
-    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, opt.addr, opt.space, opt.ascii);
+    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
@@ -5495,7 +5496,7 @@ DebugJS.prototype = {
     ctx.fileLoaderBuf = buf;
     DebugJS.file.onLoaded(file, buf);
     var opt = ctx.fileLoaderBinViewOpt;
-    var html = ctx.getBinFilePreviewHtml(ctx, file, buf, ctx.fileLoaderBinMode, opt.addr, opt.space, opt.ascii);
+    var html = ctx.getBinFilePreviewHtml(ctx, file, buf, opt.mode, opt.addr, opt.space, opt.ascii);
     return html;
   },
 
