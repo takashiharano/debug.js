@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711061907';
+  this.v = '201711062245';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -191,8 +191,8 @@ var DebugJS = DebugJS || function() {
   this.fileLoaderFile = null;
   this.fileLoaderSysCb = null;
   this.fileLoaderBuf = null;
-  this.fileLoaderShowSpace = true;
   this.fileLoaderBinMode = 'hex';
+  this.fileLoaderBinViewOpt = {addr: true, space: true, ascii: true},
   this.fileReader = null;
   this.scriptBtn = null;
   this.scriptPanel = null;
@@ -5387,8 +5387,7 @@ DebugJS.prototype = {
   },
 
   onFileLoadError: function(e) {
-    var ctx = DebugJS.ctx;
-    ctx.fileLoaderSysCb = null;
+    DebugJS.ctx.fileLoaderSysCb = null;
     DebugJS.file.finalize();
     var err;
     switch (e.target.error.code) {
@@ -5407,7 +5406,7 @@ DebugJS.prototype = {
       default:
         err = 'FILE_READ_ERROR (' + e.target.error.code + ')';
     }
-    ctx.updateFilePreview(err);
+    DebugJS.ctx.updateFilePreview(err);
   },
 
   onFileLoadProgress: function(e) {
@@ -5423,9 +5422,8 @@ DebugJS.prototype = {
   },
 
   onFileLoadStart: function(e) {
-    var ctx = DebugJS.ctx;
-    DebugJS.addClass(ctx.fileLoaderFooter, ctx.id + '-loading');
-    ctx.updateFilePreview('LOADING...');
+    DebugJS.addClass(DebugJS.ctx.fileLoaderFooter, DebugJS.ctx.id + '-loading');
+    DebugJS.ctx.updateFilePreview('LOADING...');
   },
 
   onFileLoaded: function(e) {
@@ -5463,18 +5461,32 @@ DebugJS.prototype = {
       default:
         ctx.fileLoaderBinMode = 'bin';
     }
-    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, ctx.fileLoaderShowSpace);
+    var opt = ctx.fileLoaderBinViewOpt;
+    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
+  toggleShowAddr: function() {
+    DebugJS.ctx.toggleBinVwrOpt(DebugJS.ctx, 'addr');
+  },
+
   toggleShowSpace: function() {
+    DebugJS.ctx.toggleBinVwrOpt(DebugJS.ctx, 'space');
+  },
+
+  toggleShowAscii: function() {
+    DebugJS.ctx.toggleBinVwrOpt(DebugJS.ctx, 'ascii');
+  },
+
+  toggleBinVwrOpt: function(ctx, key) {
     var ctx = DebugJS.ctx;
-    if (ctx.fileLoaderShowSpace) {
-      ctx.fileLoaderShowSpace = false;
+    var opt = ctx.fileLoaderBinViewOpt;
+    if (opt[key]) {
+      opt[key] = false;
     } else {
-      ctx.fileLoaderShowSpace = true;
+      opt[key] = true;
     }
-    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, ctx.fileLoaderShowSpace);
+    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, ctx.fileLoaderBinMode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
@@ -5482,12 +5494,13 @@ DebugJS.prototype = {
     var buf = new Uint8Array(content);
     ctx.fileLoaderBuf = buf;
     DebugJS.file.onLoaded(file, buf);
-    var html = ctx.getBinFilePreviewHtml(ctx, file, buf, ctx.fileLoaderBinMode, ctx.fileLoaderShowSpace);
+    var opt = ctx.fileLoaderBinViewOpt;
+    var html = ctx.getBinFilePreviewHtml(ctx, file, buf, ctx.fileLoaderBinMode, opt.addr, opt.space, opt.ascii);
     return html;
   },
 
-  getBinFilePreviewHtml: function(ctx, file, buf, mode, showspace) {
-    var html = ctx.getFileInfo(file) + ctx.getBinDumpHtml(buf, mode, showspace) + '\n';
+  getBinFilePreviewHtml: function(ctx, file, buf, mode, showAddr, showSpace, showAscii) {
+    var html = ctx.getFileInfo(file) + ctx.getBinDumpHtml(buf, mode, showAddr, showSpace, showAscii) + '\n';
     return html;
   },
 
@@ -5554,7 +5567,7 @@ DebugJS.prototype = {
     imgPreview.style.maxHeight = maxH + 'px';
   },
 
-  getBinDumpHtml: function(buf, mode, showspace) {
+  getBinDumpHtml: function(buf, mode, showAddr, showSpace, showAscii) {
     if (buf == null) return '';
     var ctx = DebugJS.ctx;
     var limit = ctx.properties.hexdumplimit.value | 0;
@@ -5570,33 +5583,41 @@ DebugJS.prototype = {
     }
     var html = '<pre style="white-space:pre !important">';
     html += ctx.createBtnHtml(ctx, '', 'DebugJS.ctx.toggleBinMode()', '[' + mode.toUpperCase() + ']') + ' ';
-    html += ctx.createBtnHtml(ctx, (showspace ? '' : 'color:' + DebugJS.COLOR_INACTIVE), 'DebugJS.ctx.toggleShowSpace()', '[SP]');
+    html += ctx.createBtnHtml(ctx, (showAddr ? '' : 'color:' + DebugJS.COLOR_INACTIVE), 'DebugJS.ctx.toggleShowAddr()', '[ADDR] ');
+    html += ctx.createBtnHtml(ctx, (showSpace ? '' : 'color:' + DebugJS.COLOR_INACTIVE), 'DebugJS.ctx.toggleShowSpace()', '[SP] ');
+    html += ctx.createBtnHtml(ctx, (showAscii ? '' : 'color:' + DebugJS.COLOR_INACTIVE), 'DebugJS.ctx.toggleShowAscii()', '[ASCII]');
     html += '\n<span style="background:#0cf;color:#000">';
-    html += 'Address    ';
+    if (showAddr) {
+      html += 'Address    ';
+    }
     if (mode == 'bin') {
-      if (showspace) {
+      if (showSpace) {
         html += '+0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F      ';
       } else {
         html += '+0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F      ';
       }
     } else if (mode == 'dec') {
-      if (showspace) {
+      if (showSpace) {
         html += ' +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F';
       } else {
         html += ' +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F';
       }
     } else {
-      if (showspace) {
+      if (showSpace) {
         html += '+0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F';
       } else {
         html += '+0+1+2+3+4+5+6+7+8+9+A+B+C+D+E+F';
       }
     }
-    html += '  ASCII           ';
-    html += '</span>';
-    html += DebugJS.dumpAddr(0);
+    if (showAscii) {
+      html += '  ASCII           ';
+    }
+    html += '</span>\n';
+    if (showAddr) {
+      html += DebugJS.dumpAddr(0);
+    }
     for (var i = 0; i < len; i++) {
-      html += ctx.getDump(mode, i, buf, len, showspace);
+      html += ctx.getDump(mode, i, buf, len, showSpace, showAddr, showAscii);
     }
     if (bLen > limit) {
       if (bLen - limit > (0x10 * lastRows)) {
@@ -5610,9 +5631,12 @@ DebugJS.prototype = {
           start = len + rem;
         }
         var end = bLen + (rem == 0 ? 0 : (0x10 - rem));
-        html += DebugJS.dumpAddr(start);
+        html += '\n';
+        if (showAddr) {
+          html += DebugJS.dumpAddr(start);
+        }
         for (i = start; i < end; i++) {
-          html += ctx.getDump(mode, i, buf, end, showspace);
+          html += ctx.getDump(mode, i, buf, end, showSpace, showAddr, showAscii);
         }
       }
     }
@@ -5620,7 +5644,7 @@ DebugJS.prototype = {
     return html;
   },
 
-  getDump: function(mode, i, buf, len, showspace) {
+  getDump: function(mode, i, buf, len, showSpace, showAddr, showAscii) {
     var b;
     if (mode == 'bin') {
       b = DebugJS.dumpBin(i, buf);
@@ -5630,11 +5654,16 @@ DebugJS.prototype = {
       b = DebugJS.dumpHex(i, buf);
     }
     if ((i + 1) % 0x10 == 0) {
-      b += '  ' + DebugJS.dumpAscii(((i + 1) - 0x10), buf, len);
-      if ((i + 1) < len) {
-        b += DebugJS.dumpAddr(i + 1);
+      if (showAscii) {
+        b += '  ' + DebugJS.dumpAscii(((i + 1) - 0x10), buf, len);
       }
-    } else if (showspace) {
+      if ((i + 1) < len) {
+        b += '\n';
+        if (showAddr) {
+          b += DebugJS.dumpAddr(i + 1);
+        }
+      }
+    } else if (showSpace) {
       if ((i + 1) % 8 == 0) {
         b += '  ';
       } else {
@@ -9699,9 +9728,7 @@ DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
 };
 
 DebugJS.dumpAddr = function(i) {
-  var addr = ('0000000' + i.toString(16)).slice(-8).toUpperCase();
-  var b = '\n' + addr + ' : ';
-  return b;
+  return ('0000000' + i.toString(16)).slice(-8).toUpperCase() + ' : ';
 };
 
 DebugJS.dumpBin = function(i, buf) {
