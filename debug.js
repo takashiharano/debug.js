@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711070718';
+  this.v = '201711070743';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -191,7 +191,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoaderFile = null;
   this.fileLoaderSysCb = null;
   this.fileLoaderBuf = null;
-  this.fileLoaderBinViewOpt = {mode :'hex', addr: true, space: true, ascii: true},
+  this.fileLoaderBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
   this.fileReader = null;
   this.scriptBtn = null;
   this.scriptPanel = null;
@@ -9117,7 +9117,11 @@ DebugJS.decodeBase64 = function(str) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
   } catch (e) {
-    decoded = atob(str);
+    try {
+      decoded = atob(str);
+    } catch (e) {
+      DebugJS.log.e('decodeBase64(): ' + e);
+    }
   }
   return decoded;
 };
