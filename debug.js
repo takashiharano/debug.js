@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711061808';
+  this.v = '201711061843';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5313,8 +5313,10 @@ DebugJS.prototype = {
   },
 
   onBatLoaded: function(ctx, success, file, content) {
-    DebugJS.bat.setBat(content);
-    ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
+    if (success) {
+      DebugJS.bat.setBat(content);
+      ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
+    }
   },
 
   handleFileDropOnJS: function(e) {
@@ -5324,9 +5326,11 @@ DebugJS.prototype = {
   },
 
   onJsLoaded: function(ctx, success, file, content) {
-    ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
-    ctx.openFeature(ctx, DebugJS.STATE_SCRIPT);
-    ctx.scriptEditor.value = ctx.scriptBuf = content;
+    if (success) {
+      ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
+      ctx.openFeature(ctx, DebugJS.STATE_SCRIPT);
+      ctx.scriptEditor.value = ctx.scriptBuf = content;
+    }
   },
 
   loadFileBin: function() {
