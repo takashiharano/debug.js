@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711060743';
+  this.v = '201711061808';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5297,9 +5297,9 @@ DebugJS.prototype = {
       return;
     }
     if (content.substr(0, BAT_HEAD.length) == BAT_HEAD) {
-      ctx.onBatLoaded(ctx, file, content);
+      ctx.onBatLoaded(ctx, success, file, content);
     } else if (file.name.match(/\.js$/)) {
-      ctx.onJsLoaded(ctx, file, content);
+      ctx.onJsLoaded(ctx, success, file, content);
     } else if (file.name.match(/\.json$/)) {
       DebugJS.execCmdJson(content, true);
       ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
