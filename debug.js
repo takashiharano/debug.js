@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711072230';
+  this.v = '201711080759';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7380,13 +7380,12 @@ DebugJS.prototype = {
     var method = args[1];
     var type = args[2];
     var val = args[3];
-    if ((args.length < 4) || (sel == '') ||
-        (method != 'set') || (method != 'get') ||
-        (type != 'text') || (type != 'value')) {
-      DebugJS.printUsage(tbl.usage);
-      return;
+    if ((args.length >= 4) && (sel != '') &&
+        ((method == 'set') || (method == 'get')) &&
+        ((type == 'text') || (type == 'value'))) {
+      return DebugJS.ctx._cmdSelect(sel, method, type, val);
     }
-    return DebugJS.ctx._cmdSelect(sel, method, type, val);
+    DebugJS.printUsage(tbl.usage);
   },
 
   _cmdSelect: function(sel, method, type, val) {
@@ -8057,6 +8056,7 @@ DebugJS.splitQuotedArgs = function(arg) {
   var start = 0;
   var len = 0;
   var searching = true;
+  var bracket = false;
   var quoted = false;
   var ch = '';
   var str = '';
@@ -8065,7 +8065,7 @@ DebugJS.splitQuotedArgs = function(arg) {
     ch = arg.charAt(i);
     switch (ch) {
       case ' ':
-        if (searching || quoted) {
+        if (searching || bracket || quoted) {
           continue;
         } else {
           searching = true;
@@ -8074,8 +8074,30 @@ DebugJS.splitQuotedArgs = function(arg) {
           searching = true;
         }
         break;
-      case '"':
+      case '(':
         if (searching) {
+          start = i;
+          len = 0;
+          searching = false;
+          bracket = true;
+        }
+        break;
+      case ')':
+        if (searching) {
+          start = i;
+          len = 0;
+          searching = false;
+        } else if (bracket) {
+          if ((i > 0) && (arg.charAt(i - 1) == '\\')) {
+            continue;
+          }
+          bracket = false;
+        }
+        break;
+      case '"':
+        if (bracket) {
+          continue;
+        } else if (searching) {
           start = i;
           len = 0;
           searching = false;
@@ -8096,7 +8118,7 @@ DebugJS.splitQuotedArgs = function(arg) {
     }
   }
   len++;
-  if (ch != ' ') {
+  if (!searching) {
     str = arg.substr(start, len);
     args.push(str);
   }
