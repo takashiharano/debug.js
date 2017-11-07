@@ -2724,8 +2724,14 @@ $ point contexstmenu
 $ point text "abc123"
 -&gt; Input text into the current position (&lt;input&gt;, &lt;textarea&gt;)
 
-$ point selectoption "abc123"
+$ point selectoption set text "option1"
+$ point selectoption set value "1"
 -&gt; Select a &lt;select&gt; option value at the current position
+
+$ point selectoption get text
+-&gt; "option1"
+$ point selectoption get value
+-&gt; "1"
 
 $ point scroll x y
 -&gt; Scroll the current position
@@ -2925,8 +2931,11 @@ $ scrollwin 100 5000 0 0
       Select an option of select element<br><br>
 e.g.,)<br>
 <pre class="eg">
-$ select #id "1"
-$ select select:nth-child(1) "abc"
+$ select #id set value "1"
+$ select select:nth-child(1) set text "abc"
+
+$ select #id get text
+$ select #id get value
 </pre>
     </td>
   </tr>
@@ -3867,13 +3876,19 @@ function callback(xhr) {
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" maxlength="10" style="width:220px;" onfocus="log('inputtext2: onfocus');" onblur="log('inputtext2: onblur');" oninput="log('inputtext2: oninput ' + this.value);"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">pass</span><input type="password" id="pass1" name="pass1" style="width:220px;"></div>
       <div id="div-select" style="margin-bottom:5px;">
-        <select id="select1" name="select1" style="width:255px; height:23px;" onchange="log('select1: ' + this.value);">
+        <select id="select1" name="select1" style="width:255px;" onchange="log('select1: ' + this.value);">
           <option value="1">opt1</option>
           <option value="2">opt2</option>
           <option value="3">opt3</option>
-        </select><br>
-
-        <select id="select2" name="select1" style="width:255px; height:23px;">
+        </select>
+        <br>
+        <select id="select2" name="select2" style="width:255px;">
+          <option value="v1">Value 1</option>
+          <option value="v2">Value 2</option>
+          <option value="v3">Value 3</option>
+        </select>
+        <br>
+        <select id="select3" name="select3" style="width:255px;">
           <option value="abc">abc</option>
           <option value="x yz">x yz</option>
         </select>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711070743';
+  this.v = '201711072230';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -328,7 +328,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key]'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -336,7 +336,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'resume', fnc: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrollto', fnc: this.cmdScrollTo, desc: 'Set scroll position', usage: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [step(px)] [speed(ms)]'},
-    {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors value'},
+    {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors get|set text|value val'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Sets the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
@@ -7095,8 +7095,15 @@ DebugJS.prototype = {
     } else if (op == 'selectoption') {
       var el = point.getElementFromCurrentPos();
       if ((el) && (el.nodeName == 'SELECT')) {
-        var val = args[1];
-        DebugJS.ctx._cmdSelect(el, val);
+        var method = args[1];
+        var type = args[2];
+        if (((method == 'get') || (method == 'set')) &&
+            ((type == 'text') || (type == 'value'))) {
+          var val = args[3];
+          ret = DebugJS.ctx._cmdSelect(el, method, type, val);
+        } else {
+          DebugJS.log.e('Usage: point selectoption get|set text|value val');
+        }
       } else {
         DebugJS.log.w('Pointed area is not a select element (' + (el ? el.nodeName : 'null') + ')');
       }
@@ -7368,20 +7375,28 @@ DebugJS.prototype = {
   },
 
   cmdSelect: function(arg, tbl) {
-    var args = DebugJS.splitCmdLineInTwoLast(arg);
+    var args = DebugJS.splitQuotedArgs(arg);
     var sel = args[0];
-    if ((sel == '') || (args.length < 2)) {
+    var method = args[1];
+    var type = args[2];
+    var val = args[3];
+    if ((args.length < 4) || (sel == '') ||
+        (method != 'set') || (method != 'get') ||
+        (type != 'text') || (type != 'value')) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    var val = args[1];
-    DebugJS.ctx._cmdSelect(sel, val);
+    return DebugJS.ctx._cmdSelect(sel, method, type, val);
   },
 
-  _cmdSelect: function(sel, val) {
+  _cmdSelect: function(sel, method, type, val) {
     try {
       var val = eval(val) + '';
-      DebugJS.selectOption(sel, val);
+      var ret = DebugJS.selectOption(sel, method, type, val);
+      if (method == 'get') {
+        DebugJS.log.res(ret);
+      }
+      return ret;
     } catch (e) {
       DebugJS.log.e(e);
     }
@@ -11571,7 +11586,7 @@ DebugJS.getSpeed = function(v) {
   return s;
 };
 
-DebugJS.selectOption = function(el, val) {
+DebugJS.selectOption = function(el, method, type, val) {
   var select = null;
   select = DebugJS.getElement(el);
   if (!select) {
@@ -11582,13 +11597,23 @@ DebugJS.selectOption = function(el, val) {
     DebugJS.log.e('Element is not select (' + select + ')');
     return;
   }
-  for (var i = 0; i < select.options.length; i++) {
-    if (select.options[i].value == val) {
-      select.options[i].selected = true;
-      return;
+  if (method == 'set') {
+    for (var i = 0; i < select.options.length; i++) {
+      if (((type == 'text') && (select.options[i].innerText == val)) ||
+          ((type == 'value') && (select.options[i].value == val))) {
+        select.options[i].selected = true;
+        return;
+      }
     }
+  } else {
+    var prop = 'innerText';
+    if (type == 'value') {
+      prop = 'value';
+    }
+    var idx = select.selectedIndex;
+    return select.options[idx][prop];
   }
-  DebugJS.log.w('No such option value: ' + val);
+  DebugJS.log.w('No such option: ' + val);
 };
 
 DebugJS.event = {};
