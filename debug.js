@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711081136';
+  this.v = '201711082030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -543,12 +543,12 @@ DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
 DebugJS._AVAILABLE = false;
-DebugJS.SNIPPET = [
-'time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ntime.end();\n\'done\';\n',
+DebugJS.JS_SNIPPET = [
+'dbg.time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.end();\n\'done\';\n',
 '',
 '',
-'// LED DEMO\nvar speed = 500;  // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.toHex(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    setTimeout(ledTest, speed);\n  } else {\n    dbg.led(0);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
-'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ntime.start(\'total\');\ntest();\nfunction test() {\n  time.start();\n  time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
+'// LED DEMO\nvar speed = 500; // ms\nvar i = 0;\nledTest();\nfunction ledTest() {\n  // Turn on the LED\n  dbg.led(i);\n\n  var i16 = DebugJS.toHex(i);\n  i16 = DebugJS.formatHex(i16, true, true);\n  dbg.msg(\'LED = \' + i + \' (\' + i16 + \')\');\n  if (i <= 255) {\n    setTimeout(ledTest, speed);\n  } else {\n    dbg.led(0);\n    dbg.msg.clear();\n  }\n  i++;\n}\n\'LED DEMO\';\n',
+'// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ndbg.time.start(\'total\');\ntest();\nfunction test() {\n  dbg.time.start();\n  dbg.time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    dbg.time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
 '<button onclick=""></button>',
@@ -3770,10 +3770,12 @@ DebugJS.prototype = {
       DebugJS.addPropSeparator(ctx) +
       'name      : ' + name + '\n' +
       'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
+      'disabled  : ' + DebugJS.setStyleIfObjNotAvailable(el.disabled, true) + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
       'maxLength : ' + DebugJS.setStyleIfObjNotAvailable(el.maxLength) + '\n' +
-      'disabled  : ' + DebugJS.setStyleIfObjNotAvailable(el.disabled, true) + '\n' +
+      'checked   : ' + DebugJS.setStyleIfObjNotAvailable(el.checked, true) + '\n' +
+      'selectedIndex: ' + DebugJS.setStyleIfObjNotAvailable(el.selectedIndex) + '\n' +
       'contentEditable: ' + el.contentEditable + '\n' +
       DebugJS.addPropSeparator(ctx) +
       'href      : ' + href + '\n' +
@@ -5940,7 +5942,7 @@ DebugJS.prototype = {
     'onmouseout="this.style.color=\'#888\';">x</div>' +
     '<span style="color:#ccc">Script Editor</span>' +
     ctx.createBtnHtml(ctx, 'float:right;margin-right:4px', 'DebugJS.ctx.execScript();', '[EXEC]') +
-    ctx.createBtnHtml(ctx, 'margin-left:4px;margin-right:4px', 'DebugJS.ctx.insertSnippet();', '[CLR]');
+    ctx.createBtnHtml(ctx, 'margin-left:4px;margin-right:4px', 'DebugJS.ctx.insertJsSnippet();', '[CLR]');
     for (var i = 0; i < 5; i++) {
       html += ctx.createJsSnippetBtn(ctx, i);
     }
@@ -5955,7 +5957,7 @@ DebugJS.prototype = {
   },
 
   createJsSnippetBtn: function(ctx, i) {
-    return ctx.createBtnHtml(ctx, 'margin-left:4px', 'DebugJS.ctx.insertSnippet(' + i + ');', '{CODE' + (i + 1) + '}');
+    return ctx.createBtnHtml(ctx, 'margin-left:4px', 'DebugJS.ctx.insertJsSnippet(' + i + ');', '{CODE' + (i + 1) + '}');
   },
 
   createBtnHtml: function(ctx, style, onclick, label) {
@@ -6001,14 +6003,14 @@ DebugJS.prototype = {
     }
   },
 
-  insertSnippet: function(n) {
+  insertJsSnippet: function(n) {
     var ctx = DebugJS.ctx;
     var editor = ctx.scriptEditor;
     if (n == undefined) {
       editor.value = '';
       editor.focus();
     } else {
-      var code = DebugJS.SNIPPET[n];
+      var code = DebugJS.JS_SNIPPET[n];
       var buf = editor.value;
       var posCursole = editor.selectionStart;
       var leftBuf = buf.substr(0, posCursole);
@@ -8050,7 +8052,8 @@ DebugJS.splitArgs = function(arg) {
   return args;
 };
 
-// ' 1 "abc" "d ef"  "g\"hi" 2 ' -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2
+// ' 1 "abc" "d ef"  "g\"hi" 2 ("jkl" + 3) 4 '
+// -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2 [5]=("jkl" + 3) [6]=4
 DebugJS.splitQuotedArgs = function(arg) {
   var args = [];
   var start = 0;
@@ -9821,13 +9824,13 @@ DebugJS.dumpAscii = function(pos, buf, len) {
   return b;
 };
 
-DebugJS.escTags = function(str) {
-  str = str.replace(/&/g, '&amp;');
-  str = str.replace(/</g, '&lt;');
-  str = str.replace(/>/g, '&gt;');
-  str = str.replace(/"/g, '&quot;');
-  str = str.replace(/'/g, '&#39;');
-  return str;
+DebugJS.escTags = function(s) {
+  s = s.replace(/&/g, '&amp;');
+  s = s.replace(/</g, '&lt;');
+  s = s.replace(/>/g, '&gt;');
+  s = s.replace(/"/g, '&quot;');
+  s = s.replace(/'/g, '&#39;');
+  return s;
 };
 
 DebugJS.escSpclChr = function(str) {
@@ -10213,17 +10216,17 @@ DebugJS.log.out = function(m, type) {
 
 DebugJS.stack = function() {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  var stk;
+  var s;
   try {
    DebugJS.a.b;
   } catch (e) {
-    stk = e.stack;
+    s = e.stack;
   }
-  stk = stk.replace(/^TypeError.*\n/, '');
-  stk = stk.replace(/^\s+at\s.*\n/, '');
-  stk = stk.replace(/^DebugJS\.stack@.*\n/, '');
-  stk = 'Stack:\n' + stk;
-  DebugJS.log(stk);
+  s = s.replace(/^TypeError.*\n/, '');
+  s = s.replace(/^\s+at\s.*\n/, '');
+  s = s.replace(/^DebugJS\.stack@.*\n/, '');
+  s = 'Stack:\n' + s;
+  DebugJS.log(s);
 };
 
 DebugJS.time = {};
@@ -11355,21 +11358,22 @@ DebugJS.point.hint.clear = function() {
 };
 
 DebugJS.scrollWinTo = function(x, y, step, speed) {
+  var ctx = DebugJS.ctx;
   var d = DebugJS.scrollWinTo.data;
   if (d.tmid > 0) {
     clearTimeout(d.tmid);
     d.tmid = 0;
     DebugJS.bat.unlock();
   }
-  d.dstX = x - DebugJS.ctx.scrollPosX;
-  d.dstY = y - DebugJS.ctx.scrollPosY;
+  d.dstX = x - ctx.scrollPosX;
+  d.dstY = y - ctx.scrollPosY;
   if (step == undefined) {
-    d.step = DebugJS.ctx.properties.scrollstep.value | 0;
+    d.step = ctx.properties.scrollstep.value | 0;
   } else {
     d.step = step | 0;
   }
   if (speed == undefined) {
-    d.speed = DebugJS.ctx.properties.scrollspeed.value | 0;
+    d.speed = ctx.properties.scrollspeed.value | 0;
   } else {
     d.speed = speed | 0;
   }
@@ -12084,8 +12088,8 @@ DebugJS.start = function() {
     console.info = function(x) {log.i(x);};
     console.warn = function(x) {log.w(x);};
     console.error = function(x) {log.e(x);};
-    console.time = function(x) {time.start(x);};
-    console.timeEnd = function(x) {time.end(x);};
+    console.time = function(x) {DebugJS.time.start(x);};
+    console.timeEnd = function(x) {DebugJS.time.end(x);};
   }
   var st = DebugJS.loadStatus();
   if (st & DebugJS.STATE_LOG_PRESERVED) {
@@ -12164,18 +12168,16 @@ DebugJS.x.addPanel = function(p) {
   var ctx = DebugJS.ctx;
   p.base = null; p.btn = null;
   var idx = ctx.extPanels.push(p) - 1;
-  if (DebugJS.ctx.status & DebugJS.STATE_INITIALIZED) {
+  if (ctx.status & DebugJS.STATE_INITIALIZED) {
     ctx.initExtPanel(ctx);
   }
   return idx;
 };
 DebugJS.x.setBtnLabel = function(l) {
-  var ctx = DebugJS.ctx;
-  ctx.extBtnLabel = l;
-  if (ctx.extBtn) ctx.extBtn.innerHTML = l;
+  DebugJS.ctx.extBtnLabel = l;
+  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
 var dbg = dbg || DebugJS;
-var time = time || DebugJS.time;
 if (DebugJS.ENABLE) {
   DebugJS.start();
 } else {
