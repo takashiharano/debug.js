@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711082030';
+  this.v = '201711082320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2986,6 +2986,7 @@ DebugJS.prototype = {
     var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
     if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       ctx.enableDraggable(ctx);
+      ctx.enableResize(ctx);
     }
     ctx.setWinPos(ctx.opt.position, ctx.initWidth, ctx.initHeight);
     ctx.setDbgWinSize(w, h);
