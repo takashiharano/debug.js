@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711080759';
+  this.v = '201711081136';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8056,8 +8056,8 @@ DebugJS.splitQuotedArgs = function(arg) {
   var start = 0;
   var len = 0;
   var searching = true;
-  var bracket = false;
   var quoted = false;
+  var bracket = 0;
   var ch = '';
   var str = '';
   for (var i = 0; i < arg.length; i++) {
@@ -8065,7 +8065,7 @@ DebugJS.splitQuotedArgs = function(arg) {
     ch = arg.charAt(i);
     switch (ch) {
       case ' ':
-        if (searching || bracket || quoted) {
+        if (searching || quoted || (bracket > 0)) {
           continue;
         } else {
           searching = true;
@@ -8079,7 +8079,9 @@ DebugJS.splitQuotedArgs = function(arg) {
           start = i;
           len = 0;
           searching = false;
-          bracket = true;
+        }
+        if (!quoted) {
+          bracket++;
         }
         break;
       case ')':
@@ -8087,15 +8089,15 @@ DebugJS.splitQuotedArgs = function(arg) {
           start = i;
           len = 0;
           searching = false;
-        } else if (bracket) {
+        } else if (bracket > 0) {
           if ((i > 0) && (arg.charAt(i - 1) == '\\')) {
             continue;
           }
-          bracket = false;
+          bracket--;
         }
         break;
       case '"':
-        if (bracket) {
+        if (bracket > 0) {
           continue;
         } else if (searching) {
           start = i;
