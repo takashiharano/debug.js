@@ -1240,11 +1240,20 @@ If you want to change the debugger settings, explicitly call for initialization 
     <td class="name">log.p</td>
     <td>
       arg1: variable<br>
-      arg2: toJson<span class="annotation">(opt)</span><br>
-      arg3: recursion level limit<span class="annotation">(opt)</span><br>
-      arg4: message string<span class="annotation">(opt)</span>
+      arg2: recursion level limit<span class="annotation">(opt)</span><br>
+      arg3: message string<span class="annotation">(opt)</span>
     </td>
     <td>Output object dump</td>
+  </tr>
+
+  <tr>
+    <td class="name">log.json</td>
+    <td>
+      arg1: variable<br>
+      arg2: recursion level limit<span class="annotation">(opt)</span><br>
+      arg3: message string<span class="annotation">(opt)</span>
+    </td>
+    <td>Output object dump (JSON format)</td>
   </tr>
 
   <tr>
@@ -3525,40 +3534,40 @@ log.p(a);<br>
 </td>
 
 <td>
-log.p(a, false, 0, msg);<br>
-<button onclick="log.p(a, false, 0, logMessageText.value);">log.p() w/ msg</button>
+log.p(a, 0, msg);<br>
+<button onclick="log.p(a, 0, logMessageText.value);">log.p() w/ msg</button>
 </td>
 
 <td>
-log.p(a, false, 1);<br>
-<button onclick="log.p(a, false, 1);">log.p() lv1</button>
+log.p(a, 1);<br>
+<button onclick="log.p(a, 1);">log.p() lv1</button>
 </td>
 
 <td>
-log.p(a, false, 2);<br>
-<button onclick="log.p(a, false, 2);">log.p() lv2</button>
+log.p(a, 2);<br>
+<button onclick="log.p(a, 2);">log.p() lv2</button>
 </td>
 </tr>
 
 <tr>
 <td>
-log.p(a, true);<br>
-<button onclick="log.p(a, true);">log.p() w/o msg (JSON)</button>
+log.json(a);<br>
+<button onclick="log.json(a);">log.json() w/o msg</button>
 </td>
 
 <td>
-log.p(a, true, 0, msg);<br>
-<button onclick="log.p(a, true, 0, logMessageText.value);">log.p() w/ msg (JSON)</button>
+log.json(a, 0, msg);<br>
+<button onclick="log.json(a, 0, logMessageText.value);">log.json() w/ msg</button>
 </td>
 
 <td>
-log.p(a, true, 1);<br>
-<button onclick="log.p(a, true, 1);">log.p() lv1 (JSON)</button>
+log.json(a, 1);<br>
+<button onclick="log.json(a, 1);">log.json() lv1</button>
 </td>
 
 <td>
-log.p(a, true, 2);<br>
-<button onclick="log.p(a, true, 2);">log.p() lv2 (JSON)</button>
+log.json(a, 2);<br>
+<button onclick="log.json(a, 2);">log.json() lv2</button>
 </td>
 </tr>
 

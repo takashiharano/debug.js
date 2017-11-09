@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711100016';
+  this.v = '201711100724';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10203,9 +10203,15 @@ DebugJS.log.s = function(m) {
   DebugJS.log.out(m, DebugJS.LOG_TYPE_SYS);
 };
 
-DebugJS.log.p = function(o, j, l, m) {
+DebugJS.log.p = function(o, l, m) {
   var valLen = DebugJS.ctx.properties.dumpvallen.value;
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false, valLen);
+  DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
+};
+
+DebugJS.log.json = function(o, l, m) {
+  var valLen = DebugJS.ctx.properties.dumpvallen.value;
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, true, l, false, valLen);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
 };
 
@@ -12042,6 +12048,11 @@ log.p = function(o, l, m) {
   DebugJS.log.p(o, l, m);
 };
 
+log.json = function(o, l, m) {
+  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  DebugJS.log.json(o, l, m);
+};
+
 log.res = function(m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS.log.res(m);
@@ -12133,6 +12144,7 @@ DebugJS.balse = function() {
   log.v = DebugJS.z1;
   log.t = DebugJS.z2;
   log.p = DebugJS.z3;
+  log.json = DebugJS.z3;
   log.clear = DebugJS.z0;
   log.res = DebugJS.z1;
   log.res.err = DebugJS.z1;
