@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711092040';
+  this.v = '201711100016';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8650,7 +8650,11 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
             if (toJson) {arg.dump += '"';}
             var dt = DebugJS.getDateTime(obj[key]);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss + ' (' + obj[key].getTime() + ')';
-            arg.dump += ': <span style="color:#f80">[Date]</span> ' + date;
+            arg.dump += ': ';
+            if (!toJson) {
+              arg.dump += '<span style="color:#f80">[Date]</span> ';
+            }
+            arg.dump += date;
             sibling++;
             continue;
           } else if ((window.ArrayBuffer) && (obj[key] instanceof ArrayBuffer)) {
@@ -8658,7 +8662,12 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
             if (toJson) {arg.dump += '"';}
             arg.dump += key;
             if (toJson) {arg.dump += '"';}
-            arg.dump += ': <span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
+            arg.dump += ': ';
+            if (toJson) {
+              arg.dump += '{}';
+            } else {
+              arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
+            }
             sibling++;
             continue;
           } else {
@@ -8697,9 +8706,16 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
           } else if (Object.prototype.toString.call(obj) === '[object Date]') {
             var dt = DebugJS.getDateTime(obj);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss + ' (' + obj.getTime() + ')';
-            arg.dump += '<span style="color:#f80">[Date]</span> ' + date;
+            if (!toJson) {
+              arg.dump += '<span style="color:#f80">[Date]</span> ';
+            }
+            arg.dump += date;
           } else if ((window.ArrayBuffer) && (obj instanceof ArrayBuffer)) {
-            arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
+            if (toJson) {
+              arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
+            } else {
+              arg.dump += '{}';
+            }
           } else {
             empty = true;
             arg.dump = arg.dump.replace(/\n$/, '');
@@ -10187,9 +10203,9 @@ DebugJS.log.s = function(m) {
   DebugJS.log.out(m, DebugJS.LOG_TYPE_SYS);
 };
 
-DebugJS.log.p = function(o, l, m) {
+DebugJS.log.p = function(o, j, l, m) {
   var valLen = DebugJS.ctx.properties.dumpvallen.value;
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false, valLen);
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
 };
 
