@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711082320';
+  this.v = '201711092040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -23,7 +23,7 @@ var DebugJS = DebugJS || function() {
     },
     lines: 18,
     bufsize: 300,
-    width: 532,
+    width: 533,
     zoom: 1,
     position: 'se',
     adjPosX: 20,
@@ -6955,24 +6955,30 @@ DebugJS.prototype = {
   },
 
   cmdPause: function(arg, tbl) {
-    var args = DebugJS.parseArgs(arg);
-    if (args.opt) {
-      if (args.opt == 'u') {
+    var args = DebugJS.splitQuotedArgs(arg);
+    if (!(DebugJS.ctx._cmdPause(args[0], args[1]))) {
+      DebugJS.printUsage(tbl.usage);
+    }
+  },
+
+  _cmdPause: function(opt, key) {
+    if (opt == '') {
+      DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD;
+      DebugJS.log('Click or press any key to continue...');
+    } else {
+      if (opt == '-u') {
         DebugJS.log('Type "resume" to continue...');
-      } else if (args.opt == 'key') {
-        var key = args.data;
+      } else if (opt == '-key') {
+        var key = key;
         DebugJS.bat.ctrl.pauseKey = key;
         DebugJS.log('Type "resume" or "resume -key ' + key + '" to continue...');
       } else {
-        DebugJS.printUsage(tbl.usage);
-        return;
+        return false;
       }
       DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD_KEY;
       DebugJS.ctx.updateBatResumeBtn();
-    } else {
-      DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD;
-      DebugJS.log('Click or press any key to continue...');
     }
+    return true;
   },
 
   cmdPoint: function(arg, tbl) {
@@ -10740,6 +10746,9 @@ DebugJS.bat.load = function() {
   bat.cmds = bt.cmds;
   bat.parseLabels();
   if (bat.ctrl.cont) {
+    if (bat.ctrl.pauseKey != null) {
+      DebugJS.ctx._cmdPause('-key', bat.ctrl.pauseKey);
+    }
     DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
     bat.exec();
   }
