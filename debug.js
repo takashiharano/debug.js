@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711100724';
+  this.v = '201711101941';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8651,10 +8651,11 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
             var dt = DebugJS.getDateTime(obj[key]);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss + ' (' + obj[key].getTime() + ')';
             arg.dump += ': ';
-            if (!toJson) {
-              arg.dump += '<span style="color:#f80">[Date]</span> ';
+            if (toJson) {
+              arg.dump += '"' + obj[key].toISOString() + '"';
+            } else {
+              arg.dump += '<span style="color:#f80">[Date]</span> ' + date;
             }
-            arg.dump += date;
             sibling++;
             continue;
           } else if ((window.ArrayBuffer) && (obj[key] instanceof ArrayBuffer)) {
@@ -8706,10 +8707,11 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
           } else if (Object.prototype.toString.call(obj) === '[object Date]') {
             var dt = DebugJS.getDateTime(obj);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss + ' (' + obj.getTime() + ')';
-            if (!toJson) {
-              arg.dump += '<span style="color:#f80">[Date]</span> ';
+            if (toJson) {
+              arg.dump += '"' + obj.toISOString() + '"';
+            } else {
+              arg.dump += '<span style="color:#f80">[Date]</span> ' + date;
             }
-            arg.dump += date;
           } else if ((window.ArrayBuffer) && (obj instanceof ArrayBuffer)) {
             if (toJson) {
               arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
