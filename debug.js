@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711101941';
+  this.v = '201711102239';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6420,7 +6420,7 @@ DebugJS.prototype = {
         } else {
           st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
         }
-        DebugJS.log.p(bat.ctrl, 0, st);
+        DebugJS.log.p(bat.ctrl, 0, st, false);
         break;
       case 'pause':
         bat.pause();
@@ -10175,7 +10175,7 @@ DebugJS.opacity = function(v) {
 
 DebugJS.log = function(m) {
   if (m instanceof Object) {
-    DebugJS.log.p(m, 0);
+    DebugJS.log.p(m, 0, null, false);
   } else {
     DebugJS.log.out(m, DebugJS.LOG_TYPE_LOG);
   }
@@ -10205,15 +10205,9 @@ DebugJS.log.s = function(m) {
   DebugJS.log.out(m, DebugJS.LOG_TYPE_SYS);
 };
 
-DebugJS.log.p = function(o, l, m) {
+DebugJS.log.p = function(o, l, m, j) {
   var valLen = DebugJS.ctx.properties.dumpvallen.value;
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, false, l, false, valLen);
-  DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
-};
-
-DebugJS.log.json = function(o, l, m) {
-  var valLen = DebugJS.ctx.properties.dumpvallen.value;
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, true, l, false, valLen);
+  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
   DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
 };
 
@@ -12047,12 +12041,12 @@ log.t = function(m, n) {
 
 log.p = function(o, l, m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.log.p(o, l, m);
+  DebugJS.log.p(o, l, m, false);
 };
 
 log.json = function(o, l, m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.log.json(o, l, m);
+  DebugJS.log.p(o, l, m, true);
 };
 
 log.res = function(m) {
