@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711111210';
+  this.v = '201711111256';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4449,14 +4449,6 @@ DebugJS.prototype = {
     return btn;
   },
 
-  closeTimerUpDwnButton: function() {
-    var ctx = DebugJS.ctx;
-    var btn = document.getElementsByClassName(ctx.id + '-timerupdwn');
-    for (var i = 0; btn.length; i++) {
-      btn[i].style.color = 'transparent';
-    }
-  },
-
   timerUpDwn: function(part, up) {
     var ctx = DebugJS.ctx;
     var val = ctx.calcTimeupTimeInp();
@@ -6350,7 +6342,7 @@ DebugJS.prototype = {
     var cmd = cmds[0];
     var arg = cmds[1];
 
-    for (var i = 0, len = ctx.CMD_TBL.length; i < len; i++) {
+    for (var i = 0; i < ctx.CMD_TBL.length; i++) {
       if (cmd == ctx.CMD_TBL[i].cmd) {
         return ctx.CMD_TBL[i].fnc(arg, ctx.CMD_TBL[i]);
       }
@@ -6360,7 +6352,7 @@ DebugJS.prototype = {
       return;
     }
 
-    for (var i = 0, len = ctx.EXT_CMD_TBL.length; i < len; i++) {
+    for (var i = 0; i < ctx.EXT_CMD_TBL.length; i++) {
       if (cmd == ctx.EXT_CMD_TBL[i].cmd) {
         return ctx.EXT_CMD_TBL[i].fnc(arg, ctx.EXT_CMD_TBL[i]);
       }
@@ -6757,7 +6749,7 @@ DebugJS.prototype = {
   showHistory: function() {
     var bf = DebugJS.ctx.cmdHistoryBuf.getAll();
     var str = '<table>';
-    for (var i = 0, len = bf.length; i < len; i++) {
+    for (var i = 0; i < bf.length; i++) {
       var cmd = bf[i];
       cmd = DebugJS.escTags(cmd);
       cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
@@ -6773,7 +6765,7 @@ DebugJS.prototype = {
     if (DebugJS.LS_AVAILABLE) {
       var bf = ctx.cmdHistoryBuf.getAll();
       var cmds = '';
-      for (var i = 0, len = bf.length; i < len; i++) {
+      for (var i = 0; i < bf.length; i++) {
         cmds += bf[i] + '\n';
       }
       localStorage.setItem('DebugJS-history', cmds);
@@ -6785,7 +6777,7 @@ DebugJS.prototype = {
       var bf = localStorage.getItem('DebugJS-history');
       if (bf != null) {
         var cmds = bf.split('\n');
-        for (var i = 0, len = (cmds.length - 1); i < len; i++) {
+        for (var i = 0; i < (cmds.length - 1); i++) {
           ctx.cmdHistoryBuf.add(cmds[i]);
           ctx.cmdHistoryIdx = (ctx.cmdHistoryBuf.count() < ctx.CMD_HISTORY_MAX) ? ctx.cmdHistoryBuf.count() : ctx.CMD_HISTORY_MAX;
         }
@@ -6888,7 +6880,7 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       var args = arg.split(' ');
-      for (var i = 0, len = args.length; i < len; i++) {
+      for (var i = 0; i < args.length; i++) {
         if (args[i] == '') continue;
         var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.getKeysStr(' + args[i] + ');DebugJS.log.mlt(DebugJS.buf);';
         try {
@@ -8801,7 +8793,7 @@ DebugJS.countElements = function(selector, showDetail) {
     DebugJS.getChildElements(element, elmList);
   }
   if (elmList) {
-    for (var i = 0, len = elmList.length; i < len; i++) {
+    for (var i = 0; i < elmList.length; i++) {
       if (!cnt[elmList[i].tagName]) {
         cnt[elmList[i].tagName] = 1;
       } else {
@@ -8826,8 +8818,7 @@ DebugJS.getChildElements = function(el, list) {
   list.push(el);
   var children = el.childNodes;
   if (children) {
-    var len = children.length;
-    for (var i = 0; i < len; i++) {
+    for (var i = 0; i < children.length; i++) {
       DebugJS.getChildElements(children[i], list);
     }
   }
@@ -9198,7 +9189,7 @@ DebugJS.decodeBase64 = function(str) {
 DebugJS.decodeUnicode = function(arg) {
   var str = '';
   var args = arg.split(' ');
-  for (var i = 0, len = args.length; i < len; i++) {
+  for (var i = 0; i < args.length; i++) {
     if (args[i] == '') continue;
     var codePoint = args[i].replace(/^U\+/i, '');
     if (codePoint == '20') {
@@ -9212,7 +9203,7 @@ DebugJS.decodeUnicode = function(arg) {
 
 DebugJS.encodeUnicode = function(str) {
   var code = '';
-  for (var i = 0, len = str.length; i < len; i++) {
+  for (var i = 0; i < str.length; i++) {
     var point = str.charCodeAt(i);
     if (i > 0) {
       code += ' ';
