@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711102239';
+  this.v = '201711111210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2544,9 +2544,11 @@ DebugJS.prototype = {
 
       case 67: // C
         if ((e.ctrlKey) && (document.activeElement == ctx.cmdLine)) {
-          DebugJS.bat.stop();
-          DebugJS.log.s(ctx.cmdLine.value + '^C');
-          ctx.cmdLine.value = '';
+          if (((ctx.cmdLine.selectionEnd - ctx.cmdLine.selectionStart) == 0)) {
+            DebugJS.bat.stop();
+            DebugJS.log.s(ctx.cmdLine.value + '^C');
+            ctx.cmdLine.value = '';
+          }
         }
         break;
 
