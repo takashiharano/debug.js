@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711111256';
+  this.v = '201711112300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1245,27 +1245,27 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.swBtnPanel);
     }
 
-    ctx.extBtn = ctx.createHeaderButton('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanelMode, 'status', 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
+    ctx.extBtn = ctx.createHeaderButton('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
     ctx.extBtn.style.display = 'none';
 
     if (opt.useTools) {
-      ctx.toolsBtn = ctx.createHeaderButton('toolsBtn', 'TOOL', 2, null, ctx.toggleToolsMode, 'status', 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
+      ctx.toolsBtn = ctx.createHeaderButton('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
 
     if (opt.useScriptEditor) {
-      ctx.scriptBtn = ctx.createHeaderButton('scriptBtn', 'JS', 2, null, ctx.toggleScriptMode, 'status', 'STATE_SCRIPT', 'JS_BTN_COLOR', false);
+      ctx.scriptBtn = ctx.createHeaderButton('scriptBtn', 'JS', 2, null, ctx.toggleScript, 'status', 'STATE_SCRIPT', 'JS_BTN_COLOR', false);
     }
 
     if (opt.useElementInfo) {
-      ctx.elmInfoBtn = ctx.createHeaderButton('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfoMode, 'status', 'STATE_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
+      ctx.elmInfoBtn = ctx.createHeaderButton('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'STATE_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
     }
 
     if (opt.useHtmlSrc) {
-      ctx.htmlSrcBtn = ctx.createHeaderButton('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrcMode, 'status', 'STATE_HTML_SRC', 'HTML_BTN_COLOR', false);
+      ctx.htmlSrcBtn = ctx.createHeaderButton('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'STATE_HTML_SRC', 'HTML_BTN_COLOR', false);
     }
 
     if (opt.useSystemInfo) {
-      ctx.sysInfoBtn = ctx.createHeaderButton('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfoMode, 'status', 'STATE_SYS_INFO', 'SYS_BTN_COLOR', false);
+      ctx.sysInfoBtn = ctx.createHeaderButton('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfo, 'status', 'STATE_SYS_INFO', 'SYS_BTN_COLOR', false);
     }
 
     if (opt.useScreenMeasure) {
@@ -1278,7 +1278,7 @@ DebugJS.prototype = {
       measureBtn.style.width = (10 * opt.zoom) + 'px';
       measureBtn.style.height = (7 * opt.zoom) + 'px';
       measureBtn.innerText = ' ';
-      measureBtn.onclick = ctx.toggleMeasureMode;
+      measureBtn.onclick = ctx.toggleMeasure;
       measureBtn.onmouseover = new Function('DebugJS.ctx.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BTN_COLOR + '\';');
       measureBtn.onmouseout = new Function('DebugJS.ctx.measureBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
       ctx.headPanel.appendChild(measureBtn);
@@ -2206,7 +2206,7 @@ DebugJS.prototype = {
     ctx.updatePreserveLogBtn(ctx);
   },
 
-  toggleMeasureMode: function() {
+  toggleMeasure: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_MEASURE) {
       ctx.closeScreenMeasure(ctx);
@@ -3170,7 +3170,7 @@ DebugJS.prototype = {
     ctx.status &= ~DebugJS.STATE_MEASURING;
   },
 
-  toggleSystemInfoMode: function() {
+  toggleSystemInfo: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_SYS_INFO) {
       ctx.closeSystemInfo(ctx);
@@ -3536,7 +3536,7 @@ DebugJS.prototype = {
     return foldingText;
   },
 
-  toggleElmInfoMode: function() {
+  toggleElmInfo: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {
       ctx.closeElmInfo(ctx);
@@ -4009,7 +4009,7 @@ DebugJS.prototype = {
     return str;
   },
 
-  toggleHtmlSrcMode: function() {
+  toggleHtmlSrc: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_HTML_SRC) {
       ctx.closeHtmlSrc(ctx);
@@ -4128,7 +4128,7 @@ DebugJS.prototype = {
     }
   },
 
-  toggleToolsMode: function() {
+  toggleTools: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_TOOLS) {
       ctx.closeTools(ctx);
@@ -5907,7 +5907,7 @@ DebugJS.prototype = {
     }
   },
 
-  toggleScriptMode: function() {
+  toggleScript: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_SCRIPT) {
       ctx.closeScriptEditor();
@@ -6051,7 +6051,7 @@ DebugJS.prototype = {
     ctx.updateScriptBtn(ctx);
   },
 
-  toggleExtPanelMode: function() {
+  toggleExtPanel: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_EXT_PANEL) {
       ctx.closeExtPanel(ctx);
