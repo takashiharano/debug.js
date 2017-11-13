@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711112300';
+  this.v = '201711132141';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6988,13 +6988,24 @@ DebugJS.prototype = {
     } else if (op.charAt(0) == '#') {
       alignX = args[1];
       alignY = args[2];
-      DebugJS.pointById(x, alignX, alignY);
+      DebugJS.pointById(op, alignX, alignY);
     } else if (op.charAt(0) == '.') {
-      x = args[0];
       idx = args[1];
       alignX = args[2];
       alignY = args[3];
-      DebugJS.pointBySelector(x, idx, alignX, alignY);
+      DebugJS.pointBySelector(op, idx, alignX, alignY);
+    } else if (op == 'label') {
+      var label = args[1];
+      try {
+        label = eval(label);
+      } catch (e) {
+        DebugJS.log.e(e);
+        return;
+      }
+      idx = args[2] | 0;
+      alignX = args[3];
+      alignY = args[4];
+      DebugJS.pointByLabel(label, idx, alignX, alignY);
     } else if (op == 'hide') {
       point.hide();
     } else if (op == 'show') {
@@ -7008,7 +7019,7 @@ DebugJS.prototype = {
         speed = args[3];
         alignX = args[4];
         alignY = args[5];
-        point.moveToId(target.substr(1), step, speed, alignX, alignY);
+        point.moveToId(target, step, speed, alignX, alignY);
       } else if (target.charAt(0) == '.') {
         idx = args[2];
         step = args[3];
@@ -7016,6 +7027,20 @@ DebugJS.prototype = {
         alignX = args[5];
         alignY = args[6];
         point.moveToSelector(target, idx, step, speed, alignX, alignY);
+      } else if (target == 'label') {
+        var label = args[2];
+        idx = args[3] | 0;
+        step = args[4];
+        speed = args[5];
+        alignX = args[6];
+        alignY = args[7];
+        try {
+          label = eval(label);
+        } catch (e) {
+          DebugJS.log.e(e);
+          return;
+        }
+        DebugJS.point.moveToLabel(label, idx, step, speed, alignX, alignY);
       } else if (target == 'center') {
         var p = DebugJS.getScreenCenter();
         step = args[2];
@@ -11152,18 +11177,7 @@ DebugJS.point._move = function() {
 };
 
 DebugJS.pointById = function(id, alignX, alignY) {
-  var el = DebugJS.getElement(id);
-  if (!el) {
-    DebugJS.log.e(id + ': Element not found');
-    return;
-  }
-  var ps = DebugJS.getElPosSize(el);
-  DebugJS.scrollWinToTarget(ps);
-  ps = DebugJS.getElPosSize(id);
-  if (alignX == undefined) alignX = 0.5;
-  if (alignY == undefined) alignY = 0.5;
-  var p = DebugJS.getAlignedPos(ps, alignX, alignY);
-  DebugJS.point(p.x, p.y);
+  DebugJS.pointBySelector(id, 0, alignX, alignY);
 };
 DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var el = DebugJS.getElement(selector, idx);
@@ -11174,6 +11188,21 @@ DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var ps = DebugJS.getElPosSize(el);
   DebugJS.scrollWinToTarget(ps);
   ps = DebugJS.getElPosSize(selector, idx);
+  if (alignX == undefined) alignX = 0.5;
+  if (alignY == undefined) alignY = 0.5;
+  var p = DebugJS.getAlignedPos(ps, alignX, alignY);
+  DebugJS.point(p.x, p.y);
+};
+DebugJS.pointByLabel = function(label, idx, alignX, alignY) {
+  var el = DebugJS.getLabelEl(label, idx);
+  if (!el) {
+    DebugJS.log.e(label + '[' + idx + ']: Element not found');
+    return;
+  }
+  var ps = DebugJS.getElPosSize(el);
+  DebugJS.scrollWinToTarget(ps);
+  el = DebugJS.getLabelEl(label, idx);
+  ps = DebugJS.getElPosSize(el);
   if (alignX == undefined) alignX = 0.5;
   if (alignY == undefined) alignY = 0.5;
   var p = DebugJS.getAlignedPos(ps, alignX, alignY);
@@ -11197,29 +11226,7 @@ DebugJS.getAlignedPos = function(ps, alignX, alignY) {
 };
 
 DebugJS.point.moveToId = function(id, step, speed, alignX, alignY) {
-  var data = {
-    id: id,
-    step: step,
-    speed: speed,
-    alignX: alignX,
-    alignY: alignY
-  };
-  var ps = DebugJS.getElPosSize('#' + id);
-  if (!ps) {
-    DebugJS.log.e('#' + id + ': Element not found');
-    return;
-  }
-  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToId, data)) {
-    return;
-  }
-  DebugJS.point._moveToId(data);
-};
-DebugJS.point._moveToId = function(data) {
-  var el = DebugJS.getElement('#' + data.id);
-  var ps = DebugJS.getElPosSize(el);
-  if (data.alignX == undefined) data.alignX = 0.5;
-  if (data.alignY == undefined) data.alignY = 0.5;
-  DebugJS.point.moveToElement(ps, data.step, data.speed, data.alignX, data.alignY);
+  DebugJS.point.moveToSelector(id, 0, step, speed, alignX, alignY);
 };
 
 DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alignY) {
@@ -11243,6 +11250,34 @@ DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alig
 };
 DebugJS.point._moveToSelector = function(data) {
   var el = DebugJS.getElement(data.selector, data.idx);
+  var ps = DebugJS.getElPosSize(el);
+  if (data.alignX == undefined) data.alignX = 0.5;
+  if (data.alignY == undefined) data.alignY = 0.5;
+  DebugJS.point.moveToElement(ps, data.step, data.speed, data.alignX, data.alignY);
+};
+
+DebugJS.point.moveToLabel = function(label, idx, step, speed, alignX, alignY) {
+  var data = {
+    label: label,
+    idx: idx,
+    step: step,
+    speed: speed,
+    alignX: alignX,
+    alignY: alignY
+  };
+  var el = DebugJS.getLabelEl(label, idx);
+  if (!el) {
+    DebugJS.log.e(label + '[' + idx + ']: Element not found');
+    return;
+  }
+  var ps = DebugJS.getElPosSize(el);
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToLabel, data)) {
+    return;
+  }
+  DebugJS.point._moveToLabel(data);
+};
+DebugJS.point._moveToLabel = function(data) {
+  var el = DebugJS.getLabelEl(data.label, data.idx);
   var ps = DebugJS.getElPosSize(el);
   if (data.alignX == undefined) data.alignX = 0.5;
   if (data.alignY == undefined) data.alignY = 0.5;
@@ -11925,6 +11960,22 @@ DebugJS.getScreenCenter = function() {
     y: (document.documentElement.clientHeight / 2)
   };
   return p;
+};
+
+DebugJS.getLabelEl = function(label, idx) {
+  var el = null;
+  var cnt = 0;
+  var c = document.getElementsByTagName('label');
+  for (var i = 0; i < c.length; i++) {
+    if (c[i].innerText == label) {
+      if (idx == cnt) {
+        el = c[i];
+        break;
+      }
+      cnt++;
+    }
+  }
+  return el;
 };
 
 DebugJS.random = function(min, max) {

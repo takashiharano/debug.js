@@ -2719,6 +2719,7 @@ $ point .className
 $ point .className index alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 $ point tagName
 $ point tagName index alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
+$ point label labelText index alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 -&gt; Point the specified element
 
 $ point center <span class="annotation">Center of the screen</span>
@@ -2764,6 +2765,7 @@ $ point move x y 10<span class="annotation">step px(opt)</span> 10<span class="a
 $ point move #id alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 $ point move .className 0<span class="annotation">index</span> alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
 $ point move tagName 0<span class="annotation">index</span> alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span>
+$ point move label labelText 0<span class="annotation">index</span> alignX<span class="annotation">0-1(opt)</span> alignY<span class="annotation">0-1(opt)</span
 $ point move center <span class="annotation">Center of the screen</span>
 $ point move mouse <span class="annotation">Current mouse position</span>
 -&gt; Move the pointer from the current position to the specified position
@@ -3944,7 +3946,18 @@ function callback(xhr) {
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value="'"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">sp chr</span><input style="width:180px;" value='"'></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">checkbox1</span><input type="checkbox" id="checkbox1" value="chk"></div>
-      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">radio1</span><input type="radio" id="radio1" name="radiogrp1" value="1">1 <input type="radio" id="radio2" name="radiogrp1" value="2">2 <input type="radio" id="radio3" name="radiogrp1" value="3">3</div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">radio1</span>
+        <input type="radio" id="radio1" name="radiogrp1" value="1">r1
+        <input type="radio" id="radio2" name="radiogrp1" value="2">r2
+        <input type="radio" id="radio3" name="radiogrp1" value="3">r3
+        (w/o label)
+      </div>
+      <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">radio2</span>
+        <input type="radio" id="radio2-1" name="radiogrp2" value="1"><label for="radio2-1">r1</label>
+        <input type="radio" id="radio2-2" name="radiogrp2" value="2"><label for="radio2-2">r2</label>
+        <input type="radio" id="radio2-3" name="radiogrp2" value="3"><label for="radio2-3">r3</label>
+        (w/ label)
+      </div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">file</span><input type="file" id="input-file" name="input-file" style="width:180px;"></div>
       <div style="margin-bottom:5px;">
         <input type="submit" id="sbmt-btn" class="button-100" value="Submit" onsubmit="return false;">
