@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711132141';
+  this.v = '201711140711';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2216,7 +2216,7 @@ DebugJS.prototype = {
   },
 
   openScreenMeasure: function(ctx, silent) {
-    if (!silent) DebugJS.log.s('Screen Measure ON.');
+    if (!silent) DebugJS.log.s('Screen Measure ON');
     ctx.status |= DebugJS.STATE_MEASURE;
     ctx.featStack.push(DebugJS.STATE_MEASURE);
     ctx.bodyCursor = ctx.bodyEl.style.cursor;
@@ -2229,7 +2229,7 @@ DebugJS.prototype = {
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
     ctx.status &= ~DebugJS.STATE_MEASURE;
     DebugJS.delArray(ctx.featStack, DebugJS.STATE_MEASURE);
-    if (!silent) DebugJS.log.s('Screen Measure OFF.');
+    if (!silent) DebugJS.log.s('Screen Measure OFF');
     ctx.updateMeasureBtn(ctx);
   },
 
@@ -11188,10 +11188,7 @@ DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var ps = DebugJS.getElPosSize(el);
   DebugJS.scrollWinToTarget(ps);
   ps = DebugJS.getElPosSize(selector, idx);
-  if (alignX == undefined) alignX = 0.5;
-  if (alignY == undefined) alignY = 0.5;
-  var p = DebugJS.getAlignedPos(ps, alignX, alignY);
-  DebugJS.point(p.x, p.y);
+  DebugJS.pointTarget(ps, alignX, alignY);
 };
 DebugJS.pointByLabel = function(label, idx, alignX, alignY) {
   var el = DebugJS.getLabelEl(label, idx);
@@ -11203,6 +11200,9 @@ DebugJS.pointByLabel = function(label, idx, alignX, alignY) {
   DebugJS.scrollWinToTarget(ps);
   el = DebugJS.getLabelEl(label, idx);
   ps = DebugJS.getElPosSize(el);
+  DebugJS.pointTarget(ps, alignX, alignY);
+};
+DebugJS.pointTarget = function(ps, alignX, alignY) {
   if (alignX == undefined) alignX = 0.5;
   if (alignY == undefined) alignY = 0.5;
   var p = DebugJS.getAlignedPos(ps, alignX, alignY);
