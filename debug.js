@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711140711';
+  this.v = '201711150700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1735,11 +1735,11 @@ DebugJS.prototype = {
 
   updateMsgLabel: function() {
     var ctx = DebugJS.ctx;
-    var str = ctx.msgString;
+    var s = ctx.msgString;
     if (ctx.msgLabel) {
-      var html = '<pre>' + str + '</pre>';
+      var html = '<pre>' + s + '</pre>';
       ctx.msgLabel.innerHTML = html;
-      if (str == '') {
+      if (s == '') {
         ctx.msgLabel.style.opacity = 0;
       } else {
         ctx.msgLabel.style.opacity = 1;
@@ -3995,18 +3995,18 @@ DebugJS.prototype = {
 
   getEvtHandlerStr: function(handler, name) {
     var MAX_LEN = 300;
-    var str = '';
+    var s = '';
     if (handler) {
-      str = handler.toString();
-      str = str.replace(/\n/g, '');
-      str = str.replace(/[^.]{1,}\{/, '');
-      str = str.replace(/\}$/, '');
-      str = str.replace(/^\s{1,}/, '');
+      s = handler.toString();
+      s = s.replace(/\n/g, '');
+      s = s.replace(/[^.]{1,}\{/, '');
+      s = s.replace(/\}$/, '');
+      s = s.replace(/^\s{1,}/, '');
     } else {
-      str = '<span style="color:#aaa">null</span>';
+      s = '<span style="color:#aaa">null</span>';
     }
-    str = DebugJS.ctx.createFoldingText(str, name, DebugJS.OMIT_LAST, MAX_LEN, 'color:#888');
-    return str;
+    s = DebugJS.ctx.createFoldingText(s, name, DebugJS.OMIT_LAST, MAX_LEN, 'color:#888');
+    return s;
   },
 
   toggleHtmlSrc: function() {
@@ -5540,11 +5540,11 @@ DebugJS.prototype = {
   getFileInfo: function(file) {
     var dt = DebugJS.getDateTime(file.lastModifiedDate);
     var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
-    var str = 'file    : ' + file.name + '\n' +
+    var s = 'file    : ' + file.name + '\n' +
     'type    : ' + file.type + '\n' +
     'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
     'modified: ' + fileDate + '\n';
-    return str;
+    return s;
   },
 
   resizeImgPreview: function() {
@@ -6515,8 +6515,8 @@ DebugJS.prototype = {
     }
     arg = DebugJS.decodeEsc(arg);
     try {
-      var str = eval(arg) + '';
-      DebugJS.log(str);
+      var s = eval(arg) + '';
+      DebugJS.log(s);
     } catch (e) {
       DebugJS.log.e(e);
     }
@@ -6606,17 +6606,17 @@ DebugJS.prototype = {
 
   cmdHelp: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var str = 'Available Commands:\n<table>';
+    var s = 'Available Commands:\n<table>';
     var len = ctx.CMD_TBL.length;
     for (var i = 0; i < len; i++) {
       if (!(ctx.CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
-        str += '<tr><td>' + ctx.CMD_TBL[i].cmd + '</td><td>' + ctx.CMD_TBL[i].desc + '</td></tr>';
+        s += '<tr><td>' + ctx.CMD_TBL[i].cmd + '</td><td>' + ctx.CMD_TBL[i].desc + '</td></tr>';
       }
     }
     if (!ctx.opt.disableAllCommands) {
       len = ctx.EXT_CMD_TBL.length;
       if (len > 0) {
-        str += '<tr><td colspan="2">' +
+        s += '<tr><td colspan="2">' +
                '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
       }
       for (var i = 0; i < len; i++) {
@@ -6627,12 +6627,12 @@ DebugJS.prototype = {
             style1 = '<span style="color:#aaa">';
             style2 = '</span>';
           }
-          str += '<tr><td>' + style1 + ctx.EXT_CMD_TBL[i].cmd + style2 + '</td><td>' + style1 + ctx.EXT_CMD_TBL[i].desc + style2 + '</td></tr>';
+          s += '<tr><td>' + style1 + ctx.EXT_CMD_TBL[i].cmd + style2 + '</td><td>' + style1 + ctx.EXT_CMD_TBL[i].desc + style2 + '</td></tr>';
         }
       }
     }
-    str += '</table>';
-    DebugJS.log.mlt(str);
+    s += '</table>';
+    DebugJS.log.mlt(s);
   },
 
   cmdHex: function(arg, tbl) {
@@ -6748,15 +6748,15 @@ DebugJS.prototype = {
 
   showHistory: function() {
     var bf = DebugJS.ctx.cmdHistoryBuf.getAll();
-    var str = '<table>';
+    var s = '<table>';
     for (var i = 0; i < bf.length; i++) {
       var cmd = bf[i];
       cmd = DebugJS.escTags(cmd);
       cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
-      str += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
+      s += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
-    str += '</table>';
-    DebugJS.log.mlt(str);
+    s += '</table>';
+    DebugJS.log.mlt(s);
   },
 
   saveHistory: function(ctx, cmd) {
@@ -7210,12 +7210,12 @@ DebugJS.prototype = {
 
   cmdProps: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var str = 'Available properties:\n<table>';
+    var s = 'Available properties:\n<table>';
     for (var key in ctx.properties) {
-      str += '<tr><td>' + key + '</td><td>' + ctx.properties[key].value + '</td></tr>';
+      s += '<tr><td>' + key + '</td><td>' + ctx.properties[key].value + '</td></tr>';
     }
-    str += '</table>';
-    DebugJS.log.mlt(str);
+    s += '</table>';
+    DebugJS.log.mlt(s);
   },
 
   cmdRandom: function(arg, tbl) {
@@ -9604,11 +9604,11 @@ DebugJS.onHttpRequestDone = function(xhr) {
 };
 
 DebugJS.encodeURIString = function(data) {
-  var str = encodeURIComponent(data);
-  str = str.replace(/%20/g, '+');
-  str = str.replace(/%3D/gi, '=');
-  str = str.replace(/%26/g, '&');
-  return str;
+  var s = encodeURIComponent(data);
+  s = s.replace(/%20/g, '+');
+  s = s.replace(/%3D/gi, '=');
+  s = s.replace(/%26/g, '&');
+  return s;
 };
 
 DebugJS.getLanguages = function(indent) {
@@ -9699,91 +9699,91 @@ DebugJS.getBrowserType = function() {
 };
 
 DebugJS.browserColoring = function(name) {
-  var str = name;
+  var s = name;
   switch (name) {
     case 'Chrome':
-      str = '<span style="color:#f44">Ch</span>' +
-            '<span style="color:#ff0">ro</span>' +
-            '<span style="color:#4f4">m</span>' +
-            '<span style="color:#6cf">e</span>';
+      s = '<span style="color:#f44">Ch</span>' +
+          '<span style="color:#ff0">ro</span>' +
+          '<span style="color:#4f4">m</span>' +
+          '<span style="color:#6cf">e</span>';
       break;
     case 'Edge':
-      str = '<span style="color:#0af">' + name + '</span>';
+      s = '<span style="color:#0af">' + name + '</span>';
       break;
     case 'Firefox':
-      str = '<span style="color:#e57f25">' + name + '</span>';
+      s = '<span style="color:#e57f25">' + name + '</span>';
       break;
     case 'Opera':
-      str = '<span style="color:#f44">' + name + '</span>';
+      s = '<span style="color:#f44">' + name + '</span>';
       break;
     case 'IE11':
     case 'IE10':
     case 'IE9':
-      str = '<span style="color:#61d5f8">' + name + '</span>';
+      s = '<span style="color:#61d5f8">' + name + '</span>';
       break;
     case 'Safari':
-      str = '<span style="color:#86c8e8">Safa</span>' +
-            '<span style="color:#dd5651">r</span>' +
-            '<span style="color:#ececec">i</span>';
+      s = '<span style="color:#86c8e8">Safa</span>' +
+          '<span style="color:#dd5651">r</span>' +
+          '<span style="color:#ececec">i</span>';
   }
-  return str;
+  return s;
 };
 
-DebugJS.substr = function(text, len) {
-  var textLen = text.length;
-  var count = 0;
+DebugJS.substr = function(txt, len) {
+  var txtLen = txt.length;
+  var cnt = 0;
   var str = '';
   var i;
   if (len >= 0) {
-    for (i = 0; i < textLen; i++) {
-      var x = encodeURIComponent(text.charAt(i));
+    for (i = 0; i < txtLen; i++) {
+      var x = encodeURIComponent(txt.charAt(i));
       if (x.length <= 3) {
-        count++;
+        cnt++;
       } else {
-        count += 2;
+        cnt += 2;
       }
-      if (count > len) {
+      if (cnt > len) {
         break;
       }
-      str += text.charAt(i);
+      str += txt.charAt(i);
     }
   } else {
     len *= (-1);
-    for (i = (textLen - 1); i >= 0; i--) {
-      var x = encodeURIComponent(text.charAt(i));
+    for (i = (txtLen - 1); i >= 0; i--) {
+      var x = encodeURIComponent(txt.charAt(i));
       if (x.length <= 3) {
-        count++;
+        cnt++;
       } else {
-        count += 2;
+        cnt += 2;
       }
-      if (count >= len) {
+      if (cnt >= len) {
         break;
       }
     }
-    str = text.substr(i);
+    str = txt.substr(i);
   }
   return str;
 };
 
-DebugJS.trimDownText = function(text, maxLen, style) {
+DebugJS.trimDownText = function(txt, maxLen, style) {
   var snip = '...';
   if (style) {
     snip = '<span style="' + style + '">' + snip + '</span>';
   }
-  var str = text;
-  if (text.length > maxLen) {
+  var str = txt;
+  if (txt.length > maxLen) {
     str = DebugJS.substr(str, maxLen) + snip;
   }
   return str;
 };
 
-DebugJS.trimDownText2 = function(text, maxLen, omitpart, style) {
+DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
   var snip = '...';
   if (style) {
     snip = '<span style="' + style + '">' + snip + '</span>';
   }
-  var str = text.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, ' ');
-  if (text.length > maxLen) {
+  var str = txt.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' ').replace(/\s{2,}/g, ' ');
+  if (txt.length > maxLen) {
     switch (omitpart) {
       case DebugJS.OMIT_FIRST:
         str = DebugJS.substr(str, (maxLen * (-1)));
@@ -10225,8 +10225,8 @@ DebugJS.log.s = function(m) {
 
 DebugJS.log.p = function(o, l, m, j) {
   var valLen = DebugJS.ctx.properties.dumpvallen.value;
-  var str = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
-  DebugJS.log.out(str, DebugJS.LOG_TYPE_LOG);
+  var s = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
+  DebugJS.log.out(s, DebugJS.LOG_TYPE_LOG);
 };
 
 DebugJS.log.res = function(m) {
