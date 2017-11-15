@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711152036';
+  this.v = '201711152100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1719,17 +1719,16 @@ DebugJS.prototype = {
   },
 
   updateLedPanel: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.ledPanel) {
+    if (DebugJS.ctx.ledPanel) {
       var LED = '&#x25CF;';
       var SHADOW = 'text-shadow:0 0 5px;';
       var led = '';
       for (var i = 7; i >= 0; i--) {
-        var bitColor = (ctx.led & DebugJS.LED_BIT[i]) ? 'color:' + DebugJS.LED_COLOR[i] + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+        var bitColor = (DebugJS.ctx.led & DebugJS.LED_BIT[i]) ? 'color:' + DebugJS.LED_COLOR[i] + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
         var margin = (i == 0 ? '' : 'margin-right:2px');
         led += '<span style="' + bitColor + margin + '">' + LED + '</span>';
       }
-      ctx.ledPanel.innerHTML = led;
+      DebugJS.ctx.ledPanel.innerHTML = led;
     }
   },
 
@@ -1908,9 +1907,8 @@ DebugJS.prototype = {
   },
 
   clearLogs: function() {
-    var ctx = DebugJS.ctx;
-    ctx.msgBuf.clear();
-    ctx.printLogs();
+    DebugJS.ctx.msgBuf.clear();
+    DebugJS.ctx.printLogs();
   },
 
   toggleLogFilter: function(filter) {
@@ -1956,9 +1954,8 @@ DebugJS.prototype = {
   },
 
   onchangeLogFilter: function() {
-    var ctx = DebugJS.ctx;
-    ctx.filterText = ctx.filterInput.value;
-    ctx.printLogs();
+    DebugJS.ctx.filterText = DebugJS.ctx.filterInput.value;
+    DebugJS.ctx.printLogs();
   },
 
   toggleFilterCase: function() {
@@ -2263,11 +2260,10 @@ DebugJS.prototype = {
   },
 
   startStopStopWatch: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
-      ctx.stopStopWatch();
+    if (DebugJS.ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+      DebugJS.ctx.stopStopWatch();
     } else {
-      ctx.startStopWatch();
+      DebugJS.ctx.startStopWatch();
     }
   },
 
@@ -3070,8 +3066,7 @@ DebugJS.prototype = {
   },
 
   focusCmdLine: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.cmdLine) ctx.cmdLine.focus();
+    if (DebugJS.ctx.cmdLine) DebugJS.ctx.cmdLine.focus();
   },
 
   startMeasure: function(ctx, e) {
@@ -3214,8 +3209,7 @@ DebugJS.prototype = {
   },
 
   updateSystemTime: function() {
-    var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.STATE_SYS_INFO)) {
+    if (!(DebugJS.ctx.status & DebugJS.STATE_SYS_INFO)) {
       return;
     }
     var now = new Date();
@@ -3224,8 +3218,8 @@ DebugJS.prototype = {
     var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(DebugJS.getDateTime(sysTime)) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         RAW</span>  (new Date()).getTime() = ' + sysTime + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin + '\n</pre>';
-    ctx.sysTimePanel.innerHTML = html;
-    setTimeout(ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
+    DebugJS.ctx.sysTimePanel.innerHTML = html;
+    setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
 
   closeSystemInfo: function(ctx) {
@@ -3947,8 +3941,7 @@ DebugJS.prototype = {
   },
 
   updateElmSelectBtn: function() {
-    var ctx = DebugJS.ctx;
-    ctx.elmSelectBtn.style.color = (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
+    DebugJS.ctx.elmSelectBtn.style.color = (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
   },
 
   toggleElmHighlightMode: function() {
@@ -3964,8 +3957,7 @@ DebugJS.prototype = {
   },
 
   updateElmHighlightBtn: function() {
-    var ctx = DebugJS.ctx;
-    ctx.elmHighlightBtn.style.color = (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
+    DebugJS.ctx.elmHighlightBtn.style.color = (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE;
   },
 
   exportTargetElm: function() {
@@ -5001,9 +4993,8 @@ DebugJS.prototype = {
   },
 
   updateElBtn: function(btn) {
-    var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_ELM_EDIT) {
-      btn.style.color = ctx.opt.btnColor;
+    if (DebugJS.ctx.status & DebugJS.STATE_ELM_EDIT) {
+      btn.style.color = DebugJS.ctx.opt.btnColor;
     } else {
       btn.style.color = DebugJS.COLOR_INACTIVE;
     }
