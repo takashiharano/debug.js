@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711150700';
+  this.v = '201711152036';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8153,6 +8153,9 @@ DebugJS.splitQuotedArgs = function(arg) {
     str = arg.substr(start, len);
     args.push(str);
   }
+  if (args.length == 0) {
+    args = [''];
+  }
   return args;
 };
 
@@ -9238,12 +9241,12 @@ DebugJS.encodeUnicode = function(str) {
   return code;
 };
 
-DebugJS.decodeUri = function(str) {
-  return decodeURIComponent(str);
+DebugJS.decodeUri = function(s) {
+  return decodeURIComponent(s);
 };
 
-DebugJS.encodeUri = function(str) {
-  return encodeURIComponent(str);
+DebugJS.encodeUri = function(s) {
+  return encodeURIComponent(s);
 };
 
 DebugJS.str2ms = function(t) {
@@ -9306,27 +9309,21 @@ DebugJS.calcTime = function(res, days, isSub) {
 DebugJS.timeStart = function(timerName, msg) {
   var ctx = DebugJS.ctx;
   var _timerName = timerName;
-
   if ((timerName === undefined) || (timerName === null)) {
     _timerName = DebugJS.DEFAULT_TIMER_NAME;
   }
-
   ctx.timers[_timerName] = {};
   ctx.timers[_timerName].start = (new Date()).getTime();
-
   if ((msg === null) || ((timerName === null) && (msg === undefined))) {
     return;
   }
-
-  var str;
+  var s;
   if (msg === undefined) {
-    str = _timerName + ': timer started';
+    s = _timerName + ': timer started';
   } else {
-    str = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' +
-          ctx.opt.timerColor + '">00:00:00.000</span>');
+    s = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' + ctx.opt.timerColor + '">00:00:00.000</span>');
   }
-
-  DebugJS.log(str);
+  DebugJS.log(s);
 };
 
 DebugJS.timeGetCount = function(timerName) {
@@ -9402,17 +9399,17 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
     }
   }
 
-  var str;
+  var s;
   if (msg === undefined) {
-    str = _timerName + ': ' + dt;
+    s = _timerName + ': ' + dt;
     if (dtLap != '') {
-      str += '(⊿' + dtLap + ')';
+      s += '(⊿' + dtLap + ')';
     }
   } else {
-    str = msg.replace(/%n/g, _timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+    s = msg.replace(/%n/g, _timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   }
 
-  DebugJS.log(str);
+  DebugJS.log(s);
   return t;
 };
 
@@ -9451,8 +9448,8 @@ DebugJS.timeLog = function(msg, timerName) {
   }
   var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
   var dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
-  var str = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
-  DebugJS.log(str);
+  var s = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+  DebugJS.log(s);
 };
 
 DebugJS.timeCheck = function(timerName, now) {
@@ -9546,7 +9543,7 @@ DebugJS.getRandomStr = function(min, max) {
   if (min > DebugJS.RANDOM_STR_MAX_LEN) min = DebugJS.RANDOM_STR_MAX_LEN;
   if (max > DebugJS.RANDOM_STR_MAX_LEN) max = DebugJS.RANDOM_STR_MAX_LEN;
   var len = DebugJS.getRandomNum(min, max);
-  var str = '';
+  var s = '';
   for (var i = 0; i < len; i++) {
     var ch;
     var retry = true;
@@ -9556,9 +9553,9 @@ DebugJS.getRandomStr = function(min, max) {
         retry = false;
       }
     }
-    str += ch;
+    s += ch;
   }
-  return str;
+  return s;
 };
 
 DebugJS.http = function(rq, cb) {
@@ -9770,11 +9767,11 @@ DebugJS.trimDownText = function(txt, maxLen, style) {
   if (style) {
     snip = '<span style="' + style + '">' + snip + '</span>';
   }
-  var str = txt;
+  var s = txt;
   if (txt.length > maxLen) {
-    str = DebugJS.substr(str, maxLen) + snip;
+    s = DebugJS.substr(s, maxLen) + snip;
   }
-  return str;
+  return s;
 };
 
 DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
@@ -9876,12 +9873,12 @@ DebugJS.escTags = function(s) {
   return s;
 };
 
-DebugJS.escSpclChr = function(str) {
-  var txt = str + '';
-  txt = txt.replace(/&/g, '&amp;');
-  txt = txt.replace(/</g, '&lt;');
-  txt = txt.replace(/>/g, '&gt;');
-  return txt;
+DebugJS.escSpclChr = function(s) {
+  s += '';
+  s = s.replace(/&/g, '&amp;');
+  s = s.replace(/</g, '&lt;');
+  s = s.replace(/>/g, '&gt;');
+  return s;
 };
 
 DebugJS.replaceCtrlChr = function(s, d) {
@@ -10705,10 +10702,10 @@ DebugJS.bat.resume = function(key) {
   if (key == undefined) {
     DebugJS.bat._resume();
   } else if (key == DebugJS.bat.ctrl.pauseKey) {
-    DebugJS.bat._resume('cmd-key');
+    DebugJS.bat._resume('cmd-key', key);
   }
 };
-DebugJS.bat._resume = function(trigger) {
+DebugJS.bat._resume = function(trigger, key) {
   var ctx = DebugJS.ctx;
   if (trigger) {
     if (trigger == 'cmd') {
@@ -10718,7 +10715,7 @@ DebugJS.bat._resume = function(trigger) {
       DebugJS.bat.ctrl.pauseKey = null;
       ctx.updateBatResumeBtn();
     }
-    DebugJS.log('Resumed.');
+    DebugJS.log('Resumed.' + ((key == undefined) ? '' : ' (' + key + ')'));
   } else {
     ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
     ctx.updateBatRunBtn();
@@ -11816,19 +11813,19 @@ DebugJS.test.count = function() {
 };
 DebugJS.test.result = function() {
   var test = DebugJS.test;
-  var str = 'Test Result\nSummary: ' + test.count() + '\n';
+  var s = 'Test Result\nSummary: ' + test.count() + '\n';
   for (name in test.res.results) {
     var caseName = name;
     if (name == '') {
       caseName = '<span style="color:#ccc">&lt;No Test Case Name&gt;</span>';
     }
-    str += '\nCase: ' + caseName + '\n';
+    s += '\nCase: ' + caseName + '\n';
     for (var i = 0; i < test.res.results[name].length; i++) {
       var result = test.res.results[name][i];
-      str += ' ' + test.getResultStr(result.status, result.detail) + '\n';
+      s += ' ' + test.getResultStr(result.status, result.detail) + '\n';
     }
   }
-  return str;
+  return s;
 };
 DebugJS.test.verify = function(got, method, exp, reqEval) {
   var test = DebugJS.test;
