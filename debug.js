@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711152100';
+  this.v = '201711170000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1818,7 +1818,7 @@ DebugJS.prototype = {
     if (!ctx.winCtrlBtnPanel) return;
     var fn = 'DebugJS.ctx.expandDbgWin(\'full\');';
     var btn = '&#x25A1;';
-    if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
+    if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       fn = 'DebugJS.ctx.restoreDbgWin();';
       btn = '&#x2750;';
     }
@@ -2442,9 +2442,9 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.STATE_EXT_PANEL) {ctx.closeExtPanel(ctx);}
   },
 
-  launchFunc: function(ctx, func, subfnc, opt) {
+  launchFunc: function(ctx, fn, subfn, opt) {
     var f = 0;
-    switch (func) {
+    switch (fn) {
       case 'measure':
         f = DebugJS.STATE_MEASURE;
         break;
@@ -2466,12 +2466,13 @@ DebugJS.prototype = {
       case 'ext':
         f = DebugJS.STATE_EXT_PANEL;
     }
-    return (ctx.openFeature(ctx, f, subfnc, opt));
+    return (ctx.openFeature(ctx, f, subfn, opt));
   },
 
   keyHandler: function(e) {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
+    var cmds;
     if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
       DebugJS.bat._resume('cmd');
     }
@@ -2507,7 +2508,7 @@ DebugJS.prototype = {
 
       case 38: // Up
         if (document.activeElement == ctx.cmdLine) {
-          var cmds = ctx.cmdHistoryBuf.getAll();
+          cmds = ctx.cmdHistoryBuf.getAll();
           if (cmds.length == 0) return;
           if (cmds.length < ctx.cmdHistoryIdx) {
             ctx.cmdHistoryIdx = cmds.length;
@@ -2525,7 +2526,7 @@ DebugJS.prototype = {
 
       case 40: // Down
         if (document.activeElement == ctx.cmdLine) {
-          var cmds = ctx.cmdHistoryBuf.getAll();
+          cmds = ctx.cmdHistoryBuf.getAll();
           if (cmds.length == 0) return;
           if (ctx.cmdHistoryIdx < cmds.length) {
             ctx.cmdHistoryIdx++;
@@ -6435,9 +6436,9 @@ DebugJS.prototype = {
   cmdClose: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
-    var func = args[0];
+    var fn = args[0];
     var f = 0;
-    switch (func) {
+    switch (fn) {
       case 'measure':
         f = DebugJS.STATE_MEASURE;
         break;
@@ -6922,10 +6923,10 @@ DebugJS.prototype = {
   cmdOpen: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
-    var func = args[0];
-    var subfnc = args[1];
+    var fn = args[0];
+    var subfn = args[1];
     var opt = args[2];
-    if ((func == '') || (!ctx.launchFunc(ctx, func, subfnc, opt))) {
+    if ((fn == '') || (!ctx.launchFunc(ctx, fn, subfn, opt))) {
       DebugJS.printUsage(tbl.usage);
     }
   },
@@ -6968,12 +6969,11 @@ DebugJS.prototype = {
 
   cmdPoint: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var ret;
     var args = DebugJS.splitQuotedArgs(arg);
     var point = DebugJS.point;
     var op = args[0];
-    var x, y;
-    var idx, step, speed, alignX, alignY;
+    var x, y, idx, step, speed, alignX, alignY;
+    var ret, p, pos, el, label, target, msg, src, w, h, txt, method, type, val;
     if (op == 'init') {
       point.init();
     } else if (op.charAt(0) == '#') {
@@ -6986,7 +6986,7 @@ DebugJS.prototype = {
       alignY = args[3];
       DebugJS.pointBySelector(op, idx, alignX, alignY);
     } else if (op == 'label') {
-      var label = args[1];
+      label = args[1];
       try {
         label = eval(label);
       } catch (e) {
@@ -7002,7 +7002,7 @@ DebugJS.prototype = {
     } else if (op == 'show') {
       point.show();
     } else if (op == 'move') {
-      var target = args[1];
+      target = args[1];
       if (target == undefined) {
         DebugJS.printUsage(tbl.usage);
       } else if (target.charAt(0) == '#') {
@@ -7019,7 +7019,7 @@ DebugJS.prototype = {
         alignY = args[6];
         point.moveToSelector(target, idx, step, speed, alignX, alignY);
       } else if (target == 'label') {
-        var label = args[2];
+        label = args[2];
         idx = args[3] | 0;
         step = args[4];
         speed = args[5];
@@ -7033,7 +7033,7 @@ DebugJS.prototype = {
         }
         DebugJS.point.moveToLabel(label, idx, step, speed, alignX, alignY);
       } else if (target == 'center') {
-        var p = DebugJS.getScreenCenter();
+        p = DebugJS.getScreenCenter();
         step = args[2];
         speed = args[3];
         point.move(p.x, p.y, step, speed);
@@ -7060,9 +7060,9 @@ DebugJS.prototype = {
         }
       }
     } else if (op == 'hint') {
-      var op = args[1];
+      op = args[1];
       if (op == 'msg') {
-        var msg = args[2];
+        msg = args[2];
         point.hint(msg);
       } else if (op == 'hide') {
         point.hint.hide();
@@ -7074,12 +7074,12 @@ DebugJS.prototype = {
         DebugJS.printUsage(tbl.usage);
       }
     } else if (op == 'center') {
-      var p = DebugJS.getScreenCenter();
+      p = DebugJS.getScreenCenter();
       point(p.x, p.y);
     } else if (op == 'cursor') {
-      var src = args[1];
-      var w = args[2];
-      var h = args[3];
+      src = args[1];
+      w = args[2];
+      h = args[3];
       if (src == undefined) {
         DebugJS.printUsage(tbl.usage);
         return;
@@ -7100,25 +7100,25 @@ DebugJS.prototype = {
     } else if (op == 'mouse') {
       point(ctx.mousePos.x, ctx.mousePos.y);
     } else if (op == 'text') {
-      var el = point.getElementFromCurrentPos();
+      el = point.getElementFromCurrentPos();
       if ((!el) || ((el.nodeName != 'INPUT') && (el.nodeName != 'TEXTAREA'))) {
         DebugJS.log.w('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
         return;
       }
-      var txt = args[1];
+      txt = args[1];
       try {
         DebugJS.inputText(el, txt);
       } catch (e) {
         DebugJS.log.e(e);
       }
     } else if (op == 'selectoption') {
-      var el = point.getElementFromCurrentPos();
+      el = point.getElementFromCurrentPos();
       if ((el) && (el.nodeName == 'SELECT')) {
-        var method = args[1];
-        var type = args[2];
+        method = args[1];
+        type = args[2];
         if (((method == 'get') || (method == 'set')) &&
             ((type == 'text') || (type == 'value'))) {
-          var val = args[3];
+          val = args[3];
           ret = DebugJS.ctx._cmdSelect(el, method, type, val);
         } else {
           DebugJS.log.e('Usage: point selectoption get|set text|value val');
@@ -7129,7 +7129,7 @@ DebugJS.prototype = {
     } else if (op == 'scroll') {
       x = args[1];
       y = args[2];
-      var el = point.getElementFromCurrentPos();
+      el = point.getElementFromCurrentPos();
       if (el) {
         DebugJS.scrollElTo(el, x, y);
       } else {
@@ -7139,7 +7139,7 @@ DebugJS.prototype = {
       x = args[0];
       y = args[1];
       if (x == '') {
-        var pos = point.getPos();
+        pos = point.getPos();
         DebugJS.log('x=' + pos.x + ', y=' + pos.y);
         DebugJS.printUsage(tbl.usage);
       } else if (isNaN(x)) {
