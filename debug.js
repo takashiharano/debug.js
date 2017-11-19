@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711170000';
+  this.v = '201711192050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6058,7 +6058,7 @@ DebugJS.prototype = {
     ctx.addOverlayPanelFull(ctx.extPanel);
     var activePanel = ctx.extActivePanel;
     if (activePanel == -1) {
-      var activePanel = 0;
+      var activePanel = ctx.nextValidExtPanelIdx(ctx, activePanel);
       ctx.switchExtPanel(activePanel);
     } else {
       var p = ctx.extPanels[activePanel];
@@ -6100,23 +6100,62 @@ DebugJS.prototype = {
 
     if (ctx.extActivePanel != -1) {
       var p2 = pnls[ctx.extActivePanel];
-      if (p2.onInActive) p2.onInActive(p2.panel);
-      ctx.extBodyPanel.removeChild(p2.base);
+      if (p2) {
+        if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p2.onInActive)) {
+          p2.onInActive(p2.panel);
+        }
+        ctx.extBodyPanel.removeChild(p2.base);
+      }
     }
 
     var p1 = pnls[idx];
     ctx.extBodyPanel.appendChild(p1.base);
-    if (p1.onActive) p1.onActive(p1.panel);
+    if (p1) {
+      if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p1.onActive)) {
+        p1.onActive(p1.panel);
+      }
+    }
 
     ctx.extActivePanel = idx;
     ctx.updateExtButtons(ctx);
+  },
+
+  prevValidExtPanelIdx: function(ctx, idx) {
+    if (idx > 0) {
+      for (var i = idx - 1; i >= 0; i--) {
+        if (ctx.extPanels[i] != null) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  },
+
+  nextValidExtPanelIdx: function(ctx, idx) {
+    for (var i = idx + 1; i < ctx.extPanels.length; i++) {
+      if (ctx.extPanels[i] != null) {
+        return i;
+      }
+    }
+    return -1;
+  },
+
+  existsValidExtPanel: function(ctx) {
+    for (var i = 0; i < ctx.extPanels.length; i++) {
+      if (ctx.extPanels[i] != null) {
+        return true;
+      }
+    }
+    return false;
   },
 
   updateExtButtons: function(ctx) {
     var pnls = ctx.extPanels;
     for (var i = 0; i < pnls.length; i++) {
       var p = pnls[i];
-      p.btn.style.color = (ctx.extActivePanel == i) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+      if (p != null) {
+        p.btn.style.color = (ctx.extActivePanel == i) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
+      }
     }
   },
 
@@ -7890,16 +7929,32 @@ DebugJS.prototype = {
       ctx.extBodyPanel = bp.body;
       ctx.extBodyPanel.style.overflow = 'auto';
     }
-
     var pnls = ctx.extPanels;
     if (pnls.length > 0) {
       if (ctx.extBtn) ctx.extBtn.style.display = 'block';
       for (var i = 0; i < pnls.length; i++) {
         var p = pnls[i];
-        if (p.base == null) {
+        if ((p != null) && (p.base == null)) {
           ctx.createExtPanel(ctx, p, i);
         }
       }
+    }
+  },
+
+  redrawExtPanelBtn: function(ctx) {
+    for (var i = ctx.extHeaderPanel.childNodes.length - 1; i >= 0; i--) {
+      ctx.extHeaderPanel.removeChild(ctx.extHeaderPanel.childNodes[i]);
+    }
+    var pnls = ctx.extPanels;
+    if (pnls.length > 0) {
+      for (var i = 0; i < pnls.length; i++) {
+        var p = pnls[i];
+        if (p != null) {
+          ctx.extHeaderPanel.appendChild(p.btn);
+        }
+      }
+    } else {
+      ctx.extBtn.style.display = 'none';
     }
   },
 
@@ -12238,6 +12293,37 @@ DebugJS.x.addPanel = function(p) {
     ctx.initExtPanel(ctx);
   }
   return idx;
+};
+DebugJS.x.removePanel = function(idx) {
+  var ctx = DebugJS.ctx;
+  if (!ctx.extPanels[idx]) {
+    return;
+  }
+  var nIdx = -1;
+  var p = ctx.extPanels[idx];
+  ctx.extPanels[idx] = null;
+  if (ctx.extActivePanel == idx) {
+    nIdx = ctx.prevValidExtPanelIdx(ctx, idx);
+    if (nIdx == -1) {
+      nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
+    }
+  }
+  if (ctx.status & DebugJS.STATE_INITIALIZED) {
+    if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p.onInActive)) {
+      p.onInActive(p.panel);
+    }
+    ctx.redrawExtPanelBtn(ctx);
+    if (ctx.existsValidExtPanel(ctx)) {
+      if (nIdx != -1) {
+        ctx.switchExtPanel(nIdx);
+      }
+    } else {
+      ctx.extActivePanel = -1;
+      ctx.extPanels = [];
+      ctx.closeExtPanel(ctx);
+      if (ctx.extBtn) ctx.extBtn.style.display = 'none';
+    }
+  }
 };
 DebugJS.x.setBtnLabel = function(l) {
   DebugJS.ctx.extBtnLabel = l;
