@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711192050';
+  this.v = '201711210000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1902,11 +1902,11 @@ DebugJS.prototype = {
   },
 
   onClr: function() {
-    DebugJS.ctx.clearLogs();
+    DebugJS.ctx.clearLog();
     DebugJS.ctx.focusCmdLine();
   },
 
-  clearLogs: function() {
+  clearLog: function() {
     DebugJS.ctx.msgBuf.clear();
     DebugJS.ctx.printLogs();
   },
@@ -4753,9 +4753,7 @@ DebugJS.prototype = {
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
       color = ctx.opt.timerColorExpr;
     }
-    var t = DebugJS.TIMER_NAME_SW_CD + ': ' +
-            '<span style="color:' + color + '">' +
-            DebugJS.getTimerStr(ctx.timerSwTimeCd) + '</span>';
+    var t = DebugJS.TIMER_NAME_SW_CD + ': ' + '<span style="color:' + color + '">' + DebugJS.getTimerStr(ctx.timerSwTimeCd) + '</span>';
     DebugJS.log(t);
   },
 
@@ -6511,7 +6509,7 @@ DebugJS.prototype = {
   },
 
   cmdCls: function(arg, tbl) {
-    DebugJS.ctx.clearLogs();
+    DebugJS.ctx.clearLog();
   },
 
   cmdDate: function(arg, tbl) {
@@ -6630,7 +6628,7 @@ DebugJS.prototype = {
     ctx.filterText = '';
     if (ctx.filterInput) ctx.filterInput.value = '';
     ctx.closeDbgWin();
-    ctx.clearLogs();
+    ctx.clearLog();
     ctx.logFilter = DebugJS.LOG_FILTER_ALL;
     ctx.updateLogFilterButtons();
   },
@@ -6715,11 +6713,11 @@ DebugJS.prototype = {
     var argLen = args.length;
     var digit = 0;
     var exp = args[0];
+    var expLen;
     if (argLen == 2) {
       digit = args[1];
     } else if (argLen >= 3) {
       if (args[0].match(/^\(/)) {
-        var expLen;
         if (args[argLen - 2].match(/\)$/)) {
           digit = args[argLen - 1];
           expLen = argLen - 1;
@@ -6994,7 +6992,6 @@ DebugJS.prototype = {
       if (opt == '-u') {
         DebugJS.log('Type "resume" to continue...');
       } else if (opt == '-key') {
-        var key = key;
         DebugJS.bat.ctrl.pauseKey = key;
         DebugJS.log('Type "resume" or "resume -key ' + key + '" to continue...');
       } else {
@@ -8464,15 +8461,16 @@ DebugJS.getDateTime = function(dt) {
 DebugJS.date = function(arg) {
   arg = DebugJS.omitLeadingAndTrailingWhiteSpace(arg);
   var s;
+  var dt;
   if ((arg == '') || isNaN(arg)) {
-    var dt = DebugJS.getDateTime(arg);
+    dt = DebugJS.getDateTime(arg);
     var tm = dt.time;
     if (!isNaN(tm)) {
       s = DebugJS.date(tm + '') + ' (' + tm + ')';
     }
   } else {
     arg = DebugJS.parseInt(arg);
-    var dt = DebugJS.getDateTime(arg);
+    dt = DebugJS.getDateTime(arg);
     s = DebugJS.getDateTimeStr(dt);
   }
   return s;
@@ -8590,8 +8588,6 @@ DebugJS.execCmdP = function(arg) {
     }
   }
   var obj = DebugJS.getArgsFrom(arg, start);
-  var exp = obj;
-  exp = exp.replace(/"/g, '\\"');
   var cmd = 'DebugJS.buf=DebugJS.objDump(' + obj + ', false, ' + levelLimit + ', ' + noMaxLimit + ', ' + valLenLimit + ');' +
             'DebugJS.log.mlt(DebugJS.buf);';
   try {
@@ -9556,42 +9552,41 @@ DebugJS.getRandom = function(type, min, max) {
   var random;
   switch (type) {
     case DebugJS.RANDOM_TYPE_NUM:
-      random = DebugJS.getRandomNum(min, max);
+      random = DebugJS.getRndNum(min, max);
       break;
     case DebugJS.RANDOM_TYPE_STR:
-      random = DebugJS.getRandomStr(min, max);
+      random = DebugJS.getRndStr(min, max);
   }
   return random;
 };
 
-DebugJS.getRandomNum = function(min, max) {
+DebugJS.getRndNum = function(min, max) {
   min |= 0;
   max |= 0;
   var minDigit = (min + '').length;
   var maxDigit = (max + '').length;
   var digit = Math.floor(Math.random() * (maxDigit - minDigit + 1)) + minDigit;
-  var randMin = (digit == 1) ? 0 : Math.pow(10, (digit - 1));
-  var randMax = Math.pow(10, digit) - 1;
-  if (min < randMin) min = randMin;
-  if (max > randMax) max = randMax;
+  var rndMin = (digit == 1) ? 0 : Math.pow(10, (digit - 1));
+  var rndMax = Math.pow(10, digit) - 1;
+  if (min < rndMin) min = rndMin;
+  if (max > rndMax) max = rndMax;
   var random = Math.floor(Math.random() * (max - min + 1)) + min;
   return random;
 };
 
 DebugJS.getRandomCharater = function() {
-  var ch = String.fromCharCode(DebugJS.getRandomNum(0x20, 0x7e));
-  return ch;
+  return String.fromCharCode(DebugJS.getRndNum(0x20, 0x7e));
 };
 
 DebugJS.RANDOM_STR_DFLT_MAX_LEN = 10;
 DebugJS.RANDOM_STR_MAX_LEN = 1024;
-DebugJS.getRandomStr = function(min, max) {
+DebugJS.getRndStr = function(min, max) {
   if (min > DebugJS.RANDOM_STR_MAX_LEN) min = DebugJS.RANDOM_STR_MAX_LEN;
   if (max > DebugJS.RANDOM_STR_MAX_LEN) max = DebugJS.RANDOM_STR_MAX_LEN;
-  var len = DebugJS.getRandomNum(min, max);
+  var len = DebugJS.getRndNum(min, max);
+  var ch;
   var s = '';
   for (var i = 0; i < len; i++) {
-    var ch;
     var retry = true;
     while (retry) {
       ch = DebugJS.getRandomCharater();
@@ -9776,10 +9771,10 @@ DebugJS.substr = function(txt, len) {
   var txtLen = txt.length;
   var cnt = 0;
   var str = '';
-  var i;
+  var i, x;
   if (len >= 0) {
     for (i = 0; i < txtLen; i++) {
-      var x = encodeURIComponent(txt.charAt(i));
+      x = encodeURIComponent(txt.charAt(i));
       if (x.length <= 3) {
         cnt++;
       } else {
@@ -9793,7 +9788,7 @@ DebugJS.substr = function(txt, len) {
   } else {
     len *= (-1);
     for (i = (txtLen - 1); i >= 0; i--) {
-      var x = encodeURIComponent(txt.charAt(i));
+      x = encodeURIComponent(txt.charAt(i));
       if (x.length <= 3) {
         cnt++;
       } else {
@@ -11709,7 +11704,7 @@ DebugJS.getSpeed = function(v) {
   if ((min == '') || (max == '')) {
     return 0;
   }
-  var s = DebugJS.getRandomNum(min, max);
+  var s = DebugJS.getRndNum(min, max);
   return s;
 };
 
@@ -12148,7 +12143,7 @@ log.res.err = function(m) {
 
 log.clear = function() {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.ctx.clearLogs();
+  DebugJS.ctx.clearLog();
 };
 
 log.suspend = function() {
