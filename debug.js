@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711210000';
+  this.v = '201711210700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8778,9 +8778,9 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
             }
           } else if ((window.ArrayBuffer) && (obj instanceof ArrayBuffer)) {
             if (toJson) {
-              arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
-            } else {
               arg.dump += '{}';
+            } else {
+              arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
             }
           } else {
             empty = true;
