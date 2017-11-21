@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711210700';
+  this.v = '201711220000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8073,8 +8073,7 @@ DebugJS.RingBuffer.prototype = {
   },
 
   lastIndex: function() {
-    var idx = (this.cnt - 1) % this.len;
-    return idx;
+    return ((this.cnt - 1) % this.len);
   },
 
   getSize: function() {
