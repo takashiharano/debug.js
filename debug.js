@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711220000';
+  this.v = '201711272350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11877,9 +11877,15 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
   try {
     if (method != 'regexp') {
       exp = eval(exp);
+      if (typeof exp === 'string') {
+        exp = exp.replace(/\r?\n/g, '\n');
+      }
     }
     if (reqEval) {
       got = eval(got);
+    }
+    if (typeof got === 'string') {
+      got = got.replace(/\r?\n/g, '\n');
     }
     if (method == '==') {
       if (got == exp) {
