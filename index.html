@@ -1695,7 +1695,7 @@ dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style=
     <td>
       Show/Update a message at the pointer position.
 <pre class="eg">
-dbg.point.hint('<input type="text" id="point-hint-text" class="demo-text" style="width:200px;" value="Hello, World!">'); <button class="demo-button2" onclick="dbg.point.hint(document.getElementById('point-hint-text').value);">DEMO</button>
+dbg.point.hint('<input type="text" id="point-hint-text" class="demo-text" style="width:200px;" value="Hello, World!">'); <button class="demo-button2" onclick="dbg.point.hint('document.getElementById(\'point-hint-text\').value');">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -2774,7 +2774,7 @@ $ point move +100 +200 10<span class="annotation">step px(opt)</span> 10<span cl
 $ point move -100 -200 10<span class="annotation">step px(opt)</span> 10<span class="annotation">speed ms(opt)</span>
 -&gt; Move the pointer to the specified position (relative)
 
-$ point hint msg hello!
+$ point hint msg "hello!"
 -&gt; Show a message at the pointer position
 
 $ point hint hide
