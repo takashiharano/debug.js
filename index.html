@@ -69,6 +69,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .eg {font-family:Consolas, monospace; line-height:1em;}
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
 .annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
+.annotation2 {font-size:12px;}
 .alias {font-size:12px; color:#88c; font-style:italic; margin-left:2px;}
 .showhide-button {color:#0a0;}
 .showhide-button:hover {cursor:pointer;}
@@ -2363,6 +2364,13 @@ $ dumplog
 $ dumplog -b64
 -&gt; export in base64 encoded JSON format
 </pre>
+<br>
+<span class="annotation2">
+See also:<br>
+&nbsp;load command<br>
+&nbsp;DebugJS.loadLog()<br>
+&nbsp;DebugJS.dumpLog()<br>
+</span>
     </td>
   </tr>
 
@@ -2657,6 +2665,21 @@ option
 JSON Format
 [{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
 </pre>
+
+<pre class="eg">
+
+e.g.,)
+$ load [{"type":1,"time":...,"msg":"ZHVtcGxvZw=="}]
+
+$ load -b64 W3sid...dlp5QXRZalkwIn1d
+</pre>
+<br>
+<span class="annotation2">
+See also:<br>
+&nbsp;dumplog command<br>
+&nbsp;DebugJS.dumpLog()<br>
+&nbsp;DebugJS.loadLog()<br>
+</span>
     </td>
   </tr>
 

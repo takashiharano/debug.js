@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712071920';
+  this.v = '201712071938';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -322,7 +322,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
-    {cmd: 'load', fnc: this.cmdLoad, desc: 'Load logs into the debug window', usage: 'load json-data'},
+    {cmd: 'load', fnc: this.cmdLoad, desc: 'Load logs into the debug window', usage: 'load [-b64] log-buffer-json'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'opacity', fnc: this.cmdOpacity, desc: 'Set the level of transparency of the debug window', usage: 'opacity 0.1-1'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
