@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712071938';
+  this.v = '201712072217';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -365,7 +365,7 @@ var DebugJS = DebugJS || function() {
   this.properties = {
     esc: {value: 'enable', restriction: /^enable$|^disable$/},
     dumplimit: {value: 1000, restriction: /^[0-9]+$/},
-    dumpvallen: {value: 256, restriction: /^[0-9]+$/},
+    dumpvallen: {value: 1024, restriction: /^[0-9]+$/},
     prevlimit: {value: 5 * 1024 * 1024, restriction: /^[0-9]+$/},
     hexdumplimit: {value: 1048576, restriction: /^[0-9]+$/},
     hexdumplastrows: {value: 16, restriction: /^[0-9]+$/},
