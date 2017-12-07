@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201711272350';
+  this.v = '201712071920';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12269,7 +12269,9 @@ DebugJS.balse = function() {
   DebugJS.time.check = DebugJS.z1;
   DebugJS.wd.start = DebugJS.z1;
   DebugJS.wd.stop = DebugJS.z0;
+  DebugJS.x.addCmdTbl = DebugJS.z1;
   DebugJS.x.addPanel = DebugJS.z1;
+  DebugJS.x.removePanel = DebugJS.z1;
   DebugJS.x.setBtnLabel = DebugJS.z1;
 };
 
