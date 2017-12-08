@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712072217';
+  this.v = '201712082234';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6410,7 +6410,7 @@ DebugJS.prototype = {
   },
 
   cmdBase64: function(arg, tbl) {
-    DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
+    return DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
   },
 
   cmdBat: function(arg, tbl) {
