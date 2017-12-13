@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712082234';
+  this.v = '201712132109';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3742,19 +3742,12 @@ DebugJS.prototype = {
       'position  : ' + computedStyle.position + '\n' +
       'z-index   : ' + computedStyle.zIndex + '\n' +
       'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
+      'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
       'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['elBorder']) + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
       'lineHeight: ' + computedStyle.lineHeight + '\n' +
       DebugJS.addPropSeparator(ctx) +
-      'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
-      'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
-      'font      : -size  : ' + computedStyle.fontSize + '\n' +
-      '            -family: ' + computedStyle.fontFamily + '\n' +
-      '            -weight: ' + computedStyle.fontWeight + '\n' +
-      '            -style : ' + computedStyle.fontStyle + '\n' +
-      DebugJS.addPropSeparator(ctx) +
-      'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
       'location  : <span style="color:#aaa">winOffset + pageOffset = pos (computedStyle)</span>\n' +
       '            top   : ' + rectT + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
       '            left  : ' + rectL + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
@@ -3763,6 +3756,13 @@ DebugJS.prototype = {
       'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
       'overflow  : ' + computedStyle.overflow + '\n' +
       'opacity   : ' + computedStyle.opacity + '\n' +
+      DebugJS.addPropSeparator(ctx) +
+      'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
+      'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
+      'font      : -size  : ' + computedStyle.fontSize + '\n' +
+      '            -family: ' + computedStyle.fontFamily + '\n' +
+      '            -weight: ' + computedStyle.fontWeight + '\n' +
+      '            -style : ' + computedStyle.fontStyle + '\n' +
       DebugJS.addPropSeparator(ctx) +
       'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
       DebugJS.addPropSeparator(ctx) +
@@ -6896,7 +6896,7 @@ DebugJS.prototype = {
         }
       }
       if (json) {
-        DebugJS.execCmdJson(json, jsnFlg, lv);
+        return DebugJS.execCmdJson(json, jsnFlg, lv);
       } else {
         DebugJS.printUsage(tbl.usage);
       }
@@ -7266,6 +7266,7 @@ DebugJS.prototype = {
     }
     var random = DebugJS.getRandom(type, min, max);
     DebugJS.log(random);
+    return random;
   },
 
   cmdRadixConv: function(v) {
@@ -8915,6 +8916,7 @@ DebugJS.execCmdJson = function(json, flg, lv) {
     var valLen = DebugJS.ctx.properties.dumpvallen.value;
     var jsn = DebugJS.objDump(j, flg, lv, false, valLen);
     DebugJS.log.mlt(jsn);
+    return jsn;
   } catch (e) {
     DebugJS.log.e('JSON format error.');
     var detail = DebugJS.checkJson(json);
