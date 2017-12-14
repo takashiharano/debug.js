@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712132109';
+  this.v = '201712142104';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11991,8 +11991,8 @@ DebugJS.getElPosSize = function(el, idx) {
   var rectR = Math.round(rect.right);
   var rectB = Math.round(rect.bottom);
   var ps = {
-    x: Math.round(rect.left),
-    y: Math.round(rect.top),
+    x: rectL,
+    y: rectT,
     w: ((rectR - rectL) + 1),
     h: ((rectB - rectT) + 1)
   };
