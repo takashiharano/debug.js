@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712142104';
+  this.v = '201712152345';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8971,6 +8971,14 @@ DebugJS.checkJson = function(json) {
     res = res + '<span class="' + ctx.id + '-txt-hl"> </span>';
   }
   return res;
+};
+
+DebugJS.toJson = function(o, r, s) {
+  return JSON.stringify(o, r, s);
+};
+
+DebugJS.fromJson = function(t, r) {
+  return JSON.parse(t, r);
 };
 
 DebugJS.digits = function(x) {
