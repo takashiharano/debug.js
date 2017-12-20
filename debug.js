@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712152345';
+  this.v = '201712201944';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8616,6 +8616,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit, valLenLimit) {
 };
 
 DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimit) {
+  var sibling = 0;
   try {
     if ((levelLimit >= 1) && (arg.lv > levelLimit)) {
       return arg;
@@ -8637,20 +8638,20 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
         if (obj.length > 0) {
           arg.dump += '\n';
         }
-        indent += DebugJS.INDENT_SP;
       } else {
         arg.dump += '<span style="color:#c08">[Array][' + obj.length + ']</span>';
       }
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
-        var sibling = 0;
         for (var i in obj) {
-          if (sibling > 0) {
-            if (toJson) {
+          arg.lv++; indent += DebugJS.INDENT_SP;
+          if (toJson) {
+            if (sibling > 0) {
               arg.dump += ',\n';
             }
-          }
-          arg.lv++; indent += DebugJS.INDENT_SP;
-          if (!toJson) {
+            if ((typeof obj[i] == 'number') || (typeof obj[i] == 'string') || (typeof obj[i] == 'boolean') || (obj[i] instanceof Array)) {
+              arg.dump += indent;
+            }
+          } else {
             arg.dump += '\n' + indent + '[' + i + '] ';
           }
           arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit, noMaxLimit, valLenLimit);
@@ -8659,7 +8660,6 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
         }
       }
       if (toJson) {
-        indent = indent.replace(DebugJS.INDENT_SP, '');
         if (sibling > 0) {
           arg.dump += '\n';
         }
@@ -8687,7 +8687,6 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
       }
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
         indent += DebugJS.INDENT_SP;
-        var sibling = 0;
         for (var key in obj) {
           if (sibling > 0) {
             if (toJson) {
