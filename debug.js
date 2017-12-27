@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712201944';
+  this.v = '201712272003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -301,7 +301,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run [start] [end]|pause|stop|list|status|clear'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run [start] [end]|pause|stop|list|status|clear|exec b64-encoded-bat'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -6453,6 +6453,10 @@ DebugJS.prototype = {
         break;
       case 'clear':
         bat.clear();
+        break;
+      case 'exec':
+        var b = DebugJS.decodeBase64(args[1]);
+        if (b != '') {bat(b);}
         break;
       default:
         DebugJS.printUsage(tbl.usage);
