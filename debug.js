@@ -1,6 +1,6 @@
 /*!
  * debug.js
- * Copyright 2017 Takashi Harano
+ * Copyright 2018 Takashi Harano
  * Released under the MIT license
  * https://debugjs.net/
  */
