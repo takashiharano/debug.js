@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201712272003';
+  this.v = '201801010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6455,9 +6455,11 @@ DebugJS.prototype = {
         bat.clear();
         break;
       case 'exec':
-        var b = DebugJS.decodeBase64(args[1]);
-        if (b != '') {bat(b);}
-        break;
+        if (args[1] != undefined) {
+          var b = DebugJS.decodeBase64(args[1]);
+          if (b != '') {bat(b);}
+          break;
+        }
       default:
         DebugJS.printUsage(tbl.usage);
     }
