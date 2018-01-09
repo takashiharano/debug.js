@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801010000';
+  this.v = '201801100026';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7892,9 +7892,11 @@ DebugJS.prototype = {
       }
     }
     data = DebugJS.encodeURIString(data);
-    var req = 'Sending a ' + method + ' request.\n' +
-    'URL : ' + url + '\n' +
-    'Body: ' + ((data == '') ? '<span style="color:#ccc">null</span>' : data);
+    method = method.toUpperCase();
+    var req = 'Sending a request.\n' +
+    'URL   : ' + url + '\n' +
+    'Method: ' + method + '\n' +
+    'Body  : ' + ((data == '') ? '<span style="color:#ccc">null</span>' : data);
     if (user || pass) {
       req += '\nuser: ' + user + ':' + (pass ? '*' : '');
     }
