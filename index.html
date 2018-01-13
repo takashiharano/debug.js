@@ -2634,6 +2634,62 @@ Option:<br>
   </tr>
 
   <tr>
+    <td class="name">led</td>
+    <td>bit pattern</td>
+    <td>Set a bit pattern to the indicator.</td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      load
+    </td>
+    <td>json-data</td>
+    <td>
+      Load logs into the debug window
+<pre class="eg">
+JSON Format
+[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
+</pre>
+
+<pre class="eg">
+
+e.g.,)
+$ load [{"type":1,"time":...,"msg":"ZHVtcGxvZw=="}]
+
+$ load -b64 W3sid...dlp5QXRZalkwIn1d
+</pre>
+<br>
+<span class="annotation2">
+See also:<br>
+&nbsp;dumplog command<br>
+&nbsp;DebugJS.dumpLog()<br>
+&nbsp;DebugJS.loadLog()<br>
+</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">log</td>
+    <td>
+      arg1: operation<br>
+      arg2: on|off</td>
+    <td>
+      Manage log output<br><br>
+<pre class="eg">
+operation
+  suspend : Suspend log output
+  preserve: Preserve log
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">msg</td>
+    <td>message</td>
+    <td>Set a string to the message display.</td>
+  </tr>
+
+  <tr>
     <td class="name">opacity</td>
     <td>0.1-1</td>
     <td>
@@ -2678,47 +2734,6 @@ option
   </tr>
 
   <tr>
-    <td class="name">led</td>
-    <td>bit pattern</td>
-    <td>Set a bit pattern to the indicator.</td>
-  </tr>
-
-  <tr>
-    <td class="name">
-      load
-    </td>
-    <td>json-data</td>
-    <td>
-      Load logs into the debug window
-<pre class="eg">
-JSON Format
-[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
-</pre>
-
-<pre class="eg">
-
-e.g.,)
-$ load [{"type":1,"time":...,"msg":"ZHVtcGxvZw=="}]
-
-$ load -b64 W3sid...dlp5QXRZalkwIn1d
-</pre>
-<br>
-<span class="annotation2">
-See also:<br>
-&nbsp;dumplog command<br>
-&nbsp;DebugJS.dumpLog()<br>
-&nbsp;DebugJS.loadLog()<br>
-</span>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">msg</td>
-    <td>message</td>
-    <td>Set a string to the message display.</td>
-  </tr>
-
-  <tr>
     <td class="name">p</td>
     <td>
       arg1: recursion level limit<span class="annotation">(opt)</span><br>
@@ -2750,6 +2765,14 @@ $ p -a object
      Click or press any key to continue.<br>
      -u option requires "resume" command to resume.<br>
      -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">pin</td>
+    <td>on|off</td>
+    <td>
+      Fix the window in its position<br><br>
     </td>
   </tr>
 

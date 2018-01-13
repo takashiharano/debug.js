@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801100026';
+  this.v = '201801131755';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -323,11 +323,13 @@ var DebugJS = DebugJS || function() {
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
     {cmd: 'load', fnc: this.cmdLoad, desc: 'Load logs into the debug window', usage: 'load [-b64] log-buffer-json'},
+    {cmd: 'log', fnc: this.cmdLog, desc: 'Manage log output', usage: 'log suspend|preserve on|off'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'opacity', fnc: this.cmdOpacity, desc: 'Set the level of transparency of the debug window', usage: 'opacity 0.1-1'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key]'},
+    {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
     {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
@@ -339,7 +341,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors get|set text|value val'},
     {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
-    {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Sets the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
+    {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
     {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
@@ -2196,9 +2198,17 @@ DebugJS.prototype = {
   toggleLogPreserve: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.STATE_LOG_PRESERVED) {
-      ctx.status &= ~DebugJS.STATE_LOG_PRESERVED;
+      ctx.setLogPreserve(ctx, false);
     } else {
+      ctx.setLogPreserve(ctx, true);
+    }
+  },
+
+  setLogPreserve: function(ctx, flg) {
+    if (flg) {
       ctx.status |= DebugJS.STATE_LOG_PRESERVED;
+    } else {
+      ctx.status &= ~DebugJS.STATE_LOG_PRESERVED;
     }
     ctx.updatePreserveLogBtn(ctx);
   },
@@ -7009,6 +7019,19 @@ DebugJS.prototype = {
     return true;
   },
 
+  cmdPin: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var op = args[0];
+    if (op == 'on') {
+      ctx.disableDraggable(ctx);
+    } else if (op == 'off') {
+      ctx.enableDraggable(ctx);
+    } else {
+      DebugJS.printUsage(tbl.usage);
+    }
+  },
+
   cmdPoint: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitQuotedArgs(arg);
@@ -7332,6 +7355,35 @@ DebugJS.prototype = {
       } catch (e) {
         DebugJS.log.e(e);
       }
+    }
+  },
+
+  cmdLog: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var cmd = args[0];
+    var op = args[1];
+    switch (cmd) {
+      case 'suspend':
+        if (op == 'on') {
+          DebugJS.ctx.suspendLog();
+        } else if (op == 'off') {
+          DebugJS.ctx.resumeLog();
+        } else {
+          DebugJS.printUsage(tbl.usage);
+        }
+        break;
+      case 'preserve':
+        if (op == 'on') {
+          ctx.setLogPreserve(ctx, true);
+        } else if (op == 'off') {
+          ctx.setLogPreserve(ctx, false);
+        } else {
+          DebugJS.printUsage(tbl.usage);
+        }
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
     }
   },
 
