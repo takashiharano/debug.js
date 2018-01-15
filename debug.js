@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801131755';
+  this.v = '201801152047';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5289,12 +5289,11 @@ DebugJS.prototype = {
   },
 
   onFileLoadedFromLogPanel: function(ctx, success, file, content) {
-    var BAT_HEAD = '#!BAT!';
     if (!success) {
       ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
       return;
     }
-    if (content.substr(0, BAT_HEAD.length) == BAT_HEAD) {
+    if (DebugJS.isBat(content)) {
       ctx.onBatLoaded(ctx, success, file, content);
     } else if (file.name.match(/\.js$/)) {
       ctx.onJsLoaded(ctx, success, file, content);
@@ -7037,8 +7036,8 @@ DebugJS.prototype = {
     var args = DebugJS.splitQuotedArgs(arg);
     var point = DebugJS.point;
     var op = args[0];
-    var x, y, idx, step, speed, alignX, alignY;
-    var ret, p, pos, el, label, target, msg, src, w, h, txt, method, type, val;
+    var x, y, idx, step, speed, alignX, alignY, ret, p, pos, el;
+    var label, target, msg, src, w, h, txt, method, type, val, exp;
     if (op == 'init') {
       point.init();
     } else if (op.charAt(0) == '#') {
@@ -7161,7 +7160,8 @@ DebugJS.prototype = {
     } else if (op == 'setprop') {
       point.setProp(args[1], args[2]);
     } else if (op == 'verify') {
-      ret = point.verify(args[1], args[2], args[3]);
+      exp = DebugJS.getArgsFrom(arg, 4);
+      ret = point.verify(args[1], args[2], exp);
     } else if (op == 'mouse') {
       point(ctx.mousePos.x, ctx.mousePos.y);
     } else if (op == 'text') {
@@ -10914,6 +10914,13 @@ DebugJS.bat.status = function() {
     st = 'RUNNING';
   }
   return st;
+};
+DebugJS.isBat = function(s) {
+  var BAT_HEAD = '#!BAT!';
+  if (s.substr(0, BAT_HEAD.length) == BAT_HEAD) {
+    return true;
+  }
+  return false;
 };
 
 DebugJS.led = function(v) {
