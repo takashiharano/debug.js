@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801152047';
+  this.v = '201801152158';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7646,7 +7646,7 @@ DebugJS.prototype = {
   },
 
   cmdTest: function(arg, tbl) {
-    var args = DebugJS.splitQuotedArgs(arg);
+    var args = DebugJS.splitQuotedArgs(arg, 4);
     var op = args[0];
     var test = DebugJS.test;
     switch (op) {
@@ -8183,7 +8183,7 @@ DebugJS.splitArgs = function(arg) {
 
 // ' 1 "abc" "d ef"  "g\"hi" 2 ("jkl" + 3) 4 '
 // -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2 [5]=("jkl" + 3) [6]=4
-DebugJS.splitQuotedArgs = function(arg) {
+DebugJS.splitQuotedArgs = function(arg, limit) {
   var args = [];
   var start = 0;
   var len = 0;
@@ -8192,6 +8192,7 @@ DebugJS.splitQuotedArgs = function(arg) {
   var bracket = 0;
   var ch = '';
   var str = '';
+  limit = (limit == undefined ? 0 : limit);
   for (var i = 0; i < arg.length; i++) {
     len++;
     ch = arg.charAt(i);
@@ -8203,7 +8204,15 @@ DebugJS.splitQuotedArgs = function(arg) {
           searching = true;
           str = arg.substr(start, len);
           args.push(str);
-          searching = true;
+          if (args.length + 1 == limit) {
+            if (i < arg.length - 1) {
+              start = i + 1;
+              len = arg.length - start;
+              str = arg.substr(start, len);
+              args.push(str);
+              i = arg.length;
+            }
+          }
         }
         break;
       case '(':
