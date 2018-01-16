@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801162026';
+  this.v = '201801162330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -346,7 +346,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
-    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|case name|count|result|verify got-val method expected-val'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|verify got-val method expected-val'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -7654,15 +7654,8 @@ DebugJS.prototype = {
         test.init();
         DebugJS.log('Test has been initialized.');
         break;
-      case 'case':
-        var n = args[1];
-        try {
-          n = eval(n);
-          if (n == undefined) n = '';
-          test.setCase(n + '');
-        } catch (e) {
-          DebugJS.log.e(e);
-        }
+      case 'set':
+        DebugJS.ctx.cmdTestSet(arg, tbl);
         break;
       case 'count':
         DebugJS.log(test.count());
@@ -7675,6 +7668,30 @@ DebugJS.prototype = {
         break;
       default:
         DebugJS.printUsage(tbl.usage);
+    }
+  },
+  cmdTestSet: function(arg, tbl) {
+    var test = DebugJS.test;
+    var args = DebugJS.splitQuotedArgs(arg, 3);
+    var target = args[1];
+    var fn;
+    switch (target) {
+      case 'id':
+        fn = test.setId;
+        break;
+      case 'label':
+        fn = test.setLabel;
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+        return;
+    }
+    try {
+      var n = eval(args[2]);
+      if (n == undefined) n = '';
+      fn(n + '');
+    } catch (e) {
+      DebugJS.log.e(e);
     }
   },
 
@@ -9880,6 +9897,22 @@ DebugJS.substr = function(txt, len) {
   return str;
 };
 
+DebugJS.strPadding = function(s, ch, l, p) {
+  var txt = s + '';
+  var d = l - txt.length;
+  if (d <= 0) {return txt;}
+  var pd = '';
+  for (var i = 0; i < d; i++) {
+    pd += ch;
+  }
+  if (p == 'L') {
+    txt = pd + txt;
+  } else {
+    txt += pd;
+  }
+  return txt;
+};
+
 DebugJS.trimDownText = function(txt, maxLen, style) {
   var snip = '...';
   if (style) {
@@ -11879,43 +11912,59 @@ DebugJS.test = {};
 DebugJS.test.STATUS_OK = 'OK';
 DebugJS.test.STATUS_NG = 'NG';
 DebugJS.test.STATUS_ERR = 'ERR';
-DebugJS.test.cnt = {ok: 0, ng: 0, err: 0};
-DebugJS.test.executingTestCase = '';
-DebugJS.test.res = {
+DebugJS.test.data = {
+  executingTestId: '',
+  executingTestLabel: '',
   cnt: {ok: 0, ng: 0, err: 0},
   results: {}
 };
 DebugJS.test.init = function() {
-  DebugJS.test.executingTestCase = '';
-  var res = DebugJS.test.res;
-  res.cnt.ok = 0;
-  res.cnt.ng = 0;
-  res.cnt.err = 0;
-  res.results = {};
+  var data = DebugJS.test.data;
+  data.executingTestId = '';
+  data.executingTestLabel = '';
+  data.cnt.ok = 0;
+  data.cnt.ng = 0;
+  data.cnt.err = 0;
+  data.results = {};
 };
 DebugJS.test.addResult = function(status, detail) {
   var test = DebugJS.test;
   switch (status) {
     case test.STATUS_OK:
-      test.res.cnt.ok++;
+      test.data.cnt.ok++;
       break;
     case test.STATUS_NG:
-      test.res.cnt.ng++;
+      test.data.cnt.ng++;
       break;
     case test.STATUS_ERR:
-      test.res.cnt.err++;
+      test.data.cnt.err++;
   }
-  var caseName = test.executingTestCase;
-  test.setCase(caseName);
-  test.res.results[caseName].push({status: status, detail: detail});
+  var id = test.data.executingTestId;
+  var label = test.data.executingTestLabel;
+  test.setId(id);
+  test.setLabel(label);
+  test.data.results[id][label].push({status: status, detail: detail});
 };
-DebugJS.test.setCase = function(name) {
+DebugJS.test.setId = function(id) {
   var test = DebugJS.test;
-  var res = test.res;
-  test.executingTestCase = name;
-  if (res.results[name] == undefined) {
-    res.results[name] = [];
+  var data = test.data;
+  if (data.results[id] == undefined) {
+    data.results[id] = [];
   }
+  test.data.executingTestId = id;
+  DebugJS.test.setLabel('');
+};
+DebugJS.test.setLabel = function(label) {
+  var test = DebugJS.test;
+  var data = test.data;
+  var id = data.executingTestId;
+  if (data.results[id] == undefined) {
+    data.results[id] = [];
+  }
+  if (data.results[id][label] == undefined) {
+    data.results[id][label] = [];
+  }
+  data.executingTestLabel = label;
 };
 DebugJS.test.getResultStr = function(res, detail) {
   var test = DebugJS.test;
@@ -11933,22 +11982,26 @@ DebugJS.test.getResultStr = function(res, detail) {
   return '[<span style="color:' + color + '">' + res + '</span>] ' + detail;
 };
 DebugJS.test.count = function() {
-  var cnt = DebugJS.test.res.cnt;
+  var cnt = DebugJS.test.data.cnt;
   var total = cnt.ok + cnt.ng + cnt.err;
   return '<span style="color:#0f0">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:#f66">NG</span>:' + cnt.ng + ' <span style="color:#ff0">ERR</span>:' + cnt.err;
 };
 DebugJS.test.result = function() {
   var test = DebugJS.test;
+  var n = DebugJS.test.countLongestLabel();
+  if (n > 8) n = 8;
   var s = 'Test Result\nSummary: ' + test.count() + '\n';
-  for (name in test.res.results) {
-    var caseName = name;
-    if (name == '') {
-      caseName = '<span style="color:#ccc">&lt;No Test Case Name&gt;</span>';
+  for (id in test.data.results) {
+    var testId = id;
+    if (id == '') {
+      testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
     }
-    s += '\nCase: ' + caseName + '\n';
-    for (var i = 0; i < test.res.results[name].length; i++) {
-      var result = test.res.results[name][i];
-      s += ' ' + test.getResultStr(result.status, result.detail) + '\n';
+    s += '\n' + testId + '\n';
+    for (label in test.data.results[id]) {
+      for (var i = 0; i < test.data.results[id][label].length; i++) {
+        var result = test.data.results[id][label][i];
+        s += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
+      }
     }
   }
   return s;
@@ -12031,13 +12084,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
     } else {
       echoGot = DebugJS.styleValue(echoGot);
     }
-    var THRESHOLD = 60;
-    if (((typeof exp === 'string') && (exp.length >= THRESHOLD)) ||
-        ((typeof got === 'string') && (got.length >= THRESHOLD))) {
-      detail = 'Exp=' + echoExp + ' ' + method + '\n      Got=' + echoGot;
-    } else {
-      detail = 'Exp=' + echoExp + ' ' + method + ' Got=' + echoGot;
-    }
+    detail = 'Exp=' + echoExp + ' ' + method + ' Got=' + echoGot;
   } catch (e) {
     status = test.STATUS_ERR;
     detail = e;
@@ -12046,6 +12093,17 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
   var str = test.getResultStr(status, detail);
   DebugJS.log(str);
   return status;
+};
+DebugJS.test.countLongestLabel = function() {
+  var l = 0;
+  for (id in DebugJS.test.data.results) {
+    for (label in DebugJS.test.data.results[id]) {
+      if (label.length > l) {
+        l = label.length;
+      }
+    }
+  }
+  return l;
 };
 
 DebugJS.getElement = function(selector, idx) {
