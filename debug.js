@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801152158';
+  this.v = '201801162026';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7170,7 +7170,7 @@ DebugJS.prototype = {
         DebugJS.log.w('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
         return;
       }
-      txt = args[1];
+      txt = DebugJS.splitQuotedArgs(arg, 2)[1];
       try {
         DebugJS.inputText(el, txt);
       } catch (e) {
@@ -11718,6 +11718,7 @@ DebugJS.calcDestPosAndStep = function(dest, step) {
 };
 
 DebugJS.inputText = function(el, txt, speed, start, end) {
+  if (txt == undefined) return;
   var data = DebugJS.inputText.data;
   if (data.tmid > 0) {
     clearTimeout(data.tmid);
