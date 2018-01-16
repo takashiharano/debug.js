@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801162330';
+  this.v = '201801170003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -346,7 +346,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
-    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|verify got-val method expected-val'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|verify got-val method expected-val|fin'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -7666,6 +7666,10 @@ DebugJS.prototype = {
       case 'verify':
         DebugJS.test.verify(args[1], args[2], args[3], true);
         break;
+      case 'fin':
+        test.fin();
+        DebugJS.log('Test completed.');
+        break;
       default:
         DebugJS.printUsage(tbl.usage);
     }
@@ -10286,10 +10290,14 @@ DebugJS.onReady = function() {
 
 DebugJS.onLoad = function() {
   window.addEventListener('unload', DebugJS.onUnload, true);
+  DebugJS.test.load();
   DebugJS.bat.load();
 };
 
 DebugJS.onUnload = function() {
+  if (DebugJS.test.data.running) {
+    DebugJS.test.save();
+  }
   if ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.ctrl.cont)) {
     DebugJS.bat.save();
   }
@@ -10909,7 +10917,7 @@ DebugJS.bat.finalize = function() {
   }
 };
 
-DebugJS.bat.save = function(b) {
+DebugJS.bat.save = function() {
   if (!DebugJS.LS_AVAILABLE) return;
   var bt = {
     ctrl: DebugJS.bat.ctrl,
@@ -11913,6 +11921,7 @@ DebugJS.test.STATUS_OK = 'OK';
 DebugJS.test.STATUS_NG = 'NG';
 DebugJS.test.STATUS_ERR = 'ERR';
 DebugJS.test.data = {
+  running: false,
   executingTestId: '',
   executingTestLabel: '',
   cnt: {ok: 0, ng: 0, err: 0},
@@ -11920,12 +11929,28 @@ DebugJS.test.data = {
 };
 DebugJS.test.init = function() {
   var data = DebugJS.test.data;
+  data.running = true;
   data.executingTestId = '';
   data.executingTestLabel = '';
   data.cnt.ok = 0;
   data.cnt.ng = 0;
   data.cnt.err = 0;
   data.results = {};
+};
+DebugJS.test.save = function() {
+  if (!DebugJS.LS_AVAILABLE) return;
+  var d = JSON.stringify(DebugJS.test.data);
+  localStorage.setItem('DebugJS-test', d);
+};
+DebugJS.test.load = function() {
+  if (!DebugJS.LS_AVAILABLE) return;
+  var d = localStorage.getItem('DebugJS-test');
+  localStorage.removeItem('DebugJS-test');
+  if (d == null) return;
+  DebugJS.test.data = JSON.parse(d);
+};
+DebugJS.test.fin = function() {
+  DebugJS.test.data.running = false;
 };
 DebugJS.test.addResult = function(status, detail) {
   var test = DebugJS.test;
@@ -11949,7 +11974,7 @@ DebugJS.test.setId = function(id) {
   var test = DebugJS.test;
   var data = test.data;
   if (data.results[id] == undefined) {
-    data.results[id] = [];
+    data.results[id] = {};
   }
   test.data.executingTestId = id;
   DebugJS.test.setLabel('');
@@ -11959,7 +11984,7 @@ DebugJS.test.setLabel = function(label) {
   var data = test.data;
   var id = data.executingTestId;
   if (data.results[id] == undefined) {
-    data.results[id] = [];
+    data.results[id] = {};
   }
   if (data.results[id][label] == undefined) {
     data.results[id][label] = [];
