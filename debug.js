@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801170003';
+  this.v = '201801172229';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7651,14 +7651,20 @@ DebugJS.prototype = {
     var test = DebugJS.test;
     switch (op) {
       case 'init':
-        test.init();
-        DebugJS.log('Test has been initialized.');
+        var nm = DebugJS.splitQuotedArgs(arg, 2)[1];
+        try {
+          var nm = eval(nm);
+          test.init(nm);
+          DebugJS.log('Test has been initialized.');
+        } catch (e) {
+          DebugJS.log.e(e);
+        }
         break;
       case 'set':
         DebugJS.ctx.cmdTestSet(arg, tbl);
         break;
       case 'count':
-        DebugJS.log(test.count());
+        DebugJS.log(test.count(test.data.cnt));
         break;
       case 'result':
         DebugJS.log(test.result());
@@ -11474,7 +11480,7 @@ DebugJS.point.hint = function(msg) {
   }
   msg = msg.replace(reg, '\n');
   msg = msg.replace(/!RESUME!/, RESUME);
-  msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count());
+  msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count(DebugJS.test.data.cnt));
   msg = msg.replace(/!TEST_RESULT!/, DebugJS.test.result());
   msg = msg.replace(/!CLOSE!/, CLOSE);
   hint.pre.innerHTML = msg;
@@ -11921,14 +11927,16 @@ DebugJS.test.STATUS_OK = 'OK';
 DebugJS.test.STATUS_NG = 'NG';
 DebugJS.test.STATUS_ERR = 'ERR';
 DebugJS.test.data = {
+  name: '',
   running: false,
   executingTestId: '',
   executingTestLabel: '',
   cnt: {ok: 0, ng: 0, err: 0},
   results: {}
 };
-DebugJS.test.init = function() {
+DebugJS.test.init = function(name) {
   var data = DebugJS.test.data;
+  data.name = ((name == undefined) ? '' : name);
   data.running = true;
   data.executingTestId = '';
   data.executingTestLabel = '';
@@ -11991,6 +11999,21 @@ DebugJS.test.setLabel = function(label) {
   }
   data.executingTestLabel = label;
 };
+DebugJS.test.chkResult = function(results) {
+  var test = DebugJS.test;
+  var r = test.STATUS_OK;
+  for (label in results) {
+    for (var i = 0; i < results[label].length; i++) {
+      var st = results[label][i].status;
+      if (st == test.STATUS_ERR) {
+        return test.STATUS_ERR;
+      } else if (st == test.STATUS_NG) {
+        r = test.STATUS_NG;
+      }
+    }
+  }
+  return r;
+};
 DebugJS.test.getResultStr = function(res, detail) {
   var test = DebugJS.test;
   var color;
@@ -12004,31 +12027,52 @@ DebugJS.test.getResultStr = function(res, detail) {
     case test.STATUS_ERR:
       color = '#ff0';
   }
+  if (detail == undefined) {detail = '';}
   return '[<span style="color:' + color + '">' + res + '</span>] ' + detail;
 };
-DebugJS.test.count = function() {
-  var cnt = DebugJS.test.data.cnt;
+DebugJS.test.count = function(cnt) {
   var total = cnt.ok + cnt.ng + cnt.err;
   return '<span style="color:#0f0">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:#f66">NG</span>:' + cnt.ng + ' <span style="color:#ff0">ERR</span>:' + cnt.err;
 };
 DebugJS.test.result = function() {
   var test = DebugJS.test;
+  var M = 16;
   var n = DebugJS.test.countLongestLabel();
-  if (n > 8) n = 8;
-  var s = 'Test Result\nSummary: ' + test.count() + '\n';
+  if (n > M) n = M;
+  var cnt = {ok: 0, ng: 0, err: 0};
+  var details = '';
   for (id in test.data.results) {
     var testId = id;
     if (id == '') {
       testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
     }
-    s += '\n' + testId + '\n';
+    var st = DebugJS.test.chkResult(test.data.results[id]);
+    switch (st) {
+      case test.STATUS_OK:
+        cnt.ok++;
+        break;
+      case test.STATUS_NG:
+        cnt.ng++;
+        break;
+      case test.STATUS_ERR:
+        cnt.err++;
+    }
+    var rs = DebugJS.test.getResultStr(st);
+    details += '\n' + rs + testId + '\n';
     for (label in test.data.results[id]) {
       for (var i = 0; i < test.data.results[id][label].length; i++) {
         var result = test.data.results[id][label][i];
-        s += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
+        details += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
       }
     }
   }
+  var nm = test.data.name;
+  var s = 'Test Result:\n';
+  if (nm != '') {
+    s += '[' + nm + ']\n';
+  }
+  s += test.count(cnt) + '\n\nDetails:\n' + test.count(test.data.cnt) + '\n';
+  s += details;
   return s;
 };
 DebugJS.test.verify = function(got, method, exp, reqEval) {
