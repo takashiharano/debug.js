@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801172229';
+  this.v = '201801172301';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10873,14 +10873,22 @@ DebugJS.bat.resume = function(key) {
 DebugJS.bat._resume = function(trigger, key) {
   var ctx = DebugJS.ctx;
   if (trigger) {
+    var resumed = false;
     if (trigger == 'cmd') {
-      ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD;
+      if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
+        ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD;
+        resumed = true;
+      }
     } else if (trigger == 'cmd-key') {
-      ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
-      DebugJS.bat.ctrl.pauseKey = null;
-      ctx.updateBatResumeBtn();
+      if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
+        ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+        DebugJS.bat.ctrl.pauseKey = null;
+        ctx.updateBatResumeBtn();
+        resumed = true;
+      }
     }
-    DebugJS.log('Resumed.' + ((key == undefined) ? '' : ' (' + key + ')'));
+    var msg = (resumed ? 'Resumed.' : 'not paused.');
+    DebugJS.log(msg + ((key == undefined) ? '' : (' (' + key + ')')));
   } else {
     ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
     ctx.updateBatRunBtn();
