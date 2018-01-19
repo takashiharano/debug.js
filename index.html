@@ -1875,9 +1875,9 @@ JSON Format
     <td>message</td>
     <td>
       Set a string to the message display<br>
-      <input type="text" id="msg-message-text" class="demo-text" value="Hello, message display!">
-      <button class="demo-button2" onclick="dbg.msg(msgMessageText.value);">DEMO</button>
-      <button class="demo-button2" onclick="msgDemo();">e.g.,</button>
+<pre class="eg">
+dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello, message display!">');<button class="demo-button2" onclick="dbg.msg(msgMessageText.value);">DEMO</button><button class="demo-button2" onclick="msgDemo();">e.g.,</button>
+</pre>
     </td>
   </tr>
 
@@ -3307,9 +3307,12 @@ ${name} = command
 command arg ${name} ...
 <span class="annotation">The variable ${name} will be replaced to its value.</span>
 
-!__js__!
+!__JS__!
 JavaScript Code;
-!__js__!</span>
+JavaScript Code;
+JavaScript Code;
+<span class="annotation">This section will be executed at once.</span>
+!__JS__!</span>
 </pre>
 <br>
 <b>Load and Execute</b><br>

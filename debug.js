@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801192003';
+  this.v = '201801192030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -539,6 +539,7 @@ DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.DISP_BIN_DIGITS_THRESHOLD = 5;
+DebugJS.PP_JS = '!__JS__!';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_FULL_OVERLAY = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
@@ -10738,7 +10739,7 @@ DebugJS.bat.prepro = function(cmd) {
         return 1;
       }
       break;
-    case '!__js__!':
+    case DebugJS.PP_JS:
       if (ctrl.js) {
         ctrl.js = false;
       } else {
@@ -10794,10 +10795,10 @@ DebugJS.bat.execJs = function() {
     c = bat.cmds[ctrl.pc];
     ctrl.pc++;
     DebugJS.ctx.updateCurPc();
-    if (c != '!__js__!') {
+    if (c != DebugJS.PP_JS) {
       bat.js += c + '\n';
     }
-    if ((c == '!__js__!') || (ctrl.pc > ctrl.endPc)) {
+    if ((c == DebugJS.PP_JS) || (ctrl.pc > ctrl.endPc)) {
       try {
         eval(bat.js);
       } catch (e) {
@@ -10839,7 +10840,7 @@ DebugJS.bat.list = function() {
     for (var j = 0; j < diff; j++) {
       pdng += '0';
     }
-    if (cmd == '!__js__!') {
+    if (cmd == DebugJS.PP_JS) {
       if (!js) {
         s += '<span style="color:#0ff">';
       }
@@ -10850,7 +10851,7 @@ DebugJS.bat.list = function() {
       s += ' ';
     }
     s += ' ' + (cmd == undefined ? '' : pdng + n + ': ' + cmd) + '\n';
-    if (cmd == '!__js__!') {
+    if (cmd == DebugJS.PP_JS) {
       if (js) {
         s += '</span>';
         js = false;
