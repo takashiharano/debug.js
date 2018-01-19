@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801172301';
+  this.v = '201801191951';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -605,7 +605,7 @@ DebugJS.prototype = {
       }
     }
     if (!keepStatus) {
-      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_WD | DebugJS.STATE_BAT_RUNNING;
+      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_WD | DebugJS.STATE_BAT_RUNNING | DebugJS.STATE_BAT_PAUSE | DebugJS.STATE_BAT_PAUSE_CMD | DebugJS.STATE_BAT_PAUSE_CMD_KEY;
       ctx.status &= preserveStatus;
       ctx.uiStatus = 0;
     }
