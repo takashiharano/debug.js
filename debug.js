@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801191951';
+  this.v = '201801192003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6959,7 +6959,11 @@ DebugJS.prototype = {
   },
 
   cmdMsg: function(arg, tbl) {
-    DebugJS.ctx.setMsg(arg);
+    try {
+      DebugJS.ctx.setMsg(eval(arg));
+    } catch (e) {
+      DebugJS.log.e(e);
+    }
   },
 
   cmdOpacity: function(arg, tbl) {
