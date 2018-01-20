@@ -3301,22 +3301,22 @@ goto foo
 
 command
 
-${name} = command
-<span class="annotation">Command result will be set to the variable ${name}.</span>
-
-command arg ${name} ...
-<span class="annotation">The variable ${name} will be replaced to its value.</span>
+$VAL = command
 
 IF ($VAL == 123) (
   command
 )
 
+<span class="annotation">Inline JavaScript Section</span>
 !__JS__!
 JavaScript Code;
 JavaScript Code;
 JavaScript Code;
+!__JS__!
 <span class="annotation">This section will be executed at once.</span>
-!__JS__!</span>
+
+${name} = command <span class="annotation">Command result will be set to the variable ${name}.</span>
+command arg ${name} ... <span class="annotation">The variable ${name} will be replaced to its value.</span></span>
 </pre>
 <br>
 <b>Load and Execute</b><br>
