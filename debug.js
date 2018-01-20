@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801192030';
+  this.v = '201801200944';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -305,6 +305,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'cont', fnc: this.cmdCont, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'cont on|off'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'dumplog', fnc: this.cmdDumpLog, desc: 'Dump the log buffer'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
@@ -354,7 +355,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
-    {cmd: 'cont', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'nop', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'wait', fnc: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
@@ -6488,8 +6488,7 @@ DebugJS.prototype = {
 
   cmdClose: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var fn = args[0];
+    var fn = DebugJS.splitArgs(arg)[0];
     var f = 0;
     switch (fn) {
       case 'measure':
@@ -6528,6 +6527,21 @@ DebugJS.prototype = {
     DebugJS.ctx.clearLog();
   },
 
+  cmdCont: function(arg, tbl) {
+    if (!(DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING)) {
+      DebugJS.log('bat dedicated command');return;
+    }
+    var a = DebugJS.splitArgs(arg)[0];
+    var ctrl = DebugJS.bat.ctrl;
+    if (a == 'on') {
+      ctrl.cont = true;
+    } else if (a == 'off') {
+      ctrl.cont = false;
+    } else {
+      DebugJS.printUsage(tbl.usage);
+    }
+  },
+
   cmdDate: function(arg, tbl) {
     var d = DebugJS.date(arg);
     if (d == undefined) {
@@ -6550,11 +6564,11 @@ DebugJS.prototype = {
 
   cmdEcho: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    if (args[0] == 'off') {
+    var a = DebugJS.splitArgs(arg)[0];
+    if (a == 'off') {
       ctx.cmdEchoFlg = false;
       return;
-    } else if (args[0] == 'on') {
+    } else if (a == 'on') {
       ctx.cmdEchoFlg = true;
       return;
     }
@@ -6968,8 +6982,7 @@ DebugJS.prototype = {
   },
 
   cmdOpacity: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    var v = args[0];
+    var v = DebugJS.splitArgs(arg)[0];
     if ((v <= 1) && (v >= 0.1)) {
       DebugJS.opacity(v);
     } else {
@@ -7025,8 +7038,7 @@ DebugJS.prototype = {
 
   cmdPin: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var op = args[0];
+    var op = DebugJS.splitArgs(arg)[0];
     if (op == 'on') {
       ctx.disableDraggable(ctx);
     } else if (op == 'off') {
@@ -10729,7 +10741,6 @@ DebugJS.bat.prepro = function(cmd) {
     case '':
     case 'bat':
       return 1;
-    case 'cont':
     case 'echo':
       if (a[0] == 'off') {
         ctrl[c] = false;
