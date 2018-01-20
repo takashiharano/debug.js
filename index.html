@@ -2277,7 +2277,7 @@ dbg.opacity(<input type="text" id="opacity-text" value="0.5" class="demo-text" s
   </tr>
 </table>
 <div style="margin-top:10px;font-size:14px;">
-"dbg" is an alias of "DebugJS". / "time" is an alias of "DebugJS.time".<br>
+"dbg" is an alias of "DebugJS". / "_" is an alias of "DebugJS.el".<br>
 debug.js will not use aliases in case of those that are already defined.
 </div>
 <br>
@@ -3490,7 +3490,7 @@ You can define your own commands and panels like below.<br>
 <pre class="code" style="margin-bottom:2px">
 // Command definition
 <span class="emphasis">example.cmdHello = function(arg, tbl) {
-  DebugJS.log('Hello!');
+  dbg.log('Hello!');
 };</span>
 
 // Command table definition
@@ -3499,7 +3499,7 @@ You can define your own commands and panels like below.<br>
 ];</span>
 
 // Register the command table
-<span class="emphasis">DebugJS.x.addCmdTbl(example.CMD_TBL);</span>
+<span class="emphasis">dbg.x.addCmdTbl(example.CMD_TBL);</span>
 </pre>
 <span style="font-family:Consolas">
 $ hello<br>
@@ -3538,7 +3538,7 @@ var panel1 = {
   onActive: example.onActiveP1,
   onInActive: example.onInActiveP1
 };
-<span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = DebugJS.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span>
+<span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = dbg.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span>
 </span></pre>
 
 Change the button label
