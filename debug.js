@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801201330';
+  this.v = '201801281935';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12048,8 +12048,8 @@ DebugJS.test.setId = function(id) {
   if (data.results[id] == undefined) {
     data.results[id] = {};
   }
-  test.data.executingTestId = id;
-  DebugJS.test.setLabel('');
+  data.executingTestId = id;
+  test.setLabel('');
 };
 DebugJS.test.setLabel = function(label) {
   var test = DebugJS.test;
@@ -12101,7 +12101,7 @@ DebugJS.test.count = function(cnt) {
 DebugJS.test.result = function() {
   var test = DebugJS.test;
   var M = 16;
-  var n = DebugJS.test.countLongestLabel();
+  var n = test.countLongestLabel();
   if (n > M) n = M;
   var cnt = {ok: 0, ng: 0, err: 0};
   var details = '';
@@ -12110,7 +12110,7 @@ DebugJS.test.result = function() {
     if (id == '') {
       testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
     }
-    var st = DebugJS.test.chkResult(test.data.results[id]);
+    var st = test.chkResult(test.data.results[id]);
     switch (st) {
       case test.STATUS_OK:
         cnt.ok++;
@@ -12121,7 +12121,7 @@ DebugJS.test.result = function() {
       case test.STATUS_ERR:
         cnt.err++;
     }
-    var rs = DebugJS.test.getResultStr(st);
+    var rs = test.getResultStr(st);
     details += '\n' + rs + testId + '\n';
     for (label in test.data.results[id]) {
       for (var i = 0; i < test.data.results[id][label].length; i++) {
