@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801281935';
+  this.v = '201801292156';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10675,6 +10675,7 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (bat.isLocked()) {
+    ctrl.tmid = setTimeout(DebugJS.bat.exec, 50);
     return;
   }
   var c = bat.cmds[ctrl.pc];
@@ -10702,7 +10703,6 @@ DebugJS.bat.isLocked = function() {
   if (DebugJS.bat.ctrl.lock == 0) {
     return false;
   } else {
-    DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 50);
     return true;
   }
 };
