@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801292156';
+  this.v = '201801292229';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7115,7 +7115,7 @@ DebugJS.prototype = {
           DebugJS.log.e(e);
           return;
         }
-        DebugJS.point.moveToLabel(label, idx, step, speed, alignX, alignY);
+        point.moveToLabel(label, idx, step, speed, alignX, alignY);
       } else if (target == 'center') {
         p = DebugJS.getScreenCenter();
         step = args[2];
@@ -10700,11 +10700,7 @@ DebugJS.bat.next = function() {
   DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
 DebugJS.bat.isLocked = function() {
-  if (DebugJS.bat.ctrl.lock == 0) {
-    return false;
-  } else {
-    return true;
-  }
+  return (DebugJS.bat.ctrl.lock != 0);
 };
 DebugJS.bat.prepro = function(cmd) {
   var ctx = DebugJS.ctx;
@@ -11341,7 +11337,7 @@ DebugJS.point.move = function(x, y, step, speed) {
   step |= 0;
   speed |= 0;
   if (speed == 0) {
-    DebugJS.point(x, y);
+    point(x, y);
   }
   point.move.speed = speed;
   if (dst.x >= pos.x) {
@@ -11401,7 +11397,7 @@ DebugJS.point._move = function() {
     }
   }
 
-  DebugJS.point(x, y);
+  point(x, y);
   if ((x == dst.x) && (y == dst.y)) {
     DebugJS.bat.unlock();
   } else {
