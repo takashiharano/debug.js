@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801292229';
+  this.v = '201801311906';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5794,7 +5794,6 @@ DebugJS.prototype = {
       ctx.batRunBtn = ctx.createButton(ctx, basePanel, '[ RUN ]');
       ctx.batRunBtn.onclick = DebugJS.ctx.startPauseBat;
       ctx.batStopBtn = ctx.createButton(ctx, basePanel, '[STOP]');
-      ctx.batStopBtn.style.color = '#f66';
       ctx.batStopBtn.onclick = DebugJS.bat.stop;
       ctx.createLabel(' FROM:', basePanel);
       ctx.batStartTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
@@ -5840,10 +5839,14 @@ DebugJS.prototype = {
     if (!ctx.batRunBtn) return;
     var label = ' RUN ';
     var color = '#0f0';
-    if ((ctx.status & DebugJS.STATE_BAT_RUNNING) &&
-        (!(ctx.status & DebugJS.STATE_BAT_PAUSE))) {
-      label = 'PAUSE';
-      color = '#ff0';
+    if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
+      if (!(ctx.status & DebugJS.STATE_BAT_PAUSE)) {
+        label = 'PAUSE';
+        color = '#ff0';
+      }
+      ctx.batStopBtn.style.color = '#f66';
+    } else {
+      ctx.batStopBtn.style.color = '#a99';
     }
     ctx.batRunBtn.innerText = '[' + label + ']';
     ctx.batRunBtn.style.color = color;
