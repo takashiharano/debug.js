@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801311950';
+  this.v = '201801312054';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -530,8 +530,8 @@ DebugJS.LED_COLOR = ['#4cf', '#0ff', '#6f6', '#ee0', '#f80', '#f66', '#f0f', '#d
 DebugJS.LED_COLOR_INACTIVE = '#777';
 DebugJS.ITEM_NAME_COLOR = '#cff';
 DebugJS.KEYWORD_COLOR = '#2f6';
-DebugJS.RANDOM_TYPE_NUM = '-d';
-DebugJS.RANDOM_TYPE_STR = '-s';
+DebugJS.RND_TYPE_NUM = '-d';
+DebugJS.RND_TYPE_STR = '-s';
 DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX = '-elhl';
 DebugJS.EXPANDBTN = '&gt;';
 DebugJS.CLOSEBTN = 'v';
@@ -7299,17 +7299,17 @@ DebugJS.prototype = {
 
   cmdRandom: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
-    var type = args[0] || DebugJS.RANDOM_TYPE_NUM;
+    var type = args[0] || DebugJS.RND_TYPE_NUM;
     var min, max;
     if (args[0] == '') {
-      type = DebugJS.RANDOM_TYPE_NUM;
+      type = DebugJS.RND_TYPE_NUM;
     } else {
-      if ((args[0] == DebugJS.RANDOM_TYPE_NUM) || (args[0] == DebugJS.RANDOM_TYPE_STR)) {
+      if ((args[0] == DebugJS.RND_TYPE_NUM) || (args[0] == DebugJS.RND_TYPE_STR)) {
         type = args[0];
         min = args[1];
         max = args[2];
       } else if (args[0].match(/[0-9]{1,}/)) {
-        type = DebugJS.RANDOM_TYPE_NUM;
+        type = DebugJS.RND_TYPE_NUM;
         min = args[0];
         max = args[1];
       } else {
@@ -7693,7 +7693,7 @@ DebugJS.prototype = {
         DebugJS.log(test.result());
         break;
       case 'verify':
-        DebugJS.test.verify(args[1], args[2], args[3], true);
+        test.verify(args[1], args[2], args[3], true);
         break;
       case 'fin':
         test.fin();
@@ -9657,10 +9657,10 @@ DebugJS.getRandom = function(type, min, max) {
     if (max) {
       max |= 0;
     } else {
-      if (type == DebugJS.RANDOM_TYPE_NUM) {
+      if (type == DebugJS.RND_TYPE_NUM) {
         max = min;
         min = 0;
-      } else if (type == DebugJS.RANDOM_TYPE_STR) {
+      } else if (type == DebugJS.RND_TYPE_STR) {
         max = min;
       }
     }
@@ -9668,23 +9668,23 @@ DebugJS.getRandom = function(type, min, max) {
       var wk = min; min = max; max = wk;
     }
   } else {
-    if (type == DebugJS.RANDOM_TYPE_NUM) {
+    if (type == DebugJS.RND_TYPE_NUM) {
       min = 0;
       max = 0x7fffffff;
-    } else if (type == DebugJS.RANDOM_TYPE_STR) {
+    } else if (type == DebugJS.RND_TYPE_STR) {
       min = 1;
-      max = DebugJS.RANDOM_STR_DFLT_MAX_LEN;
+      max = DebugJS.RND_STR_DFLT_MAX_LEN;
     }
   }
-  var random;
+  var rnd;
   switch (type) {
-    case DebugJS.RANDOM_TYPE_NUM:
-      random = DebugJS.getRndNum(min, max);
+    case DebugJS.RND_TYPE_NUM:
+      rnd = DebugJS.getRndNum(min, max);
       break;
-    case DebugJS.RANDOM_TYPE_STR:
-      random = DebugJS.getRndStr(min, max);
+    case DebugJS.RND_TYPE_STR:
+      rnd = DebugJS.getRndStr(min, max);
   }
-  return random;
+  return rnd;
 };
 
 DebugJS.getRndNum = function(min, max) {
@@ -9697,19 +9697,19 @@ DebugJS.getRndNum = function(min, max) {
   var rndMax = Math.pow(10, digit) - 1;
   if (min < rndMin) min = rndMin;
   if (max > rndMax) max = rndMax;
-  var random = Math.floor(Math.random() * (max - min + 1)) + min;
-  return random;
+  var rnd = Math.floor(Math.random() * (max - min + 1)) + min;
+  return rnd;
 };
 
 DebugJS.getRandomCharater = function() {
   return String.fromCharCode(DebugJS.getRndNum(0x20, 0x7e));
 };
 
-DebugJS.RANDOM_STR_DFLT_MAX_LEN = 10;
-DebugJS.RANDOM_STR_MAX_LEN = 1024;
+DebugJS.RND_STR_DFLT_MAX_LEN = 10;
+DebugJS.RND_STR_MAX_LEN = 1024;
 DebugJS.getRndStr = function(min, max) {
-  if (min > DebugJS.RANDOM_STR_MAX_LEN) min = DebugJS.RANDOM_STR_MAX_LEN;
-  if (max > DebugJS.RANDOM_STR_MAX_LEN) max = DebugJS.RANDOM_STR_MAX_LEN;
+  if (min > DebugJS.RND_STR_MAX_LEN) min = DebugJS.RND_STR_MAX_LEN;
+  if (max > DebugJS.RND_STR_MAX_LEN) max = DebugJS.RND_STR_MAX_LEN;
   var len = DebugJS.getRndNum(min, max);
   var ch;
   var s = '';
@@ -10678,7 +10678,7 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (bat.isLocked()) {
-    ctrl.tmid = setTimeout(DebugJS.bat.exec, 50);
+    ctrl.tmid = setTimeout(bat.exec, 50);
     return;
   }
   var c = bat.cmds[ctrl.pc];
@@ -10751,7 +10751,7 @@ DebugJS.bat.prepro = function(cmd) {
         if (r.res) {
           ctrl.blockLv++;
         } else {
-          ctrl.pc = DebugJS.bat.findBlockEndLine() + 1;
+          ctrl.pc = bat.findBlockEndLine() + 1;
         }
       }
       return 1;
@@ -11109,10 +11109,11 @@ DebugJS.point.createPtr = function() {
   DebugJS.point.ptr = ptr;
 };
 DebugJS.point.init = function() {
-  DebugJS.point(0, 0);
-  DebugJS.point.cursor();
-  DebugJS.point.hint.clear();
-  DebugJS.point.hide();
+  var point = DebugJS.point;
+  point(0, 0);
+  point.cursor();
+  point.hint.clear();
+  point.hide();
 };
 DebugJS.point.show = function() {
   var point = DebugJS.point;
@@ -11866,6 +11867,8 @@ DebugJS._inputText = function() {
   data.tmid = 0;
   var txt = data.txt.substr(0, data.i);
   data.el.value = txt;
+  var e = DebugJS.event.create('input');
+  data.el.dispatchEvent(e);
   if (data.i < data.txt.length) {
     speed = DebugJS.getSpeed(speed);
     data.tmid = setTimeout(DebugJS._inputText, speed);
@@ -12298,11 +12301,11 @@ DebugJS.getLabelEl = function(label, idx) {
 };
 
 DebugJS.random = function(min, max) {
-  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_NUM, min, max);
+  return DebugJS.getRandom(DebugJS.RND_TYPE_NUM, min, max);
 };
 
 DebugJS.randomStr = function(min, max) {
-  return DebugJS.getRandom(DebugJS.RANDOM_TYPE_STR, min, max);
+  return DebugJS.getRandom(DebugJS.RND_TYPE_STR, min, max);
 };
 
 DebugJS.wd = {};
@@ -12310,7 +12313,6 @@ DebugJS.wd.INTERVAL = 50;
 DebugJS.wd.wdTmId = 0;
 DebugJS.wd.wdPetTime = 0;
 DebugJS.wd.cnt = 0;
-
 DebugJS.wd.start = function(interval) {
   var ctx = DebugJS.ctx;
   var wd = DebugJS.wd;
@@ -12323,7 +12325,6 @@ DebugJS.wd.start = function(interval) {
   if (wd.wdTmId > 0) clearTimeout(wd.wdTmId);
   wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);
 };
-
 DebugJS.wd.pet = function() {
   var ctx = DebugJS.ctx;
   if (!(ctx.status & DebugJS.STATE_WD)) return;
@@ -12341,7 +12342,6 @@ DebugJS.wd.pet = function() {
   wd.wdPetTime = now;
   wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);
 };
-
 DebugJS.wd.stop = function() {
   var wd = DebugJS.wd;
   if (wd.wdTmId > 0) {
