@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201801311906';
+  this.v = '201801311950';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5315,7 +5315,7 @@ DebugJS.prototype = {
 
   onBatLoaded: function(ctx, success, file, content) {
     if (success) {
-      DebugJS.bat.setBat(content);
+      DebugJS.bat.set(content);
       ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
     }
   },
@@ -10545,7 +10545,7 @@ DebugJS.cmd = function(c, echo) {
 };
 
 DebugJS.bat = function(b, sl, el) {
-  DebugJS.bat.setBat(b);
+  DebugJS.bat.set(b);
   DebugJS.bat.run(sl, el);
 };
 DebugJS.bat.cmds = [];
@@ -10565,7 +10565,7 @@ DebugJS.bat.ctrl = {
 };
 DebugJS.bat.js = '';
 DebugJS.bat.labels = {};
-DebugJS.bat.setBat = function(b) {
+DebugJS.bat.set = function(b) {
   if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
     DebugJS.bat.stop();
   }

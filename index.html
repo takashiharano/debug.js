@@ -491,6 +491,14 @@ function batDemo3() {
   dbg.bat(cmds, sl, el);
 }
 
+function batSetDemo() {
+  var cmds = 'echo off\n';
+  cmds += 'echo "foo"\n';
+  cmds += 'echo "bar"\n';
+  cmds += 'echo "baz"\n';
+  dbg.bat.set(cmds);
+}
+
 function httpDemo() {
   var url = document.getElementById('http-url-text').value;
   var method = document.getElementById('http-method-text').value;
@@ -1565,6 +1573,27 @@ dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</butto
 dbg.bat(commands, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="6">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="10">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
 dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value="led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value="led2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
 
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.bat.set<br>
+      <span class="alias">( dbg.bat.set )</span>
+    </td>
+    <td>
+      commands<br>
+    </td>
+    <td>
+      Set a batch script. (only set. not run.)<br><br>
+<pre class="eg">
+var commands = 'echo off\n';
+commands += 'echo "foo"\n';
+commands += 'echo "bar"\n';
+commands += 'echo "baz"\n';
+
+dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO</button>
 </pre>
     </td>
   </tr>
