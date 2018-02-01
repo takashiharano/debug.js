@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802012315';
+  this.v = '201802020000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5518,7 +5518,9 @@ DebugJS.prototype = {
         for (var i = 0; i < ext.length; i++) {
           if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
         }
-        if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name))) {
+        var b64Head = 'data:;base64,';
+        var xmlHead = 'PD94bWw';
+        if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || (b64content.substr(b64Head.length, xmlHead.length) == xmlHead)) {
           var contents = b64content.split(',');
           var decoded = DebugJS.decodeBase64(contents[1]);
           var escDecoded = DebugJS.escTags(decoded);
@@ -10681,7 +10683,7 @@ DebugJS.bat.exec = function() {
   }
   var c = bat.cmds[ctrl.pc];
   ctrl.pc++;
-  DebugJS.ctx.updateCurPc();
+  ctx.updateCurPc();
   switch (bat.prepro(c)) {
     case 1:
       bat.next();
