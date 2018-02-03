@@ -2676,8 +2676,17 @@ Option:<br>
 
   <tr>
     <td class="name">led</td>
-    <td>bit pattern</td>
-    <td>Set a bit pattern to the indicator.</td>
+    <td>bit pattern(0-255)</td>
+    <td>
+      Set a bit pattern to the indicator.<br>
+<pre class="eg">
+e.g.,)
+$ led 1
+$ led 255
+$ led 0x20
+$ led 0b111
+</pre>
+    </td>
   </tr>
 
   <tr>
@@ -3319,20 +3328,21 @@ goto foo
 <pre class="code" style="margin-bottom:2px">
 <span class="emphasis">#!BAT!</span> <i>File Header</i><span class="emphasis">
 
-# comment
+#comment
 
-// comment
+//comment
 
 /*
- multi-line-comment
+multi-
+line-
+comment
 */
 
 :label
 
 command
 
-$VAL = command
-
+$VAL = JavaScript Code;
 IF ($VAL == 123) (
   command
 )
@@ -3345,9 +3355,13 @@ JavaScript Code;
 !__JS__!
 <span class="annotation">This section will be executed at once.</span>
 
-${name} = command <span class="annotation">Command result will be set to the variable ${name}.</span>
-command arg ${name} ... <span class="annotation">The variable ${name} will be replaced to its value.</span></span>
+${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
+command arg ${val} ... <span class="annotation">The variable ${val} will be replaced to its value.</span></span>
+IF ("${val}" == "abc") (
+  command
+)
 </pre>
+
 <a href="bat.txt" target="_blank">Sample Batch Script</a><br><br>
 <b>Load and Execute</b><br>
 TOOL =&gt; &lt;BAT&gt; =&gt; Drop a BAT file / Copy & Paste bat code =&gt; [EXECUTE]<br>
