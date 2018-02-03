@@ -2866,6 +2866,9 @@ $ point cclick 500<span class="annotation">click speed in ms (opt:default=100)</
 $ point rclick 500<span class="annotation">click speed in ms (opt:default=100)</span>
 -&gt; Right click the current position
 
+$ point dblclick 200<span class="annotation">click speed in ms (opt:default=100)</span>
+-&gt; Double click the current position
+
 $ point contexstmenu
 -&gt; Dispatch the contextmenu event to the current position
 
@@ -4123,7 +4126,8 @@ function callback(xhr) {
 </div>
 <div id="evttest" style="display:inline-block; width:415px; height:50px; background:#dff;" 
 onclick="log.i('> click');" 
-onmousedown="log.i('> mousedown');"  
+ondblclick="log.i('> dblclick');" 
+onmousedown="log.i('> mousedown');" 
 onmouseup="log.i('> mouseup');" 
 onkeydown="log.i('> keydown');"
 onkeypress="log.i('> keypress');"
@@ -4134,7 +4138,8 @@ oncontextmenu="onContextMenu();">event test</div>
 <br>
 <input id="eventinput" 
 onclick="log.i('> click');" 
-onmousedown="log.i('> mousedown');"  
+ondblclick="log.i('> dblclick');" 
+onmousedown="log.i('> mousedown');" 
 onmouseup="log.i('> mouseup');" 
 onkeydown="log.i('> keydown');"
 onkeypress="log.i('> keypress');"

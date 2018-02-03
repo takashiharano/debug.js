@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802030021';
+  this.v = '201802032321';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -331,7 +331,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list'},
@@ -7178,7 +7178,7 @@ DebugJS.prototype = {
       point.cursor(src, w, h);
     } else if ((op == 'focus') || (op == 'blur') || (op == 'contextmenu')) {
       point.event(op);
-    } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick')) {
+    } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
       speed = args[1];
       point.event(op, speed);
     } else if (op == 'getprop') {
@@ -11195,6 +11195,9 @@ DebugJS.point.event = function(type, opt) {
     case 'rclick':
       point.click(2, el, opt);
       break;
+    case 'dblclick':
+      point.dblclick(el, opt);
+      break;
     case 'focus':
       point.focus(el);
       break;
@@ -11205,7 +11208,7 @@ DebugJS.point.event = function(type, opt) {
       point.contextmenu(el);
   }
 };
-DebugJS.point.click = function(button, target, speed) {
+DebugJS.point.click = function(button, target, speed, cb) {
   var click = DebugJS.point.click;
   if (click.tmid[button] > 0) {
     clearTimeout(click.tmid[button]);
@@ -11213,12 +11216,55 @@ DebugJS.point.click = function(button, target, speed) {
     DebugJS.point.clickUp(button);
   }
   click.target[button] = target;
+  click.cb = cb;
   var e = DebugJS.event.create('mousedown');
   e.button = button;
   target.dispatchEvent(e);
   target.focus();
   if (speed == undefined) speed = 100;
   click.tmid[button] = setTimeout('DebugJS.point.clickUp(' + button + ')', speed);
+};
+DebugJS.point.dblclick = function(target, speed) {
+  var data = DebugJS.point.dblclick.data;
+  if (data.cnt > 1) {
+    if (data.tmid > 0) {
+      clearTimeout(data.tmid);
+      data.tmid = 0;
+    }
+    data.cnt = 0;
+    DebugJS.bat.unlock();
+  }
+  if (speed == undefined) speed = 100;
+  var clickcpeed = speed / 2 | 0;
+  data.target = target;
+  data.cnt = 0;
+  data.speed = speed;
+  DebugJS.bat.lock();
+  DebugJS.point._dblclick();
+};
+DebugJS.point._dblclick = function() {
+  var data = DebugJS.point.dblclick.data;
+  var clickcpeed = data.speed / 2 | 0;
+  DebugJS.point.click(0, data.target, clickcpeed, DebugJS.point.dblclick.onDone);
+};
+DebugJS.point.dblclick.onDone = function() {
+  var data = DebugJS.point.dblclick.data;
+  data.tmid = 0;
+  data.cnt++;
+  if (data.cnt < 2) {
+    data.tmid = setTimeout(DebugJS.point._dblclick, data.speed);
+  } else {
+    var e = DebugJS.event.create('dblclick');
+    data.target.dispatchEvent(e);
+    data.cnt = 0;
+    DebugJS.bat.unlock();
+  }
+};
+DebugJS.point.dblclick.data = {
+  target: null,
+  tmid: 0,
+  cnt: 0,
+  speed: 0
 };
 DebugJS.point.clickUp = function(n) {
   var click = DebugJS.point.click;
@@ -11246,10 +11292,15 @@ DebugJS.point.clickUp = function(n) {
       }
   }
   click.target[n] = null;
+  if (click.cb) {
+    click.cb();
+    click.cb = null;
+  }
 };
 DebugJS.point.click.target = [null, null, null];
 DebugJS.point.click.tmid = [0, 0, 0];
 DebugJS.point.click.invalid = false;
+DebugJS.point.click.cb = null;
 
 DebugJS.point.focus = function(el) {
   el.focus();
