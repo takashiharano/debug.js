@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802020000';
+  this.v = '201802030021';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -609,7 +609,7 @@ DebugJS.prototype = {
       }
     }
     if (!keepStatus) {
-      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_WD | DebugJS.STATE_BAT_RUNNING | DebugJS.STATE_BAT_PAUSE | DebugJS.STATE_BAT_PAUSE_CMD | DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_STOPWATCH_RUNNING | DebugJS.STATE_WD | DebugJS.STATE_BAT_RUNNING | DebugJS.STATE_BAT_PAUSE | DebugJS.STATE_BAT_PAUSE_CMD | DebugJS.STATE_BAT_PAUSE_CMD_KEY;
       ctx.status &= preserveStatus;
       ctx.uiStatus = 0;
     }
@@ -1781,6 +1781,7 @@ DebugJS.prototype = {
   },
 
   updateSwBtnPanel: function(ctx) {
+    if (!ctx.swBtnPanel) return;
     var btn = (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
     var margin = (2 * ctx.opt.zoom) + 'px';
     var btns = ctx.createBtnHtml(ctx, 'margin-right:' + margin, 'DebugJS.ctx.resetStopWatch();', '0') +
@@ -1791,10 +1792,13 @@ DebugJS.prototype = {
   updateSwLabel: function() {
     var ctx = DebugJS.ctx;
     ctx.updateStopWatch();
-    if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
-      ctx.swLabel.innerHTML = '<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>';
-    } else {
-      ctx.swLabel.innerHTML = ctx.swElapsedTimeDisp;
+    ctx.swElapsedTimeDisp = DebugJS.getTimerStr(ctx.swElapsedTime);
+    if (ctx.swLabel) {
+      if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+        ctx.swLabel.innerHTML = '<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>';
+      } else {
+        ctx.swLabel.innerHTML = ctx.swElapsedTimeDisp;
+      }
     }
     if (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
       setTimeout(ctx.updateSwLabel, DebugJS.UPDATE_INTERVAL_H);
@@ -2285,7 +2289,6 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.STATE_STOPWATCH_RUNNING;
     ctx.swStartTime = (new Date()).getTime() - ctx.swElapsedTime;
-    ctx.updateStopWatch();
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
   },
@@ -2304,7 +2307,6 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.swStartTime = (new Date()).getTime();
     ctx.swElapsedTime = 0;
-    ctx.swElapsedTimeDisp = DebugJS.getTimerStr(ctx.swElapsedTime);
     ctx.updateSwLabel();
   },
 
@@ -2313,7 +2315,6 @@ DebugJS.prototype = {
     if (!(ctx.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
     var swCurrentTime = (new Date()).getTime();
     ctx.swElapsedTime = swCurrentTime - ctx.swStartTime;
-    ctx.swElapsedTimeDisp = DebugJS.getTimerStr(ctx.swElapsedTime);
   },
 
   collapseLogPanel: function(ctx) {
@@ -7775,6 +7776,7 @@ DebugJS.prototype = {
     if (!ret) {
       DebugJS.printUsage(tbl.usage);
     }
+    return ret;
   },
 
   cmdStopwatch0: function(ctx, op) {
@@ -7784,7 +7786,7 @@ DebugJS.prototype = {
         break;
       case 'stop':
         ctx.stopStopWatch();
-        break;
+        return ctx.swElapsedTimeDisp;
       case 'reset':
         ctx.resetStopWatch();
         break;
@@ -10217,16 +10219,21 @@ DebugJS.loadLog = function(json, b64) {
 
 DebugJS.saveStatus = function() {
   if (!DebugJS.LS_AVAILABLE) return;
-  localStorage.setItem('DebugJS-st', DebugJS.ctx.status + '');
+  var data = {
+    status: DebugJS.ctx.status,
+    swElapsedTime: DebugJS.ctx.swElapsedTime
+  };
+  var st = JSON.stringify(data);
+  localStorage.setItem('DebugJS-st', st);
 };
 
 DebugJS.loadStatus = function() {
   if (!DebugJS.LS_AVAILABLE) return 0;
   var st = localStorage.getItem('DebugJS-st');
-  if (st == null) return 0;
+  if (st == null) return null;
   localStorage.removeItem('DebugJS-st');
-  st |= 0;
-  return st;
+  var data = JSON.parse(st);
+  return data;
 };
 
 DebugJS.preserveLog = function() {
@@ -10813,6 +10820,7 @@ DebugJS.bat.ppIf = function(cmd, s) {
   var v = DebugJS.delLeadingAndTrailingWhiteSpace(s);
   if (v.charAt(s.length - 1) == DebugJS.PP_BLOCK_START) {
     v = v.substr(0, s.length - 2);
+    v = DebugJS.replaceCmdValName(v);
     try {
       r.res = eval(v);
       r.err = false;
@@ -12487,13 +12495,22 @@ DebugJS.start = function() {
     console.time = function(x) {DebugJS.time.start(x);};
     console.timeEnd = function(x) {DebugJS.time.end(x);};
   }
-  var st = DebugJS.loadStatus();
-  if (st & DebugJS.STATE_LOG_PRESERVED) {
-    DebugJS.ctx.status |= DebugJS.STATE_LOG_PRESERVED;
-    DebugJS.restoreLog();
+  DebugJS.restoreStatus(DebugJS.ctx);
+};
+DebugJS.restoreStatus = function(ctx, data) {
+  var data = DebugJS.loadStatus();
+  if ((data == null) || !(data.status & DebugJS.STATE_LOG_PRESERVED)) {
+    return;
+  }
+  ctx.status |= DebugJS.STATE_LOG_PRESERVED;
+  DebugJS.restoreLog();
+  ctx.swElapsedTime = data.swElapsedTime;
+  if (data.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    ctx.startStopWatch();
+  } else {
+    ctx.updateSwLabel();
   }
 };
-
 DebugJS.balse = function() {
   log = DebugJS.z1;
   log.e = DebugJS.z1;
