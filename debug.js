@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802032321';
+  this.v = '201802041448';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6456,14 +6456,21 @@ DebugJS.prototype = {
         DebugJS.log.mlt(s);
         break;
       case 'status':
-        var st = '\n';
-        if (bat.cmds.length == 0) {
-         st += 'no batch loaded';
+        var v;
+        var key = args[1];
+        if (key == undefined) {
+          var st = '\n';
+          if (bat.cmds.length == 0) {
+            st += 'no batch loaded';
+          } else {
+            st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
+          }
+          DebugJS.log.p(bat.ctrl, 0, st, false);
         } else {
-          st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
+          v = bat.ctrl[key];
+          DebugJS.log(v);
         }
-        DebugJS.log.p(bat.ctrl, 0, st, false);
-        break;
+        return v;
       case 'pause':
         bat.pause();
         break;
@@ -7034,8 +7041,9 @@ DebugJS.prototype = {
       if (opt == '-u') {
         DebugJS.log('Type "resume" to continue...');
       } else if (opt == '-key') {
+        if (key == undefined) {key = null;}
         DebugJS.bat.ctrl.pauseKey = key;
-        DebugJS.log('Type "resume" or "resume -key ' + key + '" to continue...');
+        DebugJS.log('Type "resume" or "resume -key' + ((key == null) ? '' : ' ' + key) + '" to continue...');
       } else {
         return false;
       }
@@ -10568,6 +10576,7 @@ DebugJS.bat.ctrl = {
   tmid: 0,
   lock: 0,
   pauseKey: null,
+  resumedKey: null,
   cont: false
 };
 DebugJS.bat.js = '';
@@ -10934,7 +10943,7 @@ DebugJS.bat.pause = function() {
 DebugJS.bat.resume = function(key) {
   if (key == undefined) {
     DebugJS.bat._resume();
-  } else if (key == DebugJS.bat.ctrl.pauseKey) {
+  } else if ((key == DebugJS.bat.ctrl.pauseKey) || (DebugJS.bat.ctrl.pauseKey == null)) {
     DebugJS.bat._resume('cmd-key', key);
   }
 };
@@ -10951,6 +10960,7 @@ DebugJS.bat._resume = function(trigger, key) {
       if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
         ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
         DebugJS.bat.ctrl.pauseKey = null;
+        DebugJS.bat.ctrl.resumedKey = key;
         ctx.updateBatResumeBtn();
         resumed = true;
       }
@@ -10988,6 +10998,7 @@ DebugJS.bat.finalize = function() {
   c.cmnt = false;
   c.lock = 0;
   c.pauseKey = null;
+  c.resumedKey = null;
   c.js = false;
   DebugJS.bat.js = '';
   if (c.tmid != 0) {
