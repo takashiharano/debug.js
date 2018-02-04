@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802041448';
+  this.v = '201802042110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -307,7 +307,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'cont', fnc: this.cmdCont, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'cont on|off'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
-    {cmd: 'dumplog', fnc: this.cmdDumpLog, desc: 'Dump the log buffer'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fnc: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
@@ -323,8 +322,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
-    {cmd: 'load', fnc: this.cmdLoad, desc: 'Load logs into the debug window', usage: 'load [-b64] log-buffer-json'},
-    {cmd: 'log', fnc: this.cmdLog, desc: 'Manage log output', usage: 'log suspend|preserve on|off'},
+    {cmd: 'log', fnc: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|load|preserve|suspend'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'opacity', fnc: this.cmdOpacity, desc: 'Set the level of transparency of the debug window', usage: 'opacity 0.1-1'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
@@ -633,7 +631,7 @@ DebugJS.prototype = {
       if (!(ctx.status & DebugJS.STATE_LOG_PRESERVED) ||
           ((ctx.status & DebugJS.STATE_LOG_PRESERVED) &&
            (ctx.msgBuf.getSize() < ctx.opt.bufsize))) {
-        ctx.initBuf(ctx);
+        ctx.initBuf(ctx, ctx.opt.bufsize);
       }
     }
     if (ctx.opt.mode == 'noui') {
@@ -983,10 +981,10 @@ DebugJS.prototype = {
     ctx.applyStyles(ctx, styles);
   },
 
-  initBuf: function(ctx) {
+  initBuf: function(ctx, newSize) {
     var buf = DebugJS.ctx.msgBuf.getAll();
     var oldSize = buf.length;
-    var newSize = ctx.opt.bufsize;
+    if (oldSize == newSize) {return;}
     var i = ((oldSize > newSize) ? (oldSize - newSize) : 0);
     ctx.msgBuf = new DebugJS.RingBuffer(newSize);
     for (; i < oldSize; i++) {
@@ -6568,16 +6566,6 @@ DebugJS.prototype = {
     return d;
   },
 
-  cmdDumpLog: function(arg, tbl) {
-    var l;
-    if (DebugJS.delLeadingAndTrailingWhiteSpace(arg) == '-b64') {
-      l = DebugJS.dumpLog('json', true);
-    } else {
-      l = DebugJS.dumpLog('json', false);
-    }
-    DebugJS.log.res(l);
-  },
-
   cmdEcho: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg)[0];
@@ -7372,10 +7360,54 @@ DebugJS.prototype = {
     }
   },
 
-  cmdLoad: function(arg, tbl) {
-    var args = DebugJS.parseArgs(arg);
-    if (args.data == '') {
+  cmdLog: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var fn = null;
+    switch (args[0]) {
+      case 'bufsize':
+        fn = ctx._cmdLogBufsize;
+        break;
+      case 'dump':
+        fn = ctx._cmdLogDump;
+        break;
+      case 'load':
+        fn = ctx._cmdLogLoad;
+        break;
+      case 'preserve':
+        fn = ctx._cmdLogPreserve;
+        break;
+      case 'suspend':
+        fn = ctx._cmdLogSuspend;
+    }
+    if (fn) {return fn(ctx, arg, tbl);}
+    DebugJS.printUsage(tbl.usage);
+  },
+  _cmdLogBufsize: function(ctx, arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var size = args[1];
+    size |= 0;
+    if (size > 0) {
+      ctx.initBuf(ctx, size);
+    } else {
       DebugJS.printUsage(tbl.usage);
+    }
+  },
+  _cmdLogDump: function(ctx, arg, tbl) {
+    arg = DebugJS.splitCmdLineInTwo(arg)[1];
+    var l;
+    if (DebugJS.delLeadingAndTrailingWhiteSpace(arg) == '-b64') {
+      l = DebugJS.dumpLog('json', true);
+    } else {
+      l = DebugJS.dumpLog('json', false);
+    }
+    DebugJS.log.res(l);
+  },
+  _cmdLogLoad: function(ctx, arg, tbl) {
+    var args = DebugJS.splitCmdLineInTwo(arg);
+    args = DebugJS.parseArgs(args[1]);
+    if (args.data == '') {
+      DebugJS.printUsage('log load [-b64] log-buffer-json');
     } else {
       try {
         switch (args.opt) {
@@ -7385,39 +7417,32 @@ DebugJS.prototype = {
           default:
             DebugJS.loadLog(args.data);
         }
-        DebugJS.ctx.printLogs();
+        ctx.printLogs();
       } catch (e) {
         DebugJS.log.e(e);
       }
     }
   },
-
-  cmdLog: function(arg, tbl) {
-    var ctx = DebugJS.ctx;
+  _cmdLogPreserve: function(ctx, arg, tbl) {
     var args = DebugJS.splitArgs(arg);
-    var cmd = args[0];
     var op = args[1];
-    switch (cmd) {
-      case 'suspend':
-        if (op == 'on') {
-          DebugJS.ctx.suspendLog();
-        } else if (op == 'off') {
-          DebugJS.ctx.resumeLog();
-        } else {
-          DebugJS.printUsage(tbl.usage);
-        }
-        break;
-      case 'preserve':
-        if (op == 'on') {
-          ctx.setLogPreserve(ctx, true);
-        } else if (op == 'off') {
-          ctx.setLogPreserve(ctx, false);
-        } else {
-          DebugJS.printUsage(tbl.usage);
-        }
-        break;
-      default:
-        DebugJS.printUsage(tbl.usage);
+    if (op == 'on') {
+      ctx.setLogPreserve(ctx, true);
+    } else if (op == 'off') {
+      ctx.setLogPreserve(ctx, false);
+    } else {
+      DebugJS.printUsage('log preserve on|off');
+    }
+  },
+  _cmdLogSuspend: function(ctx, arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var op = args[1];
+    if (op == 'on') {
+      DebugJS.ctx.suspendLog();
+    } else if (op == 'off') {
+      DebugJS.ctx.resumeLog();
+    } else {
+      DebugJS.printUsage('log suspend on|off');
     }
   },
 

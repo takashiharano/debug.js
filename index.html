@@ -2080,7 +2080,7 @@ max: maximum length
     </td>
     <td>
       Export the log buffer in JSON format / plain text format<br><br>
-<pre class="eg">type: 'json' / 'text'
+<pre class="eg">type: 'json' | 'text'
 
 base64:
  true: The result will be encoded in Base64
@@ -2089,6 +2089,7 @@ base64:
 format time:
  true:  The time format will be human-readable foamrt.
         e.g.,) 2017-10-17 12:34:56.789
+
  false: The numeric value corresponding to the time for 
         the logged time according to universal time. (default)
         e.g.,) 1508211296789
@@ -2431,32 +2432,6 @@ $ date
 
   <tr>
     <td class="name">
-      dumplog<br>
-    </td>
-    <td>
-      option<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Export the log buffer in JSON format
-<pre class="eg">
-$ dumplog
--&gt; export in JSON format
-
-$ dumplog -b64
--&gt; export in base64 encoded JSON format
-</pre>
-<br>
-<span class="annotation2">
-See also:<br>
-&nbsp;load command<br>
-&nbsp;DebugJS.loadLog()<br>
-&nbsp;DebugJS.dumpLog()<br>
-</span>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">
       echo<br>
     </td>
     <td>
@@ -2701,45 +2676,51 @@ $ led 0b111
   </tr>
 
   <tr>
-    <td class="name">
-      load
-    </td>
-    <td>json-data</td>
-    <td>
-      Load logs into the debug window
-<pre class="eg">
-JSON Format
-[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
-</pre>
-
-<pre class="eg">
-
-e.g.,)
-$ load [{"type":1,"time":...,"msg":"ZHVtcGxvZw=="}]
-
-$ load -b64 W3sid...dlp5QXRZalkwIn1d
-</pre>
-<br>
-<span class="annotation2">
-See also:<br>
-&nbsp;dumplog command<br>
-&nbsp;DebugJS.dumpLog()<br>
-&nbsp;DebugJS.loadLog()<br>
-</span>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">log</td>
     <td>
       arg1: operation<br>
-      arg2: on|off</td>
+      arg2: args</td>
     <td>
-      Manage log output<br><br>
+      Manipulate log output<br><br>
 <pre class="eg">
-operation
-  suspend : Suspend log output
-  preserve: Preserve log
+<b>dump:</b>
+Export the log buffer in JSON format
+$ log dump
+-&gt; export in JSON format
+
+$ log dump -b64
+-&gt; export in base64 encoded JSON format
+<span class="annotation2">
+ See also:
+  log load command
+  DebugJS.loadLog()
+  DebugJS.dumpLog()
+</span>
+
+<b>load:</b>
+Load logs into the debug window
+
+$ log load JSON
+$ log load -b64 Base64-encoded-JSON
+
+JSON Format
+[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
+<span class="annotation2">
+ See also:
+  dumplog command
+  DebugJS.dumpLog()
+  DebugJS.loadLog()
+</span>
+
+<b>preserve:</b>
+Preserve log
+$ log preserve on
+$ log preserve off
+
+<b>suspend:</b>
+Suspend log output
+$ log suspend on
+$ log suspend off
 </pre>
     </td>
   </tr>
