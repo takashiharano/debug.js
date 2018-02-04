@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802042335';
+  this.v = '201802050026';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6447,7 +6447,7 @@ DebugJS.prototype = {
         break;
       case 'list':
         if (bat.cmds.length == 0) {
-          DebugJS.log('no batch loaded');
+          DebugJS.log('no batch script');
           break;
         }
         var s = bat.list();
@@ -6459,7 +6459,7 @@ DebugJS.prototype = {
         if (key == undefined) {
           var st = '\n';
           if (bat.cmds.length == 0) {
-            st += 'no batch loaded';
+            st += 'no batch script';
           } else {
             st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
           }
@@ -10637,7 +10637,7 @@ DebugJS.bat.run = function(s, e) {
   var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
   if (bat.cmds.length == 0) {
-    DebugJS.log('no batch loaded');
+    DebugJS.log('no batch script');
     return;
   }
   var sl, el;
