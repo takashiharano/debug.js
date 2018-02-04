@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802042110';
+  this.v = '201802042335';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7384,8 +7384,7 @@ DebugJS.prototype = {
     DebugJS.printUsage(tbl.usage);
   },
   _cmdLogBufsize: function(ctx, arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    var size = args[1];
+    var size = DebugJS.splitArgs(arg)[1];
     size |= 0;
     if (size > 0) {
       ctx.initBuf(ctx, size);
@@ -7424,8 +7423,7 @@ DebugJS.prototype = {
     }
   },
   _cmdLogPreserve: function(ctx, arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    var op = args[1];
+    var op = DebugJS.splitArgs(arg)[1];
     if (op == 'on') {
       ctx.setLogPreserve(ctx, true);
     } else if (op == 'off') {
@@ -7435,8 +7433,7 @@ DebugJS.prototype = {
     }
   },
   _cmdLogSuspend: function(ctx, arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    var op = args[1];
+    var op = DebugJS.splitArgs(arg)[1];
     if (op == 'on') {
       DebugJS.ctx.suspendLog();
     } else if (op == 'off') {
@@ -7454,22 +7451,20 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else if (target == 'log') {
       var pos = args[1];
-      ctx._cmdScrollLog(ctx, tbl, pos);
+      ctx._cmdScrollToLog(ctx, tbl, pos);
     } else if (target == 'window') {
       var posX = args[1];
       var posY = args[2];
       var step = args[3];
       var speed = args[4];
-      ctx._cmdScrollWin(ctx, tbl, posX, posY, step, speed);
+      ctx._cmdScrollToWin(ctx, tbl, posX, posY, step, speed);
     } else {
       var x = args[1];
       var y = args[2];
       DebugJS.scrollElTo(target, x, y);
     }
   },
-
-  _cmdScrollLog: function(ctx, tbl, pos) {
-    var ctx = DebugJS.ctx;
+  _cmdScrollToLog: function(ctx, tbl, pos) {
     if (pos == 'top') {
       pos = 0;
     } else if (pos == 'bottom') {
@@ -7481,15 +7476,17 @@ DebugJS.prototype = {
       ctx.logPanel.scrollTop = pos;
     }
   },
-
-  _cmdScrollWin: function(ctx, tbl, posX, posY, step, speed) {
-    var ctx = DebugJS.ctx;
-    var x = ctx.cmdScrollWinGetX(posX);
+  _cmdScrollToWin: function(ctx, tbl, posX, posY, step, speed) {
+    if ((posX == undefined) || (posY == undefined)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var x = ctx._cmdScrollWinGetX(posX);
     if (x == undefined) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    var y = ctx.cmdScrollWinGetY(posY);
+    var y = ctx._cmdScrollWinGetY(posY);
     if (y == undefined) {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -7500,8 +7497,7 @@ DebugJS.prototype = {
       DebugJS.scrollWinTo(x, y, step, speed);
     }
   },
-
-  cmdScrollWinGetX: function(posX) {
+  _cmdScrollWinGetX: function(posX) {
     var x;
     var scrollX = (window.scrollX != undefined ? window.scrollX : window.pageXOffset);
     if (posX == 'left') {
@@ -7523,8 +7519,7 @@ DebugJS.prototype = {
     }
     return x;
   },
-
-  cmdScrollWinGetY: function(posY) {
+  _cmdScrollWinGetY: function(posY) {
     var y;
     var scrollY = (window.scrollY != undefined ? window.scrollY : window.pageYOffset);
     if (posY == 'top') {
