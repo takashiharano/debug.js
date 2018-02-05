@@ -1572,7 +1572,7 @@ led 0
 var commands = document.getElementById('commands').value;
 dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</button>
 dbg.bat(commands, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="6">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="10">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
-dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value="led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value="led2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
+dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value=":led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value=":led2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
 
 </pre>
     </td>
@@ -2807,14 +2807,15 @@ $ p -a object
   <tr>
     <td class="name">pause</td>
     <td>
-     -u<span class="annotation">(opt)</span><br>
-     -key <i>key</i><span class="annotation">(opt)</span>
+     -u<span class="annotation">(opt)</span> [timeout]<br>
+     -key <i>key</i><span class="annotation">(opt)</span> [timeout]
     </td>
     <td>
      Suspends processing of batch file.<br>
      Click or press any key to continue.<br>
      -u option requires "resume" command to resume.<br>
-     -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.
+     -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.<br>
+      [timeout] is time-out value in milliseconds.<span class="annotation">(opt)</span>
     </td>
   </tr>
 
