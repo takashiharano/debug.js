@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802050026';
+  this.v = '201802051906';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7029,9 +7029,9 @@ DebugJS.prototype = {
       if (opt == '-u') {
         DebugJS.log('Type "resume" to continue...');
       } else if (opt == '-key') {
-        if (key == undefined) {key = null;}
+        if (key == undefined) {key = '';}
         DebugJS.bat.ctrl.pauseKey = key;
-        DebugJS.log('Type "resume" or "resume -key' + ((key == null) ? '' : ' ' + key) + '" to continue...');
+        DebugJS.log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...');
       } else {
         return false;
       }
@@ -7389,7 +7389,8 @@ DebugJS.prototype = {
     if (size > 0) {
       ctx.initBuf(ctx, size);
     } else {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.log.res(ctx.msgBuf.getSize());
+      DebugJS.printUsage('log bufsize [size]');
     }
   },
   _cmdLogDump: function(ctx, arg, tbl) {
@@ -10963,7 +10964,7 @@ DebugJS.bat.pause = function() {
 DebugJS.bat.resume = function(key) {
   if (key == undefined) {
     DebugJS.bat._resume();
-  } else if ((key == DebugJS.bat.ctrl.pauseKey) || (DebugJS.bat.ctrl.pauseKey == null)) {
+  } else if ((key == DebugJS.bat.ctrl.pauseKey) || (DebugJS.bat.ctrl.pauseKey == '')) {
     DebugJS.bat._resume('cmd-key', key);
   }
 };
