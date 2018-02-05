@@ -2683,6 +2683,14 @@ $ led 0b111  <span style="color:#999;margin-right:2px;">●</span><span style="c
     <td>
       Manipulate log output<br><br>
 <pre class="eg">
+<b>bufsize:</b>
+Set the log buffer size
+$ log bufsize 1000
+-&gt; Set the size to 1000
+
+$ log bufsize
+-&gt; Show the current size
+
 <b>dump:</b>
 Export the log buffer in JSON format
 $ log dump
@@ -2707,7 +2715,7 @@ JSON Format
 [{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(b64)</span>"},...]
 <span class="annotation2">
  See also:
-  dumplog command
+  log dump command
   DebugJS.dumpLog()
   DebugJS.loadLog()
 </span>
