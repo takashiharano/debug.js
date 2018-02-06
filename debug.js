@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802062205';
+  this.v = '201802062226';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6351,8 +6351,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var setValName = null;
     var cmdline = str;
-    if (str.charAt(0) == '@') {
-      cmdline = str.substr(1);
+    if (str.match(/^\s*@/)) {
+      cmdline = str.substr(str.indexOf('@') + 1);
     } else {
       if (echo) {
         var echoStr = str;
@@ -10784,8 +10784,8 @@ DebugJS.bat.prepro = function(cmd) {
   var ctrl = bat.ctrl;
   var c = cmds[0];
   var a = DebugJS.splitArgs(cmds[1]);
-  if (c.charAt(0) == '@') {
-    c = c.substr(1);
+  if (c.match(/^\s*@/)) {
+    c = c.substr(c.indexOf('@') + 1);
     ctrl.tmpEchoOff = true;
   }
   if ((c.charAt(0) == '#') || (c.substr(0, 2) == '//') || (c.charAt(0) == ':')) {
