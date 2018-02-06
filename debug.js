@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802060010';
+  this.v = '201802061953';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -309,6 +309,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
+    {cmd: 'errstop', fnc: this.cmdErrstop, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'errstop on|off'},
     {cmd: 'event', fnc: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'execute', fnc: this.cmdExecute, desc: 'Execute the edited JavaScript code'},
     {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -6542,15 +6543,21 @@ DebugJS.prototype = {
   },
 
   cmdCont: function(arg, tbl) {
-    if (!(DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING)) {
+    DebugJS.ctx._cmdBatCtrlOnOff(DebugJS.ctx, arg, tbl, 'cont');
+  },
+  cmdErrstop: function(arg, tbl) {
+    DebugJS.ctx._cmdBatCtrlOnOff(DebugJS.ctx, arg, tbl, 'errstop');
+  },
+  _cmdBatCtrlOnOff: function(ctx, arg, tbl, key) {
+    if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
       DebugJS.log('bat dedicated command');return;
     }
     var a = DebugJS.splitArgs(arg)[0];
     var ctrl = DebugJS.bat.ctrl;
     if (a == 'on') {
-      ctrl.cont = true;
+      ctrl[key] = true;
     } else if (a == 'off') {
-      ctrl.cont = false;
+      ctrl[key] = false;
     } else {
       DebugJS.printUsage(tbl.usage);
     }
@@ -7196,7 +7203,7 @@ DebugJS.prototype = {
     } else if (op == 'text') {
       el = point.getElementFromCurrentPos();
       if ((!el) || ((el.nodeName != 'INPUT') && (el.nodeName != 'TEXTAREA'))) {
-        DebugJS.log.w('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
+        DebugJS.log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
         return;
       }
       txt = DebugJS.splitQuotedArgs(arg, 2)[1];
@@ -7218,7 +7225,7 @@ DebugJS.prototype = {
           DebugJS.log.e('Usage: point selectoption get|set text|value val');
         }
       } else {
-        DebugJS.log.w('Pointed area is not a select element (' + (el ? el.nodeName : 'null') + ')');
+        DebugJS.log.e('Pointed area is not a select element (' + (el ? el.nodeName : 'null') + ')');
       }
     } else if (op == 'scroll') {
       x = args[1];
@@ -10428,6 +10435,7 @@ DebugJS.log = function(m) {
 };
 
 DebugJS.log.e = function(m) {
+  DebugJS.bat.ctrl.hasErr = true;
   DebugJS.log.out(m, DebugJS.LOG_TYPE_ERR);
 };
 
@@ -10606,7 +10614,9 @@ DebugJS.bat.ctrl = {
   pauseKey: null,
   resumedKey: null,
   pauseTimeout: 0,
-  cont: false
+  cont: false,
+  errstop: false,
+  hasErr: false
 };
 DebugJS.bat.js = '';
 DebugJS.bat.labels = {};
@@ -10714,6 +10724,11 @@ DebugJS.bat.exec = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
+  if (ctrl.errstop && ctrl.hasErr) {
+    DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
+    bat.stop();
+    return;
+  }
   if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD)) {
     return;
   } else if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
@@ -11043,6 +11058,8 @@ DebugJS.bat.finalize = function() {
   DebugJS.ctx.updateCurPc();
   c.echo = true;
   c.cont = false;
+  c.errstop = false;
+  c.hasErr = false;
   c.cmnt = false;
   c.lock = 0;
   c.pauseKey = null;
@@ -12051,7 +12068,7 @@ DebugJS.selectOption = function(el, method, type, val) {
     var idx = select.selectedIndex;
     return select.options[idx][prop];
   }
-  DebugJS.log.w('No such option: ' + val);
+  DebugJS.log.e('No such option: ' + val);
 };
 
 DebugJS.event = {};

@@ -367,7 +367,6 @@ function errorDemo() {
   fakeError
 }
 
-
 function sleepDemo() {
   var ms = document.getElementById('sleep-text').value;
   log('sleep start');
@@ -3286,6 +3285,14 @@ $ uri -d abc%3Adef
     <td>on/off</td>
     <td>
       Set/Unset continue flag.<br>The batch script will be continued after page unload/load.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">errstop</td>
+    <td>on/off</td>
+    <td>
+      Set/Unset error stop flag.<br>The batch script will be stopped when an error occurred. (when log.e() was called)
     </td>
   </tr>
 
