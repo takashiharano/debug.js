@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802062135';
+  this.v = '201802062205';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -360,10 +360,10 @@ var DebugJS = DebugJS || function() {
   ];
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
-  this.CMDVAL = {};
+  this.CMDVALS = {};
   this.opt = null;
   this.errStatus = DebugJS.ERR_STATE_NONE;
-  this.properties = {
+  this.props = {
     esc: {value: 'enable', restriction: /^enable$|^disable$/},
     dumplimit: {value: 1000, restriction: /^[0-9]+$/},
     dumpvallen: {value: 1024, restriction: /^[0-9]+$/},
@@ -994,7 +994,7 @@ DebugJS.prototype = {
   },
 
   initSetPropsCb: function(ctx) {
-    ctx.properties.timer.cb = ctx.setPropTimerCb;
+    ctx.props.timer.cb = ctx.setPropTimerCb;
   },
 
   createResizeSideArea: function(cursor, state, width, height) {
@@ -2506,7 +2506,7 @@ DebugJS.prototype = {
         break;
 
       case 27: // ESC
-        if (ctx.properties.esc.value == 'disable') {
+        if (ctx.props.esc.value == 'disable') {
           break;
         }
         if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGING) || (ctx.uiStatus & DebugJS.UI_ST_RESIZING)) {
@@ -4378,13 +4378,13 @@ DebugJS.prototype = {
     ctx.timerStopWatchCdInput.style.margin = '0';
     ctx.timerStopWatchCdInput.style.lineHeight = baseFontSize + 'px';
     basePanel.appendChild(ctx.timerStopWatchCdInput);
-    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).hh, baseFontSize);
+    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.props.timer.value).hh, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, ':');
-    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).mi, baseFontSize);
+    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.props.timer.value).mi, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, ':');
-    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).ss, baseFontSize);
+    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.props.timer.value).ss, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerStopWatchCdInput, '.', msFontSize);
-    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.properties.timer.value).sss, msFontSize, '2em');
+    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerStopWatchCdInput, DebugJS.timestr2struct(ctx.props.timer.value).sss, msFontSize, '2em');
 
     var timerDwnBtns = document.createElement('div');
     var marginT = fontSize * 0.8;
@@ -4496,7 +4496,7 @@ DebugJS.prototype = {
 
   updatePropTimer: function(v) {
     var ctx = DebugJS.ctx;
-    ctx.properties.timer.value = ctx.timerTxtHH.value + ':' + ctx.timerTxtMI.value + ':' + ctx.timerTxtSS.value + '.' + ctx.timerTxtSSS.value;
+    ctx.props.timer.value = ctx.timerTxtHH.value + ':' + ctx.timerTxtMI.value + ':' + ctx.timerTxtSS.value + '.' + ctx.timerTxtSSS.value;
   },
 
   calcTimeupTimeInp: function() {
@@ -5532,7 +5532,7 @@ DebugJS.prototype = {
       }
     }
     html += preview + '\n';
-    var limit = ctx.properties.prevlimit.value;
+    var limit = ctx.props.prevlimit.value;
     if (file.size <= limit) {
       html += b64content;
     } else {
@@ -5573,8 +5573,8 @@ DebugJS.prototype = {
   getBinDumpHtml: function(buf, mode, showAddr, showSpace, showAscii) {
     if (buf == null) return '';
     var ctx = DebugJS.ctx;
-    var limit = ctx.properties.hexdumplimit.value | 0;
-    var lastRows = ctx.properties.hexdumplastrows.value | 0;
+    var limit = ctx.props.hexdumplimit.value | 0;
+    var lastRows = ctx.props.hexdumplastrows.value | 0;
     var lastLen = 0x10 * lastRows;
     var bLen = buf.length;
     if (limit == 0) {
@@ -6378,7 +6378,7 @@ DebugJS.prototype = {
 
     var ret = ctx.__execCmd(ctx, cmdline);
     if (setValName != null) {
-      ctx.CMDVAL[setValName] = ret;
+      ctx.CMDVALS[setValName] = ret;
     }
     return ret;
   },
@@ -6636,7 +6636,7 @@ DebugJS.prototype = {
 
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    ctx.CMDVAL = {};
+    ctx.CMDVALS = {};
     ctx.finalizeFeatures(ctx);
     ctx.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
     if (ctx.opt.useSuspendLogButton) {
@@ -7292,8 +7292,8 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     } else {
       var name = arg;
-      if (ctx.properties[name] != undefined) {
-        DebugJS.log.res(ctx.properties[name].value);
+      if (ctx.props[name] != undefined) {
+        DebugJS.log.res(ctx.props[name].value);
       } else {
         DebugJS.log.e(name + ' is invalid property name.');
       }
@@ -7303,8 +7303,8 @@ DebugJS.prototype = {
   cmdProps: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var s = 'Available properties:\n<table>';
-    for (var key in ctx.properties) {
-      s += '<tr><td>' + key + '</td><td>' + ctx.properties[key].value + '</td></tr>';
+    for (var key in ctx.props) {
+      s += '<tr><td>' + key + '</td><td>' + ctx.props[key].value + '</td></tr>';
     }
     s += '</table>';
     DebugJS.log.mlt(s);
@@ -7597,7 +7597,7 @@ DebugJS.prototype = {
 
   cmdSet: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var props = ctx.properties;
+    var props = ctx.props;
     var args = DebugJS.splitArgs(arg);
     var name = args[0];
     var value = ((args[1] == undefined) ? '' : args[1]);
@@ -7910,7 +7910,7 @@ DebugJS.prototype = {
         break;
       default:
         if (ctx.status & DebugJS.STATE_WD) {
-          DebugJS.log('Running ' + ctx.properties.wdt.value + 'ms: ' + DebugJS.wd.cnt);
+          DebugJS.log('Running ' + ctx.props.wdt.value + 'ms: ' + DebugJS.wd.cnt);
         } else {
           DebugJS.log('Not Running');
         }
@@ -8261,7 +8261,7 @@ DebugJS.replaceCmdValName = function(v) {
       return v;
     }
     var re = new RegExp('\\$\\{(.+?)\\}', 'g');
-    v = v.replace(re, DebugJS.ctx.CMDVAL[name] + '');
+    v = v.replace(re, DebugJS.ctx.CMDVALS[name] + '');
   }
 };
 
@@ -8741,7 +8741,7 @@ DebugJS.execCmdP = function(arg) {
   var start = 0;
   var levelLimit = 0;
   var noMaxLimit = false;
-  var valLenLimit = DebugJS.ctx.properties.dumpvallen.value;
+  var valLenLimit = DebugJS.ctx.props.dumpvallen.value;
   if (opt != null) {
     start = 2;
     levelLimit = opt[1];
@@ -8771,7 +8771,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit, valLenLimit) {
     arg.dump += '<span style="color:#4c4">function</span>()\n';
   }
   var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimit);
-  if ((!noMaxLimit) && (ret.cnt >= DebugJS.ctx.properties.dumplimit.value)) {
+  if ((!noMaxLimit) && (ret.cnt >= DebugJS.ctx.props.dumplimit.value)) {
     DebugJS.log.w('The object is too large. (>=' + ret.cnt + ')');
   }
   ret.dump = ret.dump.replace(/: {2,}\{/g, ': {');
@@ -8785,7 +8785,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
     if ((levelLimit >= 1) && (arg.lv > levelLimit)) {
       return arg;
     }
-    if ((!noMaxLimit) && (arg.cnt >= DebugJS.ctx.properties.dumplimit.value)) {
+    if ((!noMaxLimit) && (arg.cnt >= DebugJS.ctx.props.dumplimit.value)) {
       if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
         arg.dump += '<span style="color:#aaa">...</span>'; arg.cnt++;
       }
@@ -9076,7 +9076,7 @@ DebugJS.getHtml = function(b64) {
 DebugJS.execCmdJson = function(json, flg, lv) {
   try {
     var j = JSON.parse(json);
-    var valLen = DebugJS.ctx.properties.dumpvallen.value;
+    var valLen = DebugJS.ctx.props.dumpvallen.value;
     var jsn = DebugJS.objDump(j, flg, lv, false, valLen);
     DebugJS.log.mlt(jsn);
     return jsn;
@@ -10460,7 +10460,7 @@ DebugJS.log.s = function(m) {
 };
 
 DebugJS.log.p = function(o, l, m, j) {
-  var valLen = DebugJS.ctx.properties.dumpvallen.value;
+  var valLen = DebugJS.ctx.props.dumpvallen.value;
   var s = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
   DebugJS.log.out(s, DebugJS.LOG_TYPE_LOG);
 };
@@ -10866,7 +10866,7 @@ DebugJS.bat.prepro = function(cmd) {
     case 'wait':
       var w = a[0] | 0;
       if (a[0] == '') {
-        w = ctx.properties.wait.value;
+        w = ctx.props.wait.value;
       }
       bat.ppEcho(cmd);
       ctrl.tmid = setTimeout(bat.exec, w);
@@ -11075,7 +11075,8 @@ DebugJS.bat.save = function() {
   if (!DebugJS.LS_AVAILABLE) return;
   var bt = {
     ctrl: DebugJS.bat.ctrl,
-    cmds: DebugJS.bat.cmds
+    cmds: DebugJS.bat.cmds,
+    vals: DebugJS.ctx.CMDVALS
   };
   var b = JSON.stringify(bt);
   localStorage.setItem('DebugJS-bat', b);
@@ -11089,6 +11090,7 @@ DebugJS.bat.load = function() {
   var bat = DebugJS.bat;
   bat.ctrl = bt.ctrl;
   bat.cmds = bt.cmds;
+  DebugJS.ctx.CMDVALS = bt.vals;
   bat.parseLabels();
   if (bat.ctrl.cont) {
     if (bat.ctrl.pauseKey != null) {
@@ -11468,10 +11470,10 @@ DebugJS.point.move = function(x, y, step, speed) {
   if (dst.x < 0) dst.x = 0;
   if (dst.y < 0) dst.y = 0;
   if ((step == undefined) || (step == 'auto')) {
-    step = DebugJS.ctx.properties.pointstep.value;
+    step = DebugJS.ctx.props.pointstep.value;
   }
   if ((speed == undefined) || (speed == 'auto')) {
-    speed = DebugJS.ctx.properties.pointspeed.value;
+    speed = DebugJS.ctx.props.pointspeed.value;
   }
   step |= 0;
   speed |= 0;
@@ -11611,7 +11613,7 @@ DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alig
     DebugJS.log.e(selector + '[' + idx + ']: Element not found');
     return;
   }
-  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToSelector, data)) {
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollstep.value, DebugJS.ctx.props.scrollspeed.value, DebugJS.point._moveToSelector, data)) {
     return;
   }
   DebugJS.point._moveToSelector(data);
@@ -11639,7 +11641,7 @@ DebugJS.point.moveToLabel = function(label, idx, step, speed, alignX, alignY) {
     return;
   }
   var ps = DebugJS.getElPosSize(el);
-  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.properties.scrollstep.value, DebugJS.ctx.properties.scrollspeed.value, DebugJS.point._moveToLabel, data)) {
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollstep.value, DebugJS.ctx.props.scrollspeed.value, DebugJS.point._moveToLabel, data)) {
     return;
   }
   DebugJS.point._moveToLabel(data);
@@ -11792,12 +11794,12 @@ DebugJS.scrollWinTo = function(x, y, step, speed) {
   d.dstX = x - ctx.scrollPosX;
   d.dstY = y - ctx.scrollPosY;
   if (step == undefined) {
-    d.step = ctx.properties.scrollstep.value | 0;
+    d.step = ctx.props.scrollstep.value | 0;
   } else {
     d.step = step | 0;
   }
   if (speed == undefined) {
-    d.speed = ctx.properties.scrollspeed.value | 0;
+    d.speed = ctx.props.scrollspeed.value | 0;
   } else {
     d.speed = speed | 0;
   }
@@ -11880,7 +11882,7 @@ DebugJS.scrollWinToTarget = function(ps, step, speed, cb, arg) {
     if (step >= 0) {
       d.step = step | 0;
     } else {
-      d.step = DebugJS.ctx.properties.scrollstep.value | 0;
+      d.step = DebugJS.ctx.props.scrollstep.value | 0;
     }
     DebugJS.bat.lock();
     DebugJS._scrollWinTo();
@@ -11979,7 +11981,7 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
   txt = DebugJS.replaceCtrlChr(txt, true);
   data.txt = txt;
   if ((speed == undefined) || (speed == '')) {
-    speed = DebugJS.ctx.properties.inputtextspeed.value;
+    speed = DebugJS.ctx.props.inputtextspeed.value;
   }
   data.speed = speed;
   data.i = start | 0;
@@ -12452,11 +12454,11 @@ DebugJS.wd.start = function(interval) {
   var ctx = DebugJS.ctx;
   var wd = DebugJS.wd;
   interval |= 0;
-  if (interval > 0) ctx.properties.wdt.value = interval;
+  if (interval > 0) ctx.props.wdt.value = interval;
   ctx.status |= DebugJS.STATE_WD;
   wd.cnt = 0;
   wd.wdPetTime = (new Date()).getTime();
-  DebugJS.log.s('Start watchdog (' + ctx.properties.wdt.value + 'ms)');
+  DebugJS.log.s('Start watchdog (' + ctx.props.wdt.value + 'ms)');
   if (wd.wdTmId > 0) clearTimeout(wd.wdTmId);
   wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);
 };
@@ -12466,7 +12468,7 @@ DebugJS.wd.pet = function() {
   var wd = DebugJS.wd;
   var now = (new Date()).getTime();
   var elapsed = now - wd.wdPetTime;
-  if (elapsed > ctx.properties.wdt.value) {
+  if (elapsed > ctx.props.wdt.value) {
     wd.cnt++;
     DebugJS.log.w('Watchdog bark! (' + elapsed + 'ms)');
     for (var i = 0; i < ctx.evtListener.watchdog.length; i++) {
