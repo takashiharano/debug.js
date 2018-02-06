@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802061953';
+  this.v = '201802062135';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10854,7 +10854,7 @@ DebugJS.bat.prepro = function(cmd) {
       return 1;
     case 'goto':
       ctrl.startPc = 0;
-      var idx = bat.labels[a[0]];
+      var idx = bat.labels[DebugJS.replaceCmdValName(a[0])];
       if (idx == undefined) {
         DebugJS.log.e('L' + ctrl.pc + ': No such label (' + a[0] + ')');
       } else {
