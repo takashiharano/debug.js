@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802072350';
+  this.v = '201802080738';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -440,6 +440,7 @@ DebugJS.STATE_BAT_RUNNING = 1 << 16;
 DebugJS.STATE_BAT_PAUSE = 1 << 17;
 DebugJS.STATE_BAT_PAUSE_CMD = 1 << 18;
 DebugJS.STATE_BAT_PAUSE_CMD_KEY = 1 << 19;
+DebugJS.STATE_BAT_CONT = 1 << 20;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -6571,8 +6572,10 @@ DebugJS.prototype = {
     var ctrl = DebugJS.bat.ctrl;
     if (a == 'on') {
       ctrl[key] = true;
+      if (key == 'cont') {ctx.status |= DebugJS.STATE_BAT_CONT;}
     } else if (a == 'off') {
       ctrl[key] = false;
+      if (key == 'cont') {ctx.status &= ~DebugJS.STATE_BAT_CONT;}
     } else {
       DebugJS.printUsage(tbl.usage);
     }
@@ -10407,7 +10410,7 @@ DebugJS.onUnload = function() {
   if ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.ctrl.cont)) {
     DebugJS.bat.save();
   }
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_PRESERVED) {
+  if ((DebugJS.ctx.status & DebugJS.STATE_LOG_PRESERVED) || (DebugJS.ctx.status & DebugJS.STATE_BAT_CONT)) {
     DebugJS.preserveLog();
     DebugJS.saveStatus();
   }
@@ -11083,6 +11086,7 @@ DebugJS.bat.finalize = function() {
   var c = DebugJS.bat.ctrl;
   c.pc = 0;
   DebugJS.ctx.updateCurPc();
+  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
   c.echo = true;
   c.cont = false;
   c.errstop = false;
@@ -12655,11 +12659,16 @@ DebugJS.start = function() {
 };
 DebugJS.restoreStatus = function(ctx) {
   var data = DebugJS.loadStatus();
-  if ((data == null) || !(data.status & DebugJS.STATE_LOG_PRESERVED)) {
+  if ((data == null) || !((data.status & DebugJS.STATE_LOG_PRESERVED) || (data.status & DebugJS.STATE_BAT_CONT))) {
     return;
   }
-  ctx.status |= DebugJS.STATE_LOG_PRESERVED;
-  DebugJS.restoreLog();
+  if (data.status & DebugJS.STATE_LOG_PRESERVED) {
+    ctx.status |= DebugJS.STATE_LOG_PRESERVED;
+    DebugJS.restoreLog();
+  }
+  if (data.status & DebugJS.STATE_BAT_CONT) {
+    ctx.status |= DebugJS.STATE_BAT_CONT;
+  }
   ctx.swElapsedTime = data.swElapsedTime;
   if (data.status & DebugJS.STATE_STOPWATCH_RUNNING) {
     ctx.startStopWatch();
