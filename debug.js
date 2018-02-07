@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802071823';
+  this.v = '201802071830';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6597,7 +6597,7 @@ DebugJS.prototype = {
     if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.countElements(arg, true);
+      return DebugJS.countElements(arg, true);
     }
   },
 
