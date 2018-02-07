@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802062226';
+  this.v = '201802071823';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7398,14 +7398,15 @@ DebugJS.prototype = {
     DebugJS.printUsage(tbl.usage);
   },
   _cmdLogBufsize: function(ctx, arg, tbl) {
-    var size = DebugJS.splitArgs(arg)[1];
-    size |= 0;
-    if (size > 0) {
-      ctx.initBuf(ctx, size);
+    var s = DebugJS.splitArgs(arg)[1] | 0;
+    if (s > 0) {
+      ctx.initBuf(ctx, s);
     } else {
-      DebugJS.log.res(ctx.msgBuf.getSize());
+      s = ctx.msgBuf.getSize();
+      DebugJS.log.res(s);
       DebugJS.printUsage('log bufsize [size]');
     }
+    return s;
   },
   _cmdLogDump: function(ctx, arg, tbl) {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
