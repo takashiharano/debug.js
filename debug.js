@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802071830';
+  this.v = '201802071906';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6428,7 +6428,7 @@ DebugJS.prototype = {
   },
 
   cmdBase64: function(arg, tbl) {
-    return DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeBase64, DebugJS.encodeBase64);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, DebugJS.encodeBase64, DebugJS.decodeBase64);
   },
 
   cmdBat: function(arg, tbl) {
@@ -7886,15 +7886,16 @@ DebugJS.prototype = {
   },
 
   cmdUnicode: function(arg, tbl) {
-    return DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeUnicode, DebugJS.encodeUnicode);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, DebugJS.encodeUnicode, DebugJS.decodeUnicode);
   },
 
   cmdUri: function(arg, tbl) {
-    return DebugJS.ctx.execDecodeAndEncode(arg, tbl, DebugJS.decodeUri, DebugJS.encodeUri, DebugJS.decodeUri);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, DebugJS.encodeUri, DebugJS.decodeUri, DebugJS.decodeUri);
   },
 
   cmdV: function(arg, tbl) {
     DebugJS.log(DebugJS.ctx.v);
+    return DebugJS.ctx.v;
   },
 
   cmdWatchdog: function(arg, tbl) {
@@ -7996,8 +7997,9 @@ DebugJS.prototype = {
 
   cmdNop: function(arg, tbl) {},
 
-  execDecodeAndEncode: function(arg, tbl, decodeFunc, encodeFunc, defaultFunc) {
+  execEncAndDec: function(arg, tbl, encFnc, decFnc, dfltFnc) {
     var args = DebugJS.parseArgs(arg);
+    if (!dfltFnc) {dfltFnc = encFnc;}
     var ret = '';
     if (args.data == '') {
       DebugJS.printUsage(tbl.usage);
@@ -8005,11 +8007,13 @@ DebugJS.prototype = {
       try {
         switch (args.opt) {
           case '':
+            ret = dfltFnc(args.dataRaw);
+            break;
           case 'e':
-            ret = encodeFunc(args.dataRaw);
+            ret = encFnc(args.dataRaw);
             break;
           case 'd':
-            ret = decodeFunc(args.dataRaw);
+            ret = decFnc(args.dataRaw);
             break;
           default:
             DebugJS.printUsage(tbl.usage);
