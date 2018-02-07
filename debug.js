@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802071906';
+  this.v = '201802072010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -589,7 +589,8 @@ DebugJS.z1 = function(a) {};
 DebugJS.z2 = function(a, b) {};
 DebugJS.z3 = function(a, b, c) {};
 DebugJS.z4 = function(a, b, c, d) {};
-
+DebugJS.LED = '&#x25CF;';
+DebugJS.DELTA = '&#x22BF;';
 DebugJS.prototype = {
   init: function(opt, restoreOpt) {
     if (!DebugJS.ENABLE) {return false;}
@@ -1725,13 +1726,12 @@ DebugJS.prototype = {
 
   updateLedPanel: function() {
     if (DebugJS.ctx.ledPanel) {
-      var LED = '&#x25CF;';
       var SHADOW = 'text-shadow:0 0 5px;';
       var led = '';
       for (var i = 7; i >= 0; i--) {
-        var bitColor = (DebugJS.ctx.led & DebugJS.LED_BIT[i]) ? 'color:' + DebugJS.LED_COLOR[i] + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
+        var color = (DebugJS.ctx.led & DebugJS.LED_BIT[i]) ? 'color:' + DebugJS.LED_COLOR[i] + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
         var margin = (i == 0 ? '' : 'margin-right:2px');
-        led += '<span style="' + bitColor + margin + '">' + LED + '</span>';
+        led += '<span style="' + color + margin + '">' + DebugJS.LED + '</span>';
       }
       DebugJS.ctx.ledPanel.innerHTML = led;
     }
@@ -7027,7 +7027,6 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     }
   },
-
   _cmdPause: function(opt, opt1, opt2) {
     var timeout;
     if (opt == '') {
@@ -7571,7 +7570,6 @@ DebugJS.prototype = {
     }
     DebugJS.printUsage(tbl.usage);
   },
-
   _cmdSelect: function(sel, method, type, val) {
     try {
       var val = eval(val) + '';
@@ -9622,7 +9620,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
   if (msg === undefined) {
     s = _timerName + ': ' + dt;
     if (dtLap != '') {
-      s += '(⊿' + dtLap + ')';
+      s += '(' + DebugJS.DELTA + dtLap + ')';
     }
   } else {
     s = msg.replace(/%n/g, _timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
@@ -10138,8 +10136,7 @@ DebugJS.hlCtrlChr = function(s) {
 DebugJS.html2text = function(html) {
   var p = document.createElement('pre');
   p.innerHTML = html;
-  var t = p.innerText;
-  return t;
+  return p.innerText;
 };
 
 DebugJS.addClass = function(el, name) {
@@ -10570,7 +10567,7 @@ DebugJS.stopwatch.end = function(m) {
 
 DebugJS.stopwatch.split = function(m) {
   if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
-    m = DebugJS.TIMER_NAME_SW_CU + ': %t(⊿%lt)' + (m == undefined ? '' : ' ' + m);
+    m = DebugJS.TIMER_NAME_SW_CU + ': %t(' + DebugJS.DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
     DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU, false, m);
   }
 };
