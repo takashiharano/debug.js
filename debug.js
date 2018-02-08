@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802081930';
+  this.v = '201802081950';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6646,7 +6646,11 @@ DebugJS.prototype = {
         break;
       case 'set':
         if (args[1]) {
-          DebugJS.event.set(args[1], args[2]);
+          try {
+            DebugJS.event.set(args[1], eval(args[2]));
+          } catch (e) {
+            DebugJS.log.e(e);
+          }
           return;
         }
         break;
@@ -12130,13 +12134,6 @@ DebugJS.event.create = function(type) {
 DebugJS.event.set = function(prop, val) {
   var e = DebugJS.event.evt;
   if (e) {
-    if (typeof val === 'string') {
-      if (val.charAt(0) == '"') {
-        val = val.substr(1, val.length - 2);
-      } else {
-        val |= 0;
-      }
-    }
     e[prop] = val;
   } else {
     DebugJS.log.e('Event is not created');
