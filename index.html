@@ -2503,6 +2503,15 @@ $ event dispatch tagName<span class="annotation">target</span> 0<span class="ann
 
 Clear the event object
 $ event clear
+
+e.g.,) Send a Key Down Event to window (A + Shift)
+$ event create keydown
+$ event set keyCode 65
+$ event set shiftKey true
+$ event set ctrlKey false
+$ event set altKey false
+$ event set metaKey false
+$ event dispatch window
 </pre>
     </td>
   </tr>
