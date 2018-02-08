@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802081950';
+  this.v = '201802082200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7115,12 +7115,7 @@ DebugJS.prototype = {
     } else if (op.charAt(0) == '#') {
       alignX = args[1];
       alignY = args[2];
-      DebugJS.pointById(op, alignX, alignY);
-    } else if (op.charAt(0) == '.') {
-      idx = args[1];
-      alignX = args[2];
-      alignY = args[3];
-      DebugJS.pointBySelector(op, idx, alignX, alignY);
+      DebugJS.pointBySelector(op, 0, alignX, alignY);
     } else if (op == 'label') {
       label = args[1];
       try {
@@ -7146,14 +7141,7 @@ DebugJS.prototype = {
         speed = args[3];
         alignX = args[4];
         alignY = args[5];
-        point.moveToId(target, step, speed, alignX, alignY);
-      } else if (target.charAt(0) == '.') {
-        idx = args[2];
-        step = args[3];
-        speed = args[4];
-        alignX = args[5];
-        alignY = args[6];
-        point.moveToSelector(target, idx, step, speed, alignX, alignY);
+        point.moveToSelector(target, 0, step, speed, alignX, alignY);
       } else if (target == 'label') {
         label = args[2];
         idx = args[3] | 0;
@@ -7186,6 +7174,9 @@ DebugJS.prototype = {
           speed = args[4];
           alignX = args[5];
           alignY = args[6];
+          if (target.charAt(0) == '(') {
+            target = target.substr(1, target.length - 2);
+          }
           point.moveToSelector(target, idx, step, speed, alignX, alignY);
         } else {
           x = args[1];
@@ -7273,17 +7264,22 @@ DebugJS.prototype = {
         DebugJS.log.e('Failed to get element');
       }
     } else {
-      x = args[0];
-      y = args[1];
-      if (x == '') {
+      if (args[0] == '') {
         pos = point.getPos();
         DebugJS.log('x=' + pos.x + ', y=' + pos.y);
         DebugJS.printUsage(tbl.usage);
-      } else if (isNaN(x)) {
+      } else if (isNaN(args[0])) {
+        target = args[0];
+        idx = args[1];
         alignX = args[2];
         alignY = args[3];
-        DebugJS.pointBySelector(x, y, alignX, alignY);
+        if (target.charAt(0) == '(') {
+          target = target.substr(1, target.length - 2);
+        }
+        DebugJS.pointBySelector(target, idx, alignX, alignY);
       } else {
+        x = args[0];
+        y = args[1];
         point(x, y);
       }
     }
@@ -9069,6 +9065,9 @@ DebugJS.countElements = function(selector, showDetail) {
   if (selector.charAt(0) == '#') {
     element = document.getElementById(selector.substr(1));
   } else {
+    if (selector.charAt(0) == '(') {
+      selector = selector.substr(1, selector.length - 2);
+    }
     elmList = document.querySelectorAll(selector);
   }
   if (element) {
@@ -11596,9 +11595,6 @@ DebugJS.point._move = function() {
   }
 };
 
-DebugJS.pointById = function(id, alignX, alignY) {
-  DebugJS.pointBySelector(id, 0, alignX, alignY);
-};
 DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var el = DebugJS.getElement(selector, idx);
   if (!el) {
@@ -11643,10 +11639,6 @@ DebugJS.getAlignedPos = function(ps, alignX, alignY) {
     y = y + ps.h * alignY;
   }
   return {x: x, y: y};
-};
-
-DebugJS.point.moveToId = function(id, step, speed, alignX, alignY) {
-  DebugJS.point.moveToSelector(id, 0, step, speed, alignX, alignY);
 };
 
 DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alignY) {
@@ -12427,13 +12419,8 @@ DebugJS.getElement = function(selector, idx) {
   }
   idx |= 0;
   var el = null;
-  if (selector.charAt(0) == '#') {
-    var id = selector.substr(1);
-    el = document.getElementById(id);
-  } else {
-    var nodeList = document.querySelectorAll(selector);
-    el = nodeList.item(idx);
-  }
+  var nodeList = document.querySelectorAll(selector);
+  el = nodeList.item(idx);
   return el;
 };
 
