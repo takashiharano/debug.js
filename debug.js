@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802082200';
+  this.v = '201802090121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -306,6 +306,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'cont', fnc: this.cmdCont, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'cont on|off'},
+    {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
@@ -315,7 +316,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'help', fnc: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'hex', fnc: this.cmdHex, desc: 'Convert a number to hexadecimal', usage: 'hex num digit'},
-    {cmd: 'hide', fnc: this.cmdHide, desc: 'Hide debug window'},
     {cmd: 'history', fnc: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
     {cmd: 'input', fnc: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" speed start end'},
@@ -325,13 +325,11 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
     {cmd: 'log', fnc: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|load|preserve|suspend'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
-    {cmd: 'opacity', fnc: this.cmdOpacity, desc: 'Set the level of transparency of the debug window', usage: 'opacity 0.1-1'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key] [timeout]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
     {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
-    {cmd: 'pos', fnc: this.cmdPos, desc: 'Set the debugger window position', usage: 'pos n|ne|e|se|s|sw|w|nw|c|x y', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
@@ -339,11 +337,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'scrollto', fnc: this.cmdScrollTo, desc: 'Set scroll position', usage: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [step(px)] [speed(ms)]'},
     {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors get|set text|value val'},
-    {cmd: 'self', fnc: this.cmdSelf, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
-    {cmd: 'show', fnc: this.cmdShow, desc: 'Show debug window'},
-    {cmd: 'size', fnc: this.cmdSize, desc: 'Set the debugger window size', usage: 'size width height', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
     {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|verify got-val method expected-val|fin'},
@@ -6596,6 +6591,92 @@ DebugJS.prototype = {
     }
   },
 
+  cmdDbgWin: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var a = DebugJS.splitArgs(arg);
+    switch (a[0]) {
+      case 'hide':
+        DebugJS.ctx.closeDbgWin();
+        break;
+      case 'show':
+        DebugJS.ctx.showDbgWin();
+        break;
+      case 'opacity':
+        var v = a[1];
+        if ((v <= 1) && (v >= 0.1)) {
+          DebugJS.opacity(v);
+        } else {
+          DebugJS.printUsage('dbgwin opacity 0.1-1');
+        }
+        break;
+      case 'pos':
+        ctx._cmdDbgWinPos(ctx, a);
+        break;
+      case 'size':
+        ctx._cmdDbgWinSize(ctx, a);
+        break;
+      case 'status':
+        ctx._cmdDbgWinStatus(ctx);
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+    }
+  },
+  _cmdDbgWinPos: function(ctx, args) {
+    if (!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) || (ctx.opt.mode == 'kiosk')) {
+      return;
+    }
+    var pos = args[1];
+    switch (pos) {
+      case 'n':
+      case 'ne':
+      case 'e':
+      case 'se':
+      case 's':
+      case 'sw':
+      case 'w':
+      case 'nw':
+      case 'c':
+        var sizePos = ctx.getSelfSizePos();
+        ctx.setWinPos(pos, sizePos.w, sizePos.h);
+        break;
+      default:
+        var x = args[1];
+        var y = args[2];
+        if (isNaN(x) || isNaN(y)) {
+          DebugJS.printUsage('dbgwin pos n|ne|e|se|s|sw|w|nw|c|x y');
+          return;
+        }
+        x |= 0; y |= 0;
+        DebugJS.ctx.setDbgWinPos(y, x);
+    }
+  },
+  _cmdDbgWinSize: function(ctx, args) {
+    if (!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) || (ctx.opt.mode == 'kiosk')) {
+      return;
+    }
+    var w = args[1];
+    var h = args[2];
+    if (isNaN(w) || isNaN(h)) {
+      DebugJS.printUsage('dbgwin size width height');
+      return;
+    }
+    w |= 0; h |= 0;
+    if (w < ctx.computedMinW) w = ctx.computedMinW;
+    if (h < ctx.computedMinH) h = ctx.computedMinH;
+    ctx.setDbgWinSize(w, h);
+  },
+  _cmdDbgWinStatus: function(ctx) {
+    var sizePos = ctx.getSelfSizePos();
+    var str = 'width : ' + sizePos.w + '\n' +
+    'height: ' + sizePos.h + '\n' +
+    'posX1 : ' + sizePos.x1 + '\n' +
+    'posY1 : ' + sizePos.y1 + '\n' +
+    'posX2 : ' + sizePos.x2 + '\n' +
+    'posY2 : ' + sizePos.y2 + '\n';
+    DebugJS.log.mlt(str);
+  },
+
   cmdDate: function(arg, tbl) {
     var d = DebugJS.date(arg);
     if (d == undefined) {
@@ -6821,10 +6902,6 @@ DebugJS.prototype = {
     return data;
   },
 
-  cmdHide: function(arg, tbl) {
-    DebugJS.ctx.closeDbgWin();
-  },
-
   cmdHistory: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.parseArgs(arg);
@@ -7026,15 +7103,6 @@ DebugJS.prototype = {
       DebugJS.ctx.setMsg(eval(arg));
     } catch (e) {
       DebugJS.log.e(e);
-    }
-  },
-
-  cmdOpacity: function(arg, tbl) {
-    var v = DebugJS.splitArgs(arg)[0];
-    if ((v <= 1) && (v >= 0.1)) {
-      DebugJS.opacity(v);
-    } else {
-      DebugJS.printUsage(tbl.usage);
     }
   },
 
@@ -7284,37 +7352,6 @@ DebugJS.prototype = {
       }
     }
     return ret;
-  },
-
-  cmdPos: function(arg, tbl) {
-    var ctx = DebugJS.ctx;
-    var args = DebugJS.parseArgs(arg);
-    var pos = args.data;
-    switch (pos) {
-      case 'n':
-      case 'ne':
-      case 'e':
-      case 'se':
-      case 's':
-      case 'sw':
-      case 'w':
-      case 'nw':
-      case 'c':
-        var sizePos = ctx.getSelfSizePos();
-        ctx.setWinPos(pos, sizePos.w, sizePos.h);
-        break;
-      default:
-        args = DebugJS.splitArgs(arg);
-        var x = args[0];
-        var y = args[1];
-        if (isNaN(x) || isNaN(y)) {
-          DebugJS.printUsage(tbl.usage);
-          return;
-        }
-        x |= 0;
-        y |= 0;
-        DebugJS.ctx.setDbgWinPos(y, x);
-    }
   },
 
   cmdProp: function(arg, tbl) {
@@ -7625,17 +7662,6 @@ DebugJS.prototype = {
     }
   },
 
-  cmdSelf: function(arg, tbl) {
-    var sizePos = DebugJS.ctx.getSelfSizePos();
-    var str = 'width : ' + sizePos.w + '\n' +
-    'height: ' + sizePos.h + '\n' +
-    'posX1 : ' + sizePos.x1 + '\n' +
-    'posY1 : ' + sizePos.y1 + '\n' +
-    'posX2 : ' + sizePos.x2 + '\n' +
-    'posY2 : ' + sizePos.y2 + '\n';
-    DebugJS.log.mlt(str);
-  },
-
   cmdSet: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var props = ctx.props;
@@ -7689,26 +7715,6 @@ DebugJS.prototype = {
       return;
     }
     el.setAttribute(nm, vl);
-  },
-
-  cmdShow: function(arg, tbl) {
-    DebugJS.ctx.showDbgWin();
-  },
-
-  cmdSize: function(arg, tbl) {
-    var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var w = args[0];
-    var h = args[1];
-    if (isNaN(w) || isNaN(h)) {
-      DebugJS.printUsage(tbl.usage);
-      return;
-    }
-    w |= 0;
-    h |= 0;
-    if (w < ctx.computedMinW) w = ctx.computedMinW;
-    if (h < ctx.computedMinH) h = ctx.computedMinH;
-    ctx.setDbgWinSize(w, h);
   },
 
   cmdSleep: function(arg, tbl) {

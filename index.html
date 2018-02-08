@@ -2413,6 +2413,57 @@ function
   </tr>
 
   <tr>
+    <td class="name">dbgwin</td>
+    <td>
+      arg1: operation<br>
+      arg2: parameter<br>
+      arg3: parameter
+    </td>
+    <td>
+      Control the debug window<br><br>
+<pre class="eg">
+operation: <b>show</b>
+ Show debug window
+
+operation: <b>hide</b>
+ Hide debug window
+
+operation: <b>pos</b>
+ Set the debugger window position.
+ parameter1:
+ n: center | top
+ ne: right | top
+ e: right | middle
+ se: right | bottom
+ s: center | bottom
+ sw: left | bottom
+ w: left | middle
+ nw: left | top
+ c: center | middle
+
+ parameter1:
+  pos-x
+
+ parameter2:
+  pos-y
+
+operation: <b>size</b>
+ Set the debug window size
+ parameter1: width
+ parameter2: height
+
+operation: <b>opacity</b>
+ Set the level of transparency of the debug window
+ parameter1:
+  0.1-1
+
+operation: <b>status</b>
+ Show the status of the debug window
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">date</td>
     <td>
       ms / Date-Time
@@ -2556,12 +2607,6 @@ $ hex (30 + 2) 4
 -&gt; 0x0020
 </pre>
     </td>
-  </tr>
-
-  <tr>
-    <td class="name">hide</td>
-    <td></td>
-    <td>Hide debug window</td>
   </tr>
 
   <tr>
@@ -2748,14 +2793,6 @@ $ log suspend off
     <td class="name">msg</td>
     <td>message</td>
     <td>Set a string to the message display.</td>
-  </tr>
-
-  <tr>
-    <td class="name">opacity</td>
-    <td>0.1-1</td>
-    <td>
-      Set the level of transparency of the debug window
-    </td>
   </tr>
 
   <tr>
@@ -2969,25 +3006,6 @@ $ point init
   </tr>
 
   <tr>
-    <td class="name">pos</td>
-    <td>position</td>
-    <td>
-      Set the debugger window position.<br><br>
-      position:<br>
-      &nbsp;&nbsp;n: center | top<br>
-      &nbsp;&nbsp;ne: right | top<br>
-      &nbsp;&nbsp;e: right | middle<br>
-      &nbsp;&nbsp;se: right | bottom<br>
-      &nbsp;&nbsp;s: center | bottom<br>
-      &nbsp;&nbsp;sw: left | bottom<br>
-      &nbsp;&nbsp;w: left | middle<br>
-      &nbsp;&nbsp;nw: left | top<br>
-      &nbsp;&nbsp;c: center | middle<br>
-      &nbsp;&nbsp;x y: pos-x | pos-y<br>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">prop</td>
     <td>property-name</td>
     <td>
@@ -3131,23 +3149,6 @@ e.g.,)<br>
 $ setattr #id disabled true
 $ setattr .className 1 disabled true
 </pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">show</td>
-    <td></td>
-    <td>Show debug window</td>
-  </tr>
-
-  <tr>
-    <td class="name">size</td>
-    <td>
-      arg1: width<br>
-      arg2: height
-    </td>
-    <td>
-      Set the debug window size
     </td>
   </tr>
 
