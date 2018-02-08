@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802080738';
+  this.v = '201802081930';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1830,7 +1830,9 @@ DebugJS.prototype = {
   },
 
   updatePinBtn: function(ctx) {
-    ctx.pinBtn.style.color = (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BTN_COLOR;
+    if (ctx.pinBtn) {
+      ctx.pinBtn.style.color = (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? DebugJS.COLOR_INACTIVE : DebugJS.PIN_BTN_COLOR;
+    }
   },
 
   updateBtnActive: function(btn, status, activeColor) {
@@ -2522,6 +2524,10 @@ DebugJS.prototype = {
         }
         break;
 
+      case 18: // Alt
+        ctx.disableDraggable(ctx);
+        break;
+
       case 27: // ESC
         if (ctx.props.esc == 'disable') {
           break;
@@ -2604,6 +2610,14 @@ DebugJS.prototype = {
     }
   },
 
+  keyHandlerUp: function(ctx, e) {
+    var opt = ctx.opt;
+    switch (e.keyCode) {
+      case 18:
+        ctx.enableDraggable(ctx);
+    }
+  },
+
   procOnProtectedD: function(ctx, e) {
     switch (e.keyCode) {
       case 13:
@@ -2655,6 +2669,7 @@ DebugJS.prototype = {
     if (ctx.opt.useKeyStatusInfo) {
       ctx.updateStatusInfoOnKeyUp(ctx, e);
     }
+     ctx.keyHandlerUp(ctx, e);
   },
 
   updateStatusInfoOnKeyDown: function(ctx, e) {
