@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802090121';
+  this.v = '201802100020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3078,10 +3078,12 @@ DebugJS.prototype = {
   },
 
   showDbgWinOnError: function(ctx) {
-    if ((ctx.errStatus) && (ctx.status & DebugJS.STATE_INITIALIZED) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
-      if (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
-          ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
-          ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG))) {
+    if ((ctx.status & DebugJS.STATE_INITIALIZED) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
+      if (((ctx.errStatus) &&
+           (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
+           ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
+           ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG)))) ||
+          ((ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.ctrl.errstop))) {
         ctx.showDbgWin();
         ctx.errStatus = DebugJS.ERR_STATE_NONE;
       }
@@ -10460,7 +10462,6 @@ DebugJS.onError = function(e) {
     }
   }
   DebugJS.log.e(msg);
-  ctx.showDbgWinOnError(ctx);
 };
 
 DebugJS.show = function() {
@@ -10480,6 +10481,11 @@ DebugJS.opacity = function(v) {
   DebugJS.ctx.win.style.opacity = v;
 };
 
+DebugJS.isVisible = function() {
+  if (DebugJS.ctx.uiStatus & DebugJS.UI_ST_VISIBLE) {return true;}
+  return false;
+};
+
 DebugJS.log = function(m) {
   if (m instanceof Object) {
     DebugJS.log.p(m, 0, null, false);
@@ -10491,6 +10497,7 @@ DebugJS.log = function(m) {
 DebugJS.log.e = function(m) {
   DebugJS.bat.ctrl.hasErr = true;
   DebugJS.log.out(m, DebugJS.LOG_TYPE_ERR);
+  DebugJS.ctx.showDbgWinOnError(DebugJS.ctx);
 };
 
 DebugJS.log.w = function(m) {
@@ -12545,9 +12552,8 @@ var log = function(m) {
 log.e = function(m) {
   var ctx = DebugJS.ctx;
   if (ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  DebugJS.log.e(m);
   ctx.errStatus |= DebugJS.ERR_STATE_LOG;
-  ctx.showDbgWinOnError(ctx);
+  DebugJS.log.e(m);
 };
 
 log.w = function(m) {
