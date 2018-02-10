@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802100020';
+  this.v = '201802101350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -372,7 +372,8 @@ var DebugJS = DebugJS || function() {
     scrollspeed: /^[0-9]+$/,
     wait: /^[0-9]+$/,
     timer: /.*/,
-    wdt: /^[0-9]+$/
+    wdt: /^[0-9]+$/,
+    mousemoveevtsim: /^true$|^false$/
   };
   this.PROPS_DFLT_VALS = {
     esc: 'enable',
@@ -388,7 +389,8 @@ var DebugJS = DebugJS || function() {
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     wait: 500,
     timer: '00:03:00.000',
-    wdt: 500
+    wdt: 500,
+    mousemoveevtsim: 'false'
   };
   this.PROPS_CB = {
     timer: this.setPropTimerCb,
@@ -11237,6 +11239,14 @@ DebugJS.point = function(x, y) {
   document.body.appendChild(ptr);
 
   point.hint.move();
+
+  if (DebugJS.ctx.props.mousemoveevtsim == 'true') {
+    var e = document.createEvent('Events');
+    e.initEvent('mousemove', true, true);
+    e.clientX = pos.x;
+    e.clientY = pos.y;
+    window.dispatchEvent(e);
+  }
 };
 DebugJS.point.ptr = null;
 DebugJS.point.ptrW = 12;
@@ -12432,8 +12442,10 @@ DebugJS.getElement = function(selector, idx) {
   }
   idx |= 0;
   var el = null;
-  var nodeList = document.querySelectorAll(selector);
-  el = nodeList.item(idx);
+  try {
+    var nodeList = document.querySelectorAll(selector);
+    el = nodeList.item(idx);
+  } catch (e) {}
   return el;
 };
 
