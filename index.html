@@ -71,6 +71,8 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
 .annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
 .annotation2 {font-size:12px;}
+.warning {color:#a00;}
+.opaque {color:#999;}
 .alias {font-size:12px; color:#88c; font-style:italic; margin-left:2px;}
 .showhide-button {color:#0a0;}
 .showhide-button:hover {cursor:pointer;}
@@ -186,8 +188,6 @@ log('Here is the log output example!');
 
 var logMessageText = null;
 var msgMessageText = null;
-var base64EText = null;
-var base64DText = null;
 
 //window.addEventListener('load', init, true);
 window.onload = function() {
@@ -196,8 +196,6 @@ window.onload = function() {
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
   consoleMessageText = document.getElementById('console-message-text');
-  base64EText = document.getElementById('base64-e-text');
-  base64DText = document.getElementById('base64-d-text');
 
   setTimeout(displayDemoMessages, 1500);
   //setTimeout(ledDemo, 1500);
@@ -205,6 +203,10 @@ window.onload = function() {
   //dbg.cmd('launch tool file bin');
   //log.t('init completed');
 }
+
+function getVal(id) {
+  return document.getElementById(id).value;
+};
 
 var demoDispCount = 0;
 function displayDemoMessages() {
@@ -233,12 +235,12 @@ function displaySampleMessages() {
 }
 
 var sampleMessages = [
-  {fnc: log, msg: 'standard log sample.', delay: 50},
-  {fnc: log.v, msg: 'verbose log sample.', delay: 50},
-  {fnc: log.d, msg: 'debug log sample.', delay: 50},
-  {fnc: log.i, msg: 'information log sample.', delay: 50},
-  {fnc: log.w, msg: 'warning log sample.', delay: 50},
-  {fnc: log.e, msg: 'error log sample.', delay: 50},
+  {fnc: log, msg: 'Standard log sample.', delay: 50},
+  {fnc: log.v, msg: 'Verbose log sample.', delay: 50},
+  {fnc: log.d, msg: 'Debug log sample.', delay: 50},
+  {fnc: log.i, msg: 'Information log sample.', delay: 50},
+  {fnc: log.w, msg: 'Warning log sample.', delay: 50},
+  {fnc: log.e, msg: 'Error log sample.', delay: 50},
 //{fnc: log.res, msg: 'result log sample.', delay: 50},
 //{fnc: log.res.err, msg: 'error result log sample.', delay: 50},
 ];
@@ -338,7 +340,7 @@ function randomDemo() {
 function startStopRandomDemo() {
   randomDemoFlag = randomDemoFlag ? false : true;
   var el = document.getElementById('random-demo-button');
-  el.innerText = randomDemoFlag ? 'stop random demo' : 'start random demo';
+  el.innerText = randomDemoFlag ? 'Stop Random Demo' : 'Start Random Demo';
 }
 
 function showHideByName(name) {
@@ -370,7 +372,7 @@ function bar() {
 }
 
 function errorDemo() {
-  fakeError
+  fakeError;
 }
 
 function sleepDemo() {
@@ -1199,54 +1201,72 @@ If you want to change the debugger settings, explicitly call for initialization 
 
   <tr>
     <td class="name">log</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
       Output standard log<br>
+<pre class="eg">
+log('<input type="text" id="log-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log(getVal('log-txt'));">DEMO</button>
+</pre>
       <span class="name annotation">log.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
   </tr>
 
   <tr>
     <td class="name">log.v</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
-      Output verbose log <span class="annotation">The messages are not displayed by default filter setting</span><br>
+      Output verbose log <span class="annotation warning">The messages are not displayed by default filter setting</span><br>
+<pre class="eg">
+log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.v(getVal('log-v-txt'));">DEMO</button>
+</pre>
       <span class="name annotation">log.v.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
   </tr>
 
   <tr>
     <td class="name">log.d</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
       Output debug log<br>
+<pre class="eg">
+log.d('<input type="text" id="log-d-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.d(getVal('log-d-txt'));">DEMO</button>
+</pre>
       <span class="name annotation">log.d.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
   </tr>
 
   <tr>
     <td class="name">log.i</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
       Output information log<br>
+<pre class="eg">
+log.i('<input type="text" id="log-i-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.i(getVal('log-i-txt'));">DEMO</button>
+</pre>
       <span class="name annotation">log.i.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
   </tr>
 
   <tr>
     <td class="name">log.w</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
       Output warning log<br>
+<pre class="eg">
+log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.w(getVal('log-w-txt'));">DEMO</button>
+</pre>
       <span class="name annotation">log.w.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
   </tr>
 
   <tr>
     <td class="name">log.e</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
       Output error log<br>
+<pre class="eg">
+log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.e(getVal('log-e-txt'));">DEMO</button>
+</pre>
       <span class="name annotation">log.e.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
   </tr>
@@ -1258,7 +1278,17 @@ If you want to change the debugger settings, explicitly call for initialization 
       arg2: recursion level limit<span class="annotation">(opt)</span><br>
       arg3: message string<span class="annotation">(opt)</span>
     </td>
-    <td>Output object dump</td>
+    <td>
+      Output object dump
+<br><br>
+<pre class="eg">
+<span class="opaque">var obj = {...}</span>
+log.p(obj); <button class="demo-button2" onclick="log.p(a);">DEMO</button>
+log.p(obj, 0, '<input type="text" id="log-p-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.p(a, 0, getVal('log-p-msg-txt'));">DEMO</button> (w/ msg)
+log.p(obj, 1); <button class="demo-button2" onclick="log.p(a, 1);">DEMO</button> (lv1)
+log.p(obj, 2); <button class="demo-button2" onclick="log.p(a, 2);">DEMO</button> (lv2)
+</pre>
+    </td>
   </tr>
 
   <tr>
@@ -1268,13 +1298,23 @@ If you want to change the debugger settings, explicitly call for initialization 
       arg2: recursion level limit<span class="annotation">(opt)</span><br>
       arg3: message string<span class="annotation">(opt)</span>
     </td>
-    <td>Output object dump (JSON format)</td>
+    <td>
+      Output object dump (JSON format)
+<br><br>
+<pre class="eg">
+<span class="opaque">var obj = {...}</span>
+log.json(obj); <button class="demo-button2" onclick="log.json(a);">DEMO</button>
+log.json(obj, 0, '<input type="text" id="log-json-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.json(a, 0, getVal('log-json-msg-txt'));">DEMO</button> (w/ msg)
+log.json(obj, 1); <button class="demo-button2" onclick="log.json(a, 1);">DEMO</button> (lv1)
+log.json(obj, 2); <button class="demo-button2" onclick="log.json(a, 2);">DEMO</button> (lv2)
+</pre>
+    </td>
   </tr>
 
   <tr>
     <td class="name">log.t</td>
     <td>
-      arg1: message string<br>
+      arg1: message<br>
       arg2: timer name<span class="annotation">(opt)</span>
     </td>
     <td>
@@ -1292,26 +1332,37 @@ log.t('foo')
 
   <tr>
     <td class="name">log.res</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
       Output result log<br>
       <pre class="eg"><span style="color:#0cf;">&gt;</span> message</pre>
+<pre class="eg">
+log.res('<input type="text" id="log-res-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res(getVal('log-res-txt'));">DEMO</button>
+</pre>
     </td>
   </tr>
 
   <tr>
     <td class="name">log.res.err</td>
-    <td>message string</td>
+    <td>message</td>
     <td>
       Output error result log<br>
       <pre class="eg"><span style="color:#f45;">&gt;</span> message</pre>
+<pre class="eg">
+log.res.err('<input type="text" id="log-res-err-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res.err(getVal('log-res-err-txt'));">DEMO</button>
+</pre>
     </td>
   </tr>
 
   <tr>
     <td class="name">log.clear</td>
     <td></td>
-    <td>Clear log message</td>
+    <td>
+      Clear log message
+<pre class="eg">
+log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
+</pre>
+</td>
   </tr>
 
   <tr>
@@ -1533,6 +1584,42 @@ dbg.countElements('tagName');
     <td>
       Command execution<br>
       echo: true = print command line / false = silent<span class="annotation">(default)</span>
+<br>
+<pre class="eg">
+dbg.cmd('base64 -e <input type="text" id="b64-e-txt" class="demo-text" style="width:150px;" value="Hello, World!">');<button class="demo-button2" onclick="dbg.cmd('base64 -e ' + getVal('b64-e-txt'));">DEMO</button>
+dbg.cmd('base64 -d <input type="text" id="b64-d-txt" class="demo-text" style="width:150px;" value="SGVsbG8sIEJhc2U2NCE=">');<button class="demo-button2" onclick="dbg.cmd('base64 -d ' + getVal('b64-d-txt'));">DEMO</button>
+
+dbg.cmd('rgb #fff'); <button class="demo-button2" onclick="dbg.cmd('rgb #fff', true);">DEMO</button>
+dbg.cmd('json {"name": "John Smith", "age": 25, "city": "New York"}'); <button class="demo-button2" onclick='dbg.cmd("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}", true);'>DEMO</button>
+
+time calc +-
+dbg.cmd('00:05:30.700 + 00:01:20.123'); <button class="demo-button2" onclick="dbg.cmd('00:05:30.700 + 00:01:20.123', true);">DEMO</button>
+dbg.cmd('00:05:30.700 - 00:05:20.400'); <button class="demo-button2" onclick="dbg.cmd('00:05:30.700 - 00:05:20.400', true);">DEMO</button>
+
+time calc + 1day
+dbg.cmd('10:00 + 13:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 13:59', true);">DEMO</button>
+dbg.cmd('10:00 + 14:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 14:00', true);">DEMO</button>
+dbg.cmd('10:00 + 14:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 14:01', true);">DEMO</button>
+
+<span id="timecalc__button" class="showhide-button" onclick="showHideByName('timecalc')">&gt;</span>
+<span id="timecalc__partial-body"></span>
+<div id="timecalc__body" style="display:none;">
+time calc + 2days
+dbg.cmd('10:00 + 37:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 37:59', true);">DEMO</button>
+dbg.cmd('10:00 + 38:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 38:00', true);">DEMO</button>
+dbg.cmd('10:00 + 38:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 38:01', true);">DEMO</button>
+
+time calc - 1day
+dbg.cmd('10:00 - 09:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 09:59', true);">DEMO</button>
+dbg.cmd('10:00 - 10:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 10:00', true);">DEMO</button>
+dbg.cmd('10:00 - 10:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 10:01', true);">DEMO</button>
+
+time calc - 2days
+dbg.cmd('10:00 - 33:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 33:59', true);">DEMO</button>
+dbg.cmd('10:00 - 34:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 34:00', true);">DEMO</button>
+dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 34:01', true);">DEMO</button>
+</div>
+</pre>
     </td>
   </tr>
 
@@ -3702,117 +3789,33 @@ and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sam
 
 <!-- ********************************************************************** -->
 <div class="caption2">log</div>
-<input type="text" id="log-message-text" value="Hello, World!" style="width:400px;margin-top:3px;">
 <table class="demo-table">
 <tr>
 <td>
-standard log<br>
-<button onclick="log(logMessageText.value);">log()</button>
-</td>
-
-<td>
-debug log<br>
-<button onclick="log.d(logMessageText.value);">log.d()</button>
-</td>
-
-<td>
-info log<br>
-<button onclick="log.i(logMessageText.value);">log.i()</button>
-</td>
-
-<td>
-verbose log<br>
-<button onclick="log.v(logMessageText.value);">log.v()</button>
-</td>
-</tr>
-
-<tr>
-<td>
-warn log<br>
-<button onclick="log.w(logMessageText.value);">log.w()</button>
-</td>
-
-<td>
-error log<br>
-<button onclick="log.e(logMessageText.value);">log.e()</button>
-</td>
-</tr>
-
-<tr>
-<td>
-log.p(a);<br>
-<button onclick="log.p(a);">log.p() w/o msg</button>
-</td>
-
-<td>
-log.p(a, 0, msg);<br>
-<button onclick="log.p(a, 0, logMessageText.value);">log.p() w/ msg</button>
-</td>
-
-<td>
-log.p(a, 1);<br>
-<button onclick="log.p(a, 1);">log.p() lv1</button>
-</td>
-
-<td>
-log.p(a, 2);<br>
-<button onclick="log.p(a, 2);">log.p() lv2</button>
-</td>
-</tr>
-
-<tr>
-<td>
-log.json(a);<br>
-<button onclick="log.json(a);">log.json() w/o msg</button>
-</td>
-
-<td>
-log.json(a, 0, msg);<br>
-<button onclick="log.json(a, 0, logMessageText.value);">log.json() w/ msg</button>
-</td>
-
-<td>
-log.json(a, 1);<br>
-<button onclick="log.json(a, 1);">log.json() lv1</button>
-</td>
-
-<td>
-log.json(a, 2);<br>
-<button onclick="log.json(a, 2);">log.json() lv2</button>
-</td>
-</tr>
-
-<tr>
-<td>
-result log<br>
-<button onclick="log.res(logMessageText.value);">log.res()</button>
-</td>
-
-<td>
-error result log<br>
-<button onclick="log.res.err(logMessageText.value);">log.res.err()</button>
-</td>
-
-<td>
-clear log<br>
-<button onclick="log.clear();">log.clear()</button>
-</td>
-</tr>
-
-<tr>
-<td>
 log() log.d() log.i() ...<br>
-<button onclick="displaySampleMessages();">a series of logs</button>
+<button onclick="displaySampleMessages();">A Series of Logs</button>
 </td>
 
 <td>
 log with random message<br>
-<button onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">start random logs</button>
+<button onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">Start Random Demo</button>
 </td>
 </table>
 
 <!-- ********************************************************************** -->
+<div class="caption2">dbg.led</div>
+<table class="demo-table">
+<tr>
+<td>
+<button id="led-demo-btn" onclick="ledDemo();">LED DEMO</button>
+</td>
+</tr>
+</table>
+<br>
+
+<!-- ********************************************************************** -->
 <div class="caption2">time</div>
+<input type="text" id="log-message-text" value="Hello, World!" style="width:400px;margin-top:3px;">
 <table class="demo-table">
 <tr>
 <td>
@@ -3883,148 +3886,6 @@ log.t('elapsed time of %n t=%t lap=%lt', 'timer2');<br>
 <br>
 
 <!-- ********************************************************************** -->
-<div class="caption2">dbg.cmd / $ Command Line</div>
-<table class="demo-table">
-<tr>
-<td>
-dbg.cmd('rgb #fff');<br>
-<button onclick="dbg.cmd('rgb #fff', true);">rgb #fff</button>
-</td>
-
-<td>
-dbg.cmd('json {"name": "John Smith", "age": 25, "city": "New York"}');<br>
-<button onclick='dbg.cmd("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}", true);'>json {"name": ...</button>
-</td>
-
-<!-- time calc +- -->
-<td>
-dbg.cmd('00:05:30.700 + 00:01:20.123');<br>
-<button onclick="dbg.cmd('00:05:30.700 + 00:01:20.123', true);">00:05:30.700 + 00:01:20.123</button>
-</td>
-
-<td>
-dbg.cmd('00:05:30.700 - 00:05:20.400');<br>
-<button onclick="dbg.cmd('00:05:30.700 - 00:05:20.400', true);">00:05:30.700 - 00:05:20.400</button>
-</td>
-</tr>
-
-<!-- time calc + 1day -->
-<tr>
-<td>
-dbg.cmd('10:00 + 13:59');<br>
-<button onclick="dbg.cmd('10:00 + 13:59', true);">10:00 + 13:59</button>
-</td>
-
-<td>
-dbg.cmd('10:00 + 14:00');<br>
-<button onclick="dbg.cmd('10:00 + 14:00', true);">10:00 + 14:00</button>
-</td>
-
-<td>
-dbg.cmd('10:00 + 14:01');<br>
-<button onclick="dbg.cmd('10:00 + 14:01', true);">10:00 + 14:01</button>
-</td>
-</tr>
-</table>
-
-<!-- ********************************************************************** -->
-<span id="timecalc__button" class="showhide-button" onclick="showHideByName('timecalc')">&gt;</span>
-<span id="timecalc__partial-body"></span>
-<div id="timecalc__body" style="display:none;">
-<table class="demo-table">
-<!-- time calc + 2days -->
-<tr>
-<td>
-dbg.cmd('10:00 + 37:59');<br>
-<button onclick="dbg.cmd('10:00 + 37:59', true);">10:00 + 37:59</button>
-</td>
-
-<td>
-dbg.cmd('10:00 + 38:00');<br>
-<button onclick="dbg.cmd('10:00 + 38:00', true);">10:00 + 38:00</button>
-</td>
-
-<td>
-dbg.cmd('10:00 + 38:01');<br>
-<button onclick="dbg.cmd('10:00 + 38:01', true);">10:00 + 38:01</button>
-</td>
-</tr>
-
-<!-- time calc - 1day -->
-<tr>
-<td>
-dbg.cmd('10:00 - 09:59');<br>
-<button onclick="dbg.cmd('10:00 - 09:59', true);">10:00 - 09:59</button>
-</td>
-
-<td>
-dbg.cmd('10:00 - 10:00');<br>
-<button onclick="dbg.cmd('10:00 - 10:00', true);">10:00 - 10:00</button>
-</td>
-
-<td>
-dbg.cmd('10:00 - 10:01');<br>
-<button onclick="dbg.cmd('10:00 - 10:01', true);">10:00 - 10:01</button>
-</td>
-</tr>
-
-<!-- time calc - 2days -->
-<tr>
-<td>
-dbg.cmd('10:00 - 33:59');<br>
-<button onclick="dbg.cmd('10:00 - 33:59', true);">10:00 - 33:59</button>
-</td>
-
-<td>
-dbg.cmd('10:00 - 34:00');<br>
-<button onclick="dbg.cmd('10:00 - 34:00', true);">10:00 - 34:00</button>
-</td>
-
-<td>
-dbg.cmd('10:00 - 34:01');<br>
-<button onclick="dbg.cmd('10:00 - 34:01', true);">10:00 - 34:01</button>
-</td>
-</tr>
-</table>
-</div>
-<br>
-
-<table class="demo-table">
-<tr>
-<td>
-<input type="text" id="base64-e-text" value="Hello, Base64!" style="width:400px;margin-top:3px;">
-dbg.cmd('base64 -e xxx')<br>
-<button onclick="dbg.cmd('base64 -e ' + base64EText.value, true);">base64 -e</button>
-</td>
-
-<td>
-<input type="text" id="base64-d-text" value="SGVsbG8sIEJhc2U2NCE=" style="width:400px;margin-top:3px;">
-dbg.cmd('base64 -d xxx')<br>
-<button onclick="dbg.cmd('base64 -d ' + base64DText.value, true);">base64 -d</button>
-</td>
-</tr>
-</table>
-
-<br>
-
-<!-- ********************************************************************** -->
-<div class="caption2">dbg.led</div>
-<table class="demo-table">
-<tr>
-<td>
-</td>
-</tr>
-
-<tr>
-<td>
-<button id="led-demo-btn" onclick="ledDemo();">demo</button>
-</td>
-</tr>
-
-</table>
-<br>
-
-<!-- ********************************************************************** -->
 <div class="caption2">console</div>
 <input type="text" id="console-message-text" value="Hello, console!" style="width:400px;margin-top:3px;">
 <table class="demo-table demo-table-green">
@@ -4065,6 +3926,7 @@ console.timeEnd('timer3');<br>
 <table class="demo-table">
 <tr>
 <td>
+<span style="color:#a00">fakeError;</span><br>
 <button class="button-red" onclick="errorDemo();">JavaScript Error</button>
 </td>
 </tr>
