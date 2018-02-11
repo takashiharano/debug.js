@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802111200';
+  this.v = '201802111246';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -564,6 +564,11 @@ DebugJS.PP_BLOCK_START = '(';
 DebugJS.PP_BLOCK_END = ')';
 DebugJS.RE_ELSE = new RegExp('^\\s*\\)\\s*' + DebugJS.PP_ELSE + '\\s*\\(\\s*$');
 DebugJS.RE_ENDBLK = new RegExp('^\\s*\\' + DebugJS.PP_BLOCK_END + '\\s*$');
+DebugJS.CHR_LED = '&#x25CF;';
+DebugJS.CHR_DELTA = '&#x22BF;';
+DebugJS.CHR_NL = '&#x21b5;';
+DebugJS.CHR_WIN_FULL = '&#x25A1;';
+DebugJS.CHR_WIN_RST = '&#x2750;';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_FULL_OVERLAY = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
@@ -611,8 +616,6 @@ DebugJS.z1 = function(a) {};
 DebugJS.z2 = function(a, b) {};
 DebugJS.z3 = function(a, b, c) {};
 DebugJS.z4 = function(a, b, c, d) {};
-DebugJS.LED = '&#x25CF;';
-DebugJS.DELTA = '&#x22BF;';
 DebugJS.prototype = {
   init: function(opt, restoreOpt) {
     if (!DebugJS.ENABLE) {return false;}
@@ -1748,7 +1751,7 @@ DebugJS.prototype = {
       for (var i = 7; i >= 0; i--) {
         var color = (DebugJS.ctx.led & DebugJS.LED_BIT[i]) ? 'color:' + DebugJS.LED_COLOR[i] + ';' + SHADOW : 'color:' + DebugJS.LED_COLOR_INACTIVE + ';';
         var margin = (i == 0 ? '' : 'margin-right:2px');
-        led += '<span style="' + color + margin + '">' + DebugJS.LED + '</span>';
+        led += '<span style="' + color + margin + '">' + DebugJS.CHR_LED + '</span>';
       }
       DebugJS.ctx.ledPanel.innerHTML = led;
     }
@@ -1845,10 +1848,10 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (!ctx.winCtrlBtnPanel) return;
     var fn = 'DebugJS.ctx.expandDbgWin(\'full\');';
-    var btn = '&#x25A1;';
+    var btn = DebugJS.CHR_WIN_FULL;
     if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       fn = 'DebugJS.ctx.restoreDbgWin();';
-      btn = '&#x2750;';
+      btn = DebugJS.CHR_WIN_RST;
     }
     fn += 'DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();';
     var b = '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.opt.zoom) + 'px;font-size:' + (16 * ctx.opt.zoom) + 'px;color:#888" onclick="' + fn + '" onmouseover="this.style.color=\'#ddd\'" onmouseout="this.style.color=\'#888\'">' + btn + '</span>' +
@@ -5463,7 +5466,12 @@ DebugJS.prototype = {
   onFileLoaded: function(e) {
     var ctx = DebugJS.ctx;
     var file = ctx.fileReader.file;
-    var content = (ctx.fileReader.result == null) ? '' : ctx.fileReader.result;
+    var content = '';
+    try {
+      if (ctx.fileReader.result != null) {content = ctx.fileReader.result;}
+    } catch (e) {
+      DebugJS.log.e('onFileLoaded: ' + e);
+    }
     var html;
     if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64) {
       html = ctx.onFileLoadedB64(ctx, file, content);
@@ -5576,7 +5584,8 @@ DebugJS.prototype = {
   },
 
   getFileInfo: function(file) {
-    var dt = DebugJS.getDateTime(file.lastModifiedDate);
+    var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
+    var dt = DebugJS.getDateTime(lastMod);
     var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
     var s = 'file    : ' + file.name + '\n' +
     'type    : ' + file.type + '\n' +
@@ -9678,7 +9687,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
   if (msg === undefined) {
     s = _timerName + ': ' + dt;
     if (dtLap != '') {
-      s += '(' + DebugJS.DELTA + dtLap + ')';
+      s += '(' + DebugJS.CHR_DELTA + dtLap + ')';
     }
   } else {
     s = msg.replace(/%n/g, _timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
@@ -10129,7 +10138,7 @@ DebugJS.dumpAscii = function(pos, buf, len) {
     switch (code) {
       case 0x0A:
       case 0x0D:
-        b += '<span style="color:#0cf">&#x21b5;</span>';
+        b += '<span style="color:#0cf">' + DebugJS.CHR_NL + '</span>';
         break;
       case 0x22:
         b += '&quot;';
@@ -10631,7 +10640,7 @@ DebugJS.stopwatch.end = function(m) {
 
 DebugJS.stopwatch.split = function(m) {
   if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
-    m = DebugJS.TIMER_NAME_SW_CU + ': %t(' + DebugJS.DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
+    m = DebugJS.TIMER_NAME_SW_CU + ': %t(' + DebugJS.CHR_DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
     DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU, false, m);
   }
 };
@@ -10979,7 +10988,7 @@ DebugJS.bat.findEndOfBlock = function() {
   var ctrl = bat.ctrl;
   var l = ctrl.pc;
   var ignoreBlkLv = 0;
-  var data = {l: 0, endWithElse: false}
+  var data = {l: 0, endWithElse: false};
   while (l <= ctrl.endPc) {
     var cmd = bat.cmds[l];
     if (cmd.match(DebugJS.RE_ELSE)) {
