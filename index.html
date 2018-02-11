@@ -1212,18 +1212,6 @@ log('<input type="text" id="log-txt" class="demo-text" style="width:100px;" valu
   </tr>
 
   <tr>
-    <td class="name">log.v</td>
-    <td>message</td>
-    <td>
-      Output verbose log <span class="annotation warning">The messages are not displayed by default filter setting</span><br>
-<pre class="eg">
-log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.v(getVal('log-v-txt'));">DEMO</button>
-</pre>
-      <span class="name annotation">log.v.root()</span> <span class="annotation">: Output log to root window.</span>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">log.d</td>
     <td>message</td>
     <td>
@@ -1272,6 +1260,18 @@ log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:100px;" 
   </tr>
 
   <tr>
+    <td class="name">log.v</td>
+    <td>message</td>
+    <td>
+      Output verbose log <span class="annotation warning">The messages are not displayed by default filter setting</span><br>
+<pre class="eg">
+log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.v(getVal('log-v-txt'));">DEMO</button>
+</pre>
+      <span class="name annotation">log.v.root()</span> <span class="annotation">: Output log to root window.</span>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">log.p</td>
     <td>
       arg1: variable<br>
@@ -1282,7 +1282,7 @@ log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:100px;" 
       Output object dump
 <br><br>
 <pre class="eg">
-<span class="opaque">var obj = {...}</span>
+<div class="opaque" style="margin-bottom:-4px">var obj = {...};</div>
 log.p(obj); <button class="demo-button2" onclick="log.p(a);">DEMO</button>
 log.p(obj, 0, '<input type="text" id="log-p-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.p(a, 0, getVal('log-p-msg-txt'));">DEMO</button> (w/ msg)
 log.p(obj, 1); <button class="demo-button2" onclick="log.p(a, 1);">DEMO</button> (lv1)
@@ -1302,7 +1302,7 @@ log.p(obj, 2); <button class="demo-button2" onclick="log.p(a, 2);">DEMO</button>
       Output object dump (JSON format)
 <br><br>
 <pre class="eg">
-<span class="opaque">var obj = {...}</span>
+<div class="opaque" style="margin-bottom:-4px">var obj = {...};</div>
 log.json(obj); <button class="demo-button2" onclick="log.json(a);">DEMO</button>
 log.json(obj, 0, '<input type="text" id="log-json-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.json(a, 0, getVal('log-json-msg-txt'));">DEMO</button> (w/ msg)
 log.json(obj, 1); <button class="demo-button2" onclick="log.json(a, 1);">DEMO</button> (lv1)
