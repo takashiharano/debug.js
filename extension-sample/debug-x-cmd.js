@@ -1,17 +1,17 @@
 var extsample = extsample || {};
 
 extsample.cmdAbc = function(arg, tbl) {
-  DebugJS.log('Hello!');
+  dbg.log('Hello!');
 };
 
 extsample.cmdXyz = function(arg, tbl) {
-  var args = DebugJS.splitArgs(arg);
+  var args = dbg.splitArgs(arg);
   if (args[0] == '') {
-    DebugJS.printUsage(tbl.usage);
+    dbg.printUsage(tbl.usage);
     return;
   }
   for (var i = 0; i < args.length; i++) {
-    DebugJS.log('arg' + i + ' = ' + args[i]);
+    dbg.log('arg' + i + ' = ' + args[i]);
   }
 };
 
@@ -20,4 +20,4 @@ extsample.CMD_TBL = [
   {'cmd': 'xyz', 'fnc': extsample.cmdXyz, 'desc': 'extention command example2', 'usage': 'xyz args...'}
 ];
 
-DebugJS.x.addCmdTbl(extsample.CMD_TBL);
+dbg.x.addCmdTbl(extsample.CMD_TBL);

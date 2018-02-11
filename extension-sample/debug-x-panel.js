@@ -61,7 +61,7 @@ extsample.onInActiveP3 = function(panel) {
 
 //--------------------------------------
 extsample.init = function() {
-  DebugJS.x.setBtnLabel('EXT');
+  dbg.x.setBtnLabel('EXT');
 
   var p1base = document.createElement('pre');
   p1base.style.boxSizing = 'border-box';
@@ -76,7 +76,7 @@ extsample.init = function() {
     onActive: extsample.onActiveP1,
     onInActive: extsample.onInActiveP1
   };
-  DebugJS.x.addPanel(panel1);
+  dbg.x.addPanel(panel1);
 };
 
 extsample.onLoad = function() {
@@ -99,7 +99,7 @@ extsample.addMorePanels = function() {
     onActive: extsample.onActiveP2,
     onInActive: extsample.onInActiveP2
   };
-  DebugJS.x.addPanel(panel2);
+  dbg.x.addPanel(panel2);
 
   var panel3 = {
     name: 'P3',
@@ -107,7 +107,7 @@ extsample.addMorePanels = function() {
     onActive: extsample.onActiveP3,
     onInActive: extsample.onInActiveP3
   };
-  DebugJS.x.addPanel(panel3);
+  dbg.x.addPanel(panel3);
 };
 
 //--------------------------------------
