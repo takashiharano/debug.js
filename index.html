@@ -84,6 +84,9 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .file-loader{float:left;width:250px; height:100px; border:dotted 1px #888; overflow:auto;margin-left:2px;}
 .file-content{font-size:12px;}
 #table1, #table1 th, #table1 td{border:solid 1px #000;border-collapse:collapse;}
+#table1 thead {background:#6cf;color:#fff;}
+#table1 .odd {background:#fff;}
+#table1 .even {background:#e8e8e8;}
 .class1{background:#66f;color:#fff;}
 .class2{background:#f66;}
 </style>
@@ -3385,6 +3388,8 @@ command
 $VAL = JavaScript Code;
 IF ($VAL == 123) (
   command
+) ELSE (
+  command
 )
 
 <span class="annotation">Inline JavaScript Section</span>
@@ -4035,7 +4040,7 @@ console.timeEnd('timer3');<br>
 <table class="demo-table">
 <tr>
 <td>
-<button class="button-red" onclick="errorDemo();">Script Error</button>
+<button class="button-red" onclick="errorDemo();">JavaScript Error</button>
 </td>
 </tr>
 </table>
@@ -4094,7 +4099,7 @@ function callback(xhr) {
 <span id="dummy__partial-body">Dummy field for DOM Element Test</span>
 <div id="dummy__body" style="display:none; height:650px;">
 <div class="caption2">Dummy field for DOM Element Test</div>
-<div style="height:460px;margin-top:10px;font-size:12px;">
+<div style="height:520px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;"></div>
@@ -4156,21 +4161,34 @@ function callback(xhr) {
     <div id="div789" style="background:#faa;">789</div>
   </div>
 
-  <div id="div1" style="width:400px;height:80px;margin-top:4px;border:1px solid #ccc;padding:4px;background:#ffe;overflow:auto;">div1
+  <div id="div1" style="width:400px;height:150px;margin-top:4px;border:1px solid #ccc;padding:4px;background:#ffe;overflow:auto;">#div1<br><br>
+    #table1
     <table id="table1">
-      <tr>
-        <th>th1</th><th>th2</th><th>th3</th>
-      </tr>
-      <tr>
-        <td>td1<span>(span1)</span><span>(span2)</span></td><td>td2</td><td>td3</td>
-      </tr>
-      <tr>
-        <td>td4</td><td>td5</td><td>td6</td>
-      </tr>
+      <thead>
+        <tr>
+          <th>th1</th><th>th2</th><th>th3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="odd">
+          <td>td1<span>(span1)</span><span>(span2)</span></td><td>td2</td><td>td3</td>
+        </tr>
+        <tr class="even">
+          <td>td4</td><td>td5</td><td>td6</td>
+        </tr>
+        <tr class="odd">
+          <td>td7</td><td>td8</td><td>td9</td>
+        </tr>
+        <tr class="even">
+          <td>td10</td><td>td11</td><td>td12</td>
+        </tr>
+      </tbody>
     </table>
-    <span class="class1">class1</span>
-    <span class="class1 class2">class1 class2</span>
-    <span class="class1">class1</span>
+    <div style="margin-top:4px;">
+      <span class="class1">.class1</span>
+      <span class="class1 class2">.class1 .class2</span>
+      <span class="class1">.class1</span>
+   </div>
   </div>
 </div>
 <div id="evttest" style="display:inline-block; width:415px; height:50px; background:#dff;" 

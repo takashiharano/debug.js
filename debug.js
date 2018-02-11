@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802101350';
+  this.v = '201802111200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -559,8 +559,11 @@ DebugJS.OMIT_FIRST = 2;
 DebugJS.DISP_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.PP_JS = '!__JS__!';
 DebugJS.PP_IF = 'IF';
+DebugJS.PP_ELSE = 'ELSE';
 DebugJS.PP_BLOCK_START = '(';
 DebugJS.PP_BLOCK_END = ')';
+DebugJS.RE_ELSE = new RegExp('^\\s*\\)\\s*' + DebugJS.PP_ELSE + '\\s*\\(\\s*$');
+DebugJS.RE_ENDBLK = new RegExp('^\\s*\\' + DebugJS.PP_BLOCK_END + '\\s*$');
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_FULL_OVERLAY = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
@@ -10847,6 +10850,7 @@ DebugJS.bat.prepro = function(cmd) {
   var ctrl = bat.ctrl;
   var c = cmds[0];
   var a = DebugJS.splitArgs(cmds[1]);
+
   if (c.match(/^\s*@/)) {
     c = c.substr(c.indexOf('@') + 1);
     ctrl.tmpEchoOff = true;
@@ -10886,16 +10890,14 @@ DebugJS.bat.prepro = function(cmd) {
         if (r.res) {
           ctrl.blockLv++;
         } else {
-          ctrl.pc = bat.findBlockEndLine() + 1;
+          var endBlk = bat.findEndOfBlock();
+          ctrl.pc = endBlk.l + 1;
+          if (endBlk.endWithElse) {
+            ctrl.blockLv++;
+          }
         }
       }
       return 1;
-    case DebugJS.PP_BLOCK_END:
-      if (ctrl.blockLv) {
-        ctrl.blockLv--;
-        return 1;
-      }
-      break;
     case DebugJS.PP_JS:
       if (ctrl.js) {
         ctrl.js = false;
@@ -10904,6 +10906,18 @@ DebugJS.bat.prepro = function(cmd) {
         bat.execJs();
       }
       return 1;
+  }
+  if (cmd.match(DebugJS.RE_ELSE)) {
+    if (ctrl.blockLv) {
+      ctrl.pc = bat.findEndOfBlock().l + 1;
+      ctrl.blockLv--;
+      return 1;
+    }
+  } else if (cmd.match(DebugJS.RE_ENDBLK)) {
+    if (ctrl.blockLv) {
+      ctrl.blockLv--;
+      return 1;
+    }
   }
   if (ctrl.pc <= ctrl.startPc) {
     return 1;
@@ -10960,19 +10974,25 @@ DebugJS.bat.ppIf = function(cmd, s) {
   }
   return r;
 };
-DebugJS.bat.findBlockEndLine = function() {
+DebugJS.bat.findEndOfBlock = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   var l = ctrl.pc;
   var ignoreBlkLv = 0;
+  var data = {l: 0, endWithElse: false}
   while (l <= ctrl.endPc) {
-    c = DebugJS.splitCmdLineInTwo(bat.cmds[l])[0];
-    if (c == DebugJS.PP_BLOCK_END) {
+    var cmd = bat.cmds[l];
+    if (cmd.match(DebugJS.RE_ELSE)) {
+      if (ignoreBlkLv == 0) {
+        data.endWithElse = true;
+        break;
+      }
+    } else if (cmd.match(DebugJS.RE_ENDBLK)) {
       if (ignoreBlkLv == 0) {
         break;
       }
       ignoreBlkLv--;
-    } else if (c == DebugJS.PP_IF) {
+    } else if (DebugJS.splitCmdLineInTwo(cmd)[0] == DebugJS.PP_IF) {
       ignoreBlkLv++;
     }
     l++;
@@ -10980,7 +11000,8 @@ DebugJS.bat.findBlockEndLine = function() {
   if (l > ctrl.endPc) {
     DebugJS.log.e('end of block ' + DebugJS.PP_BLOCK_END + ' not found');
   }
-  return l;
+  data.l = l;
+  return data;
 };
 DebugJS.bat.execJs = function() {
   var bat = DebugJS.bat;
