@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802111246';
+  this.v = '201802111320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -218,7 +218,7 @@ var DebugJS = DebugJS || function() {
   this.swLabel = null;
   this.swStartTime = 0;
   this.swElapsedTime = 0;
-  this.swElapsedTimeDisp = '00:00:00.000';
+  this.swElapsedTimeDisp = DebugJS.TIME_RST_STR;
   this.clearBtn = null;
   this.wdBtn = null;
   this.suspendLogBtn = null;
@@ -340,7 +340,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
-    {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end'},
+    {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
     {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|verify got-val method expected-val|fin'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
@@ -557,6 +557,7 @@ DebugJS.OMIT_LAST = 0;
 DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.DISP_BIN_DIGITS_THRESHOLD = 5;
+DebugJS.TIME_RST_STR = '00:00:00.000';
 DebugJS.PP_JS = '!__JS__!';
 DebugJS.PP_IF = 'IF';
 DebugJS.PP_ELSE = 'ELSE';
@@ -7869,7 +7870,6 @@ DebugJS.prototype = {
       sw = args[0].charAt(2) | 0;
       op = args[1];
     }
-
     var ret = false;
     if (sw == 0) {
       ret = ctx.cmdStopwatch0(ctx, op);
@@ -7878,7 +7878,6 @@ DebugJS.prototype = {
     } else if (sw == 2) {
       ret = ctx.cmdStopwatch2(ctx, op);
     }
-
     if (!ret) {
       DebugJS.printUsage(tbl.usage);
     }
@@ -7895,6 +7894,9 @@ DebugJS.prototype = {
         return ctx.swElapsedTimeDisp;
       case 'reset':
         ctx.resetStopWatch();
+        break;
+      case 'val':
+        DebugJS.log('sw0: ' + ctx.swElapsedTimeDisp);
         break;
       default:
         return false;
@@ -7920,6 +7922,10 @@ DebugJS.prototype = {
       case 'end':
         ctx.endTimerStopWatchCu();
         break;
+      case 'val':
+        var v = DebugJS.time.check(DebugJS.TIMER_NAME_SW_CU);
+        DebugJS.log(DebugJS.TIMER_NAME_SW_CU + ': ' + (v == null ? DebugJS.TIME_RST_STR : v));
+        break;
       default:
         return false;
     }
@@ -7940,6 +7946,9 @@ DebugJS.prototype = {
         break;
       case 'split':
         ctx.splitTimerStopWatchCd();
+        break;
+      case 'val':
+        DebugJS.log(DebugJS.TIMER_NAME_SW_CD + ': ' + DebugJS.getTimerStr(ctx.timerSwTimeCd));
         break;
       default:
         return false;
@@ -9605,7 +9614,7 @@ DebugJS.timeStart = function(timerName, msg) {
   if (msg === undefined) {
     s = _timerName + ': timer started';
   } else {
-    s = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' + ctx.opt.timerColor + '">00:00:00.000</span>');
+    s = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' + ctx.opt.timerColor + '">' + DebugJS.TIME_RST_STR + '</span>');
   }
   DebugJS.log(s);
 };
@@ -9727,7 +9736,7 @@ DebugJS.timeLog = function(msg, timerName) {
     ctx.timers[timerName] = {};
     ctx.timers[timerName].start = now;
     ctx.timers[timerName].split = now;
-    t = '00:00:00.000';
+    t = DebugJS.TIME_RST_STR;
     tLap = t;
   }
   var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
@@ -10605,8 +10614,7 @@ DebugJS.time.end = function(timerName, msg) {
 };
 
 DebugJS.time.check = function(timerName) {
-  var now = new Date();
-  return DebugJS.timeCheck(timerName, now);
+  return DebugJS.timeCheck(timerName, new Date());
 };
 
 DebugJS.stopwatch = function() {

@@ -3183,9 +3183,34 @@ $ setattr .className 1 disabled true
   <tr>
     <td class="name">stopwatch</td>
     <td>
-      start / stop / reset
+      arg1: target<span class="annotation">(opt)</span><br>
+      arg2: operation
     </td>
-    <td>Manipulate the stopwatch.</td>
+    <td>
+      Manipulate the stopwatch.<br><br>
+<pre class="eg">
+target:
+  sw0: Mini stopwatch on the upper right of the debug window
+  sw1: CountUp Timer in TOOL window
+  sw2: CountDown Timer in TOOL window
+
+operation:
+  start: (sw0/sw1/sw2)
+  stop : (sw0/sw1/sw2)
+  reset: (sw0/sw1/sw2)
+  split: ( - /sw1/sw2)
+  end  : ( - /sw1/ - )
+  val  : (sw0/sw1/sw2)
+
+e.g.,)
+$ stopwatch start
+$ stopwatch stop
+
+$ stopwatch sw1 start
+$ stopwatch sw1 split
+$ stopwatch sw1 stop
+</pre>
+    </td>
   </tr>
 
   <tr>
