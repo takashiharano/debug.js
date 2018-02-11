@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802111320';
+  this.v = '201802111840';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6707,12 +6707,12 @@ DebugJS.prototype = {
   cmdEcho: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg)[0];
-    if (a == 'off') {
-      ctx.cmdEchoFlg = false;
-      return;
+    if (a == '') {
+      DebugJS.log(ctx.cmdEchoFlg ? 'on' : 'off');return;
+    } else if (a == 'off') {
+      ctx.cmdEchoFlg = false;return;
     } else if (a == 'on') {
-      ctx.cmdEchoFlg = true;
-      return;
+      ctx.cmdEchoFlg = true;return;
     }
     arg = DebugJS.decodeEsc(arg);
     try {
@@ -12674,7 +12674,6 @@ log.root = function(m) {
     window.top.DebugJS.log(m);
   }
 };
-
 log.root.fn = function(lv, m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   if (window.opener) {
@@ -12685,7 +12684,6 @@ log.root.fn = function(lv, m) {
     window.top.DebugJS.log[lv](m);
   }
 };
-
 DebugJS.rootFncs = function() {
   var fn = ['v', 'd', 'i', 'w', 'e'];
   for (var i = 0; i < fn.length; i++) {
@@ -12694,30 +12692,6 @@ DebugJS.rootFncs = function() {
   }
 };
 
-DebugJS.start = function() {
-  DebugJS.rootFncs();
-  DebugJS.ctx = DebugJS.ctx || new DebugJS();
-  DebugJS.el = null;
-  if (!window._) DebugJS._AVAILABLE = true;
-  if (typeof window.localStorage != 'undefined') {
-    DebugJS.LS_AVAILABLE = true;
-  }
-  if (typeof window.sessionStorage != 'undefined') {
-    DebugJS.SS_AVAILABLE = true;
-  }
-  window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
-  window.addEventListener('load', DebugJS.onLoad, true);
-  window.addEventListener('error', DebugJS.onError, true);
-  if ((DebugJS.MERGE_CONSOLE) && (window.console)) {
-    console.log = function(x) {log(x);};
-    console.info = function(x) {log.i(x);};
-    console.warn = function(x) {log.w(x);};
-    console.error = function(x) {log.e(x);};
-    console.time = function(x) {DebugJS.time.start(x);};
-    console.timeEnd = function(x) {DebugJS.time.end(x);};
-  }
-  DebugJS.restoreStatus(DebugJS.ctx);
-};
 DebugJS.restoreStatus = function(ctx) {
   var data = DebugJS.loadStatus();
   if ((data == null) || !((data.status & DebugJS.STATE_LOG_PRESERVED) || (data.status & DebugJS.STATE_BAT_CONT))) {
@@ -12737,6 +12711,62 @@ DebugJS.restoreStatus = function(ctx) {
     ctx.updateSwLabel();
   }
   DebugJS.deepCopy(data.props, ctx.props);
+};
+DebugJS.x = DebugJS.x || {};
+DebugJS.x.addCmdTbl = function(table) {
+  var ctx = DebugJS.ctx;
+  for (var i = 0; i < table.length; i++) {
+    var c = table[i];
+    if ((ctx.existCmd(c.cmd, ctx.INT_CMD_TBL)) ||
+        (ctx.existCmd(c.cmd, ctx.EXT_CMD_TBL))) {
+      c.attr |= DebugJS.CMD_ATTR_DISABLED;
+    }
+    ctx.EXT_CMD_TBL.push(c);
+  }
+};
+DebugJS.x.addPanel = function(p) {
+  var ctx = DebugJS.ctx;
+  p.base = null; p.btn = null;
+  var idx = ctx.extPanels.push(p) - 1;
+  if (ctx.status & DebugJS.STATE_INITIALIZED) {
+    ctx.initExtPanel(ctx);
+  }
+  return idx;
+};
+DebugJS.x.removePanel = function(idx) {
+  var ctx = DebugJS.ctx;
+  if (!ctx.extPanels[idx]) {
+    return;
+  }
+  var nIdx = -1;
+  var p = ctx.extPanels[idx];
+  ctx.extPanels[idx] = null;
+  if (ctx.extActivePanel == idx) {
+    nIdx = ctx.prevValidExtPanelIdx(ctx, idx);
+    if (nIdx == -1) {
+      nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
+    }
+  }
+  if (ctx.status & DebugJS.STATE_INITIALIZED) {
+    if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p.onInActive)) {
+      p.onInActive(p.panel);
+    }
+    ctx.redrawExtPanelBtn(ctx);
+    if (ctx.existsValidExtPanel(ctx)) {
+      if (nIdx != -1) {
+        ctx.switchExtPanel(nIdx);
+      }
+    } else {
+      ctx.extActivePanel = -1;
+      ctx.extPanels = [];
+      ctx.closeExtPanel(ctx);
+      if (ctx.extBtn) ctx.extBtn.style.display = 'none';
+    }
+  }
+};
+DebugJS.x.setBtnLabel = function(l) {
+  DebugJS.ctx.extBtnLabel = l;
+  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
 DebugJS.balse = function() {
   log = DebugJS.z1;
@@ -12794,62 +12824,29 @@ DebugJS.balse = function() {
   DebugJS.x.removePanel = DebugJS.z1;
   DebugJS.x.setBtnLabel = DebugJS.z1;
 };
-
-DebugJS.x = DebugJS.x || {};
-DebugJS.x.addCmdTbl = function(table) {
-  var ctx = DebugJS.ctx;
-  for (var i = 0; i < table.length; i++) {
-    var c = table[i];
-    if ((ctx.existCmd(c.cmd, ctx.INT_CMD_TBL)) ||
-        (ctx.existCmd(c.cmd, ctx.EXT_CMD_TBL))) {
-      c.attr |= DebugJS.CMD_ATTR_DISABLED;
-    }
-    ctx.EXT_CMD_TBL.push(c);
+DebugJS.start = function() {
+  DebugJS.rootFncs();
+  DebugJS.ctx = DebugJS.ctx || new DebugJS();
+  DebugJS.el = null;
+  if (!window._) DebugJS._AVAILABLE = true;
+  if (typeof window.localStorage != 'undefined') {
+    DebugJS.LS_AVAILABLE = true;
   }
-};
-DebugJS.x.addPanel = function(p) {
-  var ctx = DebugJS.ctx;
-  p.base = null; p.btn = null;
-  var idx = ctx.extPanels.push(p) - 1;
-  if (ctx.status & DebugJS.STATE_INITIALIZED) {
-    ctx.initExtPanel(ctx);
+  if (typeof window.sessionStorage != 'undefined') {
+    DebugJS.SS_AVAILABLE = true;
   }
-  return idx;
-};
-DebugJS.x.removePanel = function(idx) {
-  var ctx = DebugJS.ctx;
-  if (!ctx.extPanels[idx]) {
-    return;
+  window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
+  window.addEventListener('load', DebugJS.onLoad, true);
+  window.addEventListener('error', DebugJS.onError, true);
+  if ((DebugJS.MERGE_CONSOLE) && (window.console)) {
+    console.log = function(x) {log(x);};
+    console.info = function(x) {log.i(x);};
+    console.warn = function(x) {log.w(x);};
+    console.error = function(x) {log.e(x);};
+    console.time = function(x) {DebugJS.time.start(x);};
+    console.timeEnd = function(x) {DebugJS.time.end(x);};
   }
-  var nIdx = -1;
-  var p = ctx.extPanels[idx];
-  ctx.extPanels[idx] = null;
-  if (ctx.extActivePanel == idx) {
-    nIdx = ctx.prevValidExtPanelIdx(ctx, idx);
-    if (nIdx == -1) {
-      nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
-    }
-  }
-  if (ctx.status & DebugJS.STATE_INITIALIZED) {
-    if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p.onInActive)) {
-      p.onInActive(p.panel);
-    }
-    ctx.redrawExtPanelBtn(ctx);
-    if (ctx.existsValidExtPanel(ctx)) {
-      if (nIdx != -1) {
-        ctx.switchExtPanel(nIdx);
-      }
-    } else {
-      ctx.extActivePanel = -1;
-      ctx.extPanels = [];
-      ctx.closeExtPanel(ctx);
-      if (ctx.extBtn) ctx.extBtn.style.display = 'none';
-    }
-  }
-};
-DebugJS.x.setBtnLabel = function(l) {
-  DebugJS.ctx.extBtnLabel = l;
-  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
+  DebugJS.restoreStatus(DebugJS.ctx);
 };
 var dbg = dbg || DebugJS;
 if (DebugJS.ENABLE) {
