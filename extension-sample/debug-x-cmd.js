@@ -1,10 +1,10 @@
 var extsample = extsample || {};
 
-extsample.cmdAbc = function(arg, tbl) {
-  dbg.log('Hello!');
+extsample.cmdHello = function(arg, tbl) {
+  dbg.log('Hello, World!');
 };
 
-extsample.cmdXyz = function(arg, tbl) {
+extsample.cmdAbc = function(arg, tbl) {
   var args = dbg.splitArgs(arg);
   if (args[0] == '') {
     dbg.printUsage(tbl.usage);
@@ -16,8 +16,8 @@ extsample.cmdXyz = function(arg, tbl) {
 };
 
 extsample.CMD_TBL = [
-  {'cmd': 'abc', 'fnc': extsample.cmdAbc, 'desc': 'extention command example1'},
-  {'cmd': 'xyz', 'fnc': extsample.cmdXyz, 'desc': 'extention command example2', 'usage': 'xyz args...'}
+  {'cmd': 'hello', 'fnc': extsample.cmdHello, 'desc': 'extention command example1'},
+  {'cmd': 'abc', 'fnc': extsample.cmdAbc, 'desc': 'extention command example2', 'usage': 'abc args...'}
 ];
 
 dbg.x.addCmdTbl(extsample.CMD_TBL);

@@ -1,115 +1,121 @@
 var extsample = extsample || {};
 
-//--------------------------------------
-extsample.p1Body = null;
-extsample.p1ActiveCount = 0;
-
-extsample.onCreateP1 = function(panel) {
-  log('onCreateP1');
+//-----------------------------------------------
+// Panel1
+//-----------------------------------------------
+extsample.panel1 = {};
+extsample.panel1.onCreate = function(panel) {
+  log('[panel1] onCreate');
   panel.innerHTML = 'Panel1';
 };
 
-extsample.onActiveP1 = function(panel) {
-  log('onActiveP1');
-  extsample.p1ActiveCount++;
-
-  var content = 'Panel1\n' +
-                'Active = ' + extsample.p1ActiveCount;
-
-  panel.innerHTML = content;
+extsample.panel1.onActive = function(panel) {
+  log('[panel1] onActive');
 };
 
-extsample.onInActiveP1 = function(panel) {
-  log('onInActiveP1');
+extsample.panel1.onInActive = function(panel) {
+  log('[panel1] onInActive');
 };
 
-//--------------------------------------
-extsample.onCreateP2 = function(panel) {
-  log('onCreateP2');
-  panel.innerHTML = 'Panel2';
-};
-
-extsample.onActiveP2 = function(panel) {
-  log('onActiveP2');
-};
-
-extsample.onInActiveP2 = function(panel) {
-  log('onInActiveP2');
-};
-
-//--------------------------------------
-extsample.onCreateP3 = function(panel) {
-  log('onCreateP3');
-  var html = '<div style="box-sizing:border-box; ' +
-             'width:100%; ' +
-             'height:100%; ' +
-             'padding:4px; ' +
-             'background:rgba(255, 240, 240, 0.6); ' +
-             'color:#a00;">' +
-             'Panel3' +
-             '</div>';
+//-----------------------------------------------
+// Panel2
+//-----------------------------------------------
+extsample.panel2 = {};
+extsample.panel2.onCreate = function(panel) {
+  log('[panel2] onCreate');
+  var html = '<div>Panel2</div>';
   panel.innerHTML = html;
 };
 
-extsample.onActiveP3 = function(panel) {
-  log('onActiveP3');
+extsample.panel2.onActive = function(panel) {
+  log('[panel2] onActive');
 };
 
-extsample.onInActiveP3 = function(panel) {
-  log('onInActiveP3');
+extsample.panel2.onInActive = function(panel) {
+  log('[panel2] onInActive');
 };
 
-//--------------------------------------
+//-----------------------------------------------
+// Panel3
+//-----------------------------------------------
+extsample.panel3 = {};
+extsample.panel3.div = null;
+extsample.panel3.onCreate = function(panel) {
+  log('[panel3] onCreate');
+  var div1 = document.createElement('div');
+  div1.innerText = 'Panel3';
+  panel.appendChild(div1);
+
+  var div2 = document.createElement('div');
+  div2.innerText = '';
+  panel.appendChild(div2);
+  extsample.panel3.div = div2;
+};
+
+extsample.panel3.onActive = function(panel) {
+  log('[panel3] onActive');
+  var content = 'Date: ' + new Date();
+  extsample.panel3.div.innerText = content;
+};
+
+extsample.panel3.onInActive = function(panel) {
+  log('[panel3] onInActive');
+};
+
+
+//-----------------------------------------------
 extsample.init = function() {
-  dbg.x.setBtnLabel('EXT');
+  extsample.registerPanel1();
+  extsample.registerPanel2();
+  extsample.registerPanel3();
 
+  //dbg.x.setBtnLabel('EXT1');
+};
+
+extsample.registerPanel1 = function() {
+  var panel1 = {
+    name: 'PANEL1',
+    onCreate: extsample.panel1.onCreate,
+    onActive: extsample.panel1.onActive,
+    onInActive: extsample.panel1.onInActive
+  };
+  dbg.x.addPanel(panel1);
+};
+
+extsample.registerPanel2 = function() {
+  var p2base = document.createElement('div');
+  p2base.style.boxSizing = 'border-box';
+  p2base.style.width = '100%';
+  p2base.style.height = '100%';
+  p2base.style.padding = '4px';
+
+  var panel2 = {
+    name: 'PANEL2',
+    panel: p2base,
+    onCreate: extsample.panel2.onCreate,
+    onActive: extsample.panel2.onActive,
+    onInActive: extsample.panel2.onInActive
+  };
+  dbg.x.addPanel(panel2);
+};
+
+extsample.registerPanel3 = function() {
   var p1base = document.createElement('pre');
   p1base.style.boxSizing = 'border-box';
   p1base.style.width = '100%';
   p1base.style.height = '100%';
   p1base.style.padding = '4px';
 
-  var panel1 = {
-    name: 'P1',
-    panel: p1base,
-    onCreate: extsample.onCreateP1,
-    onActive: extsample.onActiveP1,
-    onInActive: extsample.onInActiveP1
-  };
-  dbg.x.addPanel(panel1);
-};
-
-extsample.onLoad = function() {
-  extsample.addMorePanels();
-};
-
-extsample.addMorePanels = function() {
-  var p2base = document.createElement('div');
-  p2base.style.boxSizing = 'border-box';
-  p2base.style.width = '100%';
-  p2base.style.height = '100%';
-  p2base.style.padding = '4px';
-  p2base.style.background = 'rgba(240, 255, 255, 0.6)';
-  p2base.style.color = '#00f';
-
-  var panel2 = {
-    name: 'P2',
-    panel: p2base,
-    onCreate: extsample.onCreateP2,
-    onActive: extsample.onActiveP2,
-    onInActive: extsample.onInActiveP2
-  };
-  dbg.x.addPanel(panel2);
-
   var panel3 = {
-    name: 'P3',
-    onCreate: extsample.onCreateP3,
-    onActive: extsample.onActiveP3,
-    onInActive: extsample.onInActiveP3
+    name: 'PANEL3',
+    panel: p1base,
+    onCreate: extsample.panel3.onCreate,
+    onActive: extsample.panel3.onActive,
+    onInActive: extsample.panel3.onInActive
   };
   dbg.x.addPanel(panel3);
 };
 
-//--------------------------------------
+
+//-----------------------------------------------
 extsample.init();
-window.addEventListener('load', extsample.onLoad, true);
