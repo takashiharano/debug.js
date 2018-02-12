@@ -3185,12 +3185,8 @@ $ rgb 255 255 255
       arg5: speed(ms)
     </td>
     <td>
-      Set scroll position<br>
+      Set scroll position<br><br>
 <pre class="eg">
-<b>target = log:</b>
--> scroll log window
-position: top|px|bottom
-
 <b>target = window:</b>
 -> scroll window
 x: [+|-]px|left|center|right|current
@@ -3208,6 +3204,10 @@ $ scrollwin 100 5000 10 20
 
 $ scrollwin 100 5000 0 0
 -> Scroll to the specified position directly
+
+<b>target = log:</b>
+-> scroll log window
+position: top|px|bottom
 </pre>
     </td>
   </tr>
@@ -3320,7 +3320,22 @@ $ stopwatch sw1 stop
       verify: Evaluate a value<br>
       count: Displays the test count.<br>
       result: Displays the test result.<br>
-      fin: Finalize the test execution.<br>
+      fin: Finalize the test execution.<br><br>
+
+<pre class="eg">
+$ test init "TestName"
+
+$ test set id "Test01"
+
+$ test set label "value1"
+$ test verify a == 1
+
+$ test set label "value2"
+$ test verify b == 2
+
+$ test fin
+$ test result
+</pre>
     </td>
   </tr>
 
@@ -3413,7 +3428,11 @@ $ uri -d abc%3Adef
     <td class="name">zoom</td>
     <td>ratio</td>
     <td>
-      Zoom the debugger window.
+      Zoom the debugger window.<br><br>
+<pre class="eg">
+$ zoom 1.4
+$ zoom 1
+</pre>
     </td>
   </tr>
 </table>
