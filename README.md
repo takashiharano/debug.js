@@ -26,4 +26,4 @@ Logging:
 ## Documents & Demos
 For more information on how to use, see: https://debugjs.net/
 
-[ ![sample](https://debugjs.net/debugjs20161029.png) ](https://debugjs.net/ "debug.js")
+[ ![sample](https://debugjs.net/debugjs20180212.png) ](https://debugjs.net/ "debug.js")
