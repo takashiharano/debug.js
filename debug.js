@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802130030';
+  this.v = '201802130037';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7691,7 +7691,7 @@ DebugJS.prototype = {
     }
     ctx._cmdSet(ctx, name, val);
   },
-  _cmdSet: function(ctx, name, val) {
+  _cmdSet: function(ctx, name, val, silent) {
     var props = ctx.props;
     if (props[name] != undefined) {
       var restriction = ctx.PROPS_RESTRICTION[name];
@@ -7708,7 +7708,7 @@ DebugJS.prototype = {
           props[name] = ret;
         }
       }
-      DebugJS.log.res(val);
+      if (!silent) {DebugJS.log.res(val);}
     } else {
       DebugJS.log.e(name + ' is invalid property name.');
     }
@@ -12776,7 +12776,7 @@ DebugJS.restoreStatus = function(ctx) {
 };
 DebugJS.restoreProps = function(ctx, props) {
   for (var key in props) {
-    ctx._cmdSet(ctx, key, props[key]);
+    ctx._cmdSet(ctx, key, props[key], true);
   }
 };
 DebugJS.x = DebugJS.x || {};
