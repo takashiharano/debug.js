@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802111840';
+  this.v = '201802121202';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6733,7 +6733,7 @@ DebugJS.prototype = {
   },
 
   cmdEvent: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
+    var args = DebugJS.splitQuotedArgs(arg);
     var op = args[0];
     switch (op) {
       case 'create':
@@ -6753,8 +6753,12 @@ DebugJS.prototype = {
         }
         break;
       case 'dispatch':
-        if (args[1]) {
-          DebugJS.event.dispatch(args[1], args[2]);
+        var target = args[1];
+        if (target) {
+          if (target.charAt(0) == '(') {
+            target = target.substr(1, target.length - 2);
+          }
+          DebugJS.event.dispatch(target, args[2]);
           return;
         }
         break;
@@ -7298,8 +7302,8 @@ DebugJS.prototype = {
       }
       if (src == 'default') src = '';
       point.cursor(src, w, h);
-    } else if ((op == 'focus') || (op == 'blur') || (op == 'contextmenu')) {
-      point.event(op);
+    } else if ((op == 'focus') || (op == 'blur') || (op == 'contextmenu') || (op == 'mousedown') || (op == 'mouseup')) {
+      point.event(op, args[1]);
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
       speed = args[1];
       point.event(op, speed);
@@ -11394,6 +11398,9 @@ DebugJS.point.event = function(type, opt) {
       break;
     case 'contextmenu':
       point.contextmenu(el);
+    case 'mousedown':
+    case 'mouseup':
+      point.mouseevt(el, type, opt);
   }
 };
 DebugJS.point.click = function(button, target, speed, cb) {
@@ -11405,9 +11412,7 @@ DebugJS.point.click = function(button, target, speed, cb) {
   }
   click.target[button] = target;
   click.cb = cb;
-  var e = DebugJS.event.create('mousedown');
-  e.button = button;
-  target.dispatchEvent(e);
+  DebugJS.point.mouseevt(target, 'mousedown', button);
   target.focus();
   if (speed == undefined) speed = 100;
   click.tmid[button] = setTimeout('DebugJS.point.clickUp(' + button + ')', speed);
@@ -11458,9 +11463,7 @@ DebugJS.point.clickUp = function(n) {
   var click = DebugJS.point.click;
   var target = click.target[n];
   click.tmid[n] = 0;
-  var e = DebugJS.event.create('mouseup');
-  e.button = n;
-  target.dispatchEvent(e);
+  DebugJS.point.mouseevt(target, 'mouseup', n);
   switch (n) {
     case 0:
       if (!click.invalid) {
@@ -11489,7 +11492,6 @@ DebugJS.point.click.target = [null, null, null];
 DebugJS.point.click.tmid = [0, 0, 0];
 DebugJS.point.click.invalid = false;
 DebugJS.point.click.cb = null;
-
 DebugJS.point.focus = function(el) {
   el.focus();
 };
@@ -11498,6 +11500,11 @@ DebugJS.point.blur = function(el) {
 };
 DebugJS.point.contextmenu = function(el) {
   var e = DebugJS.event.create('contextmenu');
+  el.dispatchEvent(e);
+};
+DebugJS.point.mouseevt = function(el, ev, b) {
+  var e = DebugJS.event.create(ev);
+  e.button = b | 0;
   el.dispatchEvent(e);
 };
 DebugJS.point.getElementFromCurrentPos = function() {

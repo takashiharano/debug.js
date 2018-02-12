@@ -1584,12 +1584,15 @@ dbg.countElements('tagName');
     <td>
       Command execution<br>
       echo: true = print command line / false = silent<span class="annotation">(default)</span>
-<br>
+<br><br>
 <pre class="eg">
-dbg.cmd('base64 -e <input type="text" id="b64-e-txt" class="demo-text" style="width:150px;" value="Hello, World!">');<button class="demo-button2" onclick="dbg.cmd('base64 -e ' + getVal('b64-e-txt'));">DEMO</button>
+dbg.cmd('rgb #fff'); <button class="demo-button2" onclick="dbg.cmd('rgb #fff');">DEMO</button>
+dbg.cmd('rgb #fff', true); <button class="demo-button2" onclick="dbg.cmd('rgb #fff', true);">DEMO</button>
+
+<span id="timecalc__button" class="showhide-button" onclick="showHideByName('timecalc')">&gt;</span>
+<span id="timecalc__partial-body"></span><div id="timecalc__body" style="display:none;">dbg.cmd('base64 -e <input type="text" id="b64-e-txt" class="demo-text" style="width:150px;" value="Hello, World!">');<button class="demo-button2" onclick="dbg.cmd('base64 -e ' + getVal('b64-e-txt'));">DEMO</button>
 dbg.cmd('base64 -d <input type="text" id="b64-d-txt" class="demo-text" style="width:150px;" value="SGVsbG8sIEJhc2U2NCE=">');<button class="demo-button2" onclick="dbg.cmd('base64 -d ' + getVal('b64-d-txt'));">DEMO</button>
 
-dbg.cmd('rgb #fff'); <button class="demo-button2" onclick="dbg.cmd('rgb #fff', true);">DEMO</button>
 dbg.cmd('json {"name": "John Smith", "age": 25, "city": "New York"}'); <button class="demo-button2" onclick='dbg.cmd("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}", true);'>DEMO</button>
 
 time calc +-
@@ -1601,9 +1604,6 @@ dbg.cmd('10:00 + 13:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 +
 dbg.cmd('10:00 + 14:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 14:00', true);">DEMO</button>
 dbg.cmd('10:00 + 14:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 14:01', true);">DEMO</button>
 
-<span id="timecalc__button" class="showhide-button" onclick="showHideByName('timecalc')">&gt;</span>
-<span id="timecalc__partial-body"></span>
-<div id="timecalc__body" style="display:none;">
 time calc + 2days
 dbg.cmd('10:00 + 37:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 37:59', true);">DEMO</button>
 dbg.cmd('10:00 + 38:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 + 38:00', true);">DEMO</button>
@@ -1617,9 +1617,7 @@ dbg.cmd('10:00 - 10:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 -
 time calc - 2days
 dbg.cmd('10:00 - 33:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 33:59', true);">DEMO</button>
 dbg.cmd('10:00 - 34:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 34:00', true);">DEMO</button>
-dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 34:01', true);">DEMO</button>
-</div>
-</pre>
+dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 34:01', true);">DEMO</button></div></pre>
     </td>
   </tr>
 
@@ -1636,7 +1634,7 @@ dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 -
     <td>
       Multi command execution<br><br>
 <pre class="eg">
-&lt;textarea id="commands"&gt;
+var commands = '
 <textarea id="bat-demo-text" class="demo-textarea2">
 #!BAT!
 # comment
@@ -1660,8 +1658,8 @@ led 0xf0
 wait 500
 led 0
 </textarea>
+';
 
-var commands = document.getElementById('commands').value;
 dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</button>
 dbg.bat(commands, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="6">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="10">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
 dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value=":led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value=":led2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
@@ -2663,7 +2661,7 @@ $ event dispatch tagName<span class="annotation">target</span> 0<span class="ann
 Clear the event object
 $ event clear
 
-e.g.,) Send a Key Down Event to window (A + Shift)
+e.g.,) Send a Key Down Event (A + Shift) to window
 $ event create keydown
 $ event set keyCode 65
 $ event set shiftKey true
@@ -3025,6 +3023,12 @@ $ point dblclick 200<span class="annotation">click speed in ms (opt:default=100)
 
 $ point contexstmenu
 -&gt; Dispatch the contextmenu event to the current position
+
+$ point mousedown 0<span class="annotation">button(0-4)</span>
+-&gt; Dispatch the mousedown event to the current position
+
+$ point mouseup 0<span class="annotation">button(0-4)</span>
+-&gt; Dispatch the mouseup event to the current position
 
 $ point text "abc123"
 -&gt; Input text into the current position (&lt;input&gt;, &lt;textarea&gt;)
