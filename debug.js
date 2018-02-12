@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802122110';
+  this.v = '201802122140';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6733,7 +6733,7 @@ DebugJS.prototype = {
   },
 
   cmdEvent: function(arg, tbl) {
-    var args = DebugJS.splitQuotedArgs(arg);
+    var args = DebugJS.splitArgsEx(arg);
     var op = args[0];
     switch (op) {
       case 'create':
@@ -7040,7 +7040,7 @@ DebugJS.prototype = {
   },
 
   cmdInput: function(arg, tbl) {
-    var args = DebugJS.splitQuotedArgs(arg);
+    var args = DebugJS.splitArgsEx(arg);
     var type = args[0];
     if (type == 'text') {
       var id = args[1];
@@ -7148,7 +7148,7 @@ DebugJS.prototype = {
   },
 
   cmdPause: function(arg, tbl) {
-    var args = DebugJS.splitQuotedArgs(arg);
+    var args = DebugJS.splitArgsEx(arg);
     if (!(DebugJS.ctx._cmdPause(args[0], args[1], args[2]))) {
       DebugJS.printUsage(tbl.usage);
     }
@@ -7194,7 +7194,7 @@ DebugJS.prototype = {
 
   cmdPoint: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitQuotedArgs(arg);
+    var args = DebugJS.splitArgsEx(arg);
     var point = DebugJS.point;
     var op = args[0];
     var x, y, idx, step, speed, alignX, alignY, ret, p, pos, el;
@@ -7328,7 +7328,7 @@ DebugJS.prototype = {
         DebugJS.log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
         return;
       }
-      txt = DebugJS.splitQuotedArgs(arg, 2)[1];
+      txt = DebugJS.splitArgsEx(arg, 2)[1];
       try {
         DebugJS.inputText(el, txt);
       } catch (e) {
@@ -7664,7 +7664,7 @@ DebugJS.prototype = {
   },
 
   cmdSelect: function(arg, tbl) {
-    var args = DebugJS.splitQuotedArgs(arg);
+    var args = DebugJS.splitArgsEx(arg);
     var sel = args[0];
     var method = args[1];
     var type = args[2];
@@ -7789,12 +7789,12 @@ DebugJS.prototype = {
   },
 
   cmdTest: function(arg, tbl) {
-    var args = DebugJS.splitQuotedArgs(arg, 4);
+    var args = DebugJS.splitArgsEx(arg, 4);
     var op = args[0];
     var test = DebugJS.test;
     switch (op) {
       case 'init':
-        var nm = DebugJS.splitQuotedArgs(arg, 2)[1];
+        var nm = DebugJS.splitArgsEx(arg, 2)[1];
         try {
           var nm = eval(nm);
           test.init(nm);
@@ -7825,7 +7825,7 @@ DebugJS.prototype = {
   },
   cmdTestSet: function(arg, tbl) {
     var test = DebugJS.test;
-    var args = DebugJS.splitQuotedArgs(arg, 3);
+    var args = DebugJS.splitArgsEx(arg, 3);
     var target = args[1];
     var fn;
     switch (target) {
@@ -8364,7 +8364,7 @@ DebugJS.splitArgs = function(arg) {
 
 // ' 1 "abc" "d ef"  "g\"hi" 2 ("jkl" + 3) 4 '
 // -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2 [5]=("jkl" + 3) [6]=4
-DebugJS.splitQuotedArgs = function(arg, limit) {
+DebugJS.splitArgsEx = function(arg, limit) {
   var args = [];
   var start = 0;
   var len = 0;
@@ -8468,7 +8468,7 @@ DebugJS.splitCmdLineInTwo = function(str) {
 
 // " 1  2 3  4 " -> [0]="1 2 3" [1]="4"
 DebugJS.splitCmdLineInTwoLast = function(str) {
-  var a = DebugJS.splitQuotedArgs(str);
+  var a = DebugJS.splitArgsEx(str);
   if (a.length == 1) {
     return a;
   }
