@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802122030';
+  this.v = '201802122110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -329,7 +329,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-u|-key key] [timeout]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
@@ -7308,7 +7308,11 @@ DebugJS.prototype = {
       speed = args[1];
       point.event(op, speed);
     } else if ((op == 'keydown') || (op == 'keypress') || (op == 'keyup')) {
-      point.keyevt(op, args[1], args[2], args[3], args[4], args[5]);
+      if (args[1] != undefined) {
+        point.keyevt(op, args[1], args[2], args[3], args[4], args[5]);
+      } else {
+        DebugJS.printUsage('point keydown|keypress|keyup keyCode [-s] [-c] [-a] [-m]');
+      }
     } else if (op == 'getprop') {
       ret = point.getProp(args[1]);
     } else if (op == 'setprop') {
