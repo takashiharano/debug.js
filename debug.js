@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802122140';
+  this.v = '201802130030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -373,7 +373,8 @@ var DebugJS = DebugJS || function() {
     wait: /^[0-9]+$/,
     timer: /.*/,
     wdt: /^[0-9]+$/,
-    mousemoveevtsim: /^true$|^false$/
+    mousemoveevtsim: /^true$|^false$/,
+    consolelog: /^native$|^debugjs$/
   };
   this.PROPS_DFLT_VALS = {
     esc: 'enable',
@@ -390,10 +391,12 @@ var DebugJS = DebugJS || function() {
     wait: 500,
     timer: '00:03:00.000',
     wdt: 500,
-    mousemoveevtsim: 'false'
+    mousemoveevtsim: 'false',
+    consolelog: 'native'
   };
   this.PROPS_CB = {
     timer: this.setPropTimerCb,
+    consolelog: this.setPropConsoleLogCb
   };
   this.props = {};
   this.extBtn = null;
@@ -414,7 +417,6 @@ var DebugJS = DebugJS || function() {
   DebugJS.deepCopy(this.PROPS_DFLT_VALS, this.props);
 };
 DebugJS.ENABLE = true;
-DebugJS.MERGE_CONSOLE = true;
 DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DEFAULT_UNIT = 32;
 DebugJS.INIT_CAUSE_ZOOM = 1;
@@ -4520,17 +4522,6 @@ DebugJS.prototype = {
     ctx.drawStopWatchCd();
   },
 
-  setPropTimerCb: function(ctx, v) {
-    var tm = DebugJS.timestr2struct(v);
-    if (ctx.timerStopWatchCdInput) {
-      ctx.timerTxtHH.value = tm.hh;
-      ctx.timerTxtMI.value = tm.mi;
-      ctx.timerTxtSS.value = tm.ss;
-      ctx.timerTxtSSS.value = tm.sss;
-    }
-    return DebugJS.getTimeStr(tm);
-  },
-
   updatePropTimer: function(v) {
     var ctx = DebugJS.ctx;
     ctx.props.timer = ctx.timerTxtHH.value + ':' + ctx.timerTxtMI.value + ':' + ctx.timerTxtSS.value + '.' + ctx.timerTxtSSS.value;
@@ -7691,33 +7682,49 @@ DebugJS.prototype = {
 
   cmdSet: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var props = ctx.props;
     var args = DebugJS.splitArgs(arg);
     var name = args[0];
-    var value = ((args[1] == undefined) ? '' : args[1]);
-    if ((name == '') || (value == '')) {
+    var val = ((args[1] == undefined) ? '' : args[1]);
+    if ((name == '') || (val == '')) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
+    ctx._cmdSet(ctx, name, val);
+  },
+  _cmdSet: function(ctx, name, val) {
+    var props = ctx.props;
     if (props[name] != undefined) {
       var restriction = ctx.PROPS_RESTRICTION[name];
       if (restriction != undefined) {
-        if (!value.match(restriction)) {
-          DebugJS.log.e(value + ' is invalid. (' + restriction + ')');
+        if (!(val + '').match(restriction)) {
+          DebugJS.log.e(val + ' is invalid. (' + restriction + ')');
           return;
         }
       }
-      props[name] = value;
+      props[name] = val;
       if (ctx.PROPS_CB[name]) {
-        var ret = ctx.PROPS_CB[name](ctx, value);
+        var ret = ctx.PROPS_CB[name](ctx, val);
         if (ret != undefined) {
           props[name] = ret;
         }
       }
-      DebugJS.log.res(value);
+      DebugJS.log.res(val);
     } else {
       DebugJS.log.e(name + ' is invalid property name.');
     }
+  },
+  setPropTimerCb: function(ctx, v) {
+    var tm = DebugJS.timestr2struct(v);
+    if (ctx.timerStopWatchCdInput) {
+      ctx.timerTxtHH.value = tm.hh;
+      ctx.timerTxtMI.value = tm.mi;
+      ctx.timerTxtSS.value = tm.ss;
+      ctx.timerTxtSSS.value = tm.sss;
+    }
+    return DebugJS.getTimeStr(tm);
+  },
+  setPropConsoleLogCb: function(ctx, v) {
+    DebugJS.setConsoleLogOut((v == 'debugjs'));
   },
 
   cmdSetAttr: function(arg, tbl) {
@@ -12618,6 +12625,25 @@ DebugJS.wd.stop = function() {
   DebugJS.log.s('Stop watchdog');
 };
 
+DebugJS.setConsoleLogOut = function(f) {
+  if (!window.console) {return;}
+  if (f) {
+    console.log = function(x) {log(x);};
+    console.info = function(x) {log.i(x);};
+    console.warn = function(x) {log.w(x);};
+    console.error = function(x) {log.e(x);};
+    console.time = function(x) {DebugJS.time.start(x);};
+    console.timeEnd = function(x) {DebugJS.time.end(x);};
+  } else {
+    console.log = DebugJS.bak.console.log;
+    console.info = DebugJS.bak.console.info;
+    console.warn = DebugJS.bak.console.warn;
+    console.error = DebugJS.bak.console.error;
+    console.time = DebugJS.bak.console.time;
+    console.timeEnd = DebugJS.bak.console.timeEnd;
+  }
+};
+
 DebugJS._init = function() {
   if (DebugJS.ctx.status & DebugJS.STATE_INITIALIZED) {
     return true;
@@ -12746,7 +12772,12 @@ DebugJS.restoreStatus = function(ctx) {
   } else {
     ctx.updateSwLabel();
   }
-  DebugJS.deepCopy(data.props, ctx.props);
+  DebugJS.restoreProps(ctx, data.props);
+};
+DebugJS.restoreProps = function(ctx, props) {
+  for (var key in props) {
+    ctx._cmdSet(ctx, key, props[key]);
+  }
 };
 DebugJS.x = DebugJS.x || {};
 DebugJS.x.addCmdTbl = function(table) {
@@ -12874,14 +12905,16 @@ DebugJS.start = function() {
   window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
   window.addEventListener('load', DebugJS.onLoad, true);
   window.addEventListener('error', DebugJS.onError, true);
-  if ((DebugJS.MERGE_CONSOLE) && (window.console)) {
-    console.log = function(x) {log(x);};
-    console.info = function(x) {log.i(x);};
-    console.warn = function(x) {log.w(x);};
-    console.error = function(x) {log.e(x);};
-    console.time = function(x) {DebugJS.time.start(x);};
-    console.timeEnd = function(x) {DebugJS.time.end(x);};
-  }
+  DebugJS.bak = {
+    console: {
+      log: console.log,
+      info: console.info,
+      warn: console.warn,
+      error: console.error,
+      time: console.time,
+      timeEnd: console.timeEnd
+    }
+  };
   DebugJS.restoreStatus(DebugJS.ctx);
 };
 var dbg = dbg || DebugJS;
