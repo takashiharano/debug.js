@@ -1284,9 +1284,9 @@ log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:100px;" 
 <pre class="eg">
 <div class="opaque" style="margin-bottom:-4px">var obj = {...};</div>
 log.p(obj); <button class="demo-button2" onclick="log.p(a);">DEMO</button>
-log.p(obj, 0, '<input type="text" id="log-p-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.p(a, 0, getVal('log-p-msg-txt'));">DEMO</button> (w/ msg)
 log.p(obj, 1); <button class="demo-button2" onclick="log.p(a, 1);">DEMO</button> (lv1)
 log.p(obj, 2); <button class="demo-button2" onclick="log.p(a, 2);">DEMO</button> (lv2)
+log.p(obj, 0, '<input type="text" id="log-p-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.p(a, 0, getVal('log-p-msg-txt'));">DEMO</button> (w/ message)
 </pre>
     </td>
   </tr>
@@ -1304,9 +1304,9 @@ log.p(obj, 2); <button class="demo-button2" onclick="log.p(a, 2);">DEMO</button>
 <pre class="eg">
 <div class="opaque" style="margin-bottom:-4px">var obj = {...};</div>
 log.json(obj); <button class="demo-button2" onclick="log.json(a);">DEMO</button>
-log.json(obj, 0, '<input type="text" id="log-json-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.json(a, 0, getVal('log-json-msg-txt'));">DEMO</button> (w/ msg)
 log.json(obj, 1); <button class="demo-button2" onclick="log.json(a, 1);">DEMO</button> (lv1)
 log.json(obj, 2); <button class="demo-button2" onclick="log.json(a, 2);">DEMO</button> (lv2)
+log.json(obj, 0, '<input type="text" id="log-json-msg-txt" class="demo-text" style="width:100px;" value="Hello, World!">'); <button class="demo-button2" onclick="log.json(a, 0, getVal('log-json-msg-txt'));">DEMO</button> (w/ message)
 </pre>
     </td>
   </tr>
@@ -2393,7 +2393,7 @@ dbg.opacity(<input type="text" id="opacity-text" value="0.5" class="demo-text" s
     </td>
     <td></td>
     <td>
-      returns if the debug window is visible.<br>
+      Returns if the debug window is visible.<br>
 <pre>
 dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('isvisible-ret').innerText = '-> ' + dbg.isVisible();">DEMO</button>
 <span id="isvisible-ret"></span>
@@ -3029,6 +3029,15 @@ $ point mousedown 0<span class="annotation">button(0-4)</span>
 
 $ point mouseup 0<span class="annotation">button(0-4)</span>
 -&gt; Dispatch the mouseup event to the current position
+
+$ point keydown 65<span class="annotation">keyCode</span> -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
+-&gt; Dispatch the keydown event to the current position
+
+$ point keypress 65<span class="annotation">keyCode</span> -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
+-&gt; Dispatch the keydown event to the current position
+
+$ point keyup 65<span class="annotation">keyCode</span> -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
+-&gt; Dispatch the keydown event to the current position
 
 $ point text "abc123"
 -&gt; Input text into the current position (&lt;input&gt;, &lt;textarea&gt;)
@@ -4101,7 +4110,7 @@ function callback(xhr) {
    </div>
   </div>
 </div>
-<div id="evttest" style="display:inline-block; width:415px; height:50px; background:#dff;" 
+<div id="event1" style="display:inline-block; width:415px; height:50px; background:#dff;" 
 onclick="log.i('> click');" 
 ondblclick="log.i('> dblclick');" 
 onmousedown="log.i('> mousedown');" 

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802121202';
+  this.v = '201802122030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7307,6 +7307,8 @@ DebugJS.prototype = {
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
       speed = args[1];
       point.event(op, speed);
+    } else if ((op == 'keydown') || (op == 'keypress') || (op == 'keyup')) {
+      point.keyevt(op, args[1], args[2], args[3], args[4], args[5]);
     } else if (op == 'getprop') {
       ret = point.getProp(args[1]);
     } else if (op == 'setprop') {
@@ -11506,6 +11508,29 @@ DebugJS.point.mouseevt = function(el, ev, b) {
   var e = DebugJS.event.create(ev);
   e.button = b | 0;
   el.dispatchEvent(e);
+};
+DebugJS.point.keyevt = function(ev, key, opt1, opt2, opt3, opt4) {
+  var point = DebugJS.point;
+  var el = point.getElementFromCurrentPos();
+  if (!el) return;
+  var e = DebugJS.event.create(ev);
+  e.keyCode = key | 0;
+  e.shiftKey = false;
+  e.ctrlKey = false;
+  e.altKey = false;
+  e.metaKey = false;
+  e = point.setKeyFlag(e, opt1);
+  e = point.setKeyFlag(e, opt2);
+  e = point.setKeyFlag(e, opt3);
+  e = point.setKeyFlag(e, opt4);
+  el.dispatchEvent(e);
+};
+DebugJS.point.setKeyFlag = function(e, f) {
+  if (f == '-s') {e.shiftKey = true;}
+  if (f == '-c') {e.ctrlKey = true;}
+  if (f == '-a') {e.altKey = true;}
+  if (f == '-m') {e.metaKey = true;}
+  return e;
 };
 DebugJS.point.getElementFromCurrentPos = function() {
   var ctx = DebugJS.ctx;
