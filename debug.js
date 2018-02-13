@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802130037';
+  this.v = '201802131951';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3094,7 +3094,7 @@ DebugJS.prototype = {
            (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
            ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
            ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG)))) ||
-          ((ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.ctrl.errstop))) {
+          ((ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.ctrl.errstop) && (DebugJS.bat.ctrl.hasErr))) {
         ctx.showDbgWin();
         ctx.errStatus = DebugJS.ERR_STATE_NONE;
       }
