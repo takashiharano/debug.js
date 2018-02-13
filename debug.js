@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802131951';
+  this.v = '201802131959';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1688,14 +1688,16 @@ DebugJS.prototype = {
   },
 
   updateWindowSizeLabel: function() {
-    var ctx = DebugJS.ctx;
-    var w = window.outerWidth;
-    var h = window.outerHeight;
-    ctx.windowSizeLabel.innerText = 'WIN:w=' + w + ',h=' + h;
-    if (ctx.status & DebugJS.STATE_SYS_INFO) {
-      document.getElementById(ctx.id + '-sys-win-w').innerText = w;
-      document.getElementById(ctx.id + '-sys-win-h').innerText = h;
-    }
+    try {
+      var ctx = DebugJS.ctx;
+      var w = window.outerWidth;
+      var h = window.outerHeight;
+      ctx.windowSizeLabel.innerText = 'WIN:w=' + w + ',h=' + h;
+      if (ctx.status & DebugJS.STATE_SYS_INFO) {
+        document.getElementById(ctx.id + '-sys-win-w').innerText = w;
+        document.getElementById(ctx.id + '-sys-win-h').innerText = h;
+      }
+    } catch (e) {}
   },
 
   updateClientSizeLabel: function() {
