@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802132130';
+  this.v = '201802132213';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8916,7 +8916,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
           arg.dump += '\n';
         }
       } else {
-        arg.dump += '<span style="color:#c08">[Array][' + obj.length + ']</span>';
+        arg.dump += '<span style="color:#e4b">[Array][' + obj.length + ']</span>';
       }
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
         for (var i in obj) {
