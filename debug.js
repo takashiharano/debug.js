@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802131959';
+  this.v = '201802132026';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2682,7 +2682,7 @@ DebugJS.prototype = {
 
   updateStatusInfoOnKeyDown: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
-    ctx.keyDownCode = e.keyCode + ' ' + modKey;
+    ctx.keyDownCode = e.keyCode + '(' + e.key + ') ' + modKey;
     ctx.updateKeyDownLabel();
     ctx.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
     ctx.updateKeyPressLabel();
@@ -2700,7 +2700,7 @@ DebugJS.prototype = {
 
   updateStatusInfoOnKeyUp: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
-    ctx.keyUpCode = e.keyCode + ' ' + modKey;
+    ctx.keyUpCode = e.keyCode + '(' + e.key + ') ' + modKey;
     ctx.updateKeyUpLabel();
     ctx.resizeMainHeight();
   },
