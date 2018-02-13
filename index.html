@@ -2411,8 +2411,7 @@ dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('
       Splits a given argument string into an array of strings by separating the string into substrings, using whitespace character " ".<br>
 <pre>
 var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" style="width:100px;" value="abc def 123">'); <button class="demo-button2" onclick="log.p(dbg.splitArgs(document.getElementById('args-txt').value), 0, 'args =');">DEMO</button>
-<span id="isvisible-ret"></span>
-</pre>
+<span id="isvisible-ret"></span></pre>
     </td>
   </tr>
 
@@ -2426,8 +2425,21 @@ var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" sty
       An extended version of splitArgs().<br>
 <pre>
 var args = dbg.splitArgsEx('<input type="text" id="args-ex-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitArgsEx(document.getElementById('args-ex-txt').value), 0, 'args =');">DEMO</button>
-<span id="isvisible-ret"></span>
-</pre>
+<span id="isvisible-ret"></span></pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
+      DebugJS.getOptVal<br>
+      <span class="alias">( dbg.getOptVal )</span>
+    </td>
+    <td>argument-string</td>
+    <td>
+      Returns a value of an option.<br>
+<pre>
+var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b 123'>', '<input type="text" id="opt-val-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVal(getVal('opt-val-arg-txt'), getVal('opt-val-opt-txt')), 0, 'val =');">DEMO</button>
+<span id="isvisible-ret"></span></pre>
     </td>
   </tr>
 
@@ -3060,13 +3072,13 @@ $ point mousedown 0<span class="annotation">button(0-4)</span>
 $ point mouseup 0<span class="annotation">button(0-4)</span>
 -&gt; Dispatch the mouseup event to the current position
 
-$ point keydown 65<span class="annotation">keyCode</span> -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
+$ point keydown -keyCode 65 -code KeyA -key a -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
 -&gt; Dispatch the keydown event to the current position
 
-$ point keypress 65<span class="annotation">keyCode</span> -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
+$ point keypress -keyCode 65 -code KeyA -key a -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
 -&gt; Dispatch the keydown event to the current position
 
-$ point keyup 65<span class="annotation">keyCode</span> -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
+$ point keyup -keyCode 65 -code -code KeyA -key a -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
 -&gt; Dispatch the keydown event to the current position
 
 $ point text "abc123"

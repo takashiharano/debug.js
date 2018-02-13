@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802132026';
+  this.v = '201802132130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7302,7 +7302,7 @@ DebugJS.prototype = {
       point.event(op, speed);
     } else if ((op == 'keydown') || (op == 'keypress') || (op == 'keyup')) {
       if (args[1] != undefined) {
-        point.keyevt(op, args[1], args[2], args[3], args[4], args[5]);
+        point.keyevt(args);
       } else {
         DebugJS.printUsage('point keydown|keypress|keyup keyCode [-s] [-c] [-a] [-m]');
       }
@@ -8523,6 +8523,24 @@ DebugJS.parseArgs = function(arg) {
     args.data = DebugJS.delLeadingAndTrailingWhiteSpace(wkArgs[2]);
   }
   return args;
+};
+
+DebugJS.getOptVal = function(args, opt) {
+  if (typeof args === 'string') {
+    args = DebugJS.splitArgsEx(args);
+  }
+  var v = null;
+  for (var i = 0; i < args.length; i++) {
+    if (args[i] == '-' + opt) {
+      if ((args[i + 1] != undefined) && (args[i + 1].charAt(0) != '-')) {
+        v = args[i + 1];
+      } else {
+        v = '';
+      }
+      break;
+    }
+  }
+  return v;
 };
 
 DebugJS.getQuotedStr = function(str) {
@@ -11522,27 +11540,37 @@ DebugJS.point.mouseevt = function(el, ev, b) {
   e.button = b | 0;
   el.dispatchEvent(e);
 };
-DebugJS.point.keyevt = function(ev, key, opt1, opt2, opt3, opt4) {
+DebugJS.point.keyevt = function(args) {
   var point = DebugJS.point;
   var el = point.getElementFromCurrentPos();
   if (!el) return;
+  var ev = args[0];
   var e = DebugJS.event.create(ev);
-  e.keyCode = key | 0;
+
+  var keyCode = DebugJS.getOptVal(args, 'keyCode');
+  if (keyCode != null) {e.keyCode = keyCode | 0;}
+
+  var code = DebugJS.getOptVal(args, 'code');
+  if (code != null) {e.code = code;}
+
+  var key = DebugJS.getOptVal(args, 'key');
+  if (key != null) {e.key = key;}
+
   e.shiftKey = false;
   e.ctrlKey = false;
   e.altKey = false;
   e.metaKey = false;
-  e = point.setKeyFlag(e, opt1);
-  e = point.setKeyFlag(e, opt2);
-  e = point.setKeyFlag(e, opt3);
-  e = point.setKeyFlag(e, opt4);
+  e = point.setKeyFlag(e, args);
+
   el.dispatchEvent(e);
 };
-DebugJS.point.setKeyFlag = function(e, f) {
-  if (f == '-s') {e.shiftKey = true;}
-  if (f == '-c') {e.ctrlKey = true;}
-  if (f == '-a') {e.altKey = true;}
-  if (f == '-m') {e.metaKey = true;}
+DebugJS.point.setKeyFlag = function(e, args) {
+  for (var i = 0; i < args.length; i++) {
+    if (args[i] == '-s') {e.shiftKey = true;}
+    if (args[i] == '-c') {e.ctrlKey = true;}
+    if (args[i] == '-a') {e.altKey = true;}
+    if (args[i] == '-m') {e.metaKey = true;}
+  }
   return e;
 };
 DebugJS.point.getElementFromCurrentPos = function() {
