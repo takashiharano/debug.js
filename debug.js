@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802150010';
+  this.v = '201802150145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -301,7 +301,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate a loaded batch script', usage: 'bat run [start] [end]|pause|stop|list|status|clear|exec b64-encoded-bat'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [start] [end]|pause|stop|list|status|clear|exec b64-encoded-bat'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -312,13 +312,13 @@ var DebugJS = DebugJS || function() {
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'errstop', fnc: this.cmdErrstop, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'errstop on|off'},
     {cmd: 'event', fnc: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
-    {cmd: 'execute', fnc: this.cmdExecute, desc: 'Execute the edited JavaScript code'},
     {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'help', fnc: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'hex', fnc: this.cmdHex, desc: 'Convert a number to hexadecimal', usage: 'hex num digit'},
     {cmd: 'history', fnc: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
     {cmd: 'input', fnc: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" speed start end'},
+    {cmd: 'js', fnc: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', usage: 'js exec'},
     {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
@@ -6763,10 +6763,6 @@ DebugJS.prototype = {
     DebugJS.printUsage(tbl.usage);
   },
 
-  cmdExecute: function(arg, tbl) {
-    DebugJS.ctx.execScript();
-  },
-
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     ctx.CMDVALS = {};
@@ -7045,6 +7041,17 @@ DebugJS.prototype = {
       DebugJS.inputText(id, txt, speed, start, max);
     } else {
       DebugJS.printUsage(tbl.usage);
+    }
+  },
+
+  cmdJs: function(arg, tbl) {
+    var a = DebugJS.splitArgs(arg);
+    switch (a[0]) {
+      case 'exec':
+        DebugJS.ctx.execScript();
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
     }
   },
 

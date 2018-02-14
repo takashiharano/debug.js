@@ -2516,7 +2516,7 @@ $ base64 -d YWJjZGVmZw==
       arg3: end line<span class="annotation">(opt)</span>
     </td>
     <td>
-      Operate a loaded batch script
+      Operate BAT Script
 <pre class="eg">
 $ bat run start-line<span class="annotation">(opt)</span> end-line<span class="annotation">(opt)</span>
 $ bat pause
@@ -2735,12 +2735,6 @@ $ event dispatch window
   </tr>
 
   <tr>
-    <td class="name">execute</td>
-    <td></td>
-    <td>Execute the edited JavaScript code.</td>
-  </tr>
-
-  <tr>
     <td class="name">exit</td>
     <td></td>
     <td>Close the debug window and clear all status.</td>
@@ -2834,6 +2828,18 @@ $ input text #text1 "abc 123" 100
 $ input text #text1 "abc 123" 100-200
 $ input text #text1 "abc 123" 100 1 3
 $ input text #text1 "abc 123" 100 2 3
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">js</td>
+    <td>operation</td>
+    <td>
+      Operate JavaScript code in JS editor.<br>
+<pre class="eg">
+Execute the edited script.
+$ js exec
 </pre>
     </td>
   </tr>
