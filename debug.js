@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802142310';
+  this.v = '201802150010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -416,7 +416,6 @@ var DebugJS = DebugJS || function() {
   this.setupDefaultOptions();
   DebugJS.deepCopy(this.PROPS_DFLT_VALS, this.props);
 };
-DebugJS.ENABLE = true;
 DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DEFAULT_UNIT = 32;
 DebugJS.INIT_CAUSE_ZOOM = 1;
@@ -12967,6 +12966,7 @@ DebugJS.start = function() {
   DebugJS.restoreStatus(DebugJS.ctx);
 };
 var dbg = dbg || DebugJS;
+DebugJS.ENABLE = true;
 if (DebugJS.ENABLE) {
   DebugJS.start();
 } else {
