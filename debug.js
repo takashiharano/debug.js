@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802132213';
+  this.v = '201802142310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -341,7 +341,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|verify got-val method expected-val|fin'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|status|verify got-val method expected-val|fin'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -374,7 +374,7 @@ var DebugJS = DebugJS || function() {
     timer: /.*/,
     wdt: /^[0-9]+$/,
     mousemoveevtsim: /^true$|^false$/,
-    consolelog: /^native$|^debugjs$/
+    consolelog: /^native$|^me$/
   };
   this.PROPS_DFLT_VALS = {
     esc: 'enable',
@@ -2587,7 +2587,9 @@ DebugJS.prototype = {
       case 67: // C
         if ((e.ctrlKey) && (document.activeElement == ctx.cmdLine)) {
           if (((ctx.cmdLine.selectionEnd - ctx.cmdLine.selectionStart) == 0)) {
-            DebugJS.bat.stop();
+            if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
+              DebugJS.bat.stop();
+            }
             DebugJS.log.s(ctx.cmdLine.value + '^C');
             ctx.cmdLine.value = '';
           }
@@ -7726,7 +7728,7 @@ DebugJS.prototype = {
     return DebugJS.getTimeStr(tm);
   },
   setPropConsoleLogCb: function(ctx, v) {
-    DebugJS.setConsoleLogOut((v == 'debugjs'));
+    DebugJS.setConsoleLogOut((v == 'me'));
   },
 
   cmdSetAttr: function(arg, tbl) {
@@ -7821,6 +7823,10 @@ DebugJS.prototype = {
       case 'result':
         DebugJS.log(test.result());
         break;
+      case 'status':
+        var st = test.getStatus();
+        DebugJS.log(test.getResultStr(st));
+        return st;
       case 'verify':
         test.verify(args[1], args[2], args[3], true);
         break;
@@ -12446,6 +12452,19 @@ DebugJS.test.result = function() {
   s += test.count(cnt) + '\n\nDetails:\n' + test.count(test.data.cnt) + '\n';
   s += details;
   return s;
+};
+DebugJS.test.getStatus = function() {
+  var test = DebugJS.test;
+  var r = test.STATUS_OK;
+  for (id in test.data.results) {
+    var st = test.chkResult(test.data.results[id]);
+    if (st == test.STATUS_ERR) {
+      return test.STATUS_ERR;
+    } else if (st == test.STATUS_NG) {
+      r = test.STATUS_NG;
+    }
+  }
+  return r;
 };
 DebugJS.test.verify = function(got, method, exp, reqEval) {
   var test = DebugJS.test;

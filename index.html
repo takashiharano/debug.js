@@ -2403,6 +2403,20 @@ dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('
 
   <tr>
     <td class="name">
+      DebugJS.test.getStatus<br>
+      <span class="alias">( dbg.test.getStatus )</span>
+    </td>
+    <td></td>
+    <td>
+      Returns the total test result.<br>
+<pre>
+dbg.test.getStatus(); <button class="demo-button2" onclick="log.p(dbg.test.getStatus());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">
       DebugJS.splitArgs<br>
       <span class="alias">( dbg.splitArgs )</span>
     </td>
@@ -3371,6 +3385,7 @@ $ stopwatch sw1 stop
       verify: Evaluate a value<br>
       count: Displays the test count.<br>
       result: Displays the test result.<br>
+      status: Displays the total test result. (OK / NG / ERR)<br>
       fin: Finalize the test execution.<br><br>
 
 <pre class="eg">
@@ -3965,7 +3980,7 @@ log.t('elapsed time of %n t=%t lap=%lt', 'timer2');<br>
 You can switch the console.log() output between native function and debug.js's log() function as follows.<br>
 <pre class="eg">
 $ set consolelog native<span class="annotation">(default)</span>
-$ set consolelog debugjs
+$ set consolelog me
 </pre>
 </div>
 <input type="text" id="console-message-text" value="Hello, console!" style="width:400px;margin-top:3px;">
