@@ -1802,8 +1802,13 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
     </td>
     <td></td>
     <td>
-      Returns the following batch execution status.<br>
-      "STOPPED" / "RUNNING" / "PAUSED" / "PAUSED2" <button class="demo-button2" onclick="log(dbg.bat.status());">DEMO</button>
+      Returns the following batch execution status. <button class="demo-button2" onclick="log(dbg.bat.status());">DEMO</button><br>
+<pre class="eg">
+"STOPPED"
+"RUNNING"
+"PAUSED"  Paused by "bat pause" command or [PAUSE] button.
+"PAUSED2" Paused by "pause" command.
+</pre>
     </td>
   </tr>
 
