@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802150735';
+  this.v = '201802152255';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11459,7 +11459,8 @@ DebugJS.point.click = function(button, target, speed, cb) {
   click.target[button] = target;
   click.cb = cb;
   DebugJS.point.mouseevt(target, 'mousedown', button);
-  target.focus();
+  var el = DebugJS.findFocusableEl(target);
+  if (el != null) {el.focus();}
   if (speed == undefined) speed = 100;
   click.tmid[button] = setTimeout('DebugJS.point.clickUp(' + button + ')', speed);
 };
@@ -12627,6 +12628,32 @@ DebugJS.getLabelEl = function(label, idx) {
     }
   }
   return el;
+};
+
+DebugJS.findFocusableEl = function(e) {
+  var el = e;
+  do {
+    if (el.tagName == 'HTML') {
+      el = null;
+      break;
+    }
+    if (DebugJS.isFocusable(el.tagName)) {
+      break;
+    }
+    el = el.parentNode;
+  } while (el != null);
+  return el;
+};
+DebugJS.isFocusable = function(n) {
+  switch (n) {
+    case 'A':
+    case 'BUTTON':
+    case 'INPUT':
+    case 'SELECT':
+    case 'TEXTAREA':
+      return true;
+  }
+  return false;
 };
 
 DebugJS.random = function(min, max) {
