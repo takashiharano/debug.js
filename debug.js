@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802160020';
+  this.v = '201802160732';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7391,11 +7391,12 @@ DebugJS.prototype = {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      var name = arg;
-      if (ctx.props[name] != undefined) {
-        DebugJS.log.res(ctx.props[name]);
+      var v = ctx.props[arg];
+      if (v != undefined) {
+        DebugJS.log.res(v);
+        return v;
       } else {
-        DebugJS.log.e(name + ' is invalid property name.');
+        DebugJS.log.e(arg + ' is invalid property name.');
       }
     }
   },
