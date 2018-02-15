@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802152347';
+  this.v = '201802160020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7118,6 +7118,7 @@ DebugJS.prototype = {
     } else {
       DebugJS.ctx.setLed(arg);
     }
+    return DebugJS.ctx.led;
   },
 
   cmdMsg: function(arg, tbl) {
@@ -7189,7 +7190,9 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       ctx.enableDraggable(ctx);
     } else {
+      var st = ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? false : true);
       DebugJS.printUsage(tbl.usage);
+      return st;
     }
   },
 
@@ -7551,7 +7554,9 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       ctx.setLogPreserve(ctx, false);
     } else {
+      var st = ((ctx.status & DebugJS.STATE_LOG_PRESERVED) ? true : false);
       DebugJS.printUsage('log preserve on|off');
+      return st;
     }
   },
   _cmdLogSuspend: function(ctx, arg, tbl) {
@@ -7561,7 +7566,9 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       DebugJS.ctx.resumeLog();
     } else {
+      var st = ((ctx.status & DebugJS.STATE_LOG_SUSPENDING) ? true : false);
       DebugJS.printUsage('log suspend on|off');
+      return st;
     }
   },
 
@@ -11283,19 +11290,19 @@ DebugJS.isBat = function(s) {
 DebugJS.led = function(v) {
   DebugJS.ctx.setLed(v);
 };
-
 DebugJS.led.on = function(pos) {
   DebugJS.ctx.turnLed(pos, true);
 };
-
 DebugJS.led.off = function(pos) {
   DebugJS.ctx.turnLed(pos, false);
+};
+DebugJS.led.val = function() {
+  return DebugJS.ctx.led;
 };
 
 DebugJS.msg = function(val) {
   DebugJS.ctx.setMsg(val);
 };
-
 DebugJS.msg.clear = function() {
   DebugJS.ctx.setMsg('');
 };
