@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802152255';
+  this.v = '201802152347';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11329,8 +11329,7 @@ DebugJS.point = function(x, y) {
   point.hint.move();
 
   if (DebugJS.ctx.props.mousemoveevtsim == 'true') {
-    var e = document.createEvent('Events');
-    e.initEvent('mousemove', true, true);
+    var e = DebugJS.event.create('mousemove');
     e.clientX = pos.x;
     e.clientY = pos.y;
     window.dispatchEvent(e);
@@ -12265,9 +12264,31 @@ DebugJS.selectOption = function(el, method, type, val) {
 
 DebugJS.event = {};
 DebugJS.event.evt = null;
+DebugJS.event.evtDef = {
+  blur: {bubbles: false, cancelable: false},
+  change: {bubbles: true, cancelable: false},
+  click: {bubbles: true, cancelable: true},
+  contextmenu: {bubbles: true, cancelable: true},
+  dblclick: {bubbles: true, cancelable: true},
+  dragover: {bubbles: true, cancelable: true},
+  drop: {bubbles: true, cancelable: true},
+  focus: {bubbles: false, cancelable: false},
+  input: {bubbles: true, cancelable: false},
+  keydown: {bubbles: true, cancelable: true},
+  keypress: {bubbles: true, cancelable: true},
+  keyup: {bubbles: true, cancelable: true},
+  mousedown: {bubbles: true, cancelable: true},
+  mousemove: {bubbles: true, cancelable: true},
+  mouseup: {bubbles: true, cancelable: true},
+};
 DebugJS.event.create = function(type) {
   var e = document.createEvent('Events');
   e.initEvent(type, true, true);
+  var df = DebugJS.event.evtDef[type];
+  if (df) {
+    e.bubbles = df.bubbles;
+    e.cancelable = df.cancelable;
+  }
   DebugJS.event.evt = e;
   return e;
 };
