@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802160732';
+  this.v = '201802162130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8364,7 +8364,7 @@ DebugJS.getCmdValName = function(v, head) {
   }
   var idx = r.index;
   if ((idx > 0) && ((v.charAt(idx - 1) == '\\'))) {
-      return null;
+    return null;
   }
   return r[1];
 };
@@ -11463,6 +11463,7 @@ DebugJS.point.click = function(button, target, speed, cb) {
     click.tmid[button] = 0;
     DebugJS.point.clickUp(button);
   }
+  DebugJS.bat.lock();
   click.target[button] = target;
   click.cb = cb;
   DebugJS.point.mouseevt(target, 'mousedown', button);
@@ -11537,6 +11538,7 @@ DebugJS.point.clickUp = function(n) {
       }
   }
   click.target[n] = null;
+  DebugJS.bat.unlock();
   if (click.cb) {
     click.cb();
     click.cb = null;
@@ -12618,9 +12620,7 @@ DebugJS.getElement = function(selector, idx) {
 
 DebugJS.getElPosSize = function(el, idx) {
   el = DebugJS.getElement(el, idx);
-  if (!el) {
-    return null;
-  }
+  if (!el) {return null;}
   var rect = el.getBoundingClientRect();
   var rectT = Math.round(rect.top);
   var rectL = Math.round(rect.left);
@@ -12666,9 +12666,7 @@ DebugJS.findFocusableEl = function(e) {
       el = null;
       break;
     }
-    if (DebugJS.isFocusable(el.tagName)) {
-      break;
-    }
+    if (DebugJS.isFocusable(el.tagName)) {break;}
     el = el.parentNode;
   } while (el != null);
   return el;
@@ -12914,9 +12912,7 @@ DebugJS.x.addPanel = function(p) {
 };
 DebugJS.x.removePanel = function(idx) {
   var ctx = DebugJS.ctx;
-  if (!ctx.extPanels[idx]) {
-    return;
-  }
+  if (!ctx.extPanels[idx]) {return;}
   var nIdx = -1;
   var p = ctx.extPanels[idx];
   ctx.extPanels[idx] = null;
