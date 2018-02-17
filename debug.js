@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802172323';
+  this.v = '201802180115';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -409,6 +409,7 @@ var DebugJS = DebugJS || function() {
   this.evtListener = {
     'batstart': [],
     'batstop': [],
+    'ctrlc': [],
     'fileloaded': [],
     'watchdog': []
   };
@@ -2602,6 +2603,10 @@ DebugJS.prototype = {
             }
             DebugJS.log.s(ctx.cmdLine.value + '^C');
             ctx.cmdLine.value = '';
+            for (var i = 0; i < ctx.evtListener.ctrlc.length; i++) {
+              var cb = ctx.evtListener.ctrlc[i];
+              if (cb) cb();
+            }
           }
         }
         break;
@@ -5496,10 +5501,10 @@ DebugJS.prototype = {
     }
     ctx.updateFilePreview(html);
     setTimeout(ctx.fileLoadFinalize, 1000);
+    var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64);
     for (var i = 0; i < ctx.evtListener.fileloaded.length; i++) {
       var cb = ctx.evtListener.fileloaded[i];
       if (cb) {
-        var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FORMAT_B64);
         cb(file, content, isB64);
       }
     }
@@ -10839,7 +10844,7 @@ DebugJS.bat = function(b, sl, el) {
   var bat = DebugJS.bat;
   bat.set(b);
   bat.run.arg.s = sl;
-  bat.run.arg.e = el;;
+  bat.run.arg.e = el;
   setTimeout(bat.run, 0);
 };
 DebugJS.bat.cmds = [];
@@ -12998,6 +13003,9 @@ DebugJS.restoreProps = function(ctx, props) {
   for (var key in props) {
     ctx._cmdSet(ctx, key, props[key], true);
   }
+};
+DebugJS.ver = function() {
+  return DebugJS.ctx.v;
 };
 DebugJS.x = DebugJS.x || {};
 DebugJS.x.addCmdTbl = function(table) {

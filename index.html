@@ -343,6 +343,12 @@ function startStopRandomDemo() {
   el.innerText = randomDemoFlag ? 'Stop Random Demo' : 'Start Random Demo';
 }
 
+function stopRandomDemo() {
+  randomDemoFlag = false;
+  var el = document.getElementById('random-demo-button');
+  el.innerText = 'Start Random Demo';
+}
+
 function showHideByName(name) {
   var button = document.getElementById(name + '__button');
   var partialBody = document.getElementById(name + '__partial-body');
@@ -580,9 +586,14 @@ function fileLoaderHandlerBin(file, content) {
   el.innerText = content;
 }
 
+function onCtrlC() {
+  stopRandomDemo();
+}
+
 function onReady() {
   //log('ready');
   addFileLoadHandler();
+  dbg.addEvtListener('ctrlc', onCtrlC);
 }
 
 function onLoad() {
@@ -1516,6 +1527,11 @@ Adds the specified EventListener function to the list of event listeners for the
       Callback function which is called after stopped batch execution.<br>
 <pre class="eg">Function format:
   function onBatStop() {}</pre>
+<br>
+      type: <b>ctrlc</b><br>
+      Callback function which is called when Ctrl+C is pressed on the command line.<br>
+<pre class="eg">Function format:
+  function onCtrlC() {}</pre>
 <br>
       type: <b>fileloaded</b><br>
 Callback function which is called when file load has been completed<br>
