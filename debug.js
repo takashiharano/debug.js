@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802172225';
+  this.v = '201802172232';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11045,7 +11045,6 @@ DebugJS.bat.prepro = function(cmd) {
     case 'nop':
       DebugJS.log('');
     case '':
-    case 'bat':
       return 1;
     case 'echo':
       if (a[0] == 'off') {
