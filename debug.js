@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802180115';
+  this.v = '201802180132';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7358,7 +7358,7 @@ DebugJS.prototype = {
       if (args[1] != undefined) {
         point.keyevt(args);
       } else {
-        DebugJS.printUsage('point keydown|keypress|keyup keyCode [-s] [-c] [-a] [-m]');
+        DebugJS.printUsage('point keydown|keypress|keyup -keyCode n -code c -key k [-s] [-c] [-a] [-m]');
       }
     } else if (op == 'getprop') {
       ret = point.getProp(args[1]);
