@@ -1179,7 +1179,9 @@ If you want to change the debugger settings, explicitly call for initialization 
       Lock code string.<br>
       Run into protected mode and unlock with this code.<br>
       The debug window will not appear until unlocked.<br>
-      Unlock: [ESC] -> [Ctrl] -> lockCode -> [Enter]
+<pre class="eg">
+Unlock: [ESC] -> [Ctrl] -> lockCode -> [Enter]
+</pre>
     </td>
     <td>null</td>
   </tr>
@@ -2636,6 +2638,12 @@ operation: <b>opacity</b>
 
 operation: <b>status</b>
  Show the status of the debug window
+
+operation: <b>lock</b>
+ Hide and lock the debug window with lock code
+ parameter1:
+  lock code
+ <span class="annotation2">See also: Options -> lockCode</span>
 </pre>
     </td>
   </tr>

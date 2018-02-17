@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802162130';
+  this.v = '201802171206';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -306,7 +306,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'cont', fnc: this.cmdCont, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'cont on|off'},
-    {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status'},
+    {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
@@ -3121,6 +3121,11 @@ DebugJS.prototype = {
       ctx.closeElmInfo(ctx);
     }
     ctx.hideDbgWin(ctx);
+  },
+
+  lockDbgWin: function(ctx) {
+    ctx.uiStatus |= DebugJS.UI_ST_PROTECTED;
+    ctx.closeDbgWin();
   },
 
   focusCmdLine: function() {
@@ -6587,7 +6592,7 @@ DebugJS.prototype = {
   },
   _cmdBatCtrlOnOff: function(ctx, arg, tbl, key) {
     if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
-      DebugJS.log('bat dedicated command');return;
+      DebugJS.log('BAT dedicated command');return;
     }
     var a = DebugJS.splitArgs(arg)[0];
     var ctrl = DebugJS.bat.ctrl;
@@ -6628,6 +6633,9 @@ DebugJS.prototype = {
         break;
       case 'status':
         ctx._cmdDbgWinStatus(ctx);
+        break;
+      case 'lock':
+        ctx._cmdDbgWinLock(ctx, a);
         break;
       default:
         DebugJS.printUsage(tbl.usage);
@@ -6686,6 +6694,17 @@ DebugJS.prototype = {
     'posX2 : ' + sizePos.x2 + '\n' +
     'posY2 : ' + sizePos.y2 + '\n';
     DebugJS.log.mlt(str);
+  },
+   _cmdDbgWinLock: function(ctx, a) {
+    var c = a[1];
+    if (ctx.opt.lockCode == null) {
+      if (c == undefined) {
+        DebugJS.printUsage('dbgwin lock [code]');
+        return;
+      }
+      ctx.opt.lockCode = c;
+    }
+    ctx.lockDbgWin(ctx);
   },
 
   cmdDate: function(arg, tbl) {
