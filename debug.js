@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802172232';
+  this.v = '201802172323';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5939,12 +5939,15 @@ DebugJS.prototype = {
   },
 
   execBat: function(ctx) {
-    DebugJS.bat.store(DebugJS.ctx.batTextEditor.value);
+    var bat = DebugJS.bat;
+    bat.store(DebugJS.ctx.batTextEditor.value);
     var s = ctx.batStartTxt.value;
     var e = ctx.batEndTxt.value;
     if (s == '') s = undefined;
     if (e == '') e = undefined;
-    DebugJS.bat.run(s, e);
+    bat.run.arg.s = s;
+    bat.run.arg.s = e;
+    DebugJS.bat.run();
   },
 
   updateCurPc: function() {
@@ -6499,9 +6502,9 @@ DebugJS.prototype = {
             (ctx.status & DebugJS.STATE_BAT_PAUSE)) {
           bat._resume();
         } else {
-          var sl = args[1];
-          var el = args[2];
-          bat.run(sl, el);
+          bat.run.arg.s = args[1];
+          bat.run.arg.e = args[2];
+          bat.run();
         }
         break;
       case 'list':
@@ -10833,8 +10836,11 @@ DebugJS.cmd = function(c, echo) {
 };
 
 DebugJS.bat = function(b, sl, el) {
-  DebugJS.bat.set(b);
-  DebugJS.bat.run(sl, el);
+  var bat = DebugJS.bat;
+  bat.set(b);
+  bat.run.arg.s = sl;
+  bat.run.arg.e = el;;
+  setTimeout(bat.run, 0);
 };
 DebugJS.bat.cmds = [];
 DebugJS.bat.ctrl = {
@@ -10879,23 +10885,25 @@ DebugJS.bat.store = function(b) {
   DebugJS.ctx.updateTotalLine();
 };
 DebugJS.bat.parseLabels = function() {
-  var cmds = DebugJS.bat.cmds;
-  DebugJS.bat.labels = {};
-  for (var i = 0; i < cmds.length; i++) {
-    var c = cmds[i];
+  var bat = DebugJS.bat;
+  bat.labels = {};
+  for (var i = 0; i < bat.cmds.length; i++) {
+    var c = bat.cmds[i];
     if ((c.charAt(0) == ':') && c.length >= 2) {
       var label = c.substr(1);
-      DebugJS.bat.labels[label] = i;
+      bat.labels[label] = i;
     }
   }
 };
-DebugJS.bat.run = function(s, e) {
+DebugJS.bat.run = function() {
   var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
   if (bat.cmds.length == 0) {
     DebugJS.log('no batch script');
     return;
   }
+  var s = bat.run.arg.s;
+  var e = bat.run.arg.e;
   var sl, el;
   if (s == undefined) {
     sl = 0;
@@ -10938,8 +10946,7 @@ DebugJS.bat.run = function(s, e) {
   ctrl.startPc = sl;
   ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
   if (ctrl.tmid != 0) {
-    clearTimeout(ctrl.tmid);
-    ctrl.tmid = 0;
+    bat.clearTimer();
   }
   ctrl.echo = true;
   ctrl.cmnt = false;
@@ -10954,7 +10961,13 @@ DebugJS.bat.run = function(s, e) {
     var cb = ctx.evtListener.batstart[i];
     if (cb) cb();
   }
-  bat.exec();
+  DebugJS.bat.exec();
+};
+DebugJS.bat.run.arg = {s: 0, e: 0};
+DebugJS.bat.clearTimer = function() {
+  var ctrl = DebugJS.bat.ctrl;
+  clearTimeout(ctrl.tmid);
+  ctrl.tmid = 0;
 };
 DebugJS.bat.exec = function() {
   var ctx = DebugJS.ctx;
@@ -11285,14 +11298,16 @@ DebugJS.bat._resume = function(trigger, key) {
     ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
     ctx.updateBatRunBtn();
   }
-  if (ctrl.tmid > 0) {
-    clearTimeout(ctrl.tmid);
-    ctrl.tmid = 0;
+  if (ctrl.tmid != 0) {
+    DebugJS.bat.clearTimer();
   }
   ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
 DebugJS.bat.stop = function() {
   var ctx = DebugJS.ctx;
+  if (DebugJS.bat.ctrl.tmid != 0) {
+    DebugJS.bat.clearTimer();
+  }
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
   ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
