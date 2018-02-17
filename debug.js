@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802171456';
+  this.v = '201802172158';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3470,9 +3470,14 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onselectstart', docOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', docOncontextmenu);
     html += DebugJS.addPropSeparator(ctx);
-    html += DebugJS.addSysInfoProp('location', ctx.createFoldingText(document.location, 'docLocation' + i, DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp('baseURI ', ctx.createFoldingText(document.baseURI, 'docBaseURL' + i, DebugJS.OMIT_MID));
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addSysInfoPropH(' location');
+    html += DebugJS.addSysInfoProp(' href    ', ctx.createFoldingText(document.location, 'docLocation' + i, DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' origin  ', ctx.createFoldingText(document.location.origin, 'origin' + i, DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' protocol', location.protocol);
+    html += DebugJS.addSysInfoProp(' host    ', ctx.createFoldingText(document.location.host, 'host' + i, DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' port    ', location.port);
+    html += DebugJS.addSysInfoProp(' pathname', ctx.createFoldingText(document.location.pathname, 'pathname' + i, DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('baseURI  ', ctx.createFoldingText(document.baseURI, 'docBaseURL' + i, DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('cookie', ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID));
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('localStorage');
