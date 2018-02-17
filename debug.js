@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802171206';
+  this.v = '201802171456';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -323,7 +323,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
-    {cmd: 'log', fnc: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|load|preserve|suspend'},
+    {cmd: 'log', fnc: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|load|preserve|suspend|lv'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
@@ -1557,6 +1557,14 @@ DebugJS.prototype = {
     ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.ctx.opt.fontColor : DebugJS.COLOR_INACTIVE;');
   },
 
+  setLogFilter: function(ctx, str, cs) {
+    ctx.filterInput.value = str;
+    if (cs != undefined) {
+      ctx.setFilterCase(ctx, cs);
+    }
+    ctx.onchangeLogFilter();
+  },
+
   createLogFilterButton: function(type, btnobj, color) {
     var ctx = DebugJS.ctx;
     var label = '[' + type + ']';
@@ -1995,7 +2003,10 @@ DebugJS.prototype = {
 
   toggleFilterCase: function() {
     var ctx = DebugJS.ctx;
-    ctx.filterCase = (ctx.filterCase ? false : true);
+    ctx.setFilterCase(ctx, (ctx.filterCase ? false : true));
+  },
+  setFilterCase: function(ctx, f) {
+    ctx.filterCase = f;
     ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.ctx.opt.fontColor : DebugJS.COLOR_INACTIVE);
     ctx.onchangeLogFilter();
   },
@@ -6737,7 +6748,7 @@ DebugJS.prototype = {
   },
 
   cmdElements: function(arg, tbl) {
-    arg = DebugJS.delLeadingAndTrailingWhiteSpace(arg);
+    arg = DebugJS.delLeadingAndTrailingWhiteSP(arg);
     if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -7078,7 +7089,7 @@ DebugJS.prototype = {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      var json = DebugJS.delLeadingWhiteSpace(arg);
+      var json = DebugJS.delLeadingWhiteSP(arg);
       var lv = 0;
       var jsnFlg = true;
       if (json.charAt(0) == '-') {
@@ -7406,7 +7417,7 @@ DebugJS.prototype = {
 
   cmdProp: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    arg = DebugJS.delLeadingWhiteSpace(arg);
+    arg = DebugJS.delLeadingWhiteSP(arg);
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -7464,7 +7475,7 @@ DebugJS.prototype = {
   },
 
   cmdRadixConv: function(v) {
-    v = DebugJS.delLeadingAndTrailingWhiteSpace(v);
+    v = DebugJS.delLeadingAndTrailingWhiteSP(v);
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
       v = v.replace(/,/g, '');
@@ -7494,7 +7505,7 @@ DebugJS.prototype = {
   },
 
   cmdRGB: function(arg, tbl) {
-    arg = DebugJS.delLeadingAndTrailingWhiteSpace(arg);
+    arg = DebugJS.delLeadingAndTrailingWhiteSP(arg);
     arg = arg.replace(/\s{2,}/g, ' ');
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
@@ -7514,6 +7525,9 @@ DebugJS.prototype = {
       case 'dump':
         fn = ctx._cmdLogDump;
         break;
+      case 'filter':
+        fn = ctx._cmdLogFilter;
+       break;
       case 'load':
         fn = ctx._cmdLogLoad;
         break;
@@ -7522,11 +7536,14 @@ DebugJS.prototype = {
         break;
       case 'suspend':
         fn = ctx._cmdLogSuspend;
+        break;
+      case 'lv':
+        fn = ctx._cmdLogLv;
     }
-    if (fn) {return fn(ctx, arg, tbl);}
+    if (fn) {return fn(ctx, arg);}
     DebugJS.printUsage(tbl.usage);
   },
-  _cmdLogBufsize: function(ctx, arg, tbl) {
+  _cmdLogBufsize: function(ctx, arg) {
     var s = DebugJS.splitArgs(arg)[1] | 0;
     if (s > 0) {
       ctx.initBuf(ctx, s);
@@ -7537,17 +7554,37 @@ DebugJS.prototype = {
     }
     return s;
   },
-  _cmdLogDump: function(ctx, arg, tbl) {
+  _cmdLogDump: function(ctx, arg) {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var l;
-    if (DebugJS.delLeadingAndTrailingWhiteSpace(arg) == '-b64') {
+    if (DebugJS.delLeadingAndTrailingWhiteSP(arg) == '-b64') {
       l = DebugJS.dumpLog('json', true);
     } else {
       l = DebugJS.dumpLog('json', false);
     }
     DebugJS.log.res(l);
   },
-  _cmdLogLoad: function(ctx, arg, tbl) {
+  _cmdLogFilter: function(ctx, arg) {
+    var a = DebugJS.splitArgsEx(arg);
+    var f = a[1];
+    if (f == undefined) {
+      DebugJS.printUsage('log filter [-case] string');
+      return;
+    }
+    var cs = false;
+    if (f == '-case') {
+      cs = true;
+      f = a[2];
+    }
+    try {
+      f = eval(f);
+    } catch (e) {
+      DebugJS.log.e(e);
+      return;
+    }
+    ctx.setLogFilter(ctx, f, cs);
+  },
+  _cmdLogLoad: function(ctx, arg) {
     var args = DebugJS.splitCmdLineInTwo(arg);
     args = DebugJS.parseArgs(args[1]);
     if (args.data == '') {
@@ -7567,7 +7604,7 @@ DebugJS.prototype = {
       }
     }
   },
-  _cmdLogPreserve: function(ctx, arg, tbl) {
+  _cmdLogPreserve: function(ctx, arg) {
     var op = DebugJS.splitArgs(arg)[1];
     if (op == 'on') {
       ctx.setLogPreserve(ctx, true);
@@ -7579,7 +7616,7 @@ DebugJS.prototype = {
       return st;
     }
   },
-  _cmdLogSuspend: function(ctx, arg, tbl) {
+  _cmdLogSuspend: function(ctx, arg) {
     var op = DebugJS.splitArgs(arg)[1];
     if (op == 'on') {
       DebugJS.ctx.suspendLog();
@@ -7590,6 +7627,42 @@ DebugJS.prototype = {
       DebugJS.printUsage('log suspend on|off');
       return st;
     }
+  },
+  _cmdLogLv: function(ctx, arg) {
+    var a = DebugJS.getArgsFrom(arg, 2);
+    a = DebugJS.delAllSP(a);
+    var lv = a.split('|');
+    if (lv[0] == '') {
+      DebugJS.printUsage('log lv LOG|VRB|DBG|INF|WRN|ERR|ALL|NONE');
+      return;
+    }
+    ctx.logFilter = 0;
+    for (var i = 0; i < lv.length; i++) {
+      switch (lv[i]) {
+        case 'LOG':
+          ctx.logFilter |= DebugJS.LOG_FILTER_LOG;
+          break;
+        case 'VRB':
+          ctx.logFilter |= DebugJS.LOG_FILTER_VRB;
+          break;
+        case 'DBG':
+          ctx.logFilter |= DebugJS.LOG_FILTER_DBG;
+          break;
+        case 'INF':
+          ctx.logFilter |= DebugJS.LOG_FILTER_INF;
+          break;
+        case 'WRN':
+          ctx.logFilter |= DebugJS.LOG_FILTER_WRN;
+          break;
+        case 'ERR':
+          ctx.logFilter |= DebugJS.LOG_FILTER_ERR;
+          break;
+        case 'ALL':
+          ctx.logFilter |= DebugJS.LOG_FILTER_ALL;
+      }
+    }
+    ctx.updateLogFilterButtons();
+    ctx.printLogs();
   },
 
   cmdScrollTo: function(arg, tbl) {
@@ -8505,7 +8578,7 @@ DebugJS.splitCmdLineInTwo = function(str) {
   var res = [];
   var strs = str.match(/([^\s]{1,})\s(.*)/);
   if (strs == null) {
-    res[0] = DebugJS.delLeadingWhiteSpace(str);
+    res[0] = DebugJS.delLeadingWhiteSP(str);
     res[1] = '';
   } else {
     res[0] = strs[1];
@@ -8551,15 +8624,15 @@ DebugJS.getArgsFrom = function(str, n) {
 // dataRaw: " 1  2 3  4 "
 DebugJS.parseArgs = function(arg) {
   var args = {opt: '', data: '', dataRaw: ''};
-  var wkArgs = DebugJS.delLeadingWhiteSpace(arg);
+  var wkArgs = DebugJS.delLeadingWhiteSP(arg);
   wkArgs = wkArgs.match(/-{1}([^\s]*)\s{0,1}(.*)/);
   if (wkArgs == null) {
     args.dataRaw = arg;
-    args.data = DebugJS.delLeadingAndTrailingWhiteSpace(arg);
+    args.data = DebugJS.delLeadingAndTrailingWhiteSP(arg);
   } else {
     args.opt = wkArgs[1];
     args.dataRaw = wkArgs[2];
-    args.data = DebugJS.delLeadingAndTrailingWhiteSpace(wkArgs[2]);
+    args.data = DebugJS.delLeadingAndTrailingWhiteSP(wkArgs[2]);
   }
   return args;
 };
@@ -8700,19 +8773,19 @@ DebugJS.cnvKey2Ch = function(key) {
   return (DebugJS.KEYCH[key] == undefined ? key : DebugJS.KEYCH[key]);
 };
 
-DebugJS.delAllWhiteSpace = function(str) {
+DebugJS.delAllSP = function(str) {
   return str.replace(/\s/g, '');
 };
 
-DebugJS.delLeadingWhiteSpace = function(str) {
+DebugJS.delLeadingWhiteSP = function(str) {
   return str.replace(/^\s{1,}/, '');
 };
 
-DebugJS.delTrailingWhiteSpace = function(str) {
+DebugJS.delTrailingWhiteSP = function(str) {
   return str.replace(/\s+$/, '');
 };
 
-DebugJS.delLeadingAndTrailingWhiteSpace = function(str) {
+DebugJS.delLeadingAndTrailingWhiteSP = function(str) {
   str = str.replace(/^\s{1,}/, '');
   str = str.replace(/\s+$/, '');
   return str;
@@ -8775,7 +8848,7 @@ DebugJS.getDateTime = function(dt) {
 };
 
 DebugJS.date = function(arg) {
-  arg = DebugJS.delLeadingAndTrailingWhiteSpace(arg);
+  arg = DebugJS.delLeadingAndTrailingWhiteSP(arg);
   var s;
   var dt;
   if ((arg == '') || isNaN(arg)) {
@@ -9244,7 +9317,7 @@ DebugJS.execCmdJson = function(json, flg, lv) {
 
 DebugJS.checkJson = function(json) {
   var ctx = DebugJS.ctx;
-  json = DebugJS.delLeadingAndTrailingWhiteSpace(json);
+  json = DebugJS.delLeadingAndTrailingWhiteSP(json);
   var wkJson = json.split('\\');
   var cnt = 0;
   var res = '';
@@ -11053,7 +11126,7 @@ DebugJS.bat.prepro = function(cmd) {
 };
 DebugJS.bat.ppIf = function(cmd, s) {
   var r = {res: false, err: true};
-  var v = DebugJS.delLeadingAndTrailingWhiteSpace(s);
+  var v = DebugJS.delLeadingAndTrailingWhiteSP(s);
   if (v.charAt(s.length - 1) == DebugJS.PP_BLOCK_START) {
     v = v.substr(0, s.length - 2);
     v = DebugJS.replaceCmdValName(v);

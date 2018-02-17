@@ -2952,6 +2952,14 @@ $ log dump -b64
   DebugJS.dumpLog()
 </span>
 
+<b>filter:</b>
+Set log filter
+$ log filter "Filter String"
+-> case insensitive
+
+$ log filter -case "Filter String"
+-> case sensitive
+
 <b>load:</b>
 Load logs into the debug window
 
@@ -2976,6 +2984,12 @@ $ log preserve off
 Suspend log output
 $ log suspend on
 $ log suspend off
+
+<b>lv:</b>
+Set log level filter
+$ log lv LOG|VRB|DBG|INF|WRN|ERR
+$ log lv ALL
+$ log lv NONE
 </pre>
     </td>
   </tr>
