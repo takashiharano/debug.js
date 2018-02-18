@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802181325';
+  this.v = '201802181400';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -273,6 +273,7 @@ var DebugJS = DebugJS || function() {
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
   this.cmdTmp = '';
   this.cmdEchoFlg = true;
+  this.cmdDelayData = {tmid: 0, cmd: null};
   this.timers = {};
   this.initWidth = 0;
   this.initHeight = 0;
@@ -308,6 +309,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cont', fnc: this.cmdCont, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'cont on|off'},
     {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
+    {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay ms command'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'errstop', fnc: this.cmdErrstop, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'errstop on|off'},
@@ -2606,6 +2608,7 @@ DebugJS.prototype = {
             if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
               DebugJS.bat.stop();
             }
+            ctx._cmdDelayCancel(ctx);
             DebugJS.log.s(ctx.cmdLine.value + '^C');
             ctx.cmdLine.value = '';
             for (var i = 0; i < ctx.evtListener.ctrlc.length; i++) {
@@ -6750,6 +6753,32 @@ DebugJS.prototype = {
     return d;
   },
 
+  cmdDelay: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var d = DebugJS.splitArgs(arg)[0];
+    if (d == '') {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var c = DebugJS.getArgsFrom(arg, 2);
+    ctx.cmdDelayData.cmd = c;
+    ctx._cmdDelayCancel(ctx);
+    ctx.cmdDelayData.tmid = setTimeout(ctx._cmdDelay, d | 0);
+  },
+  _cmdDelay: function() {
+    var ctx = DebugJS.ctx;
+    ctx.cmdDelayData.tmid = 0;
+    ctx._execCmd(ctx.cmdDelayData.cmd, false);
+    ctx.cmdDelayData.cmd = null;
+  },
+  _cmdDelayCancel: function(ctx) {
+    if (ctx.cmdDelayData.tmid != 0) {
+      clearTimeout(ctx.cmdDelayData.tmid);
+      ctx.cmdDelayData.tmid = 0;
+      DebugJS.log('command delay execution has been canceled.');
+    }
+  },
+
   cmdEcho: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg)[0];
@@ -6817,6 +6846,7 @@ DebugJS.prototype = {
 
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
+    ctx._cmdDelayCancel(ctx);
     ctx.CMDVALS = {};
     ctx.finalizeFeatures(ctx);
     ctx.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;

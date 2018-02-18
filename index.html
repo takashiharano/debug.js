@@ -2667,10 +2667,10 @@ operation: <b>lock</b>
   <tr>
     <td class="name">date</td>
     <td>
-      ms / Date-Time
+      millis / Date-Time
     </td>
     <td>
-      Convert ms &lt;--&gt; Date-Time
+      Convert millis &lt;--&gt; Date-Time
 <pre class="eg">
 $ date 1500000000000
 -&gt; 2017-07-14 FRI 11:40:00.000
@@ -2680,6 +2680,17 @@ $  date 2000/01/01 00:00:00
 
 $ date
 -&gt; 2017-07-15 SAT 14:18:23.892 (1500095903892)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">delay</td>
+    <td>arg1: millis<br>arg2: command</td>
+    <td>
+      Delay command execution<br><br>
+<pre class="eg">
+$ delay 1000 echo "abc"
 </pre>
     </td>
   </tr>
@@ -2854,7 +2865,7 @@ http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
       arg1: text<br>
       arg2: #id<br>
       arg3: "data"<br>
-      arg4: speed <span class="annotation">ms or (min-max)</span><br>
+      arg4: speed <span class="annotation">millis or (min-max)</span><br>
       arg5: startPos<span class="annotation">(opt)</span><br>
       arg6: endStep<span class="annotation">(opt)</span>
     </td>
@@ -3391,7 +3402,7 @@ $ setattr .className 1 disabled true
   <tr>
     <td class="name">sleep</td>
     <td>
-      ms
+      millis
     </td>
     <td>
       Causes the currently executing thread to sleep
@@ -3621,7 +3632,7 @@ goto foo
 
   <tr>
     <td class="name">wait</td>
-    <td>ms</td>
+    <td>millis</td>
     <td>
       Wait the specified milli seconds.
     </td>
