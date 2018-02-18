@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802182033';
+  this.v = '201802182300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10104,20 +10104,20 @@ DebugJS.encodeURIString = function(data) {
 };
 
 DebugJS.getLanguages = function(indent) {
-  var languages;
+  var langs;
   var navLangs = navigator.languages;
   if (navLangs) {
     for (var i = 0; i < navLangs.length; i++) {
       if (i == 0) {
-        languages = '[' + i + '] ' + navLangs[i];
+        langs = '[' + i + '] ' + navLangs[i];
       } else {
-        languages += '\n' + indent + '[' + i + '] ' + navLangs[i];
+        langs += '\n' + indent + '[' + i + '] ' + navLangs[i];
       }
     }
   } else {
-    languages = DebugJS.setStyleIfObjNotAvailable(navLangs);
+    langs = DebugJS.setStyleIfObjNotAvailable(navLangs);
   }
-  return languages;
+  return langs;
 };
 
 DebugJS.getBrowserType = function() {
@@ -11239,8 +11239,7 @@ DebugJS.bat.execJs = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   bat.js = '';
-  while ((ctrl.pc >= ctrl.startPc) &&
-         (ctrl.pc <= ctrl.endPc)) {
+  while ((ctrl.pc >= ctrl.startPc) && (ctrl.pc <= ctrl.endPc)) {
     c = bat.cmds[ctrl.pc];
     ctrl.pc++;
     DebugJS.ctx.updateCurPc();
@@ -13156,6 +13155,7 @@ DebugJS.balse = function() {
   DebugJS.time.split = DebugJS.z2;
   DebugJS.time.end = DebugJS.z2;
   DebugJS.time.check = DebugJS.z1;
+  DebugJS.ver = DebugJS.z0;
   DebugJS.wd.start = DebugJS.z1;
   DebugJS.wd.stop = DebugJS.z0;
   DebugJS.x.addCmdTbl = DebugJS.z1;
