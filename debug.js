@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802180132';
+  this.v = '201802181148';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10954,7 +10954,7 @@ DebugJS.bat.run = function() {
     bat.clearTimer();
   }
   ctrl.echo = true;
-  ctrl.cmnt = false;
+  ctrl.cmnt = 0;
   ctrl.blockLv = 0;
   ctrl.js = false;
   ctrl.lock = 0;
@@ -11040,7 +11040,6 @@ DebugJS.bat.prepro = function(cmd) {
   var ctrl = bat.ctrl;
   var c = cmds[0];
   var a = DebugJS.splitArgs(cmds[1]);
-
   if (c.match(/^\s*@/)) {
     c = c.substr(c.indexOf('@') + 1);
     ctrl.tmpEchoOff = true;
@@ -11048,15 +11047,16 @@ DebugJS.bat.prepro = function(cmd) {
   if ((c.charAt(0) == '#') || (c.substr(0, 2) == '//') || (c.charAt(0) == ':')) {
     return 1;
   }
-  if (cmd.slice(-2) == '*/') {
-    ctrl.cmnt = false;
-    return 1;
-  }
-  if (ctrl.cmnt) {
-    return 1;
-  }
   if (cmd.substr(0, 2) == '/*') {
-    ctrl.cmnt = true;
+    ctrl.cmnt++;
+    return 1;
+  }
+  if (cmd.slice(-2) == '*/') {
+    ctrl.cmnt--;
+    if (ctrl.cmnt < 0) {bat.syntaxErr(cmd);}
+    return 1;
+  }
+  if (ctrl.cmnt > 0) {
     return 1;
   }
   switch (c) {
@@ -11159,7 +11159,7 @@ DebugJS.bat.ppIf = function(cmd, s) {
       DebugJS.log.e(e);
     }
   } else {
-    DebugJS.log.e('BAT SyntaxError: ' + cmd);
+    DebugJS.bat.syntaxErr(cmd);
   }
   return r;
 };
@@ -11219,6 +11219,9 @@ DebugJS.bat.ppEcho = function(c) {
   if (DebugJS.bat.ctrl.echo && !DebugJS.bat.ctrl.tmpEchoOff) {
     DebugJS.log.s(c);
   }
+};
+DebugJS.bat.syntaxErr = function(c) {
+  DebugJS.log.e('BAT SyntaxError: ' + c);
 };
 DebugJS.bat.lock = function() {
   DebugJS.bat.ctrl.lock++;
