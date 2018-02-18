@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802181925';
+  this.v = '201802181933';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5197,6 +5197,20 @@ DebugJS.prototype = {
       ctx.fileLoaderPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
 
+      ctx.fileLoaderRadioB64 = document.createElement('input');
+      ctx.fileLoaderRadioB64.type = 'radio';
+      ctx.fileLoaderRadioB64.id = ctx.id + '-load-type-b64';
+      ctx.fileLoaderRadioB64.name = ctx.id + '-load-type';
+      ctx.fileLoaderRadioB64.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      ctx.fileLoaderRadioB64.value = 'base64';
+      ctx.fileLoaderRadioB64.checked = true;
+      ctx.fileLoaderRadioB64.onchange = ctx.loadFileB64;
+      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioB64);
+      ctx.fileLoaderLabelB64 = document.createElement('label');
+      ctx.fileLoaderLabelB64.htmlFor = ctx.id + '-load-type-b64';
+      ctx.fileLoaderLabelB64.innerText = 'Base64';
+      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelB64);
+
       ctx.fileLoaderRadioBin = document.createElement('input');
       ctx.fileLoaderRadioBin.type = 'radio';
       ctx.fileLoaderRadioBin.id = ctx.id + '-load-type-bin';
@@ -5204,25 +5218,11 @@ DebugJS.prototype = {
       ctx.fileLoaderRadioBin.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       ctx.fileLoaderRadioBin.value = 'binary';
       ctx.fileLoaderRadioBin.onchange = ctx.loadFileBin;
-      ctx.fileLoaderRadioBin.checked = true;
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioBin);
       ctx.fileLoaderLabelBin = document.createElement('label');
       ctx.fileLoaderLabelBin.htmlFor = ctx.id + '-load-type-bin';
       ctx.fileLoaderLabelBin.innerText = 'Binary';
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelBin);
-
-      ctx.fileLoaderRadioB64 = document.createElement('input');
-      ctx.fileLoaderRadioB64.type = 'radio';
-      ctx.fileLoaderRadioB64.id = ctx.id + '-load-type-b64';
-      ctx.fileLoaderRadioB64.name = ctx.id + '-load-type';
-      ctx.fileLoaderRadioB64.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
-      ctx.fileLoaderRadioB64.value = 'base64';
-      ctx.fileLoaderRadioB64.onchange = ctx.loadFileB64;
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioB64);
-      ctx.fileLoaderLabelB64 = document.createElement('label');
-      ctx.fileLoaderLabelB64.htmlFor = ctx.id + '-load-type-b64';
-      ctx.fileLoaderLabelB64.innerText = 'Base64';
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelB64);
 
       var reloadBtn = ctx.createButton(ctx, ctx.fileLoaderPanel, 'Reload');
       reloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
