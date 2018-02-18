@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802181148';
+  this.v = '201802181250';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -569,7 +569,12 @@ DebugJS.RE_ELSE = new RegExp('^\\s*\\)\\s*' + DebugJS.PP_ELSE + '\\s*\\(\\s*$');
 DebugJS.RE_ENDBLK = new RegExp('^\\s*\\' + DebugJS.PP_BLOCK_END + '\\s*$');
 DebugJS.CHR_LED = '&#x25CF;';
 DebugJS.CHR_DELTA = '&#x22BF;';
-DebugJS.CHR_NL = '&#x21b5;';
+DebugJS.CHR_CRLF = '&#x21b5;';
+DebugJS.CHR_LF = '&#x2193;';
+DebugJS.CHR_CR = '&#x2190;';
+DebugJS.CHR_CRLF_S = '<span style="color:#0cf">' + DebugJS.CHR_CRLF + '</span>';
+DebugJS.CHR_LF_S = '<span style="color:#0f0">' + DebugJS.CHR_LF + '</span>';
+DebugJS.CHR_CR_S = '<span style="color:#f00">' + DebugJS.CHR_CR + '</span>';
 DebugJS.CHR_WIN_FULL = '&#x25A1;';
 DebugJS.CHR_WIN_RST = '&#x2750;';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
@@ -5585,8 +5590,12 @@ DebugJS.prototype = {
         if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || (b64content.substr(b64Head.length, xmlHead.length) == xmlHead)) {
           var contents = b64content.split(',');
           var decoded = DebugJS.decodeBase64(contents[1]);
-          var escDecoded = DebugJS.escTags(decoded);
-          preview = '<span style="color:#0f0">' + escDecoded + '</span>\n';
+          var cont = DebugJS.escTags(decoded);
+          cont = cont.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
+          cont = cont.replace(/([^>])\n/g, '$1' + DebugJS.CHR_LF_S + '\n');
+          cont = cont.replace(/\r/g, DebugJS.CHR_CR_S + '\n');
+          cont = cont.replace(/([^\n])$/, '$1\n');
+          preview = '<span style="color:#0f0">--------</span>\n' + cont + '<span style="color:#0f0">--------</span>\n';
           if (ctx.fileLoaderSysCb) {
             ctx.fileLoaderSysCb(ctx, true, file, decoded);
           }
@@ -10308,8 +10317,10 @@ DebugJS.dumpAscii = function(pos, buf, len) {
     if (code == undefined) break;
     switch (code) {
       case 0x0A:
+        b += DebugJS.CHR_LF_S;
+        break;
       case 0x0D:
-        b += '<span style="color:#0cf">' + DebugJS.CHR_NL + '</span>';
+        b += DebugJS.CHR_CR_S;
         break;
       case 0x22:
         b += '&quot;';
