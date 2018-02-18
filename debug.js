@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802181250';
+  this.v = '201802181325';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5585,9 +5585,9 @@ DebugJS.prototype = {
         for (var i = 0; i < ext.length; i++) {
           if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
         }
-        var b64Head = 'data:;base64,';
+        var cnmIdx = b64content.indexOf(',');
         var xmlHead = 'PD94bWw';
-        if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || (b64content.substr(b64Head.length, xmlHead.length) == xmlHead)) {
+        if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || (b64content.substr(cnmIdx + 1, xmlHead.length) == xmlHead)) {
           var contents = b64content.split(',');
           var decoded = DebugJS.decodeBase64(contents[1]);
           var cont = DebugJS.escTags(decoded);
