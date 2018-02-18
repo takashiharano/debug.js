@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802181933';
+  this.v = '201802182033';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5965,7 +5965,7 @@ DebugJS.prototype = {
     if (s == '') s = undefined;
     if (e == '') e = undefined;
     bat.run.arg.s = s;
-    bat.run.arg.s = e;
+    bat.run.arg.e = e;
     DebugJS.bat.run();
   },
 
