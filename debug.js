@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802192100';
+  this.v = '201802200025';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -319,7 +319,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'hex', fnc: this.cmdHex, desc: 'Convert a number to hexadecimal', usage: 'hex num digit'},
     {cmd: 'history', fnc: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
-    {cmd: 'input', fnc: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" speed start end'},
+    {cmd: 'input', fnc: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'js', fnc: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', usage: 'js exec'},
     {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
@@ -337,7 +337,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
     {cmd: 'resume', fnc: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'rgb', fnc: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {cmd: 'scrollto', fnc: this.cmdScrollTo, desc: 'Set scroll position', usage: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [step(px)] [speed(ms)]'},
+    {cmd: 'scrollto', fnc: this.cmdScrollTo, desc: 'Set scroll position', usage: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
     {cmd: 'select', fnc: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors get|set text|value val'},
     {cmd: 'set', fnc: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
@@ -367,15 +367,15 @@ var DebugJS = DebugJS || function() {
     prevlimit: /^[0-9]+$/,
     hexdumplimit: /^[0-9]+$/,
     hexdumplastrows: /^[0-9]+$/,
-    pointstep: /^[0-9]+$/,
     pointspeed: /^[0-9]+$/,
+    pointstep: /^[0-9]+$/,
     inputtextspeed: /^[0-9\-]+$/,
-    scrollstep: /^[0-9]+$/,
     scrollspeed: /^[0-9]+$/,
+    scrollstep: /^[0-9]+$/,
     wait: /^[0-9]+$/,
     timer: /.*/,
     wdt: /^[0-9]+$/,
-    mousemoveevtsim: /^true$|^false$/,
+    mousemovesim: /^true$|^false$/,
     consolelog: /^native$|^me$/
   };
   this.PROPS_DFLT_VALS = {
@@ -385,15 +385,15 @@ var DebugJS = DebugJS || function() {
     prevlimit: 5 * 1024 * 1024,
     hexdumplimit: 1048576,
     hexdumplastrows: 16,
-    pointstep: DebugJS.point.move.step,
     pointspeed: DebugJS.point.move.speed,
+    pointstep: DebugJS.point.move.step,
     inputtextspeed: 30,
-    scrollstep: DebugJS.scrollWinTo.data.step,
     scrollspeed: DebugJS.scrollWinTo.data.speed,
+    scrollstep: DebugJS.scrollWinTo.data.step,
     wait: 500,
     timer: '00:03:00.000',
     wdt: 500,
-    mousemoveevtsim: 'false',
+    mousemovesim: 'false',
     consolelog: 'native'
   };
   this.PROPS_CB = {
@@ -7285,13 +7285,13 @@ DebugJS.prototype = {
     var args = DebugJS.splitArgsEx(arg);
     var point = DebugJS.point;
     var op = args[0];
-    var x, y, idx, step, speed, alignX, alignY, ret, p, pos, el, start, end;
+    var x, y, idx, speed, step, ret, p, pos, el, start, end;
     var label, target, msg, src, w, h, txt, method, type, val, exp;
+    var alignX = DebugJS.getOptVal(arg, 'alignX');
+    var alignY = DebugJS.getOptVal(arg, 'alignY');
     if (op == 'init') {
       point.init();
     } else if (op.charAt(0) == '#') {
-      alignX = args[1];
-      alignY = args[2];
       DebugJS.pointBySelector(op, 0, alignX, alignY);
     } else if (op == 'label') {
       label = args[1];
@@ -7302,8 +7302,6 @@ DebugJS.prototype = {
         return;
       }
       idx = args[2] | 0;
-      alignX = args[3];
-      alignY = args[4];
       DebugJS.pointByLabel(label, idx, alignX, alignY);
     } else if (op == 'hide') {
       point.hide();
@@ -7311,14 +7309,12 @@ DebugJS.prototype = {
       point.show();
     } else if (op == 'move') {
       target = args[1];
-      step = DebugJS.getOptVal(arg, 'step');
       speed = DebugJS.getOptVal(arg, 'speed');
-      alignX = DebugJS.getOptVal(arg, 'alignX');
-      alignY = DebugJS.getOptVal(arg, 'alignY');
+      step = DebugJS.getOptVal(arg, 'step');
       if (target == undefined) {
         DebugJS.printUsage(tbl.usage);
       } else if (target.charAt(0) == '#') {
-        point.moveToSelector(target, 0, step, speed, alignX, alignY);
+        point.moveToSelector(target, 0, speed, step, alignX, alignY);
       } else if (target == 'label') {
         label = args[2];
         idx = args[3] | 0;
@@ -7328,12 +7324,12 @@ DebugJS.prototype = {
           DebugJS.log.e(e);
           return;
         }
-        point.moveToLabel(label, idx, step, speed, alignX, alignY);
+        point.moveToLabel(label, idx, speed, step, alignX, alignY);
       } else if (target == 'center') {
         p = DebugJS.getScreenCenter();
-        point.move(p.x, p.y, step, speed);
+        point.move(p.x, p.y, speed, step);
       } else if (target == 'mouse') {
-        point.move(ctx.mousePos.x, ctx.mousePos.y, step, speed);
+        point.move(ctx.mousePos.x, ctx.mousePos.y, speed, step);
       } else {
         if (args[1] == '') {
           DebugJS.printUsage(tbl.usage);
@@ -7342,11 +7338,11 @@ DebugJS.prototype = {
           if (target.charAt(0) == '(') {
             target = target.substr(1, target.length - 2);
           }
-          point.moveToSelector(target, idx, step, speed, alignX, alignY);
+          point.moveToSelector(target, idx, speed, step, alignX, alignY);
         } else {
           x = args[1];
           y = args[2];
-          point.move(x, y, step, speed, alignX, alignY);
+          point.move(x, y, speed, step, alignX, alignY);
         }
       }
     } else if (op == 'hint') {
@@ -7379,7 +7375,7 @@ DebugJS.prototype = {
     } else if ((op == 'focus') || (op == 'blur') || (op == 'contextmenu') || (op == 'mousedown') || (op == 'mouseup')) {
       point.event(op, args[1]);
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
-      speed = args[1];
+      speed = DebugJS.getOptVal(arg, 'speed');
       point.event(op, speed);
     } else if ((op == 'keydown') || (op == 'keypress') || (op == 'keyup')) {
       if (args[1] != undefined) {
@@ -7443,8 +7439,6 @@ DebugJS.prototype = {
       } else if (isNaN(args[0])) {
         target = args[0];
         idx = args[1];
-        alignX = args[2];
-        alignY = args[3];
         if (target.charAt(0) == '(') {
           target = target.substr(1, target.length - 2);
         }
@@ -7720,9 +7714,9 @@ DebugJS.prototype = {
     } else if (target == 'window') {
       var posX = args[1];
       var posY = args[2];
-      var step = DebugJS.getOptVal(arg, 'step');
       var speed = DebugJS.getOptVal(arg, 'speed');
-      ctx._cmdScrollToWin(ctx, tbl, posX, posY, step, speed);
+      var step = DebugJS.getOptVal(arg, 'step');
+      ctx._cmdScrollToWin(ctx, tbl, posX, posY, speed, step);
     } else {
       var x = args[1];
       var y = args[2];
@@ -7741,7 +7735,7 @@ DebugJS.prototype = {
       ctx.logPanel.scrollTop = pos;
     }
   },
-  _cmdScrollToWin: function(ctx, tbl, posX, posY, step, speed) {
+  _cmdScrollToWin: function(ctx, tbl, posX, posY, speed, step) {
     if ((posX == undefined) || (posY == undefined)) {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -7756,10 +7750,10 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    if ((step == '0') || (speed == '0')) {
+    if ((speed == '0') || (step == '0')) {
       window.scroll(x, y);
     } else {
-      DebugJS.scrollWinTo(x, y, step, speed);
+      DebugJS.scrollWinTo(x, y, speed, step);
     }
   },
   _cmdScrollWinGetX: function(posX) {
@@ -11483,7 +11477,7 @@ DebugJS.point = function(x, y) {
 
   point.hint.move();
 
-  if (DebugJS.ctx.props.mousemoveevtsim == 'true') {
+  if (DebugJS.ctx.props.mousemovesim == 'true') {
     var e = DebugJS.event.create('mousemove');
     e.clientX = pos.x;
     e.clientY = pos.y;
@@ -11801,7 +11795,7 @@ DebugJS.point.verify = function(prop, method, exp) {
   var got = el[prop];
   return DebugJS.test.verify(got, method, exp);
 };
-DebugJS.point.move = function(x, y, step, speed) {
+DebugJS.point.move = function(x, y, speed, step) {
   x += ''; y += '';
   var point = DebugJS.point;
   var pos = point.getPos();
@@ -11822,17 +11816,17 @@ DebugJS.point.move = function(x, y, step, speed) {
   }
   if (dst.x < 0) dst.x = 0;
   if (dst.y < 0) dst.y = 0;
-  if ((step == null) || (step == undefined) || (step == 'auto')) {
-    step = DebugJS.ctx.props.pointstep;
-  }
   if ((speed == null) || (speed == undefined) || (speed == 'auto')) {
     speed = DebugJS.ctx.props.pointspeed;
   }
-  step |= 0;
   speed |= 0;
   if (speed == 0) {
     point(x, y);
   }
+  if ((step == null) || (step == undefined) || (step == 'auto')) {
+    step = DebugJS.ctx.props.pointstep;
+  }
+  step |= 0;
   point.move.speed = speed;
   if (dst.x >= pos.x) {
     point.move.mvX = step;
@@ -11853,8 +11847,8 @@ DebugJS.point.move = function(x, y, step, speed) {
   point._move();
 };
 DebugJS.point.move.dstPos = {x: 0, y: 0};
-DebugJS.point.move.step = 10;
 DebugJS.point.move.speed = 10;
+DebugJS.point.move.step = 10;
 DebugJS.point.move.tmid = 0;
 DebugJS.point._move = function() {
   var point = DebugJS.point;
@@ -11945,12 +11939,12 @@ DebugJS.getAlignedPos = function(ps, alignX, alignY) {
   return {x: x, y: y};
 };
 
-DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alignY) {
+DebugJS.point.moveToSelector = function(selector, idx, speed, step, alignX, alignY) {
   var data = {
     selector: selector,
     idx: idx,
-    step: step,
     speed: speed,
+    step: step,
     alignX: alignX,
     alignY: alignY
   };
@@ -11959,7 +11953,7 @@ DebugJS.point.moveToSelector = function(selector, idx, step, speed, alignX, alig
     DebugJS.log.e(selector + '[' + idx + ']: Element not found');
     return;
   }
-  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollstep, DebugJS.ctx.props.scrollspeed, DebugJS.point._moveToSelector, data)) {
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollspeed, DebugJS.ctx.props.scrollstep, DebugJS.point._moveToSelector, data)) {
     return;
   }
   DebugJS.point._moveToSelector(data);
@@ -11969,15 +11963,15 @@ DebugJS.point._moveToSelector = function(data) {
   var ps = DebugJS.getElPosSize(el);
   if (data.alignX == undefined) data.alignX = 0.5;
   if (data.alignY == undefined) data.alignY = 0.5;
-  DebugJS.point.moveToElement(ps, data.step, data.speed, data.alignX, data.alignY);
+  DebugJS.point.moveToElement(ps, data.speed, data.step, data.alignX, data.alignY);
 };
 
-DebugJS.point.moveToLabel = function(label, idx, step, speed, alignX, alignY) {
+DebugJS.point.moveToLabel = function(label, idx, speed, step, alignX, alignY) {
   var data = {
     label: label,
     idx: idx,
-    step: step,
     speed: speed,
+    step: step,
     alignX: alignX,
     alignY: alignY
   };
@@ -11987,7 +11981,7 @@ DebugJS.point.moveToLabel = function(label, idx, step, speed, alignX, alignY) {
     return;
   }
   var ps = DebugJS.getElPosSize(el);
-  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollstep, DebugJS.ctx.props.scrollspeed, DebugJS.point._moveToLabel, data)) {
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollspeed, DebugJS.ctx.props.scrollstep, DebugJS.point._moveToLabel, data)) {
     return;
   }
   DebugJS.point._moveToLabel(data);
@@ -11997,14 +11991,14 @@ DebugJS.point._moveToLabel = function(data) {
   var ps = DebugJS.getElPosSize(el);
   if (data.alignX == undefined) data.alignX = 0.5;
   if (data.alignY == undefined) data.alignY = 0.5;
-  DebugJS.point.moveToElement(ps, data.step, data.speed, data.alignX, data.alignY);
+  DebugJS.point.moveToElement(ps, data.speed, data.step, data.alignX, data.alignY);
 };
 
-DebugJS.point.moveToElement = function(ps, step, speed, alignX, alignY) {
+DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
   if (ps) {
     var p = DebugJS.getAlignedPos(ps, alignX, alignY);
     if (p) {
-      DebugJS.point.move(p.x, p.y, step, speed);
+      DebugJS.point.move(p.x, p.y, speed, step);
     }
   }
 };
@@ -12129,7 +12123,7 @@ DebugJS.point.hint.clear = function() {
   point.hint.st.hasMsg = false;
 };
 
-DebugJS.scrollWinTo = function(x, y, step, speed) {
+DebugJS.scrollWinTo = function(x, y, speed, step) {
   var ctx = DebugJS.ctx;
   var d = DebugJS.scrollWinTo.data;
   if (d.tmid > 0) {
@@ -12139,15 +12133,15 @@ DebugJS.scrollWinTo = function(x, y, step, speed) {
   }
   d.dstX = x - ctx.scrollPosX;
   d.dstY = y - ctx.scrollPosY;
-  if ((step == undefined) || (step == null)) {
-    d.step = ctx.props.scrollstep | 0;
-  } else {
-    d.step = step | 0;
-  }
   if ((speed == undefined) || (speed == null)) {
     d.speed = ctx.props.scrollspeed | 0;
   } else {
     d.speed = speed | 0;
+  }
+  if ((step == undefined) || (step == null)) {
+    d.step = ctx.props.scrollstep | 0;
+  } else {
+    d.step = step | 0;
   }
   DebugJS.bat.lock();
   DebugJS._scrollWinTo();
@@ -12177,15 +12171,15 @@ DebugJS.scrollWinTo.initData = function() {
   var d = DebugJS.scrollWinTo.data;
   d.dstX = 0;
   d.dstY = 0;
-  d.step = 100;
   d.speed = 10;
+  d.step = 100;
   d.tmid = 0;
   d.cb = null;
   d.arg = null;
 };
 DebugJS.scrollWinTo.initData();
 
-DebugJS.scrollWinToTarget = function(ps, step, speed, cb, arg) {
+DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg) {
   if (!ps) return false;
   var d = DebugJS.scrollWinTo.data;
   if (d.tmid > 0) {
@@ -12325,7 +12319,7 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
   if ((speed == undefined) || (speed == null) || (speed == '')) {
     speed = DebugJS.ctx.props.inputtextspeed;
   }
-  data.speed = speed | 0;
+  data.speed = speed;
   data.i = start | 0;
   data.end = end | 0;
   data.el = DebugJS.getElement(el);
