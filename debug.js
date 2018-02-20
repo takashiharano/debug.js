@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802202335';
+  this.v = '201802210000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4541,10 +4541,10 @@ DebugJS.prototype = {
     var v = 0;
     switch (part) {
       case 'hh':
-        v = 60 * 60 * 1000;
+        v = 3600000;
         break;
       case 'mi':
-        v = 60 * 1000;
+        v = 60000;
         break;
       case 'ss':
         v = 1000;
@@ -4568,8 +4568,8 @@ DebugJS.prototype = {
 
   calcTimeupTimeInp: function() {
     var ctx = DebugJS.ctx;
-    var timeupHH = (ctx.timerTxtHH.value | 0) * 60 * 60 * 1000;
-    var timeupMI = (ctx.timerTxtMI.value | 0) * 60 * 1000;
+    var timeupHH = (ctx.timerTxtHH.value | 0) * 3600000;
+    var timeupMI = (ctx.timerTxtMI.value | 0) * 60000;
     var timeupSS = (ctx.timerTxtSS.value | 0) * 1000;
     var timeupSSS = (ctx.timerTxtSSS.value | 0);
     var timeup = timeupHH + timeupMI + timeupSS + timeupSSS;
@@ -9752,7 +9752,7 @@ DebugJS.str2ms = function(t) {
   if (ss.length >= 2) {
     msec = ss[1] | 0;
   }
-  var time = (hour * 60 * 60 * 1000) + (min * 60 * 1000) + (sec * 1000) + msec;
+  var time = (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
   return time;
 };
 
