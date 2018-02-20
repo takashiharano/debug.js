@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802200025';
+  this.v = '201802201925';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -31,7 +31,7 @@ var DebugJS = DebugJS || function() {
     fontSize: 12,
     fontFamily: 'Consolas, monospace',
     fontColor: '#fff',
-    logColorV: '#aaa',
+    logColorV: '#99b8b8',
     logColorD: '#ccc',
     logColorI: '#9ef',
     logColorW: '#fe0',
@@ -10869,6 +10869,7 @@ DebugJS.bat = function(b, sl, el) {
   bat.set(b);
   bat.run.arg.s = sl;
   bat.run.arg.e = el;
+  DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
   setTimeout(bat.run, 0);
 };
 DebugJS.bat.cmds = [];
@@ -10927,6 +10928,7 @@ DebugJS.bat.parseLabels = function() {
 DebugJS.bat.run = function() {
   var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
+  ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
   if (bat.cmds.length == 0) {
     DebugJS.log('no batch script');
     return;
