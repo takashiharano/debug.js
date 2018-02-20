@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802210000';
+  this.v = '201802210730';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10886,7 +10886,7 @@ DebugJS.bat.ctrl = {
   endPc: 0,
   echo: true,
   tmpEchoOff: false,
-  cmnt: false,
+  cmnt: 0,
   blockLv: 0,
   js: false,
   tmid: 0,
@@ -11379,7 +11379,7 @@ DebugJS.bat.finalize = function() {
   c.cont = false;
   c.errstop = false;
   c.hasErr = false;
-  c.cmnt = false;
+  c.cmnt = 0;
   c.lock = 0;
   c.pauseKey = null;
   c.resumedKey = null;
