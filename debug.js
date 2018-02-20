@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802201925';
+  this.v = '201802202335';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5954,7 +5954,9 @@ DebugJS.prototype = {
     for (var i = 0; i < cmds.length; i++) {
       b += cmds[i] + '\n';
    }
-   ctx.batTextEditor.value = b;
+   if (ctx.batTextEditor) {
+     ctx.batTextEditor.value = b;
+   }
   },
 
   execBat: function(ctx) {
@@ -6562,7 +6564,12 @@ DebugJS.prototype = {
       case 'exec':
         if (args[1] != undefined) {
           var b = DebugJS.decodeBase64(args[1]);
-          if (b != '') {bat(b);}
+          if (b != '') {
+            if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
+              bat.stCtx();
+            }
+            bat(b);
+          }
           break;
         }
       default:
@@ -10891,16 +10898,24 @@ DebugJS.bat.ctrl = {
   errstop: false,
   hasErr: false
 };
-DebugJS.bat.js = '';
 DebugJS.bat.labels = {};
+DebugJS.bat.ctx = [];
 DebugJS.bat.set = function(b) {
+  var bat = DebugJS.bat;
   if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
-    DebugJS.bat.stop();
+    if (bat.ctx.length == 0) {
+      bat.stop();
+    } else {
+      bat.stopNext();
+    }
   }
   if (DebugJS.ctx.batTextEditor) {
     DebugJS.ctx.batTextEditor.value = b;
   }
-  DebugJS.bat.store(b);
+  bat.store(b);
+  if (bat.ctx.length > 0) {
+    bat.ctrl.cont = bat.ctx[bat.ctx.length - 1].ctrl.cont;
+  }
 };
 DebugJS.bat.store = function(b) {
   var bat = DebugJS.bat;
@@ -10976,9 +10991,7 @@ DebugJS.bat.run = function() {
   ctx.updateCurPc();
   ctrl.startPc = sl;
   ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
-  if (ctrl.tmid != 0) {
-    bat.clearTimer();
-  }
+  bat.stopNext();
   ctrl.echo = true;
   ctrl.cmnt = 0;
   ctrl.blockLv = 0;
@@ -10987,7 +11000,6 @@ DebugJS.bat.run = function() {
   ctrl.pauseKey = null;
   ctrl.resumedKey = null;
   ctrl.pauseTimeout = 0;
-  bat.js = '';
   for (var i = 0; i < ctx.evtListener.batstart.length; i++) {
     var cb = ctx.evtListener.batstart[i];
     if (cb) cb();
@@ -11028,7 +11040,9 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (ctrl.pc > ctrl.endPc) {
-    bat.stop();
+    if (!bat.ldCtx()) {
+      bat.stop();
+    }
     return;
   }
   if (bat.isLocked()) {
@@ -11221,17 +11235,17 @@ DebugJS.bat.findEndOfBlock = function() {
 DebugJS.bat.execJs = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
-  bat.js = '';
+  var js = '';
   while ((ctrl.pc >= ctrl.startPc) && (ctrl.pc <= ctrl.endPc)) {
     c = bat.cmds[ctrl.pc];
     ctrl.pc++;
     DebugJS.ctx.updateCurPc();
     if (c != DebugJS.PP_JS) {
-      bat.js += c + '\n';
+      js += c + '\n';
     }
     if ((c == DebugJS.PP_JS) || (ctrl.pc > ctrl.endPc)) {
       try {
-        eval(bat.js);
+        eval(js);
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -11331,16 +11345,18 @@ DebugJS.bat._resume = function(trigger, key) {
     ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
     ctx.updateBatRunBtn();
   }
-  if (ctrl.tmid != 0) {
-    DebugJS.bat.clearTimer();
-  }
+  DebugJS.bat.stopNext();
   ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
-DebugJS.bat.stop = function() {
-  var ctx = DebugJS.ctx;
+DebugJS.bat.stopNext = function() {
   if (DebugJS.bat.ctrl.tmid != 0) {
     DebugJS.bat.clearTimer();
   }
+};
+DebugJS.bat.stop = function() {
+  var ctx = DebugJS.ctx;
+  DebugJS.bat.stopNext();
+  DebugJS.bat.ctx = [];
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
   ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
@@ -11368,17 +11384,43 @@ DebugJS.bat.finalize = function() {
   c.pauseKey = null;
   c.resumedKey = null;
   c.js = false;
-  DebugJS.bat.js = '';
   if (c.tmid != 0) {
     clearTimeout(c.tmid);
     c.tmid = 0;
   }
+};
+DebugJS.bat.stCtx = function() {
+  var bat = DebugJS.bat;
+  var ctrl = {};
+  DebugJS.deepCopy(bat.ctrl, ctrl);
+  var cmds = bat.cmds.slice();
+  var batCtx = {
+    cmds: cmds,
+    ctrl: ctrl,
+    labels: bat.labels
+  };
+  bat.ctx.push(batCtx);
+};
+DebugJS.bat.ldCtx = function() {
+  var ctx = DebugJS.ctx;
+  var bat = DebugJS.bat;
+  var batCtx = bat.ctx.pop();
+  if (!batCtx) {return false;}
+  DebugJS.deepCopy(batCtx.ctrl, bat.ctrl);
+  bat.cmds = batCtx.cmds;
+  bat.labels = batCtx.labels;
+  ctx.setBatTxt(ctx);
+  ctx.updateTotalLine();
+  ctx.updateCurPc();
+  bat.next();
+  return true;
 };
 DebugJS.bat.save = function() {
   if (!DebugJS.LS_AVAILABLE) return;
   var bt = {
     ctrl: DebugJS.bat.ctrl,
     cmds: DebugJS.bat.cmds,
+    ctx: DebugJS.bat.ctx,
     vals: DebugJS.ctx.CMDVALS
   };
   var b = JSON.stringify(bt);
@@ -11393,6 +11435,7 @@ DebugJS.bat.load = function() {
   var bat = DebugJS.bat;
   bat.ctrl = bt.ctrl;
   bat.cmds = bt.cmds;
+  bat.ctx = bt.ctx;
   DebugJS.ctx.CMDVALS = bt.vals;
   bat.parseLabels();
   if (bat.ctrl.cont) {
