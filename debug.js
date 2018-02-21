@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802220048';
+  this.v = '201802220738';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11029,9 +11029,9 @@ DebugJS.bat.exec = function() {
   ctrl.tmid = 0;
   if (ctrl.errstop && ctrl.hasErr) {
     ctrl.hasErr = false;
-    bat.setExitStatus(DebugJS.EXIT_FAILURE);
     DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
-    bat.finalize(false);
+    bat.finalize();
+    bat.setExitStatus(DebugJS.EXIT_FAILURE);
     return;
   }
   if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD)) {
@@ -11051,7 +11051,7 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (ctrl.pc > ctrl.endPc) {
-    bat.finalize(true);
+    bat.finalize();
     return;
   }
   if (bat.isLocked()) {
@@ -11079,14 +11079,10 @@ DebugJS.bat.exec = function() {
 DebugJS.bat.next = function() {
   DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
-DebugJS.bat.finalize = function(end) {
+DebugJS.bat.finalize = function() {
   var bat = DebugJS.bat;
-  if (!bat.ldCtx()) {
-    bat.stop();
-  }
-  if (end) {
-    bat.setExitStatus(DebugJS.EXIT_SUCCESS);
-  }
+  if (!bat.ldCtx()) {bat.stop();}
+  bat.setExitStatus(DebugJS.EXIT_SUCCESS);
 };
 DebugJS.bat.setExitStatus = function(es) {
   DebugJS.ctx.CMDVALS['?'] = (((es == undefined) || (es == '')) ? DebugJS.EXIT_SUCCESS : es);
@@ -11172,8 +11168,8 @@ DebugJS.bat.prepro = function(cmd) {
   switch (c) {
     case 'exit':
       bat.ppEcho(cmd);
+      bat.finalize();
       bat.setExitStatus(a[0]);
-      bat.finalize(false);
       return 2;
     case 'goto':
       ctrl.startPc = 0;
