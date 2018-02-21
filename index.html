@@ -3615,9 +3615,26 @@ $ zoom 1
 
   <tr>
     <td class="name">exit</td>
-    <td></td>
+    <td>exit status</td>
     <td>
-      Terminate the execution of the batch script
+      Terminate the execution of the batch script<br>
+      When a program exits, it can return to the parent program a small amount of information about the cause of termination, using the exit status.<br>
+      Normally the exit status 0 indicates successful program completion.<br>
+      Other value indicates unsuccessful program completion.<br>
+      You can access the exit status via special variable ${?}<br><br>
+<pre class="eg">
+bat exec IyFCQVQhDQpleGl0IDENCg==<span class="annotation">(*1)</span>
+echo "Exit Status = ${?}"
+IF (${?} == 0)) (
+  echo "OK!"
+) ELSE (
+  echo "ERROR!"
+)
+
+<span class="annotation">(*1)</span>
+#!BAT!
+exit 1
+</pre>
     </td>
   </tr>
 
@@ -3625,11 +3642,10 @@ $ zoom 1
     <td class="name">goto</td>
     <td>label</td>
     <td>
-      Jump to the label
-
+      Jump to the label<br><br>
 <pre class="eg">
-:foo
-goto foo
+:label1
+goto label1
 </pre>
     </td>
   </tr>
