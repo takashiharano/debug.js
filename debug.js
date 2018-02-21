@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802212230';
+  this.v = '201802220000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3785,10 +3785,8 @@ DebugJS.prototype = {
       var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus['text']);
       var className = el.className;
       className = className.replace(ctx.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HIGHLISGHT_CLASS_SUFFIX + '</span>');
-
       var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNotAvailable(el.href));
       var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNotAvailable(el.src));
-
       var backgroundColor = computedStyle.backgroundColor;
       var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
       var color = computedStyle.color;
@@ -3801,12 +3799,10 @@ DebugJS.prototype = {
       var borderColorB16 = DebugJS.getElmHexColor(borderColorB);
       var borderColorL = computedStyle.borderLeftColor;
       var borderColorL16 = DebugJS.getElmHexColor(borderColorL);
-
       var borderT = 'top   : ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + borderColorT + ' ' + borderColorT16 + ' ' + DebugJS.getColorBlock(borderColorT);
       var borderRBL = '            right : ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + borderColorR + ' ' + borderColorR16 + ' ' + DebugJS.getColorBlock(borderColorR) + '\n' +
                       '            bottom: ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + borderColorR + ' ' + borderColorB16 + ' ' + DebugJS.getColorBlock(borderColorB) + '\n' +
                       '            left  : ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + borderColorL + ' ' + borderColorL16 + ' ' + DebugJS.getColorBlock(borderColorL);
-
       var allStyles = '';
       var MIN_KEY_LEN = 20;
       for (var key in computedStyle) {
@@ -5911,8 +5907,20 @@ DebugJS.prototype = {
         DebugJS.bat.pause();
       }
     } else {
-      ctx.execBat(ctx);
+      ctx.runBat(ctx);
     }
+  },
+
+  runBat: function(ctx) {
+    var bat = DebugJS.bat;
+    bat.store(ctx.batTextEditor.value);
+    var s = ctx.batStartTxt.value;
+    var e = ctx.batEndTxt.value;
+    if (s == '') s = undefined;
+    if (e == '') e = undefined;
+    bat.run.arg.s = s;
+    bat.run.arg.e = e;
+    DebugJS.bat.run();
   },
 
   updateBatRunBtn: function() {
@@ -5955,22 +5963,10 @@ DebugJS.prototype = {
     var cmds = DebugJS.bat.cmds;
     for (var i = 0; i < cmds.length; i++) {
       b += cmds[i] + '\n';
-   }
-   if (ctx.batTextEditor) {
-     ctx.batTextEditor.value = b;
-   }
-  },
-
-  execBat: function(ctx) {
-    var bat = DebugJS.bat;
-    bat.store(DebugJS.ctx.batTextEditor.value);
-    var s = ctx.batStartTxt.value;
-    var e = ctx.batEndTxt.value;
-    if (s == '') s = undefined;
-    if (e == '') e = undefined;
-    bat.run.arg.s = s;
-    bat.run.arg.e = e;
-    DebugJS.bat.run();
+    }
+    if (ctx.batTextEditor) {
+      ctx.batTextEditor.value = b;
+    }
   },
 
   updateCurPc: function() {
