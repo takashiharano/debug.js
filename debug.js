@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802220000';
+  this.v = '201802220048';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7204,6 +7204,9 @@ DebugJS.prototype = {
 
   cmdLed: function(arg, tbl) {
     if (arg == '') {
+      var v = DebugJS.ctx.led;
+      var h = DebugJS.formatHex(DebugJS.toHex(v), true, true);
+      DebugJS.log.res(v + '(' + h + ')');
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS.ctx.setLed(arg);
