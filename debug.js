@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802210730';
+  this.v = '201802212230';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -562,6 +562,8 @@ DebugJS.OMIT_MID = 1;
 DebugJS.OMIT_FIRST = 2;
 DebugJS.DISP_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.TIME_RST_STR = '00:00:00.000';
+DebugJS.EXIT_SUCCESS = 0;
+DebugJS.EXIT_FAILURE = 1;
 DebugJS.PP_JS = '!__JS__!';
 DebugJS.PP_IF = 'IF';
 DebugJS.PP_ELSE = 'ELSE';
@@ -6545,6 +6547,7 @@ DebugJS.prototype = {
             st += 'no batch script';
           } else {
             st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
+            st += '\nNesting Lv: ' + bat.ctx.length;
           }
           DebugJS.log.p(bat.ctrl, 0, st, false);
         } else {
@@ -8509,7 +8512,9 @@ DebugJS.replaceCmdValName = function(v) {
   while (true) {
     var name = DebugJS.getCmdValName(v);
     if (name == null) {return v;}
-    var re = new RegExp('\\$\\{' + name + '\\}', 'g');
+    var reNm = name;
+    if (name == '?') {reNm = '\\?';}
+    var re = new RegExp('\\$\\{' + reNm + '\\}', 'g');
     v = v.replace(re, DebugJS.ctx.CMDVALS[name] + '');
   }
 };
@@ -10914,8 +10919,13 @@ DebugJS.bat.set = function(b) {
   }
   bat.store(b);
   if (bat.ctx.length > 0) {
-    bat.ctrl.cont = bat.ctx[bat.ctx.length - 1].ctrl.cont;
+    bat.inheritSt();
   }
+};
+DebugJS.bat.inheritSt = function() {
+  var bat = DebugJS.bat;
+  bat.ctrl.cont = bat.ctx[bat.ctx.length - 1].ctrl.cont;
+  bat.ctrl.errstop = bat.ctx[bat.ctx.length - 1].ctrl.errstop;
 };
 DebugJS.bat.store = function(b) {
   var bat = DebugJS.bat;
@@ -10926,7 +10936,7 @@ DebugJS.bat.store = function(b) {
     bat.cmds.push(last);
   }
   bat.parseLabels();
-  bat.finalize();
+  bat.initCtrl();
   DebugJS.ctx.updateTotalLine();
 };
 DebugJS.bat.parseLabels = function() {
@@ -10944,6 +10954,7 @@ DebugJS.bat.run = function() {
   var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
   ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+  bat.setExitStatus(DebugJS.EXIT_SUCCESS);
   if (bat.cmds.length == 0) {
     DebugJS.log('no batch script');
     return;
@@ -11018,9 +11029,10 @@ DebugJS.bat.exec = function() {
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
   if (ctrl.errstop && ctrl.hasErr) {
-    DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
-    bat.stop();
     ctrl.hasErr = false;
+    bat.setExitStatus(DebugJS.EXIT_FAILURE);
+    DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
+    bat.finalize(false);
     return;
   }
   if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD)) {
@@ -11036,13 +11048,11 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
-    bat.finalize();
+    bat.initCtrl();
     return;
   }
   if (ctrl.pc > ctrl.endPc) {
-    if (!bat.ldCtx()) {
-      bat.stop();
-    }
+    bat.finalize(true);
     return;
   }
   if (bat.isLocked()) {
@@ -11070,8 +11080,17 @@ DebugJS.bat.exec = function() {
 DebugJS.bat.next = function() {
   DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
-DebugJS.bat.isLocked = function() {
-  return (DebugJS.bat.ctrl.lock != 0);
+DebugJS.bat.finalize = function(end) {
+  var bat = DebugJS.bat;
+  if (!bat.ldCtx()) {
+    bat.stop();
+  }
+  if (end) {
+    bat.setExitStatus(DebugJS.EXIT_SUCCESS);
+  }
+};
+DebugJS.bat.setExitStatus = function(es) {
+  DebugJS.ctx.CMDVALS['?'] = (((es == undefined) || (es == '')) ? DebugJS.EXIT_SUCCESS : es);
 };
 DebugJS.bat.prepro = function(cmd) {
   var ctx = DebugJS.ctx;
@@ -11153,11 +11172,10 @@ DebugJS.bat.prepro = function(cmd) {
   }
   switch (c) {
     case 'exit':
-      ctrl.pc = bat.cmds.length;
-      ctx.updateCurPc();
       bat.ppEcho(cmd);
-      bat.stop();
-      return 1;
+      bat.setExitStatus(a[0]);
+      bat.finalize(false);
+      return 2;
     case 'goto':
       ctrl.startPc = 0;
       var idx = bat.labels[DebugJS.replaceCmdValName(a[0])];
@@ -11272,6 +11290,9 @@ DebugJS.bat.unlock = function() {
     ctrl.lock = 0;
   }
 };
+DebugJS.bat.isLocked = function() {
+  return (DebugJS.bat.ctrl.lock != 0);
+};
 DebugJS.bat.list = function() {
   var s = '';
   var js = false;
@@ -11370,7 +11391,7 @@ DebugJS.bat.stop = function() {
 DebugJS.bat.clear = function() {
   DebugJS.bat.set('');
 };
-DebugJS.bat.finalize = function() {
+DebugJS.bat.initCtrl = function() {
   var c = DebugJS.bat.ctrl;
   c.pc = 0;
   DebugJS.ctx.updateCurPc();
