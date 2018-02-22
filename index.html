@@ -91,6 +91,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 #table1 .even {background:#e8e8e8;}
 .class1{background:#66f;color:#fff;}
 .class2{background:#f66;}
+.elm{display:inline-block;position:relative;color:#999;font-size:8px;font-family:Consolas;}
 </style>
 <script>
 dbg.init({visible:true});
@@ -487,22 +488,34 @@ function onWatchdogTimeout(elapsed) {
 }
 
 function batDemo() {
-  var cmds = document.getElementById("bat-demo-text").value;
+  var cmds = getVal("bat-demo-text");
   dbg.bat(cmds);
 }
 
+function batArgDemo() {
+  var cmds = getVal("bat-demo-text");
+  var arg = getVal("bat-arg-text");
+  dbg.bat(cmds, arg);
+}
+
 function batDemo2() {
-  var cmds = document.getElementById("bat-demo-text").value;
-  var sl = document.getElementById("bat-sl-text").value;
-  var el = document.getElementById("bat-el-text").value;
-  dbg.bat(cmds, sl, el);
+  var cmds = getVal("bat-demo-text");
+  var arg = getVal("bat-arg-text");
+  var sl = getVal("bat-sl-text");
+  var el = getVal("bat-el-text");
+  if (sl == '') {sl = undefined;}
+  if (el == '') {el = undefined;}
+  dbg.bat(cmds, arg, sl, el);
 }
 
 function batDemo3() {
-  var cmds = document.getElementById("bat-demo-text").value;
-  var sl = document.getElementById("bat-sl2-text").value;
-  var el = document.getElementById("bat-el2-text").value;
-  dbg.bat(cmds, sl, el);
+  var cmds = getVal("bat-demo-text");
+  var arg = getVal("bat-arg-text");
+  var sl = getVal("bat-sl2-text");
+  var el = getVal("bat-el2-text");
+  if (sl == '') {sl = undefined;}
+  if (el == '') {el = undefined;}
+  dbg.bat(cmds, arg, sl, el);
 }
 
 function batSetDemo() {
@@ -1657,39 +1670,51 @@ dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 -
       arg3: end line<span class="annotation">(opt)</span>
     </td>
     <td>
+<div id="p1" class="elm">&lt;div&gt;#p1&lt;/div&gt;</div><div id="p2" class="elm" style="float:right">&lt;div&gt;#p2&lt;/div&gt;</div>
+<br>
       Multi command execution<br><br>
 <pre class="eg">
 var commands = '
 <textarea id="bat-demo-text" class="demo-textarea2">
 #!BAT!
 # comment
-rgb 0 191 255
-
-@echo off
-echo "Hello, World!"
-
-@echo on
-base64 -e ABC
-10:00 + 17:00
-
-nop
+echo off
+echo "arg = ${%ARG%}"
+point move #p1
+point hint msg "Hi!"
+wait 1000
+point hint clear
+point move #p2
+point move #bat-demo-text -alignX 0.9 -alignY 0.1
+point move #p4
+point move #p3
+point hint msg "Bye!"
+wait 3000
+point init
 
 :led1
-led 0xf
+led 0x1
 wait 500
 
 :led2
-led 0xf0
+led 0x24
+wait 500
+
+:led3
+led 0x80
 wait 500
 led 0
 </textarea>
 ';
+var arg = '<input type="text" id="bat-arg-text" class="demo-text" style="width:150px;" value="abc 123">';
 
 dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</button>
-dbg.bat(commands, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="6">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="10">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
-dbg.bat(commands, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value=":led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value=":led2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
+dbg.bat(commands, arg); <button class="demo-button2" onclick="batArgDemo();">DEMO</button>
+dbg.bat(commands, arg, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="9">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="11">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
+dbg.bat(commands, arg, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value=":led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value=":led3">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
 
 </pre>
+<div id="p3" class="elm">&lt;div&gt;#p3&lt;/div&gt;</div><div id="p4" class="elm" style="float:right">&lt;div&gt;#p4&lt;/div&gt;</div>
     </td>
   </tr>
 

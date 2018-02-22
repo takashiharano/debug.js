@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802222004';
+  this.v = '201802230020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -212,6 +212,7 @@ var DebugJS = DebugJS || function() {
   this.batResumeBtn = null;
   this.batStartTxt = null;
   this.batEndTxt = null;
+  this.batArgTxt = null;
   this.batCurPc = null;
   this.batTotalLine = null;
   this.swBtnPanel = null;
@@ -5873,14 +5874,17 @@ DebugJS.prototype = {
       ctx.batStopBtn = ctx.createButton(ctx, basePanel, '[STOP]');
       ctx.batStopBtn.onclick = DebugJS.bat.stop;
       ctx.createLabel(' FROM:', basePanel);
-      ctx.batStartTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
+      ctx.batStartTxt = ctx.createTextInput('45px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batStartTxt);
       ctx.createLabel(' TO:', basePanel);
-      ctx.batEndTxt = ctx.createTextInput('50px', 'left', ctx.opt.fontColor, '', null);
+      ctx.batEndTxt = ctx.createTextInput('45px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batEndTxt);
+      ctx.createLabel(' Arg:', basePanel);
+      ctx.batArgTxt = ctx.createTextInput('100px', 'left', ctx.opt.fontColor, '', null);
+      basePanel.appendChild(ctx.batArgTxt);
       ctx.createLabel(' L:', basePanel);
       ctx.batCurPc = ctx.createLabel('0', basePanel);
-      ctx.createLabel(' / ', basePanel);
+      ctx.createLabel('/', basePanel).style.color = '#ccc';
       ctx.batTotalLine = ctx.createLabel(DebugJS.bat.cmds.length, basePanel);
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
@@ -5889,6 +5893,7 @@ DebugJS.prototype = {
       basePanel.appendChild(ctx.batTextEditor);
       ctx.batBasePanel = basePanel;
       ctx.setBatTxt(ctx);
+      ctx.setBatArgTxt(ctx);
       ctx.updateCurPc();
       ctx.updateBatRunBtn();
       ctx.updateBatResumeBtn();
@@ -5914,6 +5919,7 @@ DebugJS.prototype = {
   runBat: function(ctx) {
     var bat = DebugJS.bat;
     bat.store(ctx.batTextEditor.value);
+    bat.setArg(ctx.batArgTxt.value);
     var s = ctx.batStartTxt.value;
     var e = ctx.batEndTxt.value;
     if (s == '') s = undefined;
@@ -5966,6 +5972,12 @@ DebugJS.prototype = {
     }
     if (ctx.batTextEditor) {
       ctx.batTextEditor.value = b;
+    }
+  },
+
+  setBatArgTxt: function(ctx) {
+    if (ctx.batArgTxt) {
+      ctx.batArgTxt.value = DebugJS.bat.ctrl.arg;
     }
   },
 
@@ -6567,7 +6579,8 @@ DebugJS.prototype = {
             if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
               bat.stCtx();
             }
-            bat(b);
+            var a = DebugJS.getArgsFrom(arg, 3);
+            bat(b, a);
           }
           break;
         }
@@ -10875,9 +10888,10 @@ DebugJS.cmd = function(c, echo) {
   return DebugJS.ctx._execCmd(c, echo);
 };
 
-DebugJS.bat = function(b, sl, el) {
+DebugJS.bat = function(b, a, sl, el) {
   var bat = DebugJS.bat;
   bat.set(b);
+  bat.setArg(a);
   bat.run.arg.s = sl;
   bat.run.arg.e = el;
   DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
@@ -10900,7 +10914,8 @@ DebugJS.bat.ctrl = {
   pauseTimeout: 0,
   cont: false,
   errstop: false,
-  hasErr: false
+  hasErr: false,
+  arg: ''
 };
 DebugJS.bat.labels = {};
 DebugJS.bat.ctx = [];
@@ -10923,8 +10938,10 @@ DebugJS.bat.set = function(b) {
 };
 DebugJS.bat.inheritSt = function() {
   var bat = DebugJS.bat;
-  bat.ctrl.cont = bat.ctx[bat.ctx.length - 1].ctrl.cont;
-  bat.ctrl.errstop = bat.ctx[bat.ctx.length - 1].ctrl.errstop;
+  var callerCtrl = bat.ctx[bat.ctx.length - 1].ctrl;
+  bat.ctrl.echo = callerCtrl.echo;
+  bat.ctrl.cont = callerCtrl.cont;
+  bat.ctrl.errstop = callerCtrl.errstop;
 };
 DebugJS.bat.store = function(b) {
   var bat = DebugJS.bat;
@@ -10935,7 +10952,7 @@ DebugJS.bat.store = function(b) {
     bat.cmds.push(last);
   }
   bat.parseLabels();
-  bat.initCtrl();
+  bat.initCtrl(true);
   DebugJS.ctx.updateTotalLine();
 };
 DebugJS.bat.parseLabels = function() {
@@ -10996,20 +11013,13 @@ DebugJS.bat.run = function() {
   }
   ctx.status |= DebugJS.STATE_BAT_RUNNING;
   ctx.updateBatRunBtn();
+  bat.initCtrl(false);
   var ctrl = bat.ctrl;
-  ctrl.pc = 0;
   ctx.updateCurPc();
   ctrl.startPc = sl;
   ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
+  bat.setArg(ctrl.arg);
   bat.stopNext();
-  ctrl.echo = true;
-  ctrl.cmnt = 0;
-  ctrl.blockLv = 0;
-  ctrl.js = false;
-  ctrl.lock = 0;
-  ctrl.pauseKey = null;
-  ctrl.resumedKey = null;
-  ctrl.pauseTimeout = 0;
   for (var i = 0; i < ctx.evtListener.batstart.length; i++) {
     var cb = ctx.evtListener.batstart[i];
     if (cb) cb();
@@ -11047,7 +11057,7 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
-    bat.initCtrl();
+    bat.initCtrl(false);
     return;
   }
   if (ctrl.pc > ctrl.endPc) {
@@ -11081,8 +11091,16 @@ DebugJS.bat.next = function() {
 };
 DebugJS.bat.finalize = function() {
   var bat = DebugJS.bat;
-  if (!bat.ldCtx()) {bat.stop();}
+  if (!bat.ldCtx()) {
+    bat.stop();
+  }
   bat.setExitStatus(DebugJS.EXIT_SUCCESS);
+};
+DebugJS.bat.setArg = function(a) {
+  a = ((a == undefined) ? '' : a);
+  DebugJS.ctx.CMDVALS['%ARG%'] = a;
+  DebugJS.bat.ctrl.arg = a;
+  DebugJS.ctx.setBatArgTxt(DebugJS.ctx);
 };
 DebugJS.bat.setExitStatus = function(es) {
   DebugJS.ctx.CMDVALS['?'] = (((es == undefined) || (es == '')) ? DebugJS.EXIT_SUCCESS : es);
@@ -11378,6 +11396,7 @@ DebugJS.bat.stop = function() {
   ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   ctx.updateBatRunBtn();
+  delete DebugJS.ctx.CMDVALS['%ARG%'];
   for (var i = 0; i < ctx.evtListener.batstop.length; i++) {
     var cb = ctx.evtListener.batstop[i];
     if (cb) cb();
@@ -11386,24 +11405,32 @@ DebugJS.bat.stop = function() {
 DebugJS.bat.clear = function() {
   DebugJS.bat.set('');
 };
-DebugJS.bat.initCtrl = function() {
+DebugJS.bat.initCtrl = function(all) {
   var c = DebugJS.bat.ctrl;
   c.pc = 0;
-  DebugJS.ctx.updateCurPc();
-  DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
-  c.echo = true;
-  c.cont = false;
-  c.errstop = false;
-  c.hasErr = false;
+  c.startPc = 0;
+  c.endPc = 0;
+  c.tmpEchoOff = false;
   c.cmnt = 0;
+  c.blockLv = 0;
+  c.js = false;
   c.lock = 0;
   c.pauseKey = null;
   c.resumedKey = null;
-  c.js = false;
+  c.pauseTimeout = 0;
+  c.hasErr = false;
+  if (all) {
+    c.echo = true;
+    c.cont = false;
+    c.errstop = false;
+    c.arg = '';
+    DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
+  }
   if (c.tmid != 0) {
     clearTimeout(c.tmid);
     c.tmid = 0;
   }
+  DebugJS.ctx.updateCurPc();
 };
 DebugJS.bat.stCtx = function() {
   var bat = DebugJS.bat;
@@ -11423,6 +11450,7 @@ DebugJS.bat.ldCtx = function() {
   var batCtx = bat.ctx.pop();
   if (!batCtx) {return false;}
   DebugJS.deepCopy(batCtx.ctrl, bat.ctrl);
+  bat.setArg(bat.ctrl.arg);
   bat.cmds = batCtx.cmds;
   bat.labels = batCtx.labels;
   ctx.setBatTxt(ctx);
@@ -11453,6 +11481,7 @@ DebugJS.bat.load = function() {
   bat.cmds = bt.cmds;
   bat.ctx = bt.ctx;
   DebugJS.ctx.CMDVALS = bt.vals;
+  bat.setArg(bat.ctrl.arg);
   bat.parseLabels();
   if (bat.ctrl.cont) {
     if (bat.ctrl.pauseKey != null) {
