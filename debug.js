@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802220738';
+  this.v = '201802222004';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12068,6 +12068,7 @@ DebugJS.point.hint = function(msg) {
   var BTN_PREFIX = '<span class="' + DebugJS.ctx.id + '-btn ' + DebugJS.ctx.id + '-nomove" ';
   var BTN_SUFFIX = '</span>';
   var RESUME = BTN_PREFIX + 'onclick="DebugJS.ctx.batResume();">[RESUME]' + BTN_SUFFIX;
+  var STOP = BTN_PREFIX + 'onclick="DebugJS.bat.stop();">[STOP]' + BTN_SUFFIX;
   var CLOSE = BTN_PREFIX + 'onclick="DebugJS.point.hide();">[CLOSE]' + BTN_SUFFIX;
   var hint = DebugJS.point.hint;
   if (hint.area == null) {
@@ -12082,6 +12083,7 @@ DebugJS.point.hint = function(msg) {
   }
   msg = msg.replace(reg, '\n');
   msg = msg.replace(/!RESUME!/, RESUME);
+  msg = msg.replace(/!STOP!/, STOP);
   msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count(DebugJS.test.data.cnt));
   msg = msg.replace(/!TEST_RESULT!/, DebugJS.test.result());
   msg = msg.replace(/!CLOSE!/, CLOSE);
