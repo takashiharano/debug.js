@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802230020';
+  this.v = '201802230051';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10906,7 +10906,7 @@ DebugJS.bat.ctrl = {
   tmpEchoOff: false,
   cmnt: 0,
   blockLv: 0,
-  js: false,
+  js: 0,
   tmid: 0,
   lock: 0,
   pauseKey: null,
@@ -11161,9 +11161,9 @@ DebugJS.bat.prepro = function(cmd) {
       return 1;
     case DebugJS.PP_JS:
       if (ctrl.js) {
-        ctrl.js = false;
+        ctrl.js = 0;
       } else {
-        ctrl.js = true;
+        ctrl.js = ((a[0] == 'pure') ? 1 : 2);
         bat.execJs();
       }
       return 1;
@@ -11266,12 +11266,16 @@ DebugJS.bat.findEndOfBlock = function() {
 DebugJS.bat.execJs = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
+  var pure = (ctrl.js == 1);
   var js = '';
   while ((ctrl.pc >= ctrl.startPc) && (ctrl.pc <= ctrl.endPc)) {
     c = bat.cmds[ctrl.pc];
     ctrl.pc++;
     DebugJS.ctx.updateCurPc();
     if (c != DebugJS.PP_JS) {
+      if (!pure) {
+        c = DebugJS.replaceCmdValName(c);
+      }
       js += c + '\n';
     }
     if ((c == DebugJS.PP_JS) || (ctrl.pc > ctrl.endPc)) {
@@ -11280,7 +11284,7 @@ DebugJS.bat.execJs = function() {
       } catch (e) {
         DebugJS.log.e(e);
       }
-      ctrl.js = false;
+      ctrl.js = 0;
       return;
     }
   }
@@ -11406,29 +11410,29 @@ DebugJS.bat.clear = function() {
   DebugJS.bat.set('');
 };
 DebugJS.bat.initCtrl = function(all) {
-  var c = DebugJS.bat.ctrl;
-  c.pc = 0;
-  c.startPc = 0;
-  c.endPc = 0;
-  c.tmpEchoOff = false;
-  c.cmnt = 0;
-  c.blockLv = 0;
-  c.js = false;
-  c.lock = 0;
-  c.pauseKey = null;
-  c.resumedKey = null;
-  c.pauseTimeout = 0;
-  c.hasErr = false;
+  var ctrl = DebugJS.bat.ctrl;
+  ctrl.pc = 0;
+  ctrl.startPc = 0;
+  ctrl.endPc = 0;
+  ctrl.tmpEchoOff = false;
+  ctrl.cmnt = 0;
+  ctrl.blockLv = 0;
+  ctrl.js = 0;
+  ctrl.lock = 0;
+  ctrl.pauseKey = null;
+  ctrl.resumedKey = null;
+  ctrl.pauseTimeout = 0;
+  ctrl.hasErr = false;
   if (all) {
-    c.echo = true;
-    c.cont = false;
-    c.errstop = false;
-    c.arg = '';
+    ctrl.echo = true;
+    ctrl.cont = false;
+    ctrl.errstop = false;
+    ctrl.arg = '';
     DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
   }
-  if (c.tmid != 0) {
-    clearTimeout(c.tmid);
-    c.tmid = 0;
+  if (ctrl.tmid != 0) {
+    clearTimeout(ctrl.tmid);
+    ctrl.tmid = 0;
   }
   DebugJS.ctx.updateCurPc();
 };
