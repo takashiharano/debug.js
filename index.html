@@ -242,8 +242,8 @@ var sampleMessages = [
   {fnc: log.i, msg: 'Information log sample.', delay: 50},
   {fnc: log.w, msg: 'Warning log sample.', delay: 50},
   {fnc: log.e, msg: 'Error log sample.', delay: 50},
-//{fnc: log.res, msg: 'result log sample.', delay: 50},
-//{fnc: log.res.err, msg: 'error result log sample.', delay: 50},
+  {fnc: log.res, msg: 'result log sample.', delay: 50},
+  {fnc: log.res.err, msg: 'error result log sample.', delay: 50},
 ];
 
 var ledDemoStepCount = 0;
@@ -403,7 +403,8 @@ var a = {
   key1: '1234567890abcdefghijklmnopqrstuvwxyz',
   key2: '123',
   key3: 123,
-  key4: {
+  key4: 0,
+  key5: {
     keyA: 'A',
     keyB: {
       keyB1: 'b1',
@@ -411,10 +412,11 @@ var a = {
     },
     keyC: 'C'
    },
-   key5: null,
-   key6: undefined,
-   key7: true,
-   key8: [
+   key6: null,
+   key7: undefined,
+   key8: true,
+   key9: false,
+   key10: [
      {
        aaa: 111,
        bbb: 'test1'
@@ -424,10 +426,10 @@ var a = {
        bbb: 'abc def&nbsp;ghi<h1>jkl</h1>"\'mno'
      }
    ],
-   key9: (new Date()),
-   key10: buf,
-   key11: foo,
-   key12: {}
+   key11: (new Date()),
+   key12: buf,
+   key13: foo,
+   key14: {}
 };
 
 var b = ['1', '2', '3'];
