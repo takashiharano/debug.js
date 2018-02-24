@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802241350';
+  this.v = '201802242025';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -351,6 +351,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
     {cmd: 'v', fnc: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'vals', fnc: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fnc: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fnc: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fnc: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
@@ -8217,6 +8218,19 @@ DebugJS.prototype = {
   cmdV: function(arg, tbl) {
     DebugJS.log(DebugJS.ctx.v);
     return DebugJS.ctx.v;
+  },
+
+  cmdVals: function(arg, tbl) {
+    var v = '';
+    for (var key in DebugJS.ctx.CMDVALS) {
+      v += '<tr><td>' + key + '</td><td>' + DebugJS.objDump(DebugJS.ctx.CMDVALS[key], false, -1) + '</td></tr>';
+    }
+    if (v == '') {
+      DebugJS.log('no variables');
+    } else {
+      v = '<table>' + v + '</table>';
+      DebugJS.log.mlt(v);
+    }
   },
 
   cmdWatchdog: function(arg, tbl) {
