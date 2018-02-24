@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802230051';
+  this.v = '201802241350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -265,6 +265,8 @@ var DebugJS = DebugJS || function() {
   this.filterText = '';
   this.filterCase = false;
   this.filterCaseBtn = null;
+  this.filterTxtHtml = true;
+  this.filterTxtHtmlBtn = null;
   this.logPanel = null;
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
@@ -326,7 +328,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
-    {cmd: 'log', fnc: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|load|preserve|suspend|lv'},
+    {cmd: 'log', fnc: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
@@ -483,6 +485,8 @@ DebugJS.LOG_TYPE_WRN = 0x10;
 DebugJS.LOG_TYPE_ERR = 0x20;
 DebugJS.LOG_TYPE_SYS = 0x40;
 DebugJS.LOG_TYPE_MLT = 0x80;
+DebugJS.LOG_TYPE_RES = 0x100;
+DebugJS.LOG_TYPE_ERES = 0x200;
 DebugJS.ELMINFO_STATE_SELECT = 0x1;
 DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
 DebugJS.ERR_STATE_NONE = 0;
@@ -537,6 +541,7 @@ DebugJS.EXT_BTN_COLOR = '#bf0';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
 DebugJS.LOG_SUSPEND_BTN_COLOR = '#f00';
 DebugJS.PIN_BTN_COLOR = '#fa0';
+DebugJS.FLT_BTN_COLOR = '#eee';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
@@ -1553,7 +1558,7 @@ DebugJS.prototype = {
     ctx.filterInputLabel.innerText = 'Filter:';
     ctx.logHeaderPanel.appendChild(ctx.filterInputLabel);
 
-    var filterWidth = 'calc(100% - 27.5em)';
+    var filterWidth = 'calc(100% - 31em)';
     ctx.filterInput = ctx.createTextInput(filterWidth, null, ctx.opt.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
     ctx.setStyle(ctx.filterInput, 'position', 'relative');
     ctx.setStyle(ctx.filterInput, 'top', '-2px');
@@ -1564,8 +1569,15 @@ DebugJS.prototype = {
     ctx.filterCaseBtn.style.marginLeft = '2px';
     ctx.filterCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
     ctx.filterCaseBtn.style.color = DebugJS.COLOR_INACTIVE;
-    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.ctx.opt.fontColor;');
-    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.ctx.opt.fontColor : DebugJS.COLOR_INACTIVE;');
+    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.FLT_BTN_COLOR');
+    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
+
+    ctx.filterTxtHtmlBtn = ctx.createButton(ctx, ctx.logHeaderPanel, '</>');
+    ctx.filterTxtHtmlBtn.style.marginLeft = '2px';
+    ctx.filterTxtHtmlBtn.onclick = DebugJS.ctx.toggleFilterTxtHtml;
+    ctx.filterTxtHtmlBtn.style.color = DebugJS.FLT_BTN_COLOR;
+    ctx.filterTxtHtmlBtn.onmouseover = new Function('DebugJS.ctx.filterTxtHtmlBtn.style.color=DebugJS.FLT_BTN_COLOR;');
+    ctx.filterTxtHtmlBtn.onmouseout = new Function('DebugJS.ctx.filterTxtHtmlBtn.style.color=(DebugJS.ctx.filterTxtHtml) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
   },
 
   setLogFilter: function(ctx, str, cs) {
@@ -1885,6 +1897,7 @@ DebugJS.prototype = {
   printLogs: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.win) return;
+    var opt = ctx.opt;
     var buf = ctx.msgBuf.getAll();
     var cnt = ctx.msgBuf.count();
     var len = buf.length;
@@ -1898,7 +1911,40 @@ DebugJS.prototype = {
     for (var i = 0; i < len; i++) {
       lineCnt++;
       var data = buf[i];
-      var msg = data.msg;
+      var msg = (ctx.filterTxtHtml ? data.msg : DebugJS.escTags(data.msg));
+      var style = '';
+      switch (data.type) {
+        case DebugJS.LOG_TYPE_DBG:
+          if (!(ctx.logFilter & DebugJS.LOG_FILTER_DBG)) continue;
+          style = 'color:' + opt.logColorD;
+          break;
+        case DebugJS.LOG_TYPE_INF:
+          if (!(ctx.logFilter & DebugJS.LOG_FILTER_INF)) continue;
+          style = 'color:' + opt.logColorI;
+          break;
+        case DebugJS.LOG_TYPE_ERR:
+          if (!(ctx.logFilter & DebugJS.LOG_FILTER_ERR)) continue;
+          style = 'color:' + opt.logColorE;
+          break;
+        case DebugJS.LOG_TYPE_WRN:
+          if (!(ctx.logFilter & DebugJS.LOG_TYPE_WRN)) continue;
+          style = 'color:' + opt.logColorW;
+          break;
+        case DebugJS.LOG_TYPE_VRB:
+          if (!(ctx.logFilter & DebugJS.LOG_TYPE_VRB)) continue;
+          style = 'color:' + opt.logColorV;
+          break;
+        case DebugJS.LOG_TYPE_SYS:
+          if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
+          style = 'color:' + opt.logColorS + ';text-shadow:0 0 3px';
+          break;
+        case DebugJS.LOG_TYPE_MLT:
+          if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
+          style = 'display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0';
+          break;
+        default:
+          if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
+      }
       if (filter != '') {
         try {
           var pos = (fltCase ? msg.indexOf(filter) : msg.toLowerCase().indexOf(filter));
@@ -1912,7 +1958,7 @@ DebugJS.prototype = {
         } catch (e) {}
       }
       var lineNum = '';
-      if ((ctx.opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
+      if ((opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
         var diff = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var pdng = '';
         for (var j = 0; j < diff; j++) {
@@ -1920,35 +1966,24 @@ DebugJS.prototype = {
         }
         lineNum = pdng + lineCnt + ': ';
       }
-      var m = (((ctx.opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (DebugJS.getLogTime(data.time) + ' ' + msg) : msg);
-      switch (data.type) {
-        case DebugJS.LOG_TYPE_DBG:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_DBG) logs += lineNum + '<span style="color:' + ctx.opt.logColorD + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_INF:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_INF) logs += lineNum + '<span style="color:' + ctx.opt.logColorI + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_ERR:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_ERR) logs += lineNum + '<span style="color:' + ctx.opt.logColorE + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_WRN:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_WRN) logs += lineNum + '<span style="color:' + ctx.opt.logColorW + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_VRB:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) logs += lineNum + '<span style="color:' + ctx.opt.logColorV + '">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_SYS:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) logs += lineNum + '<span style="color:' + ctx.opt.logColorS + ';text-shadow:0 0 3px">' + m + '</span>\n';
-          break;
-        case DebugJS.LOG_TYPE_MLT:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) logs += lineNum + '<span style="display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0">' + m + '</span>\n';
-          break;
-        default:
-          if (ctx.logFilter & DebugJS.LOG_FILTER_LOG) logs += lineNum + m + '\n';
+      var color = '';
+      if ((data.type == DebugJS.LOG_TYPE_RES) || (data.type == DebugJS.LOG_TYPE_ERES)) {
+        msg = DebugJS.encStringIfNeeded(DebugJS.setStyleIfObjNotAvailable(msg));
+        if (data.type == DebugJS.LOG_TYPE_RES) {
+          color = opt.promptColor;
+        } else {
+          color = opt.promptColorE;
+        }
+        msg = '<span style=color:' + color + '>&gt;</span> ' + msg;
+      }
+      var m = (((opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (DebugJS.getLogTime(data.time) + ' ' + msg) : msg);
+      if (style) {
+        logs += lineNum + '<span style="' + style + '">' + m + '</span>\n';
+      } else {
+        logs += lineNum + m + '\n';
       }
     }
-    var html = '<pre style="padding:0 3px">' + logs + '</pre>';
-    ctx.logPanel.innerHTML = html;
+    ctx.logPanel.innerHTML = '<pre style="padding:0 3px">' + logs + '</pre>';
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
       ctx.uiStatus |= DebugJS.UI_ST_NEED_TO_SCROLL;
@@ -2018,7 +2053,17 @@ DebugJS.prototype = {
   },
   setFilterCase: function(ctx, f) {
     ctx.filterCase = f;
-    ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.ctx.opt.fontColor : DebugJS.COLOR_INACTIVE);
+    ctx.filterCaseBtn.style.color = (ctx.filterCase ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.onchangeLogFilter();
+  },
+
+  toggleFilterTxtHtml: function() {
+    var ctx = DebugJS.ctx;
+    ctx.setFilterTxtHtml(ctx, (ctx.filterTxtHtml ? false : true));
+  },
+  setFilterTxtHtml: function(ctx, f) {
+    ctx.filterTxtHtml = f;
+    ctx.filterTxtHtmlBtn.style.color = (ctx.filterTxtHtml ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
     ctx.onchangeLogFilter();
   },
 
@@ -7587,6 +7632,9 @@ DebugJS.prototype = {
       case 'filter':
         fn = ctx._cmdLogFilter;
        break;
+      case 'html':
+        fn = ctx._cmdLogHtml;
+        break;
       case 'load':
         fn = ctx._cmdLogLoad;
         break;
@@ -7642,6 +7690,18 @@ DebugJS.prototype = {
       return;
     }
     ctx.setLogFilter(ctx, f, cs);
+  },
+  _cmdLogHtml: function(ctx, arg) {
+    var op = DebugJS.splitArgs(arg)[1];
+    if (op == 'on') {
+      ctx.setFilterTxtHtml(ctx, true);
+    } else if (op == 'off') {
+      ctx.setFilterTxtHtml(ctx, false);
+    } else {
+      var st = ctx.filterTxtHtml;
+      DebugJS.printUsage('log html on|off');
+      return st;
+    }
   },
   _cmdLogLoad: function(ctx, arg) {
     var args = DebugJS.splitCmdLineInTwo(arg);
@@ -10502,8 +10562,7 @@ DebugJS.dumpLog = function(type, b64, formatTime) {
     var data = buf[i];
     var time = (formatTime ? DebugJS.getLogDateTime(data.time) : data.time);
     if (type == 'json') {
-      l = {type: data.type, time: time, msg: data.msg};
-      l.msg = DebugJS.encodeBase64(l.msg);
+      l = {type: data.type, time: time, msg: DebugJS.encodeBase64(data.msg)};
       b.push(l);
     } else {
       var lv = 'LOG';
@@ -10525,6 +10584,10 @@ DebugJS.dumpLog = function(type, b64, formatTime) {
           break;
         case DebugJS.LOG_TYPE_SYS:
           lv = 'SYS';
+          break;
+        case DebugJS.LOG_TYPE_RES:
+        case DebugJS.LOG_TYPE_ERES:
+          data.msg = '> ' + data.msg;
       }
       l += time + '\t' + lv + '\t' + data.msg + '\n';
     }
@@ -10760,17 +10823,11 @@ DebugJS.log.p = function(o, l, m, j) {
 };
 
 DebugJS.log.res = function(m) {
-  m = DebugJS.setStyleIfObjNotAvailable(m);
-  m = DebugJS.encStringIfNeeded(m);
-  var msg = '<span style="color:' + DebugJS.ctx.opt.promptColor + '">&gt;</span> ' + m;
-  DebugJS.log(msg);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_RES);
 };
 
 DebugJS.log.res.err = function(m) {
-  m = DebugJS.setStyleIfObjNotAvailable(m);
-  m = DebugJS.encStringIfNeeded(m);
-  var msg = '<span style="color:' + DebugJS.ctx.opt.promptColorE + '">&gt;</span> ' + m;
-  DebugJS.log(msg);
+  DebugJS.log.out(m, DebugJS.LOG_TYPE_ERES);
 };
 
 DebugJS.log.mlt = function(m) {
@@ -10779,6 +10836,7 @@ DebugJS.log.mlt = function(m) {
 
 DebugJS.log.out = function(m, type) {
   m = DebugJS.setStyleIfObjNotAvailable(m);
+  if (typeof m != 'string') {m = m.toString();}
   var data = {type: type, time: (new Date()).getTime(), msg: m};
   DebugJS.ctx.msgBuf.add(data);
   if (!(DebugJS.ctx.status & DebugJS.STATE_INITIALIZED)) {
