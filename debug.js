@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802251510';
+  this.v = '201802251830';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -215,6 +215,7 @@ var DebugJS = DebugJS || function() {
   this.batArgTxt = null;
   this.batCurPc = null;
   this.batTotalLine = null;
+  this.batNestLv = null;
   this.swBtnPanel = null;
   this.swLabel = null;
   this.swStartTime = 0;
@@ -5992,12 +5993,14 @@ DebugJS.prototype = {
       ctx.batEndTxt = ctx.createTextInput('45px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batEndTxt);
       ctx.createLabel(' Arg:', basePanel);
-      ctx.batArgTxt = ctx.createTextInput('100px', 'left', ctx.opt.fontColor, '', null);
+      ctx.batArgTxt = ctx.createTextInput('80px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batArgTxt);
       ctx.createLabel(' L:', basePanel);
       ctx.batCurPc = ctx.createLabel('0', basePanel);
       ctx.createLabel('/', basePanel).style.color = '#ccc';
       ctx.batTotalLine = ctx.createLabel(DebugJS.bat.cmds.length, basePanel);
+      ctx.createLabel(' N:', basePanel);
+      ctx.batNestLv = ctx.createLabel('0', basePanel);
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 2) + 'px)');
@@ -6108,6 +6111,12 @@ DebugJS.prototype = {
   updateTotalLine: function() {
     if (DebugJS.ctx.batTotalLine) {
       DebugJS.ctx.batTotalLine.innerText = DebugJS.bat.cmds.length;
+    }
+  },
+
+  updateBatNestLv: function() {
+    if (DebugJS.ctx.batNestLv) {
+      DebugJS.ctx.batNestLv.innerText = DebugJS.bat.ctx.length;
     }
   },
 
@@ -6667,7 +6676,7 @@ DebugJS.prototype = {
             st += 'no batch script';
           } else {
             st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
-            st += '\nNesting Lv: ' + bat.ctx.length;
+            st += '\nNest Lv: ' + bat.ctx.length;
           }
           DebugJS.log.p(bat.ctrl, 0, st, false);
         } else {
@@ -11100,6 +11109,7 @@ DebugJS.bat.store = function(b) {
   bat.parseLabels();
   bat.initCtrl(true);
   DebugJS.ctx.updateTotalLine();
+  DebugJS.ctx.updateBatNestLv();
 };
 DebugJS.bat.parseLabels = function() {
   var bat = DebugJS.bat;
@@ -11546,6 +11556,7 @@ DebugJS.bat._stop = function() {
   var ctx = DebugJS.ctx;
   DebugJS.bat.stopNext();
   DebugJS.bat.ctx = [];
+  ctx.updateBatNestLv();
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
   ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
@@ -11614,6 +11625,7 @@ DebugJS.bat.ldCtx = function() {
   bat.labels = batCtx.labels;
   ctx.setBatTxt(ctx);
   ctx.updateTotalLine();
+  ctx.updateBatNestLv();
   ctx.updateCurPc();
   bat.next();
   return true;
