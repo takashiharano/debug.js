@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802251505';
+  this.v = '201802251510';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4283,7 +4283,9 @@ DebugJS.prototype = {
       } else {
         ctx.removeOverlayPanel(ctx, ctx.htmlSrcPanel);
       }
-      ctx.resetExpandedHeightIfNeeded(ctx);
+      if (DebugJS.HTML_SRC_EXPAND_H) {
+        ctx.resetExpandedHeightIfNeeded(ctx);
+      }
       ctx.htmlSrcPanel = null;
     }
     ctx.status &= ~DebugJS.STATE_HTML_SRC;
