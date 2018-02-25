@@ -1686,34 +1686,23 @@ point move #p1
 point hint msg "Hi!"
 wait 1000
 point hint clear
+:label1
 point move #p2
 point move #bat-demo-text -alignX 0.9 -alignY 0.1
+:label2
 point move #p4
 point move #p3
 point hint msg "Bye!"
-wait 3000
+wait 1000
 point init
-
-:led1
-led 0x1
-wait 500
-
-:led2
-led 0x24
-wait 500
-
-:led3
-led 0x80
-wait 500
-led 0
 </textarea>
 ';
 var arg = '<input type="text" id="bat-arg-text" class="demo-text" style="width:150px;" value="abc 123">';
 
 dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</button>
 dbg.bat(commands, arg); <button class="demo-button2" onclick="batArgDemo();">DEMO</button>
-dbg.bat(commands, arg, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="9">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="11">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
-dbg.bat(commands, arg, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:40px;" value=":led1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:40px;" value=":led3">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
+dbg.bat(commands, arg, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="5">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="13">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
+dbg.bat(commands, arg, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:60px;" value=":label1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:60px;" value=":label2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
 
 </pre>
 <div id="p3" class="elm">&lt;div&gt;#p3&lt;/div&gt;</div><div id="p4" class="elm" style="float:right">&lt;div&gt;#p4&lt;/div&gt;</div>
