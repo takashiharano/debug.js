@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802251254';
+  this.v = '201802251415';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1087,6 +1087,9 @@ DebugJS.prototype = {
       window.addEventListener('mousedown', ctx.onMouseDown, true);
       window.addEventListener('mousemove', ctx.onMouseMove, true);
       window.addEventListener('mouseup', ctx.onMouseUp, true);
+      window.addEventListener('touchstart', ctx.onTouchStart, true);
+      window.addEventListener('touchmove', ctx.onTouchMove, true);
+      window.addEventListener('touchend', ctx.onTouchEnd, true);
     }
 
     if (ctx.opt.useWindowSizeInfo) {
@@ -1117,6 +1120,9 @@ DebugJS.prototype = {
     window.removeEventListener('keydown', ctx.onKeyDown, true);
     window.removeEventListener('keypress', ctx.onKeyPress, true);
     window.removeEventListener('keyup', ctx.onKeyUp, true);
+    window.removeEventListener('touchstart', ctx.onTouchStart, true);
+    window.removeEventListener('touchmove', ctx.onTouchMove, true);
+    window.removeEventListener('touchend', ctx.onTouchEnd, true);
   },
 
   initUiStatus: function(ctx, opt, restoreOpt) {
@@ -2111,20 +2117,40 @@ DebugJS.prototype = {
   },
 
   setupMove: function(ctx) {
-    ctx.winBody.onmousedown = ctx.startMove;
+    ctx.winBody.onmousedown = ctx.startMoveM;
+    ctx.winBody.ontouchstart = ctx.startMoveT;
   },
 
-  startMove: function(e) {
+  startMoveM: function(e) {
     var ctx = DebugJS.ctx;
-    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) ||
-        (e.button != 0) || !ctx.isMovable(ctx, e)) {
+    var x = e.clientX;
+    var y = e.clientY;
+    var target = e.target;
+    if (e.button != 0) {return;}
+    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, target, x, y)) {
       return;
     }
+    ctx._startMove(ctx, target, x, y);
+  },
+
+  startMoveT: function(e) {
+    var ctx = DebugJS.ctx;
+    var x = e.changedTouches[0].pageX;
+    var y = e.changedTouches[0].pageY;
+    var target = e.target;
+    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, target, x, y)) {
+      return;
+    }
+    ctx._startMove(ctx, target, x, y);
+    e.preventDefault();
+  },
+
+  _startMove: function(ctx, target, x, y) {
     ctx.uiStatus |= DebugJS.UI_ST_DRAGGING;
     ctx.winBody.style.cursor = 'move';
     ctx.disableTextSelect(ctx);
-    ctx.prevOffsetTop = e.clientY - ctx.win.offsetTop;
-    ctx.prevOffsetLeft = e.clientX - ctx.win.offsetLeft;
+    ctx.prevOffsetTop = y - ctx.win.offsetTop;
+    ctx.prevOffsetLeft = x - ctx.win.offsetLeft;
     if (!document.all) {
        window.getSelection().removeAllRanges();
     }
@@ -2139,8 +2165,7 @@ DebugJS.prototype = {
     document.onselectstart = ctx.savedFunc;
   },
 
-  isMovable: function(ctx, e) {
-    var el = e.target;
+  isMovable: function(ctx, el, x, y) {
     if (el.nodeName == 'INPUT') return false;
     if (el.nodeName == 'TEXTAREA') return false;
     if (DebugJS.hasClass(el, ctx.id + '-nomove')) return false;
@@ -2165,11 +2190,11 @@ DebugJS.prototype = {
     return true;
   },
 
-  doMove: function(ctx, e) {
+  doMove: function(ctx, x, y) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
-    ctx.win.style.top = e.clientY - ctx.prevOffsetTop + 'px';
-    ctx.win.style.left = e.clientX - ctx.prevOffsetLeft + 'px';
+    ctx.win.style.top = y - ctx.prevOffsetTop + 'px';
+    ctx.win.style.left = x - ctx.prevOffsetLeft + 'px';
   },
 
   endMove: function(ctx) {
@@ -2189,9 +2214,9 @@ DebugJS.prototype = {
     ctx.disableTextSelect(ctx);
   },
 
-  doResize: function(ctx, e) {
-    var currentX = e.clientX;
-    var currentY = e.clientY;
+  doResize: function(ctx, x, y) {
+    var currentX = x;
+    var currentY = y;
     var moveX, moveY, t, l, w, h;
 
     if (currentX > document.documentElement.clientWidth) {
@@ -2829,7 +2854,7 @@ DebugJS.prototype = {
       case 0:
         ctx.mouseClick0 = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.STATE_MEASURE) {
-          ctx.startMeasure(ctx, e);
+          ctx.startMeasure(ctx, posX, posY);
         }
         if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
           DebugJS.log('<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
@@ -2861,17 +2886,45 @@ DebugJS.prototype = {
     }
   },
 
+  onTouchStart: function(e) {
+    var ctx = DebugJS.ctx;
+    var x = e.changedTouches[0].pageX;
+    var y = e.changedTouches[0].pageY;
+    if (ctx.status & DebugJS.STATE_MEASURE) {
+      ctx.startMeasure(ctx, x, y);
+      e.preventDefault();
+    }
+  },
+
   onMouseMove: function(e) {
     var ctx = DebugJS.ctx;
+    var posX = e.clientX;
+    var posY = e.clientY;
     if (ctx.opt.useMouseStatusInfo) {
-      ctx.mousePos.x = e.clientX;
-      ctx.mousePos.y = e.clientY;
+      ctx.mousePos.x = posX;
+      ctx.mousePos.y = posY;
       ctx.updateMousePosLabel();
     }
-    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, e);
-    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.doResize(ctx, e);
-    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, e);
-    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(e);
+    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, posX, posY);
+    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.doResize(ctx, posX, posY);
+    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, posX, posY);
+    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(posX, posY);
+    ctx.resizeMainHeight();
+  },
+
+  onTouchMove: function(e) {
+    var ctx = DebugJS.ctx;
+    var posX = e.changedTouches[0].pageX;
+    var posY = e.changedTouches[0].pageY;
+    if (ctx.opt.useMouseStatusInfo) {
+      ctx.mousePos.x = posX;
+      ctx.mousePos.y = posY;
+      ctx.updateMousePosLabel();
+    }
+    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, posX, posY);
+    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.doResize(ctx, posX, posY);
+    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, posX, posY);
+    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(posX, posY);
     ctx.resizeMainHeight();
   },
 
@@ -2901,9 +2954,24 @@ DebugJS.prototype = {
     }
   },
 
+  onTouchEnd: function(e) {
+    var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.STATE_MEASURING) {
+      ctx.stopMeasure(ctx);
+    }
+    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
+      ctx.endMove(ctx);
+    }
+    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) {
+      ctx.endResize(ctx);
+    }
+  },
+
   onDbgWinDblClick: function(e) {
     var ctx = DebugJS.ctx;
-    if ((!ctx.isMovable(ctx, e)) ||
+    var x = e.clientX;
+    var y = e.clientY;
+    if ((!ctx.isMovable(ctx, e.target, x, y)) ||
         (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE))) {
       return;
     }
@@ -3207,9 +3275,7 @@ DebugJS.prototype = {
     if (DebugJS.ctx.cmdLine) DebugJS.ctx.cmdLine.focus();
   },
 
-  startMeasure: function(ctx, e) {
-    var posX = e.clientX;
-    var posY = e.clientY;
+  startMeasure: function(ctx, posX, posY) {
     if (ctx.isOnDbgWin(posX, posY)) return;
 
     ctx.status |= DebugJS.STATE_MEASURING;
@@ -3232,9 +3298,9 @@ DebugJS.prototype = {
     ctx.disableTextSelect(ctx);
   },
 
-  doMeasure: function(ctx, e) {
-    var currentPosX = e.clientX;
-    var currentPosY = e.clientY;
+  doMeasure: function(ctx, posX, posY) {
+    var currentPosX = posX;
+    var currentPosY = posY;
     var deltaX = currentPosX - ctx.clickedPosX;
     var deltaY = currentPosY - ctx.clickedPosY;
     var clientW = document.documentElement.clientWidth;
@@ -3791,13 +3857,13 @@ DebugJS.prototype = {
     ctx.updateElmInfoBtn(ctx);
   },
 
-  inspectElement: function(e) {
+  inspectElement: function(x, y) {
     var ctx = DebugJS.ctx;
     if (!(ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT)) {
       return;
     }
-    var posX = e.clientX;
-    var posY = e.clientY;
+    var posX = x;
+    var posY = y;
     if (ctx.isOnDbgWin(posX, posY)) return;
     var el = document.elementFromPoint(posX, posY);
     if (el != ctx.targetElm) {
