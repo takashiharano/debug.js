@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802251415';
+  this.v = '201802251505';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -589,7 +589,8 @@ DebugJS.CHR_CR_S = '<span style="color:#f00">' + DebugJS.CHR_CR + '</span>';
 DebugJS.CHR_WIN_FULL = '&#x25A1;';
 DebugJS.CHR_WIN_RST = '&#x2750;';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
-DebugJS.HTML_SRC_FULL_OVERLAY = false;
+DebugJS.HTML_SRC_FULL_OVERLAY = true;
+DebugJS.HTML_SRC_EXPAND_H = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
@@ -2182,7 +2183,7 @@ DebugJS.prototype = {
         var rect = el.getBoundingClientRect();
         var scrollL = rect.left + rect.width - scrollBarW;
         var scrollR = rect.left + rect.width;
-        if ((e.clientX >= scrollL) && (e.clientX <= scrollR)) {
+        if ((x >= scrollL) && (y <= scrollR)) {
           return false;
         }
       }
@@ -3277,17 +3278,15 @@ DebugJS.prototype = {
 
   startMeasure: function(ctx, posX, posY) {
     if (ctx.isOnDbgWin(posX, posY)) return;
-
     ctx.status |= DebugJS.STATE_MEASURING;
     ctx.clickedPosX = posX;
     ctx.clickedPosY = posY;
-
     if (ctx.measureBox == null) {
       var box = document.createElement('div');
       box.style.position = 'fixed';
       box.style.zIndex = 0x7fffffff;
-      box.style.top = ctx.clickedPosY + 'px';
-      box.style.left = ctx.clickedPosX + 'px';
+      box.style.top = posY + 'px';
+      box.style.left = posX + 'px';
       box.style.width = '0px';
       box.style.height = '0px';
       box.style.border = 'dotted 1px #333';
@@ -3299,17 +3298,15 @@ DebugJS.prototype = {
   },
 
   doMeasure: function(ctx, posX, posY) {
-    var currentPosX = posX;
-    var currentPosY = posY;
-    var deltaX = currentPosX - ctx.clickedPosX;
-    var deltaY = currentPosY - ctx.clickedPosY;
+    var deltaX = posX - ctx.clickedPosX;
+    var deltaY = posY - ctx.clickedPosY;
     var clientW = document.documentElement.clientWidth;
     if (deltaX < 0) {
-      ctx.measureBox.style.left = currentPosX + 'px';
+      ctx.measureBox.style.left = posX + 'px';
       deltaX *= -1;
     }
     if (deltaY < 0) {
-      ctx.measureBox.style.top = currentPosY + 'px';
+      ctx.measureBox.style.top = posY + 'px';
       deltaY *= -1;
     }
     ctx.measureBox.style.width = deltaX + 'px';
@@ -3333,30 +3330,30 @@ DebugJS.prototype = {
       }
     }
 
-    if (currentPosY < sizeLabelH) {
+    if (posY < sizeLabelH) {
       if (ctx.clickedPosY > sizeLabelH) {
         sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
       }
     }
 
-    if (((ctx.clickedPosX + sizeLabelW) > clientW) && ((currentPosX + sizeLabelW) > clientW)) {
+    if (((ctx.clickedPosX + sizeLabelW) > clientW) && ((posX + sizeLabelW) > clientW)) {
       sizeLabelX = (sizeLabelW - (clientW - ctx.clickedPosX)) * (-1);
     }
 
     var endPointY = 'bottom';
     var endPointX = 'right';
-    if (currentPosX < ctx.clickedPosX) {
+    if (posX < ctx.clickedPosX) {
       originX = 'right';
       endPointX = 'left';
     }
-    if (currentPosY < ctx.clickedPosY) {
+    if (posY < ctx.clickedPosY) {
       originY = 'bottom';
       endPointY = 'top';
     }
     var size = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + (deltaX | 0) + ' H=' + (deltaY | 0) + '</span>';
     var origin = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px">x=' + ctx.clickedPosX + ',y=' + ctx.clickedPosY + '</span>';
     var endPoint = '';
-    //endPoint = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px">x=' + currentPosX + ',y=' + currentPosY + '</span>';
+    //endPoint = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px">x=' + posX + ',y=' + posY + '</span>';
     ctx.measureBox.innerHTML = origin + size + endPoint;
   },
 
@@ -4234,8 +4231,9 @@ DebugJS.prototype = {
       ctx.htmlSrcPanel.className = ctx.id + '-overlay-panel';
       ctx.addOverlayPanel(ctx, ctx.htmlSrcPanel);
     }
-    ctx.expandHightIfNeeded(ctx);
-
+    if (DebugJS.HTML_SRC_EXPAND_H) {
+      ctx.expandHightIfNeeded(ctx);
+    }
     ctx.htmlSrcHeaderPanel = document.createElement('div');
     ctx.htmlSrcPanel.appendChild(ctx.htmlSrcHeaderPanel);
 
