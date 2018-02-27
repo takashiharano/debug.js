@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802272128';
+  this.v = '201802272145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13319,6 +13319,11 @@ DebugJS.x.addPanel = function(p) {
     ctx.initExtPanel(ctx);
   }
   return idx;
+};
+DebugJS.x.getPanel = function(idx) {
+  var p = DebugJS.ctx.extPanels[idx];
+  if (p) {return p.panel;}
+  return null;
 };
 DebugJS.x.removePanel = function(idx) {
   var ctx = DebugJS.ctx;
