@@ -3110,13 +3110,13 @@ $ p -a object
   <tr>
     <td class="name">pause</td>
     <td>
-     -u<span class="annotation">(opt)</span> [timeout]<br>
+     -c<span class="annotation">(opt)</span> [timeout]<br>
      -key <i>key</i><span class="annotation">(opt)</span> [timeout]
     </td>
     <td>
      Suspends processing of batch file.<br>
      Click or press any key to continue.<br>
-     -u option requires "resume" command to resume.<br>
+     -c option requires "resume" command to resume.<br>
      -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.<br>
       [timeout] is time-out value in milliseconds.<span class="annotation">(opt)</span>
     </td>
@@ -3323,7 +3323,7 @@ max: maximum number / length
       -key <i>key</i><span class="annotation">(opt)</span>
     </td>
     <td>
-     Resume a batch process which suspended by "pause -u" command.<br>
+     Resume a batch process which suspended by "pause -c" command.<br>
      -key option resumes the batch process corresponding to the same key by "pause -key" command.
     </td>
   </tr>
