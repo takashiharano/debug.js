@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802272320';
+  this.v = '201802281953';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10651,19 +10651,21 @@ DebugJS.sleep = function(ms) {
   }
 };
 
-DebugJS.dumpLog = function(type, b64, formatTime) {
+DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   var buf = DebugJS.ctx.msgBuf.getAll();
   var b = [];
   var l = '';
   for (var i = 0; i < buf.length; i++) {
     var data = buf[i];
-    var time = (formatTime ? DebugJS.getLogDateTime(data.time) : data.time);
-    if (type == 'json') {
-      l = {type: data.type, time: time, msg: DebugJS.encodeBase64(data.msg)};
+    var type = data.type;
+    var time = (fmtTime ? DebugJS.getLogDateTime(data.time) : data.time);
+    var msg = data.msg;
+    if (fmt == 'json') {
+      l = {type: type, time: time, msg: DebugJS.encodeBase64(msg)};
       b.push(l);
     } else {
       var lv = 'LOG';
-      switch (data.type) {
+      switch (type) {
         case DebugJS.LOG_TYPE_ERR:
           lv = 'ERR';
           break;
@@ -10684,12 +10686,12 @@ DebugJS.dumpLog = function(type, b64, formatTime) {
           break;
         case DebugJS.LOG_TYPE_RES:
         case DebugJS.LOG_TYPE_ERES:
-          data.msg = '> ' + data.msg;
+          msg = '> ' + msg;
       }
-      l += time + '\t' + lv + '\t' + data.msg + '\n';
+      l += time + '\t' + lv + '\t' + msg + '\n';
     }
   }
-  if (type == 'json') l = JSON.stringify(b);
+  if (fmt == 'json') l = JSON.stringify(b);
   if (b64) l = DebugJS.encodeBase64(l);
   return l;
 };
