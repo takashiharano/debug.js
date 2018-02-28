@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802282300';
+  this.v = '201803010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6070,6 +6070,8 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
       color = ctx.opt.btnColor;
       handler = ctx.batResume;
+    } else if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
+      color = ctx.opt.btnColor;
     }
     ctx.batResumeBtn.style.color = color;
     ctx.batResumeBtn.onclick = handler;
@@ -7404,8 +7406,8 @@ DebugJS.prototype = {
         DebugJS.bat.ctrl.pauseTimeout = (new Date()).getTime() + timeout;
       }
       DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD_KEY;
-      DebugJS.ctx.updateBatResumeBtn();
     }
+    DebugJS.ctx.updateBatResumeBtn();
     return true;
   },
 
@@ -9096,7 +9098,7 @@ DebugJS.getTimeStr = function(st) {
   return st.hh + ':' + st.mi + ':' + st.ss + '.' + st.sss;
 };
 
-DebugJS.ms2struct = function(ms, format) {
+DebugJS.ms2struct = function(ms, fmt) {
   var wk = ms;
   var sign = false;
   if (ms < 0) {
@@ -9122,7 +9124,7 @@ DebugJS.ms2struct = function(ms, format) {
     ss: ss,
     sss: sss
   };
-  if (format) {
+  if (fmt) {
     if (tm.hh < 10) tm.hh = '0' + tm.hh;
     if (tm.mi < 10) tm.mi = '0' + tm.mi;
     if (tm.ss < 10) tm.ss = '0' + tm.ss;
@@ -11523,6 +11525,7 @@ DebugJS.bat._resume = function(trigger, key) {
     if (trigger == 'cmd') {
       if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
         ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD;
+        ctx.updateBatResumeBtn();
         resumed = true;
       }
     } else if (trigger == 'cmd-key') {
