@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201802282230';
+  this.v = '201802282300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1218,7 +1218,7 @@ DebugJS.prototype = {
     }
 
     if (opt.useClearButton) {
-      ctx.clearBtn = ctx.createButton(ctx, '[CLR]', ctx.headPanel);
+      ctx.clearBtn = ctx.createBtn(ctx, '[CLR]', ctx.headPanel);
       ctx.clearBtn.onclick = ctx.onClr;
     }
 
@@ -1254,7 +1254,7 @@ DebugJS.prototype = {
 
     // -- R to L
     if (opt.togglableShowHide) {
-      ctx.closeBtn = ctx.createButton(ctx, 'x', ctx.headPanel);
+      ctx.closeBtn = ctx.createBtn(ctx, 'x', ctx.headPanel);
       ctx.closeBtn.style.float = 'right';
       ctx.closeBtn.style.position = 'relative';
       ctx.closeBtn.style.top = '-1px';
@@ -1274,15 +1274,15 @@ DebugJS.prototype = {
     }
 
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (opt.usePinButton)) {
-      ctx.pinBtn = ctx.createHeaderButton('pinBtn', 'P', 3, fontSize, ctx.toggleDraggable, 'uiStatus', 'UI_ST_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
+      ctx.pinBtn = ctx.createHeaderBtn('pinBtn', 'P', 3, fontSize, ctx.toggleDraggable, 'uiStatus', 'UI_ST_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
 
     if (opt.useSuspendLogButton) {
-      ctx.suspendLogBtn = ctx.createHeaderButton('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
+      ctx.suspendLogBtn = ctx.createHeaderBtn('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
     }
 
     if (DebugJS.LS_AVAILABLE) {
-      ctx.preserveLogBtn = ctx.createHeaderButton('preserveLogBtn', '*', 5, fontSize, ctx.toggleLogPreserve, 'status', 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
+      ctx.preserveLogBtn = ctx.createHeaderBtn('preserveLogBtn', '*', 5, fontSize, ctx.toggleLogPreserve, 'status', 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
     }
 
     if (opt.useStopWatch) {
@@ -1298,27 +1298,27 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.swBtnPanel);
     }
 
-    ctx.extBtn = ctx.createHeaderButton('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
+    ctx.extBtn = ctx.createHeaderBtn('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
     ctx.extBtn.style.display = 'none';
 
     if (opt.useTools) {
-      ctx.toolsBtn = ctx.createHeaderButton('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
+      ctx.toolsBtn = ctx.createHeaderBtn('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
 
     if (opt.useJsEditor) {
-      ctx.jsBtn = ctx.createHeaderButton('jsBtn', 'JS', 2, null, ctx.toggleJs, 'status', 'STATE_JS', 'JS_BTN_COLOR', false);
+      ctx.jsBtn = ctx.createHeaderBtn('jsBtn', 'JS', 2, null, ctx.toggleJs, 'status', 'STATE_JS', 'JS_BTN_COLOR', false);
     }
 
     if (opt.useElementInfo) {
-      ctx.elmInfoBtn = ctx.createHeaderButton('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'STATE_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
+      ctx.elmInfoBtn = ctx.createHeaderBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'STATE_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
     }
 
     if (opt.useHtmlSrc) {
-      ctx.htmlSrcBtn = ctx.createHeaderButton('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'STATE_HTML_SRC', 'HTML_BTN_COLOR', false);
+      ctx.htmlSrcBtn = ctx.createHeaderBtn('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'STATE_HTML_SRC', 'HTML_BTN_COLOR', false);
     }
 
     if (opt.useSystemInfo) {
-      ctx.sysInfoBtn = ctx.createHeaderButton('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfo, 'status', 'STATE_SYS_INFO', 'SYS_BTN_COLOR', false);
+      ctx.sysInfoBtn = ctx.createHeaderBtn('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfo, 'status', 'STATE_SYS_INFO', 'SYS_BTN_COLOR', false);
     }
 
     if (opt.useScreenMeasure) {
@@ -1462,7 +1462,7 @@ DebugJS.prototype = {
   initDbgWin: function(ctx) {
     var opt = ctx.opt;
     if (ctx.isAllFeaturesDisabled(ctx)) return;
-    if (opt.useLogFilter) ctx.updateLogFilterButtons();
+    if (opt.useLogFilter) ctx.updateLogFilterBtns();
     if (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK) ctx.updateClockLabel();
     if (opt.useScreenMeasure) ctx.updateMeasureBtn(ctx);
     if (opt.useSystemInfo) ctx.updateSysInfoBtn(ctx);
@@ -1497,7 +1497,7 @@ DebugJS.prototype = {
     if (opt.useMsgDisplay) ctx.updateMsgLabel();
   },
 
-  createButton: function(ctx, label, base) {
+  createBtn: function(ctx, label, base) {
     var btn = document.createElement('span');
     btn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
     btn.innerText = label;
@@ -1505,9 +1505,9 @@ DebugJS.prototype = {
     return btn;
   },
 
-  createHeaderButton: function(btnobj, label, marginLeft, fontSize, handler, status, state, activeColor, reverse, title) {
+  createHeaderBtn: function(btnobj, label, marginLeft, fontSize, handler, status, state, activeColor, reverse, title) {
     var ctx = DebugJS.ctx;
-    var btn = ctx.createButton(ctx, label, ctx.headPanel);
+    var btn = ctx.createBtn(ctx, label, ctx.headPanel);
     btn.style.float = 'right';
     btn.style.marginLeft = (marginLeft * ctx.opt.zoom) + 'px';
     if (fontSize) btn.style.fontSize = fontSize;
@@ -1553,13 +1553,13 @@ DebugJS.prototype = {
   },
 
   createLogFilter: function(ctx) {
-    ctx.filterBtnAll = ctx.createLogFilterButton('ALL', 'filterBtnAll', 'btnColor');
-    ctx.filterBtnStd = ctx.createLogFilterButton('LOG', 'filterBtnStd', 'fontColor');
-    ctx.filterBtnErr = ctx.createLogFilterButton('ERR', 'filterBtnErr', 'logColorE');
-    ctx.filterBtnWrn = ctx.createLogFilterButton('WRN', 'filterBtnWrn', 'logColorW');
-    ctx.filterBtnInf = ctx.createLogFilterButton('INF', 'filterBtnInf', 'logColorI');
-    ctx.filterBtnDbg = ctx.createLogFilterButton('DBG', 'filterBtnDbg', 'logColorD');
-    ctx.filterBtnVrb = ctx.createLogFilterButton('VRB', 'filterBtnVrb', 'logColorV');
+    ctx.filterBtnAll = ctx.createLogFilterBtn('ALL', 'filterBtnAll', 'btnColor');
+    ctx.filterBtnStd = ctx.createLogFilterBtn('LOG', 'filterBtnStd', 'fontColor');
+    ctx.filterBtnErr = ctx.createLogFilterBtn('ERR', 'filterBtnErr', 'logColorE');
+    ctx.filterBtnWrn = ctx.createLogFilterBtn('WRN', 'filterBtnWrn', 'logColorW');
+    ctx.filterBtnInf = ctx.createLogFilterBtn('INF', 'filterBtnInf', 'logColorI');
+    ctx.filterBtnDbg = ctx.createLogFilterBtn('DBG', 'filterBtnDbg', 'logColorD');
+    ctx.filterBtnVrb = ctx.createLogFilterBtn('VRB', 'filterBtnVrb', 'logColorV');
 
     ctx.filterInputLabel = document.createElement('span');
     ctx.filterInputLabel.style.marginLeft = '4px';
@@ -1574,14 +1574,14 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.filterInput, 'margin-left', '2px');
     ctx.logHeaderPanel.appendChild(ctx.filterInput);
 
-    ctx.filterCaseBtn = ctx.createButton(ctx, 'Aa', ctx.logHeaderPanel);
+    ctx.filterCaseBtn = ctx.createBtn(ctx, 'Aa', ctx.logHeaderPanel);
     ctx.filterCaseBtn.style.marginLeft = '2px';
     ctx.filterCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
     ctx.filterCaseBtn.style.color = DebugJS.COLOR_INACTIVE;
     ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.filterCaseBtn.style.color=DebugJS.FLT_BTN_COLOR');
     ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.filterCaseBtn.style.color=(DebugJS.ctx.filterCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
 
-    ctx.filterTxtHtmlBtn = ctx.createButton(ctx, '</>', ctx.logHeaderPanel);
+    ctx.filterTxtHtmlBtn = ctx.createBtn(ctx, '</>', ctx.logHeaderPanel);
     ctx.filterTxtHtmlBtn.style.marginLeft = '2px';
     ctx.filterTxtHtmlBtn.onclick = DebugJS.ctx.toggleFilterTxtHtml;
     ctx.filterTxtHtmlBtn.style.color = DebugJS.FLT_BTN_COLOR;
@@ -1597,14 +1597,14 @@ DebugJS.prototype = {
     ctx.onchangeLogFilter();
   },
 
-  createLogFilterButton: function(type, btnobj, color) {
+  createLogFilterBtn: function(type, btnobj, color) {
     var ctx = DebugJS.ctx;
     var label = '[' + type + ']';
-    var btn = ctx.createButton(ctx, label, ctx.logHeaderPanel);
+    var btn = ctx.createBtn(ctx, label, ctx.logHeaderPanel);
     btn.style.marginLeft = '2px';
     btn.onclick = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FILTER_' + type + ');');
     btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.ctx.opt.' + color + ';');
-    btn.onmouseout = ctx.updateLogFilterButtons;
+    btn.onmouseout = ctx.updateLogFilterBtns;
     return btn;
   },
 
@@ -2034,11 +2034,11 @@ DebugJS.prototype = {
         }
       }
     }
-    ctx.updateLogFilterButtons();
+    ctx.updateLogFilterBtns();
     ctx.printLogs();
   },
 
-  updateLogFilterButtons: function() {
+  updateLogFilterBtns: function() {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
     var filter = ctx.logFilter;
@@ -3771,7 +3771,7 @@ DebugJS.prototype = {
     ctx.elmInfoHeaderPanel = document.createElement('div');
     ctx.elmInfoPanel.appendChild(ctx.elmInfoHeaderPanel);
 
-    ctx.elmPrevBtn = ctx.createElmInfoHeadButton('<<', ctx.showPrevElem);
+    ctx.elmPrevBtn = ctx.createElmInfoHeadBtn('<<', ctx.showPrevElem);
     ctx.elmPrevBtn.style.color = DebugJS.COLOR_INACTIVE;
 
     ctx.elmTitle = document.createElement('span');
@@ -3781,18 +3781,18 @@ DebugJS.prototype = {
     ctx.elmTitle.innerText = 'ELEMENT INFO';
     ctx.elmInfoHeaderPanel.appendChild(ctx.elmTitle);
 
-    ctx.elmNextBtn = ctx.createElmInfoHeadButton('>>', ctx.showNextElem);
+    ctx.elmNextBtn = ctx.createElmInfoHeadBtn('>>', ctx.showNextElem);
     ctx.elmNextBtn.style.color = DebugJS.COLOR_INACTIVE;
 
-    ctx.elmSelectBtn = ctx.createElmInfoHeadButton('SELECT', ctx.toggleElmSelectMode);
+    ctx.elmSelectBtn = ctx.createElmInfoHeadBtn('SELECT', ctx.toggleElmSelectMode);
     ctx.elmSelectBtn.style.marginLeft = '8px';
     ctx.elmSelectBtn.style.marginRight = '4px';
 
-    ctx.elmHighlightBtn = ctx.createElmInfoHeadButton('HIGHLIGHT', ctx.toggleElmHighlightMode);
+    ctx.elmHighlightBtn = ctx.createElmInfoHeadBtn('HIGHLIGHT', ctx.toggleElmHighlightMode);
     ctx.elmHighlightBtn.style.marginLeft = '4px';
     ctx.elmHighlightBtn.style.marginRight = '4px';
 
-    ctx.elmUpdateBtn = ctx.createElmInfoHeadButton('UPDATE', ctx.updateElementInfo);
+    ctx.elmUpdateBtn = ctx.createElmInfoHeadBtn('UPDATE', ctx.updateElementInfo);
     ctx.elmUpdateBtn.style.marginLeft = '4px';
     ctx.elmUpdateBtn.style.color = DebugJS.COLOR_INACTIVE;
 
@@ -3814,7 +3814,7 @@ DebugJS.prototype = {
     ctx.elmInfoHeaderPanel.appendChild(ctx.elmNumPanel);
     ctx.updateElementInfoInterval();
 
-    ctx.elmCapBtn = ctx.createElmInfoHeadButton('CAPTURE', ctx.exportTargetElm);
+    ctx.elmCapBtn = ctx.createElmInfoHeadBtn('CAPTURE', ctx.exportTargetElm);
     ctx.elmCapBtn.style.float = 'right';
     ctx.elmCapBtn.style.marginRight = '4px';
     ctx.elmCapBtn.style.color = DebugJS.COLOR_INACTIVE;
@@ -3826,9 +3826,9 @@ DebugJS.prototype = {
     ctx.elmInfoPanel.appendChild(ctx.elmInfoBodyPanel);
   },
 
-  createElmInfoHeadButton: function(label, handler) {
+  createElmInfoHeadBtn: function(label, handler) {
     var ctx = DebugJS.ctx;
-    var btn = ctx.createButton(ctx, label, ctx.elmInfoHeaderPanel);
+    var btn = ctx.createBtn(ctx, label, ctx.elmInfoHeaderPanel);
     btn.onclick = handler;
     return btn;
   },
@@ -4261,7 +4261,7 @@ DebugJS.prototype = {
     ctx.htmlSrcUpdInpLbl.innerText = ':';
     ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdInpLbl);
 
-    ctx.htmlSrcUpdBtn = ctx.createButton(ctx, 'UPDATE', ctx.htmlSrcHeaderPanel);
+    ctx.htmlSrcUpdBtn = ctx.createBtn(ctx, 'UPDATE', ctx.htmlSrcHeaderPanel);
     ctx.htmlSrcUpdBtn.style.float = 'right';
     ctx.htmlSrcUpdBtn.style.marginLeft = '4px';
     ctx.htmlSrcUpdBtn.style.color = ctx.opt.btnColor;
@@ -4344,7 +4344,7 @@ DebugJS.prototype = {
     ctx.addOverlayPanelFull(ctx.toolsPanel);
     ctx.resizeImgPreview();
     ctx.switchToolsFunction(ctx.toolsActiveFnc);
-    ctx.updateToolsButtons();
+    ctx.updateToolsBtns();
     ctx.updateToolsBtn(ctx);
   },
 
@@ -4359,16 +4359,16 @@ DebugJS.prototype = {
     ctx.toolsPanel = p.base;
     ctx.toolsHeaderPanel = p.head;
     ctx.toolsBodyPanel = p.body;
-    ctx.timerBtn = ctx.createToolsHeaderButton('TIMER', 'TOOLS_FNC_TIMER', 'timerBtn');
-    ctx.txtChkBtn = ctx.createToolsHeaderButton('TEXT', 'TOOLS_FNC_TEXT', 'txtChkBtn');
-    ctx.htmlPrevBtn = ctx.createToolsHeaderButton('HTML', 'TOOLS_FNC_HTML', 'htmlPrevBtn');
-    ctx.fileLoaderBtn = ctx.createToolsHeaderButton('FILE', 'TOOLS_FNC_FILE', 'fileLoaderBtn');
-    ctx.batBtn = ctx.createToolsHeaderButton('BAT', 'TOOLS_FNC_BAT', 'batBtn');
+    ctx.timerBtn = ctx.createToolsHeaderBtn('TIMER', 'TOOLS_FNC_TIMER', 'timerBtn');
+    ctx.txtChkBtn = ctx.createToolsHeaderBtn('TEXT', 'TOOLS_FNC_TEXT', 'txtChkBtn');
+    ctx.htmlPrevBtn = ctx.createToolsHeaderBtn('HTML', 'TOOLS_FNC_HTML', 'htmlPrevBtn');
+    ctx.fileLoaderBtn = ctx.createToolsHeaderBtn('FILE', 'TOOLS_FNC_FILE', 'fileLoaderBtn');
+    ctx.batBtn = ctx.createToolsHeaderBtn('BAT', 'TOOLS_FNC_BAT', 'batBtn');
   },
 
-  createToolsHeaderButton: function(label, state, btnobj) {
+  createToolsHeaderBtn: function(label, state, btnobj) {
     var ctx = DebugJS.ctx;
-    var btn = ctx.createButton(ctx, '<' + label + '>', ctx.toolsHeaderPanel);
+    var btn = ctx.createBtn(ctx, '<' + label + '>', ctx.toolsHeaderPanel);
     btn.style.marginRight = '4px';
     btn.onclick = new Function('DebugJS.ctx.switchToolsFunction(DebugJS.' + state + ');');
     btn.onmouseover = new Function('DebugJS.ctx.' + btnobj + '.style.color=DebugJS.SBPNL_COLOR_ACTIVE;');
@@ -4386,7 +4386,7 @@ DebugJS.prototype = {
     ctx.updateToolsBtn(ctx);
   },
 
-  updateToolsButtons: function() {
+  updateToolsBtns: function() {
     var ctx = DebugJS.ctx;
     ctx.timerBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
     ctx.txtChkBtn.style.color = (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE;
@@ -4423,7 +4423,7 @@ DebugJS.prototype = {
       ctx.closeBatEditor();
     }
     if (kind) ctx.toolsActiveFnc = kind;
-    ctx.updateToolsButtons();
+    ctx.updateToolsBtns();
   },
 
   removeToolFuncPanel: function(ctx, panel) {
@@ -4480,10 +4480,10 @@ DebugJS.prototype = {
     btns.style.fontSize = btnFontSize + 'px';
     ctx.timerClockSubPanel.appendChild(btns);
 
-    ctx.createTimerButton(btns, 'MODE', ctx.toggleTimerMode);
-    ctx.createTimerButton(btns, 'RESET', null, true);
-    ctx.createTimerButton(btns, '>>', null, true);
-    ctx.createTimerButton(btns, 'SPLIT', null, true);
+    ctx.createTimerBtn(btns, 'MODE', ctx.toggleTimerMode);
+    ctx.createTimerBtn(btns, 'RESET', null, true);
+    ctx.createTimerBtn(btns, '>>', null, true);
+    ctx.createTimerBtn(btns, 'SPLIT', null, true);
   },
 
   createTimerStopWatchSubPanel: function(ctx, handlers) {
@@ -4508,10 +4508,10 @@ DebugJS.prototype = {
     btns.style.fontSize = btnFontSize + 'px';
     panel.basePanel.appendChild(btns);
 
-    ctx.createTimerButton(btns, 'MODE', ctx.toggleTimerMode);
-    ctx.createTimerButton(btns, 'RESET', handlers.reset);
-    panel.startStopBtn = ctx.createTimerButton(btns, '>>', handlers.startStop);
-    panel.splitBtn = ctx.createTimerButton(btns, 'SPLIT', handlers.split);
+    ctx.createTimerBtn(btns, 'MODE', ctx.toggleTimerMode);
+    ctx.createTimerBtn(btns, 'RESET', handlers.reset);
+    panel.startStopBtn = ctx.createTimerBtn(btns, '>>', handlers.startStop);
+    panel.splitBtn = ctx.createTimerBtn(btns, 'SPLIT', handlers.split);
 
     panel.btns = btns;
     return panel;
@@ -4543,8 +4543,8 @@ DebugJS.prototype = {
     ctx.timerStopWatchCdLabel = panel.stopWatchLabel;
     ctx.timerStartStopBtnCd = panel.startStopBtn;
     ctx.timerSplitBtnCd = panel.splitBtn;
-    ctx.timer0CntBtnCd1 = ctx.createTimerButton(panel.btns, '0=>', ctx.toggle0ContinueTimerStopWatchCd, false, (ctx.computedFontSize * 1.5));
-    ctx.update0ContinueButtonTimerStopWatchCd();
+    ctx.timer0CntBtnCd1 = ctx.createTimerBtn(panel.btns, '0=>', ctx.toggle0ContinueTimerStopWatchCd, false, (ctx.computedFontSize * 1.5));
+    ctx.update0ContinueBtnTimerStopWatchCd();
   },
 
   createTimerStopWatchCdInpSubPanel: function() {
@@ -4560,10 +4560,10 @@ DebugJS.prototype = {
     timerUpBtns.style.fontSize = btnFontSize + 'px';
     timerUpBtns.style.lineHeight = btnFontSize + 'px';
     basePanel.appendChild(timerUpBtns);
-    ctx.createTimerUpDwnButton(true, 'hh', timerUpBtns, 3);
-    ctx.createTimerUpDwnButton(true, 'mi', timerUpBtns, 3);
-    ctx.createTimerUpDwnButton(true, 'ss', timerUpBtns, 2.5);
-    ctx.createTimerUpDwnButton(true, 'sss', timerUpBtns);
+    ctx.createTimerUpDwnBtn(true, 'hh', timerUpBtns, 3);
+    ctx.createTimerUpDwnBtn(true, 'mi', timerUpBtns, 3);
+    ctx.createTimerUpDwnBtn(true, 'ss', timerUpBtns, 2.5);
+    ctx.createTimerUpDwnBtn(true, 'sss', timerUpBtns);
 
     ctx.timerStopWatchCdInput = document.createElement('div');
     ctx.timerStopWatchCdInput.style.margin = '0';
@@ -4583,10 +4583,10 @@ DebugJS.prototype = {
     timerDwnBtns.style.margin = '-' + marginT + 'px 0 ' + marginB + 'px 0';
     timerDwnBtns.style.fontSize = btnFontSize + 'px';
     timerDwnBtns.style.lineHeight = btnFontSize + 'px';
-    ctx.createTimerUpDwnButton(false, 'hh', timerDwnBtns, 3);
-    ctx.createTimerUpDwnButton(false, 'mi', timerDwnBtns, 3);
-    ctx.createTimerUpDwnButton(false, 'ss', timerDwnBtns, 2.5);
-    ctx.createTimerUpDwnButton(false, 'sss', timerDwnBtns);
+    ctx.createTimerUpDwnBtn(false, 'hh', timerDwnBtns, 3);
+    ctx.createTimerUpDwnBtn(false, 'mi', timerDwnBtns, 3);
+    ctx.createTimerUpDwnBtn(false, 'ss', timerDwnBtns, 2.5);
+    ctx.createTimerUpDwnBtn(false, 'sss', timerDwnBtns);
     basePanel.appendChild(timerDwnBtns);
 
     var btns = document.createElement('div');
@@ -4594,11 +4594,11 @@ DebugJS.prototype = {
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
     btns.style.fontSize = btnFontSize + 'px';
-    ctx.createTimerButton(btns, 'MODE', ctx.toggleTimerMode);
-    ctx.createTimerButton(btns, 'RESET', ctx.resetTimerStopWatchCd);
-    ctx.timerStartStopBtnCdInp = ctx.createTimerButton(btns, '>>', ctx.startStopTimerStopWatchCd);
-    ctx.createTimerButton(btns, 'SPLIT', null, true);
-    ctx.timer0CntBtnCd2 = ctx.createTimerButton(btns, '0=>', ctx.toggle0ContinueTimerStopWatchCd, false, (fontSize * 1.5));
+    ctx.createTimerBtn(btns, 'MODE', ctx.toggleTimerMode);
+    ctx.createTimerBtn(btns, 'RESET', ctx.resetTimerStopWatchCd);
+    ctx.timerStartStopBtnCdInp = ctx.createTimerBtn(btns, '>>', ctx.startStopTimerStopWatchCd);
+    ctx.createTimerBtn(btns, 'SPLIT', null, true);
+    ctx.timer0CntBtnCd2 = ctx.createTimerBtn(btns, '0=>', ctx.toggle0ContinueTimerStopWatchCd, false, (fontSize * 1.5));
     basePanel.appendChild(btns);
 
     ctx.timerStopWatchCdInpSubPanel = basePanel;
@@ -4624,9 +4624,9 @@ DebugJS.prototype = {
     base.appendChild(span);
   },
 
-  createTimerButton: function(base, label, handler, disabled, fontSize) {
+  createTimerBtn: function(base, label, handler, disabled, fontSize) {
     var ctx = DebugJS.ctx;
-    var btn = ctx.createButton(ctx, label, base);
+    var btn = ctx.createBtn(ctx, label, base);
     btn.style.marginRight = '0.5em';
     btn.style.color = (disabled ? '#888' : DebugJS.TOOL_TIMER_BTN_COLOR);
     if (fontSize) {
@@ -4636,10 +4636,10 @@ DebugJS.prototype = {
     return btn;
   },
 
-  createTimerUpDwnButton: function(up, part, area, margin) {
+  createTimerUpDwnBtn: function(up, part, area, margin) {
     var ctx = DebugJS.ctx;
     var label = (up ? '+' : '-');
-    var btn = ctx.createButton(ctx, label, area);
+    var btn = ctx.createBtn(ctx, label, area);
     btn.className += ' ' + ctx.id + '-timerupdwn';
     btn.style.marginRight = margin + 'em';
     btn.style.color = DebugJS.TOOL_TIMER_BTN_COLOR;
@@ -4893,10 +4893,10 @@ DebugJS.prototype = {
     } else {
       ctx.timerSwTimeCdContinue = true;
     }
-    ctx.update0ContinueButtonTimerStopWatchCd();
+    ctx.update0ContinueBtnTimerStopWatchCd();
   },
 
-  update0ContinueButtonTimerStopWatchCd: function() {
+  update0ContinueBtnTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     var color = DebugJS.TOOL_TIMER_BTN_COLOR;
     if (ctx.timerSwTimeCdContinue) {
@@ -4980,7 +4980,7 @@ DebugJS.prototype = {
     }
     if (ctx.timerSwTimeCd < 0) {
       ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_EXPIRED;
-      ctx.update0ContinueButtonTimerStopWatchCd();
+      ctx.update0ContinueBtnTimerStopWatchCd();
       if (ctx.timerSwTimeCdContinue) {
         ctx.timerSwTimeCd *= -1;
       } else {
@@ -5007,7 +5007,7 @@ DebugJS.prototype = {
     ctx.timerStartStopBtnCd.innerText = btn;
     ctx.timerStartStopBtnCdInp.innerText = btn;
     ctx.updateTimerLapBtnCd();
-    ctx.update0ContinueButtonTimerStopWatchCd();
+    ctx.update0ContinueBtnTimerStopWatchCd();
   },
 
   updateTimerLapBtnCd: function() {
@@ -5336,12 +5336,12 @@ DebugJS.prototype = {
       ctx.fileLoaderLabelBin.innerText = 'Binary';
       ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelBin);
 
-      var reloadBtn = ctx.createButton(ctx, 'Reload', ctx.fileLoaderPanel);
+      var reloadBtn = ctx.createBtn(ctx, 'Reload', ctx.fileLoaderPanel);
       reloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       reloadBtn.onclick = ctx.reloadFile;
       ctx.fileReloadBtn = reloadBtn;
 
-      var reloadBtn = ctx.createButton(ctx, 'Clear', ctx.fileLoaderPanel);
+      var reloadBtn = ctx.createBtn(ctx, 'Clear', ctx.fileLoaderPanel);
       reloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       reloadBtn.onclick = ctx.clearFile;
       ctx.fileClrBtn = reloadBtn;
@@ -5391,7 +5391,7 @@ DebugJS.prototype = {
       ctx.fileLoadProgress.innerText = '0%';
       ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
 
-      ctx.fileLoadCancelBtn = ctx.createButton(ctx, '[CANCEL]', ctx.fileLoaderFooter);
+      ctx.fileLoadCancelBtn = ctx.createBtn(ctx, '[CANCEL]', ctx.fileLoaderFooter);
       ctx.fileLoadCancelBtn.style.position = 'relative';
       ctx.fileLoadCancelBtn.style.top = '2px';
       ctx.fileLoadCancelBtn.style.float = 'right';
@@ -5980,11 +5980,11 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.batBasePanel == null) {
       var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
-      ctx.batResumeBtn = ctx.createButton(ctx, '[RESUME]', basePanel);
+      ctx.batResumeBtn = ctx.createBtn(ctx, '[RESUME]', basePanel);
       ctx.batResumeBtn.style.float = 'right';
-      ctx.batRunBtn = ctx.createButton(ctx, '[ RUN ]', basePanel);
+      ctx.batRunBtn = ctx.createBtn(ctx, '[ RUN ]', basePanel);
       ctx.batRunBtn.onclick = DebugJS.ctx.startPauseBat;
-      ctx.batStopBtn = ctx.createButton(ctx, '[STOP]', basePanel);
+      ctx.batStopBtn = ctx.createBtn(ctx, '[STOP]', basePanel);
       ctx.batStopBtn.onclick = DebugJS.bat.stop;
       ctx.createLabel(' FROM:', basePanel);
       ctx.batStartTxt = ctx.createTextInput('45px', 'left', ctx.opt.fontColor, '', null);
@@ -6293,14 +6293,14 @@ DebugJS.prototype = {
       var p = ctx.extPanels[activePanel];
       if ((p) && (p.onActive)) p.onActive(p.panel);
     }
-    ctx.updateExtButtons(ctx);
+    ctx.updateExtBtns(ctx);
     ctx.updateExtBtn(ctx);
   },
 
-  createExtHeaderButton: function(ctx, label, idx) {
+  createExtHeaderBtn: function(ctx, label, idx) {
     var MAX_LEN = 20;
     if (label.length > MAX_LEN) {label = label.substr(0, MAX_LEN) + '...';}
-    var btn = ctx.createButton(ctx, '<' + label + '>', ctx.extHeaderPanel);
+    var btn = ctx.createBtn(ctx, '<' + label + '>', ctx.extHeaderPanel);
     btn.style.marginRight = '4px';
     btn.style.color = DebugJS.SBPNL_COLOR_INACTIVE;
     btn.onclick = new Function('DebugJS.ctx.switchExtPanel(' + idx + ');');
@@ -6346,7 +6346,7 @@ DebugJS.prototype = {
     }
 
     ctx.extActivePanel = idx;
-    ctx.updateExtButtons(ctx);
+    ctx.updateExtBtns(ctx);
   },
 
   prevValidExtPanelIdx: function(ctx, idx) {
@@ -6378,7 +6378,7 @@ DebugJS.prototype = {
     return false;
   },
 
-  updateExtButtons: function(ctx) {
+  updateExtBtns: function(ctx) {
     var pnls = ctx.extPanels;
     for (var i = 0; i < pnls.length; i++) {
       var p = pnls[i];
@@ -7024,7 +7024,7 @@ DebugJS.prototype = {
     ctx.closeDbgWin();
     ctx.clearLog();
     ctx.logFilter = DebugJS.LOG_FILTER_ALL;
-    ctx.updateLogFilterButtons();
+    ctx.updateLogFilterBtns();
   },
 
   cmdHelp: function(arg, tbl) {
@@ -7856,7 +7856,7 @@ DebugJS.prototype = {
           ctx.logFilter |= DebugJS.LOG_FILTER_ALL;
       }
     }
-    ctx.updateLogFilterButtons();
+    ctx.updateLogFilterBtns();
     ctx.printLogs();
   },
 
@@ -8529,7 +8529,7 @@ DebugJS.prototype = {
   createExtPanel: function(ctx, p, idx) {
     p.base = document.createElement('div');
     p.base.className = ctx.id + '-sbpnl';
-    p.btn = ctx.createExtHeaderButton(ctx, p.name, idx);
+    p.btn = ctx.createExtHeaderBtn(ctx, p.name, idx);
     if (p.panel) {
       p.base.appendChild(p.panel);
     } else {
@@ -13090,8 +13090,8 @@ DebugJS.isFocusable = function(n) {
   return false;
 };
 
-DebugJS.createButton = function(label, base) {
-  return DebugJS.ctx.createButton(DebugJS.ctx, label, base);
+DebugJS.createBtn = function(label, base) {
+  return DebugJS.ctx.createBtn(DebugJS.ctx, label, base);
 };
 DebugJS.createBtnHtml = function(label, onclick, style) {
   return DebugJS.ctx.createBtnHtml(DebugJS.ctx, label, onclick, style);
