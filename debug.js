@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803012239';
+  this.v = '201803012300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10827,8 +10827,10 @@ DebugJS.onUnload = function() {
     DebugJS.bat.save();
   }
   if ((DebugJS.ctx.status & DebugJS.STATE_LOG_PRESERVED) || (DebugJS.ctx.status & DebugJS.STATE_BAT_CONT)) {
-    DebugJS.preserveLog();
     DebugJS.saveStatus();
+  }
+  if (DebugJS.ctx.status & DebugJS.STATE_LOG_PRESERVED) {
+    DebugJS.preserveLog();
   }
 };
 
