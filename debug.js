@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803010000';
+  this.v = '201803012111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6900,7 +6900,7 @@ DebugJS.prototype = {
   cmdDelay: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var d = DebugJS.splitArgs(arg)[0];
-    if (d == '') {
+    if ((d == '') || (isNaN(d))) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
@@ -6912,7 +6912,12 @@ DebugJS.prototype = {
   _cmdDelay: function() {
     var ctx = DebugJS.ctx;
     ctx.cmdDelayData.tmid = 0;
-    ctx._execCmd(ctx.cmdDelayData.cmd, false);
+    var c = ctx.cmdDelayData.cmd;
+    if (c == '') {
+      DebugJS.log(c);
+    } else {
+      ctx._execCmd(c, false);
+    }
     ctx.cmdDelayData.cmd = null;
   },
   _cmdDelayCancel: function(ctx) {
