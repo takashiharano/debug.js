@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803012300';
+  this.v = '201803020051';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8494,7 +8494,7 @@ DebugJS.prototype = {
     }
     var pnls = ctx.extPanels;
     if (pnls.length > 0) {
-      if (ctx.extBtn) ctx.extBtn.style.display = 'block';
+      if (ctx.extBtn) ctx.extBtn.style.display = '';
       for (var i = 0; i < pnls.length; i++) {
         var p = pnls[i];
         if ((p != null) && (p.base == null)) {
