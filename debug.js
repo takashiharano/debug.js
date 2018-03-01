@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803012111';
+  this.v = '201803012239';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2900,33 +2900,28 @@ DebugJS.prototype = {
 
   onMouseMove: function(e) {
     var ctx = DebugJS.ctx;
-    var posX = e.clientX;
-    var posY = e.clientY;
-    if (ctx.opt.useMouseStatusInfo) {
-      ctx.mousePos.x = posX;
-      ctx.mousePos.y = posY;
-      ctx.updateMousePosLabel();
-    }
-    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, posX, posY);
-    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.doResize(ctx, posX, posY);
-    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, posX, posY);
-    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(posX, posY);
-    ctx.resizeMainHeight();
+    var x = e.clientX;
+    var y = e.clientY;
+    ctx._onPointerMove(ctx, x, y);
   },
 
   onTouchMove: function(e) {
     var ctx = DebugJS.ctx;
-    var posX = e.changedTouches[0].pageX;
-    var posY = e.changedTouches[0].pageY;
+    var x = e.changedTouches[0].pageX;
+    var y = e.changedTouches[0].pageY;
+    ctx._onPointerMove(ctx, x, y);
+  },
+
+  _onPointerMove: function(ctx, x, y) {
     if (ctx.opt.useMouseStatusInfo) {
-      ctx.mousePos.x = posX;
-      ctx.mousePos.y = posY;
+      ctx.mousePos.x = x;
+      ctx.mousePos.y = y;
       ctx.updateMousePosLabel();
     }
-    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, posX, posY);
-    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.doResize(ctx, posX, posY);
-    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, posX, posY);
-    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(posX, posY);
+    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, x, y);
+    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.doResize(ctx, x, y);
+    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, x, y);
+    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(x, y);
     ctx.resizeMainHeight();
   },
 
@@ -2935,15 +2930,7 @@ DebugJS.prototype = {
     switch (e.button) {
       case 0:
         ctx.mouseClick0 = DebugJS.COLOR_INACTIVE;
-        if (ctx.status & DebugJS.STATE_MEASURING) {
-          ctx.stopMeasure(ctx);
-        }
-        if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
-          ctx.endMove(ctx);
-        }
-        if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) {
-          ctx.endResize(ctx);
-        }
+        ctx._onPointerUp(ctx);
         break;
       case 1:
         ctx.mouseClick1 = DebugJS.COLOR_INACTIVE;
@@ -2957,7 +2944,10 @@ DebugJS.prototype = {
   },
 
   onTouchEnd: function(e) {
-    var ctx = DebugJS.ctx;
+    DebugJS.ctx._onPointerUp(DebugJS.ctx);
+  },
+
+  _onPointerUp: function(ctx) {
     if (ctx.status & DebugJS.STATE_MEASURING) {
       ctx.stopMeasure(ctx);
     }
@@ -3860,10 +3850,8 @@ DebugJS.prototype = {
     if (!(ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT)) {
       return;
     }
-    var posX = x;
-    var posY = y;
-    if (ctx.isOnDbgWin(posX, posY)) return;
-    var el = document.elementFromPoint(posX, posY);
+    if (ctx.isOnDbgWin(x, y)) return;
+    var el = document.elementFromPoint(x, y);
     if (el != ctx.targetElm) {
       ctx.showElementInfo(el);
       ctx.updateTargetElm(el);
