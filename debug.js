@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803020051';
+  this.v = '201803030103';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -347,7 +347,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'setattr', fnc: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fnc: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fnc: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set id|label name|count|result|status|verify got-val method expected-val|fin'},
+    {cmd: 'test', fnc: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set|count|result|status|verify got-val method expected-val|fin'},
     {cmd: 'timer', fnc: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fnc: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fnc: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -8146,14 +8146,17 @@ DebugJS.prototype = {
       case 'label':
         fn = test.setLabel;
         break;
+      case 'comment':
+        fn = test.setCmnt;
+        break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage('test set id|label|comment val');
         return;
     }
     try {
-      var n = eval(args[2]);
-      if (n == undefined) n = '';
-      fn(n + '');
+      var v = eval(args[2]);
+      if (v == undefined) v = '';
+      fn(v + '');
     } catch (e) {
       DebugJS.log.e(e);
     }
@@ -12798,26 +12801,33 @@ DebugJS.test.addResult = function(status, detail) {
   var label = test.data.executingTestLabel;
   test.setId(id);
   test.setLabel(label);
-  test.data.results[id][label].push({status: status, detail: detail});
+  test.data.results[id].res[label].push({status: status, detail: detail});
 };
 DebugJS.test.setId = function(id) {
   var test = DebugJS.test;
   var data = test.data;
   if (data.results[id] == undefined) {
-    data.results[id] = {};
+    data.results[id] = {cmnt: [], res: {}};
   }
   data.executingTestId = id;
   test.setLabel('');
+};
+DebugJS.test.setCmnt = function(c) {
+  var test = DebugJS.test;
+  var data = test.data;
+  var id = data.executingTestId;
+  data.results[id].cmnt.push(c);
+  DebugJS.log('# ' + c);
 };
 DebugJS.test.setLabel = function(label) {
   var test = DebugJS.test;
   var data = test.data;
   var id = data.executingTestId;
   if (data.results[id] == undefined) {
-    data.results[id] = {};
+    data.results[id] = {cmnt: [], res: {}};
   }
-  if (data.results[id][label] == undefined) {
-    data.results[id][label] = [];
+  if (data.results[id].res[label] == undefined) {
+    data.results[id].res[label] = [];
   }
   data.executingTestLabel = label;
 };
@@ -12859,6 +12869,7 @@ DebugJS.test.count = function(cnt) {
 DebugJS.test.result = function() {
   var test = DebugJS.test;
   var M = 16;
+  var i;
   var n = test.countLongestLabel();
   if (n > M) n = M;
   var cnt = {ok: 0, ng: 0, err: 0};
@@ -12868,7 +12879,7 @@ DebugJS.test.result = function() {
     if (id == '') {
       testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
     }
-    var st = test.chkResult(test.data.results[id]);
+    var st = test.chkResult(test.data.results[id].res);
     switch (st) {
       case test.STATUS_OK:
         cnt.ok++;
@@ -12879,11 +12890,18 @@ DebugJS.test.result = function() {
       case test.STATUS_ERR:
         cnt.err++;
     }
+
     var rs = test.getResultStr(st);
     details += '\n' + rs + testId + '\n';
-    for (label in test.data.results[id]) {
-      for (var i = 0; i < test.data.results[id][label].length; i++) {
-        var result = test.data.results[id][label][i];
+
+    for (i = 0; i < test.data.results[id].cmnt.length; i++) {
+      var cmnt = test.data.results[id].cmnt[i];
+      details += ' # ' + cmnt + '\n';
+    }
+
+    for (label in test.data.results[id].res) {
+      for (i = 0; i < test.data.results[id].res[label].length; i++) {
+        var result = test.data.results[id].res[label][i];
         details += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
       }
     }
@@ -12901,7 +12919,7 @@ DebugJS.test.getStatus = function() {
   var test = DebugJS.test;
   var r = test.STATUS_OK;
   for (id in test.data.results) {
-    var st = test.chkResult(test.data.results[id]);
+    var st = test.chkResult(test.data.results[id].res);
     if (st == test.STATUS_ERR) {
       return test.STATUS_ERR;
     } else if (st == test.STATUS_NG) {
@@ -13001,7 +13019,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
 DebugJS.test.countLongestLabel = function() {
   var l = 0;
   for (id in DebugJS.test.data.results) {
-    for (label in DebugJS.test.data.results[id]) {
+    for (label in DebugJS.test.data.results[id].res) {
       if (label.length > l) {
         l = label.length;
       }
