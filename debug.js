@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803030103';
+  this.v = '201803031425';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12799,9 +12799,13 @@ DebugJS.test.addResult = function(status, detail) {
   }
   var id = test.data.executingTestId;
   var label = test.data.executingTestLabel;
-  test.setId(id);
-  test.setLabel(label);
+  test.prepare();
   test.data.results[id].res[label].push({status: status, detail: detail});
+};
+DebugJS.test.prepare = function() {
+  var test = DebugJS.test;
+  test.setId(test.data.executingTestId);
+  test.setLabel(test.data.executingTestLabel);
 };
 DebugJS.test.setId = function(id) {
   var test = DebugJS.test;
@@ -12811,13 +12815,6 @@ DebugJS.test.setId = function(id) {
   }
   data.executingTestId = id;
   test.setLabel('');
-};
-DebugJS.test.setCmnt = function(c) {
-  var test = DebugJS.test;
-  var data = test.data;
-  var id = data.executingTestId;
-  data.results[id].cmnt.push(c);
-  DebugJS.log('# ' + c);
 };
 DebugJS.test.setLabel = function(label) {
   var test = DebugJS.test;
@@ -12830,6 +12827,12 @@ DebugJS.test.setLabel = function(label) {
     data.results[id].res[label] = [];
   }
   data.executingTestLabel = label;
+};
+DebugJS.test.setCmnt = function(c) {
+  var test = DebugJS.test;
+  test.prepare();
+  test.data.results[test.data.executingTestId].cmnt.push(c);
+  DebugJS.log('# ' + c);
 };
 DebugJS.test.chkResult = function(results) {
   var test = DebugJS.test;
