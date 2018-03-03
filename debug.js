@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803031425';
+  this.v = '201803032337';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2192,7 +2192,7 @@ DebugJS.prototype = {
     return true;
   },
 
-  doMove: function(ctx, x, y) {
+  moveDbgWin: function(ctx, x, y) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
     ctx.win.style.top = y - ctx.prevOffsetTop + 'px';
@@ -2216,7 +2216,7 @@ DebugJS.prototype = {
     ctx.disableTextSelect(ctx);
   },
 
-  doResize: function(ctx, x, y) {
+  resizeDbgWin: function(ctx, x, y) {
     var currentX = x;
     var currentY = y;
     var moveX, moveY, t, l, w, h;
@@ -2918,8 +2918,8 @@ DebugJS.prototype = {
       ctx.mousePos.y = y;
       ctx.updateMousePosLabel();
     }
-    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.doMove(ctx, x, y);
-    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.doResize(ctx, x, y);
+    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.moveDbgWin(ctx, x, y);
+    if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.resizeDbgWin(ctx, x, y);
     if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, x, y);
     if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(x, y);
     ctx.resizeMainHeight();
@@ -2978,6 +2978,12 @@ DebugJS.prototype = {
   expandDbgWin: function(mode) {
     var ctx = DebugJS.ctx;
     var sizePos = ctx.getSelfSizePos();
+    var border = DebugJS.WIN_BORDER * 2;
+    if ((mode == 'expand') &&
+        (sizePos.w == DebugJS.DBGWIN_EXPAND_W + border) &&
+        (sizePos.h == DebugJS.DBGWIN_EXPAND_H + border)) {
+      return;
+    }
     ctx.saveSizeAndPos(ctx);
     switch (mode) {
       case 'full':
@@ -3159,6 +3165,16 @@ DebugJS.prototype = {
     if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       ctx.enableDraggable(ctx);
       ctx.enableResize(ctx);
+    } else {
+      var sh = 10;
+      var sp = ctx.getSelfSizePos();
+      var orgY2 = t + h;
+      var orgX2 = l + w;
+      if (((Math.abs(sp.x1 - l) > sh) && (Math.abs(sp.x2 - orgX2) > sh)) ||
+          ((Math.abs(sp.y1 - t) > sh) && (Math.abs(sp.y2 - orgY2) > sh))) {
+        t = (sp.y1 < 0 ? 0 : sp.y1 + 3);
+        l = (sp.x1 < 0 ? 0 : sp.x1 + 3);
+      }
     }
     ctx.setDbgWinSize(w, h);
     ctx.setDbgWinPos(t, l);
