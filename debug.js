@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803041550';
+  this.v = '201803050000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6617,7 +6617,7 @@ DebugJS.prototype = {
         setValName = valName;
       }
     }
-    cmdline = DebugJS.replaceCmdValName(cmdline);
+    cmdline = DebugJS.replaceCmdVals(cmdline);
 
     var ret = ctx.__execCmd(ctx, cmdline);
     if (setValName != null) {
@@ -8707,10 +8707,16 @@ DebugJS.getCmdValName = function(v, head) {
   return r[1];
 };
 
-DebugJS.replaceCmdValName = function(v) {
+DebugJS.replaceCmdVals = function(v) {
+  var prevN;
   while (true) {
     var name = DebugJS.getCmdValName(v);
     if (name == null) {return v;}
+    if (name == prevN) {
+      DebugJS.log.e('(bug) replaceCmdVals()');
+      return v;
+    }
+    prevN = name;
     var reNm = name;
     if (name == '?') {reNm = '\\?';}
     var re = new RegExp('\\$\\{' + reNm + '\\}', 'g');
@@ -11387,7 +11393,7 @@ DebugJS.bat.prepro = function(cmd) {
       return 2;
     case 'goto':
       ctrl.startPc = 0;
-      var idx = bat.labels[DebugJS.replaceCmdValName(a[0])];
+      var idx = bat.labels[DebugJS.replaceCmdVals(a[0])];
       if (idx == undefined) {
         DebugJS.log.e('L' + ctrl.pc + ': No such label (' + a[0] + ')');
       } else {
@@ -11418,7 +11424,7 @@ DebugJS.bat.ppIf = function(cmd, s) {
   var v = DebugJS.delLeadingAndTrailingWhiteSP(s);
   if (v.charAt(s.length - 1) == DebugJS.PP_BLOCK_START) {
     v = v.substr(0, s.length - 2);
-    v = DebugJS.replaceCmdValName(v);
+    v = DebugJS.replaceCmdVals(v);
     try {
       r.res = eval(v);
       r.err = false;
@@ -11470,7 +11476,7 @@ DebugJS.bat.execJs = function() {
     DebugJS.ctx.updateCurPc();
     if (c != DebugJS.PP_JS) {
       if (!pure) {
-        c = DebugJS.replaceCmdValName(c);
+        c = DebugJS.replaceCmdVals(c);
       }
       js += c + '\n';
     }
