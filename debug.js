@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803032337';
+  this.v = '201803041550';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -632,11 +632,7 @@ DebugJS.FEATURES = [
   'useLogFilter',
   'useCommandLine'
 ];
-DebugJS.z0 = function() {};
-DebugJS.z1 = function(a) {};
-DebugJS.z2 = function(a, b) {};
-DebugJS.z3 = function(a, b, c) {};
-DebugJS.z4 = function(a, b, c, d) {};
+DebugJS.fn = function() {};
 DebugJS.prototype = {
   init: function(opt, restoreOpt) {
     if (!DebugJS.ENABLE) {return false;}
@@ -684,8 +680,8 @@ DebugJS.prototype = {
     }
     if (ctx.opt.mode == 'noui') {
       ctx.removeEventHandlers(ctx);
-      ctx.init = DebugJS.z2;
-      DebugJS.init = DebugJS.z1;
+      ctx.init = DebugJS.fn;
+      DebugJS.init = DebugJS.fn;
       ctx.status |= DebugJS.STATE_INITIALIZED;
       return false;
     }
@@ -1675,37 +1671,39 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
     var top, left;
+    var clientW = document.documentElement.clientWidth;
+    var clientH = document.documentElement.clientHeight;
     switch (pos) {
       case 'se':
-        top = (document.documentElement.clientHeight - dbgWinHeight - opt.adjPosY) + 'px';
-        left = (document.documentElement.clientWidth - dbgWinWidth - opt.adjPosX) + 'px';
+        top = (clientH - dbgWinHeight - opt.adjPosY) + 'px';
+        left = (clientW - dbgWinWidth - opt.adjPosX) + 'px';
         break;
       case 'ne':
         top = opt.adjPosY + 'px';
-        left = (document.documentElement.clientWidth - dbgWinWidth - opt.adjPosX) + 'px';
+        left = (clientW - dbgWinWidth - opt.adjPosX) + 'px';
         break;
       case 'c':
-        top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-        left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
+        top = ((clientH / 2) - (dbgWinHeight / 2)) + 'px';
+        left = ((clientW / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'sw':
-        top = (document.documentElement.clientHeight - dbgWinHeight - opt.adjPosY) + 'px';
+        top = (clientH - dbgWinHeight - opt.adjPosY) + 'px';
         left = opt.adjPosX + 'px';
         break;
       case 'n':
         top = opt.adjPosY + 'px';
-        left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
+        left = ((clientW / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'e':
-        top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
-        left = (document.documentElement.clientWidth - dbgWinWidth - opt.adjPosX) + 'px';
+        top = ((clientH / 2) - (dbgWinHeight / 2)) + 'px';
+        left = (clientW - dbgWinWidth - opt.adjPosX) + 'px';
         break;
       case 's':
-        top = (document.documentElement.clientHeight - dbgWinHeight - opt.adjPosY) + 'px';
-        left = ((document.documentElement.clientWidth / 2) - (dbgWinWidth / 2)) + 'px';
+        top = (clientH - dbgWinHeight - opt.adjPosY) + 'px';
+        left = ((clientW / 2) - (dbgWinWidth / 2)) + 'px';
         break;
       case 'w':
-        top = ((document.documentElement.clientHeight / 2) - (dbgWinHeight / 2)) + 'px';
+        top = ((clientH / 2) - (dbgWinHeight / 2)) + 'px';
         left = opt.adjPosX + 'px';
         break;
       default:
@@ -2220,15 +2218,17 @@ DebugJS.prototype = {
     var currentX = x;
     var currentY = y;
     var moveX, moveY, t, l, w, h;
+    var clientW = document.documentElement.clientWidth;
+    var clientH = document.documentElement.clientHeight;
 
-    if (currentX > document.documentElement.clientWidth) {
-      currentX = document.documentElement.clientWidth;
+    if (currentX > clientW) {
+      currentX = clientW;
     } else if (currentX < 0) {
       currentX = 0;
     }
 
-    if (currentY > document.documentElement.clientHeight) {
-      currentY = document.documentElement.clientHeight;
+    if (currentY > clientH) {
+      currentY = clientH;
     } else if (currentY < 0) {
       currentY = 0;
     }
@@ -3010,8 +3010,8 @@ DebugJS.prototype = {
     var sizePos = ctx.getSelfSizePos();
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
-    var expandThresholdW = document.documentElement.clientWidth * 0.6;
-    var expandThresholdH = document.documentElement.clientHeight * 0.6;
+    var expandThresholdW = clientW * 0.6;
+    var expandThresholdH = clientH * 0.6;
     if ((sizePos.w > expandThresholdW) || (sizePos.h > expandThresholdH)) {
       ctx.setDbgWinFull(ctx);
       return;
@@ -3044,8 +3044,8 @@ DebugJS.prototype = {
     }
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
-    var expandThresholdW = document.documentElement.clientWidth * 0.6;
-    var expandThresholdH = document.documentElement.clientHeight * 0.6;
+    var expandThresholdW = clientW * 0.6;
+    var expandThresholdH = clientH * 0.6;
     var w = 0, h = 0, t = 0, l = 0;
 
     if ((DebugJS.DBGWIN_EXPAND_W > clientW) || (sizePos.w > expandThresholdW)) {
@@ -3166,14 +3166,38 @@ DebugJS.prototype = {
       ctx.enableDraggable(ctx);
       ctx.enableResize(ctx);
     } else {
-      var sh = 10;
+      var thold = 10;
       var sp = ctx.getSelfSizePos();
       var orgY2 = t + h;
       var orgX2 = l + w;
-      if (((Math.abs(sp.x1 - l) > sh) && (Math.abs(sp.x2 - orgX2) > sh)) ||
-          ((Math.abs(sp.y1 - t) > sh) && (Math.abs(sp.y2 - orgY2) > sh))) {
-        t = (sp.y1 < 0 ? 0 : sp.y1 + 3);
-        l = (sp.x1 < 0 ? 0 : sp.x1 + 3);
+      if (((Math.abs(sp.x1 - l) > thold) && (Math.abs(sp.x2 - orgX2) > thold)) ||
+          ((Math.abs(sp.y1 - t) > thold) && (Math.abs(sp.y2 - orgY2) > thold))) {
+        var clientW = document.documentElement.clientWidth;
+        var clientH = document.documentElement.clientHeight;
+        var mL = (sp.x1 < 0 ? 0 : sp.x1);
+        var mT = (sp.y1 < 0 ? 0 : sp.y1);
+        var mR = clientW - sp.x2;
+        var mB = clientH - sp.y2;
+        if (mR < 0) mR = 0;
+        if (mB < 0) mB = 0;
+        t = sp.y1 + 3;
+        l = sp.x1 + 3;
+        if (mT > mB) {
+          t = sp.y2 - h;
+          if ((t > clientH) || (t + h > clientH)) {
+            t = clientH - h;
+          }
+          t -= 6;
+        }
+        if (mL > mR) {
+          l = sp.x2 - w;
+          if ((l > clientW) || (l + w > clientW)) {
+            l = clientW - w;
+          }
+          l -= 6;
+        }
+        if (l < 0) l = 0;
+        if (t < 0) t = 0;
       }
     }
     ctx.setDbgWinSize(w, h);
@@ -13309,7 +13333,7 @@ DebugJS.rootFncs = function() {
   var fn = ['v', 'd', 'i', 'w', 'e'];
   for (var i = 0; i < fn.length; i++) {
     var lv = fn[i];
-    log[lv].root = (DebugJS.ENABLE ? log.root.fn.bind(undefined, lv) : DebugJS.z1);
+    log[lv].root = (DebugJS.ENABLE ? log.root.fn.bind(undefined, lv) : DebugJS.fn);
   }
 };
 
@@ -13401,65 +13425,65 @@ DebugJS.x.setBtnLabel = function(l) {
   if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
 DebugJS.balse = function() {
-  log = DebugJS.z1;
-  log.e = DebugJS.z1;
-  log.w = DebugJS.z1;
-  log.i = DebugJS.z1;
-  log.d = DebugJS.z1;
-  log.v = DebugJS.z1;
-  log.t = DebugJS.z2;
-  log.p = DebugJS.z3;
-  log.json = DebugJS.z3;
-  log.clear = DebugJS.z0;
-  log.res = DebugJS.z1;
-  log.res.err = DebugJS.z1;
-  log.suspend = DebugJS.z0;
-  log.resume = DebugJS.z0;
-  log.root = DebugJS.z1;
-  DebugJS.addEvtListener = DebugJS.z2;
-  DebugJS.addFileLoader = DebugJS.z4;
-  DebugJS.cmd = DebugJS.z2;
-  DebugJS.bat = DebugJS.z1;
-  DebugJS.bat.set = DebugJS.z1;
-  DebugJS.bat.run = DebugJS.z0;
-  DebugJS.bat.pause = DebugJS.z0;
-  DebugJS.bat.resume = DebugJS.z0;
-  DebugJS.bat.stop = DebugJS.z0;
-  DebugJS.bat.list = DebugJS.z0;
-  DebugJS.bat.status = DebugJS.z0;
-  DebugJS.bat.isRunning = DebugJS.z0;
-  DebugJS.countElements = DebugJS.z2;
-  DebugJS.getHtml = DebugJS.z1;
-  DebugJS.init = DebugJS.z1;
-  DebugJS.dumpLog = DebugJS.z3;
-  DebugJS.show = DebugJS.z0;
-  DebugJS.hide = DebugJS.z0;
-  DebugJS.http = DebugJS.z2;
-  DebugJS.led = DebugJS.z1;
-  DebugJS.led.on = DebugJS.z1;
-  DebugJS.led.off = DebugJS.z1;
-  DebugJS.msg = DebugJS.z1;
-  DebugJS.msg.clear = DebugJS.z0;
-  DebugJS.opacity = DebugJS.z1;
-  DebugJS.stack = DebugJS.z0;
-  DebugJS.stopwatch = DebugJS.z0;
-  DebugJS.stopwatch.start = DebugJS.z0;
-  DebugJS.stopwatch.stop = DebugJS.z0;
-  DebugJS.stopwatch.end = DebugJS.z0;
-  DebugJS.stopwatch.split = DebugJS.z1;
-  DebugJS.stopwatch.reset = DebugJS.z0;
-  DebugJS.time.start = DebugJS.z2;
-  DebugJS.time.split = DebugJS.z2;
-  DebugJS.time.end = DebugJS.z2;
-  DebugJS.time.check = DebugJS.z1;
-  DebugJS.ver = DebugJS.z0;
-  DebugJS.wd.start = DebugJS.z1;
-  DebugJS.wd.stop = DebugJS.z0;
-  DebugJS.x.addCmdTbl = DebugJS.z1;
-  DebugJS.x.addPanel = DebugJS.z1;
-  DebugJS.x.getPanel = DebugJS.z1;
-  DebugJS.x.removePanel = DebugJS.z1;
-  DebugJS.x.setBtnLabel = DebugJS.z1;
+  log = DebugJS.fn;
+  log.e = DebugJS.fn;
+  log.w = DebugJS.fn;
+  log.i = DebugJS.fn;
+  log.d = DebugJS.fn;
+  log.v = DebugJS.fn;
+  log.t = DebugJS.fn;
+  log.p = DebugJS.fn;
+  log.json = DebugJS.fn;
+  log.clear = DebugJS.fn;
+  log.res = DebugJS.fn;
+  log.res.err = DebugJS.fn;
+  log.suspend = DebugJS.fn;
+  log.resume = DebugJS.fn;
+  log.root = DebugJS.fn;
+  DebugJS.addEvtListener = DebugJS.fn;
+  DebugJS.addFileLoader = DebugJS.fn;
+  DebugJS.cmd = DebugJS.fn;
+  DebugJS.bat = DebugJS.fn;
+  DebugJS.bat.set = DebugJS.fn;
+  DebugJS.bat.run = DebugJS.fn;
+  DebugJS.bat.pause = DebugJS.fn;
+  DebugJS.bat.resume = DebugJS.fn;
+  DebugJS.bat.stop = DebugJS.fn;
+  DebugJS.bat.list = DebugJS.fn;
+  DebugJS.bat.status = DebugJS.fn;
+  DebugJS.bat.isRunning = DebugJS.fn;
+  DebugJS.countElements = DebugJS.fn;
+  DebugJS.getHtml = DebugJS.fn;
+  DebugJS.init = DebugJS.fn;
+  DebugJS.dumpLog = DebugJS.fn;
+  DebugJS.show = DebugJS.fn;
+  DebugJS.hide = DebugJS.fn;
+  DebugJS.http = DebugJS.fn;
+  DebugJS.led = DebugJS.fn;
+  DebugJS.led.on = DebugJS.fn;
+  DebugJS.led.off = DebugJS.fn;
+  DebugJS.msg = DebugJS.fn;
+  DebugJS.msg.clear = DebugJS.fn;
+  DebugJS.opacity = DebugJS.fn;
+  DebugJS.stack = DebugJS.fn;
+  DebugJS.stopwatch = DebugJS.fn;
+  DebugJS.stopwatch.start = DebugJS.fn;
+  DebugJS.stopwatch.stop = DebugJS.fn;
+  DebugJS.stopwatch.end = DebugJS.fn;
+  DebugJS.stopwatch.split = DebugJS.fn;
+  DebugJS.stopwatch.reset = DebugJS.fn;
+  DebugJS.time.start = DebugJS.fn;
+  DebugJS.time.split = DebugJS.fn;
+  DebugJS.time.end = DebugJS.fn;
+  DebugJS.time.check = DebugJS.fn;
+  DebugJS.ver = DebugJS.fn;
+  DebugJS.wd.start = DebugJS.fn;
+  DebugJS.wd.stop = DebugJS.fn;
+  DebugJS.x.addCmdTbl = DebugJS.fn;
+  DebugJS.x.addPanel = DebugJS.fn;
+  DebugJS.x.getPanel = DebugJS.fn;
+  DebugJS.x.removePanel = DebugJS.fn;
+  DebugJS.x.setBtnLabel = DebugJS.fn;
 };
 DebugJS.start = function() {
   DebugJS.rootFncs();
