@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803052215';
+  this.v = '201803060735';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3701,7 +3701,7 @@ DebugJS.prototype = {
     var html = ' <span style="color:' + DebugJS.ITEM_NAME_COLOR + '">length</span> = ' + strg.length + '\n' +
                ' <span style="color:' + DebugJS.ITEM_NAME_COLOR + '">key</span>';
     if (DebugJS.LS_AVAILABLE) {
-      for (i = 0; i < strg.length; i++) {
+      for (var i = 0; i < strg.length; i++) {
         var key = strg.key(i);
         if (i != 0) {
           html += '\n    ';
@@ -12900,7 +12900,7 @@ DebugJS.test.setCmnt = function(c) {
 DebugJS.test.chkResult = function(results) {
   var test = DebugJS.test;
   var r = test.STATUS_OK;
-  for (label in results) {
+  for (var label in results) {
     for (var i = 0; i < results[label].length; i++) {
       var st = results[label][i].status;
       if (st == test.STATUS_ERR) {
@@ -12941,7 +12941,7 @@ DebugJS.test.result = function() {
   if (n > M) n = M;
   var cnt = {ok: 0, ng: 0, err: 0};
   var details = '';
-  for (id in data.results) {
+  for (var id in data.results) {
     var testId = id;
     if (id == '') {
       testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
@@ -12963,7 +12963,7 @@ DebugJS.test.result = function() {
       var cmnt = data.results[id].cmnt[i];
       details += ' # ' + cmnt + '\n';
     }
-    for (label in data.results[id].res) {
+    for (var label in data.results[id].res) {
       for (i = 0; i < data.results[id].res[label].length; i++) {
         var result = data.results[id].res[label][i];
         details += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
@@ -12985,7 +12985,7 @@ DebugJS.test.result = function() {
 DebugJS.test.getStatus = function() {
   var test = DebugJS.test;
   var r = test.STATUS_OK;
-  for (id in test.data.results) {
+  for (var id in test.data.results) {
     var st = test.chkResult(test.data.results[id].res);
     if (st == test.STATUS_ERR) {
       return test.STATUS_ERR;
@@ -13085,8 +13085,8 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
 };
 DebugJS.test.countLongestLabel = function() {
   var l = 0;
-  for (id in DebugJS.test.data.results) {
-    for (label in DebugJS.test.data.results[id].res) {
+  for (var id in DebugJS.test.data.results) {
+    for (var label in DebugJS.test.data.results[id].res) {
       if (label.length > l) {
         l = label.length;
       }
