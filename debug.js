@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803050000';
+  this.v = '201803052215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8145,7 +8145,7 @@ DebugJS.prototype = {
         try {
           var nm = eval(nm);
           test.init(nm);
-          DebugJS.log('Test has been initialized.');
+          DebugJS.log('Test has been initialized.' + (nm == undefined ? '' : ' (' + nm + ')'));
         } catch (e) {
           DebugJS.log.e(e);
         }
@@ -8180,6 +8180,12 @@ DebugJS.prototype = {
     var target = args[1];
     var fn;
     switch (target) {
+      case 'name':
+        fn = test.setName;
+        break;
+      case 'desc':
+        fn = test.setDesc;
+        break;
       case 'id':
         fn = test.setId;
         break;
@@ -8190,7 +8196,7 @@ DebugJS.prototype = {
         fn = test.setCmnt;
         break;
       default:
-        DebugJS.printUsage('test set id|label|comment val');
+        DebugJS.printUsage('test set name|desc|id|label|comment val');
         return;
     }
     try {
@@ -12799,6 +12805,7 @@ DebugJS.test.STATUS_NG = 'NG';
 DebugJS.test.STATUS_ERR = 'ERR';
 DebugJS.test.data = {
   name: '',
+  desc: [],
   running: false,
   executingTestId: '',
   executingTestLabel: '',
@@ -12808,6 +12815,7 @@ DebugJS.test.data = {
 DebugJS.test.init = function(name) {
   var data = DebugJS.test.data;
   data.name = ((name == undefined) ? '' : name);
+  data.desc = [];
   data.running = true;
   data.executingTestId = '';
   data.executingTestLabel = '';
@@ -12815,6 +12823,14 @@ DebugJS.test.init = function(name) {
   data.cnt.ng = 0;
   data.cnt.err = 0;
   data.results = {};
+};
+DebugJS.test.setName = function(n) {
+  DebugJS.test.data.name = n;
+  DebugJS.log('TestName: ' + n);
+};
+DebugJS.test.setDesc = function(s) {
+  DebugJS.test.data.desc.push(s);
+  DebugJS.log(s);
 };
 DebugJS.test.save = function() {
   if (!DebugJS.LS_AVAILABLE) return;
@@ -12833,20 +12849,21 @@ DebugJS.test.fin = function() {
 };
 DebugJS.test.addResult = function(status, detail) {
   var test = DebugJS.test;
+  var data = test.data;
   switch (status) {
     case test.STATUS_OK:
-      test.data.cnt.ok++;
+      data.cnt.ok++;
       break;
     case test.STATUS_NG:
-      test.data.cnt.ng++;
+      data.cnt.ng++;
       break;
     case test.STATUS_ERR:
-      test.data.cnt.err++;
+      data.cnt.err++;
   }
-  var id = test.data.executingTestId;
-  var label = test.data.executingTestLabel;
+  var id = data.executingTestId;
+  var label = data.executingTestLabel;
   test.prepare();
-  test.data.results[id].res[label].push({status: status, detail: detail});
+  data.results[id].res[label].push({status: status, detail: detail});
 };
 DebugJS.test.prepare = function() {
   var test = DebugJS.test;
@@ -12917,18 +12934,19 @@ DebugJS.test.count = function(cnt) {
 };
 DebugJS.test.result = function() {
   var test = DebugJS.test;
+  var data = test.data;
   var M = 16;
   var i;
   var n = test.countLongestLabel();
   if (n > M) n = M;
   var cnt = {ok: 0, ng: 0, err: 0};
   var details = '';
-  for (id in test.data.results) {
+  for (id in data.results) {
     var testId = id;
     if (id == '') {
       testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
     }
-    var st = test.chkResult(test.data.results[id].res);
+    var st = test.chkResult(data.results[id].res);
     switch (st) {
       case test.STATUS_OK:
         cnt.ok++;
@@ -12939,28 +12957,28 @@ DebugJS.test.result = function() {
       case test.STATUS_ERR:
         cnt.err++;
     }
-
     var rs = test.getResultStr(st);
     details += '\n' + rs + testId + '\n';
-
-    for (i = 0; i < test.data.results[id].cmnt.length; i++) {
-      var cmnt = test.data.results[id].cmnt[i];
+    for (i = 0; i < data.results[id].cmnt.length; i++) {
+      var cmnt = data.results[id].cmnt[i];
       details += ' # ' + cmnt + '\n';
     }
-
-    for (label in test.data.results[id].res) {
-      for (i = 0; i < test.data.results[id].res[label].length; i++) {
-        var result = test.data.results[id].res[label][i];
+    for (label in data.results[id].res) {
+      for (i = 0; i < data.results[id].res[label].length; i++) {
+        var result = data.results[id].res[label][i];
         details += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
       }
     }
   }
-  var nm = test.data.name;
+  var nm = data.name;
   var s = 'Test Result:\n';
   if (nm != '') {
     s += '[' + nm + ']\n';
   }
-  s += test.count(cnt) + '\n\nDetails:\n' + test.count(test.data.cnt) + '\n';
+  for (i = 0; i < data.desc.length; i++) {
+    s += data.desc[i] + '\n';
+  }
+  s += '\nSummary:\n' + test.count(cnt) + '\n\nDetails:\n' + test.count(data.cnt) + '\n';
   s += details;
   return s;
 };
