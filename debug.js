@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803060735';
+  this.v = '201803070035';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11225,6 +11225,9 @@ DebugJS.bat.run = function() {
   ctx.updateBatRunBtn();
   bat.initCtrl(false);
   var ctrl = bat.ctrl;
+  if (bat.ctx.length == 0) {
+    ctrl.echo = ctx.cmdEchoFlg;
+  }
   ctx.updateCurPc();
   ctrl.startPc = sl;
   ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
@@ -11282,6 +11285,7 @@ DebugJS.bat.exec = function() {
   ctx.updateCurPc();
   switch (bat.prepro(c)) {
     case 1:
+      ctrl.tmpEchoOff = false;
       bat.next();
       return;
     case 2:
@@ -11347,9 +11351,11 @@ DebugJS.bat.prepro = function(cmd) {
       return 1;
     case 'echo':
       if (a[0] == 'off') {
+        bat.ppEcho(cmd);
         ctrl[c] = false;
         return 1;
       } else if (a[0] == 'on') {
+        bat.ppEcho(cmd);
         ctrl[c] = true;
         return 1;
       }
