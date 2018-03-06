@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803070100';
+  this.v = '201803070737';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -335,7 +335,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-c|-key key] [timeout]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text str|selectoption get|set text|value val|scroll x y|hint msg|show|hide|clear|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
@@ -539,7 +539,7 @@ DebugJS.HTML_BTN_COLOR = '#8f8';
 DebugJS.DOM_BTN_COLOR = '#f63';
 DebugJS.JS_BTN_COLOR = '#6df';
 DebugJS.TOOLS_BTN_COLOR = '#ff0';
-DebugJS.EXT_BTN_COLOR = '#bf0';
+DebugJS.EXT_BTN_COLOR = '#f8f';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
 DebugJS.LOG_SUSPEND_BTN_COLOR = '#f00';
 DebugJS.PIN_BTN_COLOR = '#fa0';
@@ -562,7 +562,7 @@ DebugJS.ITEM_NAME_COLOR = '#cff';
 DebugJS.KEYWORD_COLOR = '#2f6';
 DebugJS.RND_TYPE_NUM = '-d';
 DebugJS.RND_TYPE_STR = '-s';
-DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX = '-elhl';
+DebugJS.ELM_HL_CLASS_SUFFIX = '-elhl';
 DebugJS.EXPANDBTN = '&gt;';
 DebugJS.CLOSEBTN = 'v';
 DebugJS.OMIT_LAST = 0;
@@ -988,7 +988,7 @@ DebugJS.prototype = {
       'background': 'rgba(192,192,192,0.5) !important'
     };
 
-    styles['.' + ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX] = {
+    styles['.' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX] = {
       'outline': 'solid 1px #f00 !important',
       'opacity': '0.7 !important'
     };
@@ -3441,15 +3441,12 @@ DebugJS.prototype = {
   },
 
   updateSystemTime: function() {
-    if (!(DebugJS.ctx.status & DebugJS.STATE_SYS_INFO)) {
-      return;
-    }
-    var now = new Date();
-    var sysTime = now.getTime();
-    var sysTimeBin = DebugJS.formatBin(sysTime.toString(2), false, 1);
-    var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(DebugJS.getDateTime(sysTime)) + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         RAW</span>  (new Date()).getTime() = ' + sysTime + '\n' +
-    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + sysTimeBin + '\n</pre>';
+    if (!(DebugJS.ctx.status & DebugJS.STATE_SYS_INFO)) {return;}
+    var time = (new Date()).getTime();
+    var timeBin = DebugJS.formatBin(time.toString(2), false, 1);
+    var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(DebugJS.getDateTime(time)) + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         RAW</span>  (new Date()).getTime() = ' + time + '\n' +
+    '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + timeBin + '\n</pre>';
     DebugJS.ctx.sysTimePanel.innerHTML = html;
     setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
@@ -3473,6 +3470,7 @@ DebugJS.prototype = {
   showSystemInfo: function(e) {
     var ctx = DebugJS.ctx;
     var INDENT = '                  ';
+    var offset = (new Date()).getTimezoneOffset();
     var screenSize = 'width = ' + screen.width + ' x height = ' + screen.height;
     var languages = DebugJS.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
@@ -3553,7 +3551,6 @@ DebugJS.prototype = {
     var docOncontextmenu = ctx.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
     var html = '<pre>';
-    var offset = (new Date()).getTimezoneOffset();
     html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.getTimeOffsetStr(offset) + ')\n';
     html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">screen.</span>     : ' + screenSize + '\n';
     html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n';
@@ -3865,7 +3862,7 @@ DebugJS.prototype = {
 
   closeElmInfo: function(ctx) {
     if (ctx.targetElm) {
-      DebugJS.removeClass(ctx.targetElm, ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX);
+      DebugJS.removeClass(ctx.targetElm, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
       ctx.targetElm = null;
     }
     if (ctx.elmInfoPanel != null) {
@@ -3923,7 +3920,7 @@ DebugJS.prototype = {
       }
       var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus['text']);
       var className = el.className;
-      className = className.replace(ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX + '</span>');
+      className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
       var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.href));
       var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.src));
       var backgroundColor = computedStyle.backgroundColor;
@@ -4120,10 +4117,10 @@ DebugJS.prototype = {
   highlightElement: function(removeTarget, setTarget) {
     var ctx = DebugJS.ctx;
     if (removeTarget) {
-      DebugJS.removeClass(removeTarget, ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX);
+      DebugJS.removeClass(removeTarget, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
     if (setTarget) {
-      DebugJS.addClass(setTarget, ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX);
+      DebugJS.addClass(setTarget, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
   },
 
@@ -4880,8 +4877,7 @@ DebugJS.prototype = {
         ((!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING)) &&
         (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END)))) return;
     if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END)) {
-      var now = (new Date()).getTime();
-      ctx.timers[DebugJS.TIMER_NAME_SW_CU].count = now - ctx.timers[DebugJS.TIMER_NAME_SW_CU].start;
+      ctx.timers[DebugJS.TIMER_NAME_SW_CU].count = (new Date()).getTime() - ctx.timers[DebugJS.TIMER_NAME_SW_CU].start;
     }
     ctx.drawStopWatchCu();
     setTimeout(ctx.updateTimerStopWatchCu, DebugJS.UPDATE_INTERVAL_H);
