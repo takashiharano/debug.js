@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803070035';
+  this.v = '201803070100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1975,7 +1975,7 @@ DebugJS.prototype = {
       }
       var color = '';
       if ((data.type == DebugJS.LOG_TYPE_RES) || (data.type == DebugJS.LOG_TYPE_ERES)) {
-        msg = DebugJS.encStringIfNeeded(DebugJS.setStyleIfObjNotAvailable(msg));
+        msg = DebugJS.encStringIfNeeded(DebugJS.setStyleIfObjNA(msg));
         if (data.type == DebugJS.LOG_TYPE_RES) {
           color = opt.promptColor;
         } else {
@@ -2840,8 +2840,8 @@ DebugJS.prototype = {
   },
 
   updateSysInfoScrollPosLabel: function(ctx) {
-    document.getElementById(ctx.id + '-sys-scroll-x').innerHTML = DebugJS.setStyleIfObjNotAvailable(window.scrollX);
-    document.getElementById(ctx.id + '-sys-scroll-y').innerHTML = DebugJS.setStyleIfObjNotAvailable(window.scrollY);
+    document.getElementById(ctx.id + '-sys-scroll-x').innerHTML = DebugJS.setStyleIfObjNA(window.scrollX);
+    document.getElementById(ctx.id + '-sys-scroll-y').innerHTML = DebugJS.setStyleIfObjNA(window.scrollY);
     document.getElementById(ctx.id + '-sys-pgoffset-x').innerText = window.pageXOffset;
     document.getElementById(ctx.id + '-sys-pgoffset-y').innerText = window.pageYOffset;
     document.getElementById(ctx.id + '-sys-cli-scroll-x').innerText = document.documentElement.scrollLeft;
@@ -3560,9 +3560,9 @@ DebugJS.prototype = {
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('navigator');
     html += DebugJS.addSysInfoProp('userAgent  ', navUserAgent);
-    html += DebugJS.addSysInfoProp('language       ', DebugJS.setStyleIfObjNotAvailable(navigator.language));
-    html += DebugJS.addSysInfoProp('browserLanguage', DebugJS.setStyleIfObjNotAvailable(navigator.browserLanguage));
-    html += DebugJS.addSysInfoProp('userLanguage   ', DebugJS.setStyleIfObjNotAvailable(navigator.userLanguage));
+    html += DebugJS.addSysInfoProp('language       ', DebugJS.setStyleIfObjNA(navigator.language));
+    html += DebugJS.addSysInfoProp('browserLanguage', DebugJS.setStyleIfObjNA(navigator.browserLanguage));
+    html += DebugJS.addSysInfoProp('userLanguage   ', DebugJS.setStyleIfObjNA(navigator.userLanguage));
     html += DebugJS.addSysInfoProp('languages      ', languages);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoProp('charset', charset);
@@ -3574,23 +3574,23 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('script ', loadedScripts);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('navigator');
-    html += DebugJS.addSysInfoProp('appCodeName  ', DebugJS.setStyleIfObjNotAvailable(navigator.appCodeName));
-    html += DebugJS.addSysInfoProp('appName      ', DebugJS.setStyleIfObjNotAvailable(navigator.appName));
+    html += DebugJS.addSysInfoProp('appCodeName  ', DebugJS.setStyleIfObjNA(navigator.appCodeName));
+    html += DebugJS.addSysInfoProp('appName      ', DebugJS.setStyleIfObjNA(navigator.appName));
     html += DebugJS.addSysInfoProp('appVersion   ', navAppVersion);
-    html += DebugJS.addSysInfoProp('buildID      ', DebugJS.setStyleIfObjNotAvailable(navigator.buildID));
-    html += DebugJS.addSysInfoProp('product      ', DebugJS.setStyleIfObjNotAvailable(navigator.product));
-    html += DebugJS.addSysInfoProp('productSub   ', DebugJS.setStyleIfObjNotAvailable(navigator.productSub));
-    html += DebugJS.addSysInfoProp('vendor       ', DebugJS.setStyleIfObjNotAvailable(navigator.vendor));
-    html += DebugJS.addSysInfoProp('platform     ', DebugJS.setStyleIfObjNotAvailable(navigator.platform));
-    html += DebugJS.addSysInfoProp('oscpu        ', DebugJS.setStyleIfObjNotAvailable(navigator.oscpu));
+    html += DebugJS.addSysInfoProp('buildID      ', DebugJS.setStyleIfObjNA(navigator.buildID));
+    html += DebugJS.addSysInfoProp('product      ', DebugJS.setStyleIfObjNA(navigator.product));
+    html += DebugJS.addSysInfoProp('productSub   ', DebugJS.setStyleIfObjNA(navigator.productSub));
+    html += DebugJS.addSysInfoProp('vendor       ', DebugJS.setStyleIfObjNA(navigator.vendor));
+    html += DebugJS.addSysInfoProp('platform     ', DebugJS.setStyleIfObjNA(navigator.platform));
+    html += DebugJS.addSysInfoProp('oscpu        ', DebugJS.setStyleIfObjNA(navigator.oscpu));
     html += DebugJS.addSysInfoProp('cookieEnabled', navigator.cookieEnabled);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('window');
     html += DebugJS.addSysInfoProp('outerWidth   ', window.outerWidth, 'sys-win-w');
     html += DebugJS.addSysInfoProp('outerHeight  ', window.outerHeight, 'sys-win-h');
-    html += DebugJS.addSysInfoProp('scrollX      ', DebugJS.setStyleIfObjNotAvailable(window.scrollX), 'sys-scroll-x');
+    html += DebugJS.addSysInfoProp('scrollX      ', DebugJS.setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
     html += DebugJS.addSysInfoProp('pageXOffset  ', window.pageXOffset, 'sys-pgoffset-x');
-    html += DebugJS.addSysInfoProp('scrollY      ', DebugJS.setStyleIfObjNotAvailable(window.scrollY), 'sys-scroll-y');
+    html += DebugJS.addSysInfoProp('scrollY      ', DebugJS.setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
     html += DebugJS.addSysInfoProp('pageYOffset  ', window.pageYOffset, 'sys-pgoffset-y');
     html += DebugJS.addSysInfoProp('onload       ', winOnload);
     html += DebugJS.addSysInfoProp('onunload     ', winOnunload);
@@ -3924,8 +3924,8 @@ DebugJS.prototype = {
       var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus['text']);
       var className = el.className;
       className = className.replace(ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HIGHLIGHT_CLASS_SUFFIX + '</span>');
-      var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNotAvailable(el.href));
-      var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNotAvailable(el.src));
+      var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.href));
+      var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.src));
       var backgroundColor = computedStyle.backgroundColor;
       var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
       var color = computedStyle.color;
@@ -3958,8 +3958,8 @@ DebugJS.prototype = {
         }
       }
       allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['allStyles']);
-      var name = (el.name == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.name) : DebugJS.escTags(el.name);
-      var val = (el.value == undefined) ? DebugJS.setStyleIfObjNotAvailable(el.value) : DebugJS.escSpclChr(el.value);
+      var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escTags(el.name);
+      var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclChr(el.value);
 
       html += '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
       DebugJS.addPropSeparator(ctx) +
@@ -3998,12 +3998,12 @@ DebugJS.prototype = {
       DebugJS.addPropSeparator(ctx) +
       'name      : ' + name + '\n' +
       'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
-      'disabled  : ' + DebugJS.setStyleIfObjNotAvailable(el.disabled, true) + '\n' +
+      'disabled  : ' + DebugJS.setStyleIfObjNA(el.disabled, true) + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
-      'maxLength : ' + DebugJS.setStyleIfObjNotAvailable(el.maxLength) + '\n' +
-      'checked   : ' + DebugJS.setStyleIfObjNotAvailable(el.checked, true) + '\n' +
-      'selectedIndex: ' + DebugJS.setStyleIfObjNotAvailable(el.selectedIndex) + '\n' +
+      'maxLength : ' + DebugJS.setStyleIfObjNA(el.maxLength) + '\n' +
+      'checked   : ' + DebugJS.setStyleIfObjNA(el.checked, true) + '\n' +
+      'selectedIndex: ' + DebugJS.setStyleIfObjNA(el.selectedIndex) + '\n' +
       'contentEditable: ' + el.contentEditable + '\n' +
       DebugJS.addPropSeparator(ctx) +
       'href      : ' + href + '\n' +
@@ -9073,7 +9073,7 @@ DebugJS.styleValue = function(v) {
     s = DebugJS.escTags(s);
     s = DebugJS.encString(s);
   } else {
-    s = DebugJS.setStyleIfObjNotAvailable(s);
+    s = DebugJS.setStyleIfObjNA(s);
   }
   return s;
 };
@@ -10319,7 +10319,7 @@ DebugJS.getLanguages = function(indent) {
       }
     }
   } else {
-    langs = DebugJS.setStyleIfObjNotAvailable(navLangs);
+    langs = DebugJS.setStyleIfObjNA(navLangs);
   }
   return langs;
 };
@@ -10528,7 +10528,7 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
   return str;
 };
 
-DebugJS.setStyleIfObjNotAvailable = function(obj, exceptFalse) {
+DebugJS.setStyleIfObjNA = function(obj, exceptFalse) {
   var txt = obj;
   if ((exceptFalse && ((obj == undefined) || (obj == null))) ||
       ((!exceptFalse) && (obj !== 0) && (!obj))) {
@@ -10986,7 +10986,7 @@ DebugJS.log.mlt = function(m) {
 };
 
 DebugJS.log.out = function(m, type) {
-  m = DebugJS.setStyleIfObjNotAvailable(m);
+  m = DebugJS.setStyleIfObjNA(m);
   if (typeof m != 'string') {m = m.toString();}
   var data = {type: type, time: (new Date()).getTime(), msg: m};
   DebugJS.ctx.msgBuf.add(data);
