@@ -3179,8 +3179,11 @@ $ point rclick -speed 500<span class="annotation">click speed in ms (opt:default
 $ point dblclick -speed 200<span class="annotation">click speed in ms (opt:default=100)</span>
 -&gt; Double click the current position
 
-$ point contexstmenu
--&gt; Dispatch the contextmenu event to the current position
+$ point contextmenu
+$ point focus
+$ point blur
+$ point change
+-&gt; Dispatch the specified event to the current position
 
 $ point mousedown 0<span class="annotation">button(0-4)</span>
 -&gt; Dispatch the mousedown event to the current position
