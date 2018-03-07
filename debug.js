@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803080025';
+  this.v = '201803080111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -417,6 +417,7 @@ var DebugJS = DebugJS || function() {
     'batstart': [],
     'batstop': [],
     'ctrlc': [],
+    'error': [],
     'fileloaded': [],
     'watchdog': []
   };
@@ -2689,10 +2690,7 @@ DebugJS.prototype = {
             ctx._cmdDelayCancel(ctx);
             DebugJS.log.s(ctx.cmdLine.value + '^C');
             ctx.cmdLine.value = '';
-            for (var i = 0; i < ctx.evtListener.ctrlc.length; i++) {
-              var cb = ctx.evtListener.ctrlc[i];
-              if (cb) cb();
-            }
+            DebugJS.callEvtListener('ctrlc');
           }
         }
         break;
@@ -5648,12 +5646,7 @@ DebugJS.prototype = {
     ctx.updateFilePreview(html);
     setTimeout(ctx.fileLoadFinalize, 1000);
     var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64);
-    for (var i = 0; i < ctx.evtListener.fileloaded.length; i++) {
-      var cb = ctx.evtListener.fileloaded[i];
-      if (cb) {
-        cb(file, content, isB64);
-      }
-    }
+    DebugJS.callEvtListener('fileloaded', file, content, isB64);
     ctx.fileLoaderSysCb = null;
     DebugJS.file.finalize();
   },
@@ -10940,6 +10933,7 @@ DebugJS.log.e = function(m) {
   DebugJS.bat.ctrl.hasErr = true;
   DebugJS.log.out(m, DebugJS.LOG_TYPE_ERR);
   DebugJS.ctx.showDbgWinOnError(DebugJS.ctx);
+  DebugJS.callEvtListener('error');
 };
 
 DebugJS.log.w = function(m) {
@@ -11088,6 +11082,13 @@ DebugJS.addEvtListener = function(type, listener) {
   }
 };
 
+DebugJS.callEvtListener = function(type, a1, a2, a3) {
+  for (var i = 0; i < DebugJS.ctx.evtListener[type].length; i++) {
+    var cb = DebugJS.ctx.evtListener[type][i];
+    if (cb) cb(a1, a2, a3);
+  }
+};
+
 DebugJS.cmd = function(c, echo) {
   return DebugJS.ctx._execCmd(c, echo);
 };
@@ -11228,10 +11229,7 @@ DebugJS.bat.run = function() {
   ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
   bat.setArg(ctrl.arg);
   bat.stopNext();
-  for (var i = 0; i < ctx.evtListener.batstart.length; i++) {
-    var cb = ctx.evtListener.batstart[i];
-    if (cb) cb();
-  }
+  DebugJS.callEvtListener('batstart');
   DebugJS.bat.exec();
 };
 DebugJS.bat.run.arg = {s: 0, e: 0};
@@ -11246,6 +11244,7 @@ DebugJS.bat.exec = function() {
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
   if (ctrl.errstop && ctrl.hasErr) {
+    DebugJS.log.e('$ ' + DebugJS.trimDownText(bat.cmds[ctrl.pc - 1], 80));
     DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
     bat._exit(DebugJS.EXIT_FAILURE);
     ctrl.hasErr = false;
@@ -11619,10 +11618,7 @@ DebugJS.bat._stop = function() {
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   ctx.updateBatRunBtn();
   delete DebugJS.ctx.CMDVALS['%ARG%'];
-  for (var i = 0; i < ctx.evtListener.batstop.length; i++) {
-    var cb = ctx.evtListener.batstop[i];
-    if (cb) cb();
-  }
+  DebugJS.callEvtListener('batstop');
 };
 DebugJS.bat.cancel = function() {
   DebugJS.bat.stop();
@@ -12226,7 +12222,7 @@ DebugJS.point._move = function() {
 DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var el = DebugJS.getElement(selector, idx);
   if (!el) {
-    DebugJS.log.e(selector + '[' + idx + ']: Element not found');
+    DebugJS.log.e(selector + (selector.charAt(0) == '#' ? '' : '[' + idx + ']') + ': Element not found');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
@@ -12280,7 +12276,7 @@ DebugJS.point.moveToSelector = function(selector, idx, speed, step, alignX, alig
   };
   var ps = DebugJS.getElPosSize(selector, idx);
   if (!ps) {
-    DebugJS.log.e(selector + '[' + idx + ']: Element not found');
+    DebugJS.log.e(selector + (selector.charAt(0) == '#' ? '' : '[' + idx + ']') + ': Element not found');
     return;
   }
   if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollspeed, DebugJS.ctx.props.scrollstep, DebugJS.point._moveToSelector, data)) {
@@ -13232,10 +13228,7 @@ DebugJS.wd.pet = function() {
   if (elapsed > ctx.props.wdt) {
     wd.cnt++;
     DebugJS.log.w('Watchdog bark! (' + elapsed + 'ms)');
-    for (var i = 0; i < ctx.evtListener.watchdog.length; i++) {
-      var cb = ctx.evtListener.watchdog[i];
-      if (cb) cb(elapsed);
-    }
+    DebugJS.callEvtListener('watchdog', elapsed);
   }
   wd.wdPetTime = now;
   wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);

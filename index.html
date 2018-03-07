@@ -1554,6 +1554,11 @@ Adds the specified EventListener function to the list of event listeners for the
 <pre class="eg">Function format:
   function onCtrlC() {}</pre>
 <br>
+      type: <b>error</b><br>
+      Callback function which is called when an error log is printed.<br>
+<pre class="eg">Function format:
+  function onError() {}</pre>
+<br>
       type: <b>fileloaded</b><br>
 Callback function which is called when file load has been completed<br>
 <pre class="eg">Function format:
@@ -4321,7 +4326,7 @@ onfocus="log.i('> focus');"
 onblur="log.i('> blur');"
 oncontextmenu="onContextMenu();">event test</div>
 <br>
-<input id="eventinput" 
+<input id="evt1" 
 onclick="log.i('> click');" 
 ondblclick="log.i('> dblclick');" 
 onmousedown="log.i('> mousedown');" 
@@ -4331,6 +4336,8 @@ onkeypress="log.i('> keypress');"
 onkeyup="log.i('> keyup');"
 onfocus="log.i('> focus');"
 onblur="log.i('> blur');"
+oninput="log.i('> input');"
+onchange="log.i('> change');"
 oncontextmenu="log.i('> contextmenu');return false;">
 
 <div style="margin-top:10px;">
