@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803072343';
+  this.v = '201803080010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9026,29 +9026,23 @@ DebugJS.KEYCH = {
 DebugJS.cnvKey2Ch = function(key) {
   return (DebugJS.KEYCH[key] == undefined ? key : DebugJS.KEYCH[key]);
 };
-
 DebugJS.delAllSP = function(str) {
   return str.replace(/\s/g, '');
 };
-
 DebugJS.delLeadingWhiteSP = function(str) {
   return str.replace(/^\s{1,}/, '');
 };
-
 DebugJS.delTrailingWhiteSP = function(str) {
   return str.replace(/\s+$/, '');
 };
-
 DebugJS.delLeadingAndTrailingWhiteSP = function(str) {
   str = str.replace(/^\s{1,}/, '');
   str = str.replace(/\s+$/, '');
   return str;
 };
-
 DebugJS.encString = function(str) {
   return '<span style="color:#0ff">"</span>' + str + '<span style="color:#0ff">"</span>';
 };
-
 DebugJS.encStringIfNeeded = function(str) {
   str += '';
   if ((str.match(/^\s|^&#x3000/)) || (str.match(/\s$|&#x3000$/))) {
@@ -9056,7 +9050,6 @@ DebugJS.encStringIfNeeded = function(str) {
   }
   return str;
 };
-
 DebugJS.escEncString = function(str) {
   str = DebugJS.escTags(str);
   str = DebugJS.encString(str);
@@ -10465,6 +10458,12 @@ DebugJS.startsWith = function(s, p, o) {
   return false;
 };
 
+DebugJS.strcmpWOsp = function(s1, s2) {
+  s1 = DebugJS.delLeadingAndTrailingWhiteSP(s1);
+  s2 = DebugJS.delLeadingAndTrailingWhiteSP(s2);
+  return (s1 == s2);
+};
+
 DebugJS.strPadding = function(s, ch, l, p) {
   var txt = s + '';
   var d = l - txt.length;
@@ -11482,13 +11481,13 @@ DebugJS.bat.execJs = function() {
     c = bat.cmds[ctrl.pc];
     ctrl.pc++;
     DebugJS.ctx.updateCurPc();
-    if (c != DebugJS.PP_JS) {
+    if (!DebugJS.strcmpWOsp(c, DebugJS.PP_JS)) {
       if (!pure) {
         c = DebugJS.replaceCmdVals(c);
       }
       js += c + '\n';
     }
-    if ((c == DebugJS.PP_JS) || (ctrl.pc > ctrl.endPc)) {
+    if (DebugJS.strcmpWOsp(c, DebugJS.PP_JS) || (ctrl.pc > ctrl.endPc)) {
       try {
         eval(js);
       } catch (e) {
@@ -11534,7 +11533,7 @@ DebugJS.bat.list = function() {
     for (var j = 0; j < diff; j++) {
       pdng += '0';
     }
-    if (DebugJS.startsWith(cmd, DebugJS.PP_JS)) {
+    if (DebugJS.startsWith(DebugJS.delLeadingWhiteSP(cmd), DebugJS.PP_JS)) {
       if (!js) {
         s += '<span style="color:#0ff">';
       }
@@ -11545,7 +11544,7 @@ DebugJS.bat.list = function() {
       s += ' ';
     }
     s += ' ' + pdng + n + ': ' + cmd + '\n';
-    if (DebugJS.startsWith(cmd, DebugJS.PP_JS)) {
+    if (DebugJS.startsWith(DebugJS.delLeadingWhiteSP(cmd), DebugJS.PP_JS)) {
       if (js) {
         s += '</span>';
         js = false;
