@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803080111';
+  this.v = '201803080735';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -335,7 +335,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-c|-key key] [timeout]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
@@ -7539,7 +7539,7 @@ DebugJS.prototype = {
       }
       if (src == 'default') src = '';
       point.cursor(src, w, h);
-    } else if ((op == 'focus') || (op == 'blur') || (op == 'contextmenu') || (op == 'mousedown') || (op == 'mouseup')) {
+    } else if ((op == 'blur') || (op == 'change') || (op == 'contextmenu') || (op == 'focus') || (op == 'mousedown') || (op == 'mouseup')) {
       point.event(op, args[1]);
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
       speed = DebugJS.getOptVal(arg, 'speed');
@@ -11908,8 +11908,12 @@ DebugJS.point.event = function(type, opt) {
     case 'blur':
       point.blur(el);
       break;
+    case 'change':
+      DebugJS.dispatchChangeEvt(el);
+      break;
     case 'contextmenu':
       point.contextmenu(el);
+      break;
     case 'mousedown':
     case 'mouseup':
       point.mouseevt(el, type, opt);
