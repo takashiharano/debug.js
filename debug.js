@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803080010';
+  this.v = '201803080025';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12062,6 +12062,8 @@ DebugJS.point.setKeyFlag = function(e, args) {
 DebugJS.point.getElementFromCurrentPos = function() {
   var ctx = DebugJS.ctx;
   var ptr = DebugJS.point.ptr;
+  var hide = false;
+  var cmdActive = (document.activeElement == ctx.cmdLine);
   if ((ptr == null) || (!ptr.parentNode)) {
     return null;
   }
@@ -12074,12 +12076,18 @@ DebugJS.point.getElementFromCurrentPos = function() {
   ctx.bodyEl.removeChild(ptr);
   var pos = DebugJS.point.getPos();
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-    ctx.bodyEl.removeChild(ctx.win);
+    if (ctx.isOnDbgWin(pos.x, pos.y)) {
+      hide = true;
+      ctx.bodyEl.removeChild(ctx.win);
+    }
   }
   var el = document.elementFromPoint(pos.x, pos.y);
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-    ctx.bodyEl.appendChild(ctx.win);
-    ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
+    if (hide) {
+      ctx.bodyEl.appendChild(ctx.win);
+      ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
+      if (cmdActive) {ctx.cmdLine.focus();}
+    }
   }
   ctx.bodyEl.appendChild(ptr);
   if (hintFlg) {
