@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803070737';
+  this.v = '201803072343';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12668,7 +12668,7 @@ DebugJS._inputText = function() {
   var e = DebugJS.event.create('input');
   data.el.dispatchEvent(e);
   if (data.i < data.txt.length) {
-    speed = DebugJS.getSpeed(speed);
+    speed = DebugJS.getSpeed(speed) | 0;
     data.tmid = setTimeout(DebugJS._inputText, speed);
   } else {
     DebugJS.inputText.finalize();
@@ -12716,10 +12716,14 @@ DebugJS.selectOption = function(el, method, type, val) {
     return;
   }
   if (method == 'set') {
+    var prevVal = select.value;
     for (var i = 0; i < select.options.length; i++) {
       if (((type == 'text') && (select.options[i].innerText == val)) ||
           ((type == 'value') && (select.options[i].value == val))) {
         select.options[i].selected = true;
+        if (prevVal != val) {
+          DebugJS.dispatchChangeEvt(select);
+        }
         return;
       }
     }
@@ -12732,6 +12736,11 @@ DebugJS.selectOption = function(el, method, type, val) {
     return select.options[idx][prop];
   }
   DebugJS.log.e('No such option: ' + val);
+};
+
+DebugJS.dispatchChangeEvt = function(target) {
+  var e = DebugJS.event.create('change');
+  return target.dispatchEvent(e);
 };
 
 DebugJS.event = {};

@@ -4230,7 +4230,7 @@ function callback(xhr) {
           <option value="3">opt3</option>
         </select>
         <br>
-        <select id="select2" name="select2" style="width:255px;">
+        <select id="select2" name="select2" style="width:255px;" onfocus="log('select2: onfocus');" onchange="log('select2: onchange');" onblur="log('select2: onblur');">
           <option value="v1">Value 1</option>
           <option value="v2">Value 2</option>
           <option value="v3">Value 3</option>
