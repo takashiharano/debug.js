@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803080735';
+  this.v = '201803090107';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6117,9 +6117,9 @@ DebugJS.prototype = {
 
   updateCurPc: function() {
     var pc = DebugJS.bat.ctrl.pc;
-    var diff = DebugJS.digits(DebugJS.bat.cmds.length) - DebugJS.digits(pc);
+    var df = DebugJS.digits(DebugJS.bat.cmds.length) - DebugJS.digits(pc);
     var pdng = '';
-    for (var i = 0; i < diff; i++) {
+    for (var i = 0; i < df; i++) {
       pdng += '0';
     }
     if (DebugJS.ctx.batCurPc) {
@@ -6665,16 +6665,16 @@ DebugJS.prototype = {
 
   cmdBat: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
+    var a = DebugJS.splitArgs(arg);
     var bat = DebugJS.bat;
-    switch (args[0]) {
+    switch (a[0]) {
       case 'run':
         if ((ctx.status & DebugJS.STATE_BAT_RUNNING) &&
             (ctx.status & DebugJS.STATE_BAT_PAUSE)) {
           bat._resume();
         } else {
-          bat.run.arg.s = args[1];
-          bat.run.arg.e = args[2];
+          bat.run.arg.s = a[1];
+          bat.run.arg.e = a[2];
           bat.run();
         }
         break;
@@ -6683,12 +6683,12 @@ DebugJS.prototype = {
           DebugJS.log('No batch script');
           break;
         }
-        var s = bat.list();
+        var s = bat.list(a[1], a[2]);
         DebugJS.log.mlt(s);
         break;
       case 'status':
         var v;
-        var key = args[1];
+        var key = a[1];
         if (key == undefined) {
           var st = '\n';
           if (bat.cmds.length == 0) {
@@ -6713,8 +6713,8 @@ DebugJS.prototype = {
         bat.clear();
         break;
       case 'exec':
-        if (args[1] != undefined) {
-          var b = DebugJS.decodeBase64(args[1]);
+        if (a[1] != undefined) {
+          var b = DebugJS.decodeBase64(a[1]);
           if (b != '') {
             if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
               bat.stCtx();
@@ -10519,7 +10519,7 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
 DebugJS.setStyleIfObjNA = function(obj, exceptFalse) {
   var txt = obj;
   if ((exceptFalse && ((obj == undefined) || (obj == null))) ||
-      ((!exceptFalse) && (obj !== 0) && (!obj))) {
+      ((!exceptFalse) && (obj !== 0) && (obj !== '') && (!obj))) {
     txt = '<span class="' + DebugJS.ctx.id + '-na">' + obj + '</span>';
   }
   return txt;
@@ -11244,7 +11244,20 @@ DebugJS.bat.exec = function() {
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
   if (ctrl.errstop && ctrl.hasErr) {
-    DebugJS.log.e('$ ' + DebugJS.trimDownText(bat.cmds[ctrl.pc - 1], 80));
+    for (var i = -3; i <= 0; i++) {
+      var pc = ctrl.pc + i;
+      var len = bat.cmds.length;
+      if ((pc >= 0) && (pc < len)) {
+        var n = pc + 1;
+        var df = DebugJS.digits(len) - DebugJS.digits(n);
+        var pdng = '';
+        for (var j = 0; j < df; j++) {
+          pdng += '0';
+        }
+        var pre = ((pc == (ctrl.pc - 1)) ? '&gt; ' : '  ');
+        DebugJS.log.e(pre + pdng + n + ': ' + DebugJS.trimDownText(bat.cmds[pc], 98));
+      }
+    }
     DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
     bat._exit(DebugJS.EXIT_FAILURE);
     ctrl.hasErr = false;
@@ -11518,42 +11531,59 @@ DebugJS.bat.unlock = function() {
 DebugJS.bat.isLocked = function() {
   return (DebugJS.bat.ctrl.lock != 0);
 };
-DebugJS.bat.list = function() {
-  var s = '';
+DebugJS.bat.list = function(s, e) {
+  var l = '';
   var pc = DebugJS.bat.ctrl.pc;
   var js = false;
   var cmds = DebugJS.bat.cmds;
-  if (pc == 0) {s += '>\n';}
-  for (var i = 0; i < cmds.length; i++) {
+  var len = cmds.length;
+  if (s == undefined) {
+    s = 0;
+    e = len;
+  } else {
+    s -= 1;
+    if (s < 0) {s = 0;}
+    if (e == undefined) {
+      e = s + 1;
+    }
+  }
+  if (e > len) {
+    e = len;
+  }
+  s |= 0; e |= 0;
+  if ((s == 0) && (e == len) && (pc == 0)) {l += '>\n';}
+  for (var i = 0; i < len; i++) {
     var cmd = cmds[i];
     var n = i + 1;
-    var diff = DebugJS.digits(cmds.length) - DebugJS.digits(n);
+    var df = DebugJS.digits(len) - DebugJS.digits(n);
     var pdng = '';
-    for (var j = 0; j < diff; j++) {
+    for (var j = 0; j < df; j++) {
       pdng += '0';
     }
     if (DebugJS.startsWith(DebugJS.delLeadingWhiteSP(cmd), DebugJS.PP_JS)) {
       if (!js) {
-        s += '<span style="color:#0ff">';
+        l += '<span style="color:#0ff">';
       }
     }
-    if (i == pc - 1) {
-      s += '>';
-    } else {
-      s += ' ';
+    if ((i >= s) && (i < e)) {
+      if (i == pc - 1) {
+        l += '>';
+      } else {
+        l += ' ';
+      }
+      l += ' ' + pdng + n + ': ' + cmd + '\n';
     }
-    s += ' ' + pdng + n + ': ' + cmd + '\n';
     if (DebugJS.startsWith(DebugJS.delLeadingWhiteSP(cmd), DebugJS.PP_JS)) {
       if (js) {
-        s += '</span>';
+        l += '</span>';
         js = false;
       } else {
         js = true;
       }
     }
   }
-  if (js) {s += '</span>';}
-  return s;
+  if (js) {l += '</span>';}
+  return l;
 };
 DebugJS.bat.pause = function() {
   DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE;
