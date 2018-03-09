@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803092333';
+  this.v = '201803100130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2688,6 +2688,9 @@ DebugJS.prototype = {
               DebugJS.bat.stop();
             }
             ctx._cmdDelayCancel(ctx);
+            DebugJS.point.move.stop();
+            DebugJS.scrollWinTo.stop();
+            DebugJS.inputText.stop();
             DebugJS.log.s(ctx.cmdLine.value + '^C');
             ctx.cmdLine.value = '';
             DebugJS.callEvtListener('ctrlc');
@@ -6938,7 +6941,7 @@ DebugJS.prototype = {
     ctx.cmdDelayData.cmd = null;
   },
   _cmdDelayCancel: function(ctx) {
-    if (ctx.cmdDelayData.tmid != 0) {
+    if (ctx.cmdDelayData.tmid > 0) {
       clearTimeout(ctx.cmdDelayData.tmid);
       ctx.cmdDelayData.tmid = 0;
       DebugJS.log('command delay execution has been canceled.');
@@ -11638,7 +11641,7 @@ DebugJS.bat._resume = function(trigger, key) {
   ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
 DebugJS.bat.stopNext = function() {
-  if (DebugJS.bat.ctrl.tmid != 0) {
+  if (DebugJS.bat.ctrl.tmid > 0) {
     DebugJS.bat.clearTimer();
   }
 };
@@ -11692,7 +11695,7 @@ DebugJS.bat.initCtrl = function(all) {
     ctrl.arg = '';
     DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
   }
-  if (ctrl.tmid != 0) {
+  if (ctrl.tmid > 0) {
     clearTimeout(ctrl.tmid);
     ctrl.tmid = 0;
   }
@@ -12254,6 +12257,14 @@ DebugJS.point._move = function() {
     move.tmid = setTimeout(point._move, move.speed);
   }
 };
+DebugJS.point.move.stop = function() {
+  var point = DebugJS.point;
+  if (point.move.tmid > 0) {
+    clearTimeout(point.move.tmid);
+    point.move.tmid = 0;
+    DebugJS.bat.unlock();
+  }
+};
 
 DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var el = DebugJS.getElement(selector, idx);
@@ -12489,11 +12500,7 @@ DebugJS.point.hint.clear = function() {
 DebugJS.scrollWinTo = function(x, y, speed, step) {
   var ctx = DebugJS.ctx;
   var d = DebugJS.scrollWinTo.data;
-  if (d.tmid > 0) {
-    clearTimeout(d.tmid);
-    d.tmid = 0;
-    DebugJS.bat.unlock();
-  }
+  DebugJS.scrollWinTo.stop();
   d.dstX = x - ctx.scrollPosX;
   d.dstY = y - ctx.scrollPosY;
   if ((speed == undefined) || (speed == null)) {
@@ -12523,8 +12530,7 @@ DebugJS._scrollWinTo = function() {
     if (d.cb) {
       d.cb(d.arg);
     }
-    DebugJS.scrollWinTo.initData();
-    DebugJS.bat.unlock();
+    DebugJS.scrollWinTo.fin();
   } else {
     d.tmid = setTimeout(DebugJS._scrollWinTo, d.speed);
   }
@@ -12541,7 +12547,17 @@ DebugJS.scrollWinTo.initData = function() {
   d.arg = null;
 };
 DebugJS.scrollWinTo.initData();
-
+DebugJS.scrollWinTo.stop = function() {
+  var tmid = DebugJS.scrollWinTo.data.tmid;
+  if (tmid > 0) {
+    clearTimeout(tmid);
+    DebugJS.scrollWinTo.fin();
+  }
+};
+DebugJS.scrollWinTo.fin = function() {
+  DebugJS.scrollWinTo.initData();
+  DebugJS.bat.unlock();
+};
 DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg) {
   if (!ps) return false;
   var d = DebugJS.scrollWinTo.data;
@@ -12590,7 +12606,6 @@ DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg) {
   DebugJS.scrollWinTo.initData();
   return false;
 };
-
 DebugJS.scrollElTo = function(target, x, y) {
   x += '';
   y += '';
@@ -12709,9 +12724,12 @@ DebugJS._inputText = function() {
     speed = DebugJS.getSpeed(speed) | 0;
     data.tmid = setTimeout(DebugJS._inputText, speed);
   } else {
-    DebugJS.inputText.finalize();
-    DebugJS.bat.unlock();
+    DebugJS.inputText.stop();
   }
+};
+DebugJS.inputText.stop = function() {
+  DebugJS.inputText.finalize();
+  DebugJS.bat.unlock();
 };
 DebugJS.inputText.finalize = function() {
   var data = DebugJS.inputText.data;
