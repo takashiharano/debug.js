@@ -3124,6 +3124,22 @@ $ p -a object
      -c option requires "resume" command to resume.<br>
      -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.<br>
       [timeout] is time-out value in milliseconds.<span class="annotation">(opt)</span>
+<pre class="eg">
+$ pause
+<span class="annotation">key press / click</span>
+
+$ pause -c
+<span class="annotation">$ resume</span>
+
+$ pause -key aaa
+<span class="annotation">$ resume</span>
+<span class="annotation">$ resume -key aaa</span>
+
+$ pause -key aaa|bbb
+<span class="annotation">$ resume</span>
+<span class="annotation">$ resume -key aaa</span>
+<span class="annotation">$ resume -key bbb</span>
+</pre>
     </td>
   </tr>
 

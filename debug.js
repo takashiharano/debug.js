@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803092119';
+  this.v = '201803092333';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7407,9 +7407,11 @@ DebugJS.prototype = {
     }
   },
   _cmdPause: function(opt, opt1, opt2) {
+    var ctx = DebugJS.ctx;
     var timeout;
+    ctx.CMDVALS['%KEY%'] = null;
     if (opt == '') {
-      DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD;
+      ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD;
       DebugJS.log('Click or press any key to continue...');
     } else {
       if (opt == '-c') {
@@ -7427,9 +7429,9 @@ DebugJS.prototype = {
       if (timeout > 0) {
         DebugJS.bat.ctrl.pauseTimeout = (new Date()).getTime() + timeout;
       }
-      DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+      ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD_KEY;
     }
-    DebugJS.ctx.updateBatResumeBtn();
+    ctx.updateBatResumeBtn();
     return true;
   },
 
@@ -11114,7 +11116,6 @@ DebugJS.bat.ctrl = {
   tmid: 0,
   lock: 0,
   pauseKey: null,
-  resumedKey: null,
   pauseTimeout: 0,
   cont: false,
   errstop: false,
@@ -11592,8 +11593,18 @@ DebugJS.bat.resume = function(key) {
   var bat = DebugJS.bat;
   if (key == undefined) {
     bat._resume();
-  } else if ((key == bat.ctrl.pauseKey) || (bat.ctrl.pauseKey == '')) {
-    bat._resume('cmd-key', key);
+  } else {
+    if (bat.ctrl.pauseKey == '') {
+      bat._resume('cmd-key', key);
+    } else {
+      var keys = DebugJS.delAllSP(bat.ctrl.pauseKey).split('|');
+      for (var i = 0; i < keys.length; i++) {
+        if (key == keys[i]) {
+          bat._resume('cmd-key', key);
+          break;
+        }
+      }
+    }
   }
 };
 DebugJS.bat._resume = function(trigger, key) {
@@ -11611,7 +11622,7 @@ DebugJS.bat._resume = function(trigger, key) {
       if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
         ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
         ctrl.pauseKey = null;
-        ctrl.resumedKey = key;
+        ctx.CMDVALS['%KEY%'] = (key == undefined ? '' : key);
         ctx.updateBatResumeBtn();
         resumed = true;
       }
@@ -11672,7 +11683,6 @@ DebugJS.bat.initCtrl = function(all) {
   ctrl.js = 0;
   ctrl.lock = 0;
   ctrl.pauseKey = null;
-  ctrl.resumedKey = null;
   ctrl.pauseTimeout = 0;
   ctrl.hasErr = false;
   if (all) {
