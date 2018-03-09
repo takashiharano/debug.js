@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803090107';
+  this.v = '201803092119';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7452,7 +7452,7 @@ DebugJS.prototype = {
     var args = DebugJS.splitArgsEx(arg);
     var point = DebugJS.point;
     var op = args[0];
-    var x, y, idx, speed, step, ret, p, pos, el, start, end;
+    var x, y, idx, speed, step, ret, p, el, start, end;
     var label, target, msg, src, w, h, txt, method, type, val, exp;
     var alignX = DebugJS.getOptVal(arg, 'alignX');
     var alignY = DebugJS.getOptVal(arg, 'alignY');
@@ -7599,9 +7599,8 @@ DebugJS.prototype = {
         DebugJS.log.e('Failed to get element');
       }
     } else {
-      if (args[0] == '') {
-        pos = point.getPos();
-        DebugJS.log('x=' + pos.x + ', y=' + pos.y);
+      if (op == '') {
+        DebugJS.log('x=' + point.x + ', y=' + point.y);
         DebugJS.printUsage(tbl.usage);
       } else if (isNaN(args[0])) {
         target = args[0];
@@ -11803,52 +11802,56 @@ DebugJS.point = function(x, y) {
   if (point.ptr == null) {
     point.createPtr();
   }
-  var pos = point.getPos();
   if (x.charAt(0) == '+') {
-    pos.x += (x.substr(1) | 0);
+    point.x += (x.substr(1) | 0);
   } else if (x.charAt(0) == '-') {
-    pos.x -= (x.substr(1) | 0);
+    point.x -= (x.substr(1) | 0);
   } else {
-    pos.x = x | 0;
+    point.x = x | 0;
   }
   if (y.charAt(0) == '+') {
-    pos.y += (y.substr(1) | 0);
+    point.y += (y.substr(1) | 0);
   } else if (y.charAt(0) == '-') {
-    pos.y -= (y.substr(1) | 0);
+    point.y -= (y.substr(1) | 0);
   } else {
-    pos.y = y | 0;
+    point.y = y | 0;
   }
   var ptr = point.ptr;
-  ptr.style.top = pos.y + 'px';
-  ptr.style.left = pos.x + 'px';
+  ptr.style.top = point.y + 'px';
+  ptr.style.left = point.x + 'px';
   document.body.appendChild(ptr);
 
   point.hint.move();
 
   if (DebugJS.ctx.props.mousemovesim == 'true') {
     var e = DebugJS.event.create('mousemove');
-    e.clientX = pos.x;
-    e.clientY = pos.y;
+    e.clientX = point.x;
+    e.clientY = point.y;
     window.dispatchEvent(e);
   }
 };
 DebugJS.point.ptr = null;
 DebugJS.point.ptrW = 12;
 DebugJS.point.ptrH = 19;
+DebugJS.point.x = 0;
+DebugJS.point.y = 0;
 DebugJS.point.CURSOR_DFLT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAATCAMAAACTKxybAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAD9QTFRFCwsY9PT3S0xX1tbYKCg04eHjLCw4wsLJMzM/zs7S+Pn7Q0ROs7S86OjqLi468PDzYWJsGBgkQkNN////////FEPnZwAAABV0Uk5T//////////////////////////8AK9l96gAAAF5JREFUeNpMzlcOwDAIA1Cyulcw9z9rQ0aLv3iSZUFZ/lBmC7DFL8WniqGGro6mgY0NcLMBTjZA4gpXBjQKRwf2vuZIJqSpotziZ3gFkxYiwlXQvvIByweJzyryCjAA+AIPnHnE+0kAAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_PTR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAYCAMAAADAi10DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJZQTFRF////EhQmHyIzPkBPT1Be+fn68fHywcHHFxorWltovr/E4+PmUlNgLS8//Pz8GRwuqquyFBcpSUtZeHqEa2x35ubo6enrQENRw8TKnJ6lTE5bc3R/9/f3paatRkhWKyw8NThHhoiRtra8lJWdFBYo1dbZKi092NjbFxkrMDJCMjVE0NDUx8jM9PT1ZWZyoqOqOz1M////QATI2QAAADJ0Uk5T/////////////////////////////////////////////////////////////////wANUJjvAAAAoUlEQVR42ozQ1xKDIBAF0GuwYO+a3nvn/38uChGFvOTODrNzXpZdMB7TZTIQ4mxdjfaRRTUyAOM/ehY/lCyKmqjU1NwPCVFo1LyPcqVRq5IosNaoBGzA4xRQTjIGAs/OU5WmY8C5KsSOFVCpxDJrALDO7cTZkPyQf+I1oEQsFJ96Wn53JHYnk+4S7HLjEG1SSSzO7wdnV/f3apO9TdF8BBgAC6AoMWCQ0+8AAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_TXT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAMAAADtX5XCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRFAAAA////pdmf3QAAAAJ0Uk5T/wDltzBKAAAAGElEQVR42mJgYGBgZAARjIx0xVB7AQIMABYAAFfcyzDzAAAAAElFTkSuQmCC';
 DebugJS.point.createPtr = function() {
+  var point = DebugJS.point;
+  point.x = 0;
+  point.y = 0;
   var ptr = document.createElement('img');
   ptr.style.position = 'fixed';
   ptr.style.width = DebugJS.point.ptrW + 'px';
   ptr.style.height = DebugJS.point.ptrH + 'px';
-  ptr.style.top = 0;
-  ptr.style.left = 0;
+  ptr.style.top = point.y;
+  ptr.style.left = point.x;
   ptr.style.zIndex = 0x7ffffffe;
   ptr.src = DebugJS.point.CURSOR_DFLT;
   document.body.appendChild(ptr);
-  DebugJS.point.ptr = ptr;
+  point.ptr = ptr;
 };
 DebugJS.point.init = function() {
   var point = DebugJS.point;
@@ -11905,15 +11908,6 @@ DebugJS.point.cursor = function(src, w, h) {
   point.ptr.src = src;
   point.ptr.style.width = w;
   point.ptr.style.height = h;
-};
-DebugJS.point.getPos = function() {
-  var ptr = DebugJS.point.ptr;
-  var pos = {x: 0, y: 0};
-  if (ptr != null) {
-    pos.x = ptr.style.left.replace('px', '') | 0;
-    pos.y = ptr.style.top.replace('px', '') | 0;
-  }
-  return pos;
 };
 DebugJS.point.event = function(type, opt) {
   var point = DebugJS.point;
@@ -12091,27 +12085,27 @@ DebugJS.point.setKeyFlag = function(e, args) {
 };
 DebugJS.point.getElementFromCurrentPos = function() {
   var ctx = DebugJS.ctx;
-  var ptr = DebugJS.point.ptr;
+  var point = DebugJS.point;
+  var ptr = point.ptr;
   var hide = false;
   var cmdActive = (document.activeElement == ctx.cmdLine);
   if ((ptr == null) || (!ptr.parentNode)) {
     return null;
   }
-  var hint = DebugJS.point.hint.area;
+  var hint = point.hint.area;
   var hintFlg = false;
   if (hint && (hint.parentNode)) {
     hintFlg = true;
     ctx.bodyEl.removeChild(hint);
   }
   ctx.bodyEl.removeChild(ptr);
-  var pos = DebugJS.point.getPos();
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-    if (ctx.isOnDbgWin(pos.x, pos.y)) {
+    if (ctx.isOnDbgWin(point.x, point.y)) {
       hide = true;
       ctx.bodyEl.removeChild(ctx.win);
     }
   }
-  var el = document.elementFromPoint(pos.x, pos.y);
+  var el = document.elementFromPoint(point.x, point.y);
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
     if (hide) {
       ctx.bodyEl.appendChild(ctx.win);
@@ -12158,19 +12152,18 @@ DebugJS.point.verify = function(prop, method, exp) {
 DebugJS.point.move = function(x, y, speed, step) {
   x += ''; y += '';
   var point = DebugJS.point;
-  var pos = point.getPos();
   var dst = point.move.dstPos;
   if (x.charAt(0) == '+') {
-    dst.x = pos.x + (x.substr(1) | 0);
+    dst.x = point.x + (x.substr(1) | 0);
   } else if (x.charAt(0) == '-') {
-    dst.x = pos.x - (x.substr(1) | 0);
+    dst.x = point.x - (x.substr(1) | 0);
   } else {
     dst.x = x | 0;
   }
   if (y.charAt(0) == '+') {
-    dst.y = pos.y + (y.substr(1) | 0);
+    dst.y = point.y + (y.substr(1) | 0);
   } else if (y.charAt(0) == '-') {
-    dst.y = pos.y - (y.substr(1) | 0);
+    dst.y = point.y - (y.substr(1) | 0);
   } else {
     dst.y = y | 0;
   }
@@ -12188,12 +12181,12 @@ DebugJS.point.move = function(x, y, speed, step) {
   }
   step |= 0;
   point.move.speed = speed;
-  if (dst.x >= pos.x) {
+  if (dst.x >= point.x) {
     point.move.mvX = step;
   } else {
     point.move.mvX = step * (-1);
   }
-  if (dst.y >= pos.y) {
+  if (dst.y >= point.y) {
     point.move.mvY = step;
   } else {
     point.move.mvY = step * (-1);
@@ -12221,9 +12214,8 @@ DebugJS.point._move = function() {
   var dst = move.dstPos;
   var mvX = move.mvX;
   var mvY = move.mvY;
-  var pos = point.getPos();
-  var x = pos.x + mvX;
-  var y = pos.y + mvY;
+  var x = point.x + mvX;
+  var y = point.y + mvY;
 
   if (mvX < 0) {
     if (x < dst.x) {
@@ -12419,22 +12411,21 @@ DebugJS.point.hint.move = function() {
   if (!area) return;
   var clientW = document.documentElement.clientWidth;
   var clientH = document.documentElement.clientHeight;
-  var pos = point.getPos();
   var ps = DebugJS.getElPosSize(area);
-  var y = (pos.y - ps.h - 2);
+  var y = (point.y - ps.h - 2);
   if (y < 0) {
-    if (ps.h > pos.y) {
-      y = pos.y + point.ptrH;
+    if (ps.h > point.y) {
+      y = point.y + point.ptrH;
     } else {
       y = 0;
     }
   }
-  var x = pos.x;
+  var x = point.x;
   if (x < 0) {
     x = 0;
   }
-  if ((y + ps.h) > pos.y) {
-    x = pos.x + point.ptrW;
+  if ((y + ps.h) > point.y) {
+    x = point.x + point.ptrW;
   }
   if ((x + ps.w) > clientW) {
     if (ps.w < clientW) {
