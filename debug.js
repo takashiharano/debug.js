@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803102255';
+  this.v = '201803110052';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6599,21 +6599,23 @@ DebugJS.prototype = {
     var cmd, arg;
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     cmd = cmds[0];
-
     var valName = DebugJS.getCmdValName(cmd, true);
     if (valName != null) {
       var vStartPos = cmdline.indexOf(valName);
       var restCmd = cmdline.substr(vStartPos + valName.length + 1);
       if (restCmd.match(/^\s*=/)) {
-        cmdline = restCmd.substr(restCmd.indexOf('=') + 1);
         setValName = valName;
+        cmdline = restCmd.substr(restCmd.indexOf('=') + 1);
       }
     }
     cmdline = DebugJS.replaceCmdVals(cmdline);
-
     var ret = ctx.__execCmd(ctx, cmdline);
     if (setValName != null) {
-      ctx.CMDVALS[setValName] = ret;
+      if ((setValName == '?') || (setValName.match(/^%.*%$/))) {
+        DebugJS.log.e('Error: ${' + setValName + '} is read-only');
+      } else {
+        ctx.CMDVALS[setValName] = ret;
+      }
     }
     return ret;
   },
@@ -12878,6 +12880,7 @@ DebugJS.test.data = {
   running: false,
   executingTestId: '',
   executingTestLabel: '',
+  status: DebugJS.test.STATUS_OK,
   cnt: {ok: 0, ng: 0, err: 0},
   results: {}
 };
@@ -12888,10 +12891,13 @@ DebugJS.test.init = function(name) {
   data.running = true;
   data.executingTestId = '';
   data.executingTestLabel = '';
+  data.status = DebugJS.test.STATUS_OK;
   data.cnt.ok = 0;
   data.cnt.ng = 0;
   data.cnt.err = 0;
   data.results = {};
+  delete DebugJS.ctx.CMDVALS['%TEST%'];
+  delete DebugJS.ctx.CMDVALS['%RSLT%'];
 };
 DebugJS.test.setName = function(n) {
   DebugJS.test.data.name = n;
@@ -12917,6 +12923,7 @@ DebugJS.test.fin = function() {
   DebugJS.test.data.running = false;
 };
 DebugJS.test.addResult = function(status, detail) {
+  var ctx = DebugJS.ctx;
   var test = DebugJS.test;
   var data = test.data;
   switch (status) {
@@ -12925,10 +12932,17 @@ DebugJS.test.addResult = function(status, detail) {
       break;
     case test.STATUS_NG:
       data.cnt.ng++;
+      if (ctx.CMDVALS['%TEST%'] != test.STATUS_ERR) {
+        data.status = status;
+        ctx.CMDVALS['%TEST%'] = status;
+      }
       break;
     case test.STATUS_ERR:
       data.cnt.err++;
+      data.status = status;
+      ctx.CMDVALS['%TEST%'] = status;
   }
+  ctx.CMDVALS['%RSLT%'] = status;
   var id = data.executingTestId;
   var label = data.executingTestLabel;
   test.prepare();
@@ -13052,17 +13066,7 @@ DebugJS.test.result = function() {
   return s;
 };
 DebugJS.test.getStatus = function() {
-  var test = DebugJS.test;
-  var r = test.STATUS_OK;
-  for (var id in test.data.results) {
-    var st = test.chkResult(test.data.results[id].res);
-    if (st == test.STATUS_ERR) {
-      return test.STATUS_ERR;
-    } else if (st == test.STATUS_NG) {
-      r = test.STATUS_NG;
-    }
-  }
-  return r;
+  return DebugJS.test.data.status;
 };
 DebugJS.test.verify = function(got, method, exp, reqEval) {
   var test = DebugJS.test;
