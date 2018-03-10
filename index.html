@@ -3769,6 +3769,51 @@ IF ("${val}" == "abc") (
 TOOL =&gt; &lt;BAT&gt; =&gt; Drop a BAT file / Copy & Paste bat code =&gt; [EXECUTE]<br>
 <br>
 
+<b>Command Environment Variable</b><br>
+<table class="desc-table">
+  <tr>
+    <th>Variable</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">${?}</td>
+    <td>
+      Exit status of BAT execution
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%ARG%}</td>
+    <td>
+      BAT execution argument string
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%KEY%}</td>
+    <td>
+      Last key value of resume command
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%RSLT%}</td>
+    <td>
+      Last result of test/point verify command
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%TEST%}</td>
+    <td>
+      Total result of test command
+    </td>
+  </tr>
+
+</table>
+<br>
+
 <div class="caption" id="calculation">// Calculation / Conversion</div>
 The debugger can perform the following calculation/conversion on the command-line.
 <table class="desc-table">
