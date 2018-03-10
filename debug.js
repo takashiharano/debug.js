@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803100130';
+  this.v = '201803102255';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11600,11 +11600,13 @@ DebugJS.bat.resume = function(key) {
     if (bat.ctrl.pauseKey == '') {
       bat._resume('cmd-key', key);
     } else {
-      var keys = DebugJS.delAllSP(bat.ctrl.pauseKey).split('|');
-      for (var i = 0; i < keys.length; i++) {
-        if (key == keys[i]) {
-          bat._resume('cmd-key', key);
-          break;
+      if (bat.ctrl.pauseKey != null) {
+        var keys = DebugJS.delAllSP(bat.ctrl.pauseKey).split('|');
+        for (var i = 0; i < keys.length; i++) {
+          if (key == keys[i]) {
+            bat._resume('cmd-key', key);
+            break;
+          }
         }
       }
     }
