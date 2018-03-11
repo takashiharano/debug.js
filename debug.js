@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803111757';
+  this.v = '201803112129';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7745,19 +7745,21 @@ DebugJS.prototype = {
   cmdReturn: function(arg, tbl) {
     var ctrl = DebugJS.bat.ctrl;
     if (DebugJS.bat.isCmdExecutable()) {
+      var fnCtx = ctrl.stack.pop();
+      if (!fnCtx) {
+        DebugJS.bat.syntaxErr('Illegal return statement');
+        return;
+      }
       try {
         DebugJS.ctx.CMDVALS['%RET%'] = eval(arg);
       } catch (e) {
         DebugJS.log.e(e);
         return;
       }
-      var fnCtx = ctrl.stack.pop();
-      if (fnCtx) {
-        DebugJS.ctx.CMDVALS['%ARG%'] = fnCtx.fnArg;
-        ctrl.fnArg = fnCtx.fnArg;
-        ctrl.blockLv = fnCtx.blockLv;
-        ctrl.lr = fnCtx.lr;
-      }
+      DebugJS.ctx.CMDVALS['%ARG%'] = fnCtx.fnArg;
+      ctrl.fnArg = fnCtx.fnArg;
+      ctrl.blockLv = fnCtx.blockLv;
+      ctrl.lr = fnCtx.lr;
       ctrl.pc = ctrl.lr;
     }
   },
@@ -11328,6 +11330,9 @@ DebugJS.bat.exec = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
+  if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD)) {
+    return;
+  }
   if (ctrl.stopReq) {
     DebugJS.log.e('--------------------------------');
     for (var i = -3; i <= 0; i++) {
@@ -11350,9 +11355,7 @@ DebugJS.bat.exec = function() {
     bat._exit(DebugJS.EXIT_FAILURE);
     return;
   }
-  if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD)) {
-    return;
-  } else if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
+  if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
     if (ctrl.pauseTimeout > 0) {
       if ((new Date).getTime() >= ctrl.pauseTimeout) {
         bat._resume('cmd-key');
