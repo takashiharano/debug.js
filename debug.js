@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803110052';
+  this.v = '201803110247';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -316,7 +316,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay ms command'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
-    {cmd: 'errstop', fnc: this.cmdErrstop, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'errstop on|off'},
     {cmd: 'event', fnc: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fnc: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'help', fnc: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -366,6 +365,7 @@ var DebugJS = DebugJS || function() {
   this.opt = null;
   this.errStatus = DebugJS.ERR_STATE_NONE;
   this.PROPS_RESTRICTION = {
+    batstop: /^[^|][a-z|]+[^|]$/,
     esc: /^enable$|^disable$/,
     dumplimit: /^[0-9]+$/,
     dumpvallen: /^[0-9]+$/,
@@ -384,6 +384,7 @@ var DebugJS = DebugJS || function() {
     consolelog: /^native$|^me$/
   };
   this.PROPS_DFLT_VALS = {
+    batstop: 'none',
     esc: 'enable',
     dumplimit: 1000,
     dumpvallen: 1024,
@@ -3273,7 +3274,7 @@ DebugJS.prototype = {
            (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
            ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
            ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG)))) ||
-          ((ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.ctrl.errstop) && (DebugJS.bat.ctrl.hasErr))) {
+          ((ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.hasBatStopCond('error')) && (DebugJS.bat.ctrl.hasErr))) {
         ctx.showDbgWin();
         ctx.errStatus = DebugJS.ERR_STATE_NONE;
       }
@@ -6788,9 +6789,6 @@ DebugJS.prototype = {
 
   cmdCont: function(arg, tbl) {
     DebugJS.ctx._cmdBatCtrlOnOff(DebugJS.ctx, arg, tbl, 'cont');
-  },
-  cmdErrstop: function(arg, tbl) {
-    DebugJS.ctx._cmdBatCtrlOnOff(DebugJS.ctx, arg, tbl, 'errstop');
   },
   _cmdBatCtrlOnOff: function(ctx, arg, tbl, key) {
     if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
@@ -10463,6 +10461,16 @@ DebugJS.strcmpWOsp = function(s1, s2) {
   return (s1 == s2);
 };
 
+DebugJS.hasKey = function(s, k, d) {
+  var a = s.split(d);
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] == k) {
+      return true;
+    }
+  }
+  return false;
+};
+
 DebugJS.strPadding = function(s, ch, l, p) {
   var txt = s + '';
   var d = l - txt.length;
@@ -11123,7 +11131,6 @@ DebugJS.bat.ctrl = {
   pauseKey: null,
   pauseTimeout: 0,
   cont: false,
-  errstop: false,
   hasErr: false,
   arg: ''
 };
@@ -11151,7 +11158,6 @@ DebugJS.bat.inheritSt = function() {
   var callerCtrl = bat.ctx[bat.ctx.length - 1].ctrl;
   bat.ctrl.echo = callerCtrl.echo;
   bat.ctrl.cont = callerCtrl.cont;
-  bat.ctrl.errstop = callerCtrl.errstop;
 };
 DebugJS.bat.store = function(b) {
   var bat = DebugJS.bat;
@@ -11248,25 +11254,29 @@ DebugJS.bat.exec = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
-  if (ctrl.errstop && ctrl.hasErr) {
-    for (var i = -3; i <= 0; i++) {
-      var pc = ctrl.pc + i;
-      var len = bat.cmds.length;
-      if ((pc >= 0) && (pc < len)) {
-        var n = pc + 1;
-        var df = DebugJS.digits(len) - DebugJS.digits(n);
-        var pdng = '';
-        for (var j = 0; j < df; j++) {
-          pdng += '0';
-        }
-        var pre = ((pc == (ctrl.pc - 1)) ? '&gt; ' : '  ');
-        DebugJS.log.e(pre + pdng + n + ': ' + DebugJS.trimDownText(bat.cmds[pc], 98));
-      }
-    }
-    DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
-    bat._exit(DebugJS.EXIT_FAILURE);
+  if (ctrl.hasErr) {
     ctrl.hasErr = false;
-    return;
+    if (bat.hasBatStopCond('error')) {
+      DebugJS.log.e('--------------------------------');
+      for (var i = -3; i <= 0; i++) {
+        var pc = ctrl.pc + i;
+        var len = bat.cmds.length;
+        if ((pc >= 0) && (pc < len)) {
+          var n = pc + 1;
+          var df = DebugJS.digits(len) - DebugJS.digits(n);
+          var pdng = '';
+          for (var j = 0; j < df; j++) {
+            pdng += '0';
+          }
+          var pre = ((pc == (ctrl.pc - 1)) ? '&gt; ' : '  ');
+          DebugJS.log.e(pre + pdng + n + ': ' + DebugJS.trimDownText(bat.cmds[pc], 98));
+        }
+      }
+      DebugJS.log.e('--------------------------------');
+      DebugJS.log.e('BAT ERROR STOP (L:' + ctrl.pc + ')');
+      bat._exit(DebugJS.EXIT_FAILURE);
+      return;
+    }
   }
   if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD)) {
     return;
@@ -11603,12 +11613,8 @@ DebugJS.bat.resume = function(key) {
       bat._resume('cmd-key', key);
     } else {
       if (bat.ctrl.pauseKey != null) {
-        var keys = DebugJS.delAllSP(bat.ctrl.pauseKey).split('|');
-        for (var i = 0; i < keys.length; i++) {
-          if (key == keys[i]) {
-            bat._resume('cmd-key', key);
-            break;
-          }
+        if (DebugJS.hasKey(DebugJS.delAllSP(bat.ctrl.pauseKey), key, '|')) {
+          bat._resume('cmd-key', key);
         }
       }
     }
@@ -11672,6 +11678,9 @@ DebugJS.bat.cancel = function() {
   DebugJS.point.init();
   DebugJS.log('Canceled.');
 };
+DebugJS.bat.hasBatStopCond = function(key) {
+  return DebugJS.hasKey(DebugJS.ctx.props.batstop, key, '|');
+};
 DebugJS.bat.resetPc = function() {
   DebugJS.bat.ctrl.pc = 0;
   DebugJS.ctx.updateCurPc();
@@ -11695,7 +11704,6 @@ DebugJS.bat.initCtrl = function(all) {
   if (all) {
     ctrl.echo = true;
     ctrl.cont = false;
-    ctrl.errstop = false;
     ctrl.arg = '';
     DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
   }
