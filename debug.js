@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803110247';
+  this.v = '201803111232';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -310,7 +310,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'cont', fnc: this.cmdCont, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN, usage: 'cont on|off'},
     {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay ms command'},
@@ -365,6 +364,7 @@ var DebugJS = DebugJS || function() {
   this.opt = null;
   this.errStatus = DebugJS.ERR_STATE_NONE;
   this.PROPS_RESTRICTION = {
+    batcont: /^on$|^off$/,
     batstop: /^[^|][a-z|]+[^|]$/,
     esc: /^enable$|^disable$/,
     dumplimit: /^[0-9]+$/,
@@ -384,7 +384,8 @@ var DebugJS = DebugJS || function() {
     consolelog: /^native$|^me$/
   };
   this.PROPS_DFLT_VALS = {
-    batstop: 'none',
+    batcont: 'off',
+    batstop: 'error',
     esc: 'enable',
     dumplimit: 1000,
     dumpvallen: 1024,
@@ -403,6 +404,7 @@ var DebugJS = DebugJS || function() {
     consolelog: 'native'
   };
   this.PROPS_CB = {
+    batcont: this.setPropBatContCb,
     timer: this.setPropTimerCb,
     consolelog: this.setPropConsoleLogCb
   };
@@ -6787,26 +6789,6 @@ DebugJS.prototype = {
     DebugJS.ctx.clearLog();
   },
 
-  cmdCont: function(arg, tbl) {
-    DebugJS.ctx._cmdBatCtrlOnOff(DebugJS.ctx, arg, tbl, 'cont');
-  },
-  _cmdBatCtrlOnOff: function(ctx, arg, tbl, key) {
-    if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
-      DebugJS.log('BAT dedicated command');return;
-    }
-    var a = DebugJS.splitArgs(arg)[0];
-    var ctrl = DebugJS.bat.ctrl;
-    if (a == 'on') {
-      ctrl[key] = true;
-      if (key == 'cont') {ctx.status |= DebugJS.STATE_BAT_CONT;}
-    } else if (a == 'off') {
-      ctrl[key] = false;
-      if (key == 'cont') {ctx.status &= ~DebugJS.STATE_BAT_CONT;}
-    } else {
-      DebugJS.printUsage(tbl.usage);
-    }
-  },
-
   cmdDbgWin: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
@@ -8044,6 +8026,15 @@ DebugJS.prototype = {
       if (!silent) {DebugJS.log.res(val);}
     } else {
       DebugJS.log.e(name + ' is invalid property name.');
+    }
+  },
+  setPropBatContCb: function(ctx, v) {
+    if (DebugJS.bat.isRunning()) {
+      if (v == 'on') {
+        ctx.status |= DebugJS.STATE_BAT_CONT;
+      } else {
+        ctx.status &= ~DebugJS.STATE_BAT_CONT;
+      }
     }
   },
   setPropTimerCb: function(ctx, v) {
@@ -10880,7 +10871,7 @@ DebugJS.onUnload = function() {
   if (DebugJS.test.data.running) {
     DebugJS.test.save();
   }
-  if ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.ctrl.cont)) {
+  if ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.ctx.props.batcont == 'on')) {
     DebugJS.bat.save();
   }
   if ((DebugJS.ctx.status & DebugJS.STATE_LOG_PRESERVED) || (DebugJS.ctx.status & DebugJS.STATE_BAT_CONT)) {
@@ -11113,7 +11104,7 @@ DebugJS.bat = function(b, a, sl, el) {
   bat.setArg(a);
   bat.run.arg.s = sl;
   bat.run.arg.e = el;
-  DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
+  bat.setRunningSt(true);
   setTimeout(bat.run, 0);
 };
 DebugJS.bat.cmds = [];
@@ -11157,7 +11148,6 @@ DebugJS.bat.inheritSt = function() {
   var bat = DebugJS.bat;
   var callerCtrl = bat.ctx[bat.ctx.length - 1].ctrl;
   bat.ctrl.echo = callerCtrl.echo;
-  bat.ctrl.cont = callerCtrl.cont;
 };
 DebugJS.bat.store = function(b) {
   var bat = DebugJS.bat;
@@ -11186,7 +11176,7 @@ DebugJS.bat.parseLabels = function() {
 DebugJS.bat.run = function() {
   var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
-  ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+  bat.setRunningSt(false);
   bat.setExitStatus(DebugJS.EXIT_SUCCESS);
   if (bat.cmds.length == 0) {
     DebugJS.log('No batch script');
@@ -11228,7 +11218,7 @@ DebugJS.bat.run = function() {
   } else if (el >= bat.cmds.length) {
     el = bat.cmds.length - 1;
   }
-  ctx.status |= DebugJS.STATE_BAT_RUNNING;
+  bat.setRunningSt(true);
   ctx.updateBatRunBtn();
   bat.initCtrl(false);
   var ctrl = bat.ctrl;
@@ -11667,7 +11657,7 @@ DebugJS.bat._stop = function() {
   ctx.updateBatNestLv();
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
-  ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+  DebugJS.bat.setRunningSt(false);
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   ctx.updateBatRunBtn();
   delete DebugJS.ctx.CMDVALS['%ARG%'];
@@ -11703,7 +11693,6 @@ DebugJS.bat.initCtrl = function(all) {
   ctrl.hasErr = false;
   if (all) {
     ctrl.echo = true;
-    ctrl.cont = false;
     ctrl.arg = '';
     DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
   }
@@ -11765,12 +11754,24 @@ DebugJS.bat.load = function() {
   DebugJS.ctx.CMDVALS = bt.vals;
   bat.setArg(bat.ctrl.arg);
   bat.parseLabels();
-  if (bat.ctrl.cont) {
+  if (DebugJS.ctx.props.batcont == 'on') {
     if (bat.ctrl.pauseKey != null) {
       DebugJS.ctx._cmdPause('-key', bat.ctrl.pauseKey);
     }
-    DebugJS.ctx.status |= DebugJS.STATE_BAT_RUNNING;
+    bat.setRunningSt(true);
     bat.exec();
+  }
+};
+DebugJS.bat.setRunningSt = function(f) {
+  var ctx = DebugJS.ctx;
+  if (f) {
+    ctx.status |= DebugJS.STATE_BAT_RUNNING;
+    if (DebugJS.ctx.props.batcont == 'on') {
+      ctx.status |= DebugJS.STATE_BAT_CONT;
+    }
+  } else {
+    ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
+    ctx.status &= ~DebugJS.STATE_BAT_CONT;
   }
 };
 DebugJS.bat.isRunning = function() {
