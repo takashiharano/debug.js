@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803120000';
+  this.v = '201803120012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13166,7 +13166,7 @@ DebugJS.test.result = function() {
 DebugJS.test.getStatus = function() {
   return DebugJS.test.data.status;
 };
-DebugJS.test.getResult = function(j) {
+DebugJS.test.getResult = function() {
   var data = DebugJS.test.data;
   var r = {
     name: data.name,
@@ -13176,10 +13176,10 @@ DebugJS.test.getResult = function(j) {
     endTime: data.endTime,
     results: data.results
   };
-  if (j) {
-    r = DebugJS.toJson(r);
-  }
   return r;
+};
+DebugJS.test.getResultJSON = function(j) {
+  return DebugJS.toJson(DebugJS.test.getResult());
 };
 DebugJS.test.verify = function(got, method, exp, reqEval) {
   var test = DebugJS.test;
