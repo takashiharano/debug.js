@@ -3685,12 +3685,38 @@ goto label1
   </tr>
 
   <tr>
+    <td class="name">jump</td>
+    <td>arg1: label<br>arg2: argument<span class="annotation">(opt)</span></td>
+    <td>
+      Jump to the label with link.<br>
+      Copy the address of the next instruction into link variable in the BAT control data.<br><br>
+<pre class="eg">
+jump label
+jump label argument
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">nop</td>
     <td></td>
     <td>
       No operation (The same behavior as press enter key without command input)
     </td>
   </tr>
+
+  <tr>
+    <td class="name">return</td>
+    <td>return value<span class="annotation">(opt)</span></td>
+    <td>
+      Return to the link which is saved by jump instruction.<br><br>
+<pre class="eg">
+return
+return value
+</pre>
+    </td>
+  </tr>
+
 
   <tr>
     <td class="name">wait</td>
@@ -3746,6 +3772,15 @@ command arg ${val} ... <span class="annotation">The variable ${val} will be repl
 IF ("${val}" == "abc") (
   command
 )
+<span class="emphasis">
+jump func1
+
+exit
+
+:func1
+command
+return
+</span>
 </pre>
 
 <a href="bat.txt" target="_blank">Sample Batch Script</a><br><br>
@@ -3802,9 +3837,16 @@ $ set batstop error|test
   </tr>
 
   <tr>
-    <td class="name">${%ARG%}</td>
+    <td class="name">${%%ARG%%}</td>
     <td>
       BAT execution argument string
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%ARG%}</td>
+    <td>
+      argument string of jump instruction
     </td>
   </tr>
 
@@ -3812,6 +3854,13 @@ $ set batstop error|test
     <td class="name">${%KEY%}</td>
     <td>
       Last key value of resume command
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%RET%}</td>
+    <td>
+      return value which is set by return instruction
     </td>
   </tr>
 
