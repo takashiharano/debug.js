@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803111730';
+  this.v = '201803111757';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11732,6 +11732,8 @@ DebugJS.bat._stop = function() {
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   ctx.updateBatRunBtn();
   delete DebugJS.ctx.CMDVALS['%%ARG%%'];
+  delete DebugJS.ctx.CMDVALS['%ARG%'];
+  delete DebugJS.ctx.CMDVALS['%RET%'];
   DebugJS.callEvtListener('batstop');
 };
 DebugJS.bat.cancel = function() {
