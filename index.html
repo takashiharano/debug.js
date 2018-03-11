@@ -3648,22 +3648,6 @@ $ zoom 1
   </tr>
 
   <tr>
-    <td class="name">cont</td>
-    <td>on/off</td>
-    <td>
-      Set/Unset continue flag.<br>The batch script will be continued after page unload/load.
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">errstop</td>
-    <td>on/off</td>
-    <td>
-      Set/Unset error stop flag.<br>The batch script will be stopped when an error occurred. (when log.e() was called)
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">exit</td>
     <td>exit status</td>
     <td>
@@ -3769,7 +3753,41 @@ IF ("${val}" == "abc") (
 TOOL =&gt; &lt;BAT&gt; =&gt; Drop a BAT file / Copy & Paste bat code =&gt; [EXECUTE]<br>
 <br>
 
-<b>Command Environment Variable</b><br>
+<b>BAT related system properties</b><br>
+<table class="desc-table">
+  <tr>
+    <th>Property</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">batcont</td>
+    <td>
+      Continue flag.<br>The batch script will be continued after page unload/load.
+<pre class="eg">
+$ set batcont on
+$ set batcont off
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">batstop</td>
+    <td>
+      Error stop flag.<br>The batch script will be stopped when an error occurred (when log.e() was called) or test verify command result was failed.<br>
+<pre class="eg">
+$ set batstop none
+$ set batstop error
+$ set batstop test
+$ set batstop error|test
+</pre>
+    </td>
+  </tr>
+
+</table>
+<br>
+
+<b>Command Environment Variables</b><br>
 <table class="desc-table">
   <tr>
     <th>Variable</th>
