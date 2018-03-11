@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803112129';
+  this.v = '201803120000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1988,7 +1988,7 @@ DebugJS.prototype = {
         }
         msg = '<span style=color:' + color + '>&gt;</span> ' + msg;
       }
-      var m = (((opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (DebugJS.getLogTime(data.time) + ' ' + msg) : msg);
+      var m = (((opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (DebugJS.getTimeStr(data.time) + ' ' + msg) : msg);
       if (style) {
         logs += lineNum + '<span style="' + style + '">' + m + '</span>\n';
       } else {
@@ -3449,7 +3449,7 @@ DebugJS.prototype = {
     if (!(DebugJS.ctx.status & DebugJS.STATE_SYS_INFO)) {return;}
     var time = (new Date()).getTime();
     var timeBin = DebugJS.formatBin(time.toString(2), false, 1);
-    var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(DebugJS.getDateTime(time)) + '\n' +
+    var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.convDateTimeStr(DebugJS.getDateTime(time)) + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         RAW</span>  (new Date()).getTime() = ' + time + '\n' +
     '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">         BIN</span>  ' + timeBin + '\n</pre>';
     DebugJS.ctx.sysTimePanel.innerHTML = html;
@@ -6951,7 +6951,7 @@ DebugJS.prototype = {
   },
 
   cmdElements: function(arg, tbl) {
-    arg = DebugJS.delLeadingAndTrailingWhiteSP(arg);
+    arg = DebugJS.delLeadingAndTrailingSP(arg);
     if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -7301,7 +7301,7 @@ DebugJS.prototype = {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      var json = DebugJS.delLeadingWhiteSP(arg);
+      var json = DebugJS.delLeadingSP(arg);
       var lv = 0;
       var jsnFlg = true;
       if (json.charAt(0) == '-') {
@@ -7352,7 +7352,7 @@ DebugJS.prototype = {
       };
       ctrl.stack.push(fnCtx);
       ctrl.fnArg = fnArg;
-      DebugJS.ctx.CMDVALS['%ARG%'] = fnArg;
+      ctx.CMDVALS['%ARG%'] = fnArg;
       ctrl.lr = ctrl.pc;
     }
     ctrl.startPc = 0;
@@ -7655,7 +7655,7 @@ DebugJS.prototype = {
 
   cmdProp: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    arg = DebugJS.delLeadingWhiteSP(arg);
+    arg = DebugJS.delLeadingSP(arg);
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -7713,7 +7713,7 @@ DebugJS.prototype = {
   },
 
   cmdRadixConv: function(v) {
-    v = DebugJS.delLeadingAndTrailingWhiteSP(v);
+    v = DebugJS.delLeadingAndTrailingSP(v);
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
       v = v.replace(/,/g, '');
@@ -7765,7 +7765,7 @@ DebugJS.prototype = {
   },
 
   cmdRGB: function(arg, tbl) {
-    arg = DebugJS.delLeadingAndTrailingWhiteSP(arg);
+    arg = DebugJS.delLeadingAndTrailingSP(arg);
     arg = arg.replace(/\s{2,}/g, ' ');
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
@@ -7820,7 +7820,7 @@ DebugJS.prototype = {
   _cmdLogDump: function(ctx, arg) {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var l;
-    if (DebugJS.delLeadingAndTrailingWhiteSP(arg) == '-b64') {
+    if (DebugJS.delLeadingAndTrailingSP(arg) == '-b64') {
       l = DebugJS.dumpLog('json', true);
     } else {
       l = DebugJS.dumpLog('json', false);
@@ -8115,7 +8115,7 @@ DebugJS.prototype = {
       ctx.timerTxtSS.value = tm.ss;
       ctx.timerTxtSSS.value = tm.sss;
     }
-    return DebugJS.getTimeStr(tm);
+    return DebugJS.convTimeStr(tm);
   },
   setPropConsoleLogCb: function(ctx, v) {
     DebugJS.setConsoleLogOut((v == 'me'));
@@ -8890,7 +8890,7 @@ DebugJS.splitCmdLineInTwo = function(str) {
   var res = [];
   var strs = str.match(/([^\s]{1,})\s(.*)/);
   if (strs == null) {
-    res[0] = DebugJS.delLeadingWhiteSP(str);
+    res[0] = DebugJS.delLeadingSP(str);
     res[1] = '';
   } else {
     res[0] = strs[1];
@@ -8936,15 +8936,15 @@ DebugJS.getArgsFrom = function(str, n) {
 // dataRaw: " 1  2 3  4 "
 DebugJS.parseArgs = function(arg) {
   var args = {opt: '', data: '', dataRaw: ''};
-  var wkArgs = DebugJS.delLeadingWhiteSP(arg);
+  var wkArgs = DebugJS.delLeadingSP(arg);
   wkArgs = wkArgs.match(/-{1}([^\s]*)\s{0,1}(.*)/);
   if (wkArgs == null) {
     args.dataRaw = arg;
-    args.data = DebugJS.delLeadingAndTrailingWhiteSP(arg);
+    args.data = DebugJS.delLeadingAndTrailingSP(arg);
   } else {
     args.opt = wkArgs[1];
     args.dataRaw = wkArgs[2];
-    args.data = DebugJS.delLeadingAndTrailingWhiteSP(wkArgs[2]);
+    args.data = DebugJS.delLeadingAndTrailingSP(wkArgs[2]);
   }
   return args;
 };
@@ -9087,13 +9087,13 @@ DebugJS.cnvKey2Ch = function(key) {
 DebugJS.delAllSP = function(str) {
   return str.replace(/\s/g, '');
 };
-DebugJS.delLeadingWhiteSP = function(str) {
+DebugJS.delLeadingSP = function(str) {
   return str.replace(/^\s{1,}/, '');
 };
-DebugJS.delTrailingWhiteSP = function(str) {
+DebugJS.delTrailingSP = function(str) {
   return str.replace(/\s+$/, '');
 };
-DebugJS.delLeadingAndTrailingWhiteSP = function(str) {
+DebugJS.delLeadingAndTrailingSP = function(str) {
   str = str.replace(/^\s{1,}/, '');
   str = str.replace(/\s+$/, '');
   return str;
@@ -9153,7 +9153,7 @@ DebugJS.getDateTime = function(dt) {
 };
 
 DebugJS.date = function(arg) {
-  arg = DebugJS.delLeadingAndTrailingWhiteSP(arg);
+  arg = DebugJS.delLeadingAndTrailingSP(arg);
   var s;
   var dt;
   if ((arg == '') || isNaN(arg)) {
@@ -9165,21 +9165,25 @@ DebugJS.date = function(arg) {
   } else {
     arg = DebugJS.parseInt(arg);
     dt = DebugJS.getDateTime(arg);
-    s = DebugJS.getDateTimeStr(dt);
+    s = DebugJS.convDateTimeStr(dt);
   }
   return s;
 };
 
-DebugJS.getDateTimeStr = function(d) {
+DebugJS.convDateTimeStr = function(d) {
   return (d.yyyy + '-' + d.mm + '-' + d.dd + ' ' + DebugJS.WDAYS[d.wday] + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss);
 };
 
-DebugJS.getLogTime = function(t) {
+DebugJS.convTimeStr = function(d) {
+  return d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
+};
+
+DebugJS.getTimeStr = function(t) {
   var d = DebugJS.getDateTime(t);
   return d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
 };
 
-DebugJS.getLogDateTime = function(t) {
+DebugJS.getDateTimeStr = function(t) {
   var d = DebugJS.getDateTime(t);
   return d.yyyy + '-' + d.mm + '-' + d.dd + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
 };
@@ -9187,10 +9191,6 @@ DebugJS.getLogDateTime = function(t) {
 DebugJS.getTimerStr = function(ms) {
   var tm = DebugJS.ms2struct(ms, true);
   return tm.hh + ':' + tm.mi + ':' + tm.ss + '.' + tm.sss;
-};
-
-DebugJS.getTimeStr = function(st) {
-  return st.hh + ':' + st.mi + ':' + st.ss + '.' + st.sss;
 };
 
 DebugJS.ms2struct = function(ms, fmt) {
@@ -9622,7 +9622,7 @@ DebugJS.execCmdJson = function(json, flg, lv) {
 
 DebugJS.checkJson = function(json) {
   var ctx = DebugJS.ctx;
-  json = DebugJS.delLeadingAndTrailingWhiteSP(json);
+  json = DebugJS.delLeadingAndTrailingSP(json);
   var wkJson = json.split('\\');
   var cnt = 0;
   var res = '';
@@ -10517,8 +10517,8 @@ DebugJS.startsWith = function(s, p, o) {
 };
 
 DebugJS.strcmpWOsp = function(s1, s2) {
-  s1 = DebugJS.delLeadingAndTrailingWhiteSP(s1);
-  s2 = DebugJS.delLeadingAndTrailingWhiteSP(s2);
+  s1 = DebugJS.delLeadingAndTrailingSP(s1);
+  s2 = DebugJS.delLeadingAndTrailingSP(s2);
   return (s1 == s2);
 };
 
@@ -10771,7 +10771,7 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   for (var i = 0; i < buf.length; i++) {
     var data = buf[i];
     var type = data.type;
-    var time = (fmtTime ? DebugJS.getLogDateTime(data.time) : data.time);
+    var time = (fmtTime ? DebugJS.getDateTimeStr(data.time) : data.time);
     var msg = data.msg;
     if (fmt == 'json') {
       l = {type: type, time: time, msg: DebugJS.encodeBase64(msg)};
@@ -11242,11 +11242,11 @@ DebugJS.bat.parseLabels = function() {
   bat.labels = {};
   for (var i = 0; i < bat.cmds.length; i++) {
     var c = bat.cmds[i];
-    if (DebugJS.delLeadingWhiteSP(c).substr(0, 2) == '/*') {
+    if (DebugJS.delLeadingSP(c).substr(0, 2) == '/*') {
       cmnt++;
       continue;
     }
-    if (DebugJS.delTrailingWhiteSP(c).slice(-2) == '*/') {
+    if (DebugJS.delTrailingSP(c).slice(-2) == '*/') {
       cmnt--;
       continue;
     }
@@ -11429,11 +11429,11 @@ DebugJS.bat.prepro = function(cmd) {
   if ((c.charAt(0) == '#') || (c.substr(0, 2) == '//') || (c.charAt(0) == ':')) {
     return 1;
   }
-  if (DebugJS.delLeadingWhiteSP(cmd).substr(0, 2) == '/*') {
+  if (DebugJS.delLeadingSP(cmd).substr(0, 2) == '/*') {
     ctrl.cmnt++;
     return 1;
   }
-  if (DebugJS.delTrailingWhiteSP(cmd).slice(-2) == '*/') {
+  if (DebugJS.delTrailingSP(cmd).slice(-2) == '*/') {
     ctrl.cmnt--;
     if (ctrl.cmnt < 0) {bat.syntaxErr(cmd);}
     return 1;
@@ -11486,7 +11486,7 @@ DebugJS.bat.prepro = function(cmd) {
       ctrl.blockLv--;
       return 1;
     }
-  } else if (DebugJS.delLeadingAndTrailingWhiteSP(cmd) == DebugJS.PP_BLOCK_END) {
+  } else if (DebugJS.delLeadingAndTrailingSP(cmd) == DebugJS.PP_BLOCK_END) {
     if (ctrl.blockLv) {
       ctrl.blockLv--;
       return 1;
@@ -11519,7 +11519,7 @@ DebugJS.bat.prepro = function(cmd) {
 };
 DebugJS.bat.ppIf = function(cmd, s) {
   var r = {res: false, err: true};
-  var v = DebugJS.delLeadingAndTrailingWhiteSP(s);
+  var v = DebugJS.delLeadingAndTrailingSP(s);
   if (v.charAt(v.length - 1) == DebugJS.PP_BLOCK_START) {
     v = v.substr(0, v.length - 2);
     v = DebugJS.replaceCmdVals(v);
@@ -11547,7 +11547,7 @@ DebugJS.bat.findEndOfBlock = function() {
         data.endWithElse = true;
         break;
       }
-    } else if (DebugJS.delLeadingAndTrailingWhiteSP(cmd) == DebugJS.PP_BLOCK_END) {
+    } else if (DebugJS.delLeadingAndTrailingSP(cmd) == DebugJS.PP_BLOCK_END) {
       if (ignoreBlkLv == 0) {
         break;
       }
@@ -11639,7 +11639,7 @@ DebugJS.bat.list = function(s, e) {
     for (var j = 0; j < df; j++) {
       pdng += '0';
     }
-    if (DebugJS.startsWith(DebugJS.delLeadingWhiteSP(cmd), DebugJS.PP_JS)) {
+    if (DebugJS.startsWith(DebugJS.delLeadingSP(cmd), DebugJS.PP_JS)) {
       if (!js) {
         l += '<span style="color:#0ff">';
       }
@@ -11652,7 +11652,7 @@ DebugJS.bat.list = function(s, e) {
       }
       l += ' ' + pdng + n + ': ' + cmd + '\n';
     }
-    if (DebugJS.startsWith(DebugJS.delLeadingWhiteSP(cmd), DebugJS.PP_JS)) {
+    if (DebugJS.startsWith(DebugJS.delLeadingSP(cmd), DebugJS.PP_JS)) {
       if (js) {
         l += '</span>';
         js = false;
@@ -12972,28 +12972,27 @@ DebugJS.test = {};
 DebugJS.test.STATUS_OK = 'OK';
 DebugJS.test.STATUS_NG = 'NG';
 DebugJS.test.STATUS_ERR = 'ERR';
-DebugJS.test.data = {
-  name: '',
-  desc: [],
-  running: false,
-  executingTestId: '',
-  executingTestLabel: '',
-  status: DebugJS.test.STATUS_OK,
-  cnt: {ok: 0, ng: 0, err: 0},
-  results: {}
-};
-DebugJS.test.init = function(name) {
+DebugJS.test.data = {};
+DebugJS.test.initData = function() {
   var data = DebugJS.test.data;
-  data.name = ((name == undefined) ? '' : name);
+  data.name = '';
   data.desc = [];
-  data.running = true;
+  data.running = false;
+  data.startTime = 0;
+  data.endTime = 0;
   data.executingTestId = '';
   data.executingTestLabel = '';
   data.status = DebugJS.test.STATUS_OK;
-  data.cnt.ok = 0;
-  data.cnt.ng = 0;
-  data.cnt.err = 0;
+  data.cnt = {ok: 0, ng: 0, err: 0};
   data.results = {};
+};
+DebugJS.test.initData();
+DebugJS.test.init = function(name) {
+  DebugJS.test.initData();
+  var data = DebugJS.test.data;
+  data.name = ((name == undefined) ? '' : name);
+  data.running = true;
+  data.startTime = (new Date()).getTime();
   delete DebugJS.ctx.CMDVALS['%TEST%'];
   delete DebugJS.ctx.CMDVALS['%RSLT%'];
 };
@@ -13019,6 +13018,7 @@ DebugJS.test.load = function() {
 };
 DebugJS.test.fin = function() {
   DebugJS.test.data.running = false;
+  DebugJS.test.data.endTime = (new Date()).getTime();
 };
 DebugJS.test.addResult = function(status, detail) {
   var ctx = DebugJS.ctx;
@@ -13044,7 +13044,7 @@ DebugJS.test.addResult = function(status, detail) {
   var id = data.executingTestId;
   var label = data.executingTestLabel;
   test.prepare();
-  data.results[id].res[label].push({status: status, detail: detail});
+  data.results[id].results[label].push({status: status, detail: detail});
 };
 DebugJS.test.prepare = function() {
   var test = DebugJS.test;
@@ -13055,7 +13055,7 @@ DebugJS.test.setId = function(id) {
   var test = DebugJS.test;
   var data = test.data;
   if (data.results[id] == undefined) {
-    data.results[id] = {cmnt: [], res: {}};
+    data.results[id] = {comment: [], results: {}};
   }
   data.executingTestId = id;
   test.setLabel('');
@@ -13065,17 +13065,17 @@ DebugJS.test.setLabel = function(label) {
   var data = test.data;
   var id = data.executingTestId;
   if (data.results[id] == undefined) {
-    data.results[id] = {cmnt: [], res: {}};
+    data.results[id] = {comment: [], results: {}};
   }
-  if (data.results[id].res[label] == undefined) {
-    data.results[id].res[label] = [];
+  if (data.results[id].results[label] == undefined) {
+    data.results[id].results[label] = [];
   }
   data.executingTestLabel = label;
 };
 DebugJS.test.setCmnt = function(c) {
   var test = DebugJS.test;
   test.prepare();
-  test.data.results[test.data.executingTestId].cmnt.push(c);
+  test.data.results[test.data.executingTestId].comment.push(c);
   DebugJS.log('# ' + c);
 };
 DebugJS.test.chkResult = function(results) {
@@ -13127,7 +13127,7 @@ DebugJS.test.result = function() {
     if (id == '') {
       testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
     }
-    var st = test.chkResult(data.results[id].res);
+    var st = test.chkResult(data.results[id].results);
     switch (st) {
       case test.STATUS_OK:
         cnt.ok++;
@@ -13140,13 +13140,13 @@ DebugJS.test.result = function() {
     }
     var rs = test.getResultStr(st);
     details += '\n' + rs + testId + '\n';
-    for (i = 0; i < data.results[id].cmnt.length; i++) {
-      var cmnt = data.results[id].cmnt[i];
-      details += ' # ' + cmnt + '\n';
+    for (i = 0; i < data.results[id].comment.length; i++) {
+      var comment = data.results[id].comment[i];
+      details += ' # ' + comment + '\n';
     }
-    for (var label in data.results[id].res) {
-      for (i = 0; i < data.results[id].res[label].length; i++) {
-        var result = data.results[id].res[label][i];
+    for (var label in data.results[id].results) {
+      for (i = 0; i < data.results[id].results[label].length; i++) {
+        var result = data.results[id].results[label][i];
         details += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
       }
     }
@@ -13165,6 +13165,21 @@ DebugJS.test.result = function() {
 };
 DebugJS.test.getStatus = function() {
   return DebugJS.test.data.status;
+};
+DebugJS.test.getResult = function(j) {
+  var data = DebugJS.test.data;
+  var r = {
+    name: data.name,
+    desc: data.desc,
+    status: data.status,
+    startTime: data.startTime,
+    endTime: data.endTime,
+    results: data.results
+  };
+  if (j) {
+    r = DebugJS.toJson(r);
+  }
+  return r;
 };
 DebugJS.test.verify = function(got, method, exp, reqEval) {
   var test = DebugJS.test;
@@ -13267,7 +13282,7 @@ DebugJS.test.onVrfyAftr = function(status) {
 DebugJS.test.countLongestLabel = function() {
   var l = 0;
   for (var id in DebugJS.test.data.results) {
-    for (var label in DebugJS.test.data.results[id].res) {
+    for (var label in DebugJS.test.data.results[id].results) {
       if (label.length > l) {
         l = label.length;
       }
