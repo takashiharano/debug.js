@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803122250';
+  this.v = '201803122302';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9590,15 +9590,18 @@ DebugJS.getChildElements = function(el, list) {
   }
 };
 
-DebugJS.getHtml = function(b64) {
+DebugJS.getHTML = function(b64) {
   var ctx = DebugJS.ctx;
   var el = document.getElementsByTagName('html').item(0);
+  var cmdActive = false;
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
+    cmdActive = (document.activeElement == ctx.cmdLine);
     ctx.bodyEl.removeChild(ctx.win);
   }
   var html = el.outerHTML;
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
     ctx.bodyEl.appendChild(ctx.win);
+    if (cmdActive) {ctx.cmdLine.focus();}
   }
   if (b64) {
     html = DebugJS.encodeBase64(html);
@@ -13670,7 +13673,7 @@ DebugJS.balse = function() {
   DebugJS.bat.status = DebugJS.fn;
   DebugJS.bat.isRunning = DebugJS.fn;
   DebugJS.countElements = DebugJS.fn;
-  DebugJS.getHtml = DebugJS.fn;
+  DebugJS.getHTML = DebugJS.fn;
   DebugJS.init = DebugJS.fn;
   DebugJS.dumpLog = DebugJS.fn;
   DebugJS.show = DebugJS.fn;
