@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803122302';
+  this.v = '201803122311';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12374,7 +12374,7 @@ DebugJS.point.move.stop = function() {
 DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   var el = DebugJS.getElement(selector, idx);
   if (!el) {
-    DebugJS.log.e(selector + (selector.charAt(0) == '#' ? '' : '[' + idx + ']') + ': Element not found');
+    DebugJS.log.e(selector + (selector.charAt(0) == '#' ? '' : (idx == undefined ? '' : ' [' + idx + ']')) + ': Element not found');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
@@ -12385,7 +12385,7 @@ DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
 DebugJS.pointByLabel = function(label, idx, alignX, alignY) {
   var el = DebugJS.getLabelEl(label, idx);
   if (!el) {
-    DebugJS.log.e(label + '[' + idx + ']: Element not found');
+    DebugJS.log.e(label + ' [' + idx + ']: Element not found');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
@@ -12428,7 +12428,7 @@ DebugJS.point.moveToSelector = function(selector, idx, speed, step, alignX, alig
   };
   var ps = DebugJS.getElPosSize(selector, idx);
   if (!ps) {
-    DebugJS.log.e(selector + (selector.charAt(0) == '#' ? '' : '[' + idx + ']') + ': Element not found');
+    DebugJS.log.e(selector + (selector.charAt(0) == '#' ? '' : (idx == undefined ? '' : ' [' + idx + ']')) + ': Element not found');
     return;
   }
   if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollspeed, DebugJS.ctx.props.scrollstep, DebugJS.point._moveToSelector, data)) {
@@ -12455,7 +12455,7 @@ DebugJS.point.moveToLabel = function(label, idx, speed, step, alignX, alignY) {
   };
   var el = DebugJS.getLabelEl(label, idx);
   if (!el) {
-    DebugJS.log.e(label + '[' + idx + ']: Element not found');
+    DebugJS.log.e(label + ' [' + idx + ']: Element not found');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
