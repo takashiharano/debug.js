@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803130050';
+  this.v = '201803130120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13179,9 +13179,10 @@ DebugJS.test.getResult = function() {
   var r = {
     name: data.name,
     desc: data.desc,
-    status: data.status,
     startTime: data.startTime,
     endTime: data.endTime,
+    status: data.status,
+    count: data.cnt,
     results: data.results
   };
   return r;
