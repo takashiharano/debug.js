@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803122311';
+  this.v = '201803130000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6269,10 +6269,10 @@ DebugJS.prototype = {
   },
 
   execJavaScript: function() {
-    DebugJS.ctx.execCode(DebugJS.ctx.jsBuf);
+    DebugJS.ctx.execCode(DebugJS.ctx.jsBuf, true);
   },
 
-  execCode: function(code) {
+  execCode: function(code, echo) {
     if (code == '') return;
     try {
       var ret = eval(code);
@@ -6280,7 +6280,7 @@ DebugJS.prototype = {
       if (typeof res === 'string') {
         res = DebugJS.encString(res);
       }
-      DebugJS.log.res(res);
+      if (echo) {DebugJS.log.res(res);}
       return ret;
     } catch (e) {
       DebugJS.log.e(e);
@@ -6591,14 +6591,14 @@ DebugJS.prototype = {
     var setValName = null;
     var cmdline = str;
     if (str.match(/^\s*@/)) {
+      echo = false;
       cmdline = str.substr(str.indexOf('@') + 1);
-    } else {
-      if (echo) {
-        var echoStr = str;
-        echoStr = DebugJS.escTags(echoStr);
-        echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
-        DebugJS.log.s(echoStr);
-      }
+    }
+    if (echo) {
+      var echoStr = str;
+      echoStr = DebugJS.escTags(echoStr);
+      echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
+      DebugJS.log.s(echoStr);
     }
     var cmd, arg;
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
@@ -6613,7 +6613,7 @@ DebugJS.prototype = {
       }
     }
     cmdline = DebugJS.replaceCmdVals(cmdline);
-    var ret = ctx.__execCmd(ctx, cmdline);
+    var ret = ctx.__execCmd(ctx, cmdline, echo);
     if (setValName != null) {
       if ((setValName == '?') || (setValName.match(/^%.*%$/))) {
         DebugJS.log.e('Error: ${' + setValName + '} is read-only');
@@ -6624,7 +6624,7 @@ DebugJS.prototype = {
     return ret;
   },
 
-  __execCmd: function(ctx, cmdline) {
+  __execCmd: function(ctx, cmdline, echo) {
     cmdline = DebugJS.replaceCtrlChr(cmdline);
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
@@ -6632,7 +6632,7 @@ DebugJS.prototype = {
 
     for (var i = 0; i < ctx.CMD_TBL.length; i++) {
       if (cmd == ctx.CMD_TBL[i].cmd) {
-        return ctx.CMD_TBL[i].fnc(arg, ctx.CMD_TBL[i]);
+        return ctx.CMD_TBL[i].fnc(arg, ctx.CMD_TBL[i], echo);
       }
     }
 
@@ -6642,7 +6642,7 @@ DebugJS.prototype = {
 
     for (var i = 0; i < ctx.EXT_CMD_TBL.length; i++) {
       if (cmd == ctx.EXT_CMD_TBL[i].cmd) {
-        return ctx.EXT_CMD_TBL[i].fnc(arg, ctx.EXT_CMD_TBL[i]);
+        return ctx.EXT_CMD_TBL[i].fnc(arg, ctx.EXT_CMD_TBL[i], echo);
       }
     }
 
@@ -6665,7 +6665,7 @@ DebugJS.prototype = {
       return ctx.cmdUnicode('-d ' + cmdline);
     }
 
-    return ctx.execCode(cmdline);
+    return ctx.execCode(cmdline, echo);
   },
 
   cmdBase64: function(arg, tbl) {
@@ -8065,7 +8065,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdSet: function(arg, tbl) {
+  cmdSet: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
     var name = args[0];
@@ -8074,9 +8074,9 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    ctx._cmdSet(ctx, name, val);
+    ctx._cmdSet(ctx, name, val, echo);
   },
-  _cmdSet: function(ctx, name, val, silent) {
+  _cmdSet: function(ctx, name, val, echo) {
     var props = ctx.props;
     if (props[name] != undefined) {
       var restriction = ctx.PROPS_RESTRICTION[name];
@@ -8093,7 +8093,7 @@ DebugJS.prototype = {
           props[name] = ret;
         }
       }
-      if (!silent) {DebugJS.log.res(val);}
+      if (echo) {DebugJS.log.res(val);}
     } else {
       DebugJS.log.e(name + ' is invalid property name.');
     }
@@ -13579,7 +13579,7 @@ DebugJS.restoreStatus = function(ctx) {
 };
 DebugJS.restoreProps = function(ctx, props) {
   for (var key in props) {
-    ctx._cmdSet(ctx, key, props[key], true);
+    ctx._cmdSet(ctx, key, props[key], false);
   }
 };
 DebugJS.ver = function() {
