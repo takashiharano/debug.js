@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803120012';
+  this.v = '201803122250';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12993,7 +12993,7 @@ DebugJS.test.init = function(name) {
   data.name = ((name == undefined) ? '' : name);
   data.running = true;
   data.startTime = (new Date()).getTime();
-  delete DebugJS.ctx.CMDVALS['%TEST%'];
+  DebugJS.ctx.CMDVALS['%TEST%'] = DebugJS.test.STATUS_OK;
   delete DebugJS.ctx.CMDVALS['%RSLT%'];
 };
 DebugJS.test.setName = function(n) {
