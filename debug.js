@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803130000';
+  this.v = '201803130050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6600,9 +6600,8 @@ DebugJS.prototype = {
       echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS.log.s(echoStr);
     }
-    var cmd, arg;
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
-    cmd = cmds[0];
+    var cmd = cmds[0];
     var valName = DebugJS.getCmdValName(cmd, true);
     if (valName != null) {
       var vStartPos = cmdline.indexOf(valName);
@@ -6612,8 +6611,14 @@ DebugJS.prototype = {
         cmdline = restCmd.substr(restCmd.indexOf('=') + 1);
       }
     }
-    cmdline = DebugJS.replaceCmdVals(cmdline);
-    var ret = ctx.__execCmd(ctx, cmdline, echo);
+    var ret;
+    cmds = DebugJS.splitCmdLineInTwo(cmdline);
+    if (cmds[0] == 'code') {
+      ret = ctx.execCode(cmds[1], echo);
+    } else {
+      cmdline = DebugJS.replaceCmdVals(cmdline);
+      ret = ctx.__execCmd(ctx, cmdline, echo);
+    }
     if (setValName != null) {
       if ((setValName == '?') || (setValName.match(/^%.*%$/))) {
         DebugJS.log.e('Error: ${' + setValName + '} is read-only');
