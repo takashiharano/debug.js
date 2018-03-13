@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803140139';
+  this.v = '201803140745';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6610,7 +6610,7 @@ DebugJS.prototype = {
     }
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
-    var valName = DebugJS.getCmdValName(cmd, true);
+    var valName = DebugJS.getCmdValName(cmd, '\\$', true);
     if (valName != null) {
       var vStartPos = cmdline.indexOf(valName);
       var restCmd = cmdline.substr(vStartPos + valName.length + 1);
@@ -6664,7 +6664,7 @@ DebugJS.prototype = {
       return;
     }
 
-    var found = ctx.cmdRadixConv(cmdline);
+    var found = ctx.cmdRadixConv(cmdline, echo);
     if (found) {
       return cmd | 0;
     }
@@ -7739,21 +7739,29 @@ DebugJS.prototype = {
     return random;
   },
 
-  cmdRadixConv: function(v) {
+  cmdRadixConv: function(v, echo) {
+    var ctx = DebugJS.ctx;
     v = DebugJS.delLeadingAndTrailingSP(v);
+    var rdx = DebugJS.checkRadix(v);
+    if ((rdx == 10) || (rdx == 16) || (rdx == 2)) {
+      ctx._cmdRadixConv(v, echo);
+      return true;
+    } else {
+      return false;
+    }
+  },
+  _cmdRadixConv: function(v, echo) {
+    if (!echo) {
+      return;
+    }
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
       v = v.replace(/,/g, '');
       DebugJS.convRadixFromDEC(v);
-      return true;
     } else if (rdx == 16) {
       DebugJS.convRadixFromHEX(v.substr(2));
-      return true;
     } else if (rdx == 2) {
       DebugJS.convRadixFromBIN(v.substr(2));
-      return true;
-    } else {
-      return false;
     }
   },
 
@@ -8777,8 +8785,8 @@ DebugJS.RingBuffer.prototype = {
   }
 };
 
-DebugJS.getCmdValName = function(v, head) {
-  var m = '\\$\\{(.+?)\\}';
+DebugJS.getCmdValName = function(v, pfix, head) {
+  var m = pfix + '\\{(.+?)\\}';
   if (head) {
     m = '^' + m;
   }
@@ -8795,22 +8803,30 @@ DebugJS.getCmdValName = function(v, head) {
 };
 
 DebugJS.replaceCmdVals = function(s) {
+  s = DebugJS._replaceCmdVals(s, true);
+  s = DebugJS._replaceCmdVals(s);
+  return s;
+};
+DebugJS._replaceCmdVals = function(s, il) {
   var prevN;
+  var pfix = (il ? '%' : '\\$');
   while (true) {
-    var name = DebugJS.getCmdValName(s);
+    var name = DebugJS.getCmdValName(s, pfix);
     if (name == null) {return s;}
     if (name == prevN) {
-      DebugJS.log.e('(bug) replaceCmdVals()');
+      DebugJS.log.e('(bug) replaceCmdVals(): ' + name);
       return s;
     }
     prevN = name;
     var reNm = name;
     if (name == '?') {reNm = '\\?';}
-    var re = new RegExp('\\$\\{' + reNm + '\\}', 'g');
+    var re = new RegExp(pfix + '\\{' + reNm + '\\}', 'g');
     var v = DebugJS.ctx.CMDVALS[name];
     var r = v + '';
-    if (typeof v === 'string') {
-      r = '"' + v + '"';
+    if (!il) {
+      if (typeof v === 'string') {
+        r = '"' + v + '"';
+      }
     }
     s = s.replace(re, r);
   }
