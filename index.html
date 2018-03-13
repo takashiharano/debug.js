@@ -1686,7 +1686,7 @@ var commands = '
 #!BAT!
 # comment
 echo off
-echo "arg = ${%ARG%}"
+echo "arg = " + ${%%ARG%%}
 point move #p1
 point hint msg "Hi!"
 wait 1000
@@ -1702,9 +1702,11 @@ wait 1000
 point init
 </textarea>
 ';
-var arg = '<input type="text" id="bat-arg-text" class="demo-text" style="width:150px;" value="abc 123">';
 
 dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</button>
+
+var arg = '<input type="text" id="bat-arg-text" class="demo-text" style="width:150px;" value="abc 123">';
+
 dbg.bat(commands, arg); <button class="demo-button2" onclick="batArgDemo();">DEMO</button>
 dbg.bat(commands, arg, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="5">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="13">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
 dbg.bat(commands, arg, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:60px;" value=":label1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:60px;" value=":label2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
@@ -3692,7 +3694,7 @@ $ zoom 1
       You can access the exit status via special variable ${?}<br><br>
 <pre class="eg">
 bat exec IyFCQVQhDQpleGl0IDENCg==<span class="annotation">(*1)</span>
-echo "Exit Status = ${?}"
+echo "Exit Status = " + ${?}
 IF (${?} == 0)) (
   echo "OK!"
 ) ELSE (
@@ -3803,7 +3805,7 @@ JavaScript Code;
 
 ${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
 command arg ${val} ... <span class="annotation">The variable ${val} will be replaced to its value.</span></span>
-IF ("${val}" == "abc") (
+IF (${val} == "abc") (
   command
 )
 <span class="emphasis">

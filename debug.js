@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803130120';
+  this.v = '201803140139';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6058,7 +6058,13 @@ DebugJS.prototype = {
   runBat: function(ctx) {
     var bat = DebugJS.bat;
     bat.store(ctx.batTextEditor.value);
-    bat.setExecArg(ctx.batArgTxt.value);
+    var a = ctx.batArgTxt.value;
+    try {
+      bat.setExecArg(eval(a));
+    } catch (e) {
+      DebugJS.log.e('BAT ARG ERROR (' + e + ')');
+      return;
+    }
     var s = ctx.batStartTxt.value;
     var e = ctx.batEndTxt.value;
     if (s == '') s = undefined;
@@ -6118,7 +6124,9 @@ DebugJS.prototype = {
 
   setBatArgTxt: function(ctx) {
     if (ctx.batArgTxt) {
-      ctx.batArgTxt.value = DebugJS.bat.ctrl.execArg;
+      var a = DebugJS.bat.ctrl.execArg;
+      if ((typeof a === 'string') && (a != '')) {a = '"' + a + '"';}
+      ctx.batArgTxt.value = a + '';
     }
   },
 
@@ -6658,7 +6666,7 @@ DebugJS.prototype = {
 
     var found = ctx.cmdRadixConv(cmdline);
     if (found) {
-      return cmd;
+      return cmd | 0;
     }
 
     var ret = ctx.cmdTimeCalc(cmdline);
@@ -6734,7 +6742,12 @@ DebugJS.prototype = {
               bat.stCtx();
             }
             var a = DebugJS.getArgsFrom(arg, 3);
-            bat(b, a);
+            try {
+              a = eval(a);
+              bat(b, a);
+            } catch (e) {
+              DebugJS.log.e('BAT ERROR: Illegal argument (' + e + ')');
+            }
           }
           break;
         }
@@ -7337,7 +7350,15 @@ DebugJS.prototype = {
     var fnArg;
     var a = DebugJS.splitCmdLineInTwo(arg);
     var lbl = a[0];
-    var idx = DebugJS.bat.labels[DebugJS.replaceCmdVals(lbl)];
+    if (lbl.match(/^".+?"$/)) {
+      try {
+        lbl = eval(lbl);
+      } catch (e) {
+        DebugJS.log.e('L' + ctrl.pc + ': Illegal argument (' + lbl + ')');
+        return;
+      }
+    }
+    var idx = DebugJS.bat.labels[lbl];
     if (idx == undefined) {
       DebugJS.log.e('L' + ctrl.pc + ': No such label (' + lbl + ')');
       return;
@@ -7412,7 +7433,8 @@ DebugJS.prototype = {
 
   cmdMsg: function(arg, tbl) {
     try {
-      DebugJS.ctx.setMsg(eval(arg));
+      var m = (arg == '' ? '' : eval(arg));
+      DebugJS.ctx.setMsg(m);
     } catch (e) {
       DebugJS.log.e(e);
     }
@@ -7555,7 +7577,7 @@ DebugJS.prototype = {
     } else if (op == 'hint') {
       op = args[1];
       if (op == 'msg') {
-        msg = args[2];
+        msg = DebugJS.getArgsFrom(arg, 3);
         point.hint(msg);
       } else if (op == 'hide') {
         point.hint.hide();
@@ -8772,20 +8794,25 @@ DebugJS.getCmdValName = function(v, head) {
   return r[1];
 };
 
-DebugJS.replaceCmdVals = function(v) {
+DebugJS.replaceCmdVals = function(s) {
   var prevN;
   while (true) {
-    var name = DebugJS.getCmdValName(v);
-    if (name == null) {return v;}
+    var name = DebugJS.getCmdValName(s);
+    if (name == null) {return s;}
     if (name == prevN) {
       DebugJS.log.e('(bug) replaceCmdVals()');
-      return v;
+      return s;
     }
     prevN = name;
     var reNm = name;
     if (name == '?') {reNm = '\\?';}
     var re = new RegExp('\\$\\{' + reNm + '\\}', 'g');
-    v = v.replace(re, DebugJS.ctx.CMDVALS[name] + '');
+    var v = DebugJS.ctx.CMDVALS[name];
+    var r = v + '';
+    if (typeof v === 'string') {
+      r = '"' + v + '"';
+    }
+    s = s.replace(re, r);
   }
 };
 
@@ -11415,7 +11442,7 @@ DebugJS.bat._exit = function(code) {
   bat.setExitStatus(code);
 };
 DebugJS.bat.setExecArg = function(a) {
-  a = ((a == undefined) ? '' : a);
+  a = ((a === undefined) ? '' : a);
   DebugJS.ctx.CMDVALS['%%ARG%%'] = a;
   DebugJS.bat.ctrl.execArg = a;
   DebugJS.ctx.setBatArgTxt(DebugJS.ctx);
