@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803150113';
+  this.v = '201803150215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13335,7 +13335,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
     detail = 'Exp=' + echoExp + ' ' + method + ' Got=' + echoGot;
   } catch (e) {
     status = test.STATUS_ERR;
-    detail = e;
+    detail = e.toString();
   }
   test.addResult(status, detail);
   var str = test.getResultStr(status, detail);
