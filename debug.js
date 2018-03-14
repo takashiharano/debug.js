@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803140745';
+  this.v = '201803150113';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7509,7 +7509,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdPoint: function(arg, tbl) {
+  cmdPoint: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgsEx(arg);
     var point = DebugJS.point;
@@ -7615,7 +7615,7 @@ DebugJS.prototype = {
     } else if (op == 'getprop') {
       ret = point.getProp(args[1]);
     } else if (op == 'setprop') {
-      point.setProp(args[1], args[2]);
+      point.setProp(args[1], DebugJS.getArgsFrom(arg, 3), echo);
     } else if (op == 'verify') {
       exp = DebugJS.getArgsFrom(arg, 4);
       ret = point.verify(args[1], args[2], exp);
@@ -12285,15 +12285,30 @@ DebugJS.point.getElementFromCurrentPos = function() {
 DebugJS.point.getProp = function(prop) {
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
-  var v = el[prop];
+  var p = prop.split('.');
+  var v = el;
+  for (var i = 0; i < p.length; i++) {
+    v = v[p[i]];
+  }
   DebugJS.log(DebugJS.styleValue(v));
   return v;
 };
-DebugJS.point.setProp = function(prop, val) {
+DebugJS.point.setProp = function(prop, val, echo) {
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
-  el[prop] = val;
-  DebugJS.log(val);
+  try {
+    var v = eval(val);
+  } catch (e) {
+    DebugJS.log.e(e);
+    return;
+  }
+  var p = prop.split('.');
+  var e = el;
+  for (var i = 0; i < (p.length - 1); i++) {
+    e = e[p[i]];
+  }
+  e[p[(p.length - 1)]] = v;
+  if (echo) {DebugJS.log.res(v);}
 };
 DebugJS.point.verify = function(prop, method, exp) {
   var test = DebugJS.test;
@@ -12312,7 +12327,11 @@ DebugJS.point.verify = function(prop, method, exp) {
     test.onVrfyAftr(status);
     return status;
   }
-  var got = el[prop];
+  var p = prop.split('.');
+  var got = el;
+  for (var i = 0; i < p.length; i++) {
+    got = got[p[i]];
+  }
   return test.verify(got, method, exp);
 };
 DebugJS.point.move = function(x, y, speed, step) {
