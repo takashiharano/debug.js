@@ -3812,10 +3812,11 @@ IF (${val} == "abc") (
 %{val}<span class="annotation">inline expansion of the value</span>
 
 jump func1
-
-LOOP (${val} < 3) (</span>
+</span>
+${i} = 0<span class="emphasis">
+LOOP (${i} &lt; 3) (</span>
   command
-  %{val} = %{val} + 1
+  %{i} = %{i} + 1
 <span class="emphasis">)
 
 LOOP (</span>
@@ -3823,7 +3824,6 @@ LOOP (</span>
   IF (xxx) (<span class="emphasis">
     BREAK</span>
   )
-
   IF (xxx)<span class="emphasis">
     CONTINUE</span>
   )
