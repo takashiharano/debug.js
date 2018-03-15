@@ -3816,7 +3816,7 @@ jump func1
 ${i} = 0<span class="emphasis">
 LOOP (${i} &lt; 3) (</span>
   command
-  %{i} = %{i} + 1
+  ${i} = ${i} + 1
 <span class="emphasis">)
 
 LOOP (</span>
@@ -3824,7 +3824,7 @@ LOOP (</span>
   IF (xxx) (<span class="emphasis">
     BREAK</span>
   )
-  IF (xxx)<span class="emphasis">
+  IF (xxx) (<span class="emphasis">
     CONTINUE</span>
   )
 <span class="emphasis">)
