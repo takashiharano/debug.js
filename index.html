@@ -3813,6 +3813,22 @@ IF (${val} == "abc") (
 
 jump func1
 
+LOOP (${val} < 3) (</span>
+  command
+  %{val} = %{val} + 1
+<span class="emphasis">)
+
+LOOP (</span>
+  command
+  IF (xxx) (<span class="emphasis">
+    BREAK</span>
+  )
+
+  IF (xxx)<span class="emphasis">
+    CONTINUE</span>
+  )
+<span class="emphasis">)
+
 exit
 
 :func1
