@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803160017';
+  this.v = '201803170749';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7620,8 +7620,7 @@ DebugJS.prototype = {
     } else if (op == 'setprop') {
       point.setProp(args[1], DebugJS.getArgsFrom(arg, 3), echo);
     } else if (op == 'verify') {
-      exp = DebugJS.getArgsFrom(arg, 4);
-      ret = point.verify(args[1], args[2], exp);
+      ret = ctx._cmdPointVerify(arg);
     } else if (op == 'mouse') {
       point(ctx.mousePos.x, ctx.mousePos.y);
     } else if (op == 'text') {
@@ -7680,6 +7679,20 @@ DebugJS.prototype = {
         point(x, y);
       }
     }
+    return ret;
+  },
+  _cmdPointVerify: function(arg) {
+    var a = DebugJS.splitArgsEx(arg);
+    var prop = a[1];
+    var method = a[2];
+    var exp = DebugJS.getArgsFrom(arg, 4);
+    var label = DebugJS.getOptVal2(a, 'label');
+    if (label != null) {
+      prop = a[2];
+      method = a[3];
+      exp = DebugJS.getArgsFrom(arg, 5);
+    }
+    ret = DebugJS.point.verify(prop, method, exp, label);
     return ret;
   },
 
@@ -8243,7 +8256,7 @@ DebugJS.prototype = {
         }
         break;
       case 'set':
-        DebugJS.ctx.cmdTestSet(arg, tbl);
+        DebugJS.ctx._cmdTestSet(arg);
         break;
       case 'count':
         DebugJS.log(test.count(test.data.cnt));
@@ -8256,7 +8269,7 @@ DebugJS.prototype = {
         DebugJS.log(test.getResultStr(st));
         return st;
       case 'verify':
-        test.verify(args[1], args[2], args[3], true);
+        DebugJS.ctx._CmdTestVerify(arg);
         break;
       case 'fin':
         test.fin();
@@ -8266,7 +8279,7 @@ DebugJS.prototype = {
         DebugJS.printUsage(tbl.usage);
     }
   },
-  cmdTestSet: function(arg, tbl) {
+  _cmdTestSet: function(arg) {
     var test = DebugJS.test;
     var args = DebugJS.splitArgsEx(arg, 3);
     var target = args[1];
@@ -8280,9 +8293,6 @@ DebugJS.prototype = {
         break;
       case 'id':
         fn = test.setId;
-        break;
-      case 'label':
-        fn = test.setLabel;
         break;
       case 'comment':
         fn = test.setCmnt;
@@ -8298,6 +8308,19 @@ DebugJS.prototype = {
     } catch (e) {
       DebugJS.log.e(e);
     }
+  },
+  _CmdTestVerify: function(arg) {
+    var a = DebugJS.splitArgsEx(arg);
+    var got = a[1];
+    var method = a[2];
+    var exp = DebugJS.getArgsFrom(arg, 4);
+    var label = DebugJS.getOptVal2(a, 'label');
+    if (label != null) {
+      got = a[2];
+      method = a[3];
+      exp = DebugJS.getArgsFrom(arg, 5);
+    }
+    ret = DebugJS.test.verify(got, method, exp, true, label);
   },
 
   cmdTimer: function(arg, tbl) {
@@ -8915,6 +8938,8 @@ DebugJS.splitArgsEx = function(arg, limit) {
             continue;
           }
           quoted = false;
+        } else {
+          quoted = true;
         }
         break;
       default:
@@ -8939,13 +8964,14 @@ DebugJS.splitArgsEx = function(arg, limit) {
 // " 1  2 3  4 " -> [0]="1" [1]=" 2 3  4 "
 DebugJS.splitCmdLineInTwo = function(str) {
   var res = [];
-  var strs = str.match(/([^\s]{1,})\s(.*)/);
-  if (strs == null) {
-    res[0] = DebugJS.delLeadingSP(str);
+  str = DebugJS.delLeadingSP(str);
+  var two = DebugJS.splitArgsEx(str);
+  if (two.length == 1) {
+    res[0] = two[0];
     res[1] = '';
   } else {
-    res[0] = strs[1];
-    res[1] = strs[2];
+    res[0] = two[0];
+    res[1] = str.substr(two[0].length + 1);
   }
   return res;
 };
@@ -9012,6 +9038,20 @@ DebugJS.getOptVal = function(args, opt) {
       } else {
         v = '';
       }
+      break;
+    }
+  }
+  return v;
+};
+
+DebugJS.getOptVal2 = function(args, opt) {
+  if (typeof args === 'string') {
+    args = DebugJS.splitArgsEx(args);
+  }
+  var v = null;
+  for (var i = 0; i < args.length; i++) {
+    if (DebugJS.startsWith(args[i], '-' + opt + ':')) {
+      v = args[i].split(':')[1];
       break;
     }
   }
@@ -11432,6 +11472,10 @@ DebugJS.bat.exec = function() {
     return;
   }
   var c = bat.cmds[ctrl.pc];
+  if (c == undefined) {
+    bat._exit(DebugJS.EXIT_SUCCESS);
+    return;
+  }
   ctrl.pc++;
   ctx.updateCurPc();
   switch (bat.prepro(c)) {
@@ -12357,12 +12401,12 @@ DebugJS.point.setProp = function(prop, val, echo) {
   e[p[(p.length - 1)]] = v;
   if (echo) {DebugJS.log.res(v);}
 };
-DebugJS.point.verify = function(prop, method, exp) {
+DebugJS.point.verify = function(prop, method, exp, label) {
   var test = DebugJS.test;
   if (prop == undefined) {
     detail = 'Property name is undefined';
     DebugJS.log.e(detail);
-    test.addResult(status, detail);
+    test.addResult(status, detail, label);
     test.onVrfyAftr(status);
     return status;
   }
@@ -12370,7 +12414,7 @@ DebugJS.point.verify = function(prop, method, exp) {
   if (!el) {
     detail = 'Element not found';
     DebugJS.log.e(detail);
-    test.addResult(status, detail);
+    test.addResult(status, detail, label);
     test.onVrfyAftr(status);
     return status;
   }
@@ -12379,7 +12423,7 @@ DebugJS.point.verify = function(prop, method, exp) {
   for (var i = 0; i < p.length; i++) {
     got = got[p[i]];
   }
-  return test.verify(got, method, exp);
+  return test.verify(got, method, exp, false, label);
 };
 DebugJS.point.move = function(x, y, speed, step) {
   x += ''; y += '';
@@ -13098,7 +13142,6 @@ DebugJS.test.initData = function() {
   data.startTime = 0;
   data.endTime = 0;
   data.executingTestId = '';
-  data.executingTestLabel = '';
   data.status = DebugJS.test.STATUS_OK;
   data.cnt = {ok: 0, ng: 0, err: 0};
   data.results = {};
@@ -13137,7 +13180,7 @@ DebugJS.test.fin = function() {
   DebugJS.test.data.running = false;
   DebugJS.test.data.endTime = (new Date()).getTime();
 };
-DebugJS.test.addResult = function(status, detail) {
+DebugJS.test.addResult = function(status, detail, label) {
   var ctx = DebugJS.ctx;
   var test = DebugJS.test;
   var data = test.data;
@@ -13159,35 +13202,25 @@ DebugJS.test.addResult = function(status, detail) {
   }
   ctx.CMDVALS['%RSLT%'] = status;
   var id = data.executingTestId;
-  var label = data.executingTestLabel;
   test.prepare();
-  data.results[id].results[label].push({status: status, detail: detail});
+  if (label == null) {
+    label = '';
+  } else if (label.match(/^".*"$/)) {
+    label = eval(label);
+  }
+  data.results[id].results.push({label: label, status: status, detail: detail});
 };
 DebugJS.test.prepare = function() {
   var test = DebugJS.test;
   test.setId(test.data.executingTestId);
-  test.setLabel(test.data.executingTestLabel);
 };
 DebugJS.test.setId = function(id) {
   var test = DebugJS.test;
   var data = test.data;
   if (data.results[id] == undefined) {
-    data.results[id] = {comment: [], results: {}};
+    data.results[id] = {comment: [], results: []};
   }
   data.executingTestId = id;
-  test.setLabel('');
-};
-DebugJS.test.setLabel = function(label) {
-  var test = DebugJS.test;
-  var data = test.data;
-  var id = data.executingTestId;
-  if (data.results[id] == undefined) {
-    data.results[id] = {comment: [], results: {}};
-  }
-  if (data.results[id].results[label] == undefined) {
-    data.results[id].results[label] = [];
-  }
-  data.executingTestLabel = label;
 };
 DebugJS.test.setCmnt = function(c) {
   var test = DebugJS.test;
@@ -13198,14 +13231,12 @@ DebugJS.test.setCmnt = function(c) {
 DebugJS.test.chkResult = function(results) {
   var test = DebugJS.test;
   var r = test.STATUS_OK;
-  for (var label in results) {
-    for (var i = 0; i < results[label].length; i++) {
-      var st = results[label][i].status;
-      if (st == test.STATUS_ERR) {
-        return test.STATUS_ERR;
-      } else if (st == test.STATUS_NG) {
-        r = test.STATUS_NG;
-      }
+  for (var i = 0; i < results.length; i++) {
+    var st = results[i].status;
+    if (st == test.STATUS_ERR) {
+      return test.STATUS_ERR;
+    } else if (st == test.STATUS_NG) {
+      r = test.STATUS_NG;
     }
   }
   return r;
@@ -13261,11 +13292,9 @@ DebugJS.test.result = function() {
       var comment = data.results[id].comment[i];
       details += ' # ' + comment + '\n';
     }
-    for (var label in data.results[id].results) {
-      for (i = 0; i < data.results[id].results[label].length; i++) {
-        var result = data.results[id].results[label][i];
-        details += ' ' + DebugJS.strPadding(label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
-      }
+    for (i = 0; i < data.results[id].results.length; i++) {
+      var result = data.results[id].results[i];
+      details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
     }
   }
   var nm = data.name;
@@ -13299,7 +13328,7 @@ DebugJS.test.getResult = function() {
 DebugJS.test.getResultJSON = function(j) {
   return DebugJS.toJson(DebugJS.test.getResult());
 };
-DebugJS.test.verify = function(got, method, exp, reqEval) {
+DebugJS.test.verify = function(got, method, exp, reqEval, label) {
   var test = DebugJS.test;
   var status = test.STATUS_ERR;
   var detail;
@@ -13346,7 +13375,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
       } catch (e) {
         detail = 'Failed to evaluate: ' + e;
         DebugJS.log.e(detail);
-        test.addResult(status, detail);
+        test.addResult(status, detail, label);
         test.onVrfyAftr(status);
         return status;
       }
@@ -13358,7 +13387,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
     } else {
       detail = 'Unknown verify method: ' + method;
       DebugJS.log.e(detail);
-      test.addResult(status, detail);
+      test.addResult(status, detail, label);
       test.onVrfyAftr(status);
       return status;
     }
@@ -13384,7 +13413,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval) {
     status = test.STATUS_ERR;
     detail = e.toString();
   }
-  test.addResult(status, detail);
+  test.addResult(status, detail, label);
   var str = test.getResultStr(status, detail);
   DebugJS.log(str);
   test.onVrfyAftr(status);
@@ -13400,9 +13429,10 @@ DebugJS.test.onVrfyAftr = function(status) {
 DebugJS.test.countLongestLabel = function() {
   var l = 0;
   for (var id in DebugJS.test.data.results) {
-    for (var label in DebugJS.test.data.results[id].results) {
-      if (label.length > l) {
-        l = label.length;
+    for (var i = 0; i < DebugJS.test.data.results[id].results.length; i++) {
+      var r = DebugJS.test.data.results[id].results[i];
+      if (r.label.length > l) {
+        l = r.label.length;
       }
     }
   }
