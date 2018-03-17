@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803170749';
+  this.v = '201803172328';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -578,6 +578,7 @@ DebugJS.DISP_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.TIME_RST_STR = '00:00:00.000';
 DebugJS.EXIT_SUCCESS = 0;
 DebugJS.EXIT_FAILURE = 1;
+DebugJS.EXIT_CLEARED = -1;
 DebugJS.PP_JS = '!__JS__!';
 DebugJS.PP_IF = 'IF';
 DebugJS.PP_ELSE = 'ELSE';
@@ -8298,7 +8299,7 @@ DebugJS.prototype = {
         fn = test.setCmnt;
         break;
       default:
-        DebugJS.printUsage('test set name|desc|id|label|comment val');
+        DebugJS.printUsage('test set name|desc|id|comment val');
         return;
     }
     try {
@@ -11473,7 +11474,7 @@ DebugJS.bat.exec = function() {
   }
   var c = bat.cmds[ctrl.pc];
   if (c == undefined) {
-    bat._exit(DebugJS.EXIT_SUCCESS);
+    bat._exit(DebugJS.EXIT_CLEARED);
     return;
   }
   ctrl.pc++;
@@ -12403,8 +12404,9 @@ DebugJS.point.setProp = function(prop, val, echo) {
 };
 DebugJS.point.verify = function(prop, method, exp, label) {
   var test = DebugJS.test;
+  var errPfix = 'Verify error: ';
   if (prop == undefined) {
-    detail = 'Property name is undefined';
+    detail = errPfix + 'Property name is undefined';
     DebugJS.log.e(detail);
     test.addResult(status, detail, label);
     test.onVrfyAftr(status);
@@ -12412,7 +12414,7 @@ DebugJS.point.verify = function(prop, method, exp, label) {
   }
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) {
-    detail = 'Element not found';
+    detail = errPfix + 'No element (x=' + DebugJS.point.x + ', y=' + DebugJS.point.y + ')';
     DebugJS.log.e(detail);
     test.addResult(status, detail, label);
     test.onVrfyAftr(status);
@@ -13154,7 +13156,7 @@ DebugJS.test.init = function(name) {
   data.running = true;
   data.startTime = (new Date()).getTime();
   DebugJS.ctx.CMDVALS['%TEST%'] = DebugJS.test.STATUS_OK;
-  delete DebugJS.ctx.CMDVALS['%RSLT%'];
+  delete DebugJS.ctx.CMDVALS['%RESULT%'];
 };
 DebugJS.test.setName = function(n) {
   DebugJS.test.data.name = n;
@@ -13200,7 +13202,7 @@ DebugJS.test.addResult = function(status, detail, label) {
       data.status = status;
       ctx.CMDVALS['%TEST%'] = status;
   }
-  ctx.CMDVALS['%RSLT%'] = status;
+  ctx.CMDVALS['%RESULT%'] = status;
   var id = data.executingTestId;
   test.prepare();
   if (label == null) {
@@ -13385,10 +13387,15 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
         status = test.STATUS_NG;
       }
     } else {
-      detail = 'Unknown verify method: ' + method;
-      DebugJS.log.e(detail);
-      test.addResult(status, detail, label);
-      test.onVrfyAftr(status);
+      if (method == undefined) {
+        status = '';
+        DebugJS.printUsage('test|point verify [-label:text] got ==|!=|<|>|<=|>=|regexp exp');
+      } else {
+        detail = 'Unknown verify method: ' + method;
+        DebugJS.log.e(detail);
+        test.addResult(status, detail, label);
+        test.onVrfyAftr(status);
+      }
       return status;
     }
     var echoExp = exp;
