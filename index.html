@@ -3558,11 +3558,9 @@ $ test set id "Test01"
 
 $ test set comment "Comment"
 
-$ test set label "value1"
 $ test verify a == 1
 
-$ test set label "value2"
-$ test verify b == 2
+$ test verify -label:"text" b == 2
 
 $ test fin
 $ test result
