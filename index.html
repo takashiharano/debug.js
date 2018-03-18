@@ -2937,7 +2937,9 @@ $ input text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span>
 $ input text #text1 "abc 123" -speed 100-200<span class="annotation">(opt)</span>
 $ input text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 1<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
 $ input text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 2<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
+$ input text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
 <span class="annotation">  speed: input speed in millis(default=30)
+  step : number of characters to input at a time (default=1)
   start: sequence end position
   end  : sequence end position</span>
 </pre>
@@ -3252,8 +3254,9 @@ $ point keypress -keyCode 65 -code KeyA -key a -s<span class="annotation">shiftK
 $ point keyup -keyCode 65 -code -code KeyA -key a -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
 -&gt; Dispatch the keydown event to the current position
 
-$ point text "abc123" -speed 10<span class="annotation">(opt)</span> -start 0<span class="annotation">(opt)</span> -end 5<span class="annotation">(opt)</span>
+$ point text "abc123" -speed 10<span class="annotation">(opt)</span> -step 2<span class="annotation">(opt)</span> -start 0<span class="annotation">(opt)</span> -end 5<span class="annotation">(opt)</span>
 <span class="annotation">  speed: input speed in millis(default=30)
+  step : number of characters to input at a time (default=1)
   start: sequence end position
   end  : sequence end position</span>
 -&gt; Input text into the current position (&lt;input&gt;, &lt;textarea&gt;)

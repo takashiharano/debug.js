@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803182149';
+  this.v = '201803182313';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -377,6 +377,7 @@ var DebugJS = DebugJS || function() {
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
     inputtextspeed: /^[0-9\-]+$/,
+    inputtextstep: /^[0-9\-]+$/,
     scrollspeed: /^[0-9]+$/,
     scrollstep: /^[0-9]+$/,
     wait: /^[0-9]+$/,
@@ -397,6 +398,7 @@ var DebugJS = DebugJS || function() {
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
     inputtextspeed: 30,
+    inputtextstep: 1,
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     scrollstep: DebugJS.scrollWinTo.data.step,
     wait: 500,
@@ -7300,9 +7302,10 @@ DebugJS.prototype = {
       var id = args[1];
       var txt = args[2];
       var speed = DebugJS.getOptVal(arg, 'speed');
+      var step = DebugJS.getOptVal(arg, 'step');
       var start = DebugJS.getOptVal(arg, 'start');
       var end = DebugJS.getOptVal(arg, 'end');
-      DebugJS.inputText(id, txt, speed, start, end);
+      DebugJS.inputText(id, txt, speed, step, start, end);
     } else {
       DebugJS.printUsage(tbl.usage);
     }
@@ -7632,10 +7635,11 @@ DebugJS.prototype = {
       }
       txt = DebugJS.splitArgsEx(arg)[1];
       speed = DebugJS.getOptVal(arg, 'speed');
+      step = DebugJS.getOptVal(arg, 'step');
       start = DebugJS.getOptVal(arg, 'start');
       end = DebugJS.getOptVal(arg, 'end');
       try {
-        DebugJS.inputText(el, txt, speed, start, end);
+        DebugJS.inputText(el, txt, speed, step, start, end);
       } catch (e) {
         DebugJS.log.e(e);
       }
@@ -12954,7 +12958,7 @@ DebugJS.calcDestPosAndStep = function(dest, step) {
   return d;
 };
 
-DebugJS.inputText = function(el, txt, speed, start, end) {
+DebugJS.inputText = function(el, txt, speed, step, start, end) {
   if (txt == undefined) return;
   var data = DebugJS.inputText.data;
   if (data.tmid > 0) {
@@ -12972,7 +12976,11 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
   if ((speed == undefined) || (speed == null) || (speed == '')) {
     speed = DebugJS.ctx.props.inputtextspeed;
   }
+  if ((step == undefined) || (step == null) || (step == '')) {
+    step = DebugJS.ctx.props.inputtextstep;
+  }
   data.speed = speed;
+  data.step = step | 0;
   data.i = start | 0;
   data.end = end | 0;
   data.el = DebugJS.getElement(el);
@@ -12985,10 +12993,12 @@ DebugJS.inputText = function(el, txt, speed, start, end) {
 };
 DebugJS._inputText = function() {
   var data = DebugJS.inputText.data;
-  data.i++;
   var speed = data.speed;
-  if ((speed == 0) || (data.end > 0) && (data.i >= data.end)) {
+  var step = data.step;
+  if ((speed == 0) || (step == 0) || (data.end > 0) && (data.i >= data.end)) {
     data.i = data.txt.length;
+  } else {
+    data.i += step;
   }
   data.tmid = 0;
   var txt = data.txt.substr(0, data.i);
