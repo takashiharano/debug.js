@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803172328';
+  this.v = '201803182149';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11512,7 +11512,17 @@ DebugJS.bat.setExecArg = function(a) {
   DebugJS.ctx.setBatArgTxt(DebugJS.ctx);
 };
 DebugJS.bat.setExitStatus = function(es) {
-  DebugJS.ctx.CMDVALS['?'] = (((es == undefined) || (es == '')) ? DebugJS.EXIT_SUCCESS : es);
+  if ((es == undefined) || (es == '')) {
+    es = DebugJS.EXIT_SUCCESS;
+  } else {
+    try {
+      es = eval(es);
+    } catch (e) {
+      DebugJS.log.e(e);
+      es = DebugJS.EXIT_FAILURE;
+    }
+  }
+  DebugJS.ctx.CMDVALS['?'] = es;
 };
 DebugJS.bat.prepro = function(cmd) {
   var ctx = DebugJS.ctx;
@@ -12099,12 +12109,12 @@ DebugJS.point.createPtr = function() {
   point.y = 0;
   var ptr = document.createElement('img');
   ptr.style.position = 'fixed';
-  ptr.style.width = DebugJS.point.ptrW + 'px';
-  ptr.style.height = DebugJS.point.ptrH + 'px';
+  ptr.style.width = point.ptrW + 'px';
+  ptr.style.height = point.ptrH + 'px';
   ptr.style.top = point.y;
   ptr.style.left = point.x;
   ptr.style.zIndex = 0x7ffffffe;
-  ptr.src = DebugJS.point.CURSOR_DFLT;
+  ptr.src = point.CURSOR_DFLT;
   document.body.appendChild(ptr);
   point.ptr = ptr;
 };
