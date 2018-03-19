@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803182234';
+  this.v = '201803200000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6077,7 +6077,7 @@ DebugJS.prototype = {
     if (e == '') e = undefined;
     bat.run.arg.s = s;
     bat.run.arg.e = e;
-    DebugJS.bat.run();
+    bat.run();
   },
 
   updateBatRunBtn: function() {
@@ -8856,7 +8856,7 @@ DebugJS._replaceCmdVals = function(s, il) {
     var r = v + '';
     if (!il) {
       if (typeof v === 'string') {
-        r = '"' + v + '"';
+        r = '"' + v.replace(/"/g, '\\"') + '"';
       }
     }
     s = s.replace(re, r);
