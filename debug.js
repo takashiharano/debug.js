@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803201000';
+  this.v = '201803202233';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1243,7 +1243,7 @@ DebugJS.prototype = {
     ctx.logPanel.style.height = 'calc(100%' + ctx.logPanelHeightAdjust + ')';
     ctx.logPanel.style.padding = '0';
     ctx.logPanel.style.overflow = 'auto';
-    ctx.enableDnDFileLoad(ctx.logPanel, ctx.handleFileDropOnLogPanel);
+    ctx.enableDnDFileLoad(ctx.logPanel, ctx.handleFileDropAuto);
     ctx.mainPanel.appendChild(ctx.logPanel);
 
     if (ctx.isAllFeaturesDisabled(ctx)) {
@@ -5501,13 +5501,13 @@ DebugJS.prototype = {
     target.addEventListener('drop', cb, false);
   },
 
-  handleFileDropOnLogPanel: function(e) {
+  handleFileDropAuto: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
-    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedFromLogPanel);
+    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedAuto);
   },
 
-  onFileLoadedFromLogPanel: function(ctx, success, file, content) {
+  onFileLoadedAuto: function(ctx, success, file, content) {
     if (!success) {
       ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
       return;
@@ -13102,7 +13102,7 @@ DebugJS.event.evtDef = {
   keyup: {bubbles: true, cancelable: true},
   mousedown: {bubbles: true, cancelable: true},
   mousemove: {bubbles: true, cancelable: true},
-  mouseup: {bubbles: true, cancelable: true},
+  mouseup: {bubbles: true, cancelable: true}
 };
 DebugJS.event.create = function(type) {
   var e = document.createEvent('Events');
