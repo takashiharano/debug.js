@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803202233';
+  this.v = '201803210000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -134,6 +134,8 @@ var DebugJS = DebugJS || function() {
   this.timerBasePanel = null;
   this.timerClockSubPanel = null;
   this.timerClockLabel = null;
+  this.timerClockSSS = false;
+  this.clockSSSbtn = null;
   this.timerStopWatchCuSubPanel = null;
   this.timerStopWatchCuLabel = null;
   this.timerStopWatchCdSubPanel = null;
@@ -4521,6 +4523,19 @@ DebugJS.prototype = {
     ctx.createTimerBtn(btns, 'RESET', null, true);
     ctx.createTimerBtn(btns, '>>', null, true);
     ctx.createTimerBtn(btns, 'SPLIT', null, true);
+    ctx.clockSSSbtn = ctx.createTimerBtn(btns, 'sss', ctx.toggleSSS, false, (fontSize * 1.5));
+    ctx.updateSSS(ctx);
+  },
+
+  toggleSSS: function() {
+    var ctx = DebugJS.ctx;
+    ctx.timerClockSSS = (ctx.timerClockSSS ? false : true);
+    ctx.updateSSS(ctx);
+  },
+
+  updateSSS: function(ctx) {
+    var color = (ctx.timerClockSSS ? DebugJS.TOOL_TIMER_BTN_COLOR : '#888');
+    ctx.clockSSSbtn.style.color = color;
   },
 
   createTimerStopWatchSubPanel: function(ctx, handlers) {
@@ -4808,7 +4823,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize * 8;
     var dtFontSize = fontSize * 0.45;
-    var msFontSize = fontSize * 0.65;
+    var ssFontSize = fontSize * 0.65;
+    var msFontSize = fontSize * 0.45;
     var marginT = 20 * ctx.opt.zoom;
     var marginB = 10 * ctx.opt.zoom;
     var dot = '.';
@@ -4816,7 +4832,8 @@ DebugJS.prototype = {
       dot = '&nbsp;';
     }
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + '">' + DebugJS.WDAYS[tm.wday] + '</span>';
-    var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (msFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">' + tm.ss + dot + '</span>';
+    var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (ssFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ';font-size:' + ssFontSize + 'px">' + tm.ss + dot + '</span>';
+    if (ctx.timerClockSSS) {time += '<span style="font-size:' + msFontSize + 'px">' + tm.sss + '</span>'}
     var label = '<div style="color:' + ctx.opt.fontColor + ';font-size:' + dtFontSize + 'px">' + date + '</div>' +
                 '<div style="color:' + ctx.opt.fontColor + ';font-size:' + fontSize + 'px;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
     return label;
