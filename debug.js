@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803210000';
+  this.v = '201803232211';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4476,13 +4476,16 @@ DebugJS.prototype = {
     if (ctx.timerBasePanel == null) {
       var baseFontSize = ctx.computedFontSize;
       var fontSize = baseFontSize * 6.5;
-
       ctx.timerBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
+      ctx.timerBasePanel.style.position = 'absolute';
+      ctx.timerBasePanel.style.height = baseFontSize * 21 + 'px';
+      ctx.timerBasePanel.style.top = '0';
+      ctx.timerBasePanel.style.bottom = '0';
+      ctx.timerBasePanel.style.margin = 'auto';
       ctx.timerBasePanel.style.fontSize = fontSize + 'px';
       ctx.timerBasePanel.style.lineHeight = '1em';
       ctx.timerBasePanel.style.textAlign = 'center';
       ctx.toolsBodyPanel.appendChild(ctx.timerBasePanel);
-
       ctx.createTimerClockSubPanel();
       ctx.createTimerStopWatchCuSubPanel();
       ctx.createTimerStopWatchCdSubPanel();
