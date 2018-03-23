@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803232211';
+  this.v = '201803240050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -274,6 +274,7 @@ var DebugJS = DebugJS || function() {
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
   this.cmdLine = null;
+  this.fromCmdLine = false;
   this.cmdHistoryBuf = null;
   this.CMD_HISTORY_MAX = this.DEFAULT_OPTIONS.cmdHistoryMax;
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
@@ -2636,7 +2637,9 @@ DebugJS.prototype = {
 
       case 13: // Enter
         if (document.activeElement == ctx.cmdLine) {
+          ctx.fromCmdLine = true;
           ctx.execCmd(ctx);
+          ctx.fromCmdLine = false;
           e.preventDefault();
         }
         break;
@@ -6621,7 +6624,7 @@ DebugJS.prototype = {
     ctx._execCmd(cl, ctx.cmdEchoFlg);
   },
 
-  _execCmd: function(str, echo) {
+  _execCmd: function(str, echo, recho) {
     var ctx = DebugJS.ctx;
     var setValName = null;
     var cmdline = str;
@@ -6647,6 +6650,7 @@ DebugJS.prototype = {
       }
     }
     var ret;
+    echo = echo || recho;
     cmds = DebugJS.splitCmdLineInTwo(cmdline);
     if (cmds[0] == 'code') {
       ret = ctx.execCode(cmds[1], echo);
@@ -6964,7 +6968,7 @@ DebugJS.prototype = {
     if (c == '') {
       DebugJS.log(c);
     } else {
-      ctx._execCmd(c, false);
+      ctx._execCmd(c, false, ctx.cmdEchoFlg);
     }
     ctx.cmdDelayData.cmd = null;
   },
@@ -11130,7 +11134,9 @@ DebugJS.log.e = function(m) {
   }
   DebugJS.log.out(m, DebugJS.LOG_TYPE_ERR);
   DebugJS.ctx.showDbgWinOnError(DebugJS.ctx);
-  DebugJS.callEvtListener('error');
+  if (!DebugJS.ctx.fromCmdLine) {
+    DebugJS.callEvtListener('error');
+  }
 };
 
 DebugJS.log.w = function(m) {
