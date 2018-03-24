@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803242345';
+  this.v = '201803250017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11006,7 +11006,9 @@ DebugJS.file.onDrop = function(e) {
   if (loader.mode == 'b64') {
     format = DebugJS.FILE_LOAD_FMT_B64;
   }
-  ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', loader.mode);
+  if (!((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFnc == DebugJS.TOOLS_FNC_FILE))) {
+    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', loader.mode);
+  }
   ctx.handleFileDrop(ctx, e, format, null);
 };
 DebugJS.isTargetEl = function(target, el) {
