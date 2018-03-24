@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803240050';
+  this.v = '201803242345';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -917,7 +917,7 @@ DebugJS.prototype = {
       'height': '100%'
     };
 
-    styles['.' + ctx.id + '-separator'] = {
+    styles['.' + ctx.id + '-sep'] = {
       'height': (ctx.computedFontSize * 0.5) + 'px'
     };
 
@@ -1007,7 +1007,7 @@ DebugJS.prototype = {
       'opacity': '0.7 !important'
     };
 
-    styles['.' + ctx.id + '-timer-input'] = {
+    styles['.' + ctx.id + '-timer-inp'] = {
       'width': '1.1em !important',
       'height': '1em !important',
       'border': 'none !important',
@@ -4665,7 +4665,7 @@ DebugJS.prototype = {
   createTimerInput: function(base, val, fontSize, width) {
     var ctx = DebugJS.ctx;
     var txt = document.createElement('input');
-    txt.className = ctx.id + '-timer-input';
+    txt.className = ctx.id + '-timer-inp';
     ctx.setStyle(txt, 'font-size', fontSize + 'px');
     if (width) ctx.setStyle(txt, 'width', width);
     txt.value = val;
@@ -5602,7 +5602,6 @@ DebugJS.prototype = {
     ctx.fileReader.onloadstart = ctx.onFileLoadStart;
     ctx.fileReader.onload = ctx.onFileLoaded;
     ctx.fileReader.file = file;
-
     if (format == DebugJS.FILE_LOAD_FMT_B64) {
       ctx.fileLoadFormat = DebugJS.FILE_LOAD_FMT_B64;
       ctx.fileReader.readAsDataURL(file);
@@ -8743,7 +8742,7 @@ DebugJS.addSubPanel = function(base) {
 };
 
 DebugJS.addPropSeparator = function(ctx) {
-  return '<div class="' + ctx.id + '-separator"></div>';
+  return '<div class="' + ctx.id + '-sep"></div>';
 };
 
 DebugJS.getColorBlock = function(color) {
