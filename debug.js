@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803250017';
+  this.v = '201803251800';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -315,7 +315,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
-    {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay ms command'},
+    {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms command'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fnc: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
@@ -6951,6 +6951,10 @@ DebugJS.prototype = {
   cmdDelay: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var d = DebugJS.splitArgs(arg)[0];
+    if (d == '-c') {
+      ctx._cmdDelayCancel(ctx);
+      return;
+    }
     if ((d == '') || (isNaN(d))) {
       DebugJS.printUsage(tbl.usage);
       return;
