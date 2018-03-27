@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803280000';
+  this.v = '201803280730';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5188,8 +5188,8 @@ DebugJS.prototype = {
     ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
     var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
     '<input value="' + defaultFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">px' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:10px;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateTxtItalicBtn(this);" onclick="DebugJS.ctx.toggleTxtItalic(this);">italic</span>' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:10px;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ';font-style:italic;" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateTxtItalicBtn(this);" onclick="DebugJS.ctx.toggleTxtItalic(this);"> I </span>' +
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
     '<br>' +
     'font-family: <input value="' + defaultFontFamily + '" class="' + ctx.id + '-txt-text" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
