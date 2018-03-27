@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803251800';
+  this.v = '201803280000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -174,6 +174,7 @@ var DebugJS = DebugJS || function() {
   this.txtChkLabelBgG = null;
   this.txtChkLabelBgB = null;
   this.txtChkTargetEl = null;
+  this.txtChkItalic = false;
   this.fileLoaderBtn = null;
   this.fileLoaderPanel = null;
   this.fileInput = null;
@@ -609,7 +610,7 @@ DebugJS.HTML_SRC_EXPAND_H = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
-DebugJS._AVAILABLE = false;
+DebugJS.O_AVAILABLE = false;
 DebugJS.JS_SNIPPET = [
 'dbg.time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.end();\n\'done\';\n',
 '',
@@ -4214,11 +4215,11 @@ DebugJS.prototype = {
   captureElm: function(elm) {
     var ctx = DebugJS.ctx;
     DebugJS.el = elm;
-    if (DebugJS._AVAILABLE) _ = elm;
+    if (DebugJS.O_AVAILABLE) o = elm;
     if (ctx.status & DebugJS.STATE_ELM_EDIT) {
       ctx.updateEditable(ctx, elm);
     }
-    DebugJS.log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS._AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">_</span>' : ''));
+    DebugJS.log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS.O_AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">o</span>' : ''));
   },
 
   updateEditable: function(ctx, el) {
@@ -5187,7 +5188,8 @@ DebugJS.prototype = {
     ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
     var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
     '<input value="' + defaultFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">px' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">el</span>' +
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:10px;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateTxtItalicBtn(this);" onclick="DebugJS.ctx.toggleTxtItalic(this);">italic</span>' +
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:10px;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
     '<br>' +
     'font-family: <input value="' + defaultFontFamily + '" class="' + ctx.id + '-txt-text" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + defaultFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
@@ -5226,6 +5228,28 @@ DebugJS.prototype = {
     ctx.onChangeFontWeight();
     ctx.onChangeFgRGB();
     ctx.onChangeBgRGB();
+  },
+
+  toggleTxtItalic: function(btn) {
+    var ctx = DebugJS.ctx;
+    var style = '';
+    if (ctx.txtChkItalic) {
+      ctx.txtChkItalic = false;
+      btn.style.color = DebugJS.COLOR_INACTIVE;
+    } else {
+      ctx.txtChkItalic = true;
+      style = 'italic';
+      btn.style.color = ctx.opt.btnColor;
+    }
+    ctx.setStyle(ctx.txtChkTargetEl, 'font-style', style);
+  },
+
+  updateTxtItalicBtn: function(btn) {
+    if (DebugJS.ctx.txtChkItalic) {
+      btn.style.color = DebugJS.ctx.opt.btnColor;
+    } else {
+      btn.style.color = DebugJS.COLOR_INACTIVE;
+    }
   },
 
   toggleElmEditable: function(btn) {
@@ -13913,7 +13937,7 @@ DebugJS.start = function() {
   DebugJS.rootFncs();
   DebugJS.ctx = DebugJS.ctx || new DebugJS();
   DebugJS.el = null;
-  if (!window._) DebugJS._AVAILABLE = true;
+  if (window.o === undefined) DebugJS.O_AVAILABLE = true;
   if (typeof window.localStorage != 'undefined') {
     DebugJS.LS_AVAILABLE = true;
   }
