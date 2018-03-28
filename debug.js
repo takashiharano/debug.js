@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803280730';
+  this.v = '201803281918';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -571,7 +571,7 @@ DebugJS.LED_BIT = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
 DebugJS.LED_COLOR = ['#4cf', '#0ff', '#6f6', '#ee0', '#f80', '#f66', '#f0f', '#ddd'];
 DebugJS.LED_COLOR_INACTIVE = '#777';
 DebugJS.ITEM_NAME_COLOR = '#cff';
-DebugJS.KEYWORD_COLOR = '#2f6';
+DebugJS.KEYWORD_COLOR = '#0ff';
 DebugJS.RND_TYPE_NUM = '-d';
 DebugJS.RND_TYPE_STR = '-s';
 DebugJS.ELM_HL_CLASS_SUFFIX = '-elhl';
@@ -610,7 +610,7 @@ DebugJS.HTML_SRC_EXPAND_H = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
-DebugJS.O_AVAILABLE = false;
+DebugJS.G_EL_AVAILABLE = false;
 DebugJS.JS_SNIPPET = [
 'dbg.time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.end();\n\'done\';\n',
 '',
@@ -4215,11 +4215,11 @@ DebugJS.prototype = {
   captureElm: function(elm) {
     var ctx = DebugJS.ctx;
     DebugJS.el = elm;
-    if (DebugJS.O_AVAILABLE) o = elm;
+    if (DebugJS.G_EL_AVAILABLE) el = elm;
     if (ctx.status & DebugJS.STATE_ELM_EDIT) {
       ctx.updateEditable(ctx, elm);
     }
-    DebugJS.log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el</span>' + (DebugJS.O_AVAILABLE ? ', <span style="color:' + DebugJS.KEYWORD_COLOR + '">o</span>' : ''));
+    DebugJS.log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + (DebugJS.G_EL_AVAILABLE ? 'el' : ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el') + '</span>');
   },
 
   updateEditable: function(ctx, el) {
@@ -13937,7 +13937,7 @@ DebugJS.start = function() {
   DebugJS.rootFncs();
   DebugJS.ctx = DebugJS.ctx || new DebugJS();
   DebugJS.el = null;
-  if (window.o === undefined) DebugJS.O_AVAILABLE = true;
+  if (window.el === undefined) DebugJS.G_EL_AVAILABLE = true;
   if (typeof window.localStorage != 'undefined') {
     DebugJS.LS_AVAILABLE = true;
   }
