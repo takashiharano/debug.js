@@ -1235,7 +1235,7 @@ Unlock: [ESC] -> [Ctrl] -> lockCode -> [Enter]
   </tr>
 
   <tr>
-    <td class="name">log</td>
+    <td class="name">log<br><span class="alias">( dbg.log )</span></td>
     <td>message</td>
     <td>
       Output standard log<br>
@@ -1247,7 +1247,7 @@ log('<input type="text" id="log-txt" class="demo-text" style="width:100px;" valu
   </tr>
 
   <tr>
-    <td class="name">log.d</td>
+    <td class="name">log.d<br><span class="alias">( dbg.log.d )</span></td>
     <td>message</td>
     <td>
       Output debug log<br>
@@ -1259,7 +1259,7 @@ log.d('<input type="text" id="log-d-txt" class="demo-text" style="width:100px;" 
   </tr>
 
   <tr>
-    <td class="name">log.i</td>
+    <td class="name">log.i<br><span class="alias">( dbg.log.i )</span></td>
     <td>message</td>
     <td>
       Output information log<br>
@@ -1271,7 +1271,7 @@ log.i('<input type="text" id="log-i-txt" class="demo-text" style="width:100px;" 
   </tr>
 
   <tr>
-    <td class="name">log.w</td>
+    <td class="name">log.w<br><span class="alias">( dbg.log.w )</span></td>
     <td>message</td>
     <td>
       Output warning log<br>
@@ -1283,7 +1283,7 @@ log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:100px;" 
   </tr>
 
   <tr>
-    <td class="name">log.e</td>
+    <td class="name">log.e<br><span class="alias">( dbg.log.e )</span></td>
     <td>message</td>
     <td>
       Output error log<br>
@@ -1295,7 +1295,7 @@ log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:100px;" 
   </tr>
 
   <tr>
-    <td class="name">log.v</td>
+    <td class="name">log.v<br><span class="alias">( dbg.log.v )</span></td>
     <td>message</td>
     <td>
       Output verbose log <span class="annotation warning">The messages are not displayed by default filter setting</span><br>
@@ -1307,7 +1307,7 @@ log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:100px;" 
   </tr>
 
   <tr>
-    <td class="name">log.p</td>
+    <td class="name">log.p<br><span class="alias">( dbg.log.p )</span></td>
     <td>
       arg1: variable<br>
       arg2: recursion level limit<span class="annotation">(opt)</span><br>
@@ -1327,7 +1327,7 @@ log.p(obj, 0, '<input type="text" id="log-p-msg-txt" class="demo-text" style="wi
   </tr>
 
   <tr>
-    <td class="name">log.json</td>
+    <td class="name">log.json<br><span class="alias">( dbg.log.json )</span></td>
     <td>
       arg1: variable<br>
       arg2: recursion level limit<span class="annotation">(opt)</span><br>
@@ -1347,7 +1347,7 @@ log.json(obj, 0, '<input type="text" id="log-json-msg-txt" class="demo-text" sty
   </tr>
 
   <tr>
-    <td class="name">log.t</td>
+    <td class="name">log.t<br><span class="alias">( dbg.log.t )</span></td>
     <td>
       arg1: message<br>
       arg2: timer name<span class="annotation">(opt)</span>
@@ -1366,7 +1366,7 @@ log.t('foo')
   </tr>
 
   <tr>
-    <td class="name">log.res</td>
+    <td class="name">log.res<br><span class="alias">( dbg.log.res )</span></td>
     <td>message</td>
     <td>
       Output result log<br>
@@ -1378,7 +1378,7 @@ log.res('<input type="text" id="log-res-txt" class="demo-text" style="width:100p
   </tr>
 
   <tr>
-    <td class="name">log.res.err</td>
+    <td class="name">log.res.err<br><span class="alias">( dbg.log.res.err )</span></td>
     <td>message</td>
     <td>
       Output error result log<br>
@@ -1390,7 +1390,7 @@ log.res.err('<input type="text" id="log-res-err-txt" class="demo-text" style="wi
   </tr>
 
   <tr>
-    <td class="name">log.clear</td>
+    <td class="name">log.clear<br><span class="alias">( dbg.log.clear )</span></td>
     <td></td>
     <td>
       Clear log message
@@ -1401,7 +1401,7 @@ log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
   </tr>
 
   <tr>
-    <td class="name">log.suspend</td>
+    <td class="name">log.suspend<br><span class="alias">( dbg.log.suspend )</span></td>
     <td></td>
     <td>
       Suspend log output <button class="demo-button2" onclick="log.suspend();">DEMO</button>
@@ -1409,7 +1409,7 @@ log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
   </tr>
 
   <tr>
-    <td class="name">log.resume</td>
+    <td class="name">log.resume<br><span class="alias">( dbg.log.resume )</span></td>
     <td></td>
     <td>
       Resume log output <button class="demo-button2" onclick="log.resume();">DEMO</button>
@@ -1417,10 +1417,7 @@ log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.time.start<br>
-      <span class="alias">( dbg.time.start )</span>
-    </td>
+    <td class="name">dbg.time.start</td>
     <td>
       arg1: timer name<span class="annotation">(opt)</span><br>
       arg2: message<span class="annotation">(opt)</span>
@@ -1445,10 +1442,7 @@ dbg.time.start('timer1', null)
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.time.split<br>
-      <span class="alias">( dbg.time.split )</span>
-    </td>
+    <td class="name">dbg.time.split</td>
     <td>
       arg1: timer name<span class="annotation">(opt)</span><br>
       arg2: message<span class="annotation">(opt)</span>
@@ -1476,10 +1470,7 @@ dbg.time.split('timer1', null)
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.time.end<br>
-      <span class="alias">( dbg.time.end )</span>
-    </td>
+    <td class="name">dbg.time.end</td>
     <td>
       arg1: timer name<span class="annotation">(opt)</span><br>
       arg2: message<span class="annotation">(opt)</span>
@@ -1507,10 +1498,7 @@ dbg.time.end('timer1', null)
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.time.check<br>
-      <span class="alias">( dbg.time.check )</span>
-    </td>
+    <td class="name">dbg.time.check</td>
     <td>
       timer name
     </td>
@@ -1528,10 +1516,7 @@ dbg.time.check('timer1')
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.addEvtListener<br>
-      <span class="alias">( dbg.addEvtListener )</span>
-    </td>
+    <td class="name">dbg.addEvtListener</td>
     <td>
       arg1: type<br>
       arg2: listener
@@ -1577,10 +1562,7 @@ Callback function which is called when file load has been completed<br>
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.countElements<br>
-      <span class="alias">( dbg.countElements )</span>
-    </td>
+    <td class="name">dbg.countElements</td>
     <td>element selector</td>
     <td>
       Count number of elements.
@@ -1604,10 +1586,7 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.getHTML<br>
-      <span class="alias">( dbg.getHTML )</span>
-    </td>
+    <td class="name">dbg.getHTML</td>
     <td>
       base64 flag<span class="annotation">(opt)</span>
     </td>
@@ -1618,10 +1597,7 @@ dbg.countElements('tagName');
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.cmd<br>
-      <span class="alias">( dbg.cmd )</span>
-    </td>
+    <td class="name">dbg.cmd</td>
     <td>
       arg1: command<br>
       arg2: echo<span class="annotation">(opt)</span>
@@ -1667,10 +1643,7 @@ dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 -
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat<br>
-      <span class="alias">( dbg.bat )</span>
-    </td>
+    <td class="name">dbg.bat</td>
     <td>
       arg1: commands<br>
       arg2: start line<span class="annotation">(opt)</span><br>
@@ -1717,10 +1690,7 @@ dbg.bat(commands, arg, '<input type="text" id="bat-sl2-text" class="demo-text" s
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.set<br>
-      <span class="alias">( dbg.bat.set )</span>
-    </td>
+    <td class="name">dbg.bat.set</td>
     <td>
       commands<br>
     </td>
@@ -1738,10 +1708,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.run<br>
-      <span class="alias">( dbg.bat.run )</span>
-    </td>
+    <td class="name">dbg.bat.run</td>
     <td>
       arg1: start line<span class="annotation">(opt)</span><br>
       arg2: end line<span class="annotation">(opt)</span>
@@ -1752,10 +1719,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.pause<br>
-      <span class="alias">( dbg.bat.pause )</span>
-    </td>
+    <td class="name">dbg.bat.pause</td>
     <td></td>
     <td>
       Pause the batch execution <button class="demo-button2" onclick="dbg.bat.pause();">DEMO</button>
@@ -1763,10 +1727,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.resume<br>
-      <span class="alias">( dbg.bat.resume )</span>
-    </td>
+    <td class="name">dbg.bat.resume</td>
     <td>
       key<span class="annotation">(opt)</span>
     </td>
@@ -1776,10 +1737,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.stop<br>
-      <span class="alias">( dbg.bat.stop )</span>
-    </td>
+    <td class="name">dbg.bat.stop</td>
     <td></td>
     <td>
       Terminate the batch execution <button class="demo-button2" onclick="dbg.bat.stop();">DEMO</button>
@@ -1787,10 +1745,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.list<br>
-      <span class="alias">( dbg.bat.list )</span>
-    </td>
+    <td class="name">dbg.bat.list</td>
     <td></td>
     <td>
       Get list of the program of loaded batch script and point the current execution line <button class="demo-button2" onclick="log.p(dbg.bat.list());">DEMO</button>
@@ -1798,10 +1753,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.clear<br>
-      <span class="alias">( dbg.bat.clear )</span>
-    </td>
+    <td class="name">dbg.bat.clear</td>
     <td></td>
     <td>
       Clear loaded batch script from memory <button class="demo-button2" onclick="dbg.bat.clear();">DEMO</button>
@@ -1809,10 +1761,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.lock<br>
-      <span class="alias">( dbg.bat.lock )</span>
-    </td>
+    <td class="name">dbg.bat.lock</td>
     <td></td>
     <td>
       Increment the lock counter to make a lock status.<br>
@@ -1821,10 +1770,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.unlock<br>
-      <span class="alias">( dbg.bat.unlock )</span>
-    </td>
+    <td class="name">dbg.bat.unlock</td>
     <td></td>
     <td>
       Decrement the lock counter.<br>
@@ -1833,10 +1779,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.isRunning<br>
-      <span class="alias">( dbg.bat.isRunning )</span>
-    </td>
+    <td class="name">dbg.bat.isRunning</td>
     <td></td>
     <td>
       true = runnning / false = stopped <button class="demo-button2" onclick="log(dbg.bat.isRunning());">DEMO</button>
@@ -1844,10 +1787,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.bat.status<br>
-      <span class="alias">( dbg.bat.status )</span>
-    </td>
+    <td class="name">dbg.bat.status</td>
     <td></td>
     <td>
       Returns the following batch execution status. <button class="demo-button2" onclick="log(dbg.bat.status());">DEMO</button><br>
@@ -1861,10 +1801,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.isBat<br>
-      <span class="alias">( dbg.isBat )</span>
-    </td>
+    <td class="name">dbg.isBat</td>
     <td>text</td>
     <td>
       Returns if the text is bat script. (true / false)
@@ -1872,10 +1809,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.point.hint<br>
-      <span class="alias">( dbg.point.hint )</span>
-    </td>
+    <td class="name">dbg.point.hint</td>
     <td>message</td>
     <td>
       Show/Update a message at the pointer position.
@@ -1886,10 +1820,7 @@ dbg.point.hint('<input type="text" id="point-hint-text" class="demo-text" style=
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.point.hint.show<br>
-      <span class="alias">( dbg.point.hint.show )</span>
-    </td>
+    <td class="name">dbg.point.hint.show</td>
     <td></td>
     <td>
       Show a message at the pointer position.
@@ -1900,10 +1831,7 @@ dbg.point.hint.show(); <button class="demo-button2" onclick="dbg.point.hint.show
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.point.hint.hide<br>
-      <span class="alias">( dbg.point.hint.hide )</span>
-    </td>
+    <td class="name">dbg.point.hint.hide</td>
     <td></td>
     <td>
       Hide the message at the pointer position.
@@ -1914,10 +1842,7 @@ dbg.point.hint.hide(); <button class="demo-button2" onclick="dbg.point.hint.hide
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.point.hint.clear<br>
-      <span class="alias">( dbg.point.hint.clear )</span>
-    </td>
+    <td class="name">dbg.point.hint.clear</td>
     <td></td>
     <td>
       Clear the message at the pointer position.
@@ -1928,10 +1853,7 @@ dbg.point.hint.clear(); <button class="demo-button2" onclick="dbg.point.hint.cle
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.getKeys<br>
-      <span class="alias">( dbg.getKeys )</span>
-    </td>
+    <td class="name">dbg.getKeys</td>
     <td>object</td>
     <td>
       Returns property key name array of the object<br>
@@ -1949,10 +1871,7 @@ dbg.getKeys(obj);
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.led<br>
-      <span class="alias">( dbg.led )</span>
-    </td>
+    <td class="name">dbg.led</td>
     <td>value</td>
     <td>
       Set indicator bit pattern<br>
@@ -1988,10 +1907,7 @@ dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.led.on<br>
-      <span class="alias">( dbg.led.on )</span>
-    </td>
+    <td class="name">dbg.led.on</td>
     <td>bit position</td>
     <td>
       Turn on the indicator<br><br>
@@ -2007,10 +1923,7 @@ dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.led.off<br>
-      <span class="alias">( dbg.led.off )</span>
-    </td>
+    <td class="name">dbg.led.off</td>
     <td>bit position</td>
     <td>
       Turn off the indicator<br><br>
@@ -2026,10 +1939,7 @@ dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.led.val<br>
-      <span class="alias">( dbg.led.val )</span>
-    </td>
+    <td class="name">dbg.led.val</td>
     <td></td>
     <td>
       Returns the current indicator value<br>
@@ -2038,10 +1948,7 @@ dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.loadLog<br>
-      <span class="alias">( dbg.loadLog )</span>
-    </td>
+    <td class="name">dbg.loadLog</td>
     <td>json</td>
     <td>
       Load logs into the debug window
@@ -2053,10 +1960,7 @@ JSON Format
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.msg<br>
-      <span class="alias">( dbg.msg )</span>
-    </td>
+    <td class="name">dbg.msg</td>
     <td>message</td>
     <td>
       Set a string to the message display<br>
@@ -2067,10 +1971,7 @@ dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.msg.clear<br>
-      <span class="alias">( dbg.msg.clear )</span>
-    </td>
+    <td class="name">dbg.msg.clear</td>
     <td></td>
     <td>
       Clear the message display <button class="demo-button2" onclick="dbg.msg.clear();">DEMO</button>
@@ -2078,10 +1979,7 @@ dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.random<br>
-      <span class="alias">( dbg.random )</span>
-    </td>
+    <td class="name">dbg.random</td>
     <td>
       arg1: min<span class="annotation">(opt)</span><br>
       arg2: max<span class="annotation">(opt)</span>
@@ -2096,10 +1994,7 @@ max: maximum number
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.randomStr<br>
-      <span class="alias">( dbg.randomStr )</span>
-    </td>
+    <td class="name">dbg.randomStr</td>
     <td>
       arg1: min<span class="annotation">(opt)</span><br>
       arg2: max<span class="annotation">(opt)</span>
@@ -2114,10 +2009,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.escTags<br>
-      <span class="alias">( dbg.escTags )</span>
-    </td>
+    <td class="name">dbg.escTags</td>
     <td>string</td>
     <td>
       Replace "&lt;" and "&gt;" to "&amp;lt;" and "&amp;gt;".
@@ -2125,10 +2017,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.html2text<br>
-      <span class="alias">( dbg.html2text )</span>
-    </td>
+    <td class="name">dbg.html2text</td>
     <td>html</td>
     <td>
       Convert HTML to plain text.
@@ -2136,10 +2025,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.addFileLoader<br>
-      <span class="alias">( dbg.addFileLoader )</span>
-    </td>
+    <td class="name">dbg.addFileLoader</td>
     <td>
       arg1: target element<br>
       arg2: callback function<br>
@@ -2152,10 +2038,7 @@ max: maximum length
 
 
   <tr>
-    <td class="name">
-      DebugJS.stopwatch<br>
-      <span class="alias">( dbg.stopwatch )</span>
-    </td>
+    <td class="name">dbg.stopwatch</td>
     <td></td>
     <td>
       Launch stopwatch function <button class="demo-button2" onclick="dbg.stopwatch();">DEMO</button>
@@ -2163,10 +2046,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.stopwatch.start<br>
-      <span class="alias">( dbg.stopwatch.start )</span>
-    </td>
+    <td class="name">dbg.stopwatch.start</td>
     <td>message</td>
     <td>
       Start stopwatch<br>
@@ -2176,10 +2056,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.stopwatch.split<br>
-      <span class="alias">( dbg.stopwatch.split )</span>
-    </td>
+    <td class="name">dbg.stopwatch.split</td>
     <td>message</td>
     <td>
       Split/LAP stopwatch<br>
@@ -2189,10 +2066,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.stopwatch.stop<br>
-      <span class="alias">( dbg.stopwatch.stop )</span>
-    </td>
+    <td class="name">dbg.stopwatch.stop</td>
     <td></td>
     <td>
       Stop stopwatch (pause) <button class="demo-button2" onclick="dbg.stopwatch.stop();">DEMO</button>
@@ -2200,10 +2074,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.stopwatch.end<br>
-      <span class="alias">( dbg.stopwatch.end )</span>
-    </td>
+    <td class="name">dbg.stopwatch.end</td>
     <td>message</td>
     <td>
       Stop stopwatch (completely end measuring)<br>
@@ -2213,10 +2084,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.stopwatch.reset<br>
-      <span class="alias">( dbg.stopwatch.reset )</span>
-    </td>
+    <td class="name">dbg.stopwatch.reset</td>
     <td></td>
     <td>
       Reset stopwatch <button class="demo-button2" onclick="dbg.stopwatch.reset();">DEMO</button>
@@ -2224,10 +2092,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.dumpLog<br>
-      <span class="alias">( dbg.dumpLog )</span>
-    </td>
+    <td class="name">dbg.dumpLog</td>
     <td>
       arg1: format<br>
       arg2: base64 enode<span class="annotation">(opt)</span><br>
@@ -2253,10 +2118,7 @@ format time:
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.getBrowserType<br>
-      <span class="alias">( dbg.getBrowserType )</span>
-    </td>
+    <td class="name">dbg.getBrowserType</td>
     <td></td>
     <td>
       Get browser type info<br><br>
@@ -2271,10 +2133,7 @@ format time:
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.getElement<br>
-      <span class="alias">( dbg.getElement )</span>
-    </td>
+    <td class="name">dbg.getElement</td>
     <td>
       arg1: #id / .className / tagName<br>
       arg2: index<span class="alias">(opt)</span>
@@ -2292,10 +2151,7 @@ Returns an DOM element or null if an element with the specified selector is not 
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.getElPosSize<br>
-      <span class="alias">( dbg.getElPosSize )</span>
-    </td>
+    <td class="name">dbg.getElPosSize</td>
     <td>
       DOM element object / #id / .className / tagName
     </td>
@@ -2314,10 +2170,7 @@ Returns an DOM element or null if an element with the specified selector is not 
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.toJSON<br>
-      <span class="alias">( dbg.toJSON )</span>
-    </td>
+    <td class="name">dbg.toJSON</td>
     <td>
       value<br>
       replacer<span class="annotation">(opt)</span><br>
@@ -2329,10 +2182,7 @@ Returns an DOM element or null if an element with the specified selector is not 
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.fromJSON<br>
-      <span class="alias">( dbg.fromJSON )</span>
-    </td>
+    <td class="name">dbg.fromJSON</td>
     <td>
       text<br>
       reviver<span class="annotation">(opt)</span>
@@ -2343,10 +2193,7 @@ Returns an DOM element or null if an element with the specified selector is not 
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.stack<br>
-      <span class="alias">( dbg.stack )</span>
-    </td>
+    <td class="name">dbg.stack</td>
     <td></td>
     <td>
       Print stack trace <button class="demo-button2" onclick="printStackDemo();">DEMO</button>
@@ -2354,10 +2201,7 @@ Returns an DOM element or null if an element with the specified selector is not 
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.http<br>
-      <span class="alias">( dbg.http )</span>
-    </td>
+    <td class="name">dbg.http</td>
     <td>
       arg1: request<br>
       arg2: callback<span class="annotation">(opt)</span>
@@ -2368,10 +2212,7 @@ Returns an DOM element or null if an element with the specified selector is not 
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.wd.start<br>
-      <span class="alias">( dbg.wd.start )</span>
-    </td>
+    <td class="name">dbg.wd.start</td>
     <td>
       arg: timeout<span class="annotation">(opt)</span>
     </td>
@@ -2384,10 +2225,7 @@ dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="w
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.wd.stop<br>
-      <span class="alias">( dbg.wd.stop )</span>
-    </td>
+    <td class="name">dbg.wd.stop</td>
     <td>
     </td>
     <td>
@@ -2396,10 +2234,7 @@ dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="w
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.sleep<br>
-      <span class="alias">( dbg.sleep )</span>
-    </td>
+    <td class="name">dbg.sleep</td>
     <td>
       ms
     </td>
@@ -2412,10 +2247,7 @@ sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.show<br>
-      <span class="alias">( dbg.show )</span>
-    </td>
+    <td class="name">dbg.show</td>
     <td>
     </td>
     <td>
@@ -2424,10 +2256,7 @@ sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.hide<br>
-      <span class="alias">( dbg.hide )</span>
-    </td>
+    <td class="name">dbg.hide</td>
     <td>
     </td>
     <td>
@@ -2436,10 +2265,7 @@ sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.opacity<br>
-      <span class="alias">( dbg.opacity )</span>
-    </td>
+    <td class="name">dbg.opacity</td>
     <td>
       0.1-1
     </td>
@@ -2452,10 +2278,7 @@ dbg.opacity(<input type="text" id="opacity-text" value="0.5" class="demo-text" s
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.isVisible<br>
-      <span class="alias">( dbg.isVisible )</span>
-    </td>
+    <td class="name">dbg.isVisible</td>
     <td></td>
     <td>
       Returns if the debug window is visible.<br>
@@ -2467,10 +2290,7 @@ dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.test.getStatus<br>
-      <span class="alias">( dbg.test.getStatus )</span>
-    </td>
+    <td class="name">dbg.test.getStatus</td>
     <td></td>
     <td>
       Returns the total test result.<br>
@@ -2481,10 +2301,7 @@ dbg.test.getStatus(); <button class="demo-button2" onclick="log.p(dbg.test.getSt
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.test.getResult<br>
-      <span class="alias">( dbg.test.getResult )</span>
-    </td>
+    <td class="name">dbg.test.getResult</td>
     <td></td>
     <td>
       Returns the test result object.<br>
@@ -2495,10 +2312,7 @@ dbg.test.getResult(); <button class="demo-button2" onclick="log.p(dbg.test.getRe
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.test.getResultJSON<br>
-      <span class="alias">( dbg.test.getResultJSON )</span>
-    </td>
+    <td class="name">dbg.test.getResultJSON</td>
     <td></td>
     <td>
       Returns the test result JSON.<br>
@@ -2509,10 +2323,7 @@ dbg.test.getResultJSON(); <button class="demo-button2" onclick="log(dbg.test.get
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.splitArgs<br>
-      <span class="alias">( dbg.splitArgs )</span>
-    </td>
+    <td class="name">dbg.splitArgs</td>
     <td>argument-string</td>
     <td>
       Splits a given argument string into an array of strings by separating the string into substrings, using whitespace character " ".<br>
@@ -2523,10 +2334,7 @@ var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" sty
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.splitArgsEx<br>
-      <span class="alias">( dbg.splitArgsEx )</span>
-    </td>
+    <td class="name">dbg.splitArgsEx</td>
     <td>argument-string</td>
     <td>
       An extended version of splitArgs().<br>
@@ -2537,10 +2345,7 @@ var args = dbg.splitArgsEx('<input type="text" id="args-ex-txt" class="demo-text
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.getOptVal<br>
-      <span class="alias">( dbg.getOptVal )</span>
-    </td>
+    <td class="name">dbg.getOptVal</td>
     <td>argument-string</td>
     <td>
       Returns a value of an option.<br>
@@ -2551,10 +2356,7 @@ var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-tex
   </tr>
 
   <tr>
-    <td class="name">
-      DebugJS.init<br>
-      <span class="alias">( dbg.init )</span>
-    </td>
+    <td class="name">dbg.init</td>
     <td>options</td>
     <td>
       Initialize debug.js
@@ -2562,7 +2364,7 @@ var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-tex
   </tr>
 </table>
 <div style="margin-top:10px;font-size:14px;">
-"dbg" is an alias of "DebugJS". / "el" is an alias of "DebugJS.el".<br>
+"dbg" is an alias of "DebugJS". / "log" is an alias of "dbg.log".<br>
 debug.js will not use aliases in case of those that are already defined.
 </div>
 <br>
@@ -3044,8 +2846,8 @@ $ log dump -b64
 <span class="annotation2">
  See also:
   log load command
-  DebugJS.loadLog()
-  DebugJS.dumpLog()
+  dbg.loadLog()
+  dbg.dumpLog()
 </span>
 
 <b>filter:</b>
@@ -3067,8 +2869,8 @@ JSON Format
 <span class="annotation2">
  See also:
   log dump command
-  DebugJS.dumpLog()
-  DebugJS.loadLog()
+  dbg.dumpLog()
+  dbg.loadLog()
 </span>
 
 <b>preserve:</b>
@@ -4109,7 +3911,7 @@ You can define your own commands and panels like below.<br>
 <pre class="code" style="margin-bottom:2px">
 // Command definition
 <span class="emphasis">example.cmdHello = function(arg, tbl) {
-  dbg.log('Hello!');
+  log('Hello!');
 };</span>
 
 // Command table definition
