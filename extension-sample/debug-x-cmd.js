@@ -1,7 +1,7 @@
 var extsample = extsample || {};
 
 extsample.cmdHello = function(arg, tbl) {
-  dbg.log('Hello, World!');
+  log('Hello, World!');
 };
 
 extsample.cmdAbc = function(arg, tbl) {
@@ -11,7 +11,7 @@ extsample.cmdAbc = function(arg, tbl) {
     return;
   }
   for (var i = 0; i < args.length; i++) {
-    dbg.log('arg' + i + ' = ' + args[i]);
+    log('arg' + i + ' = ' + args[i]);
   }
 };
 
