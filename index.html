@@ -3812,6 +3812,39 @@ $ 10:00 - 16:00 -
   </tr>
 
   <tr>
+    <td class="name">Date calculation</td>
+    <td>
+     YYYY/MM/DD +|- days
+    </td>
+    <td>
+     Perform a date calculation.
+<pre class="eg">
+$ 2018/01/01 + 2
+-&gt; 2018/01/03
+
+$ 2018/01/01 - 2
+-&gt; 2017/12/30
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">Date diff</td>
+    <td>
+     YYYY/MM/DD YYYY/MM/DD
+    </td>
+    <td>
+<pre class="eg">
+$ 2018/01/01 2018/01/03
+-&gt; 2
+
+$ 2018/01/01 2017/12/30
+-&gt; -2
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">Unicode</td>
     <td>
      U+XXXX ...

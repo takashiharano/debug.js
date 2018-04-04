@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201803300000';
+  this.v = '201804042317';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6718,12 +6718,22 @@ DebugJS.prototype = {
       return;
     }
 
-    var found = ctx.cmdRadixConv(cmdline, echo);
-    if (found) {
+    var ret = ctx.cmdRadixConv(cmdline, echo);
+    if (ret) {
       return cmd | 0;
     }
 
-    var ret = ctx.cmdTimeCalc(cmdline);
+    ret = ctx.cmdTimeCalc(cmdline, echo);
+    if (ret != null) {
+      return ret;
+    }
+
+    ret = ctx.cmdDateCalc(cmdline, echo);
+    if (ret != null) {
+      return ret;
+    }
+
+    ret = ctx.cmdDateDiff(cmdline, echo);
     if (ret != null) {
       return ret;
     }
@@ -6970,6 +6980,53 @@ DebugJS.prototype = {
       DebugJS._log.res(d);
     }
     return d;
+  },
+
+  cmdDateCalc: function(arg, echo) {
+    var ret = null;
+    arg = DebugJS.delLeadingAndTrailingSP(arg);
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (!arg.match(/^\d{4}\/\d{1,}\/\d{1,}/)) {
+      return ret;
+    }
+    arg = DebugJS.delAllSP(arg);
+    var op;
+    if (arg.indexOf('-') >= 0) {
+      op = '-';
+    } else if (arg.indexOf('+') >= 0) {
+      op = '+';
+    }
+    var v = arg.split(op);
+    if (v.length < 2) {
+      return ret;
+    }
+    var d1 = DebugJS.getDateTime(v[0]).time;
+    var d2 = (v[1] | 0) * 86400000;
+    var t;
+    if (op == '-') {
+      t = d1 - d2;
+    } else {
+      t = d1 + d2;
+    }
+    ret = DebugJS.convDateStr(DebugJS.getDateTime(t), '/');
+    if (echo) {DebugJS._log.res(ret);}
+    return ret;
+  },
+
+  cmdDateDiff: function(arg, echo) {
+    var ret = null;
+    var a = DebugJS.splitArgs(arg);
+    if (a.length < 2) {
+      return ret;
+    }
+    var d1 = a[0];
+    var d2 = a[1];
+    if ((!d1.match(/\d{4}\/\d{1,}\/\d{1,}/)) || (!d2.match(/\d{4}\/\d{1,}\/\d{1,}/))) {
+      return ret;
+    }
+    ret = DebugJS.diffDate(d1, d2);
+    if (echo) {DebugJS._log.res(ret);}
+    return ret;
   },
 
   cmdDelay: function(arg, tbl) {
@@ -8263,20 +8320,21 @@ DebugJS.prototype = {
     DebugJS.sleep(ms);
   },
 
-  cmdTimeCalc: function(arg) {
+  cmdTimeCalc: function(arg, echo) {
     var ret = null;
-    var wkArg = arg.replace(/\s{2,}/g, ' ');
-    if (!wkArg.match(/\d{1,}:{1}\d{2}/)) {
+    arg = DebugJS.delLeadingAndTrailingSP(arg);
+    arg = arg.replace(/\s{2,}/g, ' ');
+    if (!arg.match(/^\d{1,}:{1}\d{2}/)) {
       return ret;
     }
-    wkArg = wkArg.replace(/\s/g, '');
+    arg = DebugJS.delAllSP(arg);
     var op;
-    if (wkArg.indexOf('-') >= 0) {
+    if (arg.indexOf('-') >= 0) {
       op = '-';
-    } else if (wkArg.indexOf('+') >= 0) {
+    } else if (arg.indexOf('+') >= 0) {
       op = '+';
     }
-    var vals = wkArg.split(op);
+    var vals = arg.split(op);
     if (vals.length < 2) {
       return ret;
     }
@@ -8290,10 +8348,10 @@ DebugJS.prototype = {
     var byTheDay = (vals[2] == undefined);
     if (op == '-') {
       ret = DebugJS.subTime(timeL, timeR, byTheDay);
-    } else if (op == '+') {
+    } else {
       ret = DebugJS.addTime(timeL, timeR, byTheDay);
     }
-    DebugJS._log.res(ret);
+    if (echo) {DebugJS._log.res(ret);}
     return ret;
   },
 
@@ -9318,8 +9376,18 @@ DebugJS.date = function(arg) {
   return s;
 };
 
+DebugJS.diffDate = function(d1, d2) {
+  var dt1 = DebugJS.getDateTime(d1);
+  var dt2 = DebugJS.getDateTime(d2);
+  return (dt2.time - dt1.time) / 86400000;
+};
+
 DebugJS.convDateTimeStr = function(d) {
   return (d.yyyy + '-' + d.mm + '-' + d.dd + ' ' + DebugJS.WDAYS[d.wday] + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss);
+};
+
+DebugJS.convDateStr = function(d, s) {
+  return d.yyyy + s + d.mm + s + d.dd;
 };
 
 DebugJS.convTimeStr = function(d) {
