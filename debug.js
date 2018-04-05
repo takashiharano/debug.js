@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804042317';
+  this.v = '201804051941';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6986,7 +6986,7 @@ DebugJS.prototype = {
     var ret = null;
     arg = DebugJS.delLeadingAndTrailingSP(arg);
     arg = arg.replace(/\s{2,}/g, ' ');
-    if (!arg.match(/^\d{4}\/\d{1,}\/\d{1,}/)) {
+    if ((!arg.match(/^\d{4}\/\d{1,}\/\d{1,}/)) && (!DebugJS.startsWith(arg, 'today'))) {
       return ret;
     }
     arg = DebugJS.delAllSP(arg);
@@ -7000,13 +7000,15 @@ DebugJS.prototype = {
     if (v.length < 2) {
       return ret;
     }
-    var d1 = DebugJS.getDateTime(v[0]).time;
-    var d2 = (v[1] | 0) * 86400000;
+    var d1 = v[0];
+    if (d1 == 'today') {d1 = DebugJS.today('/');}
+    var t1 = DebugJS.getDateTime(d1).time;
+    var t2 = (v[1] | 0) * 86400000;
     var t;
     if (op == '-') {
-      t = d1 - d2;
+      t = t1 - t2;
     } else {
-      t = d1 + d2;
+      t = t1 + t2;
     }
     ret = DebugJS.convDateStr(DebugJS.getDateTime(t), '/');
     if (echo) {DebugJS._log.res(ret);}
@@ -7021,6 +7023,8 @@ DebugJS.prototype = {
     }
     var d1 = a[0];
     var d2 = a[1];
+    if (d1 == 'today') {d1 = DebugJS.today('/');}
+    if (d2 == 'today') {d2 = DebugJS.today('/');}
     if ((!d1.match(/\d{4}\/\d{1,}\/\d{1,}/)) || (!d2.match(/\d{4}\/\d{1,}\/\d{1,}/))) {
       return ret;
     }
@@ -9380,6 +9384,10 @@ DebugJS.diffDate = function(d1, d2) {
   var dt1 = DebugJS.getDateTime(d1);
   var dt2 = DebugJS.getDateTime(d2);
   return (dt2.time - dt1.time) / 86400000;
+};
+
+DebugJS.today = function(s) {
+  return DebugJS.convDateStr(DebugJS.getDateTime(), (s === undefined ? '-' : s));
 };
 
 DebugJS.convDateTimeStr = function(d) {
