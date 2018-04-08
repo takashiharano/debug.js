@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804081908';
+  this.v = '201804090043';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6738,6 +6738,11 @@ DebugJS.prototype = {
       return ret;
     }
 
+    ret = ctx.cmdConvDate(cmdline, echo);
+    if (ret != null) {
+      return ret;
+    }
+
     if (cmdline.match(/^\s*U\+/i)) {
       return ctx.cmdUnicode('-d ' + cmdline);
     }
@@ -6974,7 +6979,7 @@ DebugJS.prototype = {
 
   cmdDate: function(arg, tbl) {
     var d = DebugJS.date(arg);
-    if (d == undefined) {
+    if (d == null) {
       DebugJS.printUsage(tbl.usage);
     } else {
       DebugJS._log.res(d);
@@ -6982,10 +6987,23 @@ DebugJS.prototype = {
     return d;
   },
 
+  cmdConvDate: function(arg, echo) {
+    var ret = null;
+    arg = DebugJS.delLeadingAndTrailingSP(arg);
+    if (!DebugJS.isDateFormat(arg)) {
+      return ret;
+    }
+    var ret = DebugJS.date(arg);
+    if (ret != null) {
+      if (echo) {DebugJS._log.res(ret);}
+    }
+    return ret;
+  },
+
   cmdDateCalc: function(arg, echo) {
     var ret = null;
     arg = DebugJS.delLeadingAndTrailingSP(arg);
-    if ((!arg.match(/^\d{4}[-/]\d{1,}[-/]\d{1,}/)) && (!DebugJS.startsWith(arg, 'today'))) {
+    if ((!DebugJS.isDateFormat(arg, true)) && (!DebugJS.startsWith(arg, 'today'))) {
       return ret;
     }
     arg = DebugJS.delAllSP(arg);
@@ -7014,7 +7032,7 @@ DebugJS.prototype = {
     } else {
       t = t1 + t2;
     }
-    ret = DebugJS.convDateStr(DebugJS.getDateTime(t), sp, true);
+    ret = DebugJS.convDateStr(DebugJS.getDateTime(t), sp);
     if (echo) {DebugJS._log.res(ret);}
     return ret;
   },
@@ -7029,7 +7047,7 @@ DebugJS.prototype = {
     var d2 = a[1];
     if (d1 == 'today') {d1 = DebugJS.today('/');}
     if (d2 == 'today') {d2 = DebugJS.today('/');}
-    if ((!d1.match(/\d{4}[-/]\d{1,}[-/]\d{1,}/)) || (!d2.match(/\d{4}[-/]\d{1,}[-/]\d{1,}/))) {
+    if ((!DebugJS.isDateFormat(d1)) || (!DebugJS.isDateFormat(d2))) {
       return ret;
     }
     d1 = d1.replace(/-/g, '/');
@@ -9370,7 +9388,7 @@ DebugJS.getDateTime = function(dt) {
 
 DebugJS.date = function(arg) {
   arg = DebugJS.delLeadingAndTrailingSP(arg);
-  var s;
+  var s = null;
   var dt;
   if ((arg == '') || isNaN(arg)) {
     dt = DebugJS.getDateTime(arg);
@@ -9392,6 +9410,12 @@ DebugJS.diffDate = function(d1, d2) {
   return (dt2.time - dt1.time) / 86400000;
 };
 
+DebugJS.isDateFormat = function(s, p) {
+  var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}';
+  if (!p) {r += '$';}
+  return (s.match(new RegExp(r)) ? true : false);
+};
+
 DebugJS.today = function(s) {
   return DebugJS.convDateStr(DebugJS.getDateTime(), (s === undefined ? '-' : s));
 };
@@ -9400,8 +9424,8 @@ DebugJS.convDateTimeStr = function(d) {
   return (d.yyyy + '-' + d.mm + '-' + d.dd + ' ' + DebugJS.WDAYS[d.wday] + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss);
 };
 
-DebugJS.convDateStr = function(d, s, w) {
-  return d.yyyy + s + d.mm + s + d.dd + (w ? (' ' + DebugJS.WDAYS[d.wday]) : '');
+DebugJS.convDateStr = function(d, s) {
+  return d.yyyy + s + d.mm + s + d.dd;
 };
 
 DebugJS.convTimeStr = function(d) {
