@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804090043';
+  this.v = '201804090733';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6993,6 +6993,7 @@ DebugJS.prototype = {
     if (!DebugJS.isDateFormat(arg)) {
       return ret;
     }
+    arg = arg.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
     var ret = DebugJS.date(arg);
     if (ret != null) {
       if (echo) {DebugJS._log.res(ret);}
