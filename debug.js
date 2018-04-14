@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804100034';
+  this.v = '201804142343';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7021,14 +7021,9 @@ DebugJS.prototype = {
     if (v.length < 2) {
       return ret;
     }
-    var d1 = v[0];
-    var d2 = v[1];
-    if ((d1.length == 8) && (!isNaN(d1))) {
-      d1 = DebugJS.num2date(d1);
-    } else if (d1 == 'today') {
-      d1 = DebugJS.today('/');
-    }
+    var d1 = DebugJS.ctx._cmdFmtDate(v[0]);
     if (!DebugJS.isDateFormat(d1)) {return ret;}
+    var d2 = v[1];
     var t1 = DebugJS.getDateTime(d1).time;
     var t2 = (d2 | 0) * 86400000;
     var t;
@@ -7048,18 +7043,8 @@ DebugJS.prototype = {
     if (a.length < 2) {
       return ret;
     }
-    var d1 = a[0];
-    var d2 = a[1];
-    if ((d1.length == 8) && (!isNaN(d1))) {
-      d1 = DebugJS.num2date(d1);
-    } else if (d1 == 'today') {
-      d1 = DebugJS.today('/');
-    }
-    if ((d2.length == 8) && (!isNaN(d2))) {
-      d2 = DebugJS.num2date(d2);
-    } else if (d2 == 'today') {
-      d2 = DebugJS.today('/');
-    }
+    var d1 = DebugJS.ctx._cmdFmtDate(a[0]);
+    var d2 = DebugJS.ctx._cmdFmtDate(a[1]);
     if ((!DebugJS.isDateFormat(d1)) || (!DebugJS.isDateFormat(d2))) {
       return ret;
     }
@@ -7068,6 +7053,15 @@ DebugJS.prototype = {
     ret = DebugJS.diffDate(d1, d2);
     if (echo) {DebugJS._log.res(ret);}
     return ret;
+  },
+
+  _cmdFmtDate: function(d) {
+    if ((d.length == 8) && (!isNaN(d))) {
+      d = DebugJS.num2date(d);
+    } else if (d == 'today') {
+      d = DebugJS.today('/');
+    }
+    return d;
   },
 
   cmdDelay: function(arg, tbl) {
