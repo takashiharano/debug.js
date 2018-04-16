@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804142343';
+  this.v = '201804162323';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6734,7 +6734,7 @@ DebugJS.prototype = {
     }
 
     ret = ctx.cmdDateDiff(cmdline, echo);
-    if (ret != null) {
+    if (!isNaN(ret)) {
       return ret;
     }
 
@@ -7018,9 +7018,7 @@ DebugJS.prototype = {
       op = '-';
     }
     var v = arg.split(op);
-    if (v.length < 2) {
-      return ret;
-    }
+    if (v.length < 2) {return ret;}
     var d1 = DebugJS.ctx._cmdFmtDate(v[0]);
     if (!DebugJS.isDateFormat(d1)) {return ret;}
     var d2 = v[1];
@@ -7032,26 +7030,24 @@ DebugJS.prototype = {
     } else {
       t = t1 + t2;
     }
-    ret = DebugJS.convDateStr(DebugJS.getDateTime(t), sp);
+    var d = DebugJS.getDateTime(t);
+    if (isNaN(d.time)) {return ret;}
+    ret = DebugJS.convDateStr(d, sp);
     if (echo) {DebugJS._log.res(ret);}
     return ret;
   },
 
   cmdDateDiff: function(arg, echo) {
-    var ret = null;
+    var ret = NaN;
     var a = DebugJS.splitArgs(arg);
-    if (a.length < 2) {
-      return ret;
-    }
+    if (a.length < 2) {return ret;}
     var d1 = DebugJS.ctx._cmdFmtDate(a[0]);
     var d2 = DebugJS.ctx._cmdFmtDate(a[1]);
-    if ((!DebugJS.isDateFormat(d1)) || (!DebugJS.isDateFormat(d2))) {
-      return ret;
-    }
+    if ((!DebugJS.isDateFormat(d1)) || (!DebugJS.isDateFormat(d2))) {return ret;}
     d1 = d1.replace(/-/g, '/');
     d2 = d2.replace(/-/g, '/');
     ret = DebugJS.diffDate(d1, d2);
-    if (echo) {DebugJS._log.res(ret);}
+    if (echo && !isNaN(ret)) {DebugJS._log.res(ret);}
     return ret;
   },
 
