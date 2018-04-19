@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804162323';
+  this.v = '201804192305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -794,15 +794,14 @@ DebugJS.prototype = {
     var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
     var styles = {};
+    var ltsp = '0';
     if (DebugJS.getBrowserType().name == 'Firefox') {
-      styles['#' + ctx.id] = {
-        'letter-spacing': '-0.35px !important'
-      };
-    } else {
-      styles['#' + ctx.id] = {
-        'letter-spacing': '0 !important'
-      };
+      ltsp = '-0.35px';
     }
+    styles['#' + ctx.id] = {
+      'text-align': 'left !important',
+      'letter-spacing': ltsp + ' !important'
+    };
 
     styles['#' + ctx.id + ' td'] = {
       'width': 'initial',
