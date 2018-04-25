@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804192305';
+  this.v = '201804252317';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3878,7 +3878,9 @@ DebugJS.prototype = {
 
   closeElmInfo: function(ctx) {
     if (ctx.targetElm) {
-      DebugJS.removeClass(ctx.targetElm, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
+      if (typeof ctx.targetElm.className == 'string') {
+        DebugJS.removeClass(ctx.targetElm, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
+      }
       ctx.targetElm = null;
     }
     if (ctx.elmInfoPanel != null) {
@@ -3931,11 +3933,13 @@ DebugJS.prototype = {
         if (el.tagName == 'META') {
           text = DebugJS.escTags(el.outerHTML);
         } else {
-          text = DebugJS.escTags(el.innerText);
+          if (el.innerText != undefined) {
+            text = DebugJS.escTags(el.innerText);
+          }
         }
       }
       var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus['text']);
-      var className = el.className;
+      var className = el.className + '';
       className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
       var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.href));
       var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.src));
@@ -4056,7 +4060,7 @@ DebugJS.prototype = {
       } else {
         html += '<span style="color:#aaa">' + el.dataset + '</span>';
       }
-      var htmlSrc = el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : DebugJS.setStyleIfObjNA(el.outerHTML));
       htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['htmlSrc']);
       html += DebugJS.addPropSeparator(ctx) +
       'outerHTML: ' + htmlSrc;
@@ -4133,10 +4137,10 @@ DebugJS.prototype = {
 
   highlightElement: function(removeTarget, setTarget) {
     var ctx = DebugJS.ctx;
-    if (removeTarget) {
+    if ((removeTarget) && (typeof removeTarget.className == 'string')) {
       DebugJS.removeClass(removeTarget, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
-    if (setTarget) {
+    if ((setTarget) && (typeof setTarget.className == 'string')) {
       DebugJS.addClass(setTarget, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
   },
