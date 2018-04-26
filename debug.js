@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804252317';
+  this.v = '201804261900';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11722,6 +11722,7 @@ DebugJS.bat.setExitStatus = function(es) {
 };
 DebugJS.bat.prepro = function(cmd) {
   var ctx = DebugJS.ctx;
+  cmd = DebugJS.replaceCmdVals(cmd);
   var cmds = DebugJS.splitCmdLineInTwo(cmd);
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
@@ -11841,9 +11842,15 @@ DebugJS.bat.prepro = function(cmd) {
       bat._exit(a[0]);
       return 2;
     case 'wait':
-      var w = a[0] | 0;
-      if (a[0] == '') {
+      var w = cmds[1];
+      if (w == '') {
         w = ctx.props.wait;
+      } else {
+        try {
+          w = eval(w) | 0;
+        } catch (e) {
+          DebugJS._log.e(e);
+        }
       }
       bat.ppEcho(cmd);
       ctrl.tmid = setTimeout(bat.exec, w);
