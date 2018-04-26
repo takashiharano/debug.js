@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804261900';
+  this.v = '201804262050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -157,6 +157,7 @@ var DebugJS = DebugJS || function() {
   this.txtChkTxt = null;
   this.txtChkFontSizeRange = null;
   this.txtChkFontSizeInput = null;
+  this.txtChkFontSizeUnitInput = null;
   this.txtChkFontWeightRange = null;
   this.txtChkFontWeightLabel = null;
   this.txtChkInputFgRGB = null;
@@ -5190,7 +5191,8 @@ DebugJS.prototype = {
     ctx.txtChkCtrl = document.createElement('div');
     ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
     var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
-    '<input value="' + defaultFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">px' +
+    '<input value="' + defaultFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">' +
+    '<input value="px" id="' + ctx.id + '-font-size-unit" class="' + ctx.id + '-txt-text" style="width:20px;" oninput="DebugJS.ctx.onChangeFontSizeTxt()">' +
     '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ';font-style:italic;" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateTxtItalicBtn(this);" onclick="DebugJS.ctx.toggleTxtItalic(this);"> I </span>' +
     '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ';" onmouseover="this.style.color=\'' + ctx.opt.btnColor + '\'" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
     '<br>' +
@@ -5210,6 +5212,7 @@ DebugJS.prototype = {
 
     ctx.txtChkFontSizeRange = document.getElementById(ctx.id + '-fontsize-range');
     ctx.txtChkFontSizeInput = document.getElementById(ctx.id + '-font-size');
+    ctx.txtChkFontSizeUnitInput = document.getElementById(ctx.id + '-font-size-unit');
     ctx.txtChkFontWeightRange = document.getElementById(ctx.id + '-fontweight-range');
     ctx.txtChkFontWeightLabel = document.getElementById(ctx.id + '-font-weight');
     ctx.txtChkInputFgRGB = document.getElementById(ctx.id + '-fg-rgb');
@@ -5333,18 +5336,19 @@ DebugJS.prototype = {
   onChangeFontSizeTxt: function() {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.txtChkFontSizeInput.value;
+    var unit = ctx.txtChkFontSizeUnitInput.value;
     ctx.txtChkFontSizeRange.value = fontSize;
     ctx.onChangeFontSize(null);
-    ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + 'px');
+    ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + unit);
   },
 
   onChangeFontSize: function(callFromRange) {
     var ctx = DebugJS.ctx;
-    var fontSize;
-    fontSize = ctx.txtChkFontSizeRange.value;
+    var fontSize = ctx.txtChkFontSizeRange.value;
+    var unit = ctx.txtChkFontSizeUnitInput.value;
     if (callFromRange) {
       ctx.txtChkFontSizeInput.value = fontSize;
-      ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + 'px');
+      ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + unit);
     }
   },
 
@@ -5361,14 +5365,12 @@ DebugJS.prototype = {
   },
 
   onChangeFontFamily: function(font) {
-    var fontFamily = font.value;
-    DebugJS.ctx.setStyle(DebugJS.ctx.txtChkTargetEl, 'font-family', fontFamily);
+    DebugJS.ctx.setStyle(DebugJS.ctx.txtChkTargetEl, 'font-family', font.value);
   },
 
   closeTextChecker: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) &&
-        (ctx.txtChkPanel != null)) {
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) && (ctx.txtChkPanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.txtChkPanel);
     }
   },
