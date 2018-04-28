@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804262050';
+  this.v = '201804290003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3755,7 +3755,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var DEFAULT_MAX_LEN = 50;
     var foldingText;
-    if (lineMaxLen == undefined) lineMaxLen = DEFAULT_MAX_LEN;
+    if ((lineMaxLen == undefined) || (lineMaxLen < 0)) lineMaxLen = DEFAULT_MAX_LEN;
     if (!style) style = 'color:#aaa';
     if (!obj) {
       foldingText = '<span class="' + ctx.id + '-na">' + obj + '</span>';
@@ -3939,7 +3939,7 @@ DebugJS.prototype = {
           }
         }
       }
-      var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus['text']);
+      var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.text);
       var className = el.className + '';
       className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
       var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.href));
@@ -3975,7 +3975,7 @@ DebugJS.prototype = {
           }
         }
       }
-      allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['allStyles']);
+      allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
       var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escTags(el.name);
       var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclChr(el.value);
 
@@ -3993,7 +3993,7 @@ DebugJS.prototype = {
       'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
       'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
       'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
-      'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['elBorder']) + '\n' +
+      'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.elBorder) + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
       'lineHeight: ' + computedStyle.lineHeight + '\n' +
       DebugJS.addPropSeparator(ctx) +
@@ -4007,6 +4007,7 @@ DebugJS.prototype = {
       'opacity   : ' + computedStyle.opacity + '\n' +
       DebugJS.addPropSeparator(ctx) +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
+      'bg-image  : ' + ctx.createFoldingText(computedStyle.backgroundImage, 'bgimg', DebugJS.OMIT_LAST, -1, OMIT_STYLE) + '\n' +
       'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
       'font      : -size  : ' + computedStyle.fontSize + '\n' +
       '            -family: ' + computedStyle.fontFamily + '\n' +
@@ -4062,7 +4063,7 @@ DebugJS.prototype = {
         html += '<span style="color:#aaa">' + el.dataset + '</span>';
       }
       var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : DebugJS.setStyleIfObjNA(el.outerHTML));
-      htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus['htmlSrc']);
+      htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.htmlSrc);
       html += DebugJS.addPropSeparator(ctx) +
       'outerHTML: ' + htmlSrc;
     }
