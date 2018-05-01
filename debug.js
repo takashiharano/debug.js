@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201804290003';
+  this.v = '201805010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12460,8 +12460,7 @@ DebugJS.point.dblclick.onDone = function() {
   if (data.cnt < 2) {
     data.tmid = setTimeout(DebugJS.point._dblclick, data.speed);
   } else {
-    var e = DebugJS.event.create('dblclick');
-    data.target.dispatchEvent(e);
+    DebugJS.point.mouseevt(data.target, 'dblclick', 0);
     data.cnt = 0;
     DebugJS.bat.unlock();
   }
@@ -12519,6 +12518,8 @@ DebugJS.point.contextmenu = function(el) {
 DebugJS.point.mouseevt = function(el, ev, b) {
   var e = DebugJS.event.create(ev);
   e.button = b | 0;
+  e.clientX = DebugJS.point.x;
+  e.clientY = DebugJS.point.y;
   el.dispatchEvent(e);
 };
 DebugJS.point.keyevt = function(args) {
