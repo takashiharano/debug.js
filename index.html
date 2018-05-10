@@ -3095,6 +3095,10 @@ $ point move +100 +200
 $ point move -100 -200
 -&gt; Move the pointer to the specified position (relative)
 
+$ point drag +100 +200
+-&gt; Drag the pointer to the specified position
+   The options are the same as point move command.
+
 $ point hint msg "hello!"
 -&gt; Show a message at the pointer position
 
@@ -4354,6 +4358,7 @@ function callback(xhr) {
 onclick="log.i('> click');" 
 ondblclick="log.i('> dblclick');" 
 onmousedown="log.i('> mousedown');" 
+onmousemove="log.d('> mousemove');" 
 onmouseup="log.i('> mouseup');" 
 onkeydown="log.i('> keydown');"
 onkeypress="log.i('> keypress');"

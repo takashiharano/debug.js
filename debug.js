@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805080014';
+  this.v = '201805102130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -340,7 +340,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-c|-key key] [timeout]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
-    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
+    {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fnc: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fnc: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
@@ -2705,6 +2705,7 @@ DebugJS.prototype = {
             }
             ctx._cmdDelayCancel(ctx);
             DebugJS.point.move.stop();
+            DebugJS.point.drag.stop();
             DebugJS.scrollWinTo.stop();
             DebugJS.inputText.stop();
             DebugJS._log.s(ctx.cmdLine.value + '^C');
@@ -7745,6 +7746,9 @@ DebugJS.prototype = {
           point.move(x, y, speed, step, alignX, alignY);
         }
       }
+    } else if (op == 'drag') {
+      idx = arg.indexOf(op);
+      point.drag(arg.substring(idx + 4));
     } else if (op == 'hint') {
       op = args[1];
       if (op == 'msg') {
@@ -12316,7 +12320,12 @@ DebugJS.point = function(x, y) {
     var e = DebugJS.event.create('mousemove');
     e.clientX = point.x;
     e.clientY = point.y;
-    window.dispatchEvent(e);
+    var el = DebugJS.point.getElementFromCurrentPos();
+    if (el) {
+      el.dispatchEvent(e);
+    } else {
+      window.dispatchEvent(e);
+    }
   }
 };
 DebugJS.point.ptr = null;
@@ -12716,6 +12725,7 @@ DebugJS.point.move.dstPos = {x: 0, y: 0};
 DebugJS.point.move.speed = 10;
 DebugJS.point.move.step = 10;
 DebugJS.point.move.tmid = 0;
+DebugJS.point.move.cb = null;
 DebugJS.point._move = function() {
   var point = DebugJS.point;
   var move = point.move;
@@ -12753,6 +12763,10 @@ DebugJS.point._move = function() {
   point(x, y);
   if ((x == dst.x) && (y == dst.y)) {
     DebugJS.bat.unlock();
+    if (move.cb) {
+      setTimeout(move.cb, 10);
+      move.cb = null;
+    }
   } else {
     move.tmid = setTimeout(point._move, move.speed);
   }
@@ -12764,6 +12778,56 @@ DebugJS.point.move.stop = function() {
     point.move.tmid = 0;
     DebugJS.bat.unlock();
   }
+};
+
+DebugJS.point.drag = function(arg) {
+  var data = DebugJS.point.drag.data;
+  DebugJS.point.drag.cancel();
+  data.step = 0;
+  data.arg = arg;
+  data.mousemovesim = DebugJS.ctx.props.mousemovesim;
+  DebugJS.ctx.props.mousemovesim = 'true';
+  DebugJS.bat.lock();
+  DebugJS.point.drag.proc();
+};
+DebugJS.point.drag.data = {
+  step: 0,
+  arg: null,
+  mousemovesim: undefined
+};
+DebugJS.point.drag.proc = function() {
+  var point = DebugJS.point;
+  var drag = point.drag;
+  var data = drag.data;
+  drag.data.step++;
+  switch (data.step) {
+    case 1:
+      point.event('mousedown', 0);
+      setTimeout(drag.proc, 10);
+      break;
+    case 2:
+      point.move.cb = drag.proc;
+      DebugJS.ctx.cmdPoint('move ' + data.arg);
+      break;
+    case 3:
+      point.event('mouseup', 0);
+      drag.stop();
+  }
+};
+DebugJS.point.drag.cancel = function() {
+  if (DebugJS.point.drag.data.step == 2) {
+    DebugJS.point.move.stop();
+  }
+  DebugJS.point.drag.stop();
+};
+DebugJS.point.drag.stop = function() {
+  var data = DebugJS.point.drag.data;
+  data.arg = null;
+  data.step = 0;
+  if (data.mousemovesim != undefined) {
+    DebugJS.ctx.props.mousemovesim = data.mousemovesim;
+  }
+  DebugJS.bat.unlock();
 };
 
 DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
