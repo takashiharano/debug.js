@@ -461,7 +461,7 @@ function onFileLoaded(file, content, isB64) {
 }
 
 function onContextMenu(e) {
-  log.i('> contextmenu');
+  log.i('evt> contextmenu');
   setTimeout(testFunc, 1000);
 }
 
@@ -613,6 +613,7 @@ function onReady() {
 
 function onLoad() {
   //log('load');
+  evttest.regieterEventHandler();
 }
 
 function onUnload() {
@@ -669,6 +670,57 @@ function buftest(size) {
 var utest = {};
 utest.testString = function() {
   return 'Hello, World!';
+};
+
+var evttest = {};
+evttest.onMouseDown = function(e) {
+  log('evt> mousedown ' + e.clientX + ' ' + e.clientY);
+};
+
+evttest.onMouseUp = function(e) {
+  log('evt> mouseup ' + e.clientX + ' ' + e.clientY);
+};
+
+evttest.onMouseMove = function(e) {
+  log.d('evt> mousemove ' + e.clientX + ' ' + e.clientY);
+};
+
+evttest.onClick = function(e) {
+  log('evt> click ' + e.clientX + ' ' + e.clientY);
+};
+
+evttest.onDblClick = function(e) {
+  log('evt> dblclick ' + e.clientX + ' ' + e.clientY);
+};
+
+evttest.onKeyDown = function(e) {
+  log('evt> keydown ' + e.keyCode);
+};
+
+evttest.onKeyPress = function(e) {
+  log('evt> keypress ' + e.keyCode);
+};
+
+evttest.onKeyUp = function(e) {
+  log('evt> keyup ' + e.keyCode);
+};
+
+evttest.onContextMenu = function(e) {
+  log('evt> contextmenu');
+  onContextMenu();
+};
+
+evttest.regieterEventHandler = function() {
+  var el = document.getElementById('event1');
+  el.addEventListener('mousedown', evttest.onMouseDown, true);
+  el.addEventListener('mouseup', evttest.onMouseUp, true);
+  el.addEventListener('mousemove', evttest.onMouseMove, true);
+  el.addEventListener('click', evttest.onClick, true);
+  el.addEventListener('dblclick', evttest.onDblClick, true);
+  el.addEventListener('keydown', evttest.onKeyDown, true);
+  el.addEventListener('keypress', evttest.onKeyPress, true);
+  el.addEventListener('keyup', evttest.onKeyUp, true);
+  el.addEventListener('contextmenu', evttest.onContextMenu, true);
 };
 </script>
 </head>
@@ -4354,18 +4406,7 @@ function callback(xhr) {
    </div>
   </div>
 </div>
-<div id="event1" style="display:inline-block; width:415px; height:50px; background:#dff;" 
-onclick="log.i('> click');" 
-ondblclick="log.i('> dblclick');" 
-onmousedown="log.i('> mousedown');" 
-onmousemove="log.d('> mousemove');" 
-onmouseup="log.i('> mouseup');" 
-onkeydown="log.i('> keydown');"
-onkeypress="log.i('> keypress');"
-onkeyup="log.i('> keyup');"
-onfocus="log.i('> focus');"
-onblur="log.i('> blur');"
-oncontextmenu="onContextMenu();">event test</div>
+<div id="event1" style="display:inline-block; width:415px; height:50px; background:#dff;">event test</div>
 <br>
 <input id="evt1" 
 onclick="log.i('> click');" 
