@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805102130';
+  this.v = '201805132313';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14153,12 +14153,16 @@ DebugJS.start = function() {
   DebugJS.ctx = DebugJS.ctx || new DebugJS();
   DebugJS.el = null;
   if (window.el === undefined) DebugJS.G_EL_AVAILABLE = true;
-  if (typeof window.localStorage != 'undefined') {
-    DebugJS.LS_AVAILABLE = true;
-  }
-  if (typeof window.sessionStorage != 'undefined') {
-    DebugJS.SS_AVAILABLE = true;
-  }
+  try {
+    if (typeof window.localStorage != 'undefined') {
+      DebugJS.LS_AVAILABLE = true;
+    }
+  } catch (e) {}
+  try {
+    if (typeof window.sessionStorage != 'undefined') {
+      DebugJS.SS_AVAILABLE = true;
+    }
+  } catch (e) {}
   window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
   window.addEventListener('load', DebugJS.onLoad, true);
   window.addEventListener('error', DebugJS.onError, true);
