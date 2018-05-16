@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805160930';
+  this.v = '201805162020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9916,9 +9916,9 @@ DebugJS.getChildElements = function(el, list) {
 };
 
 DebugJS.isDescendant = function(el, t) {
-  if (el == null) {
+  if (!el) {
     var p = el.parentNode;
-    while ((p != null)) {
+    while (p) {
       if (p == t) {
         return true;
       }
