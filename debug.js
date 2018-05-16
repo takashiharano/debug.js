@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805132313';
+  this.v = '201805160930';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -331,6 +331,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'js', fnc: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', usage: 'js exec'},
     {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
     {cmd: 'jump', fnc: this.cmdJump, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'keypress', fnc: this.cmdKeyPress, desc: 'Dispatch a key event to active element', usage: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
     {cmd: 'laptime', fnc: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
@@ -7559,6 +7560,21 @@ DebugJS.prototype = {
     ctx.updateCurPc();
   },
 
+  cmdKeyPress: function(arg, tbl) {
+    var args = DebugJS.splitArgs(arg);
+    var keyCode = args[0];
+    if ((keyCode == '') || isNaN(keyCode)) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var s = (DebugJS.getOptVal(arg, 'shift') == null ? false : true);
+    var c = (DebugJS.getOptVal(arg, 'ctrl') == null ? false : true);
+    var a = (DebugJS.getOptVal(arg, 'alt') == null ? false : true);
+    var m = (DebugJS.getOptVal(arg, 'meta') == null ? false : true);
+    var opt = {keyCode: keyCode | 0, shift: s, ctrl: c, alt: a, meta: m};
+    DebugJS.keyPress(opt);
+  },
+
   cmdKeys: function(arg, tbl) {
     arg = arg.replace(/\s{2,}/g, ' ');
     if (arg == '') {
@@ -9897,6 +9913,19 @@ DebugJS.getChildElements = function(el, list) {
       DebugJS.getChildElements(children[i], list);
     }
   }
+};
+
+DebugJS.isDescendant = function(el, t) {
+  if (el == null) {
+    var p = el.parentNode;
+    while ((p != null)) {
+      if (p == t) {
+        return true;
+      }
+      p = p.parentNode;
+    }
+  }
+  return false;
 };
 
 DebugJS.getHTML = function(b64) {
@@ -13434,6 +13463,35 @@ DebugJS.event.dispatch = function(el, idx) {
 };
 DebugJS.event.clear = function() {
   DebugJS.event.evt = null;
+};
+
+DebugJS.keyPress = function(data) {
+  DebugJS.keyPress.data = data;
+  DebugJS.bat.lock();
+  DebugJS.keyPress.down();
+};
+DebugJS.keyPress.data = null;
+DebugJS.keyPress.down = function() {
+  DebugJS.keyPress.send('keydown');
+  setTimeout(DebugJS.keyPress.up, 10);
+};
+DebugJS.keyPress.up = function() {
+  DebugJS.keyPress.send('keyup');
+  DebugJS.keyPress.end();
+};
+DebugJS.keyPress.send = function(type) {
+  var data = DebugJS.keyPress.data;
+  DebugJS.event.create(type);
+  DebugJS.event.set('keyCode', data.keyCode);
+  DebugJS.event.set('shiftKey', data.shift);
+  DebugJS.event.set('ctrlKey', data.ctrl);
+  DebugJS.event.set('altKey', data.alt);
+  DebugJS.event.set('metaKey', data.meta);
+  var target = (DebugJS.isDescendant(document.activeElement, DebugJS.ctx.win) ? 'window' : 'active');
+  DebugJS.event.dispatch(target);
+};
+DebugJS.keyPress.end = function() {
+  DebugJS.bat.unlock();
 };
 
 DebugJS.test = {};
