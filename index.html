@@ -711,7 +711,10 @@ evttest.onContextMenu = function(e) {
 };
 
 evttest.regieterEventHandler = function() {
-  var el = document.getElementById('event1');
+  evttest.regieterEventHandlers(document.getElementById('event1'));
+};
+
+evttest.regieterEventHandlers = function(el) {
   el.addEventListener('mousedown', evttest.onMouseDown, true);
   el.addEventListener('mouseup', evttest.onMouseUp, true);
   el.addEventListener('mousemove', evttest.onMouseMove, true);
@@ -2840,6 +2843,17 @@ Option:<br>
 -l&lt;n&gt;<br>
 &nbsp;&nbsp;Recursion level limit
     </td>
+  </tr>
+
+  <tr>
+    <td class="name">keypress</td>
+    <td>keycode</td>
+    <td>
+      Dispatch a keyevent to active element.<br><br>
+<pre class="eg">
+$ keypress 1 -shift -ctrl -alt -meta
+</pre>
+  </td>
   </tr>
 
   <tr>
