@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805182215';
+  this.v = '201805190002';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11659,7 +11659,7 @@ DebugJS.bat.run = function() {
   }
   ctx.updateCurPc();
   ctrl.startPc = sl;
-  ctrl.endPc = (el == 0 ? bat.cmds.length - 1 : el);
+  ctrl.endPc = el;
   bat.setExecArg(ctrl.execArg);
   bat.stopNext();
   DebugJS.callEvtListener('batstart');
