@@ -571,16 +571,9 @@ function httpCallback(xhr) {
 }
 
 function addFileLoadHandler() {
-  var el;
-
-  el = document.getElementById('file-loader-b64');
-  dbg.addFileLoader(el, fileLoaderHandlerB64, 'b64', false);
-
-  el = document.getElementById('file-loader-b64-decoded');
-  dbg.addFileLoader(el, fileLoaderHandlerB64Decoded, 'b64', true);
-
-  el = document.getElementById('file-loader-bin');
-  dbg.addFileLoader(el, fileLoaderHandlerBin, 'bin');
+  dbg.addFileLoader('#file-loader-b64', fileLoaderHandlerB64, 'b64', false);
+  dbg.addFileLoader('#file-loader-b64-decoded', fileLoaderHandlerB64Decoded, 'b64', true);
+  dbg.addFileLoader('#file-loader-bin', fileLoaderHandlerBin, 'bin');
 }
 
 function fileLoaderHandlerB64(file, content) {
@@ -2088,7 +2081,9 @@ max: maximum length
       arg3: mode('b64' or 'bin')<br>
       arg4: decode</td>
     <td>
-      Add File Loader Handler
+      Add File Loader Handler<br><br>
+      Handler format:<br>
+      function(file, content)
     </td>
   </tr>
 

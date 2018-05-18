@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805162020';
+  this.v = '201805182215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11265,6 +11265,7 @@ DebugJS.file.finalize = function() {
   DebugJS.file.ongoingLoader = null;
 };
 DebugJS.addFileLoader = function(el, cb, mode, decode) {
+  el = DebugJS.getElement(el);
   if (!el) {
     DebugJS._log.e('addFileLoader(): target element is ' + el);
     return;
