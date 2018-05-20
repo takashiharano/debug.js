@@ -2602,11 +2602,13 @@ $ date
 
   <tr>
     <td class="name">delay</td>
-    <td>arg1: millis<br>arg2: command</td>
+    <td>arg1: millis|target time<br>arg2: command</td>
     <td>
       Delay command execution<br><br>
 <pre class="eg">
 $ delay 1000 echo "abc"
+$ delay 20180520T170030 echo "abc"
+$ delay T170030 echo "abc"
 
 $ delay -c
 Cancel delay execution

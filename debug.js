@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805190002';
+  this.v = '201805201835';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -317,7 +317,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
-    {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms command'},
+    {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms|YYYYMMDDTHHMISS command'},
     {cmd: 'echo', fnc: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fnc: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fnc: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
@@ -7092,17 +7092,47 @@ DebugJS.prototype = {
     if (d == '-c') {
       ctx._cmdDelayCancel(ctx);
       return;
-    }
-    if ((d == '') || (isNaN(d))) {
+    } else if ((d.match(/^\d{8}T\d{4,6}$/)) || (d.match(/^T\d{4,6}$/))) {
+      d = ctx._cmdDelayCalc(d);
+    } else if ((d == '') || (isNaN(d))) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
     var c = DebugJS.getArgsFrom(arg, 2);
     ctx.cmdDelayData.cmd = c;
     ctx._cmdDelayCancel(ctx);
-    ctx.cmdDelayData.tmid = setTimeout(ctx._cmdDelay, d | 0);
+    ctx.cmdDelayData.tmid = setTimeout(ctx._cmdDelayExec, d | 0);
   },
-  _cmdDelay: function() {
+  _cmdDelayCalc: function(d) {
+    var yyyy, mm, dd, t1;
+    var now = DebugJS.getDateTime();
+    var dt = d.split('T');
+    var date = dt[0];
+    var time = dt[1];
+    var hh = time.substr(0, 2);
+    var mi = time.substr(2, 2);
+    var ss = time.substr(4, 2);
+    if (ss == '') ss = '00';
+    if (date == '') {
+      yyyy = now.yyyy;
+      mm = now.mm;
+      dd = now.dd;
+      var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
+      if (now.time > tgt.time) {
+        t1 = tgt.time + 86400000;
+      } else {
+        t1 = tgt.time;
+      }
+    } else {
+      yyyy = date.substr(0, 4);
+      mm = date.substr(4, 2);
+      dd = date.substr(6, 2);
+      var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss;
+      t1 = (new Date(sd)).getTime();
+    }
+    return (t1 - now.time);
+  },
+  _cmdDelayExec: function() {
     var ctx = DebugJS.ctx;
     ctx.cmdDelayData.tmid = 0;
     var c = ctx.cmdDelayData.cmd;
