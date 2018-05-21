@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805201835';
+  this.v = '201805211941';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9247,23 +9247,29 @@ DebugJS.parseArgs = function(arg) {
 };
 
 DebugJS.getOptVal = function(args, opt) {
+  var v = DebugJS.getOptVals(args);
+  return (v[opt] == undefined ? null : v[opt]);
+};
+DebugJS.getOptVals = function(args) {
+  var k, v;
+  var o = {};
   if (typeof args === 'string') {
     args = DebugJS.splitArgsEx(args);
   }
-  var v = null;
   for (var i = 0; i < args.length; i++) {
-    if (args[i] == '-' + opt) {
+    if (args[i].charAt(0) == '-') {
+      var k = args[i].substring(1);
       if ((args[i + 1] != undefined) && (args[i + 1].charAt(0) != '-')) {
-        v = args[i + 1];
+        i++;
+        v = args[i];
       } else {
         v = '';
       }
-      break;
+      o[k] = v;
     }
   }
-  return v;
+  return o;
 };
-
 DebugJS.getOptVal2 = function(args, opt) {
   if (typeof args === 'string') {
     args = DebugJS.splitArgsEx(args);

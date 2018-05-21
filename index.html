@@ -2397,11 +2397,25 @@ var args = dbg.splitArgsEx('<input type="text" id="args-ex-txt" class="demo-text
 
   <tr>
     <td class="name">dbg.getOptVal</td>
-    <td>argument-string</td>
+    <td>
+      argument-string<br>
+      key
+    </td>
     <td>
       Returns a value of an option.<br>
 <pre>
 var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b 123'>', '<input type="text" id="opt-val-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVal(getVal('opt-val-arg-txt'), getVal('opt-val-opt-txt')), 0, 'val =');">DEMO</button>
+<span id="isvisible-ret"></span></pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getOptVals</td>
+    <td>argument-string</td>
+    <td>
+      Returns values of options.<br>
+<pre>
+var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b 123 -c'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVals(getVal('opt-vals-arg-txt')), 0, 'val =');">DEMO</button>
 <span id="isvisible-ret"></span></pre>
     </td>
   </tr>
