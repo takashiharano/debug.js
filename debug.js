@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805222220';
+  this.v = '201805222246';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6790,6 +6790,7 @@ DebugJS.prototype = {
             (ctx.status & DebugJS.STATE_BAT_PAUSE)) {
           bat._resume();
         } else {
+          if (ctx.batTextEditor) {bat.store(ctx.batTextEditor.value);}
           bat.run.arg.s = a[1];
           bat.run.arg.e = a[2];
           bat.run();
