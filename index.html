@@ -703,6 +703,11 @@ evttest.onContextMenu = function(e) {
   onContextMenu();
 };
 
+evttest.onWheel = function(e) {
+  log('evt> wheel ' + e.deltaX + ' ' + e.deltaY);
+};
+
+
 evttest.regieterEventHandler = function() {
   evttest.regieterEventHandlers(document.getElementById('event1'));
 };
@@ -717,6 +722,7 @@ evttest.regieterEventHandlers = function(el) {
   el.addEventListener('keypress', evttest.onKeyPress, true);
   el.addEventListener('keyup', evttest.onKeyUp, true);
   el.addEventListener('contextmenu', evttest.onContextMenu, true);
+  el.addEventListener('wheel', evttest.onWheel, true);
 };
 </script>
 </head>
@@ -3176,6 +3182,9 @@ $ point move -100 -200
 $ point drag +100 +200
 -&gt; Drag the pointer to the specified position
    The options are the same as point move command.
+
+$ point event eventType -prop1 val1 -prop2 val2
+-&gt; Send a event to the pointer position
 
 $ point hint msg "hello!"
 -&gt; Show a message at the pointer position

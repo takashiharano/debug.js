@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805211941';
+  this.v = '201805222220';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7795,6 +7795,9 @@ DebugJS.prototype = {
     } else if (op == 'drag') {
       idx = arg.indexOf(op);
       point.drag(arg.substring(idx + 4));
+    } else if (op == 'event') {
+      idx = arg.indexOf(op);
+      ret = point.event(arg.substring(idx + 6));
     } else if (op == 'hint') {
       op = args[1];
       if (op == 'msg') {
@@ -7823,10 +7826,10 @@ DebugJS.prototype = {
       if (src == 'default') src = '';
       point.cursor(src, w, h);
     } else if ((op == 'blur') || (op == 'change') || (op == 'contextmenu') || (op == 'focus') || (op == 'mousedown') || (op == 'mouseup')) {
-      point.event(op, args[1]);
+      point.simpleEvent(op, args[1]);
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
       speed = DebugJS.getOptVal(arg, 'speed');
-      point.event(op, speed);
+      point.simpleEvent(op, speed);
     } else if ((op == 'keydown') || (op == 'keypress') || (op == 'keyup')) {
       if (args[1] != undefined) {
         point.keyevt(args);
@@ -12473,7 +12476,25 @@ DebugJS.point.cursor = function(src, w, h) {
   point.ptr.style.width = w;
   point.ptr.style.height = h;
 };
-DebugJS.point.event = function(type, opt) {
+DebugJS.point.event = function(args) {
+  var point = DebugJS.point;
+  var el = point.getElementFromCurrentPos();
+  if (!el) return;
+  var type = DebugJS.splitArgsEx(args)[0];
+  var opts = DebugJS.getOptVals(args);
+  var e = DebugJS.event.create(type);
+  e.clientX = DebugJS.point.x;
+  e.clientY = DebugJS.point.y;
+  for (var k in opts) {
+    try {
+      e[k] = eval(opts[k]);
+    } catch (e) {
+      DebugJS._log.e('Set property error (' + e + ')');
+    }
+  }
+  return el.dispatchEvent(e);
+};
+DebugJS.point.simpleEvent = function(type, opt) {
   var point = DebugJS.point;
   var el = point.getElementFromCurrentPos();
   if (!el) return;
@@ -12868,7 +12889,7 @@ DebugJS.point.drag.proc = function() {
   drag.data.step++;
   switch (data.step) {
     case 1:
-      point.event('mousedown', 0);
+      point.simpleEvent('mousedown', 0);
       setTimeout(drag.proc, 10);
       break;
     case 2:
@@ -12876,7 +12897,7 @@ DebugJS.point.drag.proc = function() {
       DebugJS.ctx.cmdPoint('move ' + data.arg);
       break;
     case 3:
-      point.event('mouseup', 0);
+      point.simpleEvent('mouseup', 0);
       drag.stop();
   }
 };
@@ -13452,7 +13473,8 @@ DebugJS.event.evtDef = {
   keyup: {bubbles: true, cancelable: true},
   mousedown: {bubbles: true, cancelable: true},
   mousemove: {bubbles: true, cancelable: true},
-  mouseup: {bubbles: true, cancelable: true}
+  mouseup: {bubbles: true, cancelable: true},
+  wheel: {bubbles: true, cancelable: true}
 };
 DebugJS.event.create = function(type) {
   var e = document.createEvent('Events');
