@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805222246';
+  this.v = '201805232103';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6857,7 +6857,7 @@ DebugJS.prototype = {
     if (data == null) {
       return;
     }
-    ret = DebugJS.convertBin(data);
+    var ret = DebugJS.convertBin(data);
     if (ret != undefined) {
       DebugJS._log(ret);
     }
@@ -7021,7 +7021,7 @@ DebugJS.prototype = {
       return ret;
     }
     if (d == 'today') {d = DebugJS.today('/');}
-    var ret = DebugJS.date(d);
+    ret = DebugJS.date(d);
     if (ret != null) {
       if (echo) {DebugJS._log.res(ret);}
     }
@@ -7915,7 +7915,7 @@ DebugJS.prototype = {
       method = a[3];
       exp = DebugJS.getArgsFrom(arg, 5);
     }
-    ret = DebugJS.point.verify(prop, method, exp, label);
+    var ret = DebugJS.point.verify(prop, method, exp, label);
     return ret;
   },
 
@@ -8544,7 +8544,7 @@ DebugJS.prototype = {
       method = a[3];
       exp = DebugJS.getArgsFrom(arg, 5);
     }
-    ret = DebugJS.test.verify(got, method, exp, true, label);
+    var ret = DebugJS.test.verify(got, method, exp, true, label);
   },
 
   cmdTimer: function(arg, tbl) {
@@ -12478,8 +12478,7 @@ DebugJS.point.cursor = function(src, w, h) {
   point.ptr.style.height = h;
 };
 DebugJS.point.event = function(args) {
-  var point = DebugJS.point;
-  var el = point.getElementFromCurrentPos();
+  var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
   var type = DebugJS.splitArgsEx(args)[0];
   var opts = DebugJS.getOptVals(args);
