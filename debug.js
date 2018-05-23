@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805232103';
+  this.v = '201805232134';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8044,7 +8044,7 @@ DebugJS.prototype = {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS.convRGB(arg);
+      return DebugJS.convRGB(arg);
     }
   },
 
@@ -10100,13 +10100,21 @@ DebugJS.printUsage = function(m) {
 };
 
 DebugJS.convRGB = function(v) {
-  var ret;
+  var ret, rgb;
   if (v.indexOf('#') == 0) {
-    ret = DebugJS.convRGB16to10(v);
+    rgb = DebugJS.convRGB16to10(v);
+    ret = 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
   } else {
-    ret = DebugJS.convRGB10to16(v);
+    v = v.replace(/rgb\(/, '');
+    v = v.replace(/\)/, '');
+    v = v.replace(/,/g, ' ');
+    v = DebugJS.delLeadingAndTrailingSP(v);
+    v = v.replace(/\s{2,}/g, ' ');
+    rgb = DebugJS.convRGB10to16(v);
+    ret = '#' + rgb.r + rgb.g + rgb.b;
   }
-  DebugJS._log(ret.rgb);
+  DebugJS._log(rgb.rgb);
+  return ret;
 };
 
 DebugJS.convRGB16to10 = function(rgb16) {
