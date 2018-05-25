@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805232134';
+  this.v = '201805251935';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -816,6 +816,8 @@ DebugJS.prototype = {
     };
 
     styles['#' + ctx.id + ' pre'] = {
+      'width': 'auto !important',
+      'height': 'auto !important',
       'margin': '0 !important',
       'line-height': '1em !important',
       'color': opt.fontColor + ' !important',
@@ -13074,6 +13076,8 @@ DebugJS.point.hint.createArea = function() {
   var el = document.createElement('div');
   el.className = ctx.id + '-hint';
   var pre = document.createElement('pre');
+  ctx.setStyle(pre, 'width', 'auto');
+  ctx.setStyle(pre, 'height', 'auto');
   ctx.setStyle(pre, 'margin', 0);
   ctx.setStyle(pre, 'padding', 0);
   ctx.setStyle(pre, 'line-height', '1.2');
