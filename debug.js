@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805251935';
+  this.v = '201805260016';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2656,8 +2656,11 @@ DebugJS.prototype = {
         if (ctx.props.esc == 'disable') {
           break;
         }
-        if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGING) || (ctx.uiStatus & DebugJS.UI_ST_RESIZING)) {
-          ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
+        if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
+          ctx.endMove(ctx);
+          break;
+        }
+        if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) {
           ctx.endResize(ctx);
           break;
         }
