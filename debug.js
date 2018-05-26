@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805260016';
+  this.v = '201805261434';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6153,9 +6153,7 @@ DebugJS.prototype = {
     var e = ctx.batEndTxt.value;
     if (s == '') s = undefined;
     if (e == '') e = undefined;
-    bat.run.arg.s = s;
-    bat.run.arg.e = e;
-    bat.run();
+    bat.run(s, e);
   },
 
   updateBatRunBtn: function() {
@@ -6796,9 +6794,7 @@ DebugJS.prototype = {
           bat._resume();
         } else {
           if (ctx.batTextEditor) {bat.store(ctx.batTextEditor.value);}
-          bat.run.arg.s = a[1];
-          bat.run.arg.e = a[2];
-          bat.run();
+          bat.run(a[1], a[2]);
         }
         break;
       case 'list':
@@ -11576,7 +11572,7 @@ DebugJS.bat = function(b, a, sl, el) {
   bat.run.arg.s = sl;
   bat.run.arg.e = el;
   bat.setRunningSt(true);
-  setTimeout(bat.run, 0);
+  setTimeout(bat._run, 0);
 };
 DebugJS.bat.cmds = [];
 DebugJS.bat.ctrl = {
@@ -11658,7 +11654,12 @@ DebugJS.bat.parseLabels = function() {
     }
   }
 };
-DebugJS.bat.run = function() {
+DebugJS.bat.run = function(s, e) {
+  DebugJS.bat.run.arg.s = s;
+  DebugJS.bat.run.arg.e = e;
+  DebugJS.bat._run();
+};
+DebugJS.bat._run = function() {
   var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
   bat.setRunningSt(false);
