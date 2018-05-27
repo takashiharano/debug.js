@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805261434';
+  this.v = '201805271515';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6794,7 +6794,12 @@ DebugJS.prototype = {
           bat._resume();
         } else {
           if (ctx.batTextEditor) {bat.store(ctx.batTextEditor.value);}
-          bat.run(a[1], a[2]);
+          var s = a[1];
+          var e = a[2];
+          if ((!isNaN(s)) && (e == undefined)) {
+            e = s;
+          }
+          bat.run(s, e);
         }
         break;
       case 'list':
@@ -11671,7 +11676,7 @@ DebugJS.bat._run = function() {
   var s = bat.run.arg.s;
   var e = bat.run.arg.e;
   var sl, el;
-  if (s == undefined) {
+  if ((s == undefined) || (s == '*')) {
     sl = 0;
   } else if (isNaN(s)) {
     if (s.charAt(0) == ':') s = s.substr(1);
@@ -11687,7 +11692,7 @@ DebugJS.bat._run = function() {
     DebugJS._log.e('Out of range (1-' + bat.cmds.length + ')');
     return;
   }
-  if (e == undefined) {
+  if ((e == undefined) || (e == '*')) {
     el = bat.cmds.length - 1;
   } else if (isNaN(e)) {
     if (e.charAt(0) == ':') e = e.substr(1);
@@ -12081,7 +12086,7 @@ DebugJS.bat.list = function(s, e) {
   var js = false;
   var cmds = DebugJS.bat.cmds;
   var len = cmds.length;
-  if (s == undefined) {
+  if ((s == undefined) || (s == '*')) {
     s = 0;
     e = len;
   } else {
@@ -12091,7 +12096,7 @@ DebugJS.bat.list = function(s, e) {
       e = s + 1;
     }
   }
-  if (e > len) {
+  if ((e > len) || (e == '*')) {
     e = len;
   }
   s |= 0; e |= 0;
