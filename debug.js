@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201805271515';
+  this.v = '201806142320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7100,7 +7100,7 @@ DebugJS.prototype = {
       ctx._cmdDelayCancel(ctx);
       return;
     } else if ((d.match(/^\d{8}T\d{4,6}$/)) || (d.match(/^T\d{4,6}$/))) {
-      d = ctx._cmdDelayCalc(d);
+      d = DebugJS.calcTargetTime(d);
     } else if ((d == '') || (isNaN(d))) {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -7109,35 +7109,6 @@ DebugJS.prototype = {
     ctx.cmdDelayData.cmd = c;
     ctx._cmdDelayCancel(ctx);
     ctx.cmdDelayData.tmid = setTimeout(ctx._cmdDelayExec, d | 0);
-  },
-  _cmdDelayCalc: function(d) {
-    var yyyy, mm, dd, t1;
-    var now = DebugJS.getDateTime();
-    var dt = d.split('T');
-    var date = dt[0];
-    var time = dt[1];
-    var hh = time.substr(0, 2);
-    var mi = time.substr(2, 2);
-    var ss = time.substr(4, 2);
-    if (ss == '') ss = '00';
-    if (date == '') {
-      yyyy = now.yyyy;
-      mm = now.mm;
-      dd = now.dd;
-      var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
-      if (now.time > tgt.time) {
-        t1 = tgt.time + 86400000;
-      } else {
-        t1 = tgt.time;
-      }
-    } else {
-      yyyy = date.substr(0, 4);
-      mm = date.substr(4, 2);
-      dd = date.substr(6, 2);
-      var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss;
-      t1 = (new Date(sd)).getTime();
-    }
-    return (t1 - now.time);
   },
   _cmdDelayExec: function() {
     var ctx = DebugJS.ctx;
@@ -9623,6 +9594,36 @@ DebugJS.timestr2struct = function(str) {
   return st;
 };
 
+DebugJS.calcTargetTime = function(tgt) {
+  var yyyy, mm, dd, t1;
+  var now = DebugJS.getDateTime();
+  var dt = tgt.split('T');
+  var date = dt[0];
+  var time = dt[1];
+  var hh = time.substr(0, 2);
+  var mi = time.substr(2, 2);
+  var ss = time.substr(4, 2);
+  if (ss == '') ss = '00';
+  if (date == '') {
+    yyyy = now.yyyy;
+    mm = now.mm;
+    dd = now.dd;
+    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
+    if (now.time > tgt.time) {
+      t1 = tgt.time + 86400000;
+    } else {
+      t1 = tgt.time;
+    }
+  } else {
+    yyyy = date.substr(0, 4);
+    mm = date.substr(4, 2);
+    dd = date.substr(6, 2);
+    var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss;
+    t1 = (new Date(sd)).getTime();
+  }
+  return (t1 - now.time);
+};
+
 DebugJS.nan2zero = function(v) {
   return (isNaN(v) ? 0 : v);
 };
@@ -11959,15 +11960,19 @@ DebugJS.bat.prepro = function(cmd) {
       var w = cmds[1];
       if (w == '') {
         w = ctx.props.wait;
-      } else {
+      } else if (!((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/)))) {
         try {
-          w = eval(w) | 0;
+          w = eval(w);
         } catch (e) {
           DebugJS._log.e(e);
         }
       }
+      w += '';
+      if ((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/))) {
+        w = DebugJS.calcTargetTime(w);
+      }
       bat.ppEcho(cmd);
-      ctrl.tmid = setTimeout(bat.exec, w);
+      ctrl.tmid = setTimeout(bat.exec, w | 0);
       return 2;
   }
   if (ctrl.js) {
