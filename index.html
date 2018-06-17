@@ -2612,7 +2612,8 @@ operation: <b>lock</b>
       millis / Date-Time
     </td>
     <td>
-      Convert millis &lt;--&gt; Date-Time
+      Convert millis &lt;--&gt; Date-Time<br>
+      -iso option: output in ISO 8601 format<br><br>
 <pre class="eg">
 $ date 1500000000000
 -&gt; 2017-07-14 FRI 11:40:00.000
@@ -2621,7 +2622,13 @@ $  date 2000/01/01 00:00:00
 -&gt; 2000-01-01 SAT 00:00:00.000 (946652400000)
 
 $ date
--&gt; 2017-07-15 SAT 14:18:23.892 (1500095903892)
+-&gt; 2017-07-15 SAT 14:18:23.892 (1500095903892) <span class="annotation">current time</span>
+
+$ date -iso
+-&gt; 20170715T141823.892 <span class="annotation">current time</span>
+
+$ date -iso 1500000000000
+-&gt; 20170714T114000.000
 </pre>
     </td>
   </tr>
