@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806171958';
+  this.v = '201806180746';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6794,12 +6794,14 @@ DebugJS.prototype = {
           bat._resume();
         } else {
           if (ctx.batTextEditor) {bat.store(ctx.batTextEditor.value);}
-          var s = a[1];
-          var e = a[2];
-          if ((!isNaN(s)) && (e == undefined)) {
+          var s = DebugJS.getOptVal(arg, 's');
+          var e = DebugJS.getOptVal(arg, 'e');
+          var ag = DebugJS.getOptVal(arg, 'arg');
+          if ((!isNaN(s)) && (e == null)) {
             e = s;
           }
-          bat.run(s, e);
+          if (ag == null) {ag = undefined;}
+          bat.run(s, e, ag);
         }
         break;
       case 'list':
@@ -11708,9 +11710,13 @@ DebugJS.bat.parseLabels = function() {
     }
   }
 };
-DebugJS.bat.run = function(s, e) {
+DebugJS.bat.run = function(s, e, a) {
+  var bat = DebugJS.bat;
   DebugJS.bat.run.arg.s = s;
   DebugJS.bat.run.arg.e = e;
+  if (a != undefined) {
+    bat.setExecArg(a);
+  }
   DebugJS.bat._run();
 };
 DebugJS.bat._run = function() {
