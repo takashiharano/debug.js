@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806142320';
+  this.v = '201806171958';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7011,7 +7011,14 @@ DebugJS.prototype = {
   },
 
   cmdDate: function(arg, tbl) {
-    var d = DebugJS.date(arg);
+    var val = arg;
+    var iso = false;
+    var optIdx = arg.indexOf('-iso');
+    if (optIdx >= 0) {
+      iso = true;
+      val = arg.substr(optIdx + 5);
+    }
+    var d = DebugJS.date(val, iso);
     if (d == null) {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -7099,6 +7106,9 @@ DebugJS.prototype = {
     if (d == '-c') {
       ctx._cmdDelayCancel(ctx);
       return;
+    } else if (d.match(/\|/)) {
+      d = DebugJS.calcNextTime(d);
+      d = DebugJS.calcTargetTime(d);
     } else if ((d.match(/^\d{8}T\d{4,6}$/)) || (d.match(/^T\d{4,6}$/))) {
       d = DebugJS.calcTargetTime(d);
     } else if ((d == '') || (isNaN(d))) {
@@ -9450,21 +9460,30 @@ DebugJS.getDateTime = function(dt) {
   return dateTime;
 };
 
-DebugJS.date = function(arg) {
-  arg = DebugJS.delLeadingAndTrailingSP(arg);
+DebugJS.date = function(val, iso) {
+  val += '';
+  val = DebugJS.delLeadingAndTrailingSP(val);
   var s = null;
   var dt;
-  if ((arg == '') || isNaN(arg)) {
-    arg = arg.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
-    dt = DebugJS.getDateTime(arg);
+  if ((val == '') || isNaN(val)) {
+    val = val.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
+    dt = DebugJS.getDateTime(val);
     var tm = dt.time;
     if (!isNaN(tm)) {
-      s = DebugJS.date(tm + '') + ' (' + tm + ')';
+      if (iso) {
+        s = DebugJS.date(tm, iso);
+      } else {
+        s = DebugJS.date(tm) + ' (' + tm + ')';
+      }
     }
   } else {
-    arg = DebugJS.parseInt(arg);
-    dt = DebugJS.getDateTime(arg);
-    s = DebugJS.convDateTimeStr(dt) + ' ' + DebugJS.getTimeOffsetStr(dt.offset);
+    val = DebugJS.parseInt(val);
+    dt = DebugJS.getDateTime(val);
+    if (iso) {
+      s = DebugJS.getDateTimeStrIso(dt);
+    } else {
+      s = DebugJS.convDateTimeStr(dt) + ' ' + DebugJS.getTimeOffsetStr(dt.offset);
+    }
   }
   return s;
 };
@@ -9510,6 +9529,10 @@ DebugJS.today = function(s) {
 
 DebugJS.convDateTimeStr = function(d) {
   return (d.yyyy + '-' + d.mm + '-' + d.dd + ' ' + DebugJS.WDAYS[d.wday] + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss);
+};
+
+DebugJS.getDateTimeStrIso = function(d) {
+  return (d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss);
 };
 
 DebugJS.convDateStr = function(d, s) {
@@ -9603,12 +9626,14 @@ DebugJS.calcTargetTime = function(tgt) {
   var hh = time.substr(0, 2);
   var mi = time.substr(2, 2);
   var ss = time.substr(4, 2);
+  var sss = time.substr(7, 3);
   if (ss == '') ss = '00';
+  sss = (sss + '000').substr(0, 3);
   if (date == '') {
     yyyy = now.yyyy;
     mm = now.mm;
     dd = now.dd;
-    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
+    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss + '.' + sss);
     if (now.time > tgt.time) {
       t1 = tgt.time + 86400000;
     } else {
@@ -9618,10 +9643,33 @@ DebugJS.calcTargetTime = function(tgt) {
     yyyy = date.substr(0, 4);
     mm = date.substr(4, 2);
     dd = date.substr(6, 2);
-    var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss;
+    var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss + '.' + sss;
     t1 = (new Date(sd)).getTime();
   }
   return (t1 - now.time);
+};
+
+DebugJS.calcNextTime = function(times) {
+  var now = DebugJS.getDateTime();
+  ts = times.split('|');
+  var yyyy = now.yyyy;
+  var mm = now.mm;
+  var dd = now.dd;
+  for (var i = 0; i < ts.length; i++) {
+    var t = ts[i];
+    t = t.replace(/T/, '');
+    var hh = t.substr(0, 2);
+    var mi = t.substr(2, 2);
+    var ss = t.substr(4, 2);
+    var sss = t.substr(7, 3);
+    if (ss == '') ss = '00';
+    sss = (sss + '000').substr(0, 3);
+    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss + '.' + sss);
+    if (now.time <= tgt.time) {
+      return ts[i];
+    }
+  }
+  return ts[0];
 };
 
 DebugJS.nan2zero = function(v) {
@@ -11960,7 +12008,7 @@ DebugJS.bat.prepro = function(cmd) {
       var w = cmds[1];
       if (w == '') {
         w = ctx.props.wait;
-      } else if (!((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/)))) {
+      } else if (!((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/)) || (w.match(/\|/)))) {
         try {
           w = eval(w);
         } catch (e) {
@@ -11968,6 +12016,9 @@ DebugJS.bat.prepro = function(cmd) {
         }
       }
       w += '';
+      if (w.match(/\|/)) {
+        w = DebugJS.calcNextTime(w);
+      }
       if ((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/))) {
         w = DebugJS.calcTargetTime(w);
       }
