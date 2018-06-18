@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806182128';
+  this.v = '201806182240';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6798,8 +6798,11 @@ DebugJS.prototype = {
           var s = DebugJS.getOptVal(arg, 's');
           var e = DebugJS.getOptVal(arg, 'e');
           var ag = DebugJS.getOptVal(arg, 'arg');
-          if ((!isNaN(s)) && (e == null)) {
-            e = s;
+          if ((s == null) && (e == null)) {
+            s = a[1];
+            if ((s != undefined) && (!isNaN(s))) {
+              e = s;
+            }
           }
           if (ag == null) {ag = undefined;}
           bat.run(s, e, ag);

@@ -2479,7 +2479,7 @@ $ base64 -d YWJjZGVmZw==
     <td>
       Operate BAT Script
 <pre class="eg">
-$ bat run start-line<span class="annotation">(opt)</span> end-line<span class="annotation">(opt)</span>
+$ bat run -s START-LINE<span class="annotation">(opt)</span> -e END-LINE<span class="annotation">(opt)</span> -arg ARGUMENT<span class="annotation">(opt)</span> 
 $ bat pause
 $ bat stop
 $ bat list start-line<span class="annotation">(opt)</span> end-line<span class="annotation">(opt)</span>
@@ -2490,7 +2490,10 @@ $ bat exec b64-encoded-bat
 $ bat run 1
 -&gt; execute only line 1
 
-$ bat run 3 *
+$ bat run -s 3 -e 5
+-&gt; execute from line 3 through line 5
+
+$ bat run -s 3
 -&gt; execute from line 3 through the end
 </pre>
     </td>
