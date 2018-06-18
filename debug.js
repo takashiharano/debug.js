@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806180746';
+  this.v = '201806182128';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -337,6 +337,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fnc: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
     {cmd: 'log', fnc: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
+    {cmd: 'nexttime', fnc: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-c|-key key] [timeout]'},
@@ -7015,10 +7016,10 @@ DebugJS.prototype = {
   cmdDate: function(arg, tbl) {
     var val = arg;
     var iso = false;
-    var optIdx = arg.indexOf('-iso');
-    if (optIdx >= 0) {
+    var idx = DebugJS.indexOfOptVal(arg, '-iso');
+    if (idx >= 0) {
       iso = true;
-      val = arg.substr(optIdx + 5);
+      val = arg.substr(idx);
     }
     var d = DebugJS.date(val, iso);
     if (d == null) {
@@ -7109,7 +7110,7 @@ DebugJS.prototype = {
       ctx._cmdDelayCancel(ctx);
       return;
     } else if (d.match(/\|/)) {
-      d = DebugJS.calcNextTime(d);
+      d = DebugJS.calcNextTime(d).t;
       d = DebugJS.calcTargetTime(d);
     } else if ((d.match(/^\d{8}T\d{4,6}$/)) || (d.match(/^T\d{4,6}$/))) {
       d = DebugJS.calcTargetTime(d);
@@ -7646,6 +7647,27 @@ DebugJS.prototype = {
     } catch (e) {
       DebugJS._log.e(e);
     }
+  },
+
+  cmdNextTime: function(arg, tbl) {
+    var v = arg;
+    var p = true;
+    var idx = DebugJS.indexOfOptVal(arg, '-q');
+    if (idx >= 0) {
+      p = false;
+      v = arg.substr(idx);
+    }
+    v = DebugJS.delLeadingAndTrailingSP(v);
+    if (!(v.match(/^T\d{4,6}/))) {
+      DebugJS.printUsage(tbl.usage);
+      return '';
+    }
+    var t = DebugJS.calcNextTime(v);
+    var idx = DebugJS.indexOfOptVal(arg, '-q');
+    if (p) {
+      DebugJS.log.res(DebugJS.convDateTimeStr(DebugJS.getDateTime(t.time)));
+    }
+    return t.t;
   },
 
   cmdOpen: function(arg, tbl) {
@@ -9305,6 +9327,15 @@ DebugJS.getQuotedStr = function(str) {
   return ret;
 };
 
+DebugJS.indexOfOptVal = function(a, o) {
+  var r = -1;
+  var i = a.indexOf(o);
+  if (i >= 0) {
+    r = i + o.length + 1;
+  }
+  return r;
+};
+
 DebugJS.encodeEsc = function(str) {
   return str.replace(/\\/g, '\\\\');
 };
@@ -9628,14 +9659,12 @@ DebugJS.calcTargetTime = function(tgt) {
   var hh = time.substr(0, 2);
   var mi = time.substr(2, 2);
   var ss = time.substr(4, 2);
-  var sss = time.substr(7, 3);
   if (ss == '') ss = '00';
-  sss = (sss + '000').substr(0, 3);
   if (date == '') {
     yyyy = now.yyyy;
     mm = now.mm;
     dd = now.dd;
-    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss + '.' + sss);
+    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
     if (now.time > tgt.time) {
       t1 = tgt.time + 86400000;
     } else {
@@ -9645,7 +9674,7 @@ DebugJS.calcTargetTime = function(tgt) {
     yyyy = date.substr(0, 4);
     mm = date.substr(4, 2);
     dd = date.substr(6, 2);
-    var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss + '.' + sss;
+    var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss;
     t1 = (new Date(sd)).getTime();
   }
   return (t1 - now.time);
@@ -9654,6 +9683,7 @@ DebugJS.calcTargetTime = function(tgt) {
 DebugJS.calcNextTime = function(times) {
   var now = DebugJS.getDateTime();
   ts = times.split('|');
+  var ret = {t: ts[0]};
   var yyyy = now.yyyy;
   var mm = now.mm;
   var dd = now.dd;
@@ -9663,15 +9693,18 @@ DebugJS.calcNextTime = function(times) {
     var hh = t.substr(0, 2);
     var mi = t.substr(2, 2);
     var ss = t.substr(4, 2);
-    var sss = t.substr(7, 3);
     if (ss == '') ss = '00';
-    sss = (sss + '000').substr(0, 3);
-    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss + '.' + sss);
+    var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
+    if (i == 0) {ret.time = tgt.time;}
     if (now.time <= tgt.time) {
-      return ts[i];
+      ret.t = ts[i];
+      ret.time = tgt.time;
+      return ret;
     }
   }
-  return ts[0];
+  ret.t = ts[0];
+  ret.time += 86400000;
+  return ret;
 };
 
 DebugJS.nan2zero = function(v) {
@@ -12023,7 +12056,7 @@ DebugJS.bat.prepro = function(cmd) {
       }
       w += '';
       if (w.match(/\|/)) {
-        w = DebugJS.calcNextTime(w);
+        w = DebugJS.calcNextTime(w).t;
       }
       if ((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/))) {
         w = DebugJS.calcTargetTime(w);
