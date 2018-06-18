@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806182240';
+  this.v = '201806190100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9686,6 +9686,7 @@ DebugJS.calcTargetTime = function(tgt) {
 DebugJS.calcNextTime = function(times) {
   var now = DebugJS.getDateTime();
   ts = times.split('|');
+  ts.sort();
   var ret = {t: ts[0]};
   var yyyy = now.yyyy;
   var mm = now.mm;
