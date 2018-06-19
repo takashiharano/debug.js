@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806192300';
+  this.v = '201806192320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9551,6 +9551,10 @@ DebugJS.isDateTimeFormat = function(s, p) {
   return (s.match(new RegExp(r)) ? true : false);
 };
 
+DebugJS.isTimeFormat = function(s) {
+  return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T\d{4,6}$/)));
+};
+
 DebugJS.num2date = function(s) {
   var d = null;
   if (DebugJS.isBasicDateFormat(s)) {
@@ -9708,9 +9712,6 @@ DebugJS.calcNextTime = function(times) {
   ret.t = ts[0];
   ret.time += 86400000;
   return ret;
-};
-DebugJS.isTimeFormat = function(s) {
-  return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T\d{4,6}$/)));
 };
 
 DebugJS.nan2zero = function(v) {
