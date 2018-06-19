@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806192050';
+  this.v = '201806192300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7115,7 +7115,7 @@ DebugJS.prototype = {
     } else if (d.match(/\|/)) {
       d = DebugJS.calcNextTime(d).t;
       d = DebugJS.calcTargetTime(d);
-    } else if ((d.match(/^\d{8}T\d{4,6}$/)) || (d.match(/^T\d{4,6}$/))) {
+    } else if (DebugJS.isTimeFormat(d)) {
       d = DebugJS.calcTargetTime(d);
     } else if ((d == '') || (isNaN(d))) {
       DebugJS.printUsage(tbl.usage);
@@ -9658,10 +9658,10 @@ DebugJS.calcTargetTime = function(tgt) {
   var now = DebugJS.getDateTime();
   var dt = tgt.split('T');
   var date = dt[0];
-  var time = dt[1];
-  var hh = time.substr(0, 2);
-  var mi = time.substr(2, 2);
-  var ss = time.substr(4, 2);
+  var t = dt[1];
+  var hh = t.substr(0, 2);
+  var mi = t.substr(2, 2);
+  var ss = t.substr(4, 2);
   if (ss == '') ss = '00';
   if (date == '') {
     yyyy = now.yyyy;
@@ -9682,7 +9682,6 @@ DebugJS.calcTargetTime = function(tgt) {
   }
   return (t1 - now.time);
 };
-
 DebugJS.calcNextTime = function(times) {
   var now = DebugJS.getDateTime();
   ts = times.split('|');
@@ -9709,6 +9708,9 @@ DebugJS.calcNextTime = function(times) {
   ret.t = ts[0];
   ret.time += 86400000;
   return ret;
+};
+DebugJS.isTimeFormat = function(s) {
+  return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T\d{4,6}$/)));
 };
 
 DebugJS.nan2zero = function(v) {
@@ -12051,7 +12053,7 @@ DebugJS.bat.prepro = function(cmd) {
       var w = cmds[1];
       if (w == '') {
         w = ctx.props.wait;
-      } else if (!((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/)) || (w.match(/\|/)))) {
+      } else if (!((DebugJS.isTimeFormat(w)) || (w.match(/\|/)))) {
         try {
           w = eval(w);
         } catch (e) {
@@ -12062,7 +12064,7 @@ DebugJS.bat.prepro = function(cmd) {
       if (w.match(/\|/)) {
         w = DebugJS.calcNextTime(w).t;
       }
-      if ((w.match(/^\d{8}T\d{4,6}$/)) || (w.match(/^T\d{4,6}$/))) {
+      if (DebugJS.isTimeFormat(w)) {
         w = DebugJS.calcTargetTime(w);
       }
       bat.ppEcho(cmd);
