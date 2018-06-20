@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806192320';
+  this.v = '201806202330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7036,7 +7036,7 @@ DebugJS.prototype = {
   cmdDateConv: function(arg, echo) {
     var ret = null;
     var d = DebugJS.delLeadingAndTrailingSP(arg);
-    if (!(DebugJS.isDateFormat(d) || DebugJS.isDateTimeFormat(d) || (d == 'today'))) {
+    if (!(DebugJS.isDateFormat(d) || DebugJS.isDateTimeFormat(d) || DebugJS.isDateTimeFormatIso(d) || (d == 'today'))) {
       return ret;
     }
     if (d == 'today') {d = DebugJS.today('/');}
@@ -9496,14 +9496,33 @@ DebugJS.getDateTime = function(dt) {
   return dateTime;
 };
 
+DebugJS.getDateTimeIso = function(s) {
+  var p = s.split('T');
+  var d = p[0];
+  var t = p[1];
+  var yyyy = d.substr(0, 4);
+  var mm = d.substr(4, 2);
+  var dd = d.substr(6, 2);
+  var hh = (t.substr(0, 2) + '00').substr(0, 2);
+  var mi = (t.substr(2, 2) + '00').substr(0, 2);
+  var ss = (t.substr(4, 2) + '00').substr(0, 2);
+  var sss = (t.substr(7, 3) + '000').substr(0, 3);
+  var dt = new Date(yyyy, (mm | 0) - 1, dd, hh, mi, ss, sss);
+  return DebugJS.getDateTime(dt);
+};
+
 DebugJS.date = function(val, iso) {
   val += '';
   val = DebugJS.delLeadingAndTrailingSP(val);
   var s = null;
   var dt;
   if ((val == '') || isNaN(val)) {
-    val = val.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
-    dt = DebugJS.getDateTime(val);
+    if (DebugJS.isDateTimeFormatIso(val)) {
+      dt = DebugJS.getDateTimeIso(val);
+    } else {
+      val = val.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
+      dt = DebugJS.getDateTime(val);
+    }
     var tm = dt.time;
     if (!isNaN(tm)) {
       if (iso) {
@@ -9547,6 +9566,13 @@ DebugJS.isBasicDateFormat = function(s, p) {
 DebugJS.isDateTimeFormat = function(s, p) {
   if (s == null) {return false;}
   var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2} {1,}\\d{1,2}:\\d{2}:?\\d{0,2}\.?\\d{0,3}';
+  if (!p) {r += '$';}
+  return (s.match(new RegExp(r)) ? true : false);
+};
+
+DebugJS.isDateTimeFormatIso = function(s, p) {
+  if (s == null) {return false;}
+  var r = '^\\d{8}T\\d{0,6}\.?\\d{0,3}';
   if (!p) {r += '$';}
   return (s.match(new RegExp(r)) ? true : false);
 };

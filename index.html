@@ -2619,13 +2619,16 @@ operation: <b>lock</b>
       -iso option: output in ISO 8601 format<br><br>
 <pre class="eg">
 $ date 1500000000000
--&gt; 2017-07-14 FRI 11:40:00.000
+-&gt; 2017-07-14 FRI 11:40:00.000 +0900
 
 $  date 2000/01/01 00:00:00
--&gt; 2000-01-01 SAT 00:00:00.000 (946652400000)
+-&gt; 2000-01-01 SAT 00:00:00.000 +0900 (946652400000)
+
+$ date 20180620T123456.987
+-&gt; 2018-06-20 WED 12:34:56.987 +0900 (1529465696987)
 
 $ date
--&gt; 2017-07-15 SAT 14:18:23.892 (1500095903892) <span class="annotation">current time</span>
+-&gt; 2017-07-15 SAT 14:18:23.892 +0900 (1500095903892) <span class="annotation">current time</span>
 
 $ date -iso
 -&gt; 20170715T141823.892 <span class="annotation">current time</span>
@@ -3951,16 +3954,17 @@ $ 10:00 - 16:00 -
      Perform a date calculation.<br><br>
 <pre class="eg">
 $ 2018/01/01 + 2
+$ 2018-01-01 + 2
+$ 20180101 + 2
 -&gt; 2018/01/03
 
 $ 2018/01/01 - 2
+$ 2018-01-01 - 2
+$ 20180101 - 2
 -&gt; 2017/12/30
 
-$ 2018-01/01 + 2
-
-$ 20180101 + 2
-
 $ today + 2
+$ today - 2
 </pre>
     </td>
   </tr>
@@ -3973,16 +3977,30 @@ $ today + 2
     <td>
 <pre class="eg">
 $ 2018/01/01 2018/01/03
+$ 2018-01-01 2018-01-03
+$ 20180101 20180103
 -&gt; 2
 
 $ 2018/01/01 2017/12/30
 -&gt; -2
 
-$ 2018-01-01 2018-01-03
-
-$ 20180101 20180103
-
 $ today 2018/04/10
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">Date-Time</td>
+    <td>
+     date-time
+    </td>
+    <td>
+<pre class="eg">
+$ 2018/06/20 12:34:56.123
+$ 2018-06-20 12:34:56.123
+$ 20180620T123456.123
+-&gt; 2018-06-20 WED 12:34:56.123 +0900 (1529465696123)
+<span class="annotation">This is an alias of date command.</span>
 </pre>
     </td>
   </tr>
@@ -4001,7 +4019,7 @@ $ U+0041
 $ U+6F22 U+5B57
 -&gt; 漢字
 </pre>
-<span class="annotation">This is an alias of the unicode command.</span>
+<span class="annotation">This is an alias of unicode command.</span>
     </td>
   </tr>
 </table>
