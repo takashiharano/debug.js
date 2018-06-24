@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806250013';
+  this.v = '201806250031';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1040,7 +1040,7 @@ DebugJS.prototype = {
       'background': 'rgba(0,0,0,0.65) !important'
     };
 
-    styles['.dbg-rsltbox'] = {
+    styles['.dbg-resbox'] = {
       'display': 'inline-block !important',
       'min-width': 'calc(100% - 18px) !important',
       'height': '1.5em',
@@ -1056,7 +1056,7 @@ DebugJS.prototype = {
       'resize': 'none !important'
     };
 
-    styles['.dbg-rsltbox.err'] = {
+    styles['.dbg-resbox.err'] = {
       'border': '1px solid #c00 !important',
       'background': 'linear-gradient(#100808, #400) !important'
     };
@@ -14131,20 +14131,20 @@ DebugJS.randomStr = function(min, max) {
   return DebugJS.getRandom(DebugJS.RND_TYPE_STR, min, max);
 };
 
-DebugJS.createRsltBox = function(m) {
-  return DebugJS._createRsltBox(m);
+DebugJS.createResBox = function(m) {
+  return DebugJS._createResBox(m);
 };
-DebugJS.createRsltBoxErr = function(m) {
-  return DebugJS._createRsltBox(m, true);
+DebugJS.createResBoxErr = function(m) {
+  return DebugJS._createResBox(m, true);
 };
-DebugJS._createRsltBox = function(m, e) {
-  return '<textarea class="dbg-rsltbox' + (e ? ' err' : '') + '" readonly>' + m + '</textarea>';
+DebugJS._createResBox = function(m, e) {
+  return '<textarea class="dbg-resbox' + (e ? ' err' : '') + '" readonly>' + m + '</textarea>';
 };
-DebugJS.adjustRsltBox = function() {
-  setTimeout(DebugJS._adjustRsltBox, 10);
+DebugJS.adjustResBox = function() {
+  setTimeout(DebugJS._adjustResBox, 10);
 };
-DebugJS._adjustRsltBox = function() {
-  var el = document.getElementsByClassName('dbg-rsltbox');
+DebugJS._adjustResBox = function() {
+  var el = document.getElementsByClassName('dbg-resbox');
   for (var i = 0; i < el.length; i++) {
     var e = el[i];
     var sh = e.scrollHeight;
@@ -14413,7 +14413,7 @@ DebugJS.balse = function() {
   DebugJS.log.root = DebugJS.fn;
   DebugJS.addEvtListener = DebugJS.fn;
   DebugJS.addFileLoader = DebugJS.fn;
-  DebugJS.adjustRsltBox = DebugJS.fn;
+  DebugJS.adjustResBox = DebugJS.fn;
   DebugJS.cmd = DebugJS.fn;
   DebugJS.bat = DebugJS.fn;
   DebugJS.bat.set = DebugJS.fn;
@@ -14456,7 +14456,7 @@ DebugJS.balse = function() {
   DebugJS.x.getPanel = DebugJS.fn;
   DebugJS.x.removePanel = DebugJS.fn;
   DebugJS.x.setBtnLabel = DebugJS.fn;
-  DebugJS._createRsltBox = DebugJS.fn;
+  DebugJS._createResBox = DebugJS.fn;
 };
 DebugJS.start = function() {
   DebugJS.rootFncs();
