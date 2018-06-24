@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806202330';
+  this.v = '201806250013';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1038,6 +1038,27 @@ DebugJS.prototype = {
       'box-shadow': '8px 8px 10px rgba(0,0,0,.3) !important',
       'border-radius': '3px !important',
       'background': 'rgba(0,0,0,0.65) !important'
+    };
+
+    styles['.dbg-rsltbox'] = {
+      'display': 'inline-block !important',
+      'min-width': 'calc(100% - 18px) !important',
+      'height': '1.5em',
+      'margin-top': '4px !important',
+      'border': '1px solid #2c6cb8 !important',
+      'padding': '5px !important',
+      'background': 'linear-gradient(#080810, #004) !important',
+      'color': '#fff !important',
+      'font-size': fontSize + ' !important',
+      'font-family': 'Consolas !important',
+      'overflow': 'auto',
+      'cursor': 'text !important',
+      'resize': 'none !important'
+    };
+
+    styles['.dbg-rsltbox.err'] = {
+      'border': '1px solid #c00 !important',
+      'background': 'linear-gradient(#100808, #400) !important'
     };
 
     ctx.applyStyles(ctx, styles);
@@ -14110,6 +14131,27 @@ DebugJS.randomStr = function(min, max) {
   return DebugJS.getRandom(DebugJS.RND_TYPE_STR, min, max);
 };
 
+DebugJS.createRsltBox = function(m) {
+  return DebugJS._createRsltBox(m);
+};
+DebugJS.createRsltBoxErr = function(m) {
+  return DebugJS._createRsltBox(m, true);
+};
+DebugJS._createRsltBox = function(m, e) {
+  return '<textarea class="dbg-rsltbox' + (e ? ' err' : '') + '" readonly>' + m + '</textarea>';
+};
+DebugJS.adjustRsltBox = function() {
+  setTimeout(DebugJS._adjustRsltBox, 10);
+};
+DebugJS._adjustRsltBox = function() {
+  var el = document.getElementsByClassName('dbg-rsltbox');
+  for (var i = 0; i < el.length; i++) {
+    var e = el[i];
+    var sh = e.scrollHeight;
+    e.style.height = sh + 'px';
+  }
+};
+
 DebugJS.wd = {};
 DebugJS.wd.INTERVAL = 50;
 DebugJS.wd.wdTmId = 0;
@@ -14371,6 +14413,7 @@ DebugJS.balse = function() {
   DebugJS.log.root = DebugJS.fn;
   DebugJS.addEvtListener = DebugJS.fn;
   DebugJS.addFileLoader = DebugJS.fn;
+  DebugJS.adjustRsltBox = DebugJS.fn;
   DebugJS.cmd = DebugJS.fn;
   DebugJS.bat = DebugJS.fn;
   DebugJS.bat.set = DebugJS.fn;
@@ -14413,6 +14456,7 @@ DebugJS.balse = function() {
   DebugJS.x.getPanel = DebugJS.fn;
   DebugJS.x.removePanel = DebugJS.fn;
   DebugJS.x.setBtnLabel = DebugJS.fn;
+  DebugJS._createRsltBox = DebugJS.fn;
 };
 DebugJS.start = function() {
   DebugJS.rootFncs();
@@ -14444,11 +14488,11 @@ DebugJS.start = function() {
   };
   DebugJS.restoreStatus(DebugJS.ctx);
 };
-var dbg = (dbg === undefined ? DebugJS : dbg);
-var log = (log === undefined ? DebugJS.log : log);
 DebugJS.ENABLE = true;
 if (DebugJS.ENABLE) {
   DebugJS.start();
 } else {
   DebugJS.balse();
 }
+var dbg = (dbg === undefined ? DebugJS : dbg);
+var log = (log === undefined ? DebugJS.log : log);
