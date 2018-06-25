@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806250031';
+  this.v = '201806252120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1047,7 +1047,7 @@ DebugJS.prototype = {
       'margin-top': '4px !important',
       'border': '1px solid #2c6cb8 !important',
       'padding': '5px !important',
-      'background': 'linear-gradient(#080810, #004) !important',
+      'background': 'linear-gradient(rgba(8,8,16,0.6),rgba(0,0,68,0.6)) !important',
       'color': '#fff !important',
       'font-size': fontSize + ' !important',
       'font-family': 'Consolas !important',
@@ -1058,7 +1058,7 @@ DebugJS.prototype = {
 
     styles['.dbg-resbox.err'] = {
       'border': '1px solid #c00 !important',
-      'background': 'linear-gradient(#100808, #400) !important'
+      'background': 'linear-gradient(rgba(16,8,8,0.6),rgba(68,0,0,0.6)) !important'
     };
 
     ctx.applyStyles(ctx, styles);
@@ -14140,15 +14140,16 @@ DebugJS.createResBoxErr = function(m) {
 DebugJS._createResBox = function(m, e) {
   return '<textarea class="dbg-resbox' + (e ? ' err' : '') + '" readonly>' + m + '</textarea>';
 };
-DebugJS.adjustResBox = function() {
+DebugJS.adjustResBox = function(adj) {
+  DebugJS.adjustResBox.a = adj | 0;
   setTimeout(DebugJS._adjustResBox, 10);
 };
+DebugJS.adjustResBox.a = 0;
 DebugJS._adjustResBox = function() {
   var el = document.getElementsByClassName('dbg-resbox');
   for (var i = 0; i < el.length; i++) {
     var e = el[i];
-    var sh = e.scrollHeight;
-    e.style.height = sh + 'px';
+    e.style.height = (e.scrollHeight + DebugJS.adjustResBox.a) + 'px';
   }
 };
 

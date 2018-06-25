@@ -2385,6 +2385,9 @@ dbg.test.getResultJSON(); <button class="demo-button2" onclick="log(dbg.test.get
     <td>
       Returns a readonly textarea tag string with given message.<br>
       This is intended to display some result or response.
+<pre>
+var html = dbg.createResBox('<input type="text" id="resbox-txt" class="demo-text" style="width:100px;" value="abc\n123\n456">'); <button class="demo-button2" onclick="log.p(dbg.createResBox(dbg.getElement('#resbox-txt').value));">DEMO</button> <button class="demo-button2" onclick="log(dbg.createResBox(dbg.getElement('#resbox-txt').value.replace(/\\n/g, '\n')));">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -2393,14 +2396,20 @@ dbg.test.getResultJSON(); <button class="demo-button2" onclick="log(dbg.test.get
     <td>message</td>
     <td>
       Returns a readonly textarea tag string with given message. (error style)
+<pre>
+var html = dbg.createResBoxErr('<input type="text" id="resbox-err-txt" class="demo-text" style="width:100px;" value="abc\n123\n456">'); <button class="demo-button2" onclick="log.p(dbg.createResBoxErr(dbg.getElement('#resbox-err-txt').value));">DEMO</button> <button class="demo-button2" onclick="log(dbg.createResBoxErr(dbg.getElement('#resbox-err-txt').value.replace(/\\n/g, '\n')));">DEMO</button>
+</pre>
     </td>
   </tr>
 
   <tr>
     <td class="name">dbg.adjustResBox</td>
-    <td></td>
+    <td>px</td>
     <td>
       Adjust height of textarea which is created by createResBox().
+<pre>
+dbg.adjustResBox(<input type="text" id="resbox-adj-txt" class="demo-text" style="width:20px;">); <button class="demo-button2" onclick="dbg.adjustResBox(dbg.getElement('#resbox-adj-txt').value);">DEMO</button>
+</pre>
     </td>
   </tr>
 
