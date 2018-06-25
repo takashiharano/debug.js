@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806252120';
+  this.v = '201806252150';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1713,6 +1713,8 @@ DebugJS.prototype = {
     var top, left;
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
+    if (clientW > window.outerWidth) {clientW = window.outerWidth;}
+    if (clientH > window.outerHeight) {clientH = window.outerHeight;}
     switch (pos) {
       case 'se':
         top = (clientH - dbgWinHeight - opt.adjPosY) + 'px';
