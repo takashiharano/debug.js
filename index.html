@@ -537,6 +537,7 @@ function httpDemo() {
   var cache = document.getElementById('http-cache-text').value;
   var user = document.getElementById('http-user-text').value;
   var pass = document.getElementById('http-pass-text').value;
+  var contentType = document.getElementById('http-contenttype-text').value;
   var userAgent = document.getElementById('http-ua-text').value;
 
   async = ((async == 'true') ? true : false);
@@ -550,6 +551,7 @@ function httpDemo() {
     cache: cache,
     user: user,
     pass: pass,
+    contentType: contentType,
     userAgent: userAgent
   };
 
@@ -2170,6 +2172,47 @@ format time:
  false: The numeric value corresponding to the time for 
         the logged time according to universal time. (default)
         e.g.,) 1508211296789
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.sendLog</td>
+    <td>
+      arg1: url<br>
+      arg2: paramName<br>
+      arg3: params<br>
+      arg4: extData<br>
+      arg5: noSS<br>
+      arg6: noBuf<br>
+      arg7: cb<br>
+    </td>
+    <td>
+      Send log buffer to server.<br><br>
+<pre class="eg">ur: URL to send
+paramName: request parameter name for log buffer
+params   : other parameters to send (map)
+extData  : extra info text put into send data
+noSS     : no screen shot (true|false)
+noBuf    : no original log buffer (true|false)
+cb       : callback function
+
+e.g.,)
+var cbFunc = function(xhr) {
+  var st = xhr.status;
+  if (st == 200) {
+    log('Send Log OK');
+  } else {
+    log.e('Send Log ERR (' + st + ')');
+  }
+};
+var url = 'https://debugjs.net/xxx';
+var params = {
+  foo: 'aaa',
+  bar: 'bbb'
+};
+var extData = 'aaa\nbbb\nccc';
+dbg.sendLog(url, 'log', params, extData, false, false, cbFunc);
 </pre>
     </td>
   </tr>
@@ -4399,6 +4442,7 @@ console.timeEnd('timer3');<br>
   cache: <input type="text" id="http-cache-text" value="false" class="inline-text-input" style="width:60px;">,
   user: '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
   pass: '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
+  contentType: '<input type="text" id="http-contenttype-text" value="" class="inline-text-input" style="width:200px;">',
   userAgent: '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:550px;">'
 };
 

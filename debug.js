@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201806252150';
+  this.v = '201807022235';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10852,6 +10852,9 @@ DebugJS.http = function(rq, cb) {
     }
   };
   xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
+  if (!rq.contentType) {
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  }
   if (!rq.cache) {
     xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
   }
@@ -10860,7 +10863,18 @@ DebugJS.http = function(rq, cb) {
   }
   xhr.send(rq.data);
 };
-
+DebugJS.http.buildParam = function(p) {
+  var s = '';
+  var cnt = 0;
+  for (key in p) {
+    if (cnt > 0) {
+      s += '&';
+    }
+    s += key + '=' + encodeURIComponent(p[key]);
+    cnt++;
+  }
+  return s;
+};
 DebugJS.onHttpRequestDone = function(xhr) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
@@ -11093,6 +11107,10 @@ DebugJS.strPadding = function(s, ch, l, p) {
   return txt;
 };
 
+DebugJS.crlf2lf = function(s) {
+  return s.replace(/\r\n/g, '\n');
+};
+
 DebugJS.trimDownText = function(txt, maxLen, style) {
   var snip = '...';
   if (style) {
@@ -11134,6 +11152,10 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
     }
   }
   return str;
+};
+
+DebugJS.isEmptyVal = function(o) {
+  return ((o === undefined) || (o === null) || (o === false) || (o === ''));
 };
 
 DebugJS.setStyleIfObjNA = function(obj, exceptFalse) {
@@ -11352,6 +11374,79 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   if (fmt == 'json') l = JSON.stringify(b);
   if (b64) l = DebugJS.encodeBase64(l);
   return l;
+};
+
+DebugJS.sendLog = function(url, pName, param, extData, noSS, noBf, cb) {
+  var b = DebugJS.createLogData(extData, !noSS, !noBf);
+  var data = DebugJS.http.buildParam(param);
+  if (data != '') {
+    data += '&';
+  }
+  if (DebugJS.isEmptyVal(pName)) {
+    pName = 'data';
+  }
+  data += pName + '=' + encodeURIComponent(b);
+  var r = {
+    url: url,
+    method: 'POST',
+    data: data
+  };
+  DebugJS.http(r, (cb ? cb : DebugJS.sendLogCb));
+};
+DebugJS.sendLogCb = function(xhr) {
+  var st = xhr.status;
+  if (st == 200) {
+    DebugJS._log('Send Log OK');
+  } else {
+    DebugJS._log.e('Send Log ERR (' + st + ')');
+  }
+};
+DebugJS.createLogData = function(extData, wSS, wBf) {
+  var logBuf = DebugJS.dumpLog('json', true, false);
+  var logTxt = DebugJS.dumpLog('text', false, true);
+  logTxt = DebugJS.html2text(logTxt);
+  logTxt = DebugJS.crlf2lf(logTxt);
+
+  var ss = DebugJS.getHTML();
+  ss = ss.replace(/<script.*<\/script>/g, '');
+  ss = DebugJS.encodeBase64(ss);
+
+  var hd = DebugJS.createLogHeader();
+  var b = '';
+  b += '------------------------------------------------------------------------\n';
+  b += hd;
+  b += '------------------------------------------------------------------------\n';
+  if (extData) {
+    extData = DebugJS.crlf2lf(extData);
+    b += extData;
+    if (extData.charAt(extData.length - 1) != '\n') {
+      b += '\n';
+    }
+    b += '------------------------------------------------------------------------\n';
+  }
+  b += '\n';
+  b += '[Client Log]\n';
+  b += logTxt + '\n\n';
+  if (wSS) {
+    b += '---- SCREEN SHOT ----\n' + ss + '\n\n';
+  }
+  if (wBf) {
+    b += '---- ORIGINAL LOG BUFFER ----\n' + logBuf + '\n\n';
+  }
+  return b;
+};
+DebugJS.createLogHeader = function() {
+  var dt = dbg.getDateTime();
+  var brw = DebugJS.getBrowserType();
+  var s = '';
+  s += 'Send Time  : ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  s += 'Browser    : ' + brw.name + ' ' + brw.version + '\n';
+  s += 'User Agent : ' + navigator.userAgent + '\n';
+  s += 'Screen Size: w=' + screen.width + ' h=' + screen.height + '\n';
+  s += 'Window Size: w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
+  s += 'Language   : ' + navigator.language + '\n';
+  s += 'window.name: ' + window.name + '\n';
+  return s;
 };
 
 DebugJS.loadLog = function(json, b64) {
