@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807022235';
+  this.v = '201807022309';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10852,7 +10852,9 @@ DebugJS.http = function(rq, cb) {
     }
   };
   xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
-  if (!rq.contentType) {
+  if (rq.contentType) {
+    xhr.setRequestHeader('Content-Type', rq.contentType);
+  } else {
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   }
   if (!rq.cache) {
