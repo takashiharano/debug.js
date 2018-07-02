@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807022309';
+  this.v = '201807030123';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11441,13 +11441,23 @@ DebugJS.createLogHeader = function() {
   var dt = dbg.getDateTime();
   var brw = DebugJS.getBrowserType();
   var s = '';
-  s += 'Send Time  : ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
-  s += 'Browser    : ' + brw.name + ' ' + brw.version + '\n';
-  s += 'User Agent : ' + navigator.userAgent + '\n';
-  s += 'Screen Size: w=' + screen.width + ' h=' + screen.height + '\n';
-  s += 'Window Size: w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
-  s += 'Language   : ' + navigator.language + '\n';
-  s += 'window.name: ' + window.name + '\n';
+  s += 'Sending Time: ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  s += 'Browser     : ' + brw.name + ' ' + brw.version + '\n';
+  s += 'User Agent  : ' + navigator.userAgent + '\n';
+  s += 'Screen Size : w=' + screen.width + ' h=' + screen.height + '\n';
+  s += 'Window Size : w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
+  s += 'Language    : ' + navigator.language + '\n';
+  s += 'Languages   : ';
+  var navLangs = navigator.languages;
+  if (navLangs) {
+    for (var i = 0; i < navLangs.length; i++) {
+      if (i > 0) {s += ', ';}
+      s += navLangs[i];
+    }
+  } else {
+    s += navLangs;
+  }
+  s += '\n';
   return s;
 };
 
