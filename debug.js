@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807030123';
+  this.v = '201807030740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11446,16 +11446,15 @@ DebugJS.createLogHeader = function() {
   s += 'User Agent  : ' + navigator.userAgent + '\n';
   s += 'Screen Size : w=' + screen.width + ' h=' + screen.height + '\n';
   s += 'Window Size : w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
-  s += 'Language    : ' + navigator.language + '\n';
-  s += 'Languages   : ';
+  s += 'Language    : ' + navigator.language;
   var navLangs = navigator.languages;
   if (navLangs) {
+    s += ' (';
     for (var i = 0; i < navLangs.length; i++) {
       if (i > 0) {s += ', ';}
       s += navLangs[i];
     }
-  } else {
-    s += navLangs;
+    s += ')';
   }
   s += '\n';
   return s;
