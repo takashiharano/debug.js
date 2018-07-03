@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807030740';
+  this.v = '201807032138';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -607,6 +607,7 @@ DebugJS.CHR_LF_S = '<span style="color:#0f0">' + DebugJS.CHR_LF + '</span>';
 DebugJS.CHR_CR_S = '<span style="color:#f00">' + DebugJS.CHR_CR + '</span>';
 DebugJS.CHR_WIN_FULL = '&#x25A1;';
 DebugJS.CHR_WIN_RST = '&#x2750;';
+DebugJS.LOG_BOUNDARY_BUF = '-- ORIGINAL LOG BUFFER --';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_EXPAND_H = false;
@@ -10125,6 +10126,7 @@ DebugJS.getHTML = function(b64) {
   var html = el.outerHTML;
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
     ctx.bodyEl.appendChild(ctx.win);
+    ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     if (cmdActive) {ctx.cmdLine.focus();}
   }
   if (b64) {
@@ -11378,8 +11380,8 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   return l;
 };
 
-DebugJS.sendLog = function(url, pName, param, extData, noSS, noBf, cb) {
-  var b = DebugJS.createLogData(extData, !noSS, !noBf);
+DebugJS.sendLog = function(url, pName, param, extHead, extData, wBf, cb) {
+  var b = DebugJS.createLogData(extHead, extData, wBf);
   var data = DebugJS.http.buildParam(param);
   if (data != '') {
     data += '&';
@@ -11403,37 +11405,33 @@ DebugJS.sendLogCb = function(xhr) {
     DebugJS._log.e('Send Log ERR (' + st + ')');
   }
 };
-DebugJS.createLogData = function(extData, wSS, wBf) {
-  var logBuf = DebugJS.dumpLog('json', true, false);
+DebugJS.createLogData = function(extHead, extData, wBf) {
+  var line = '------------------------------------------------------------------------\n';
   var logTxt = DebugJS.dumpLog('text', false, true);
   logTxt = DebugJS.html2text(logTxt);
   logTxt = DebugJS.crlf2lf(logTxt);
-
-  var ss = DebugJS.getHTML();
-  ss = ss.replace(/<script.*<\/script>/g, '');
-  ss = DebugJS.encodeBase64(ss);
-
   var hd = DebugJS.createLogHeader();
   var b = '';
-  b += '------------------------------------------------------------------------\n';
+  b += line;
   b += hd;
-  b += '------------------------------------------------------------------------\n';
-  if (extData) {
-    extData = DebugJS.crlf2lf(extData);
-    b += extData;
-    if (extData.charAt(extData.length - 1) != '\n') {
+  b += line;
+  if (extHead) {
+    extHead = DebugJS.crlf2lf(extHead);
+    b += extHead;
+    if (extHead.charAt(extHead.length - 1) != '\n') {
       b += '\n';
     }
-    b += '------------------------------------------------------------------------\n';
+    b += line;
   }
   b += '\n';
   b += '[Client Log]\n';
-  b += logTxt + '\n\n';
-  if (wSS) {
-    b += '---- SCREEN SHOT ----\n' + ss + '\n\n';
+  b += logTxt + '\n';
+  if (extData) {
+    b += extData + '\n\n';
   }
   if (wBf) {
-    b += '---- ORIGINAL LOG BUFFER ----\n' + logBuf + '\n\n';
+    var logBuf = DebugJS.dumpLog('json', true, false);
+    b += DebugJS.LOG_BOUNDARY_BUF + '\n' + logBuf + '\n';
   }
   return b;
 };
@@ -11441,12 +11439,12 @@ DebugJS.createLogHeader = function() {
   var dt = dbg.getDateTime();
   var brw = DebugJS.getBrowserType();
   var s = '';
-  s += 'Sending Time: ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
-  s += 'Browser     : ' + brw.name + ' ' + brw.version + '\n';
-  s += 'User Agent  : ' + navigator.userAgent + '\n';
-  s += 'Screen Size : w=' + screen.width + ' h=' + screen.height + '\n';
-  s += 'Window Size : w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
-  s += 'Language    : ' + navigator.language;
+  s += 'Sending Time : ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  s += 'Browser      : ' + brw.name + ' ' + brw.version + '\n';
+  s += 'User Agent   : ' + navigator.userAgent + '\n';
+  s += 'Screen Size  : w=' + screen.width + ' h=' + screen.height + '\n';
+  s += 'Window Size  : w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
+  s += 'Language     : ' + navigator.language;
   var navLangs = navigator.languages;
   if (navLangs) {
     s += ' (';

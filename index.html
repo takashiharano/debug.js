@@ -2182,20 +2182,20 @@ format time:
       arg1: url<br>
       arg2: paramName<br>
       arg3: params<br>
-      arg4: extData<br>
-      arg5: noSS<br>
-      arg6: noBuf<br>
-      arg7: cb<br>
+      arg4: extHeader<br>
+      arg5: extData<br>
+      arg6: outputBuf<br>
+      arg7: callback<br>
     </td>
     <td>
       Send log buffer to server.<br><br>
 <pre class="eg">ur: URL to send
 paramName: request parameter name for log buffer
 params   : other parameters to send (map)
-extData  : extra info text put into send data
-noSS     : no screen shot (true|false)
-noBuf    : no original log buffer (true|false)
-cb       : callback function
+extHeader: extra header text
+extData  : extra info text
+outputBuf: output original log buffer (true|false)
+callback : callback function
 
 e.g.,)
 var cbFunc = function(xhr) {
@@ -2211,8 +2211,9 @@ var params = {
   foo: 'aaa',
   bar: 'bbb'
 };
+var extHeader = 'key1:value1\nkey2:value2';
 var extData = 'aaa\nbbb\nccc';
-dbg.sendLog(url, 'log', params, extData, false, false, cbFunc);
+dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
 </pre>
     </td>
   </tr>
