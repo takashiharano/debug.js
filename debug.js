@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807032138';
+  this.v = '201807042121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11069,6 +11069,10 @@ DebugJS.startsWith = function(s, p, o) {
   return false;
 };
 
+DebugJS.endsWith = function(s, t) {
+  return (s.charAt(s.length - 1) == t);
+};
+
 DebugJS.strcount = function(s, p) {
   var cnt = 0;
   var pos = s.indexOf(p);
@@ -11383,12 +11387,8 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
 DebugJS.sendLog = function(url, pName, param, extHead, extData, wBf, cb) {
   var b = DebugJS.createLogData(extHead, extData, wBf);
   var data = DebugJS.http.buildParam(param);
-  if (data != '') {
-    data += '&';
-  }
-  if (DebugJS.isEmptyVal(pName)) {
-    pName = 'data';
-  }
+  if (data != '') {data += '&';}
+  if (DebugJS.isEmptyVal(pName)) {pName = 'data';}
   data += pName + '=' + encodeURIComponent(b);
   var r = {
     url: url,
@@ -11411,35 +11411,29 @@ DebugJS.createLogData = function(extHead, extData, wBf) {
   logTxt = DebugJS.html2text(logTxt);
   logTxt = DebugJS.crlf2lf(logTxt);
   var hd = DebugJS.createLogHeader();
-  var b = '';
-  b += line;
-  b += hd;
-  b += line;
+  var b = line + hd + line;
   if (extHead) {
     extHead = DebugJS.crlf2lf(extHead);
     b += extHead;
-    if (extHead.charAt(extHead.length - 1) != '\n') {
-      b += '\n';
-    }
+    if (!DebugJS.endsWith(extHead, '\n')) {b += '\n';}
     b += line;
   }
-  b += '\n';
-  b += '[Client Log]\n';
-  b += logTxt + '\n';
+  b += '\n[Client Log]\n' + logTxt;
+  if (!DebugJS.endsWith(logTxt, '\n')) {b += '\n';}
   if (extData) {
-    b += extData + '\n\n';
+    b += '\n' + extData;
+    if (!DebugJS.endsWith(extData, '\n')) {b += '\n';}
   }
   if (wBf) {
     var logBuf = DebugJS.dumpLog('json', true, false);
-    b += DebugJS.LOG_BOUNDARY_BUF + '\n' + logBuf + '\n';
+    b += '\n' + DebugJS.LOG_BOUNDARY_BUF + '\n' + logBuf + '\n';
   }
   return b;
 };
 DebugJS.createLogHeader = function() {
   var dt = dbg.getDateTime();
   var brw = DebugJS.getBrowserType();
-  var s = '';
-  s += 'Sending Time : ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  var s = 'Sending Time : ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
   s += 'Browser      : ' + brw.name + ' ' + brw.version + '\n';
   s += 'User Agent   : ' + navigator.userAgent + '\n';
   s += 'Screen Size  : w=' + screen.width + ' h=' + screen.height + '\n';
@@ -12236,7 +12230,7 @@ DebugJS.bat.prepro = function(cmd) {
 DebugJS.bat.ppIf = function(t, cmd, s) {
   var r = {cond: false, err: true};
   var v = DebugJS.delLeadingAndTrailingSP(s);
-  if (v.charAt(v.length - 1) == DebugJS.BAT_TKN_BLOCK_START) {
+  if (DebugJS.endsWith(v, DebugJS.BAT_TKN_BLOCK_START)) {
     v = v.substr(0, v.length - 2);
     if ((t == DebugJS.BAT_TKN_LOOP) && (v == '')) {
       r.cond = true;r.err = false;
