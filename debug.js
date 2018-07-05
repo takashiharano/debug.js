@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807042121';
+  this.v = '201807052145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -241,6 +241,7 @@ var DebugJS = DebugJS || function() {
   this.windowSizeLabel = null;
   this.clientSizeLabel = null;
   this.bodySizeLabel = null;
+  this.pixelRatioLabel = null;
   this.scrollPosLabel = null;
   this.scrollPosX = 0;
   this.scrollPosY = 0;
@@ -1388,6 +1389,7 @@ DebugJS.prototype = {
       ctx.windowSizeLabel = ctx.createSysInfoLabel();
       ctx.clientSizeLabel = ctx.createSysInfoLabel();
       ctx.bodySizeLabel = ctx.createSysInfoLabel();
+      ctx.pixelRatioLabel = ctx.createSysInfoLabel();
       ctx.scrollPosLabel = ctx.createSysInfoLabel();
     }
 
@@ -1800,6 +1802,7 @@ DebugJS.prototype = {
       document.getElementById(ctx.id + '-sys-body-w').innerText = w;
       document.getElementById(ctx.id + '-sys-body-h').innerText = h;
     }
+    ctx.pixelRatioLabel.innerText = Math.round(window.devicePixelRatio * 100) + '%';
   },
 
   updateScrollPosLabel: function() {
@@ -3632,6 +3635,7 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('cookieEnabled', navigator.cookieEnabled);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('window');
+    html += DebugJS.addSysInfoProp('devicePixelRatio', window.devicePixelRatio, 'sys-win-h');
     html += DebugJS.addSysInfoProp('outerWidth   ', window.outerWidth, 'sys-win-w');
     html += DebugJS.addSysInfoProp('outerHeight  ', window.outerHeight, 'sys-win-h');
     html += DebugJS.addSysInfoProp('scrollX      ', DebugJS.setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
@@ -11438,6 +11442,7 @@ DebugJS.createLogHeader = function() {
   s += 'User Agent   : ' + navigator.userAgent + '\n';
   s += 'Screen Size  : w=' + screen.width + ' h=' + screen.height + '\n';
   s += 'Window Size  : w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
+  s += 'Pixel Ratio  : ' + window.devicePixelRatio + '\n';
   s += 'Language     : ' + navigator.language;
   var navLangs = navigator.languages;
   if (navLangs) {
