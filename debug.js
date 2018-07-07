@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807052145';
+  this.v = '201807072217';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1802,7 +1802,7 @@ DebugJS.prototype = {
       document.getElementById(ctx.id + '-sys-body-w').innerText = w;
       document.getElementById(ctx.id + '-sys-body-h').innerText = h;
     }
-    ctx.pixelRatioLabel.innerText = Math.round(window.devicePixelRatio * 100) + '%';
+    ctx.pixelRatioLabel.innerText = DebugJS.getWinZoomRatio();
   },
 
   updateScrollPosLabel: function() {
@@ -10911,6 +10911,10 @@ DebugJS.encodeURIString = function(data) {
   return s;
 };
 
+DebugJS.getWinZoomRatio = function() {
+  return Math.round(window.devicePixelRatio * 100) + '%';
+};
+
 DebugJS.getLanguages = function(indent) {
   var langs;
   var navLangs = navigator.languages;
@@ -11442,7 +11446,8 @@ DebugJS.createLogHeader = function() {
   s += 'User Agent   : ' + navigator.userAgent + '\n';
   s += 'Screen Size  : w=' + screen.width + ' h=' + screen.height + '\n';
   s += 'Window Size  : w=' + document.documentElement.clientWidth + ' h=' + document.documentElement.clientHeight + '\n';
-  s += 'Pixel Ratio  : ' + window.devicePixelRatio + '\n';
+  s += 'Body Size    : w=' + document.body.clientWidth + ' h=' + document.body.clientHeight + '\n';
+  s += 'Zoom Ratio   : ' + DebugJS.getWinZoomRatio() + '\n';
   s += 'Language     : ' + navigator.language;
   var navLangs = navigator.languages;
   if (navLangs) {
