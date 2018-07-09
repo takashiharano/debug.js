@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807072217';
+  this.v = '201807100000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -118,6 +118,7 @@ var DebugJS = DebugJS || function() {
   this.elmHighlightBtn = null;
   this.elmUpdateBtn = null;
   this.elmCapBtn = null;
+  this.elmDelBtn = null;
   this.elmUpdateInput = null;
   this.elmNumPanel = null;
   this.elmInfoBodyPanel = null;
@@ -312,7 +313,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fnc: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [start] [end]|pause|stop|list|status|clear|exec b64-encoded-bat'},
+    {cmd: 'bat', fnc: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s sl] [-e el] [-arg arg]|pause|stop|list|status|clear|exec b64-encoded-bat'},
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -3894,6 +3895,11 @@ DebugJS.prototype = {
     ctx.elmInfoHeaderPanel.appendChild(ctx.elmNumPanel);
     ctx.updateElementInfoInterval();
 
+    ctx.elmDelBtn = ctx.createElmInfoHeadBtn('DEL', ctx.delTargetElm);
+    ctx.elmDelBtn.style.float = 'right';
+    ctx.elmDelBtn.style.marginRight = '4px';
+    ctx.elmDelBtn.style.color = DebugJS.COLOR_INACTIVE;
+
     ctx.elmCapBtn = ctx.createElmInfoHeadBtn('CAPTURE', ctx.exportTargetElm);
     ctx.elmCapBtn.style.float = 'right';
     ctx.elmCapBtn.style.marginRight = '4px';
@@ -4170,6 +4176,7 @@ DebugJS.prototype = {
       ctx.elmNextBtn.style.color = ctx.opt.btnColor;
       ctx.elmUpdateBtn.style.color = ctx.opt.btnColor;
       ctx.elmCapBtn.style.color = ctx.opt.btnColor;
+      ctx.elmDelBtn.style.color = ctx.opt.btnColor;
     }
   },
 
@@ -4261,6 +4268,18 @@ DebugJS.prototype = {
       ctx.updateEditable(ctx, elm);
     }
     DebugJS._log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + (DebugJS.G_EL_AVAILABLE ? 'el' : ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el') + '</span>');
+  },
+
+  delTargetElm: function() {
+    var e = DebugJS.ctx.targetElm;
+    if (e) {
+      var p = e.parentNode;
+      if (p) {
+        p.removeChild(e);
+        DebugJS.ctx.showElementInfo(p);
+        DebugJS.ctx.updateTargetElm(p);
+      }
+    }
   },
 
   updateEditable: function(ctx, el) {
