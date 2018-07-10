@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807100000';
+  this.v = '201807110000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1278,9 +1278,7 @@ DebugJS.prototype = {
     ctx.enableDnDFileLoad(ctx.logPanel, ctx.handleFileDropAuto);
     ctx.mainPanel.appendChild(ctx.logPanel);
 
-    if (ctx.isAllFeaturesDisabled(ctx)) {
-      return;
-    }
+    if (ctx.isAllFeaturesDisabled(ctx)) {return;}
 
     if (opt.useClock) {
       ctx.clockLabel = document.createElement('span');
@@ -4176,7 +4174,7 @@ DebugJS.prototype = {
       ctx.elmNextBtn.style.color = ctx.opt.btnColor;
       ctx.elmUpdateBtn.style.color = ctx.opt.btnColor;
       ctx.elmCapBtn.style.color = ctx.opt.btnColor;
-      ctx.elmDelBtn.style.color = ctx.opt.btnColor;
+      ctx.elmDelBtn.style.color = '#a88';
     }
   },
 
@@ -4420,9 +4418,7 @@ DebugJS.prototype = {
 
   updateHtmlSrcInterval: function() {
     var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.STATE_HTML_SRC)) {
-      return;
-    }
+    if (!(ctx.status & DebugJS.STATE_HTML_SRC)) {return;}
     ctx.showHtmlSrc();
     if (ctx.htmlSrcUpdateInterval > 0) {
       ctx.elmUpdateTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdateInterval);
@@ -5686,9 +5682,7 @@ DebugJS.prototype = {
   loadFile: function(format) {
     var ctx = DebugJS.ctx;
     var file = ctx.fileLoaderFile;
-    if (!file) {
-      return;
-    }
+    if (!file) {return;}
     if ((file.size == 0) && (file.type == '')) {
       var html = ctx.getFileInfo(file);
       ctx.updateFilePreview(html);
@@ -6487,9 +6481,7 @@ DebugJS.prototype = {
   switchExtPanel: function(idx) {
     var ctx = DebugJS.ctx;
     var pnls = ctx.extPanels;
-    if (ctx.extActivePanel == idx) {
-      return;
-    }
+    if (ctx.extActivePanel == idx) {return;}
 
     if (ctx.extActivePanel != -1) {
       var p2 = pnls[ctx.extActivePanel];
@@ -6780,9 +6772,7 @@ DebugJS.prototype = {
       }
     }
 
-    if (ctx.opt.disableAllCommands) {
-      return;
-    }
+    if (ctx.opt.disableAllCommands) {return;}
 
     for (var i = 0; i < ctx.EXT_CMD_TBL.length; i++) {
       if (cmd == ctx.EXT_CMD_TBL[i].cmd) {
@@ -6796,29 +6786,19 @@ DebugJS.prototype = {
     }
 
     var ret = ctx.cmdRadixConv(cmdline, echo);
-    if (ret) {
-      return cmd | 0;
-    }
+    if (ret) {return cmd | 0;}
 
     ret = ctx.cmdTimeCalc(cmdline, echo);
-    if (ret != null) {
-      return ret;
-    }
+    if (ret != null) {return ret;}
 
     ret = ctx.cmdDateCalc(cmdline, echo);
-    if (ret != null) {
-      return ret;
-    }
+    if (ret != null) {return ret;}
 
     ret = ctx.cmdDateDiff(cmdline, echo);
-    if (!isNaN(ret)) {
-      return ret;
-    }
+    if (!isNaN(ret)) {return ret;}
 
     ret = ctx.cmdDateConv(cmdline, echo);
-    if (ret != null) {
-      return ret;
-    }
+    if (ret != null) {return ret;}
 
     if (cmdline.match(/^\s*U\+/i)) {
       return ctx.cmdUnicode('-d ' + cmdline);
@@ -6913,9 +6893,7 @@ DebugJS.prototype = {
 
   cmdBin: function(arg, tbl) {
     var data = DebugJS.ctx.radixCmd(arg, tbl);
-    if (data == null) {
-      return;
-    }
+    if (data == null) {return;}
     var ret = DebugJS.convertBin(data);
     if (ret != undefined) {
       DebugJS._log(ret);
@@ -7339,9 +7317,7 @@ DebugJS.prototype = {
 
   cmdHex: function(arg, tbl) {
     var data = DebugJS.ctx.radixCmd(arg, tbl);
-    if (data == null) {
-      return;
-    }
+    if (data == null) {return;}
     try {
       var v2 = '';
       var v16 = '';
@@ -8051,9 +8027,7 @@ DebugJS.prototype = {
     }
   },
   _cmdRadixConv: function(v, echo) {
-    if (!echo) {
-      return;
-    }
+    if (!echo) {return;}
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
       v = v.replace(/,/g, '');
@@ -11571,9 +11545,7 @@ DebugJS.isTargetEl = function(target, el) {
 };
 DebugJS.file.onLoaded = function(file, content) {
   var loader = DebugJS.file.ongoingLoader;
-  if (loader == null) {
-    return;
-  }
+  if (loader == null) {return;}
   if ((loader.mode == 'b64') && (loader.decode == true)) {
     var contents = content.split(',');
     content = DebugJS.decodeBase64(contents[1]);
@@ -12602,11 +12574,7 @@ DebugJS.bat.setRunningSt = function(f) {
   }
 };
 DebugJS.bat.isRunning = function() {
-  if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
-    return true;
-  } else {
-    return false;
-  }
+  return ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) ? true : false);
 };
 DebugJS.bat.isCmdExecutable = function() {
   if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
