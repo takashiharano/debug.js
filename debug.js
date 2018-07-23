@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807110000';
+  this.v = '201807240045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4059,6 +4059,7 @@ DebugJS.prototype = {
       'name      : ' + name + '\n' +
       'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
       'disabled  : ' + DebugJS.setStyleIfObjNA(el.disabled, true) + '\n' +
+      'hidden    : ' + el.hidden + '\n' +
       'tabIndex  : ' + el.tabIndex + '\n' +
       'accessKey : ' + el.accessKey + '\n' +
       'maxLength : ' + DebugJS.setStyleIfObjNA(el.maxLength) + '\n' +
