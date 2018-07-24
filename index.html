@@ -1354,7 +1354,8 @@ log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:100px;" 
     <td class="name">log.v<br><span class="alias">( dbg.log.v )</span></td>
     <td>message</td>
     <td>
-      Output verbose log <span class="annotation warning">The messages are not displayed by default filter setting</span><br>
+      Output verbose log<br>
+      <span class="annotation warning">The messages will be filtered out by default. Press [VRB] to display.</span>
 <pre class="eg">
 log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.v(getVal('log-v-txt'));">DEMO</button>
 </pre>
@@ -1473,6 +1474,118 @@ log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
   </tr>
 
   <tr>
+    <td class="name">dbg.stack</td>
+    <td></td>
+    <td>
+      Print stack trace <button class="demo-button2" onclick="printStackDemo();">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.sendLog</td>
+    <td>
+      arg1: url<br>
+      arg2: paramName<br>
+      arg3: params<br>
+      arg4: extHeader<br>
+      arg5: extData<br>
+      arg6: outputBuf<br>
+      arg7: callback<br>
+    </td>
+    <td>
+      Send log buffer to server.<br><br>
+<pre class="eg">url      : URL to send
+paramName: request parameter name for log buffer<span class="annotation">(opt)</span>
+params   : other parameters to send (map)<span class="annotation">(opt)</span>
+extHeader: extra header text<span class="annotation">(opt)</span>
+extData  : extra info text<span class="annotation">(opt)</span>
+outputBuf: output original log buffer (true|false)<span class="annotation">(opt)</span>
+callback : callback function<span class="annotation">(opt)</span>
+
+e.g.,)
+var cbFunc = function(xhr) {
+  var st = xhr.status;
+  if (st == 200) {
+    log('Send Log OK');
+  } else {
+    log.e('Send Log ERR (' + st + ')');
+  }
+};
+var url = 'https://debugjs.net/xxx';
+var params = {
+  foo: 'aaa',
+  bar: 'bbb'
+};
+var extHeader = 'key1:value1\nkey2:value2';
+var extData = 'aaa\nbbb\nccc';
+dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
+
+-------------------------------------------------------
+<b>DEMO</b>
+dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
+-&gt; <a href="log.txt" target="_blank">log.txt</a>
+<pre class="code emphasis" style="width:500px">
+<span style="color:#0ff">SERVER SIDE PROGRAM</span>
+
+#!/usr/bin/python
+
+import cgi
+
+def save_log():
+  form = cgi.FieldStorage()
+  data = form.getvalue('data', '')
+
+  f = open('log.txt', 'w')
+  f.write(data)
+  f.close()
+
+def send_result(status):
+  result = '{"status":"' + status + '"}'
+  print('Content-Type: application/json')
+  print()
+  print(result)
+
+def main():
+  try:
+    save_log()
+    status = 'OK'
+  except Exception as e:
+    status = 'ERROR'
+
+  send_result(status)
+
+main()
+</pre></pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.dumpLog</td>
+    <td>
+      arg1: format<br>
+      arg2: base64 enode<span class="annotation">(opt)</span><br>
+      arg3: format time<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Export the log buffer in JSON format / plain text format<br><br>
+<pre class="eg">format: 'json' | 'text'
+
+base64:
+ true: The result will be encoded in Base64
+ false: Plain text (default)
+
+format time:
+ true:  The time format will be human-readable foamrt.
+        e.g.,) 2017-10-17 12:34:56.789
+
+ false: The numeric value corresponding to the time for 
+        the logged time according to universal time. (default)
+        e.g.,) 1508211296789
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.time.start</td>
     <td>
       arg1: timer name<span class="annotation">(opt)</span><br>
@@ -1568,87 +1681,6 @@ dbg.time.check()
 dbg.time.check('timer1')
 -&gt; A string like "00:01:23.456" will be returned.
 </pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.addEvtListener</td>
-    <td>
-      arg1: type<br>
-      arg2: listener
-    </td>
-    <td>
-Adds the specified EventListener function to the list of event listeners for the specified event type.<br>
-<br>
-      type: <b>batstart</b><br>
-      Callback function which is called before starting batch execution.<br>
-<pre class="eg">Function format:
-  function onBatStart() {}</pre>
-<br>
-      type: <b>batstop</b><br>
-      Callback function which is called after stopped batch execution.<br>
-<pre class="eg">Function format:
-  function onBatStop() {}</pre>
-<br>
-      type: <b>ctrlc</b><br>
-      Callback function which is called when Ctrl+C is pressed on the command line.<br>
-<pre class="eg">Function format:
-  function onCtrlC() {}</pre>
-<br>
-      type: <b>error</b><br>
-      Callback function which is called when an error log is printed.<br>
-<pre class="eg">Function format:
-  function onError() {}</pre>
-<br>
-      type: <b>fileloaded</b><br>
-Callback function which is called when file load has been completed<br>
-<pre class="eg">Function format:
-  function onFileLoaded(file, content, isB64) {}
-
-  file   : meta info (MIME Type, Size, Modified date)
-  content: File content
-  isB64  : true = Base64 encoded / false = Binary ArrayBuffer
-</pre>
-<br>
-      type: <b>watchdog</b><br>
-      Callback function which is called when the watchdog timer has been timed out.<br>
-<pre class="eg">Function format:
-  function onWatchdogTimeout(elapsed) {}</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.countElements</td>
-    <td>element selector</td>
-    <td>
-      Count number of elements.
-<pre class="eg">
-dbg.countElements('*');<button class="demo-button2" onclick="log(dbg.countElements('*'));">DEMO</button>
-dbg.countElements('*', true); <button class="demo-button2" onclick="log(dbg.countElements('*', true));">DEMO</button>
--&gt; Count all elements
-
-dbg.countElements('#id');
--&gt; Count the id's element
-   dbg.countElements('#title');<button class="demo-button2" onclick="log(dbg.countElements('#title'));">DEMO</button>
-
-dbg.countElements('.className');
--&gt; Count elements which has the className.
-
-dbg.countElements('tagName');
--&gt; Count elements which correspond to the tagName.
-   dbg.countElements('div');<button class="demo-button2" onclick="log(dbg.countElements('div'));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getHTML</td>
-    <td>
-      base64 flag<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Dump the serialized HTML string of the whole document<br>
-      base64 flag: false = plain text / true = Base64 encoded string
     </td>
   </tr>
 
@@ -1910,24 +1942,6 @@ dbg.point.hint.clear(); <button class="demo-button2" onclick="dbg.point.hint.cle
   </tr>
 
   <tr>
-    <td class="name">dbg.getKeys</td>
-    <td>object</td>
-    <td>
-      Returns property key name array of the object<br>
-<pre class="eg">
-var obj = {
-  key1: 'A',
-  key2: 'B',
-  key3: 'C',
-};
-
-dbg.getKeys(obj);
--&gt; ['key1', 'key2', 'key3']
-</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">dbg.led</td>
     <td>value</td>
     <td>
@@ -2084,6 +2098,52 @@ max: maximum length
   </tr>
 
   <tr>
+    <td class="name">dbg.addEvtListener</td>
+    <td>
+      arg1: type<br>
+      arg2: listener
+    </td>
+    <td>
+Adds the specified EventListener function to the list of event listeners for the specified event type.<br>
+<br>
+      type: <b>batstart</b><br>
+      Callback function which is called before starting batch execution.<br>
+<pre class="eg">Function format:
+  function onBatStart() {}</pre>
+<br>
+      type: <b>batstop</b><br>
+      Callback function which is called after stopped batch execution.<br>
+<pre class="eg">Function format:
+  function onBatStop() {}</pre>
+<br>
+      type: <b>ctrlc</b><br>
+      Callback function which is called when Ctrl+C is pressed on the command line.<br>
+<pre class="eg">Function format:
+  function onCtrlC() {}</pre>
+<br>
+      type: <b>error</b><br>
+      Callback function which is called when an error log is printed.<br>
+<pre class="eg">Function format:
+  function onError() {}</pre>
+<br>
+      type: <b>fileloaded</b><br>
+Callback function which is called when file load has been completed<br>
+<pre class="eg">Function format:
+  function onFileLoaded(file, content, isB64) {}
+
+  file   : meta info (MIME Type, Size, Modified date)
+  content: File content
+  isB64  : true = Base64 encoded / false = Binary ArrayBuffer
+</pre>
+<br>
+      type: <b>watchdog</b><br>
+      Callback function which is called when the watchdog timer has been timed out.<br>
+<pre class="eg">Function format:
+  function onWatchdogTimeout(elapsed) {}</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.addFileLoader</td>
     <td>
       arg1: target element<br>
@@ -2096,7 +2156,6 @@ max: maximum length
       function(file, content)
     </td>
   </tr>
-
 
   <tr>
     <td class="name">dbg.stopwatch</td>
@@ -2153,110 +2212,6 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">dbg.dumpLog</td>
-    <td>
-      arg1: format<br>
-      arg2: base64 enode<span class="annotation">(opt)</span><br>
-      arg3: format time<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Export the log buffer in JSON format / plain text format<br><br>
-<pre class="eg">format: 'json' | 'text'
-
-base64:
- true: The result will be encoded in Base64
- false: Plain text (default)
-
-format time:
- true:  The time format will be human-readable foamrt.
-        e.g.,) 2017-10-17 12:34:56.789
-
- false: The numeric value corresponding to the time for 
-        the logged time according to universal time. (default)
-        e.g.,) 1508211296789
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.sendLog</td>
-    <td>
-      arg1: url<br>
-      arg2: paramName<br>
-      arg3: params<br>
-      arg4: extHeader<br>
-      arg5: extData<br>
-      arg6: outputBuf<br>
-      arg7: callback<br>
-    </td>
-    <td>
-      Send log buffer to server.<br><br>
-<pre class="eg">url      : URL to send
-paramName: request parameter name for log buffer<span class="annotation">(opt)</span>
-params   : other parameters to send (map)<span class="annotation">(opt)</span>
-extHeader: extra header text<span class="annotation">(opt)</span>
-extData  : extra info text<span class="annotation">(opt)</span>
-outputBuf: output original log buffer (true|false)<span class="annotation">(opt)</span>
-callback : callback function<span class="annotation">(opt)</span>
-
-e.g.,)
-var cbFunc = function(xhr) {
-  var st = xhr.status;
-  if (st == 200) {
-    log('Send Log OK');
-  } else {
-    log.e('Send Log ERR (' + st + ')');
-  }
-};
-var url = 'https://debugjs.net/xxx';
-var params = {
-  foo: 'aaa',
-  bar: 'bbb'
-};
-var extHeader = 'key1:value1\nkey2:value2';
-var extData = 'aaa\nbbb\nccc';
-dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
-
--------------------------------------------------------
-<b>DEMO</b>
-dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
--&gt; <a href="log.txt" target="_blank">log.txt</a>
-<pre class="code emphasis" style="width:500px">
-<span style="color:#0ff">SERVER SIDE PROGRAM</span>
-
-#!/usr/bin/python
-
-import cgi
-
-def save_log():
-  form = cgi.FieldStorage()
-  data = form.getvalue('data', '')
-
-  f = open('log.txt', 'w')
-  f.write(data)
-  f.close()
-
-def send_result(status):
-  result = '{"status":"' + status + '"}'
-  print('Content-Type: application/json')
-  print()
-  print(result)
-
-def main():
-  try:
-    save_log()
-    status = 'OK'
-  except Exception as e:
-    status = 'ERROR'
-
-  send_result(status)
-
-main()
-</pre></pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">dbg.getBrowserType</td>
     <td></td>
     <td>
@@ -2268,6 +2223,41 @@ main()
   version: '50.0'
 }
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.countElements</td>
+    <td>element selector</td>
+    <td>
+      Count number of elements.
+<pre class="eg">
+dbg.countElements('*');<button class="demo-button2" onclick="log(dbg.countElements('*'));">DEMO</button>
+dbg.countElements('*', true); <button class="demo-button2" onclick="log(dbg.countElements('*', true));">DEMO</button>
+-&gt; Count all elements
+
+dbg.countElements('#id');
+-&gt; Count the id's element
+   dbg.countElements('#title');<button class="demo-button2" onclick="log(dbg.countElements('#title'));">DEMO</button>
+
+dbg.countElements('.className');
+-&gt; Count elements which has the className.
+
+dbg.countElements('tagName');
+-&gt; Count elements which correspond to the tagName.
+   dbg.countElements('div');<button class="demo-button2" onclick="log(dbg.countElements('div'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getHTML</td>
+    <td>
+      base64 flag<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Dump the serialized HTML string of the whole document<br>
+      base64 flag: false = plain text / true = Base64 encoded string
     </td>
   </tr>
 
@@ -2309,6 +2299,24 @@ Returns an DOM element or null if an element with the specified selector is not 
   </tr>
 
   <tr>
+    <td class="name">dbg.getKeys</td>
+    <td>object</td>
+    <td>
+      Returns property key name array of the object<br>
+<pre class="eg">
+var obj = {
+  key1: 'A',
+  key2: 'B',
+  key3: 'C',
+};
+
+dbg.getKeys(obj);
+-&gt; ['key1', 'key2', 'key3']
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.toJSON</td>
     <td>
       value<br>
@@ -2328,14 +2336,6 @@ Returns an DOM element or null if an element with the specified selector is not 
     </td>
     <td>
       Parses a JSON string, constructing the JavaScript value or object described by the string
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.stack</td>
-    <td></td>
-    <td>
-      Print stack trace <button class="demo-button2" onclick="printStackDemo();">DEMO</button>
     </td>
   </tr>
 
