@@ -1521,11 +1521,13 @@ var extData = 'aaa\nbbb\nccc';
 dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
 
 -------------------------------------------------------
-<b>DEMO</b>
+<b>DEMO</b> This is the simplest example of the sending.
+
 dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
 -&gt; <a href="log.txt" target="_blank">log.txt</a>
+
 <pre class="code emphasis" style="width:500px">
-<span style="color:#0ff">SERVER SIDE PROGRAM</span>
+<span style="color:#0ff">SERVER SIDE PROGRAM (savelog.py)</span>
 
 #!/usr/bin/python
 
