@@ -2191,13 +2191,13 @@ format time:
     </td>
     <td>
       Send log buffer to server.<br><br>
-<pre class="eg">ur: URL to send
-paramName: request parameter name for log buffer
-params   : other parameters to send (map)
-extHeader: extra header text
-extData  : extra info text
-outputBuf: output original log buffer (true|false)
-callback : callback function
+<pre class="eg">ur       : URL to send
+paramName: request parameter name for log buffer<span class="annotation">(opt)</span>
+params   : other parameters to send (map)<span class="annotation">(opt)</span>
+extHeader: extra header text<span class="annotation">(opt)</span>
+extData  : extra info text<span class="annotation">(opt)</span>
+outputBuf: output original log buffer (true|false)<span class="annotation">(opt)</span>
+callback : callback function<span class="annotation">(opt)</span>
 
 e.g.,)
 var cbFunc = function(xhr) {
@@ -2216,7 +2216,43 @@ var params = {
 var extHeader = 'key1:value1\nkey2:value2';
 var extData = 'aaa\nbbb\nccc';
 dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
-</pre>
+
+-------------------------------------------------------
+<b>DEMO</b>
+dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
+-&gt; <a href="log.txt" target="_blank">log.txt</a>
+<pre class="code emphasis" style="width:500px">
+<span style="color:#0ff">SERVER SIDE PROGRAM</span>
+
+#!/usr/bin/python
+
+import cgi
+
+def save_log():
+  form = cgi.FieldStorage()
+  data = form.getvalue('data', '')
+
+  f = open('log.txt', 'w')
+  f.write(data)
+  f.close()
+
+def send_result(status):
+  result = '{"status":"' + status + '"}'
+  print('Content-Type: application/json')
+  print()
+  print(result)
+
+def main():
+  try:
+    save_log()
+    status = 'OK'
+  except Exception as e:
+    status = 'ERROR'
+
+  send_result(status)
+
+main()
+</pre></pre>
     </td>
   </tr>
 
@@ -2239,7 +2275,7 @@ dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
     <td class="name">dbg.getElement</td>
     <td>
       arg1: #id / .className / tagName<br>
-      arg2: index<span class="alias">(opt)</span>
+      arg2: index<span class="annotation">(opt)</span>
     </td>
     <td>
       Get an DOM element object of the specified selector<br><br>
