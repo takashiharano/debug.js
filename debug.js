@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807240045';
+  this.v = '201807250000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10878,15 +10878,11 @@ DebugJS.http.buildParam = function(p) {
   return s;
 };
 DebugJS.onHttpRequestDone = function(xhr) {
-  var statusMsg = xhr.status + ' ' + xhr.statusText;
+  var stmsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
-    DebugJS._log.e('Cannot load: ' + statusMsg);
-  } else if ((xhr.status >= 300) && (xhr.status <= 399)) {
-    DebugJS._log.w(statusMsg);
-  } else if ((xhr.status >= 400) && (xhr.status <= 599)) {
-    DebugJS._log.e(statusMsg);
+    DebugJS._log.e('Cannot load: ' + stmsg);
   } else {
-    DebugJS._log(statusMsg);
+    DebugJS._log(stmsg);
   }
   var head = xhr.getAllResponseHeaders();
   var txt = xhr.responseText.replace(/</g, '&lt;');
