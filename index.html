@@ -471,16 +471,17 @@ function testFunc() {
   dbg.bat.resume('key1');
 }
 
-function printStackDemo() {
-  printStackDemo1();
+function printStackDemo(idx, silent) {
+  silent = ((silent == 'true') ? true : false);
+  printStackDemo1(idx, silent);
 }
 
-function printStackDemo1() {
-  printStackDemo2();
+function printStackDemo1(idx, silent) {
+  printStackDemo2(idx, silent);
 }
 
-function printStackDemo2() {
-  dbg.stack();
+function printStackDemo2(idx, silent) {
+  dbg.stack(idx, silent);
 }
 
 var wdtCount = 0;
@@ -1475,9 +1476,16 @@ log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
 
   <tr>
     <td class="name">dbg.stack</td>
-    <td></td>
     <td>
-      Print stack trace <button class="demo-button2" onclick="printStackDemo();">DEMO</button>
+      arg1: startIndex<span class="annotation">(opt)</span><br>
+      arg2: silent<span class="annotation">(opt)</span><br>
+    </td>
+    <td>
+      Print stack trace
+<pre class="eg">
+dbg.stack();<button class="demo-button2" onclick="printStackDemo();">DEMO</button>
+dbg.stack(<input type="text" id="stack-idx-txt" class="demo-text" style="width:20px;" value="1">, <input type="text" id="stack-silent-txt" class="demo-text" style="width:40px;" value="false">);<button class="demo-button2" onclick="printStackDemo(getVal('stack-idx-txt'), getVal('stack-silent-txt'));">DEMO</button>
+</pre>
     </td>
   </tr>
 

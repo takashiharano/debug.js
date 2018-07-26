@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807250000';
+  this.v = '201807270100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11698,19 +11698,25 @@ DebugJS._log.out = function(m, type) {
   DebugJS.ctx.printLogs();
 };
 
-DebugJS.stack = function() {
+DebugJS.stack = function(ldx, silent) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  var s;
+  var stk;
   try {
-   DebugJS.a.b;
+    DebugJS.a.b;
   } catch (e) {
-    s = e.stack;
+    stk = e.stack.split('\n');;
   }
-  s = s.replace(/^TypeError.*\n/, '');
-  s = s.replace(/^\s+at\s.*\n/, '');
-  s = s.replace(/^DebugJS\.stack@.*\n/, '');
-  s = 'Stack:\n' + s;
-  DebugJS._log(s);
+  if (ldx == undefined) ldx = 0;
+  var cnt = 0;
+  var rslt = 'Stack:';
+  for (var i = 0; i < stk.length; i++) {
+    var s = stk[i];
+    if (s.match(/^TypeError.*/) || s.match(/^DebugJS\.stack@.*/) || s.match(/^\s+at\s.*DebugJS\.stack\s/)) {continue;}
+    if (cnt < ldx) {cnt++;continue;}
+    rslt += '\n  ' + DebugJS.delLeadingSP(s);cnt++;
+  }
+  if (!silent) DebugJS._log(rslt);
+  return rslt;
 };
 
 DebugJS.time = {};
