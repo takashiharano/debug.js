@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807292230';
+  this.v = '201807300750';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -729,10 +729,10 @@ DebugJS.prototype = {
       ctx.id = ctx.DEFAULT_ELM_ID;
       ctx.win = document.createElement('div');
       ctx.win.id = ctx.id;
-      ctx.win.style.position = 'fixed';
-      ctx.win.style.zIndex = 0x7fffffff;
-      ctx.win.style.width = ctx.computedWidth + 'px';
-      ctx.win.style.boxShadow = DebugJS.WIN_SHADOW + 'px ' + DebugJS.WIN_SHADOW + 'px 10px rgba(0,0,0,.3)';
+      ctx.setStyle(ctx.win, 'position', 'fixed');
+      ctx.setStyle(ctx.win, 'z-index', 0x7fffffff);
+      ctx.setStyle(ctx.win, 'width', ctx.computedWidth + 'px');
+      ctx.setStyle(ctx.win, 'box-dhadow', DebugJS.WIN_SHADOW + 'px ' + DebugJS.WIN_SHADOW + 'px 10px rgba(0,0,0,.3)');
       ctx.bodyEl.appendChild(ctx.win);
       if (ctx.opt.mode == 'kiosk') {
         ctx.setupKioskMode(ctx);
@@ -740,18 +740,16 @@ DebugJS.prototype = {
     } else {
       ctx.id = ctx.opt.target;
       ctx.win = document.getElementById(ctx.id);
-      ctx.win.style.position = 'relative';
+      ctx.setStyle(ctx.win, 'position', 'relative');
     }
-    ctx.win.style.display = 'block';
-    ctx.win.style.padding = DebugJS.WIN_BORDER + 'px';
-    ctx.win.style.lineHeight = '1em';
-    ctx.win.style.boxSizing = 'content-box';
-    ctx.win.style.border = ctx.opt.border;
-    ctx.win.style.borderRadius = ctx.opt.borderRadius;
-    ctx.win.style.background = ctx.opt.background;
-    ctx.win.style.fontSize = ctx.computedFontSize + 'px',
-    ctx.win.style.opacity = ctx.opt.opacity;
-
+    ctx.setStyle(ctx.win, 'display', 'block');
+    ctx.setStyle(ctx.win, 'padding', DebugJS.WIN_BORDER + 'px');
+    ctx.setStyle(ctx.win, 'line-height', '1em');
+    ctx.setStyle(ctx.win, 'border', ctx.opt.border);
+    ctx.setStyle(ctx.win, 'border-radius', ctx.opt.borderRadius);
+    ctx.setStyle(ctx.win, 'background', ctx.opt.background);
+    ctx.setStyle(ctx.win, 'font-size', ctx.computedFontSize + 'px');
+    ctx.setStyle(ctx.win, 'opacity', ctx.opt.opacity);
     ctx.createPanels(ctx);
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) {
@@ -808,6 +806,7 @@ DebugJS.prototype = {
     };
 
     styles['#' + ctx.id + ' *'] = {
+      'box-sizing': 'content-box !important',
       'color': opt.fontColor,
       'font-family': opt.fontFamily + ' !important'
     };
@@ -815,8 +814,8 @@ DebugJS.prototype = {
     styles['#' + ctx.id + ' td'] = {
       'width': 'initial',
       'padding': '0 3px',
-      'border': 'initial',
-      'background': 'initial',
+      'border': 'initial !important',
+      'background': 'initial !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important'
     };
@@ -826,6 +825,8 @@ DebugJS.prototype = {
       'height': 'auto !important',
       'margin': '0 !important',
       'line-height': '1em !important',
+      'border': 'initial !important',
+      'background': 'initial !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important',
       'white-space': 'pre-wrap !important',
@@ -991,7 +992,6 @@ DebugJS.prototype = {
       'width': 'calc(100% - 6px) !important',
       'height': 'calc(100% - ' + (ctx.computedFontSize + 10) + 'px) !important',
       'margin': '2px 0 0 0 !important',
-      'box-sizing': 'content-box !important',
       'padding': '2px !important',
       'border': 'solid 1px #1883d7 !important',
       'border-radius': '0 !important',
