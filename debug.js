@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807270100';
+  this.v = '201807291636';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -751,7 +751,6 @@ DebugJS.prototype = {
     ctx.win.style.background = ctx.opt.background;
     ctx.win.style.color = ctx.opt.fontColor;
     ctx.win.style.fontSize = ctx.computedFontSize + 'px',
-    ctx.win.style.fontFamily = ctx.opt.fontFamily;
     ctx.win.style.opacity = ctx.opt.opacity;
 
     ctx.createPanels(ctx);
@@ -809,14 +808,17 @@ DebugJS.prototype = {
       'letter-spacing': ltsp + ' !important'
     };
 
+    styles['#' + ctx.id + ' *'] = {
+      'font-family': opt.fontFamily + ' !important'
+    };
+
     styles['#' + ctx.id + ' td'] = {
       'width': 'initial',
       'padding': '0 3px',
       'border': 'initial',
       'background': 'initial',
-      'color': opt.fontColor,
-      'font-size': fontSize,
-      'font-family': opt.fontFamily
+      'color': opt.fontColor + ' !important',
+      'font-size': fontSize + ' !important'
     };
 
     styles['#' + ctx.id + ' pre'] = {
@@ -826,7 +828,6 @@ DebugJS.prototype = {
       'line-height': '1em !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important',
-      'font-family': opt.fontFamily + ' !important',
       'white-space': 'pre-wrap !important',
       'word-break': 'break-all !important',
       'overflow': 'visible !important'
@@ -901,8 +902,7 @@ DebugJS.prototype = {
     styles['.' + ctx.id + '-overlay-panel pre'] = {
       'padding': '0 1px',
       'color': opt.fontColor + ' !important',
-      'font-size': fontSize + ' !important',
-      'font-family': opt.fontFamily + ' !important'
+      'font-size': fontSize + ' !important'
     };
 
     styles['.' + ctx.id + '-overlay-panel-full'] = {
@@ -951,8 +951,7 @@ DebugJS.prototype = {
       'box-shadow': 'none !important',
       'background': 'transparent !important',
       'color': opt.fontColor + ' !important',
-      'font-size': fontSize + ' !important',
-      'font-family': opt.fontFamily + ' !important'
+      'font-size': fontSize + ' !important'
     };
 
     styles['.' + ctx.id + '-txt-range'] = {
@@ -979,8 +978,7 @@ DebugJS.prototype = {
       'line-height': '1em',
       'color': opt.fontColor,
       'font-size': fontSize,
-      'font-weight': 'normal',
-      'font-family': opt.fontFamily
+      'font-weight': 'normal'
     };
 
     styles['#' + ctx.id + ' input[type="radio"]'] = {
@@ -1001,7 +999,6 @@ DebugJS.prototype = {
       'background': 'transparent !important',
       'color': '#fff !important',
       'font-size': fontSize + ' !important',
-      'font-family': opt.fontFamily + ' !important',
       'overflow': 'auto !important',
       'resize': 'none !important'
     };
@@ -1025,8 +1022,7 @@ DebugJS.prototype = {
       'text-align': 'center !important',
       'vartical-align': 'middle !important',
       'background': 'transparent !important',
-      'color': '#fff !important',
-      'font-family': opt.fontFamily + ' !important'
+      'color': '#fff !important'
     };
 
     styles['.' + ctx.id + '-hint'] = {
@@ -1442,7 +1438,6 @@ DebugJS.prototype = {
       ctx.setStyle(cmdLine, 'background', 'transparent');
       ctx.setStyle(cmdLine, 'color', opt.fontColor);
       ctx.setStyle(cmdLine, 'font-size', fontSize);
-      ctx.setStyle(cmdLine, 'font-family', opt.fontFamily);
       ctx.cmdPanel.appendChild(cmdLine);
       ctx.cmdLine = cmdLine;
       ctx.initHistory(ctx);
@@ -5463,7 +5458,6 @@ DebugJS.prototype = {
       ctx.setStyle(fileInput, 'border-radius', '0');
       ctx.setStyle(fileInput, 'outline', 'none');
       ctx.setStyle(fileInput, 'font-size', fontSize);
-      ctx.setStyle(fileInput, 'font-family', opt.fontFamily + 'px');
       fileInput.addEventListener('change', ctx.onFileSelected, false);
       ctx.fileLoaderPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
@@ -5512,7 +5506,6 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'padding', '2px');
       ctx.setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
-      ctx.setStyle(ctx.filePreviewWrapper, 'font-family', opt.fontFamily + 'px');
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
       ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.handleFileDropOnFileViewer);
       ctx.fileLoaderPanel.appendChild(ctx.filePreviewWrapper);
@@ -5521,7 +5514,6 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreview, 'background', 'transparent');
       ctx.setStyle(ctx.filePreview, 'color', opt.fontColor);
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
-      ctx.setStyle(ctx.filePreview, 'font-family', opt.fontFamily + 'px');
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
 
       ctx.fileLoaderFooter = document.createElement('div');
