@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807302017';
+  this.v = '201807310000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1545,7 +1545,7 @@ DebugJS.prototype = {
     var btn = ctx.createBtn(ctx, label, ctx.headPanel);
     btn.style.float = 'right';
     btn.style.marginLeft = (marginLeft * ctx.opt.zoom) + 'px';
-    if (fontSize) btn.style.fontSize = fontSize;
+    if (fontSize) ctx.setStyle(btn, 'font-size', fontSize);
     btn.onclick = handler;
     ctx.setStyle(btn, 'color', DebugJS.COLOR_INACTIVE);
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnobj + ', \'color\', DebugJS.' + activeColor + ');');
@@ -1677,7 +1677,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
       ctx.fileLoaderFooter.style.height = (ctx.computedFontSize + 3) + 'px';
       ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
-      ctx.fileLoadProgress.style.fontSize = (ctx.computedFontSize * 0.8) + 'px';
+      ctx.setStyle(ctx.fileLoadProgress, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
     }
     if (ctx.extPanel != null) {
       ctx.extHeaderPanel.style.height = fontSize;
@@ -4541,7 +4541,7 @@ DebugJS.prototype = {
       ctx.timerBasePanel.style.top = '0';
       ctx.timerBasePanel.style.bottom = '0';
       ctx.timerBasePanel.style.margin = 'auto';
-      ctx.timerBasePanel.style.fontSize = fontSize + 'px';
+      ctx.setStyle(ctx.timerBasePanel, 'font-size', fontSize + 'px');
       ctx.timerBasePanel.style.lineHeight = '1em';
       ctx.timerBasePanel.style.textAlign = 'center';
       ctx.toolsBodyPanel.appendChild(ctx.timerBasePanel);
@@ -4592,7 +4592,7 @@ DebugJS.prototype = {
     btns.style.borderTop = 'solid 2px ' + ctx.opt.timerLineColor;
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
-    btns.style.fontSize = btnFontSize + 'px';
+    ctx.setStyle(btns, 'font-size', btnFontSize + 'px');
     ctx.timerClockSubPanel.appendChild(btns);
 
     ctx.createTimerBtn(btns, 'MODE', ctx.toggleTimerMode);
@@ -4633,7 +4633,7 @@ DebugJS.prototype = {
     btns.style.borderTop = 'solid 2px ' + ctx.opt.timerLineColor;
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
-    btns.style.fontSize = btnFontSize + 'px';
+    ctx.setStyle(btns, 'font-size', btnFontSize + 'px');
     panel.basePanel.appendChild(btns);
 
     ctx.createTimerBtn(btns, 'MODE', ctx.toggleTimerMode);
@@ -4685,8 +4685,8 @@ DebugJS.prototype = {
 
     var timerUpBtns = document.createElement('div');
     timerUpBtns.style.margin = fontSize + 'px 0 -' + fontSize * 0.8 + 'px 0';
-    timerUpBtns.style.fontSize = btnFontSize + 'px';
     timerUpBtns.style.lineHeight = btnFontSize + 'px';
+    ctx.setStyle(timerUpBtns, 'font-size', btnFontSize + 'px');
     basePanel.appendChild(timerUpBtns);
     ctx.createTimerUpDwnBtn(true, 'hh', timerUpBtns, 3);
     ctx.createTimerUpDwnBtn(true, 'mi', timerUpBtns, 3);
@@ -4709,8 +4709,8 @@ DebugJS.prototype = {
     var marginT = fontSize * 0.8;
     var marginB = fontSize * 1.2 + ctx.opt.zoom;
     timerDwnBtns.style.margin = '-' + marginT + 'px 0 ' + marginB + 'px 0';
-    timerDwnBtns.style.fontSize = btnFontSize + 'px';
     timerDwnBtns.style.lineHeight = btnFontSize + 'px';
+    ctx.setStyle(timerDwnBtns, 'font-size', btnFontSize + 'px');
     ctx.createTimerUpDwnBtn(false, 'hh', timerDwnBtns, 3);
     ctx.createTimerUpDwnBtn(false, 'mi', timerDwnBtns, 3);
     ctx.createTimerUpDwnBtn(false, 'ss', timerDwnBtns, 2.5);
@@ -4721,7 +4721,7 @@ DebugJS.prototype = {
     btns.style.borderTop = 'solid 2px ' + ctx.opt.timerLineColor;
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
-    btns.style.fontSize = btnFontSize + 'px';
+    ctx.setStyle(btns, 'font-size', btnFontSize + 'px');
     ctx.createTimerBtn(btns, 'MODE', ctx.toggleTimerMode);
     ctx.createTimerBtn(btns, 'RESET', ctx.resetTimerStopWatchCd);
     ctx.timerStartStopBtnCdInp = ctx.createTimerBtn(btns, '>>', ctx.startStopTimerStopWatchCd);
@@ -4748,7 +4748,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var span = document.createElement('span');
     span.innerText = label;
-    if (fontSize) span.style.fontSize = fontSize + 'px';
+    if (fontSize) ctx.setStyle(span, 'font-size', fontSize + 'px');
     base.appendChild(span);
   },
 
@@ -4758,7 +4758,7 @@ DebugJS.prototype = {
     btn.style.marginRight = '0.5em';
     ctx.setStyle(btn, 'color', (disabled ? '#888' : DebugJS.TOOL_TIMER_BTN_COLOR));
     if (fontSize) {
-      btn.style.fontSize = fontSize + 'px';
+      ctx.setStyle(btn, 'font-size', fontSize + 'px');
     }
     btn.onclick = handler;
     return btn;
@@ -4907,11 +4907,11 @@ DebugJS.prototype = {
     if (tm.sss > 500) {
       dot = '&nbsp;';
     }
-    var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + '">' + DebugJS.WDAYS[tm.wday] + '</span>';
-    var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (ssFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ';font-size:' + ssFontSize + 'px">' + tm.ss + dot + '</span>';
-    if (ctx.timerClockSSS) {time += '<span style="font-size:' + msFontSize + 'px">' + tm.sss + '</span>'}
-    var label = '<div style="color:' + ctx.opt.fontColor + ';font-size:' + dtFontSize + 'px">' + date + '</div>' +
-                '<div style="color:' + ctx.opt.fontColor + ';font-size:' + fontSize + 'px;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
+    var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + ' !important">' + DebugJS.WDAYS[tm.wday] + '</span>';
+    var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (ssFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ' !important;font-size:' + ssFontSize + 'px !important">' + tm.ss + dot + '</span>';
+    if (ctx.timerClockSSS) {time += '<span style="font-size:' + msFontSize + 'px !important">' + tm.sss + '</span>'}
+    var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + dtFontSize + 'px !important">' + date + '</div>' +
+                '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
     return label;
   },
 
@@ -5163,15 +5163,15 @@ DebugJS.prototype = {
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END) {
       var now = DebugJS.getDateTime();
       if (now.sss > 500) {
-        str = '&nbsp;<span style="font-size:' + msFontSize + 'px">' + '&nbsp;</span>';
+        str = '&nbsp;<span style="font-size:' + msFontSize + 'px !important">' + '&nbsp;</span>';
       } else {
-        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">.' + tm.sss + '</span>';
+        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ' !important;font-size:' + msFontSize + 'px !important">.' + tm.sss + '</span>';
       }
     } else {
       var dot = (((ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING) && (tm.sss > 500)) ? '&nbsp;' : '.');
-      str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>';
+      str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>';
     }
-    var label = '<div style="color:' + ctx.opt.fontColor + ';font-size:' + fontSize + 'px">' + str + '</div>';
+    var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
     return label;
   },
 
@@ -5183,9 +5183,9 @@ DebugJS.prototype = {
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_END) {
       var now = DebugJS.getDateTime();
       if (now.sss > 500) {
-        str = '&nbsp;<span style="font-size:' + msFontSize + 'px">' + '&nbsp;</span>';
+        str = '&nbsp;<span style="font-size:' + msFontSize + 'px !important">' + '&nbsp;</span>';
       } else {
-        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ';font-size:' + msFontSize + 'px">.' + tm.sss + '</span>';
+        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ' !important;font-size:' + msFontSize + 'px !important">.' + tm.sss + '</span>';
       }
     } else {
       var dot;
@@ -5193,14 +5193,14 @@ DebugJS.prototype = {
       var style2 = '';
       if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
         dot = (((ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) && (tm.sss > 500)) ? '&nbsp;' : '.');
-        style1 = '<span style="color:' + ctx.opt.timerColorExpr + '">';
+        style1 = '<span style="color:' + ctx.opt.timerColorExpr + ' !important">';
         style2 = '</span>';
       } else {
         dot = (((ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) && (tm.sss < 500)) ? '&nbsp;' : '.');
       }
-      str = style1 + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="font-size:' + msFontSize + 'px">' + dot + tm.sss + '</span>' + style2;
+      str = style1 + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>' + style2;
     }
-    var label = '<div style="color:' + ctx.opt.fontColor + ';font-size:' + fontSize + 'px">' + str + '</div>';
+    var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
     return label;
   },
 
@@ -5540,7 +5540,7 @@ DebugJS.prototype = {
       ctx.fileLoadProgress.style.padding = '1px';
       ctx.fileLoadProgress.style.border = 'none';
       ctx.fileLoadProgress.style.background = '#00f';
-      ctx.fileLoadProgress.style.fontSize = (ctx.computedFontSize * 0.8) + 'px';
+      ctx.setStyle(ctx.fileLoadProgress, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
       ctx.fileLoadProgress.style.fontFamily = opt.fontFamily + 'px';
       ctx.fileLoadProgress.innerText = '0%';
       ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
