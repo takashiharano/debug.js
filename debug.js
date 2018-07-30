@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807301925';
+  this.v = '201807302017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4018,11 +4018,12 @@ DebugJS.prototype = {
 
       html += '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
       DebugJS.addPropSeparator(ctx) +
+      'id        : ' + el.id + '\n' +
+      'className : ' + className + '\n' +
+      DebugJS.addPropSeparator(ctx) +
       'object    : ' + Object.prototype.toString.call(el) + '\n' +
       'tagName   : ' + el.tagName + '\n' +
       'type      : ' + DebugJS.setStyleIfObjNA(el.type) + '\n' +
-      'id        : ' + el.id + '\n' +
-      'className : ' + className + '\n' +
       DebugJS.addPropSeparator(ctx) +
       'display   : ' + computedStyle.display + '\n' +
       'position  : ' + computedStyle.position + '\n' +
