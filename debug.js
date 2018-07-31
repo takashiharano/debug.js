@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808010017';
+  this.v = '201808010751';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11718,7 +11718,7 @@ DebugJS.stack = function(ldx, silent) {
 DebugJS.line = function(idx) {
   var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
   s = s.replace(/(.*)\)$/, '$1');
-  var l = s.replace(/.*\/(.*?\:\d+)\:\d+/, '$1');
+  var l = s.replace(/.*\/.*?\:(\d+)\:\d+/, '$1');
   return l;
 };
 
@@ -11726,6 +11726,13 @@ DebugJS.funcname = function(idx) {
   var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
   s = s.replace(/@/, ' ');
   var n = s.replace(/^(.*?)\s.*/, '$1');
+  return n;
+};
+
+DebugJS.filename = function(idx) {
+  var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
+  s = s.replace(/(.*)\)$/, '$1');
+  var n = s.replace(/.*\/(.*?)\:\d+\:\d+/, '$1');
   return n;
 };
 
