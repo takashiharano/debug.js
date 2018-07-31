@@ -484,6 +484,35 @@ function printStackDemo2(idx, silent) {
   return dbg.stack(idx, silent);
 }
 
+function getCurrentLineNumDemo() {
+  var line = dbg.line();
+  log(line);
+}
+
+function getCurrentLineNumDemo2a(idx) {
+  getCurrentLineNumDemo2b(idx);
+}
+
+function getCurrentLineNumDemo2b(idx) {
+  var line = dbg.line(idx);
+  log(line);
+}
+
+function getFuncNameDemo() {
+  var name = dbg.funcname();
+  log(name);
+}
+
+function getFuncNameDemo2a(idx) {
+  getFuncNameDemo2b(idx);
+}
+
+function getFuncNameDemo2b(idx) {
+  var name = dbg.funcname(idx);
+  log(name);
+}
+
+
 var wdtCount = 0;
 function onWatchdogTimeout(elapsed) {
   dbg.show();
@@ -1483,12 +1512,43 @@ log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
     <td>
       Print stack trace
 <pre class="eg">
+
 dbg.stack();<button class="demo-button2" onclick="printStackDemo();">DEMO</button>
 
 dbg.stack(<input type="text" id="stack-idx1-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="printStackDemo(getVal('stack-idx1-txt'));">DEMO</button>
 
 var stk = dbg.stack(<input type="text" id="stack-idx2-txt" class="demo-text" style="width:20px;" value="1">, <input type="text" id="stack-silent2-txt" class="demo-text" style="width:40px;" value="true">);
 log('Some message\n' + stk);<button class="demo-button2" onclick="var stk=printStackDemo(getVal('stack-idx2-txt'), getVal('stack-silent2-txt'));log('Some message\n' + stk);">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.line</td>
+    <td>
+      index<span class="annotation">(opt)</span><br>
+    </td>
+    <td>
+      Returns current line number
+<pre class="eg">
+
+dbg.line();<button class="demo-button2" onclick="getCurrentLineNumDemo();">DEMO</button>
+dbg.line(<input type="text" id="line-idx-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="getCurrentLineNumDemo2a(getVal('line-idx-txt') | 0);">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.funcname</td>
+    <td>
+      index<span class="annotation">(opt)</span><br>
+    </td>
+    <td>
+      Returns current line number
+<pre class="eg">
+
+dbg.funcname();<button class="demo-button2" onclick="getFuncNameDemo();">DEMO</button>
+dbg.funcname(<input type="text" id="func-idx-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="getFuncNameDemo2a(getVal('func-idx-txt') | 0);">DEMO</button>
 </pre>
     </td>
   </tr>

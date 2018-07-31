@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201807310000';
+  this.v = '201808010017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11701,17 +11701,32 @@ DebugJS.stack = function(ldx, silent) {
   } catch (e) {
     stk = e.stack.split('\n');
   }
-  if (ldx == undefined) ldx = 0;
-  var cnt = 0;
-  var rslt = 'Stack:';
+  ldx |= 0;
+  var cnt = 0, skp = 0;
+  var rslt = '';
   for (var i = 0; i < stk.length; i++) {
     var s = stk[i];
     if (s.match(/^TypeError.*/) || s.match(/^DebugJS\.stack@.*/) || s.match(/^\s+at\s.*DebugJS\.stack\s/)) {continue;}
-    if (cnt < ldx) {cnt++;continue;}
-    rslt += '\n  ' + DebugJS.delLeadingSP(s);cnt++;
+    if (skp < ldx) {skp++;continue;}
+    if (cnt > 0) {rslt += '\n';}
+    rslt += DebugJS.delLeadingSP(s).replace(/^at /, '');cnt++;
   }
-  if (!silent) DebugJS._log(rslt);
+  if (!silent) DebugJS._log('Stack:\n' + rslt);
   return rslt;
+};
+
+DebugJS.line = function(idx) {
+  var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
+  s = s.replace(/(.*)\)$/, '$1');
+  var l = s.replace(/.*\/(.*?\:\d+)\:\d+/, '$1');
+  return l;
+};
+
+DebugJS.funcname = function(idx) {
+  var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
+  s = s.replace(/@/, ' ');
+  var n = s.replace(/^(.*?)\s.*/, '$1');
+  return n;
 };
 
 DebugJS.time = {};
