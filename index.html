@@ -512,6 +512,20 @@ function getFuncNameDemo2b(idx) {
   log(name);
 }
 
+function getFileNameDemo() {
+  var name = dbg.filename();
+  log(name);
+}
+
+function getFileNameDemo2a(idx, abs) {
+  abs = (abs == "true" ? true : false);
+  getFileNameDemo2b(idx, abs);
+}
+
+function getFileNameDemo2b(idx, abs) {
+  var name = dbg.filename(idx, abs);
+  log(name);
+}
 
 var wdtCount = 0;
 function onWatchdogTimeout(elapsed) {
@@ -756,6 +770,64 @@ evttest.regieterEventHandlers = function(el) {
   el.addEventListener('contextmenu', evttest.onContextMenu, true);
   el.addEventListener('wheel', evttest.onWheel, true);
 };
+
+var demo = {};
+demo.printStackDemo = function(idx, silent) {
+  silent = ((silent == 'true') ? true : false);
+  return demo.printStackDemo1(idx, silent);
+}
+
+demo.printStackDemo1 = function(idx, silent) {
+  return demo.printStackDemo2(idx, silent);
+}
+
+demo.printStackDemo2 = function(idx, silent) {
+  return dbg.stack(idx, silent);
+}
+
+demo.getCurrentLineNumDemo = function(idx) {
+  var line = dbg.line(idx);
+  log(line);
+};
+
+demo.getFuncNameDemo = function(idx) {
+  var name = dbg.funcname(idx);
+  log(name);
+};
+
+demo.getFileNameDemo = function(idx, abs) {
+  abs = (abs == "true" ? true : false);
+  var name = dbg.filename(idx, abs);
+  log(name);
+};
+
+function addScript() {
+  var script = 'var demo2 = {};';
+  script += 'demo2.printStackDemo = function(idx, silent) {';
+  script += '  return dbg.stack(idx, silent);';
+  script += '};';
+
+  script += 'demo2.getCurrentLineNumDemo = function(idx) {';
+  script += '  var line = dbg.line(idx);';
+  script += '  log(line);';
+  script += '};';
+
+  script += 'demo2.getFuncNameDemo = function(idx) {';
+  script += '  var name = dbg.funcname(idx);';
+  script += '  log(name);';
+  script += '};';
+
+  script += 'demo2.getFileNameDemo = function(idx, abs) {';
+  script += '  abs = (abs == "true" ? true : false);';
+  script += '  var name = dbg.filename(idx, abs);';
+  script += '  log(name);';
+  script += '};';
+
+  var scriptElement = document.createElement('script');
+  scriptElement.innerHTML = script;
+  document.body.appendChild(scriptElement);
+}
+setTimeout(addScript, 100);
 </script>
 </head>
 <body>
@@ -1513,12 +1585,12 @@ log.clear();<button class="demo-button2" onclick="log.clear();">DEMO</button>
       Print stack trace
 <pre class="eg">
 
-dbg.stack();<button class="demo-button2" onclick="printStackDemo();">DEMO</button>
+dbg.stack();<button class="demo-button2" onclick="printStackDemo();">DEMO</button><button class="demo-button2" onclick="demo.printStackDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.printStackDemo();">DEMO3</button>
 
 dbg.stack(<input type="text" id="stack-idx1-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="printStackDemo(getVal('stack-idx1-txt'));">DEMO</button>
 
 var stk = dbg.stack(<input type="text" id="stack-idx2-txt" class="demo-text" style="width:20px;" value="1">, <input type="text" id="stack-silent2-txt" class="demo-text" style="width:40px;" value="true">);
-log('Some message\n' + stk);<button class="demo-button2" onclick="var stk=printStackDemo(getVal('stack-idx2-txt'), getVal('stack-silent2-txt'));log('Some message\n' + stk);">DEMO</button>
+log('Some message\n' + stk);<button class="demo-button2" onclick="var stk=printStackDemo(getVal('stack-idx2-txt'), getVal('stack-silent2-txt'));log('Some message\n' + stk);">DEMO</button><button class="demo-button2" onclick="var stk=demo.printStackDemo(getVal('stack-idx2-txt'), getVal('stack-silent2-txt'));log('Some message\n' + stk);">DEMO2</button><button class="demo-button2" onclick="var stk=demo2.printStackDemo(getVal('stack-idx2-txt'), getVal('stack-silent2-txt'));log('Some message\n' + stk);">DEMO3</button>
 </pre>
     </td>
   </tr>
@@ -1532,8 +1604,8 @@ log('Some message\n' + stk);<button class="demo-button2" onclick="var stk=printS
       Returns current line number
 <pre class="eg">
 
-dbg.line();<button class="demo-button2" onclick="getCurrentLineNumDemo();">DEMO</button>
-dbg.line(<input type="text" id="line-idx-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="getCurrentLineNumDemo2a(getVal('line-idx-txt') | 0);">DEMO</button>
+dbg.line();<button class="demo-button2" onclick="getCurrentLineNumDemo();">DEMO</button><button class="demo-button2" onclick="demo.getCurrentLineNumDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getCurrentLineNumDemo();">DEMO3</button>
+dbg.line(<input type="text" id="line-idx-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="getCurrentLineNumDemo2a(getVal('line-idx-txt') | 0);">DEMO</button><button class="demo-button2" onclick="demo.getCurrentLineNumDemo(getVal('line-idx-txt') | 0);">DEMO2</button><button class="demo-button2" onclick="demo2.getCurrentLineNumDemo(getVal('line-idx-txt') | 0);">DEMO3</button>
 </pre>
     </td>
   </tr>
@@ -1547,8 +1619,24 @@ dbg.line(<input type="text" id="line-idx-txt" class="demo-text" style="width:20p
       Returns current line number
 <pre class="eg">
 
-dbg.funcname();<button class="demo-button2" onclick="getFuncNameDemo();">DEMO</button>
-dbg.funcname(<input type="text" id="func-idx-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="getFuncNameDemo2a(getVal('func-idx-txt') | 0);">DEMO</button>
+dbg.funcname();<button class="demo-button2" onclick="getFuncNameDemo();">DEMO</button><button class="demo-button2" onclick="demo.getFuncNameDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getFuncNameDemo();">DEMO3</button>
+dbg.funcname(<input type="text" id="func-idx-txt" class="demo-text" style="width:20px;" value="1">);<button class="demo-button2" onclick="getFuncNameDemo2a(getVal('func-idx-txt') | 0);">DEMO</button><button class="demo-button2" onclick="demo.getFuncNameDemo(getVal('func-idx-txt') | 0);">DEMO2</button><button class="demo-button2" onclick="demo2.getFuncNameDemo(getVal('func-idx-txt') | 0);">DEMO3</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.filename</td>
+    <td>
+      arg1: index<span class="annotation">(opt)</span><br>
+      arg2: absolute<span class="annotation">(opt)</span><br>
+    </td>
+    <td>
+      Returns current line number
+<pre class="eg">
+
+dbg.filename();<button class="demo-button2" onclick="getFileNameDemo();">DEMO</button><button class="demo-button2" onclick="demo.getFileNameDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getFileNameDemo();">DEMO3</button>
+dbg.filename(<input type="text" id="file-idx-txt" class="demo-text" style="width:20px;" value="0">, <input type="text" id="file-abs-txt" class="demo-text" style="width:40px;" value="true">);<button class="demo-button2" onclick="getFileNameDemo2a(getVal('file-idx-txt') | 0, getVal('file-abs-txt'));">DEMO</button><button class="demo-button2" onclick="demo.getFileNameDemo(getVal('file-idx-txt') | 0, getVal('file-abs-txt'));">DEMO2</button><button class="demo-button2" onclick="demo2.getFileNameDemo(getVal('file-idx-txt') | 0, getVal('file-abs-txt'));">DEMO3</button>
 </pre>
     </td>
   </tr>
