@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808020044';
+  this.v = '201808020054';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11746,7 +11746,7 @@ DebugJS.filename = function(idx, abs) {
     var p = n.split('/');
     n = p[p.length - 1];
     if (n == '') {
-      if (p.length >= 2) {
+      if ((p.length >= 2) && (p.length != 4)) {
         n = p[p.length - 2];
       }
       n += '/';
