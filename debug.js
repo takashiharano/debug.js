@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808010751';
+  this.v = '201808020044';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11715,24 +11715,48 @@ DebugJS.stack = function(ldx, silent) {
   return rslt;
 };
 
+DebugJS.stktop = function(idx) {
+  return DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
+};
+
 DebugJS.line = function(idx) {
-  var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
-  s = s.replace(/(.*)\)$/, '$1');
-  var l = s.replace(/.*\/.*?\:(\d+)\:\d+/, '$1');
+  var s = DebugJS.stktop((idx | 0) + 1);
+  var a = s.split(':');
+  var l = a[a.length - 2];
   return l;
 };
 
 DebugJS.funcname = function(idx) {
-  var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
+  var s = DebugJS.stktop((idx | 0) + 1);
   s = s.replace(/@/, ' ');
   var n = s.replace(/^(.*?)\s.*/, '$1');
   return n;
 };
 
-DebugJS.filename = function(idx) {
-  var s = DebugJS.stack((idx | 0) + 1, true).split('\n')[0];
-  s = s.replace(/(.*)\)$/, '$1');
-  var n = s.replace(/.*\/(.*?)\:\d+\:\d+/, '$1');
+DebugJS.filename = function(idx, abs) {
+  var s = DebugJS.stktop((idx | 0) + 1);
+  s = s.replace(/@/, ' ');
+  s = s.replace(/^.*?\s/, '');
+  s = s.replace(/^\(/, '');
+  s = s.replace(/\)$/, '');
+  s = s.replace(/:\d+$/, '');
+  s = s.replace(/:\d+$/, '');
+  var n = s;
+  if (!abs) {
+    var p = n.split('/');
+    n = p[p.length - 1];
+    if (n == '') {
+      if (p.length >= 2) {
+        n = p[p.length - 2];
+      }
+      n += '/';
+    }
+  }
+  if ((n == '<anonymous>') || (n == 'Unknown script code')) {
+    n = '*anonymous*';
+  } else if ((n == 'code (eval code') || (n.match(/> eval$/)) || (n.match(/<anonymous>$/))) {
+    n = '*eval*';
+  }
   return n;
 };
 
