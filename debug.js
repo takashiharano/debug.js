@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808020054';
+  this.v = '201808020736';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11721,13 +11721,19 @@ DebugJS.stktop = function(idx) {
 
 DebugJS.line = function(idx) {
   var s = DebugJS.stktop((idx | 0) + 1);
+  return DebugJS._line(s, idx);
+};
+DebugJS._line = function(s, idx) {
   var a = s.split(':');
-  var l = a[a.length - 2];
+  var l = a[a.length - 2] | 0;
   return l;
 };
 
 DebugJS.funcname = function(idx) {
   var s = DebugJS.stktop((idx | 0) + 1);
+  return DebugJS._funcname(s, idx);
+};
+DebugJS._funcname = function(s, idx) {
   s = s.replace(/@/, ' ');
   var n = s.replace(/^(.*?)\s.*/, '$1');
   return n;
@@ -11735,6 +11741,10 @@ DebugJS.funcname = function(idx) {
 
 DebugJS.filename = function(idx, abs) {
   var s = DebugJS.stktop((idx | 0) + 1);
+  return DebugJS._filename(s, idx, abs);
+};
+DebugJS._filename = function(s, idx, abs) {
+  if (s == '') return s;
   s = s.replace(/@/, ' ');
   s = s.replace(/^.*?\s/, '');
   s = s.replace(/^\(/, '');
@@ -11758,6 +11768,14 @@ DebugJS.filename = function(idx, abs) {
     n = '*eval*';
   }
   return n;
+};
+
+DebugJS.fileline = function(idx, abs) {
+  var s = DebugJS.stktop((idx | 0) + 1);
+  if (s == '') return s;
+  var f = DebugJS._filename(s, idx, abs);
+  var l = DebugJS._line(s, idx);
+  return f + ':' + l;
 };
 
 DebugJS.time = {};
