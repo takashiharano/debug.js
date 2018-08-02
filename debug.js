@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808020736';
+  this.v = '201808022230';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10835,10 +10835,11 @@ DebugJS.getRndStr = function(min, max) {
 };
 
 DebugJS.http = function(rq, cb) {
+  if (!rq.method) rq.method = 'GET';
   if ((rq.data == undefined) || (rq.data == '')) data = null;
   if (rq.async == undefined) rq.async = true;
-  if (rq.user == undefined) rq.user = '';
-  if (rq.pass == undefined) rq.pass = '';
+  if (!rq.user) rq.user = '';
+  if (!rq.pass) rq.pass = '';
   rq.method = rq.method.toUpperCase();
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
@@ -11711,7 +11712,7 @@ DebugJS.stack = function(ldx, silent) {
     if (cnt > 0) {rslt += '\n';}
     rslt += DebugJS.delLeadingSP(s).replace(/^at /, '');cnt++;
   }
-  if (!silent) DebugJS._log('Stack:\n' + rslt);
+  if (!silent) DebugJS._log('Stack:\n' + DebugJS.escTags(rslt));
   return rslt;
 };
 
@@ -11720,8 +11721,7 @@ DebugJS.stktop = function(idx) {
 };
 
 DebugJS.line = function(idx) {
-  var s = DebugJS.stktop((idx | 0) + 1);
-  return DebugJS._line(s, idx);
+  return DebugJS._line(DebugJS.stktop((idx | 0) + 1), idx);
 };
 DebugJS._line = function(s, idx) {
   var a = s.split(':');
@@ -11730,28 +11730,23 @@ DebugJS._line = function(s, idx) {
 };
 
 DebugJS.funcname = function(idx) {
-  var s = DebugJS.stktop((idx | 0) + 1);
-  return DebugJS._funcname(s, idx);
+  return DebugJS._funcname(DebugJS.stktop((idx | 0) + 1), idx);
 };
 DebugJS._funcname = function(s, idx) {
-  s = s.replace(/@/, ' ');
-  var n = s.replace(/^(.*?)\s.*/, '$1');
-  return n;
+  return s.replace(/@/, ' ').replace(/^(.*?)\s.*/, '$1');
 };
 
 DebugJS.filename = function(idx, abs) {
-  var s = DebugJS.stktop((idx | 0) + 1);
-  return DebugJS._filename(s, idx, abs);
+  return DebugJS._filename(DebugJS.stktop((idx | 0) + 1), idx, abs);
 };
 DebugJS._filename = function(s, idx, abs) {
   if (s == '') return s;
-  s = s.replace(/@/, ' ');
-  s = s.replace(/^.*?\s/, '');
-  s = s.replace(/^\(/, '');
-  s = s.replace(/\)$/, '');
-  s = s.replace(/:\d+$/, '');
-  s = s.replace(/:\d+$/, '');
-  var n = s;
+  var n = s.replace(/@/, ' ');
+  n = n.replace(/^.*?\s/, '');
+  n = n.replace(/^\(/, '');
+  n = n.replace(/\)$/, '');
+  n = n.replace(/:\d+$/, '');
+  n = n.replace(/:\d+$/, '');
   if (!abs) {
     var p = n.split('/');
     n = p[p.length - 1];
@@ -11763,7 +11758,7 @@ DebugJS._filename = function(s, idx, abs) {
     }
   }
   if ((n == '<anonymous>') || (n == 'Unknown script code')) {
-    n = '*anonymous*';
+    n = '&lt;anonymous&gt;';
   } else if ((n == 'code (eval code') || (n.match(/> eval$/)) || (n.match(/<anonymous>$/))) {
     n = '*eval*';
   }
