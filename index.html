@@ -93,6 +93,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .class1{background:#66f;color:#fff;}
 .class2{background:#f66;}
 .elm{display:inline-block;position:relative;color:#999;font-size:8px;font-family:Consolas;}
+.pseudobtn:hover{text-shadow:0 0 3px;cursor:pointer;}
 </style>
 <script>
 dbg.init({visible:true});
@@ -527,6 +528,33 @@ function getFileNameDemo2b(idx, abs) {
   log(name);
 }
 
+function getFileLineDemo() {
+  var fl = dbg.fileline();
+  log(fl);
+}
+
+function getFileLineDemo2a(idx, abs) {
+  abs = (abs == "true" ? true : false);
+  getFileNameDemo2b(idx, abs);
+}
+
+function getFileLineDemo2b(idx, abs) {
+  var name = dbg.fileline(idx, abs);
+  log(fl);
+}
+
+function clrlog() {
+  var r = {url: '/savelog.py?data='};
+  dbg.http(r, cbClrlog); 
+}
+function cbClrlog(xhr) {
+  if (xhr.status == 200) {
+    log('Clear OK');
+  } else {
+    log(xhr.status);
+  }
+}
+
 var wdtCount = 0;
 function onWatchdogTimeout(elapsed) {
   dbg.show();
@@ -801,6 +829,12 @@ demo.getFileNameDemo = function(idx, abs) {
   log(name);
 };
 
+demo.getFileLineDemo = function(idx, abs) {
+  abs = (abs == "true" ? true : false);
+  var fl = dbg.fileline(idx, abs);
+  log(fl);
+};
+
 function addScript() {
   var script = 'var demo2 = {};';
   script += 'demo2.printStackDemo = function(idx, silent) {';
@@ -821,6 +855,12 @@ function addScript() {
   script += '  abs = (abs == "true" ? true : false);';
   script += '  var name = dbg.filename(idx, abs);';
   script += '  log(name);';
+  script += '};';
+
+  script += 'demo2.getFileLineDemo = function(idx, abs) {';
+  script += '  abs = (abs == "true" ? true : false);';
+  script += '  var ln = dbg.fileline(idx, abs);';
+  script += '  log(ln);';
   script += '};';
 
   var scriptElement = document.createElement('script');
@@ -1642,6 +1682,22 @@ dbg.filename(<input type="text" id="file-idx-txt" class="demo-text" style="width
   </tr>
 
   <tr>
+    <td class="name">dbg.fileline</td>
+    <td>
+      arg1: index<span class="annotation">(opt)</span><br>
+      arg2: absolute<span class="annotation">(opt)</span><br>
+    </td>
+    <td>
+      Returns current line number
+<pre class="eg">
+
+dbg.fileline();<button class="demo-button2" onclick="getFileLineDemo();">DEMO</button><button class="demo-button2" onclick="demo.getFileLineDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getFileLineDemo();">DEMO3</button>
+dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="width:20px;" value="0">, <input type="text" id="fileline-abs-txt" class="demo-text" style="width:40px;" value="true">);<button class="demo-button2" onclick="getFileLineDemo2a(('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO</button><button class="demo-button2" onclick="demo.getFileLineDemo(getVal('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO2</button><button class="demo-button2" onclick="demo2.getFileLineDemo(getVal('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO3</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.sendLog</td>
     <td>
       arg1: url<br>
@@ -1684,7 +1740,7 @@ dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
 <b>DEMO</b> This is the simplest example of the sending.
 
 dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
--&gt; <a href="log.txt" target="_blank">log.txt</a>
+-&gt; <a href="log.txt" target="_blank">log.txt</a> <span class="pseudobtn" style="color:#c88" onclick="clrlog();" title="clear">x</span>
 
 <pre class="code emphasis" style="width:500px">
 <span style="color:#0ff">SERVER SIDE PROGRAM (savelog.py)</span>
