@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808071900';
+  this.v = '201808081800';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10198,7 +10198,7 @@ DebugJS.toJSON = function(o, r, s) {
   return JSON.stringify(o, r, s);
 };
 
-DebugJS.jsonDump = function(o) {
+DebugJS.dumpJSON = function(o) {
   return DebugJS.objDump(o, true, 0, true, 0)
 };
 

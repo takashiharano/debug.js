@@ -2535,6 +2535,17 @@ dbg.getKeys(obj);
   </tr>
 
   <tr>
+    <td class="name">dbg.fromJSON</td>
+    <td>
+      text<br>
+      reviver<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Parses a JSON string, constructing the JavaScript value or object described by the string
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.toJSON</td>
     <td>
       value<br>
@@ -2547,13 +2558,14 @@ dbg.getKeys(obj);
   </tr>
 
   <tr>
-    <td class="name">dbg.fromJSON</td>
+    <td class="name">dbg.dumpJSON</td>
+    <td>object</td>
     <td>
-      text<br>
-      reviver<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Parses a JSON string, constructing the JavaScript value or object described by the string
+      Returns JSON string of given object in a Friendly Readable Format.<br>
+<pre>
+var obj = <input type="text" id="dump-json-text" class="demo-text" style="width:400px;" value="{a:'b', c:'123'}">;
+dbg.dumpJSON(obj); <button class="demo-button2" onclick="eval('obj='+getVal('dump-json-text'));log('\n'+dbg.dumpJSON(obj));">DEMO</button>
+</pre>
     </td>
   </tr>
 
