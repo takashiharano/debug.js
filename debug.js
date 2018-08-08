@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808082018';
+  this.v = '201808082055';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4905,7 +4905,10 @@ DebugJS.prototype = {
     }
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + ' !important;font-size:' + dtFontSize + 'px !important">' + DebugJS.WDAYS[tm.wday] + '</span>';
     var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (ssFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ' !important;font-size:' + ssFontSize + 'px !important">' + tm.ss + dot + '</span>';
-    if (ctx.timerClockSSS) {time += '<span style="font-size:' + msFontSize + 'px !important">' + tm.sss + '</span>'}
+    if (ctx.timerClockSSS) {
+      time += '<span style="font-size:' + msFontSize + 'px !important">' + tm.sss + '</span>';
+      marginB -= 16 * ctx.opt.zoom;
+    }
     var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + dtFontSize + 'px !important">' + date + '</div>' +
                 '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
     return label;
