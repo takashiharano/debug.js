@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808082055';
+  this.v = '201808101626';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -317,6 +317,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'condwait', fnc: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', usage: 'condwait init -key key | pause [timeout]'},
     {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms|YYYYMMDDTHHMISS command'},
@@ -6938,6 +6939,25 @@ DebugJS.prototype = {
     DebugJS.ctx.clearLog();
   },
 
+  cmdCondWait: function(arg, tbl) {
+    var bat = DebugJS.bat;
+    var args = DebugJS.splitArgsEx(arg);
+    var op = args[0];
+    switch (op) {
+      case 'init':
+        var key = DebugJS.getOptVal(arg, 'key');
+        bat.ctrl.condKey = (key ? DebugJS.delAllSP(key) : key);
+        break;
+      case 'pause':
+        if (bat.ctrl.condKey) {
+          DebugJS.ctx._cmdPause('-key', bat.ctrl.condKey, args[1]);
+        }
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+    }
+  },
+
   cmdDbgWin: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
@@ -11089,6 +11109,7 @@ DebugJS.strcmpWOsp = function(s1, s2) {
 };
 
 DebugJS.hasKey = function(s, k, d) {
+  if (!s) return false;
   var a = s.split(d);
   for (var i = 0; i < a.length; i++) {
     if (a[i] == k) {
@@ -11893,6 +11914,7 @@ DebugJS.bat.ctrl = {
   lock: 0,
   block: [],
   fnArg: undefined,
+  condKey: null,
   pauseKey: null,
   pauseTimeout: 0,
   cont: false,
@@ -12466,9 +12488,10 @@ DebugJS.bat.resume = function(key) {
     }
   }
 };
-DebugJS.bat._resume = function(trigger, key, to) {
+DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
   var ctx = DebugJS.ctx;
-  var ctrl = DebugJS.bat.ctrl;
+  var bat = DebugJS.bat;
+  var ctrl = bat.ctrl;
   if (trigger) {
     var resumed = false;
     if (trigger == 'cmd') {
@@ -12489,19 +12512,20 @@ DebugJS.bat._resume = function(trigger, key, to) {
     if (resumed) {ctrl.pauseTimeout = 0;}
     var msg;
     if (resumed) {
+      bat.ctrl.pauseKey = null;
       msg = 'Resumed.';
       if (to) msg += ' (timed out)';
       if (key != undefined) msg += ' (' + key + ')';
     } else {
-      msg = 'not paused.';
+      if (!fmCnd) msg = 'not paused.';
     }
-    DebugJS._log(msg);
+    if (msg) DebugJS._log(msg);
   } else {
     ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
     ctx.updateBatRunBtn();
   }
-  DebugJS.bat.stopNext();
-  ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
+  bat.stopNext();
+  ctrl.tmid = setTimeout(bat.exec, 0);
 };
 DebugJS.bat.stopNext = function() {
   if (DebugJS.bat.ctrl.tmid > 0) {
@@ -12555,6 +12579,7 @@ DebugJS.bat.initCtrl = function(all) {
   ctrl.block = [];
   ctrl.js = 0;
   ctrl.lock = 0;
+  ctrl.conddKey = null;
   ctrl.pauseKey = null;
   ctrl.pauseTimeout = 0;
   ctrl.stopReq = false;
@@ -12664,6 +12689,16 @@ DebugJS.bat.status = function() {
     st = 'RUNNING';
   }
   return st;
+};
+DebugJS.bat.getPauseKey = function() {
+  return DebugJS.bat.ctrl.pauseKey;
+};
+DebugJS.bat.setCond = function(key) {
+  var bat = DebugJS.bat;
+  if (DebugJS.hasKey(bat.ctrl.condKey, key, '|')) {
+    bat._resume('cmd-key', key, false, true);
+    bat.ctrl.condKey = null;
+  }
 };
 DebugJS.isBat = function(s) {
   var BAT_HEAD = '#!BAT!';

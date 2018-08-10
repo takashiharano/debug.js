@@ -2108,6 +2108,25 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
+    <td class="name">dbg.bat.getPauseKey</td>
+    <td></td>
+    <td>
+      Returns current pausing key. <button class="demo-button2" onclick="log(dbg.bat.getPauseKey());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.bat.setCond</td>
+    <td>condtion key</td>
+    <td>
+      Sets condition for resuming "condwait pause" command.
+<pre class="eg">
+dbg.bat.setCond('<input type="text" id="setcond-text" class="demo-text" style="width:100px;" value="AAA">'); <button class="demo-button2" onclick="dbg.bat.setCond(getVal('setcond-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.isBat</td>
     <td>text</td>
     <td>
