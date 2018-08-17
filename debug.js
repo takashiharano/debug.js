@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808101626';
+  this.v = '201808161130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -317,7 +317,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bin', fnc: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fnc: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fnc: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'condwait', fnc: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', usage: 'condwait init -key key | pause [timeout]'},
+    {cmd: 'condwait', fnc: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', usage: 'condwait set -key key | pause [timeout] | init'},
     {cmd: 'dbgwin', fnc: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fnc: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'delay', fnc: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms|YYYYMMDDTHHMISS command'},
@@ -6945,6 +6945,9 @@ DebugJS.prototype = {
     var op = args[0];
     switch (op) {
       case 'init':
+        bat._initCond();
+        break;
+      case 'set':
         var key = DebugJS.getOptVal(arg, 'key');
         bat.ctrl.condKey = (key ? DebugJS.delAllSP(key) : key);
         break;
@@ -12698,6 +12701,15 @@ DebugJS.bat.setCond = function(key) {
   if (DebugJS.hasKey(bat.ctrl.condKey, key, '|')) {
     bat._resume('cmd-key', key, false, true);
     bat.ctrl.condKey = null;
+  }
+};
+DebugJS.bat._initCond = function() {
+  var bat = DebugJS.bat;
+  var condKey = bat.ctrl.condKey;
+  if (condKey == null) return;
+  bat.ctrl.condKey = null;
+  if (DebugJS.bat.ctrl.pauseKey == condKey) {
+    DebugJS.bat._resume('cmd-key');
   }
 };
 DebugJS.isBat = function(s) {
