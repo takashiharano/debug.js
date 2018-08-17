@@ -2918,6 +2918,25 @@ function
   </tr>
 
   <tr>
+    <td class="name">condwait</td>
+    <td>
+      arg1: opeation
+      arg2: key
+    </td>
+    <td>
+      Sets condition key and pause BAT execution.
+<pre class="eg">
+$ condwait set -key &lt;key&gt;
+$ condwait pause
+dbg.bat.setCond(&lt;key&gt;);
+
+$ condwait init
+-&gt; Clear the waiting condition forcibly.
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbgwin</td>
     <td>
       arg1: operation<br>
