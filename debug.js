@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808161130';
+  this.v = '201808190055';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12696,6 +12696,9 @@ DebugJS.bat.status = function() {
 DebugJS.bat.getPauseKey = function() {
   return DebugJS.bat.ctrl.pauseKey;
 };
+DebugJS.bat.getCondKey = function() {
+  return DebugJS.bat.ctrl.condKey;
+};
 DebugJS.bat.setCond = function(key) {
   var bat = DebugJS.bat;
   if (DebugJS.hasKey(bat.ctrl.condKey, key, '|')) {
@@ -12705,12 +12708,11 @@ DebugJS.bat.setCond = function(key) {
 };
 DebugJS.bat._initCond = function() {
   var bat = DebugJS.bat;
-  var condKey = bat.ctrl.condKey;
-  if (condKey == null) return;
-  bat.ctrl.condKey = null;
-  if (DebugJS.bat.ctrl.pauseKey == condKey) {
+  if (bat.ctrl.condKey == null) return;
+  if (DebugJS.bat.ctrl.pauseKey == bat.ctrl.condKey) {
     DebugJS.bat._resume('cmd-key');
   }
+  bat.ctrl.condKey = null;
 };
 DebugJS.isBat = function(s) {
   var BAT_HEAD = '#!BAT!';
