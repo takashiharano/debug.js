@@ -434,6 +434,39 @@ var a = {
    key14: {}
 };
 
+var aa = {
+  'key1<abc>': 'ab"c',
+  'key2&': "xy'z<123>",
+  key3: 123,
+  'key<a>4': 0,
+  'key<a>5': {
+    'key<a>A': 'A',
+    'key<a>B': {
+      'key<a>B1': 'b1',
+      'key<a>B2': 'b2'
+    },
+    'key<a>C': 'C'
+   },
+   'key<a>6': null,
+   'key<a>7': undefined,
+   'key<a>8': true,
+   'key<a>9': false,
+   'key<a>10': [
+     {
+       'aaa<a>': 111,
+       'bbb<a>': 'test1'
+     },
+     {
+       'aaa<a>': 222,
+       'bbb<a>': 'abc def&nbsp;ghi<h1>jkl</h1>"\'mno'
+     }
+   ],
+   'key<a>11': (new Date()),
+   'key<a>12': buf,
+   'key<a>13': foo,
+   'key<a>14': {}
+};
+
 var b = ['1', '2', '3'];
 var c = 1;
 var d = 'string';
@@ -2585,13 +2618,13 @@ dbg.getKeys(obj);
   </tr>
 
   <tr>
-    <td class="name">dbg.dumpJSON</td>
+    <td class="name">dbg.obj2json</td>
     <td>object</td>
     <td>
       Returns JSON string of given object in a Friendly Readable Format.<br>
 <pre>
 var obj = <input type="text" id="dump-json-text" class="demo-text" style="width:400px;" value="{a:'b', c:'123'}">;
-dbg.dumpJSON(obj); <button class="demo-button2" onclick="eval('obj='+getVal('dump-json-text'));log('\n'+dbg.dumpJSON(obj));">DEMO</button>
+dbg.obj2json(obj); <button class="demo-button2" onclick="eval('obj='+getVal('dump-json-text'));log('\n'+dbg.obj2json(obj));">DEMO</button>
 </pre>
     </td>
   </tr>

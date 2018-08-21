@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808190055';
+  this.v = '201808212130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -332,7 +332,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'http', fnc: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
     {cmd: 'input', fnc: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'js', fnc: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', usage: 'js exec'},
-    {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l<n>] [-p] one-line-json'},
+    {cmd: 'json', fnc: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l&lt;n&gt;] [-p] one-line-json'},
     {cmd: 'jump', fnc: this.cmdJump, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'keypress', fnc: this.cmdKeyPress, desc: 'Dispatch a key event to active element', usage: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
     {cmd: 'keys', fnc: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
@@ -342,7 +342,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'msg', fnc: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'nexttime', fnc: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
-    {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l<n>] object'},
+    {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] object'},
     {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-c|-key key] [timeout]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
     {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
@@ -9827,7 +9827,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit, valLenLimit) {
   }
   var arg = {lv: 0, cnt: 0, dump: ''};
   if (typeof obj === 'function') {
-    arg.dump += '<span style="color:#4c4">function</span>()\n';
+    arg.dump += (toJson ? 'function' : '<span style="color:#4c4">function</span>') + '()\n';
   }
   var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimit);
   if ((!noMaxLimit) && (ret.cnt >= DebugJS.ctx.props.dumplimit)) {
@@ -9918,11 +9918,11 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
             arg.dump += '\n';
           }
           if (typeof obj[key] === 'function') {
-            arg.dump += indent + '<span style="color:#4c4">function</span>';
+            arg.dump += indent + (toJson ? 'function' : '<span style="color:#4c4">function</span>');
             if (obj[key].toString().match(/\[native code\]/)) {
               arg.dump += ' [native]';
             }
-            arg.dump += ' ' + key + '()';
+            arg.dump += ' ' + DebugJS.escTags(key) + '()';
             arg.cnt++;
             if ((levelLimit == 0) || ((levelLimit >= 1) && ((arg.lv + 1) < levelLimit))) {
               if (Object.keys(obj[key]).length > 0) {
@@ -9932,7 +9932,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
           } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
             arg.dump += indent;
             if (toJson) {arg.dump += '"';}
-            arg.dump += key;
+            arg.dump += (toJson ? key : DebugJS.escTags(key));
             if (toJson) {arg.dump += '"';}
             var dt = DebugJS.getDateTime(obj[key]);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss + ' (' + obj[key].getTime() + ')';
@@ -9947,7 +9947,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
           } else if ((window.ArrayBuffer) && (obj[key] instanceof ArrayBuffer)) {
             arg.dump += indent;
             if (toJson) {arg.dump += '"';}
-            arg.dump += key;
+            arg.dump += (toJson ? key : DebugJS.escTags(key));
             if (toJson) {arg.dump += '"';}
             arg.dump += ': ';
             if (toJson) {
@@ -9960,7 +9960,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
           } else {
             arg.dump += indent;
             if (toJson) {arg.dump += '"';}
-            arg.dump += key;
+            arg.dump += (toJson ? key : DebugJS.escTags(key));
             if (toJson) {arg.dump += '"';}
             arg.dump += ': ';
           }
@@ -10039,11 +10039,15 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
       var str;
       if ((valLenLimit > 0) && (obj.length > valLenLimit)) {
         str = obj.substr(0, valLenLimit);
-        str = DebugJS.escTags(str) + (toJson ? '...' : '<span style="color:#aaa">...</span>');
+        if (toJson) {
+          str += '...';
+        } else {
+          str = DebugJS.escTags(str) + '<span style="color:#aaa">...</span>';
+        }
       } else {
-        str = DebugJS.escTags(obj);
+        str = (toJson ? obj : DebugJS.escTags(obj));
       }
-      arg.dump += (toJson ? '"' + str + '"' : DebugJS.encString(str));
+      arg.dump += (toJson ? '"' + str.replace(/\"/g, '\\"') + '"' : DebugJS.encString(str));
       arg.cnt++;
     } else {
       arg.dump += obj; arg.cnt++;
@@ -10157,6 +10161,7 @@ DebugJS.execCmdJson = function(json, flg, lv) {
     var j = JSON.parse(json);
     var valLen = DebugJS.ctx.props.dumpvallen;
     var jsn = DebugJS.objDump(j, flg, lv, false, valLen);
+    if (flg) jsn = DebugJS.escTags(jsn);
     DebugJS._log.mlt(jsn);
     return jsn;
   } catch (e) {
@@ -10223,7 +10228,7 @@ DebugJS.toJSON = function(o, r, s) {
   return JSON.stringify(o, r, s);
 };
 
-DebugJS.dumpJSON = function(o) {
+DebugJS.obj2json = function(o) {
   return DebugJS.objDump(o, true, 0, true, 0);
 };
 
@@ -11700,6 +11705,7 @@ DebugJS._log.s = function(m) {
 DebugJS._log.p = function(o, l, m, j) {
   var valLen = DebugJS.ctx.props.dumpvallen;
   var s = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
+  if (j) s = DebugJS.escTags(s);
   DebugJS._log.out(s, DebugJS.LOG_TYPE_LOG);
 };
 DebugJS._log.res = function(m) {
