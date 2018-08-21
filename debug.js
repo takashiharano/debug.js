@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808212217';
+  this.v = '201808220111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10047,6 +10047,9 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
       } else {
         str = (toJson ? obj : DebugJS.escTags(obj));
       }
+      str = str.replace(/\\/g, '\\\\');
+      str = str.replace(/\n/g, '\\n');
+      str = str.replace(/\r/g, '\\r');
       arg.dump += (toJson ? '"' + str.replace(/\"/g, '\\"') + '"' : DebugJS.encString(str));
       arg.cnt++;
     } else {
