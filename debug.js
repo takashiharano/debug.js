@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808220111';
+  this.v = '201808222107';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -386,8 +386,8 @@ var DebugJS = DebugJS || function() {
     hexdumplastrows: /^[0-9]+$/,
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
-    inputtextspeed: /^[0-9\-]+$/,
-    inputtextstep: /^[0-9\-]+$/,
+    textinputspeed: /^[0-9\-]+$/,
+    textinputstep: /^[0-9\-]+$/,
     scrollspeed: /^[0-9]+$/,
     scrollstep: /^[0-9]+$/,
     wait: /^[0-9]+$/,
@@ -407,8 +407,8 @@ var DebugJS = DebugJS || function() {
     hexdumplastrows: 16,
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
-    inputtextspeed: 30,
-    inputtextstep: 1,
+    textinputspeed: 30,
+    textinputstep: 1,
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     scrollstep: DebugJS.scrollWinTo.data.step,
     wait: 500,
@@ -13740,10 +13740,10 @@ DebugJS.inputText = function(el, txt, speed, step, start, end) {
   txt = DebugJS.replaceCtrlChr(txt, true);
   data.txt = txt;
   if ((speed == undefined) || (speed == null) || (speed == '')) {
-    speed = DebugJS.ctx.props.inputtextspeed;
+    speed = DebugJS.ctx.props.textinputspeed;
   }
   if ((step == undefined) || (step == null) || (step == '')) {
-    step = DebugJS.ctx.props.inputtextstep;
+    step = DebugJS.ctx.props.textinputstep;
   }
   data.speed = speed;
   data.step = step | 0;
@@ -14150,9 +14150,6 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
   var test = DebugJS.test;
   var status = test.STATUS_ERR;
   var detail;
-  if (typeof exp === 'string') {
-    exp = DebugJS.replaceCtrlChr(exp, true);
-  }
   try {
     if (method != 'regexp') {
       exp = eval(exp);
