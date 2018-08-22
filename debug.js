@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808222123';
+  this.v = '201808230030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10271,6 +10271,36 @@ DebugJS.checkRadix = function(v) {
   } else {
     return 0;
   }
+};
+
+DebugJS.arr2set = function(a, f) {
+  var s = [];
+  for (var i = 0; i < a.length; i++) {
+    var v = a[i];
+    if (DebugJS.findArrVal(s, v, f) < 0) {
+      s.push(v);
+    }
+  }
+  return s;
+};
+DebugJS.findArrVal = function(a, v, f) {
+  var r = -1;
+  for (var i = 0; i < a.length; i++) {
+    if ((!f && (a[i] == v)) || (f && (a[i] === v))) {
+      r = i;
+      break;
+    }
+  }
+  return r;
+};
+DebugJS.countArrVal = function(a, v, f) {
+  var c = 0;
+  for (var i = 0; i < a.length; i++) {
+    if ((!f && (a[i] == v)) || (f && (a[i] === v))) {
+      c++;
+    }
+  }
+  return c;
 };
 
 DebugJS.printUsage = function(m) {

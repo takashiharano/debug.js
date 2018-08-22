@@ -2363,7 +2363,14 @@ max: maximum length
     <td class="name">dbg.escTags</td>
     <td>string</td>
     <td>
-      Replace "&lt;" and "&gt;" to "&amp;lt;" and "&amp;gt;".
+      Perform HTML sanitization.<br>
+<pre class="eg">
+&lt; -&gt; &amp;lt;
+&gt; -&gt; &amp;gt;
+&amp; -&gt; &amp;amp;
+&quot; -&gt; &amp;quot;
+&#39; -&gt; &amp;#39;
+</pre>
     </td>
   </tr>
 
@@ -2624,7 +2631,61 @@ dbg.getKeys(obj);
       Returns JSON string of given object in a Friendly Readable Format.<br>
 <pre>
 var obj = <input type="text" id="dump-json-text" class="demo-text" style="width:400px;" value="{a:'b', c:'123'}">;
-dbg.obj2json(obj); <button class="demo-button2" onclick="eval('obj='+getVal('dump-json-text'));log('\n'+dbg.obj2json(obj));">DEMO</button>
+dbg.obj2json(obj); <button class="demo-button2" onclick="eval('obj=' + getVal('dump-json-text'));log('\n' + dbg.obj2json(obj));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.arr2set</td>
+    <td>
+      arg1: array<br>
+      arg2: strict mode<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Convert array to set.<br><br>
+<pre class="eg">
+var array = [<textarea id="arr2set-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
+
+dbg.arr2set(array); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr));">DEMO</button>
+dbg.arr2set(array, <input type="text" id="arr2set-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr, (getVal('arr2set-flg-text') == 'true' ? true : false)));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.countArrVal</td>
+    <td>
+      arg1: array<br>
+      arg2: value<br>
+      arg3: strict mode<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Count the value of array.<br><br>
+<pre class="eg">
+var array = [<textarea id="cntval-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
+
+dbg.countArrVal(array, <input type="text" id="cntval-val-text1" class="demo-text" style="width:100px;" value="1">); <button class="demo-button2" onclick="eval('arr=[' + getVal('cntval-arr-text') + ']');log.res(dbg.countArrVal(arr, eval(getVal('cntval-val-text1'))));">DEMO</button>
+dbg.countArrVal(array, <input type="text" id="cntval-val-text2" class="demo-text" style="width:100px;" value="'1'">, <input type="text" id="cntval-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('cntval-arr-text') + ']');log.res(dbg.countArrVal(arr, eval(getVal('cntval-val-text2')), (getVal('cntval-flg-text') == 'true' ? true : false)));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.findArrVal</td>
+    <td>
+      arg1: array<br>
+      arg2: value<br>
+      arg3: strict mode<span class="annotation">(opt)</span>
+    </td>
+    <td>
+       Find the position of an element or whether an element exists in an array.<br>
+       The function returns -1 if the element was not found.<br><br>
+<pre class="eg">
+var array = [<textarea id="findval-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
+
+dbg.findArrVal(array, <input type="text" id="findval-val-text1" class="demo-text" style="width:100px;" value="1">); <button class="demo-button2" onclick="eval('arr=[' + getVal('findval-arr-text') + ']');log.res(dbg.findArrVal(arr, eval(getVal('findval-val-text1'))));">DEMO</button>
+dbg.findArrVal(array, <input type="text" id="findval-val-text2" class="demo-text" style="width:100px;" value="'2'">, <input type="text" id="findval-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('findval-arr-text') + ']');log.res(dbg.findArrVal(arr, eval(getVal('findval-val-text2')), (getVal('findval-flg-text') == 'true' ? true : false)));">DEMO</button>
 </pre>
     </td>
   </tr>
