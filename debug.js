@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808222107';
+  this.v = '201808222123';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7258,6 +7258,7 @@ DebugJS.prototype = {
 
   cmdExit: function(arg, tbl) {
     var ctx = DebugJS.ctx;
+    DebugJS.bat.exit();
     ctx._cmdDelayCancel(ctx);
     ctx.CMDVALS = {};
     ctx.finalizeFeatures(ctx);
@@ -12568,6 +12569,11 @@ DebugJS.bat.cancel = function() {
   DebugJS.bat.stop();
   DebugJS.point.init();
   DebugJS._log('Canceled.');
+};
+DebugJS.bat.exit = function() {
+  DebugJS.bat.stop();
+  DebugJS.point.init();
+  DebugJS.bat.clear();
 };
 DebugJS.bat.hasBatStopCond = function(key) {
   return DebugJS.hasKey(DebugJS.ctx.props.batstop, key, '|');
