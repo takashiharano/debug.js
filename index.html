@@ -3564,20 +3564,18 @@ $ p -a object
   <tr>
     <td class="name">pause</td>
     <td>
-     -c<span class="annotation">(opt)</span> [timeout]<br>
-     -key <i>key</i><span class="annotation">(opt)</span> [timeout]
+     -key <i>key</i><span class="annotation">(opt)</span><br>
+     -timeout <i>ms</i><span class="annotation">(opt)</span><br>
+     -s<span class="annotation">(opt)</span>
     </td>
     <td>
      Suspends processing of batch file.<br>
-     Click or press any key to continue.<br>
-     -c option requires "resume" command to resume.<br>
+     Execute "resume" command to resume.<br>
      -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.<br>
-      [timeout] is time-out value in milliseconds.<span class="annotation">(opt)</span>
+     -timeout option: Set time-out value in milliseconds.<span class="annotation">(opt)</span>
+     -s option: Simple pause, Click or press any key to continue.<br>
 <pre class="eg">
 $ pause
-<span class="annotation">key press / click</span>
-
-$ pause -c
 <span class="annotation">$ resume</span>
 
 $ pause -key aaa
@@ -3588,6 +3586,9 @@ $ pause -key aaa|bbb
 <span class="annotation">$ resume</span>
 <span class="annotation">$ resume -key aaa</span>
 <span class="annotation">$ resume -key bbb</span>
+
+$ pause -s
+<span class="annotation">key press / click</span>
 </pre>
     </td>
   </tr>

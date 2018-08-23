@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808230030';
+  this.v = '201808232036';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -343,7 +343,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nexttime', fnc: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...'},
     {cmd: 'open', fnc: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fnc: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] object'},
-    {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-c|-key key [-timeout ms]]'},
+    {cmd: 'pause', fnc: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-key key [-timeout ms]|-s]'},
     {cmd: 'pin', fnc: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
     {cmd: 'point', fnc: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
     {cmd: 'prop', fnc: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
@@ -6954,7 +6954,7 @@ DebugJS.prototype = {
       case 'pause':
         if (bat.ctrl.condKey) {
           var to = dbg.getOptVal(arg, 'timeout');
-          DebugJS.ctx._cmdPause('-key', bat.ctrl.condKey, to);
+          DebugJS.ctx._cmdPause('key', bat.ctrl.condKey, to);
         }
         break;
       default:
@@ -7739,7 +7739,14 @@ DebugJS.prototype = {
   },
 
   cmdPause: function(arg, tbl) {
-    var op = DebugJS.splitArgsEx(arg)[0];
+    var op = '';
+    var opts = ['s', 'key'];
+    for (var i = 0; i < opts.length; i++) {
+      if (dbg.getOptVal(arg, opts[i]) != null) {
+        op = opts[i];
+        break;
+      }
+    }
     var key = dbg.getOptVal(arg, 'key');
     var to = dbg.getOptVal(arg, 'timeout');
     if (!(DebugJS.ctx._cmdPause(op, key, to))) {
@@ -7750,13 +7757,13 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     timeout |= 0;
     ctx.CMDVALS['%KEY%'] = null;
-    if (op == '') {
+    if (op == 's') {
       ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD;
       DebugJS._log('Click or press any key to continue...');
     } else {
-      if (op == '-c') {
+      if (op == '') {
         DebugJS._log('Type "resume" to continue...' + ((timeout > 0) ? ' (timeout=' + timeout + ')' : ''));
-      } else if (op == '-key') {
+      } else if (op == 'key') {
         if (key == undefined) {key = '';}
         DebugJS.bat.ctrl.pauseKey = key;
         DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((timeout > 0) ? ' (timeout=' + timeout + ')' : ''));
@@ -12697,7 +12704,7 @@ DebugJS.bat.load = function() {
   bat.parseLabels();
   if (DebugJS.ctx.props.batcont == 'on') {
     if (bat.ctrl.pauseKey != null) {
-      DebugJS.ctx._cmdPause('-key', bat.ctrl.pauseKey, 0);
+      DebugJS.ctx._cmdPause('key', bat.ctrl.pauseKey, 0);
     }
     bat.setRunningSt(true);
     bat.exec();
