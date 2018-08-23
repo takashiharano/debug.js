@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808240030';
+  this.v = '201808240110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -936,7 +936,7 @@ DebugJS.prototype = {
     };
 
     styles['.' + ctx.id + '-na'] = {
-      'color': '#ccc'
+      'color': '#ccc !important'
     };
 
     styles['.' + ctx.id + '-showhide-btn'] = {
@@ -1429,7 +1429,7 @@ DebugJS.prototype = {
       ctx.cmdPanel = document.createElement('div');
       ctx.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
       ctx.winBody.appendChild(ctx.cmdPanel);
-      ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + '">$</span>';
+      ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + ' !important">$</span>';
       var cmdLine = document.createElement('input');
       ctx.setStyle(cmdLine, 'min-height', fontSize);
       ctx.setStyle(cmdLine, 'width', 'calc(100% - ' + fontSize + ')');
@@ -4064,6 +4064,7 @@ DebugJS.prototype = {
       'accessKey : ' + el.accessKey + '\n' +
       'maxLength : ' + DebugJS.setStyleIfObjNA(el.maxLength) + '\n' +
       'checked   : ' + DebugJS.setStyleIfObjNA(el.checked, true) + '\n' +
+      'htmlFor   : ' + DebugJS.setStyleIfObjNA(el.htmlFor) + '\n' +
       'selectedIndex: ' + DebugJS.setStyleIfObjNA(el.selectedIndex) + '\n' +
       'contentEditable: ' + el.contentEditable + '\n' +
       DebugJS.addPropSeparator(ctx) +
