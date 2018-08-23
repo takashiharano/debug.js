@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808232036';
+  this.v = '201808232117';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9134,12 +9134,11 @@ DebugJS._replaceCmdVals = function(s, il) {
     var reNm = name;
     if (name == '?') {reNm = '\\?';}
     var re = new RegExp(pfix + '\\{' + reNm + '\\}', 'g');
-    var v = DebugJS.ctx.CMDVALS[name];
-    var r = v + '';
-    if (!il) {
-      if (typeof v === 'string') {
-        r = '"' + v.replace(/"/g, '\\"') + '"';
-      }
+    var r;
+    if (il) {
+      r = DebugJS.ctx.CMDVALS[name] + '';
+    } else {
+      r = 'DebugJS.ctx.CMDVALS[\'' + name + '\']';
     }
     s = s.replace(re, r);
   }
