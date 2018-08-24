@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808250000';
+  this.v = '201808250100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2410,7 +2410,7 @@ DebugJS.prototype = {
     ctx.stopMeasure(ctx);
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
     ctx.status &= ~DebugJS.STATE_MEASURE;
-    DebugJS.delArray(ctx.featStack, DebugJS.STATE_MEASURE);
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_MEASURE);
     if (!silent) DebugJS._log.s('Screen Measure OFF');
     ctx.updateMeasureBtn(ctx);
   },
@@ -3512,7 +3512,7 @@ DebugJS.prototype = {
       ctx.sysInfoPanel = null;
     }
     ctx.status &= ~DebugJS.STATE_SYS_INFO;
-    DebugJS.delArray(ctx.featStack, DebugJS.STATE_SYS_INFO);
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_SYS_INFO);
     ctx.updateSysInfoBtn(ctx);
     ctx.setIntervalL(ctx);
   },
@@ -3936,7 +3936,7 @@ DebugJS.prototype = {
     }
     ctx.updateTargetElm(null);
     ctx.status &= ~DebugJS.STATE_ELM_INSPECTING;
-    DebugJS.delArray(ctx.featStack, DebugJS.STATE_ELM_INSPECTING);
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_ELM_INSPECTING);
     ctx.updateElmInfoBtn(ctx);
   },
 
@@ -4393,7 +4393,7 @@ DebugJS.prototype = {
       ctx.htmlSrcPanel = null;
     }
     ctx.status &= ~DebugJS.STATE_HTML_SRC;
-    DebugJS.delArray(ctx.featStack, DebugJS.STATE_HTML_SRC);
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_HTML_SRC);
     ctx.updateHtmlSrcBtn(ctx);
   },
 
@@ -4483,7 +4483,7 @@ DebugJS.prototype = {
       ctx.switchToolsFunction(0);
     }
     ctx.status &= ~DebugJS.STATE_TOOLS;
-    DebugJS.delArray(ctx.featStack, DebugJS.STATE_TOOLS);
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_TOOLS);
     ctx.updateToolsBtn(ctx);
   },
 
@@ -6426,7 +6426,7 @@ DebugJS.prototype = {
       ctx.jsPanel = null;
     }
     ctx.status &= ~DebugJS.STATE_JS;
-    DebugJS.delArray(ctx.featStack, DebugJS.STATE_JS);
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_JS);
     ctx.updateJsBtn(ctx);
   },
 
@@ -6474,7 +6474,7 @@ DebugJS.prototype = {
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.STATE_EXT_PANEL;
-    DebugJS.delArray(ctx.featStack, DebugJS.STATE_EXT_PANEL);
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_EXT_PANEL);
     ctx.updateExtBtn(ctx);
   },
 
@@ -11314,6 +11314,20 @@ DebugJS.dumpAscii = function(pos, buf, len) {
   return b;
 };
 
+DebugJS.escape = function(s, c) {
+  if (c instanceof Array) {
+    for (var i = 0; i < c.length; i++) {
+      s = DebugJS._escape(s, c[i]);
+    }
+  } else {
+    s = DebugJS._escape(s, c);
+  }
+  return s;
+};
+DebugJS._escape = function(s, c) {
+  return s.replace(new RegExp(c, 'g'), '\\' + c);
+};
+
 DebugJS.escTags = function(s) {
   s = s.replace(/&/g, '&amp;');
   s = s.replace(/</g, '&lt;');
@@ -11345,9 +11359,11 @@ DebugJS.replaceCtrlChr = function(s, d) {
 };
 
 DebugJS.hlCtrlChr = function(s) {
-  s = s.replace(/\t/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\t</span>');
-  s = s.replace(/\r/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\r</span>');
-  s = s.replace(/\n/g, '<span class="' + DebugJS.ctx.id + '-txt-hl">\\n</span>');
+  var st = '<span class="' + DebugJS.ctx.id + '-txt-hl">';
+  var et = '</span>';
+  s = s.replace(/\t/g, st + '\\t' + et);
+  s = s.replace(/\r/g, st + '\\r' + et);
+  s = s.replace(/\n/g, st + '\\n' + et);
   return s;
 };
 
@@ -11382,9 +11398,7 @@ DebugJS.hasClass = function(el, n) {
   var className = el.className;
   var names = className.split(' ');
   for (var i = 0; i < names.length; i++) {
-    if (names[i] == n) {
-      return true;
-    }
+    if (names[i] == n) return true;
   }
   return false;
 };
@@ -11395,7 +11409,7 @@ DebugJS.deepCopy = function(src, dest) {
   }
 };
 
-DebugJS.delArray = function(arr, v) {
+DebugJS.delArrayVal = function(arr, v) {
   for (var i = 0; i < arr.length; i++) {
     if (arr[i] == v) {
       arr.splice(i--, 1);

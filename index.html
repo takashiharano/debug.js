@@ -2375,6 +2375,21 @@ max: maximum length
   </tr>
 
   <tr>
+    <td class="name">dbg.escape</td>
+    <td>string</td>
+    <td>
+      Escape the specified character(s).<br><br>
+<pre class="eg">
+dbg.escape('abc"123"xyz', '"');
+-&gt; 'abc\"123\"xyz'
+
+dbg.escape('abc"123"xy\\z', ['\\\\', '"']);
+-&gt; 'abc\"123\"xy\\\z'
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.html2text</td>
     <td>html</td>
     <td>
