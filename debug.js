@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808250100';
+  this.v = '201808252315';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -386,10 +386,11 @@ var DebugJS = DebugJS || function() {
     hexdumplastrows: /^[0-9]+$/,
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
-    textinputspeed: /^[0-9\-]+$/,
-    textinputstep: /^[0-9\-]+$/,
     scrollspeed: /^[0-9]+$/,
     scrollstep: /^[0-9]+$/,
+    textinputspeed: /^[0-9\-]+$/,
+    textinputstep: /^[0-9\-]+$/,
+    testvallimit: /^[0-9\-]+$/,
     wait: /^[0-9]+$/,
     timer: /.*/,
     wdt: /^[0-9]+$/,
@@ -401,16 +402,17 @@ var DebugJS = DebugJS || function() {
     batstop: 'error',
     esc: 'enable',
     dumplimit: 1000,
-    dumpvallen: 1024,
+    dumpvallen: 4096,
     prevlimit: 5 * 1024 * 1024,
     hexdumplimit: 1048576,
     hexdumplastrows: 16,
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
-    textinputspeed: 30,
-    textinputstep: 1,
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     scrollstep: DebugJS.scrollWinTo.data.step,
+    textinputspeed: 30,
+    textinputstep: 1,
+    testvallimit: 4096,
     wait: 500,
     timer: '00:03:00.000',
     wdt: 500,
@@ -6249,7 +6251,7 @@ DebugJS.prototype = {
   setBatArgTxt: function(ctx) {
     if (ctx.batArgTxt) {
       var a = DebugJS.bat.ctrl.execArg;
-      if ((typeof a === 'string') && (a != '')) {a = '"' + a + '"';}
+      if ((typeof a == 'string') && (a != '')) {a = '"' + a + '"';}
       ctx.batArgTxt.value = a + '';
     }
   },
@@ -6409,7 +6411,7 @@ DebugJS.prototype = {
     try {
       var ret = eval(code);
       var res = ret;
-      if (typeof res === 'string') {
+      if (typeof res == 'string') {
         res = DebugJS.encString(res);
       }
       if (echo) {DebugJS._log.res(res);}
@@ -6457,7 +6459,7 @@ DebugJS.prototype = {
 
   createExtHeaderBtn: function(ctx, label, idx) {
     var MAX_LEN = 20;
-    if (label.length > MAX_LEN) {label = label.substr(0, MAX_LEN) + '...';}
+    label = DebugJS.trimDownText(label, MAX_LEN);
     var btn = ctx.createBtn(ctx, '<' + label + '>', ctx.extHeaderPanel);
     btn.style.marginRight = '4px';
     ctx.setStyle(btn, 'color', DebugJS.SBPNL_COLOR_INACTIVE);
@@ -8556,7 +8558,7 @@ DebugJS.prototype = {
         break;
       case 'status':
         var st = test.getStatus();
-        DebugJS._log(test.getResultStr(st));
+        DebugJS._log(test.getStyledResultStr(st, ''));
         return st;
       case 'verify':
         DebugJS.ctx._CmdTestVerify(arg);
@@ -9338,7 +9340,7 @@ DebugJS.getOptVal = function(args, opt) {
 DebugJS.getOptVals = function(args) {
   var k, v;
   var o = {};
-  if (typeof args === 'string') {
+  if (typeof args == 'string') {
     args = DebugJS.splitArgsEx(args);
   }
   for (var i = 0; i < args.length; i++) {
@@ -9356,7 +9358,7 @@ DebugJS.getOptVals = function(args) {
   return o;
 };
 DebugJS.getOptVal2 = function(args, opt) {
-  if (typeof args === 'string') {
+  if (typeof args == 'string') {
     args = DebugJS.splitArgsEx(args);
   }
   var v = null;
@@ -9527,7 +9529,7 @@ DebugJS.escEncString = function(str) {
 
 DebugJS.styleValue = function(v) {
   var s = v;
-  if (typeof s === 'string') {
+  if (typeof s == 'string') {
     s = DebugJS.escTags(s);
     s = DebugJS.encString(s);
   } else {
@@ -10061,7 +10063,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
         arg.dump += '<span style="color:#ccc">undefined</span>';
       }
       arg.cnt++;
-    } else if (typeof obj === 'string') {
+    } else if (typeof obj == 'string') {
       var str;
       if ((valLenLimit > 0) && (obj.length > valLenLimit)) {
         str = obj.substr(0, valLenLimit);
@@ -13231,19 +13233,20 @@ DebugJS.point.setProp = function(prop, val, echo) {
 };
 DebugJS.point.verify = function(prop, method, exp, label) {
   var test = DebugJS.test;
+  var info;
   var errPfix = 'Verify error: ';
   if (prop == undefined) {
-    detail = errPfix + 'Property name is undefined';
-    DebugJS._log.e(detail);
-    test.addResult(status, detail, label);
+    info = errPfix + 'Property name is undefined';
+    DebugJS._log.e(info);
+    test.addResult(status, label, exp, undefined, method, info);
     test.onVrfyAftr(status);
     return status;
   }
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) {
-    detail = errPfix + 'No element (x=' + DebugJS.point.x + ', y=' + DebugJS.point.y + ')';
-    DebugJS._log.e(detail);
-    test.addResult(status, detail, label);
+    info = errPfix + 'No element (x=' + DebugJS.point.x + ', y=' + DebugJS.point.y + ')';
+    DebugJS._log.e(info);
+    test.addResult(status, label, exp, undefined, method, info);
     test.onVrfyAftr(status);
     return status;
   }
@@ -14102,10 +14105,11 @@ DebugJS.test.fin = function() {
   DebugJS.test.data.running = false;
   DebugJS.test.data.endTime = (new Date()).getTime();
 };
-DebugJS.test.addResult = function(status, detail, label) {
+DebugJS.test.addResult = function(status, label, exp, got, method, info) {
   var ctx = DebugJS.ctx;
   var test = DebugJS.test;
   var data = test.data;
+  var limit = ctx.props.testvallimit;
   switch (status) {
     case test.STATUS_OK:
       data.cnt.ok++;
@@ -14130,7 +14134,21 @@ DebugJS.test.addResult = function(status, detail, label) {
   } else if (label.match(/^".*"$/)) {
     label = eval(label);
   }
-  data.results[id].results.push({label: label, status: status, detail: detail});
+  if (typeof exp == 'string') {
+    exp = DebugJS.trimDownText(exp, limit);
+  }
+  if (typeof got == 'string') {
+    got = DebugJS.trimDownText(got, limit);
+  }
+  var rslt = {
+    label: label,
+    status: status,
+    method: method,
+    exp: exp,
+    got: got,
+    info: info
+  };
+  data.results[id].results.push(rslt);
 };
 DebugJS.test.prepare = function() {
   var test = DebugJS.test;
@@ -14163,7 +14181,7 @@ DebugJS.test.chkResult = function(results) {
   }
   return r;
 };
-DebugJS.test.getResultStr = function(res, detail) {
+DebugJS.test.getStyledResultStr = function(res, info) {
   var test = DebugJS.test;
   var color;
   switch (res) {
@@ -14176,8 +14194,31 @@ DebugJS.test.getResultStr = function(res, detail) {
     case test.STATUS_ERR:
       color = '#ff0';
   }
-  if (detail == undefined) {detail = '';}
-  return '[<span style="color:' + color + '">' + res + '</span>] ' + detail;
+  return '[<span style="color:' + color + '">' + res + '</span>] ' + info;
+};
+DebugJS.test.getStyledInfoStr = function(result) {
+  if (result.status == 'ERR') {
+    return result.info;
+  }
+  var echoExp = result.exp;
+  if (result.method == 'regexp') {
+    echoExp = DebugJS.decodeEsc(echoExp);
+    echoExp = '<span style="color:#0ff">/</span>' + echoExp + '<span style="color:#0ff">/</span>';
+  } else if (typeof echoExp == 'string') {
+    echoExp = DebugJS.styleValue(echoExp);
+    echoExp = DebugJS.hlCtrlChr(echoExp);
+  } else {
+    echoExp = DebugJS.styleValue(echoExp);
+  }
+  var echoGot = result.got;
+  if (typeof echoGot == 'string') {
+    echoGot = DebugJS.styleValue(echoGot);
+    echoGot = DebugJS.hlCtrlChr(echoGot);
+  } else {
+    echoGot = DebugJS.styleValue(echoGot);
+  }
+  var s = 'Exp=' + echoExp + ' ' + result.method + ' Got=' + echoGot;
+  return s;
 };
 DebugJS.test.count = function(cnt) {
   var total = cnt.ok + cnt.ng + cnt.err;
@@ -14208,7 +14249,7 @@ DebugJS.test.result = function() {
       case test.STATUS_ERR:
         cnt.err++;
     }
-    var rs = test.getResultStr(st);
+    var rs = test.getStyledResultStr(st, '');
     details += '\n' + rs + testId + '\n';
     for (i = 0; i < data.results[id].comment.length; i++) {
       var comment = data.results[id].comment[i];
@@ -14216,7 +14257,8 @@ DebugJS.test.result = function() {
     }
     for (i = 0; i < data.results[id].results.length; i++) {
       var result = data.results[id].results[i];
-      details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getResultStr(result.status, result.detail) + '\n';
+      var info = DebugJS.test.getStyledInfoStr(result);
+      details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getStyledResultStr(result.status, info) + '\n';
     }
   }
   var nm = data.name;
@@ -14253,18 +14295,18 @@ DebugJS.test.getResultJSON = function(j) {
 DebugJS.test.verify = function(got, method, exp, reqEval, label) {
   var test = DebugJS.test;
   var status = test.STATUS_ERR;
-  var detail;
+  var info = '';
   try {
     if (method != 'regexp') {
       exp = eval(exp);
-      if (typeof exp === 'string') {
+      if (typeof exp == 'string') {
         exp = exp.replace(/\r?\n/g, '\n');
       }
     }
     if (reqEval) {
       got = eval(got);
     }
-    if (typeof got === 'string') {
+    if (typeof got == 'string') {
       got = got.replace(/\r?\n/g, '\n');
     }
     if (method == '==') {
@@ -14292,9 +14334,9 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
       try {
         r = eval(evl);
       } catch (e) {
-        detail = 'Failed to evaluate: ' + e;
-        DebugJS._log.e(detail);
-        test.addResult(status, detail, label);
+        info = 'Failed to evaluate: ' + e;
+        DebugJS._log.e(info);
+        test.addResult(status, label, exp, got, method, info);
         test.onVrfyAftr(status);
         return status;
       }
@@ -14308,37 +14350,19 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
         status = '';
         DebugJS.printUsage('test|point verify [-label:text] got ==|!=|<|>|<=|>=|regexp exp');
       } else {
-        detail = 'Unknown verify method: ' + method;
-        DebugJS._log.e(detail);
-        test.addResult(status, detail, label);
+        info = 'Unknown verify method: ' + method;
+        DebugJS._log.e(info);
+        test.addResult(status, label, exp, got, method, info);
         test.onVrfyAftr(status);
       }
       return status;
     }
-    var echoExp = exp;
-    if (method == 'regexp') {
-      echoExp = DebugJS.decodeEsc(echoExp);
-      echoExp = '<span style="color:#0ff">/</span>' + echoExp + '<span style="color:#0ff">/</span>';
-    } else if (typeof echoExp === 'string') {
-      echoExp = DebugJS.styleValue(echoExp);
-      echoExp = DebugJS.hlCtrlChr(echoExp);
-    } else {
-      echoExp = DebugJS.styleValue(echoExp);
-    }
-    var echoGot = got;
-    if (typeof echoGot === 'string') {
-      echoGot = DebugJS.styleValue(echoGot);
-      echoGot = DebugJS.hlCtrlChr(echoGot);
-    } else {
-      echoGot = DebugJS.styleValue(echoGot);
-    }
-    detail = 'Exp=' + echoExp + ' ' + method + ' Got=' + echoGot;
   } catch (e) {
     status = test.STATUS_ERR;
-    detail = e.toString();
+    info = e.toString();
   }
-  test.addResult(status, detail, label);
-  var str = test.getResultStr(status, detail);
+  test.addResult(status, label, exp, got, method, info);
+  var str = test.getStyledResultStr(status, info);
   DebugJS._log(str);
   test.onVrfyAftr(status);
   return status;
