@@ -16,8 +16,8 @@ extsample.cmdAbc = function(arg, tbl) {
 };
 
 extsample.CMD_TBL = [
-  {'cmd': 'hello', 'fnc': extsample.cmdHello, 'desc': 'extention command example1'},
-  {'cmd': 'abc', 'fnc': extsample.cmdAbc, 'desc': 'extention command example2', 'usage': 'abc args...'}
+  {'cmd': 'hello', 'fn': extsample.cmdHello, 'desc': 'extention command example1'},
+  {'cmd': 'abc', 'fn': extsample.cmdAbc, 'desc': 'extention command example2', 'usage': 'abc args...'}
 ];
 
 dbg.x.addCmdTbl(extsample.CMD_TBL);
