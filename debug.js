@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808261930';
+  this.v = '201808270000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -657,7 +657,7 @@ DebugJS.FEATURES = [
   'useLogFilter',
   'useCommandLine'
 ];
-DebugJS.fn = function() {};
+DebugJS.f_ = function() {};
 DebugJS.prototype = {
   init: function(opt, restoreOpt) {
     if (!DebugJS.ENABLE) return false;
@@ -705,8 +705,8 @@ DebugJS.prototype = {
     }
     if (ctx.opt.mode == 'noui') {
       ctx.removeEventHandlers(ctx);
-      ctx.init = DebugJS.fn;
-      DebugJS.init = DebugJS.fn;
+      ctx.init = DebugJS.f_;
+      DebugJS.init = DebugJS.f_;
       ctx.status |= DebugJS.STATE_INITIALIZED;
       return false;
     }
@@ -14656,7 +14656,7 @@ DebugJS.rootFncs = function() {
   var fn = ['v', 'd', 'i', 'w', 'e'];
   for (var i = 0; i < fn.length; i++) {
     var lv = fn[i];
-    DebugJS.log[lv].root = (DebugJS.ENABLE ? DebugJS.log.root.fn.bind(undefined, lv) : DebugJS.fn);
+    DebugJS.log[lv].root = (DebugJS.ENABLE ? DebugJS.log.root.fn.bind(undefined, lv) : DebugJS.f_);
   }
 };
 
@@ -14748,67 +14748,68 @@ DebugJS.x.setBtnLabel = function(l) {
   if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
 DebugJS.balse = function() {
-  DebugJS.log = DebugJS.fn;
-  DebugJS.log.e = DebugJS.fn;
-  DebugJS.log.w = DebugJS.fn;
-  DebugJS.log.i = DebugJS.fn;
-  DebugJS.log.d = DebugJS.fn;
-  DebugJS.log.v = DebugJS.fn;
-  DebugJS.log.t = DebugJS.fn;
-  DebugJS.log.p = DebugJS.fn;
-  DebugJS.log.json = DebugJS.fn;
-  DebugJS.log.clear = DebugJS.fn;
-  DebugJS.log.res = DebugJS.fn;
-  DebugJS.log.res.err = DebugJS.fn;
-  DebugJS.log.suspend = DebugJS.fn;
-  DebugJS.log.resume = DebugJS.fn;
-  DebugJS.log.root = DebugJS.fn;
-  DebugJS.addEvtListener = DebugJS.fn;
-  DebugJS.addFileLoader = DebugJS.fn;
-  DebugJS.adjustResBox = DebugJS.fn;
-  DebugJS.cmd = DebugJS.fn;
-  DebugJS.bat = DebugJS.fn;
-  DebugJS.bat.set = DebugJS.fn;
-  DebugJS.bat.run = DebugJS.fn;
-  DebugJS.bat.pause = DebugJS.fn;
-  DebugJS.bat.resume = DebugJS.fn;
-  DebugJS.bat.stop = DebugJS.fn;
-  DebugJS.bat.list = DebugJS.fn;
-  DebugJS.bat.status = DebugJS.fn;
-  DebugJS.bat.isRunning = DebugJS.fn;
-  DebugJS.countElements = DebugJS.fn;
-  DebugJS.getHTML = DebugJS.fn;
-  DebugJS.init = DebugJS.fn;
-  DebugJS.dumpLog = DebugJS.fn;
-  DebugJS.show = DebugJS.fn;
-  DebugJS.hide = DebugJS.fn;
-  DebugJS.http = DebugJS.fn;
-  DebugJS.led = DebugJS.fn;
-  DebugJS.led.on = DebugJS.fn;
-  DebugJS.led.off = DebugJS.fn;
-  DebugJS.msg = DebugJS.fn;
-  DebugJS.msg.clear = DebugJS.fn;
-  DebugJS.opacity = DebugJS.fn;
-  DebugJS.stack = DebugJS.fn;
-  DebugJS.stopwatch = DebugJS.fn;
-  DebugJS.stopwatch.start = DebugJS.fn;
-  DebugJS.stopwatch.stop = DebugJS.fn;
-  DebugJS.stopwatch.end = DebugJS.fn;
-  DebugJS.stopwatch.split = DebugJS.fn;
-  DebugJS.stopwatch.reset = DebugJS.fn;
-  DebugJS.time.start = DebugJS.fn;
-  DebugJS.time.split = DebugJS.fn;
-  DebugJS.time.end = DebugJS.fn;
-  DebugJS.time.check = DebugJS.fn;
-  DebugJS.ver = DebugJS.fn;
-  DebugJS.wd.start = DebugJS.fn;
-  DebugJS.wd.stop = DebugJS.fn;
-  DebugJS.x.addCmdTbl = DebugJS.fn;
-  DebugJS.x.addPanel = DebugJS.fn;
-  DebugJS.x.getPanel = DebugJS.fn;
-  DebugJS.x.removePanel = DebugJS.fn;
-  DebugJS.x.setBtnLabel = DebugJS.fn;
-  DebugJS._createResBox = DebugJS.fn;
+  DebugJS.log = DebugJS.f_;
+  DebugJS.log.e = DebugJS.f_;
+  DebugJS.log.w = DebugJS.f_;
+  DebugJS.log.i = DebugJS.f_;
+  DebugJS.log.d = DebugJS.f_;
+  DebugJS.log.v = DebugJS.f_;
+  DebugJS.log.t = DebugJS.f_;
+  DebugJS.log.p = DebugJS.f_;
+  DebugJS.log.json = DebugJS.f_;
+  DebugJS.log.clear = DebugJS.f_;
+  DebugJS.log.res = DebugJS.f_;
+  DebugJS.log.res.err = DebugJS.f_;
+  DebugJS.log.suspend = DebugJS.f_;
+  DebugJS.log.resume = DebugJS.f_;
+  DebugJS.log.root = DebugJS.f_;
+  DebugJS.addEvtListener = DebugJS.f_;
+  DebugJS.addFileLoader = DebugJS.f_;
+  DebugJS.adjustResBox = DebugJS.f_;
+  DebugJS.cmd = DebugJS.f_;
+  DebugJS.bat = DebugJS.f_;
+  DebugJS.bat.set = DebugJS.f_;
+  DebugJS.bat.run = DebugJS.f_;
+  DebugJS.bat.pause = DebugJS.f_;
+  DebugJS.bat.resume = DebugJS.f_;
+  DebugJS.bat.stop = DebugJS.f_;
+  DebugJS.bat.list = DebugJS.f_;
+  DebugJS.bat.status = DebugJS.f_;
+  DebugJS.bat.isRunning = DebugJS.f_;
+  DebugJS.bat.setCond = DebugJS.f_;
+  DebugJS.countElements = DebugJS.f_;
+  DebugJS.getHTML = DebugJS.f_;
+  DebugJS.init = DebugJS.f_;
+  DebugJS.dumpLog = DebugJS.f_;
+  DebugJS.show = DebugJS.f_;
+  DebugJS.hide = DebugJS.f_;
+  DebugJS.http = DebugJS.f_;
+  DebugJS.led = DebugJS.f_;
+  DebugJS.led.on = DebugJS.f_;
+  DebugJS.led.off = DebugJS.f_;
+  DebugJS.msg = DebugJS.f_;
+  DebugJS.msg.clear = DebugJS.f_;
+  DebugJS.opacity = DebugJS.f_;
+  DebugJS.stack = DebugJS.f_;
+  DebugJS.stopwatch = DebugJS.f_;
+  DebugJS.stopwatch.start = DebugJS.f_;
+  DebugJS.stopwatch.stop = DebugJS.f_;
+  DebugJS.stopwatch.end = DebugJS.f_;
+  DebugJS.stopwatch.split = DebugJS.f_;
+  DebugJS.stopwatch.reset = DebugJS.f_;
+  DebugJS.time.start = DebugJS.f_;
+  DebugJS.time.split = DebugJS.f_;
+  DebugJS.time.end = DebugJS.f_;
+  DebugJS.time.check = DebugJS.f_;
+  DebugJS.ver = DebugJS.f_;
+  DebugJS.wd.start = DebugJS.f_;
+  DebugJS.wd.stop = DebugJS.f_;
+  DebugJS.x.addCmdTbl = DebugJS.f_;
+  DebugJS.x.addPanel = DebugJS.f_;
+  DebugJS.x.getPanel = DebugJS.f_;
+  DebugJS.x.removePanel = DebugJS.f_;
+  DebugJS.x.setBtnLabel = DebugJS.f_;
+  DebugJS._createResBox = DebugJS.f_;
 };
 DebugJS.start = function() {
   DebugJS.rootFncs();
