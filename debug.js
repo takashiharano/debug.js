@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808252315';
+  this.v = '201808261440';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3006,9 +3006,11 @@ DebugJS.prototype = {
     }
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
       ctx.endMove(ctx);
+      ctx.focusCmdLine();
     }
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) {
       ctx.endResize(ctx);
+      ctx.focusCmdLine();
     }
   },
 
