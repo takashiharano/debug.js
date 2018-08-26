@@ -505,6 +505,14 @@ function testFunc() {
   dbg.bat.resume('key1');
 }
 
+function testSetCond() {
+  log('condwait test');
+  setTimeout(_testSetCond, 1000);
+}
+function _testSetCond() {
+  dbg.bat.setCond('ABC');
+}
+
 function printStackDemo(idx, silent) {
   silent = ((silent == 'true') ? true : false);
   return printStackDemo1(idx, silent);
