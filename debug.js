@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808280043';
+  this.v = '201808280735';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5798,7 +5798,9 @@ DebugJS.prototype = {
       ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
     } else {
       html = ctx.onFileLoadedBin(ctx, file, content);
-      ctx.filePreviewWrapper.removeChild(ctx.fileLoadB64dturl);
+      if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileLoadB64dturl)) {
+        ctx.filePreviewWrapper.removeChild(ctx.fileLoadB64dturl);
+      }
     }
     ctx.updateFilePreview(html);
     setTimeout(ctx.fileLoadFinalize, 1000);
@@ -10182,13 +10184,23 @@ DebugJS.getChildElements = function(el, list) {
 };
 
 DebugJS.isDescendant = function(el, t) {
-  if (!el) {
+  if (el) {
     var p = el.parentNode;
     while (p) {
       if (p == t) {
         return true;
       }
       p = p.parentNode;
+    }
+  }
+  return false;
+};
+
+DebugJS.isChild = function(p, el) {
+  if (el) {
+    var c = p.childNodes;
+    for (var i = 0; i < c.length; i++) {
+      if (c[i] == el) return true;
     }
   }
   return false;
