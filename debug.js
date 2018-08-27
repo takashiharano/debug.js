@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808272018';
+  this.v = '201808280043';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -188,6 +188,9 @@ var DebugJS = DebugJS || function() {
   this.fileClrBtn = null;
   this.filePreviewWrapper = null;
   this.filePreview = null;
+  this.fileLoadB64dturl = null;
+  this.fileLoadB64scheme = null;
+  this.fileLoadB64txtarea = null;
   this.fileLoaderFooter = null;
   this.fileLoadProgressBar = null;
   this.fileLoadProgress = null;
@@ -630,8 +633,8 @@ DebugJS.JS_SNIPPET = [
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
-'<button onclick=""></button>',
 '<img src="data:image/jpeg;base64,">',
+'<button onclick=""></button>',
 '<video src="" controls autoplay>',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
@@ -5522,6 +5525,7 @@ DebugJS.prototype = {
       ctx.fileLoaderPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
+      ctx.setStyle(ctx.filePreview, 'min-height', 'calc(50% + 10px)');
       ctx.setStyle(ctx.filePreview, 'background', 'transparent');
       ctx.setStyle(ctx.filePreview, 'color', opt.fontColor);
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
@@ -5559,6 +5563,18 @@ DebugJS.prototype = {
       ctx.fileLoadCancelBtn.style.float = 'right';
       ctx.fileLoadCancelBtn.onclick = ctx.cancelLoadFile;
 
+      ctx.fileLoadB64dturl = document.createElement('div');
+      ctx.setStyle(ctx.fileLoadB64dturl, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
+      ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
+
+      ctx.fileLoadB64scheme = ctx.createTextInput('100%', null, ctx.opt.fontColor, '', null);
+      ctx.fileLoadB64dturl.appendChild(ctx.fileLoadB64scheme);
+
+      ctx.fileLoadB64txtarea = document.createElement('textarea');
+      ctx.fileLoadB64txtarea.className = ctx.id + '-editor';
+      ctx.setStyle(ctx.fileLoadB64txtarea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
+      ctx.fileLoadB64dturl.appendChild(ctx.fileLoadB64txtarea);
+
       ctx.clearFile();
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.fileLoaderPanel);
@@ -5588,6 +5604,7 @@ DebugJS.prototype = {
 
   onFileSelected: function(e) {
     var ctx = DebugJS.ctx;
+    ctx.clearFile();
     if (e.target.files) {
       DebugJS.ctx.fileLoaderFile = e.target.files[0];
       var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
@@ -5602,6 +5619,7 @@ DebugJS.prototype = {
   },
 
   handleFileDrop: function(ctx, e, format, cb) {
+    ctx.clearFile();
     e.stopPropagation();
     e.preventDefault();
     try {
@@ -5777,8 +5795,10 @@ DebugJS.prototype = {
     var html;
     if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64) {
       html = ctx.onFileLoadedB64(ctx, file, content);
+      ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
     } else {
       html = ctx.onFileLoadedBin(ctx, file, content);
+      ctx.filePreviewWrapper.removeChild(ctx.fileLoadB64dturl);
     }
     ctx.updateFilePreview(html);
     setTimeout(ctx.fileLoadFinalize, 1000);
@@ -5846,7 +5866,9 @@ DebugJS.prototype = {
   onFileLoadedB64: function(ctx, file, b64content) {
     var html = ctx.getFileInfo(file);
     var preview = '';
+    var dturl = ['', ''];
     if (file.size > 0) {
+      dturl = b64content.split(',');
       if (file.type.match(/image\//)) {
         var ctxSizePos = ctx.getSelfSizePos();
         preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
@@ -5859,8 +5881,7 @@ DebugJS.prototype = {
         var cnmIdx = b64content.indexOf(',');
         var xmlHead = 'PD94bWw';
         if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || (DebugJS.startsWith(b64content, xmlHead, cnmIdx + 1))) {
-          var contents = b64content.split(',');
-          var decoded = DebugJS.decodeBase64(contents[1]);
+          var decoded = DebugJS.decodeBase64(dturl[1]);
           var cont = DebugJS.escTags(decoded);
           cont = cont.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
           cont = cont.replace(/([^>])\n/g, '$1' + DebugJS.CHR_LF_S + '\n');
@@ -5876,7 +5897,8 @@ DebugJS.prototype = {
     html += preview + '\n';
     var limit = ctx.props.prevlimit;
     if (file.size <= limit) {
-      html += b64content;
+      ctx.fileLoadB64scheme.value = dturl[0] + ',';
+      ctx.fileLoadB64txtarea.value = dturl[1];
     } else {
       html += '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
     }
@@ -6058,6 +6080,8 @@ DebugJS.prototype = {
     ctx.fileReader = null;
     ctx.fileLoaderBuf = null;
     ctx.filePreview.innerText = 'Drop a file here';
+    ctx.fileLoadB64scheme.value = '';
+    ctx.fileLoadB64txtarea.value = '';
   },
 
   openHtmlEditor: function() {
@@ -6865,9 +6889,8 @@ DebugJS.prototype = {
         }
         return v;
       case 'pc':
-        var pc = bat.ctrl.pc
-        DebugJS._log.res(pc);
-        return pc;
+        DebugJS._log.res(bat.ctrl.pc);
+        return bat.ctrl.pc;
         break;
       case 'pause':
       case 'stop':
