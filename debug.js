@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808270000';
+  this.v = '201808272018';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -629,10 +629,10 @@ DebugJS.JS_SNIPPET = [
 '// logging performance check\nvar i = 0;\nvar loop = 1000;\ndbg.msg(\'loop = \' + loop);\ndbg.time.start(\'total\');\ntest();\nfunction test() {\n  dbg.time.start();\n  dbg.time.end();\n  i++;\n  if (i == loop ) {\n    dbg.msg.clear();\n    dbg.time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
-'<button onclick=""></button>',
-'<video src="" controls autoplay>',
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
-'<div style="width:100%; height:100%; background:#000; color:#fff;">\n\n</div>\n',
+'<button onclick=""></button>',
+'<img src="data:image/jpeg;base64,">',
+'<video src="" controls autoplay>',
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
@@ -6865,7 +6865,9 @@ DebugJS.prototype = {
         }
         return v;
       case 'pc':
-        DebugJS._log(bat.ctrl.pc);
+        var pc = bat.ctrl.pc
+        DebugJS._log.res(pc);
+        return pc;
         break;
       case 'pause':
       case 'stop':
@@ -14614,6 +14616,7 @@ DebugJS.log.json = function(o, l, m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS._log.p(o, l, m, true);
 };
+DebugJS.log.j = DebugJS.log.json;
 DebugJS.log.res = function(m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   DebugJS._log.res(m);
