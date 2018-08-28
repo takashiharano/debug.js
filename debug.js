@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808280735';
+  this.v = '201808282137';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11227,20 +11227,23 @@ DebugJS.hasKey = function(s, k, d) {
   return false;
 };
 
-DebugJS.strPadding = function(s, ch, l, p) {
+DebugJS.strPadding = function(s, c, l, p) {
   var txt = s + '';
   var d = l - txt.length;
   if (d <= 0) return txt;
-  var pd = '';
-  for (var i = 0; i < d; i++) {
-    pd += ch;
-  }
+  var pd = DebugJS.repeatCh(c, d);
   if (p == 'L') {
     txt = pd + txt;
   } else {
     txt += pd;
   }
   return txt;
+};
+
+DebugJS.repeatCh = function(c, n) {
+  var s = '';
+  for (var i = 0; i < n; i++) s += c;
+  return s;
 };
 
 DebugJS.crlf2lf = function(s) {
@@ -14308,8 +14311,9 @@ DebugJS.test.result = function() {
   for (i = 0; i < data.desc.length; i++) {
     s += data.desc[i] + '\n';
   }
+  var tstSt = test.getStatus();
   s += '\nSummary:\n' + test.count(cnt) + '\n\nDetails:\n' + test.count(data.cnt) + '\n';
-  s += details;
+  s += details + '\n' + DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledResultStr(tstSt, '');
   return s;
 };
 DebugJS.test.getStatus = function() {
