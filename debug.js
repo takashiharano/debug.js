@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808282207';
+  this.v = '201808282235';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -344,6 +344,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...'},
+    {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC.'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] object'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-key key [-timeout ms]|-s]'},
@@ -7722,6 +7723,172 @@ DebugJS.prototype = {
     return DebugJS.ctx.led;
   },
 
+  cmdLog: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitArgs(arg);
+    var fn = null;
+    switch (args[0]) {
+      case 'bufsize':
+        fn = ctx._cmdLogBufsize;
+        break;
+      case 'dump':
+        fn = ctx._cmdLogDump;
+        break;
+      case 'filter':
+        fn = ctx._cmdLogFilter;
+       break;
+      case 'html':
+        fn = ctx._cmdLogHtml;
+        break;
+      case 'load':
+        fn = ctx._cmdLogLoad;
+        break;
+      case 'preserve':
+        fn = ctx._cmdLogPreserve;
+        break;
+      case 'suspend':
+        fn = ctx._cmdLogSuspend;
+        break;
+      case 'lv':
+        fn = ctx._cmdLogLv;
+    }
+    if (fn) {return fn(ctx, arg);}
+    DebugJS.printUsage(tbl.usage);
+  },
+  _cmdLogBufsize: function(ctx, arg) {
+    var s = DebugJS.splitArgs(arg)[1] | 0;
+    if (s > 0) {
+      ctx.initBuf(ctx, s);
+    } else {
+      s = ctx.msgBuf.getSize();
+      DebugJS._log.res(s);
+      DebugJS.printUsage('log bufsize [size]');
+    }
+    return s;
+  },
+  _cmdLogDump: function(ctx, arg) {
+    arg = DebugJS.splitCmdLineInTwo(arg)[1];
+    var l;
+    if (DebugJS.delLeadingAndTrailingSP(arg) == '-b64') {
+      l = DebugJS.dumpLog('json', true);
+    } else {
+      l = DebugJS.dumpLog('json', false);
+    }
+    DebugJS._log.res(l);
+  },
+  _cmdLogFilter: function(ctx, arg) {
+    var a = DebugJS.splitArgsEx(arg);
+    var f = a[1];
+    if (f == undefined) {
+      DebugJS.printUsage('log filter [-case] string');
+      return;
+    }
+    var cs = false;
+    if (f == '-case') {
+      cs = true;
+      f = a[2];
+    }
+    try {
+      f = eval(f);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return;
+    }
+    ctx.setLogFilter(ctx, f, cs);
+  },
+  _cmdLogHtml: function(ctx, arg) {
+    var op = DebugJS.splitArgs(arg)[1];
+    if (op == 'on') {
+      ctx.setFilterTxtHtml(ctx, true);
+    } else if (op == 'off') {
+      ctx.setFilterTxtHtml(ctx, false);
+    } else {
+      var st = ctx.filterTxtHtml;
+      DebugJS.printUsage('log html on|off');
+      return st;
+    }
+  },
+  _cmdLogLoad: function(ctx, arg) {
+    var args = DebugJS.splitCmdLineInTwo(arg);
+    args = DebugJS.parseArgs(args[1]);
+    if (args.data == '') {
+      DebugJS.printUsage('log load [-b64] log-buffer-json');
+    } else {
+      try {
+        switch (args.opt) {
+          case 'b64':
+            DebugJS.loadLog(args.data, true);
+            break;
+          default:
+            DebugJS.loadLog(args.data);
+        }
+        ctx.printLogs();
+      } catch (e) {
+        DebugJS._log.e(e);
+      }
+    }
+  },
+  _cmdLogPreserve: function(ctx, arg) {
+    var op = DebugJS.splitArgs(arg)[1];
+    if (op == 'on') {
+      ctx.setLogPreserve(ctx, true);
+    } else if (op == 'off') {
+      ctx.setLogPreserve(ctx, false);
+    } else {
+      var st = ((ctx.status & DebugJS.STATE_LOG_PRESERVED) ? true : false);
+      DebugJS.printUsage('log preserve on|off');
+      return st;
+    }
+  },
+  _cmdLogSuspend: function(ctx, arg) {
+    var op = DebugJS.splitArgs(arg)[1];
+    if (op == 'on') {
+      DebugJS.ctx.suspendLog();
+    } else if (op == 'off') {
+      DebugJS.ctx.resumeLog();
+    } else {
+      var st = ((ctx.status & DebugJS.STATE_LOG_SUSPENDING) ? true : false);
+      DebugJS.printUsage('log suspend on|off');
+      return st;
+    }
+  },
+  _cmdLogLv: function(ctx, arg) {
+    var a = DebugJS.getArgsFrom(arg, 2);
+    a = DebugJS.delAllSP(a);
+    var lv = a.split('|');
+    if (lv[0] == '') {
+      DebugJS.printUsage('log lv LOG|VRB|DBG|INF|WRN|ERR|ALL|NONE');
+      return;
+    }
+    ctx.logFilter = 0;
+    for (var i = 0; i < lv.length; i++) {
+      switch (lv[i]) {
+        case 'LOG':
+          ctx.logFilter |= DebugJS.LOG_FILTER_LOG;
+          break;
+        case 'VRB':
+          ctx.logFilter |= DebugJS.LOG_FILTER_VRB;
+          break;
+        case 'DBG':
+          ctx.logFilter |= DebugJS.LOG_FILTER_DBG;
+          break;
+        case 'INF':
+          ctx.logFilter |= DebugJS.LOG_FILTER_INF;
+          break;
+        case 'WRN':
+          ctx.logFilter |= DebugJS.LOG_FILTER_WRN;
+          break;
+        case 'ERR':
+          ctx.logFilter |= DebugJS.LOG_FILTER_ERR;
+          break;
+        case 'ALL':
+          ctx.logFilter |= DebugJS.LOG_FILTER_ALL;
+      }
+    }
+    ctx.updateLogFilterBtns();
+    ctx.printLogs();
+  },
+
   cmdMsg: function(arg, tbl) {
     try {
       var m = (arg == '' ? '' : eval(arg));
@@ -7750,6 +7917,12 @@ DebugJS.prototype = {
       DebugJS.log.res(DebugJS.convDateTimeStr(DebugJS.getDateTime(t.time)));
     }
     return t.t;
+  },
+
+  cmdNow: function(arg, tbl, echo) {
+    var t = (new Date()).getTime();
+    if (echo) DebugJS._log.res(t);
+    return t;
   },
 
   cmdOpen: function(arg, tbl) {
@@ -8143,172 +8316,6 @@ DebugJS.prototype = {
     } else {
       return DebugJS.convRGB(arg);
     }
-  },
-
-  cmdLog: function(arg, tbl) {
-    var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var fn = null;
-    switch (args[0]) {
-      case 'bufsize':
-        fn = ctx._cmdLogBufsize;
-        break;
-      case 'dump':
-        fn = ctx._cmdLogDump;
-        break;
-      case 'filter':
-        fn = ctx._cmdLogFilter;
-       break;
-      case 'html':
-        fn = ctx._cmdLogHtml;
-        break;
-      case 'load':
-        fn = ctx._cmdLogLoad;
-        break;
-      case 'preserve':
-        fn = ctx._cmdLogPreserve;
-        break;
-      case 'suspend':
-        fn = ctx._cmdLogSuspend;
-        break;
-      case 'lv':
-        fn = ctx._cmdLogLv;
-    }
-    if (fn) {return fn(ctx, arg);}
-    DebugJS.printUsage(tbl.usage);
-  },
-  _cmdLogBufsize: function(ctx, arg) {
-    var s = DebugJS.splitArgs(arg)[1] | 0;
-    if (s > 0) {
-      ctx.initBuf(ctx, s);
-    } else {
-      s = ctx.msgBuf.getSize();
-      DebugJS._log.res(s);
-      DebugJS.printUsage('log bufsize [size]');
-    }
-    return s;
-  },
-  _cmdLogDump: function(ctx, arg) {
-    arg = DebugJS.splitCmdLineInTwo(arg)[1];
-    var l;
-    if (DebugJS.delLeadingAndTrailingSP(arg) == '-b64') {
-      l = DebugJS.dumpLog('json', true);
-    } else {
-      l = DebugJS.dumpLog('json', false);
-    }
-    DebugJS._log.res(l);
-  },
-  _cmdLogFilter: function(ctx, arg) {
-    var a = DebugJS.splitArgsEx(arg);
-    var f = a[1];
-    if (f == undefined) {
-      DebugJS.printUsage('log filter [-case] string');
-      return;
-    }
-    var cs = false;
-    if (f == '-case') {
-      cs = true;
-      f = a[2];
-    }
-    try {
-      f = eval(f);
-    } catch (e) {
-      DebugJS._log.e(e);
-      return;
-    }
-    ctx.setLogFilter(ctx, f, cs);
-  },
-  _cmdLogHtml: function(ctx, arg) {
-    var op = DebugJS.splitArgs(arg)[1];
-    if (op == 'on') {
-      ctx.setFilterTxtHtml(ctx, true);
-    } else if (op == 'off') {
-      ctx.setFilterTxtHtml(ctx, false);
-    } else {
-      var st = ctx.filterTxtHtml;
-      DebugJS.printUsage('log html on|off');
-      return st;
-    }
-  },
-  _cmdLogLoad: function(ctx, arg) {
-    var args = DebugJS.splitCmdLineInTwo(arg);
-    args = DebugJS.parseArgs(args[1]);
-    if (args.data == '') {
-      DebugJS.printUsage('log load [-b64] log-buffer-json');
-    } else {
-      try {
-        switch (args.opt) {
-          case 'b64':
-            DebugJS.loadLog(args.data, true);
-            break;
-          default:
-            DebugJS.loadLog(args.data);
-        }
-        ctx.printLogs();
-      } catch (e) {
-        DebugJS._log.e(e);
-      }
-    }
-  },
-  _cmdLogPreserve: function(ctx, arg) {
-    var op = DebugJS.splitArgs(arg)[1];
-    if (op == 'on') {
-      ctx.setLogPreserve(ctx, true);
-    } else if (op == 'off') {
-      ctx.setLogPreserve(ctx, false);
-    } else {
-      var st = ((ctx.status & DebugJS.STATE_LOG_PRESERVED) ? true : false);
-      DebugJS.printUsage('log preserve on|off');
-      return st;
-    }
-  },
-  _cmdLogSuspend: function(ctx, arg) {
-    var op = DebugJS.splitArgs(arg)[1];
-    if (op == 'on') {
-      DebugJS.ctx.suspendLog();
-    } else if (op == 'off') {
-      DebugJS.ctx.resumeLog();
-    } else {
-      var st = ((ctx.status & DebugJS.STATE_LOG_SUSPENDING) ? true : false);
-      DebugJS.printUsage('log suspend on|off');
-      return st;
-    }
-  },
-  _cmdLogLv: function(ctx, arg) {
-    var a = DebugJS.getArgsFrom(arg, 2);
-    a = DebugJS.delAllSP(a);
-    var lv = a.split('|');
-    if (lv[0] == '') {
-      DebugJS.printUsage('log lv LOG|VRB|DBG|INF|WRN|ERR|ALL|NONE');
-      return;
-    }
-    ctx.logFilter = 0;
-    for (var i = 0; i < lv.length; i++) {
-      switch (lv[i]) {
-        case 'LOG':
-          ctx.logFilter |= DebugJS.LOG_FILTER_LOG;
-          break;
-        case 'VRB':
-          ctx.logFilter |= DebugJS.LOG_FILTER_VRB;
-          break;
-        case 'DBG':
-          ctx.logFilter |= DebugJS.LOG_FILTER_DBG;
-          break;
-        case 'INF':
-          ctx.logFilter |= DebugJS.LOG_FILTER_INF;
-          break;
-        case 'WRN':
-          ctx.logFilter |= DebugJS.LOG_FILTER_WRN;
-          break;
-        case 'ERR':
-          ctx.logFilter |= DebugJS.LOG_FILTER_ERR;
-          break;
-        case 'ALL':
-          ctx.logFilter |= DebugJS.LOG_FILTER_ALL;
-      }
-    }
-    ctx.updateLogFilterBtns();
-    ctx.printLogs();
   },
 
   cmdScrollTo: function(arg, tbl) {
