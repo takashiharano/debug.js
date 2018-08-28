@@ -2917,6 +2917,17 @@ var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-
   </tr>
 
   <tr>
+    <td class="name">dbg.hasOpt</td>
+    <td>argument-string<br>key</td>
+    <td>
+      Returns if the arguments has an option.<br>
+<pre>
+dbg.hasOpt('<input type="text" id="opt-has-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b'>', '<input type="text" id="opt-has-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.res(dbg.hasOpt(getVal('opt-has-arg-txt'), getVal('opt-has-opt-txt')));">DEMO</button>
+<span id="isvisible-ret"></span></pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.init</td>
     <td>options</td>
     <td>

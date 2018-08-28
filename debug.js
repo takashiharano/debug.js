@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808282137';
+  this.v = '201808282207';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2402,8 +2402,8 @@ DebugJS.prototype = {
     }
   },
 
-  openScreenMeasure: function(ctx, silent) {
-    if (!silent) DebugJS._log.s('Screen Measure ON');
+  openScreenMeasure: function(ctx, q) {
+    if (!q) DebugJS._log.s('Screen Measure ON');
     ctx.status |= DebugJS.STATE_MEASURE;
     ctx.featStack.push(DebugJS.STATE_MEASURE);
     ctx.bodyCursor = ctx.bodyEl.style.cursor;
@@ -2411,12 +2411,12 @@ DebugJS.prototype = {
     ctx.updateMeasureBtn(ctx);
   },
 
-  closeScreenMeasure: function(ctx, silent) {
+  closeScreenMeasure: function(ctx, q) {
     ctx.stopMeasure(ctx);
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
     ctx.status &= ~DebugJS.STATE_MEASURE;
     DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_MEASURE);
-    if (!silent) DebugJS._log.s('Screen Measure OFF');
+    if (!q) DebugJS._log.s('Screen Measure OFF');
     ctx.updateMeasureBtn(ctx);
   },
 
@@ -2619,8 +2619,8 @@ DebugJS.prototype = {
     ctx.closeAllFeatures(ctx, true);
   },
 
-  closeAllFeatures: function(ctx, silent) {
-    if (ctx.status & DebugJS.STATE_MEASURE) {ctx.closeScreenMeasure(ctx, silent);}
+  closeAllFeatures: function(ctx, q) {
+    if (ctx.status & DebugJS.STATE_MEASURE) {ctx.closeScreenMeasure(ctx, q);}
     if (ctx.status & DebugJS.STATE_SYS_INFO) {ctx.closeSystemInfo(ctx);}
     if (ctx.status & DebugJS.STATE_HTML_SRC) {ctx.closeHtmlSrc(ctx);}
     if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {ctx.closeElmInfo(ctx);}
@@ -7108,7 +7108,7 @@ DebugJS.prototype = {
     if (d == null) {
       DebugJS.printUsage(tbl.usage);
     } else {
-      DebugJS._log.res(d);
+      if (!DebugJS.hasOpt(arg, 'q')) DebugJS._log.res(d);
     }
     return d;
   },
@@ -9399,6 +9399,9 @@ DebugJS.getOptVal2 = function(args, opt) {
   }
   return v;
 };
+DebugJS.hasOpt = function(arg, opt) {
+  return (DebugJS.getOptVal(arg, opt) != null);
+};
 
 DebugJS.getQuotedStr = function(str) {
   var ret = null;
@@ -10607,7 +10610,7 @@ DebugJS.encodeBase64 = function(str) {
   return encoded;
 };
 
-DebugJS.decodeBase64 = function(str, silent) {
+DebugJS.decodeBase64 = function(str, q) {
   if (!window.atob) return '';
   var decoded = '';
   try {
@@ -10618,7 +10621,7 @@ DebugJS.decodeBase64 = function(str, silent) {
     try {
       decoded = atob(str);
     } catch (e) {
-      if (!silent) DebugJS._log.e('decodeBase64(): ' + e);
+      if (!q) DebugJS._log.e('decodeBase64(): ' + e);
     }
   }
   return decoded;
@@ -11846,7 +11849,7 @@ DebugJS._log.out = function(m, type) {
   DebugJS.ctx.printLogs();
 };
 
-DebugJS.stack = function(ldx, silent) {
+DebugJS.stack = function(ldx, q) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
   var stk;
   try {
@@ -11864,7 +11867,7 @@ DebugJS.stack = function(ldx, silent) {
     if (cnt > 0) {rslt += '\n';}
     rslt += DebugJS.delLeadingSP(s).replace(/^at /, '');cnt++;
   }
-  if (!silent) DebugJS._log('Stack:\n' + DebugJS.escTags(rslt));
+  if (!q) DebugJS._log('Stack:\n' + DebugJS.escTags(rslt));
   return rslt;
 };
 
