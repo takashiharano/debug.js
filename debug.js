@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808282235';
+  this.v = '201808292125';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -197,6 +197,7 @@ var DebugJS = DebugJS || function() {
   this.fileLoadCancelBtn = null;
   this.fileLoadFormat = DebugJS.FILE_LOAD_FMT_B64;
   this.fileLoaderFile = null;
+  this.fileLoaderDataUrl = null;
   this.fileLoaderSysCb = null;
   this.fileLoaderBuf = null;
   this.fileLoaderBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
@@ -5568,8 +5569,13 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.fileLoadB64dturl, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
       ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
 
-      ctx.fileLoadB64scheme = ctx.createTextInput('100%', null, ctx.opt.fontColor, '', null);
+      ctx.fileLoadB64scheme = ctx.createTextInput('calc(100% - 5em)', null, ctx.opt.fontColor, '', null);
       ctx.fileLoadB64dturl.appendChild(ctx.fileLoadB64scheme);
+
+      var decodeBtn = ctx.createBtn(ctx, 'Decode', ctx.fileLoadB64dturl);
+      decodeBtn.style.right = 0;
+      decodeBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      decodeBtn.onclick = ctx.decodeB64data;
 
       ctx.fileLoadB64txtarea = document.createElement('textarea');
       ctx.fileLoadB64txtarea.className = ctx.id + '-editor';
@@ -5590,7 +5596,7 @@ DebugJS.prototype = {
         ctx.fileLoaderRadioB64.checked = false;
       }
       if (ctx.fileLoadFormat != format) {
-        ctx.loadFile(format);
+        ctx.loadFile(ctx.fileLoaderFile, format);
       }
     }
   },
@@ -5607,9 +5613,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.clearFile();
     if (e.target.files) {
-      DebugJS.ctx.fileLoaderFile = e.target.files[0];
       var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
-      ctx.loadFile(format);
+      ctx.loadFile(e.target.files[0], format);
     }
   },
 
@@ -5626,9 +5631,8 @@ DebugJS.prototype = {
     try {
       if (e.dataTransfer.files) {
         if (e.dataTransfer.files.length > 0) {
-          ctx.fileLoaderFile = e.dataTransfer.files[0];
           ctx.fileLoaderSysCb = cb;
-          ctx.loadFile(format);
+          ctx.loadFile(e.dataTransfer.files[0], format);
         } else {
           DebugJS._log.w('handleFileDrop() e.dataTransfer.files.length == 0');
           if (cb) {
@@ -5694,27 +5698,17 @@ DebugJS.prototype = {
     }
   },
 
-  loadFileBin: function() {
-    DebugJS.ctx.loadFile(DebugJS.FILE_LOAD_FMT_BIN);
-  },
-
-  loadFileB64: function() {
-    DebugJS.ctx.loadFile(DebugJS.FILE_LOAD_FMT_B64);
-  },
-
-  loadFile: function(format) {
+  loadFile: function(file, format) {
     var ctx = DebugJS.ctx;
-    var file = ctx.fileLoaderFile;
+    ctx.fileLoaderFile = file;
     if (!file) return;
     if ((file.size == 0) && (file.type == '')) {
       var html = ctx.getFileInfo(file);
       ctx.updateFilePreview(html);
       return;
     }
-
     ctx.fileLoadProgress.style.width = '0%';
     ctx.fileLoadProgress.textContent = '0%';
-
     ctx.fileReader = new FileReader();
     ctx.fileReader.onerror = ctx.onFileLoadError;
     ctx.fileReader.onprogress = ctx.onFileLoadProgress;
@@ -5728,6 +5722,29 @@ DebugJS.prototype = {
     } else {
       ctx.fileLoadFormat = DebugJS.FILE_LOAD_FMT_BIN;
       ctx.fileReader.readAsArrayBuffer(file);
+    }
+  },
+
+  loadFileB64: function() {
+    var ctx = DebugJS.ctx;
+    ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
+    if (ctx.fileLoaderFile) {
+      DebugJS.ctx.loadFile(ctx.fileLoaderFile, DebugJS.FILE_LOAD_FMT_B64);
+    } else if (ctx.fileLoaderDataUrl) {
+      var html = ctx.onFileLoadedB64(ctx, null, ctx.fileLoaderDataUrl);
+      ctx.updateFilePreview(html);
+    }
+  },
+
+  loadFileBin: function() {
+    var ctx = DebugJS.ctx;
+    if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileLoadB64dturl)) {
+      ctx.filePreviewWrapper.removeChild(ctx.fileLoadB64dturl);
+    }
+    if (ctx.fileLoaderFile) {
+      DebugJS.ctx.loadFile(ctx.fileLoaderFile, DebugJS.FILE_LOAD_FMT_BIN);
+    } else {
+      ctx.updateFilePreview('');
     }
   },
 
@@ -5793,15 +5810,11 @@ DebugJS.prototype = {
     } catch (e) {
       DebugJS._log.e('onFileLoaded: ' + e);
     }
-    var html;
+    var html = ctx.getFileInfo(file);
     if (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64) {
-      html = ctx.onFileLoadedB64(ctx, file, content);
-      ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
+      html += ctx.onFileLoadedB64(ctx, file, content);
     } else {
-      html = ctx.onFileLoadedBin(ctx, file, content);
-      if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileLoadB64dturl)) {
-        ctx.filePreviewWrapper.removeChild(ctx.fileLoadB64dturl);
-      }
+      html += ctx.onFileLoadedBin(ctx, file, content);
     }
     ctx.updateFilePreview(html);
     setTimeout(ctx.fileLoadFinalize, 1000);
@@ -5824,7 +5837,8 @@ DebugJS.prototype = {
       default:
         opt.mode = 'bin';
     }
-    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, opt.mode, opt.addr, opt.space, opt.ascii);
+    var html = ctx.getFileInfo(ctx.fileLoaderFile);
+    html += ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
@@ -5848,7 +5862,8 @@ DebugJS.prototype = {
     } else {
       opt[key] = true;
     }
-    var html = ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, opt.mode, opt.addr, opt.space, opt.ascii);
+    var html = ctx.getFileInfo(ctx.fileLoaderFile);
+    html += ctx.getBinFilePreviewHtml(ctx, ctx.fileLoaderFile, ctx.fileLoaderBuf, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
@@ -5862,29 +5877,22 @@ DebugJS.prototype = {
   },
 
   getBinFilePreviewHtml: function(ctx, file, buf, mode, showAddr, showSpace, showAscii) {
-    var html = ctx.getFileInfo(file) + ctx.getBinDumpHtml(buf, mode, showAddr, showSpace, showAscii) + '\n';
-    return html;
+    return ctx.getBinDumpHtml(buf, mode, showAddr, showSpace, showAscii) + '\n';
   },
 
   onFileLoadedB64: function(ctx, file, b64content) {
-    var html = ctx.getFileInfo(file);
     var preview = '';
-    var dturl = ['', ''];
-    if (file.size > 0) {
-      dturl = b64content.split(',');
-      if (file.type.match(/image\//)) {
+    var dturl = b64content.split(',');
+    var dtscheme = dturl[0];
+    var b64data = (dturl[1] == undefined ? '' : dturl[1]);
+    var cType = DebugJS.getContentType(dtscheme, file, b64content);
+    if ((!file) || (file.size > 0)) {
+      if (cType == 'image') {
         var ctxSizePos = ctx.getSelfSizePos();
         preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
       } else {
-        var ext = ['bat', 'csv', 'ini', 'java', 'js', 'json', 'log', 'md'];
-        var re = '';
-        for (var i = 0; i < ext.length; i++) {
-          if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
-        }
-        var cnmIdx = b64content.indexOf(',');
-        var xmlHead = 'PD94bWw';
-        if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || (DebugJS.startsWith(b64content, xmlHead, cnmIdx + 1))) {
-          var decoded = DebugJS.decodeBase64(dturl[1]);
+        if (cType == 'text') {
+          var decoded = DebugJS.decodeBase64(b64data);
           var cont = DebugJS.escTags(decoded);
           cont = cont.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
           cont = cont.replace(/([^>])\n/g, '$1' + DebugJS.CHR_LF_S + '\n');
@@ -5897,11 +5905,11 @@ DebugJS.prototype = {
         }
       }
     }
-    html += preview + '\n';
+    var html = preview + '\n';
     var limit = ctx.props.prevlimit;
-    if (file.size <= limit) {
-      ctx.fileLoadB64scheme.value = dturl[0] + ',';
-      ctx.fileLoadB64txtarea.value = dturl[1];
+    if ((!file) || (file.size <= limit)) {
+      ctx.fileLoadB64scheme.value = dtscheme + ',';
+      ctx.fileLoadB64txtarea.value = b64data;
     } else {
       html += '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
     }
@@ -6055,36 +6063,44 @@ DebugJS.prototype = {
 
   switchFileScreen: function() {
     var ctx = DebugJS.ctx;
-    var format;
     if (ctx.fileLoaderRadioB64.checked) {
       ctx.fileLoaderRadioBin.checked = true;
-      format = DebugJS.FILE_LOAD_FMT_BIN;
+      ctx.loadFileBin();
     } else {
       ctx.fileLoaderRadioB64.checked = true;
-      format = DebugJS.FILE_LOAD_FMT_B64;
+      ctx.loadFileB64();
     }
-    ctx.loadFile(format);
   },
 
   reloadFile: function() {
     var ctx = DebugJS.ctx;
-    var format;
+    var fmt;
     if (ctx.fileLoaderRadioB64.checked) {
-      format = DebugJS.FILE_LOAD_FMT_B64;
+      fmt = DebugJS.FILE_LOAD_FMT_B64;
     } else {
-      format = DebugJS.FILE_LOAD_FMT_BIN;
+      fmt = DebugJS.FILE_LOAD_FMT_BIN;
     }
-    ctx.loadFile(format);
+    ctx.loadFile(ctx.fileLoaderFile, fmt);
   },
 
   clearFile: function() {
     var ctx = DebugJS.ctx;
     ctx.fileLoaderFile = null;
+    ctx.fileLoaderDataUrl = null;
     ctx.fileReader = null;
     ctx.fileLoaderBuf = null;
     ctx.filePreview.innerText = 'Drop a file here';
     ctx.fileLoadB64scheme.value = '';
     ctx.fileLoadB64txtarea.value = '';
+  },
+
+  decodeB64data: function() {
+    var ctx = DebugJS.ctx;
+    var d = ctx.fileLoadB64scheme.value + ctx.fileLoadB64txtarea.value;
+    ctx.clearFile();
+    ctx.fileLoaderDataUrl = d;
+    var html = ctx.onFileLoadedB64(ctx, null, d);
+    ctx.updateFilePreview(html);
   },
 
   openHtmlEditor: function() {
@@ -9522,6 +9538,29 @@ DebugJS.isTypographic = function(ch) {
     return true;
   }
   return false;
+};
+
+DebugJS.getContentType = function(mime, file, b64content) {
+  var t = '';
+  var ext = ['bat', 'csv', 'ini', 'java', 'js', 'json', 'log', 'md'];
+  var re = '';
+  for (var i = 0; i < ext.length; i++) {
+    if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
+  }
+  var cnmIdx = b64content.indexOf(',');
+  var xmlHead = 'PD94bWw';
+  if (mime.match(/image\//)) {
+    t = 'image';
+  } else if (mime.match(/text\//)) {
+    t = 'text';
+  } else if (file) {
+    if (file.type.match(/image\//)) {
+      t = 'image';
+    } else if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || DebugJS.startsWith(b64content, xmlHead, cnmIdx + 1)) {
+      t = 'text';
+    }
+  }
+  return t;
 };
 
 DebugJS.KEYCH = {
