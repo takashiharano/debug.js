@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808292346';
+  this.v = '201808300130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14857,6 +14857,8 @@ DebugJS.x.setBtnLabel = function(l) {
   if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
 DebugJS.balse = function() {
+  DebugJS.boot = DebugJS.f_;
+  DebugJS.start = DebugJS.f_;
   DebugJS.log = DebugJS.f_;
   DebugJS.log.e = DebugJS.f_;
   DebugJS.log.w = DebugJS.f_;
@@ -14920,7 +14922,7 @@ DebugJS.balse = function() {
   DebugJS.x.setBtnLabel = DebugJS.f_;
   DebugJS._createResBox = DebugJS.f_;
 };
-DebugJS.start = function() {
+DebugJS.boot = function() {
   DebugJS.rootFncs();
   DebugJS.ctx = DebugJS.ctx || new DebugJS();
   DebugJS.el = null;
@@ -14950,9 +14952,10 @@ DebugJS.start = function() {
   };
   DebugJS.restoreStatus(DebugJS.ctx);
 };
+DebugJS.start = function() {DebugJS.init();DebugJS.show();};
 DebugJS.ENABLE = true;
 if (DebugJS.ENABLE) {
-  DebugJS.start();
+  DebugJS.boot();
 } else {
   DebugJS.balse();
 }
