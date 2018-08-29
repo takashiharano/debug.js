@@ -714,10 +714,15 @@ function onCtrlC() {
   stopRandomDemo();
 }
 
+function onBatStop(code) {
+  log.i('BAT exit status = ' + code);
+}
+
 function onReady() {
   //log('ready');
   addFileLoadHandler();
   dbg.addEvtListener('ctrlc', onCtrlC);
+  dbg.addEvtListener('batstop', onBatStop);
 }
 
 function onLoad() {
@@ -2422,7 +2427,7 @@ Adds the specified EventListener function to the list of event listeners for the
       type: <b>batstop</b><br>
       Callback function which is called after stopped batch execution.<br>
 <pre class="eg">Function format:
-  function onBatStop() {}</pre>
+  function onBatStop(exitstatus) {}</pre>
 <br>
       type: <b>ctrlc</b><br>
       Callback function which is called when Ctrl+C is pressed on the command line.<br>

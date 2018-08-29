@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808292125';
+  this.v = '201808292240';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -597,7 +597,10 @@ DebugJS.DISP_BIN_DIGITS_THRESHOLD = 5;
 DebugJS.TIME_RST_STR = '00:00:00.000';
 DebugJS.EXIT_SUCCESS = 0;
 DebugJS.EXIT_FAILURE = 1;
+DebugJS.EXIT_SIG = 128;
 DebugJS.EXIT_CLEARED = -1;
+DebugJS.SIGINT = 2;
+DebugJS.SIGTERM = 15;
 DebugJS.BAT_TKN_JS = '!__JS__!';
 DebugJS.BAT_TKN_TXT = '!__TEXT__!';
 DebugJS.BAT_TKN_IF = 'IF';
@@ -2741,7 +2744,7 @@ DebugJS.prototype = {
         if ((e.ctrlKey) && (document.activeElement == ctx.cmdLine)) {
           if (((ctx.cmdLine.selectionEnd - ctx.cmdLine.selectionStart) == 0)) {
             if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
-              DebugJS.bat.stop();
+              DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGINT);
             }
             ctx._cmdDelayCancel(ctx);
             DebugJS.point.move.stop();
@@ -6182,7 +6185,7 @@ DebugJS.prototype = {
       ctx.batRunBtn = ctx.createBtn(ctx, '[ RUN ]', basePanel);
       ctx.batRunBtn.onclick = DebugJS.ctx.startPauseBat;
       ctx.batStopBtn = ctx.createBtn(ctx, '[STOP]', basePanel);
-      ctx.batStopBtn.onclick = DebugJS.bat.stop;
+      ctx.batStopBtn.onclick = DebugJS.bat.terminate;
       ctx.createLabel(' FROM:', basePanel);
       ctx.batStartTxt = ctx.createTextInput('45px', 'left', ctx.opt.fontColor, '', null);
       basePanel.appendChild(ctx.batStartTxt);
@@ -6912,9 +6915,11 @@ DebugJS.prototype = {
         return bat.ctrl.pc;
         break;
       case 'pause':
-      case 'stop':
       case 'clear':
         bat[a[0]]();
+        break;
+      case 'stop':
+        bat.terminate();
         break;
       case 'exec':
         if (a[1] != undefined) {
@@ -12107,7 +12112,7 @@ DebugJS.bat.set = function(b) {
   var bat = DebugJS.bat;
   if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
     if (bat.ctx.length == 0) {
-      bat.stop();
+      bat.stop(DebugJS.EXIT_CLEARED);
     } else {
       bat.stopNext();
     }
@@ -12314,12 +12319,12 @@ DebugJS.bat.exec = function() {
 DebugJS.bat.next = function() {
   DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
-DebugJS.bat._exit = function(code) {
+DebugJS.bat._exit = function(st) {
   var bat = DebugJS.bat;
+  bat.setExitStatus(st);
   if (!bat.ldCtx()) {
-    bat._stop();
+    bat._stop(st);
   }
-  bat.setExitStatus(code);
 };
 DebugJS.bat.setExecArg = function(a) {
   a = ((a === undefined) ? '' : a);
@@ -12327,18 +12332,8 @@ DebugJS.bat.setExecArg = function(a) {
   DebugJS.bat.ctrl.execArg = a;
   DebugJS.ctx.setBatArgTxt(DebugJS.ctx);
 };
-DebugJS.bat.setExitStatus = function(es) {
-  if ((es == undefined) || (es == '')) {
-    es = DebugJS.EXIT_SUCCESS;
-  } else {
-    try {
-      es = eval(es);
-    } catch (e) {
-      DebugJS._log.e(e);
-      es = DebugJS.EXIT_FAILURE;
-    }
-  }
-  DebugJS.ctx.CMDVALS['?'] = es;
+DebugJS.bat.setExitStatus = function(st) {
+  DebugJS.ctx.CMDVALS['?'] = st;
 };
 DebugJS.bat.prepro = function(cmd) {
   var ctx = DebugJS.ctx;
@@ -12464,7 +12459,7 @@ DebugJS.bat.prepro = function(cmd) {
   switch (c) {
     case 'exit':
       bat.ppEcho(cmd);
-      bat._exit(a[0]);
+      bat._exit(a[0] | 0);
       return 2;
     case 'wait':
       var w = cmds[1];
@@ -12735,34 +12730,40 @@ DebugJS.bat.stopNext = function() {
     DebugJS.bat.clearTimer();
   }
 };
-DebugJS.bat.stop = function() {
+DebugJS.bat.stop = function(c) {
   var ctx = DebugJS.ctx;
-  DebugJS.bat._stop();
+  DebugJS.bat._stop(c);
   DebugJS.bat.resetPc();
 };
-DebugJS.bat._stop = function() {
+DebugJS.bat._stop = function(st) {
   var ctx = DebugJS.ctx;
-  DebugJS.bat.stopNext();
-  DebugJS.bat.ctx = [];
+  var bat = DebugJS.bat;
+  bat.stopNext();
+  bat.ctx = [];
   ctx.updateBatNestLv();
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
-  DebugJS.bat.setRunningSt(false);
+  bat.setRunningSt(false);
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
   ctx.updateBatRunBtn();
   delete DebugJS.ctx.CMDVALS['%%ARG%%'];
   delete DebugJS.ctx.CMDVALS['%ARG%'];
   delete DebugJS.ctx.CMDVALS['%RET%'];
   delete DebugJS.ctx.CMDVALS['%TEXT%'];
-  DebugJS.callEvtListener('batstop');
+  st |= 0;
+  bat.setExitStatus(st);
+  DebugJS.callEvtListener('batstop', st);
+};
+DebugJS.bat.terminate = function() {
+  DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGTERM);
 };
 DebugJS.bat.cancel = function() {
-  DebugJS.bat.stop();
+  DebugJS.bat.terminate();
   DebugJS.point.init();
   DebugJS._log('Canceled.');
 };
 DebugJS.bat.exit = function() {
-  DebugJS.bat.stop();
+  DebugJS.bat.terminate();
   DebugJS.point.init();
   DebugJS.bat.clear();
 };
