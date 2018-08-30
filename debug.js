@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808300130';
+  this.v = '201808302155';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -363,7 +363,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set|count|result|status|verify got-val method expected-val|fin'},
+    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
@@ -6802,11 +6802,7 @@ DebugJS.prototype = {
       ret = ctx.__execCmd(ctx, cmdline, echo);
     }
     if (setValName != null) {
-      if (DebugJS.isSysVal(setValName)) {
-        DebugJS._log.e('Error: ${' + setValName + '} is read-only');
-      } else {
-        ctx.CMDVALS[setValName] = ret;
-      }
+      DebugJS.setCmdVal(setValName, ret);
     }
     return ret;
   },
@@ -8614,6 +8610,10 @@ DebugJS.prototype = {
       case 'count':
         DebugJS._log(test.count(test.data.cnt));
         break;
+      case 'last':
+        var st = test.getLastResult();
+        DebugJS._log(test.getStyledResultStr(st, ''));
+        return st;
       case 'result':
         DebugJS._log(test.result());
         break;
@@ -8622,8 +8622,7 @@ DebugJS.prototype = {
         DebugJS._log(test.getStyledResultStr(st, ''));
         return st;
       case 'verify':
-        DebugJS.ctx._CmdTestVerify(arg);
-        break;
+        return DebugJS.ctx._CmdTestVerify(arg);
       case 'fin':
         test.fin();
         DebugJS._log('Test completed.');
@@ -8673,7 +8672,7 @@ DebugJS.prototype = {
       method = a[3];
       exp = DebugJS.getArgsFrom(arg, 5);
     }
-    var ret = DebugJS.test.verify(got, method, exp, true, label);
+    return DebugJS.test.verify(got, method, exp, true, label);
   },
 
   cmdTimer: function(arg, tbl) {
@@ -12080,7 +12079,19 @@ DebugJS.cmd = function(c, echo) {
   return DebugJS.ctx._execCmd(c, echo);
 };
 
+DebugJS.getCmdVal = function(n) {
+  return DebugJS.ctx.CMDVALS[n];
+};
+DebugJS.setCmdVal = function(n, v) {
+  if (DebugJS.isSysVal(n)) {
+    DebugJS._log.e('Error: ${' + n + '} is read-only');
+  } else {
+    DebugJS.ctx.CMDVALS[n] = v;
+  }
+};
+
 DebugJS.bat = function(b, a, sl, el) {
+  if (!b) return;
   var bat = DebugJS.bat;
   bat.set(b);
   bat.setExecArg(a);
@@ -12343,6 +12354,16 @@ DebugJS.bat.setLabel = function(s) {
   DebugJS.bat.ctrl.label = s;
 };
 DebugJS.bat.setExitStatus = function(st) {
+  if ((st == undefined) || (st == '')) {
+    st = DebugJS.EXIT_SUCCESS;
+  } else {
+    try {
+      st = eval(st);
+    } catch (e) {
+      DebugJS._log.e(e);
+      st = DebugJS.EXIT_FAILURE;
+    }
+  }
   DebugJS.ctx.CMDVALS['?'] = st;
 };
 DebugJS.bat.prepro = function(cmd) {
@@ -12473,7 +12494,7 @@ DebugJS.bat.prepro = function(cmd) {
   switch (c) {
     case 'exit':
       bat.ppEcho(cmd);
-      bat._exit(a[0] | 0);
+      bat._exit(cmds[1]);
       return 2;
     case 'wait':
       var w = cmds[1];
@@ -12765,9 +12786,8 @@ DebugJS.bat._stop = function(st) {
   delete DebugJS.ctx.CMDVALS['%RET%'];
   delete DebugJS.ctx.CMDVALS['%LABEL%'];
   delete DebugJS.ctx.CMDVALS['%TEXT%'];
-  st |= 0;
   bat.setExitStatus(st);
-  DebugJS.callEvtListener('batstop', st);
+  DebugJS.callEvtListener('batstop', ctx.CMDVALS['?']);
 };
 DebugJS.bat.terminate = function() {
   DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGTERM);
@@ -14167,6 +14187,7 @@ DebugJS.test = {};
 DebugJS.test.STATUS_OK = 'OK';
 DebugJS.test.STATUS_NG = 'NG';
 DebugJS.test.STATUS_ERR = 'ERR';
+DebugJS.test.STATUS_NT = 'NT';
 DebugJS.test.data = {};
 DebugJS.test.initData = function() {
   var data = DebugJS.test.data;
@@ -14176,19 +14197,19 @@ DebugJS.test.initData = function() {
   data.startTime = 0;
   data.endTime = 0;
   data.executingTestId = '';
-  data.status = DebugJS.test.STATUS_OK;
+  data.status = DebugJS.test.STATUS_NT;
+  data.lastRslt = DebugJS.test.STATUS_NT;
   data.cnt = {ok: 0, ng: 0, err: 0};
   data.results = {};
 };
 DebugJS.test.initData();
 DebugJS.test.init = function(name) {
-  DebugJS.test.initData();
-  var data = DebugJS.test.data;
+  var test = DebugJS.test;
+  test.initData();
+  var data = test.data;
   data.name = ((name == undefined) ? '' : name);
   data.running = true;
   data.startTime = (new Date()).getTime();
-  DebugJS.ctx.CMDVALS['%TEST%'] = DebugJS.test.STATUS_OK;
-  delete DebugJS.ctx.CMDVALS['%RESULT%'];
 };
 DebugJS.test.setName = function(n) {
   DebugJS.test.data.name = n;
@@ -14214,28 +14235,23 @@ DebugJS.test.fin = function() {
   DebugJS.test.data.running = false;
   DebugJS.test.data.endTime = (new Date()).getTime();
 };
-DebugJS.test.addResult = function(status, label, exp, got, method, info) {
+DebugJS.test.addResult = function(st, label, exp, got, method, info) {
   var ctx = DebugJS.ctx;
   var test = DebugJS.test;
   var data = test.data;
   var limit = ctx.props.testvallimit;
-  switch (status) {
+  switch (st) {
     case test.STATUS_OK:
       data.cnt.ok++;
       break;
     case test.STATUS_NG:
       data.cnt.ng++;
-      if (ctx.CMDVALS['%TEST%'] != test.STATUS_ERR) {
-        data.status = status;
-        ctx.CMDVALS['%TEST%'] = status;
-      }
       break;
     case test.STATUS_ERR:
       data.cnt.err++;
-      data.status = status;
-      ctx.CMDVALS['%TEST%'] = status;
   }
-  ctx.CMDVALS['%RESULT%'] = status;
+  test.setStatus(st);
+  test.setLastResult(st);
   var id = data.executingTestId;
   test.prepare();
   if (label == null) {
@@ -14251,13 +14267,34 @@ DebugJS.test.addResult = function(status, label, exp, got, method, info) {
   }
   var rslt = {
     label: label,
-    status: status,
+    status: st,
     method: method,
     exp: exp,
     got: got,
     info: info
   };
   data.results[id].results.push(rslt);
+};
+DebugJS.test.setStatus = function(st) {
+  var test = DebugJS.test;
+  var data = DebugJS.test.data;
+  switch (st) {
+    case test.STATUS_OK:
+      if (data.status != test.STATUS_NT) return;
+      break;
+    case test.STATUS_NG:
+      if (data.status == test.STATUS_ERR) return;
+  }
+  data.status = st;
+};
+DebugJS.test.getStatus = function() {
+  return DebugJS.test.data.status;
+};
+DebugJS.test.setLastResult = function(st) {
+  DebugJS.test.data.lastRslt = st;
+};
+DebugJS.test.getLastResult = function() {
+  return DebugJS.test.data.lastRslt;
 };
 DebugJS.test.prepare = function() {
   var test = DebugJS.test;
@@ -14382,9 +14419,6 @@ DebugJS.test.result = function() {
   s += '\nSummary:\n' + test.count(cnt) + '\n\nDetails:\n' + test.count(data.cnt) + '\n';
   s += details + '\n' + DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledResultStr(tstSt, '');
   return s;
-};
-DebugJS.test.getStatus = function() {
-  return DebugJS.test.data.status;
 };
 DebugJS.test.getResult = function() {
   var data = DebugJS.test.data;

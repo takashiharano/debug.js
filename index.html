@@ -1995,6 +1995,33 @@ dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 -
   </tr>
 
   <tr>
+    <td class="name">dbg.getCmdVal</td>
+    <td>
+      name
+    </td>
+    <td>
+      Returns a command variable. (${name})<br>
+<pre class="eg">
+dbg.getCmdVal('<input type="text" id="getcmdval-text" class="demo-text" style="width:100px;" value="a">'); <button class="demo-button2" onclick="log.p(dbg.getCmdVal(getVal('getcmdval-text')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.setCmdVal</td>
+    <td>
+      arg1: name<br>
+      arg2: value
+    </td>
+    <td>
+      Returns a command variable. (${name})<br>
+<pre class="eg">
+dbg.setCmdVal('<input type="text" id="setcmdval-name-text" class="demo-text" style="width:50px;" value="a">', '<input type="text" id="setcmdval-val-text" class="demo-text" style="width:50px;" value="abc">'); <button class="demo-button2" onclick="dbg.setCmdVal(getVal('setcmdval-name-text'), getVal('setcmdval-val-text'));log('${' + getVal('setcmdval-name-text') + '} = ' + getVal('setcmdval-val-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.bat</td>
     <td>
       arg1: commands<br>
@@ -2801,8 +2828,8 @@ dbg.opacity(<input type="text" id="opacity-text" value="0.5" class="demo-text" s
     <td>
       Returns if the debug window is visible.<br>
 <pre>
-dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('isvisible-ret').innerText = '-> ' + dbg.isVisible();">DEMO</button>
-<span id="isvisible-ret"></span>
+dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('isvisible-ret').innerText = dbg.isVisible();">DEMO</button>
+-&gt; <span id="isvisible-ret"></span>
 </pre>
     </td>
   </tr>
@@ -2814,6 +2841,17 @@ dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('
       Returns the total test result.<br>
 <pre>
 dbg.test.getStatus(); <button class="demo-button2" onclick="log.p(dbg.test.getStatus());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.getLastResult</td>
+    <td></td>
+    <td>
+      Returns the last test result.<br>
+<pre>
+dbg.test.getLastResult(); <button class="demo-button2" onclick="log.p(dbg.test.getLastResult());">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -4018,7 +4056,8 @@ $ stopwatch sw1 stop
       verify: Evaluate a value<br>
       count: Displays the test count.<br>
       result: Displays the test result.<br>
-      status: Displays the total test result. (OK / NG / ERR)<br>
+      last: Last result of test/point verify command. (OK / NG / ERR / NT)<br>
+      status: Displays the total test result. (OK / NG / ERR / NT)<br>
       fin: Finalize the test execution.<br><br>
 
 <pre class="eg">
@@ -4354,7 +4393,7 @@ $ set batcont off
   <tr>
     <td class="name">batstop</td>
     <td>
-      Error stop flag.<br>The batch script will be stopped when an error occurred (when log.e() was called) or test verify command result was failed.<br>
+      Error stop trigger.<br>The batch script will be stopped when an error occurred (when log.e() was called) or test verify command result was failed.<br>
 <pre class="eg">
 $ set batstop none
 $ set batstop error
@@ -4415,21 +4454,6 @@ $ set batstop error|test
       Last key value of resume command
     </td>
   </tr>
-
-  <tr>
-    <td class="name">${%RESULT%}</td>
-    <td>
-      Last result of test/point verify command
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">${%TEST%}</td>
-    <td>
-      Total result of test command
-    </td>
-  </tr>
-
 </table>
 <br>
 
