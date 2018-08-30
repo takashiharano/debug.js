@@ -4067,7 +4067,7 @@ $ stopwatch sw1 stop
       Manage unit test.<br><br>
       [operation type]<br>
       init: Reset the test results. ($ test init "TestName"<span class="annotation">(opt)</span>)<br>
-      set: Set Test ID / Label / Description / Comment ($ test set id|label|desc|comment "STRING")<br>
+      set: Set Test ID / Label / Description / Comment / Result ($ test set id|label|desc|comment|result "STRING")<br>
       verify: Evaluate a value<br>
       count: Displays the test count.<br>
       result: Displays the test result.<br>
@@ -4087,6 +4087,11 @@ $ test set comment "Comment"
 $ test verify a == 1
 
 $ test verify -label:"text" b == 2
+
+$ test set result -status OK -label "result1" -info "ok test"
+$ test set result -status NG -label "result2" -info "ng test"
+$ test set result -status ERR -label "result3" -info "err test"
+$ test set result -status NT -label "result4" -info "nt test"
 
 $ test fin
 $ test result
