@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808302300';
+  this.v = '201808310001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7010,7 +7010,7 @@ DebugJS.prototype = {
         break;
       case 'pause':
         if (bat.ctrl.condKey) {
-          var to = dbg.getOptVal(arg, 'timeout');
+          var to = DebugJS.getOptVal(arg, 'timeout');
           DebugJS.ctx._cmdPause('key', bat.ctrl.condKey, to);
         }
         break;
@@ -7972,13 +7972,13 @@ DebugJS.prototype = {
     var op = '';
     var opts = ['s', 'key'];
     for (var i = 0; i < opts.length; i++) {
-      if (dbg.getOptVal(arg, opts[i]) != null) {
+      if (DebugJS.getOptVal(arg, opts[i]) != null) {
         op = opts[i];
         break;
       }
     }
-    var key = dbg.getOptVal(arg, 'key');
-    var to = dbg.getOptVal(arg, 'timeout');
+    var key = DebugJS.getOptVal(arg, 'key');
+    var to = DebugJS.getOptVal(arg, 'timeout');
     if (!(DebugJS.ctx._cmdPause(op, key, to))) {
       DebugJS.printUsage(tbl.usage);
     }
@@ -8653,8 +8653,11 @@ DebugJS.prototype = {
       case 'comment':
         fn = test.setCmnt;
         break;
+      case 'result':
+        DebugJS.ctx._cmdTestSetRslt(DebugJS.getArgsFrom(arg, 3));
+        return;
       default:
-        DebugJS.printUsage('test set name|desc|id|comment val');
+        DebugJS.printUsage('test set name|desc|id|comment|result val');
         return;
     }
     try {
@@ -8677,6 +8680,18 @@ DebugJS.prototype = {
       exp = DebugJS.getArgsFrom(arg, 5);
     }
     return DebugJS.test.verify(got, method, exp, true, label);
+  },
+  _cmdTestSetRslt: function(a) {
+    var st = DebugJS.getOptVal(a, 'status');
+    var label = DebugJS.getOptVal(a, 'label');
+    var info = DebugJS.getOptVal(a, 'info');
+    try {
+      var inf = eval(info);
+    } catch (e) {
+      DebugJS._log.e('Illegal info opt: ' + info);
+      return;
+    }
+    DebugJS.test.setResult(st, label, inf);
   },
 
   cmdTimer: function(arg, tbl) {
@@ -11637,9 +11652,9 @@ DebugJS.createLogData = function(extHead, extData, wBf) {
   return b;
 };
 DebugJS.createLogHeader = function() {
-  var dt = dbg.getDateTime();
+  var dt = DebugJS.getDateTime();
   var brw = DebugJS.getBrowserType();
-  var s = 'Sending Time : ' + dbg.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
   s += 'Browser      : ' + brw.name + ' ' + brw.version + '\n';
   s += 'User Agent   : ' + navigator.userAgent + '\n';
   s += 'Screen Size  : w=' + screen.width + ' h=' + screen.height + '\n';
@@ -14258,6 +14273,19 @@ DebugJS.test.fin = function() {
   DebugJS.test.data.running = false;
   DebugJS.test.data.endTime = (new Date()).getTime();
 };
+DebugJS.test.setResult = function(st, label, info) {
+  var test = DebugJS.test;
+  switch (st) {
+    case test.STATUS_OK:
+    case test.STATUS_NG:
+    case test.STATUS_ERR:
+      break;
+    default:
+      DebugJS._log.e('Illegal Test Status: ' + st);
+      return;
+  }
+  test.addResult(st, label, null, null, null, info);
+};
 DebugJS.test.addResult = function(st, label, exp, got, method, info) {
   var ctx = DebugJS.ctx;
   var test = DebugJS.test;
@@ -14366,7 +14394,7 @@ DebugJS.test.getStyledResultStr = function(res, info) {
   return '[<span style="color:' + color + '">' + res + '</span>] ' + info;
 };
 DebugJS.test.getStyledInfoStr = function(result) {
-  if (result.status == 'ERR') {
+  if (result.info) {
     return result.info;
   }
   var echoExp = result.exp;
