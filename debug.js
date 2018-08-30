@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808310729';
+  this.v = '201808310737';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14286,7 +14286,7 @@ DebugJS.test.setResult = function(st, label, info) {
     case test.STATUS_NT:
       break;
     default:
-      DebugJS._log.e('Illegal Test Status: ' + st);
+      DebugJS._log.e('Test status must be OK|NG|ERR|NT: ' + st);
       return;
   }
   test.addResult(st, label, null, null, null, info);
