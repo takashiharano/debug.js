@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808310001';
+  this.v = '201808310115';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14237,7 +14237,7 @@ DebugJS.test.initData = function() {
   data.executingTestId = '';
   data.status = DebugJS.test.STATUS_NT;
   data.lastRslt = DebugJS.test.STATUS_NT;
-  data.cnt = {ok: 0, ng: 0, err: 0};
+  data.cnt = {ok: 0, ng: 0, err: 0, nt: 0};
   data.results = {};
 };
 DebugJS.test.initData();
@@ -14279,6 +14279,7 @@ DebugJS.test.setResult = function(st, label, info) {
     case test.STATUS_OK:
     case test.STATUS_NG:
     case test.STATUS_ERR:
+    case test.STATUS_NT:
       break;
     default:
       DebugJS._log.e('Illegal Test Status: ' + st);
@@ -14300,6 +14301,9 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
       break;
     case test.STATUS_ERR:
       data.cnt.err++;
+      break;
+    case test.STATUS_NT:
+      data.cnt.nt++;
   }
   test.setStatus(st);
   test.setLastResult(st);
@@ -14330,6 +14334,8 @@ DebugJS.test.setStatus = function(st) {
   var test = DebugJS.test;
   var data = DebugJS.test.data;
   switch (st) {
+    case test.STATUS_NT:
+      return;
     case test.STATUS_OK:
       if (data.status != test.STATUS_NT) return;
       break;
@@ -14367,13 +14373,15 @@ DebugJS.test.setCmnt = function(c) {
 };
 DebugJS.test.chkResult = function(results) {
   var test = DebugJS.test;
-  var r = test.STATUS_OK;
+  var r = test.STATUS_NT;
   for (var i = 0; i < results.length; i++) {
     var st = results[i].status;
     if (st == test.STATUS_ERR) {
       return test.STATUS_ERR;
     } else if (st == test.STATUS_NG) {
       r = test.STATUS_NG;
+    } else if ((st == test.STATUS_OK) && (r == test.STATUS_NT)) {
+      r = test.STATUS_OK;
     }
   }
   return r;
@@ -14390,6 +14398,9 @@ DebugJS.test.getStyledResultStr = function(res, info) {
       break;
     case test.STATUS_ERR:
       color = '#ff0';
+      break;
+    default:
+      color = DebugJS.ctx.opt.fontColor;
   }
   return '[<span style="color:' + color + '">' + res + '</span>] ' + info;
 };
@@ -14418,8 +14429,8 @@ DebugJS.test.getStyledInfoStr = function(result) {
   return s;
 };
 DebugJS.test.count = function(cnt) {
-  var total = cnt.ok + cnt.ng + cnt.err;
-  return '<span style="color:#0f0">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:#f66">NG</span>:' + cnt.ng + ' <span style="color:#ff0">ERR</span>:' + cnt.err;
+  var total = cnt.ok + cnt.ng + cnt.err + cnt.nt;
+  return '<span style="color:#0f0">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:#f66">NG</span>:' + cnt.ng + ' <span style="color:#ff0">ERR</span>:' + cnt.err + ' <span style="color:' + DebugJS.ctx.opt.fontColor + '">NT</span>:' + cnt.nt;
 };
 DebugJS.test.result = function() {
   var test = DebugJS.test;
@@ -14428,7 +14439,7 @@ DebugJS.test.result = function() {
   var i;
   var n = test.countLongestLabel();
   if (n > M) n = M;
-  var cnt = {ok: 0, ng: 0, err: 0};
+  var cnt = {ok: 0, ng: 0, err: 0, nt: 0};
   var details = '';
   for (var id in data.results) {
     var testId = id;
@@ -14445,6 +14456,9 @@ DebugJS.test.result = function() {
         break;
       case test.STATUS_ERR:
         cnt.err++;
+        break;
+      case test.STATUS_NT:
+        cnt.nt++;
     }
     var rs = test.getStyledResultStr(st, '');
     details += '\n' + rs + testId + '\n';
