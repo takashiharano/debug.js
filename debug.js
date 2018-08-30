@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808310130';
+  this.v = '201808310729';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8146,7 +8146,7 @@ DebugJS.prototype = {
         DebugJS._log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
         return;
       }
-      txt = DebugJS.splitArgsEx(arg)[1];
+      txt = DebugJS.getArgVal(arg, 1);
       speed = DebugJS.getOptVal(arg, 'speed');
       step = DebugJS.getOptVal(arg, 'step');
       start = DebugJS.getOptVal(arg, 'start');
@@ -8682,7 +8682,7 @@ DebugJS.prototype = {
     return DebugJS.test.verify(got, method, exp, true, label);
   },
   _cmdTestSetRslt: function(a) {
-    var st = DebugJS.getOptVal(a, 'status');
+    var st = DebugJS.getArgVal(a, 0);
     var label = DebugJS.getOptVal(a, 'label');
     var info = DebugJS.getOptVal(a, 'info');
     try {
@@ -9410,6 +9410,10 @@ DebugJS.parseArgs = function(arg) {
     args.data = DebugJS.delLeadingAndTrailingSP(wkArgs[2]);
   }
   return args;
+};
+
+DebugJS.getArgVal = function(a, idx) {
+  return DebugJS.splitArgsEx(a)[idx];
 };
 
 DebugJS.getOptVal = function(args, opt) {
@@ -13145,7 +13149,7 @@ DebugJS.point.cursor = function(src, w, h) {
 DebugJS.point.event = function(args) {
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
-  var type = DebugJS.splitArgsEx(args)[0];
+  var type = DebugJS.getArgVal(args, 0);
   var opts = DebugJS.getOptVals(args);
   var e = DebugJS.event.create(type);
   e.clientX = DebugJS.point.x;
@@ -14405,9 +14409,8 @@ DebugJS.test.getStyledResultStr = function(res, info) {
   return '[<span style="color:' + color + '">' + res + '</span>] ' + info;
 };
 DebugJS.test.getStyledInfoStr = function(result) {
-  if (result.info) {
-    return result.info;
-  }
+  if (result.info) return result.info;
+  if (!result.method) return '';
   var echoExp = result.exp;
   if (result.method == 'regexp') {
     echoExp = DebugJS.decodeEsc(echoExp);

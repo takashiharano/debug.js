@@ -2947,6 +2947,20 @@ var args = dbg.splitArgsEx('<input type="text" id="args-ex-txt" class="demo-text
   </tr>
 
   <tr>
+    <td class="name">dbg.getArgVal</td>
+    <td>
+      argument-string<br>
+      key
+    </td>
+    <td>
+      Returns a value of an option.<br>
+<pre>
+var val = dbg.getArgVal('<input type="text" id="getargval-arg-txt" class="demo-text" style="width:180px;" value='-a abc -b "xyz 123"'>', <input type="text" id="getargval-idx-txt" class="demo-text" style="width:20px;" value='0'>); <button class="demo-button2" onclick="log.p(dbg.getArgVal(getVal('getargval-arg-txt'), getVal('getargval-idx-txt')), 0, 'val =');">DEMO</button>
+<span id="isvisible-ret"></span></pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.getOptVal</td>
     <td>
       argument-string<br>
@@ -4088,10 +4102,10 @@ $ test verify a == 1
 
 $ test verify -label:"text" b == 2
 
-$ test set result -status OK -label "result1" -info "ok test"
-$ test set result -status NG -label "result2" -info "ng test"
-$ test set result -status ERR -label "result3" -info "err test"
-$ test set result -status NT -label "result4" -info "nt test"
+$ test set result OK -label "result1" -info "ok test"
+$ test set result NG -label "result2" -info "ng test"
+$ test set result ERR -label "result3" -info "err test"
+$ test set result NT -label "result4" -info "nt test"
 
 $ test fin
 $ test result
