@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808310115';
+  this.v = '201808310130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12812,9 +12812,9 @@ DebugJS.bat.terminate = function() {
   DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGTERM);
 };
 DebugJS.bat.cancel = function() {
+  DebugJS._log('Canceled.');
   DebugJS.bat.terminate();
   DebugJS.point.init();
-  DebugJS._log('Canceled.');
 };
 DebugJS.bat.exit = function() {
   DebugJS.bat.terminate();
