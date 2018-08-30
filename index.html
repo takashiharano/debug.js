@@ -2208,6 +2208,18 @@ dbg.bat.setCond('<input type="text" id="setcond-text" class="demo-text" style="w
   </tr>
 
   <tr>
+    <td class="name">dbg.bat.getLabels</td>
+    <td></td>
+    <td>
+      Returns labels array list.
+<pre class="eg">
+dbg.bat.getLabels() <button class="demo-button2" onclick="log(dbg.bat.getLabels());">DEMO</button>
+dbg.bat.getLabels('<input type="text" id="getlbls-txt" class="demo-text" style="width:100px;" value='^test_'>') <button class="demo-button2" onclick="log(dbg.bat.getLabels(getVal('getlbls-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.isBat</td>
     <td>text</td>
     <td>
@@ -3042,6 +3054,9 @@ $ bat run -s 3
 
 $ bat pc
 -&gt; Displays current program counter
+
+$ bat labels [pattern<span class="annotation">(RegExp)</span>]
+-&gt; Displays label list
 </pre>
     </td>
   </tr>

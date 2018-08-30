@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808302155';
+  this.v = '201808302300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -317,7 +317,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|clear|exec b64-encoded-bat'},
+    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat'},
     {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -6858,10 +6858,11 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, DebugJS.encodeBase64, DebugJS.decodeBase64);
   },
 
-  cmdBat: function(arg, tbl) {
+  cmdBat: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
     var bat = DebugJS.bat;
+    var ret;
     switch (a[0]) {
       case 'run':
         if ((ctx.status & DebugJS.STATE_BAT_RUNNING) &&
@@ -6882,6 +6883,10 @@ DebugJS.prototype = {
           bat.run(s, e, ag);
         }
         break;
+      case 'labels':
+        ret = bat.getLabels(DebugJS.splitCmdLineInTwo(arg)[1]);
+        if (echo) DebugJS._log.p(ret);
+        return ret;
       case 'list':
         if (bat.cmds.length == 0) {
           DebugJS._log('No batch script');
@@ -6891,7 +6896,6 @@ DebugJS.prototype = {
         DebugJS._log.mlt(s);
         break;
       case 'status':
-        var v;
         var key = a[1];
         if (key == undefined) {
           var st = '\n';
@@ -6903,10 +6907,10 @@ DebugJS.prototype = {
           }
           DebugJS._log.p(bat.ctrl, 0, st, false);
         } else {
-          v = bat.ctrl[key];
-          DebugJS._log(v);
+          ret = bat.ctrl[key];
+          DebugJS._log(ret);
         }
-        return v;
+        return ret;
       case 'pc':
         DebugJS._log.res(bat.ctrl.pc);
         return bat.ctrl.pc;
@@ -12957,6 +12961,25 @@ DebugJS.bat._initCond = function() {
     DebugJS.bat._resume('cmd-key');
   }
   bat.ctrl.condKey = null;
+};
+DebugJS.bat.getLabels = function(p) {
+  var a = [];
+  var re = null;
+  if (p) {
+    try {
+      var cnd = eval('/' + p + '/');
+    } catch (e) {
+      DebugJS._log.e('Get labels error (' + e + ')');
+      return a;
+    }
+    re = new RegExp(cnd);
+  }
+  for (var k in DebugJS.bat.labels) {
+    if ((!re) || ((re) && (k.match(re)))) {
+      a.push(k);
+    }
+  }
+  return a;
 };
 DebugJS.isBat = function(s) {
   var BAT_HEAD = '#!BAT!';
