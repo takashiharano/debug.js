@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808310737';
+  this.v = '201808312200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6884,7 +6884,14 @@ DebugJS.prototype = {
         }
         break;
       case 'labels':
-        ret = bat.getLabels(DebugJS.splitCmdLineInTwo(arg)[1]);
+        var p = DebugJS.splitCmdLineInTwo(arg)[1];
+        try {
+          p = eval(p);
+        } catch (e) {
+          DebugJS._log.e('bat labels: ' + e);
+          return;
+        }
+        ret = bat.getLabels(p);
         if (echo) DebugJS._log.p(ret);
         return ret;
       case 'list':
