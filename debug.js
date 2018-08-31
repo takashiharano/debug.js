@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201808312200';
+  this.v = '201809010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5881,54 +5881,63 @@ DebugJS.prototype = {
   },
 
   getBinFilePreviewHtml: function(ctx, file, buf, mode, showAddr, showSpace, showAscii) {
-    return ctx.getBinDumpHtml(buf, mode, showAddr, showSpace, showAscii) + '\n';
+    return ctx.getBinDumpHtml(buf, mode, showAddr, showSpace, showAscii);
   },
 
   onFileLoadedB64: function(ctx, file, b64content) {
-    var preview = '';
+    DebugJS.file.onLoaded(file, b64content);
+    var limit = ctx.props.prevlimit;
+    if (file) {
+      if (file.size > limit) {
+        return '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
+      } else if (file.size == 0) {
+        return '';
+      }
+    }
     var dturl = b64content.split(',');
     var dtscheme = dturl[0];
     var b64data = (dturl[1] == undefined ? '' : dturl[1]);
+    var decoded = null;
+    ctx.fileLoadB64scheme.value = dtscheme + ',';
+    ctx.fileLoadB64txtarea.value = b64data;
     var cType = DebugJS.getContentType(dtscheme, file, b64content);
-    if ((!file) || (file.size > 0)) {
-      if (cType == 'image') {
-        var ctxSizePos = ctx.getSelfSizePos();
-        preview = '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
-      } else {
-        if (cType == 'text') {
-          var decoded = DebugJS.decodeBase64(b64data);
-          var cont = DebugJS.escTags(decoded);
-          cont = cont.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
-          cont = cont.replace(/([^>])\n/g, '$1' + DebugJS.CHR_LF_S + '\n');
-          cont = cont.replace(/\r/g, DebugJS.CHR_CR_S + '\n');
-          cont = cont.replace(/([^\n])$/, '$1\n');
-          preview = '<span style="color:#0f0">--------</span>\n' + cont + '<span style="color:#0f0">--------</span>\n';
-          if (ctx.fileLoaderSysCb) {
-            ctx.fileLoaderSysCb(ctx, true, file, decoded);
-          }
-        }
-      }
+    var html = '';
+    if (cType == 'image') {
+      html = ctx.getImgPreview(ctx, b64content);
+    } else if (cType == 'text') {
+      decoded = DebugJS.decodeBase64(b64data);
+      html = ctx.getTextPreview(decoded);
     }
-    var html = preview + '\n';
-    var limit = ctx.props.prevlimit;
-    if ((!file) || (file.size <= limit)) {
-      ctx.fileLoadB64scheme.value = dtscheme + ',';
-      ctx.fileLoadB64txtarea.value = b64data;
-    } else {
-      html += '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
+    if ((ctx.fileLoaderSysCb) && decoded) {
+      ctx.fileLoaderSysCb(ctx, true, file, decoded);
     }
-    DebugJS.file.onLoaded(file, b64content);
     return html;
+  },
+
+  getTextPreview: function(decoded) {
+    if (decoded.length == 0) return '';
+    var txt = DebugJS.escTags(decoded);
+    txt = txt.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
+    txt = txt.replace(/([^>])\n/g, '$1' + DebugJS.CHR_LF_S + '\n');
+    txt = txt.replace(/\r/g, DebugJS.CHR_CR_S + '\n');
+    var eof = '<span style="color:#08f">[EOF]</span>';
+    return (txt + eof + '\n');
+  },
+
+  getImgPreview: function(ctx, b64content) {
+    var ctxSizePos = ctx.getSelfSizePos();
+    return '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
   },
 
   getFileInfo: function(file) {
     var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
     var dt = DebugJS.getDateTime(lastMod);
-    var fileDate = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss;
-    var s = 'file    : ' + file.name + '\n' +
+    var fileDate = DebugJS.convDateTimeStr(dt);
+    var s = '<span style="color:#cff">' +
+    'file    : ' + file.name + '\n' +
     'type    : ' + file.type + '\n' +
     'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
-    'modified: ' + fileDate + '\n';
+    'modified: ' + fileDate + '</span>\n';
     return s;
   },
 
@@ -6057,7 +6066,7 @@ DebugJS.prototype = {
   },
 
   updateFilePreview: function(html) {
-    DebugJS.ctx.filePreview.innerHTML = html;
+    DebugJS.ctx.filePreview.innerHTML = html + '\n';
     DebugJS.ctx.filePreviewWrapper.scrollTop = 0;
   },
 
