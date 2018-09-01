@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809010000';
+  this.v = '201809011350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -802,7 +802,7 @@ DebugJS.prototype = {
     ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_C_H * ctx.opt.zoom;
     if ((restoreOpt != null) && (restoreOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom(ctx);
-      ctx.reopenFeatures(ctx, restoreOpt.status);
+      ctx.reopenFeatures(ctx);
       ctx.restoreDbgWinSize(ctx, restoreOpt.sizeStatus);
     }
   },
@@ -1699,7 +1699,7 @@ DebugJS.prototype = {
     }
   },
 
-  reopenFeatures: function(ctx, status) {
+  reopenFeatures: function(ctx) {
     var f;
     while (true) {
       f = ctx.featStackBak.shift();
@@ -8628,18 +8628,20 @@ DebugJS.prototype = {
         DebugJS.ctx._cmdTestSet(arg);
         break;
       case 'count':
-        DebugJS._log(test.count(test.data.cnt));
+        var c = test.data.cnt;
+        if (args[1] != '-d') c = test.getSumCount();
+        DebugJS._log(test.getCountStr(c));
         break;
       case 'last':
         var st = test.getLastResult();
-        DebugJS._log(test.getStyledResultStr(st, ''));
+        DebugJS._log(test.getStyledStStr(st));
         return st;
       case 'result':
         DebugJS._log(test.result());
         break;
       case 'status':
         var st = test.getStatus();
-        DebugJS._log(test.getStyledResultStr(st, ''));
+        DebugJS._log(test.getStyledStStr(st));
         return st;
       case 'verify':
         return DebugJS.ctx._CmdTestVerify(arg);
@@ -13420,22 +13422,23 @@ DebugJS.point.setProp = function(prop, val, echo) {
 };
 DebugJS.point.verify = function(prop, method, exp, label) {
   var test = DebugJS.test;
+  var st = test.STATUS_ERR;
   var info;
   var errPfix = 'Verify error: ';
   if (prop == undefined) {
     info = errPfix + 'Property name is undefined';
     DebugJS._log.e(info);
-    test.addResult(status, label, exp, undefined, method, info);
-    test.onVrfyAftr(status);
-    return status;
+    test.addResult(st, label, exp, undefined, method, info);
+    test.onVrfyAftr(st);
+    return st;
   }
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) {
     info = errPfix + 'No element (x=' + DebugJS.point.x + ', y=' + DebugJS.point.y + ')';
     DebugJS._log.e(info);
-    test.addResult(status, label, exp, undefined, method, info);
-    test.onVrfyAftr(status);
-    return status;
+    test.addResult(st, label, exp, undefined, method, info);
+    test.onVrfyAftr(st);
+    return st;
   }
   var p = prop.split('.');
   var got = el;
@@ -13731,11 +13734,11 @@ DebugJS.point.hint = function(msg) {
     msg = e + '';
   }
   msg = msg.replace(reg, '\n');
-  msg = msg.replace(/!RESUME!/, RESUME);
-  msg = msg.replace(/!STOP!/, STOP);
-  msg = msg.replace(/!TEST_COUNT!/, DebugJS.test.count(DebugJS.test.data.cnt));
-  msg = msg.replace(/!TEST_RESULT!/, DebugJS.test.result());
-  msg = msg.replace(/!CLOSE!/, CLOSE);
+  msg = msg.replace(/!RESUME!/g, RESUME);
+  msg = msg.replace(/!STOP!/g, STOP);
+  if (msg.match(/!TEST_COUNT!/)) msg = msg.replace(/!TEST_COUNT!/g, DebugJS.test.getCountStr(DebugJS.test.getSumCount()));
+  if (msg.match(/!TEST_RESULT!/)) msg = msg.replace(/!TEST_RESULT!/g, DebugJS.test.result());
+  msg = msg.replace(/!CLOSE!/g, CLOSE);
   hint.pre.innerHTML = msg;
   hint.st.hasMsg = true;
   hint.show();
@@ -14246,6 +14249,10 @@ DebugJS.test.STATUS_OK = 'OK';
 DebugJS.test.STATUS_NG = 'NG';
 DebugJS.test.STATUS_ERR = 'ERR';
 DebugJS.test.STATUS_NT = 'NT';
+DebugJS.test.COLOR_OK = '#0f0';
+DebugJS.test.COLOR_NG = '#f66';
+DebugJS.test.COLOR_ERR = '#fa0';
+DebugJS.test.STATUS_NT_COLOR = '#fff';
 DebugJS.test.data = {};
 DebugJS.test.initData = function() {
   var data = DebugJS.test.data;
@@ -14406,23 +14413,28 @@ DebugJS.test.chkResult = function(results) {
   }
   return r;
 };
-DebugJS.test.getStyledResultStr = function(res, info) {
+DebugJS.test.getStyledResultStr = function(st, info) {
+  var s = DebugJS.test.getStyledStStr(st);
+  if (info) s += ' ' + info;
+  return s;
+};
+DebugJS.test.getStyledStStr = function(st) {
   var test = DebugJS.test;
   var color;
-  switch (res) {
+  switch (st) {
     case test.STATUS_OK:
-      color = '#0f0';
+      color = test.COLOR_OK;
       break;
     case test.STATUS_NG:
-      color = '#f66';
+      color = test.COLOR_NG;
       break;
     case test.STATUS_ERR:
-      color = '#ff0';
+      color = test.COLOR_ERR;
       break;
     default:
-      color = DebugJS.ctx.opt.fontColor;
+      color = test.COLOR_NT;
   }
-  return '[<span style="color:' + color + '">' + res + '</span>] ' + info;
+  return '[<span style="color:' + color + '">' + st + '</span>]';
 };
 DebugJS.test.getStyledInfoStr = function(result) {
   if (result.info) return result.info;
@@ -14447,25 +14459,16 @@ DebugJS.test.getStyledInfoStr = function(result) {
   var s = 'Exp=' + echoExp + ' ' + result.method + ' Got=' + echoGot;
   return s;
 };
-DebugJS.test.count = function(cnt) {
-  var total = cnt.ok + cnt.ng + cnt.err + cnt.nt;
-  return '<span style="color:#0f0">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:#f66">NG</span>:' + cnt.ng + ' <span style="color:#ff0">ERR</span>:' + cnt.err + ' <span style="color:' + DebugJS.ctx.opt.fontColor + '">NT</span>:' + cnt.nt;
-};
-DebugJS.test.result = function() {
+DebugJS.test.getCountStr = function(cnt) {
   var test = DebugJS.test;
-  var data = test.data;
-  var M = 16;
-  var i;
-  var n = test.countLongestLabel();
-  if (n > M) n = M;
+  var total = cnt.ok + cnt.ng + cnt.err + cnt.nt;
+  return '<span style="color:' + test.COLOR_OK + '">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:' + test.COLOR_NG + '">NG</span>:' + cnt.ng + ' <span style="color:' + test.COLOR_ERR + '">ERR</span>:' + cnt.err + ' <span style="color:' + test.COLOR_NT + '">NT</span>:' + cnt.nt;
+};
+DebugJS.test.getSumCount = function() {
+  var test = DebugJS.test;
   var cnt = {ok: 0, ng: 0, err: 0, nt: 0};
-  var details = '';
-  for (var id in data.results) {
-    var testId = id;
-    if (id == '') {
-      testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
-    }
-    var st = test.chkResult(data.results[id].results);
+  for (var id in test.data.results) {
+    var st = test.chkResult(test.data.results[id].results);
     switch (st) {
       case test.STATUS_OK:
         cnt.ok++;
@@ -14479,8 +14482,25 @@ DebugJS.test.result = function() {
       case test.STATUS_NT:
         cnt.nt++;
     }
-    var rs = test.getStyledResultStr(st, '');
-    details += '\n' + rs + testId + '\n';
+  }
+  return cnt;
+};
+DebugJS.test.result = function() {
+  var test = DebugJS.test;
+  var data = test.data;
+  var M = 16;
+  var i;
+  var n = test.countLongestLabel();
+  if (n > M) n = M;
+  var details = '';
+  for (var id in data.results) {
+    var testId = id;
+    if (id == '') {
+      testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
+    }
+    var st = test.chkResult(data.results[id].results);
+    var rs = test.getStyledStStr(st);
+    details += rs + ' ' + testId + '\n';
     for (i = 0; i < data.results[id].comment.length; i++) {
       var comment = data.results[id].comment[i];
       details += ' # ' + comment + '\n';
@@ -14490,18 +14510,22 @@ DebugJS.test.result = function() {
       var info = DebugJS.test.getStyledInfoStr(result);
       details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getStyledResultStr(result.status, info) + '\n';
     }
+    details += '\n';
   }
   var nm = data.name;
   var s = 'Test Result:\n';
   if (nm != '') {
-    s += '[' + nm + ']\n';
+    s += '[TEST NAME]\n' + nm + '\n\n';
   }
+  if (data.desc.length > 0) s += '[DESCRIPTION]\n';
   for (i = 0; i < data.desc.length; i++) {
     s += data.desc[i] + '\n';
   }
+  if (data.desc.length > 0) s += '\n';
   var tstSt = test.getStatus();
-  s += '\nSummary:\n' + test.count(cnt) + '\n\nDetails:\n' + test.count(data.cnt) + '\n';
-  s += details + '\n' + DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledResultStr(tstSt, '');
+  var cnt = DebugJS.test.getSumCount();
+  s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n\n';
+  s += '----\n' + details + DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
   return s;
 };
 DebugJS.test.getResult = function() {
@@ -14575,7 +14599,6 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
       }
     } else {
       if (method == undefined) {
-        status = '';
         DebugJS.printUsage('test|point verify [-label:text] got ==|!=|<|>|<=|>=|regexp exp');
       } else {
         info = 'Unknown verify method: ' + method;
@@ -14586,7 +14609,6 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
       return status;
     }
   } catch (e) {
-    status = test.STATUS_ERR;
     info = e.toString();
   }
   test.addResult(status, label, exp, got, method, info);
@@ -14595,9 +14617,9 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
   test.onVrfyAftr(status);
   return status;
 };
-DebugJS.test.onVrfyAftr = function(status) {
+DebugJS.test.onVrfyAftr = function(st) {
   if ((DebugJS.bat.isRunning()) && (DebugJS.bat.hasBatStopCond('test'))) {
-    if (status != DebugJS.test.STATUS_OK) {
+    if (st != DebugJS.test.STATUS_OK) {
       DebugJS.bat.ctrl.stopReq = true;
     }
   }
