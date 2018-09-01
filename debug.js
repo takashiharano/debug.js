@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809011350';
+  this.v = '201809011414';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14461,7 +14461,7 @@ DebugJS.test.getStyledInfoStr = function(result) {
 };
 DebugJS.test.getCountStr = function(cnt) {
   var test = DebugJS.test;
-  var total = cnt.ok + cnt.ng + cnt.err + cnt.nt;
+  var total = test.countTotal(cnt);
   return '<span style="color:' + test.COLOR_OK + '">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:' + test.COLOR_NG + '">NG</span>:' + cnt.ng + ' <span style="color:' + test.COLOR_ERR + '">ERR</span>:' + cnt.err + ' <span style="color:' + test.COLOR_NT + '">NT</span>:' + cnt.nt;
 };
 DebugJS.test.getSumCount = function() {
@@ -14485,48 +14485,57 @@ DebugJS.test.getSumCount = function() {
   }
   return cnt;
 };
+DebugJS.test.countTotal = function(cnt) {
+  return (cnt.ok + cnt.ng + cnt.err + cnt.nt);
+};
 DebugJS.test.result = function() {
   var test = DebugJS.test;
   var data = test.data;
-  var M = 16;
-  var i;
-  var n = test.countLongestLabel();
-  if (n > M) n = M;
-  var details = '';
-  for (var id in data.results) {
-    var testId = id;
-    if (id == '') {
-      testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
-    }
-    var st = test.chkResult(data.results[id].results);
-    var rs = test.getStyledStStr(st);
-    details += rs + ' ' + testId + '\n';
-    for (i = 0; i < data.results[id].comment.length; i++) {
-      var comment = data.results[id].comment[i];
-      details += ' # ' + comment + '\n';
-    }
-    for (i = 0; i < data.results[id].results.length; i++) {
-      var result = data.results[id].results[i];
-      var info = DebugJS.test.getStyledInfoStr(result);
-      details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getStyledResultStr(result.status, info) + '\n';
-    }
-    details += '\n';
-  }
   var nm = data.name;
   var s = 'Test Result:\n';
   if (nm != '') {
     s += '[TEST NAME]\n' + nm + '\n\n';
   }
   if (data.desc.length > 0) s += '[DESCRIPTION]\n';
+  var i;
   for (i = 0; i < data.desc.length; i++) {
     s += data.desc[i] + '\n';
   }
   if (data.desc.length > 0) s += '\n';
   var tstSt = test.getStatus();
   var cnt = DebugJS.test.getSumCount();
+  var details = DebugJS.test.getDetailStr(data.results);
   s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n\n';
-  s += '----\n' + details + DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
+  if (test.countTotal(cnt) > 0) s += '----\n';
+  s += details + DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
   return s;
+};
+DebugJS.test.getDetailStr = function(results) {
+  var test = DebugJS.test;
+  var M = 16;
+  var n = test.countLongestLabel();
+  if (n > M) n = M;
+  var details = '';
+  for (var id in results) {
+    var testId = id;
+    if (id == '') {
+      testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
+    }
+    var st = test.chkResult(results[id].results);
+    var rs = test.getStyledStStr(st);
+    details += rs + ' ' + testId + '\n';
+    for (i = 0; i < results[id].comment.length; i++) {
+      var comment = results[id].comment[i];
+      details += ' # ' + comment + '\n';
+    }
+    for (i = 0; i < results[id].results.length; i++) {
+      var result = results[id].results[i];
+      var info = DebugJS.test.getStyledInfoStr(result);
+      details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getStyledResultStr(result.status, info) + '\n';
+    }
+    details += '\n';
+  }
+  return details;
 };
 DebugJS.test.getResult = function() {
   var data = DebugJS.test.data;
