@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809030707';
+  this.v = '201809030730';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5777,7 +5777,6 @@ DebugJS.prototype = {
   openViewerBin: function() {
     var ctx = DebugJS.ctx;
     if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileLoadB64dturl)) {
-      var b64 = ctx.fileLoadB64txtarea.value;
       ctx.filePreviewWrapper.removeChild(ctx.fileLoadB64dturl);
     }
     var dtSrc = ctx.dataSrcType();
@@ -5792,11 +5791,61 @@ DebugJS.prototype = {
       case 'b64':
       case 'bin':
       case 'hex':
-        ctx.decodeB64dataAsB(b64);
+        ctx.decodeB64dataAsB(ctx.fileViewerB64data);
         break;
       default:
         ctx.updateFilePreview('');
     }
+  },
+
+  decodeFileViewData: function() {
+    var ctx = DebugJS.ctx;
+    var mode = ctx.fileViewerDecMode;
+    var schm = ctx.fileLoadB64scheme.value;
+    var data = ctx.fileLoadB64txtarea.value;
+    ctx.clearFile();
+    data = DebugJS.delAllSP(data);
+    data = DebugJS.delAllNL(data);
+    ctx.fileViewerDataSrc = {schm: schm, data: data};
+    ctx.setDataUrl(ctx, schm, data);
+    switch (mode) {
+      case 'bin':
+        ctx.fileViewerDataSrcType = 'bin';
+        ctx.decodeBin(ctx, data);
+        break;
+      case 'hex':
+        ctx.fileViewerDataSrcType = 'hex';
+        ctx.decodeHex(ctx, data);
+        break;
+      default:
+        var d = DebugJS.buildDataUrl(schm, data);
+        ctx.fileViewerDataSrcType = 'b64';
+        ctx.decodeB64data(ctx, d);
+    }
+  },
+
+  decodeB64data: function(ctx, d) {
+    ctx.fileViewerDataUrl = d;
+    ctx.showB64Preview(ctx, null, d);
+  },
+
+  decodeBin: function(ctx, bin) {
+    var arr = DebugJS.str2binArr(bin, 8, '0b');
+    ctx.fileViewerByteArray = arr;
+    ctx.viewBinAsB64(ctx);
+  },
+
+  decodeHex: function(ctx, hex) {
+    var arr = DebugJS.str2binArr(hex, 2, '0x');
+    ctx.fileViewerByteArray = arr;
+    ctx.viewBinAsB64(ctx);
+  },
+
+  decodeB64dataAsB: function(b64) {
+    var ctx = DebugJS.ctx;
+    var arr = DebugJS.Base64.decode(b64);
+    ctx.fileViewerByteArray = arr;
+    ctx.showBinDump(ctx, arr);
   },
 
   viewBinAsB64: function(ctx) {
@@ -6226,56 +6275,6 @@ DebugJS.prototype = {
 
   setDtSchmImg: function() {
     DebugJS.ctx.setDtSchm('image/jpeg');
-  },
-
-  decodeFileViewData: function() {
-    var ctx = DebugJS.ctx;
-    var mode = ctx.fileViewerDecMode;
-    var schm = ctx.fileLoadB64scheme.value;
-    var data = ctx.fileLoadB64txtarea.value;
-    ctx.clearFile();
-    data = DebugJS.delAllSP(data);
-    data = DebugJS.delAllNL(data);
-    ctx.fileViewerDataSrc = {schm: schm, data: data};
-    ctx.setDataUrl(ctx, schm, data);
-    switch (mode) {
-      case 'bin':
-        ctx.fileViewerDataSrcType = 'bin';
-        ctx.decodeBin(ctx, data);
-        break;
-      case 'hex':
-        ctx.fileViewerDataSrcType = 'hex';
-        ctx.decodeHex(ctx, data);
-        break;
-      default:
-        var d = DebugJS.buildDataUrl(schm, data);
-        ctx.fileViewerDataSrcType = 'b64';
-        ctx.decodeB64data(ctx, d);
-    }
-  },
-
-  decodeB64data: function(ctx, d) {
-    ctx.fileViewerDataUrl = d;
-    ctx.showB64Preview(ctx, null, d);
-  },
-
-  decodeBin: function(ctx, bin) {
-    var arr = DebugJS.str2binArr(bin, 8, '0b');
-    ctx.fileViewerByteArray = arr;
-    ctx.viewBinAsB64(ctx);
-  },
-
-  decodeHex: function(ctx, hex) {
-    var arr = DebugJS.str2binArr(hex, 2, '0x');
-    ctx.fileViewerByteArray = arr;
-    ctx.viewBinAsB64(ctx);
-  },
-
-  decodeB64dataAsB: function(b64) {
-    var ctx = DebugJS.ctx;
-    var arr = DebugJS.Base64.decode(b64);
-    ctx.fileViewerByteArray = arr;
-    ctx.showBinDump(ctx, arr);
   },
 
   openHtmlEditor: function() {
