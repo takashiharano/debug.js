@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809022040';
+  this.v = '201809022300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -177,13 +177,13 @@ var DebugJS = DebugJS || function() {
   this.txtChkLabelBgB = null;
   this.txtChkTargetEl = null;
   this.txtChkItalic = false;
-  this.fileLoaderBtn = null;
-  this.fileLoaderPanel = null;
+  this.fileViewerBtn = null;
+  this.fileViewerPanel = null;
   this.fileInput = null;
-  this.fileLoaderLabelB64 = null;
-  this.fileLoaderRadioB64 = null;
-  this.fileLoaderLabelBin = null;
-  this.fileLoaderRadioBin = null;
+  this.fileViewerLabelB64 = null;
+  this.fileViewerRadioB64 = null;
+  this.fileViewerLabelBin = null;
+  this.fileViewerRadioBin = null;
   this.fileReloadBtn = null;
   this.fileClrBtn = null;
   this.filePreviewWrapper = null;
@@ -191,17 +191,18 @@ var DebugJS = DebugJS || function() {
   this.fileLoadB64dturl = null;
   this.fileLoadB64scheme = null;
   this.fileLoadB64txtarea = null;
-  this.fileLoaderFooter = null;
+  this.fileViewerFooter = null;
   this.fileLoadProgressBar = null;
   this.fileLoadProgress = null;
   this.fileLoadCancelBtn = null;
   this.fileLoadFormat = DebugJS.FILE_LOAD_FMT_B64;
-  this.fileLoaderFile = null;
-  this.fileLoaderDataUrl = null;
-  this.fileLoaderB64data = null;
-  this.fileLoaderByteArray = null;
-  this.fileLoaderBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
-  this.fileLoaderSysCb = null;
+  this.fileViewerDataSrcType = null;
+  this.fileViewerFile = null;
+  this.fileViewerDataSrc = null;
+  this.fileViewerB64data = null;
+  this.fileViewerByteArray = null;
+  this.fileViewerBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
+  this.fileViewerSysCb = null;
   this.fileReader = null;
   this.jsBtn = null;
   this.jsPanel = null;
@@ -1683,14 +1684,14 @@ DebugJS.prototype = {
       ctx.toolsHeaderPanel.style.height = fontSize;
       ctx.toolsBodyPanel.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
     }
-    if (ctx.fileLoaderPanel != null) {
+    if (ctx.fileViewerPanel != null) {
       ctx.setStyle(ctx.fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
       ctx.setStyle(ctx.fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
       ctx.setStyle(ctx.fileInput, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
-      ctx.fileLoaderFooter.style.height = (ctx.computedFontSize + 3) + 'px';
+      ctx.fileViewerFooter.style.height = (ctx.computedFontSize + 3) + 'px';
       ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
       ctx.setStyle(ctx.fileLoadProgress, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
     }
@@ -4477,7 +4478,7 @@ DebugJS.prototype = {
     ctx.timerBtn = ctx.createToolsHeaderBtn('TIMER', 'TOOLS_FNC_TIMER', 'timerBtn');
     ctx.txtChkBtn = ctx.createToolsHeaderBtn('TEXT', 'TOOLS_FNC_TEXT', 'txtChkBtn');
     ctx.htmlPrevBtn = ctx.createToolsHeaderBtn('HTML', 'TOOLS_FNC_HTML', 'htmlPrevBtn');
-    ctx.fileLoaderBtn = ctx.createToolsHeaderBtn('FILE', 'TOOLS_FNC_FILE', 'fileLoaderBtn');
+    ctx.fileViewerBtn = ctx.createToolsHeaderBtn('FILE', 'TOOLS_FNC_FILE', 'fileViewerBtn');
     ctx.batBtn = ctx.createToolsHeaderBtn('BAT', 'TOOLS_FNC_BAT', 'batBtn');
   },
 
@@ -4506,7 +4507,7 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.timerBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
     ctx.setStyle(ctx.txtChkBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
     ctx.setStyle(ctx.htmlPrevBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
-    ctx.setStyle(ctx.fileLoaderBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
+    ctx.setStyle(ctx.fileViewerBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
     ctx.setStyle(ctx.batBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
   },
 
@@ -5466,8 +5467,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
-    if (ctx.fileLoaderPanel == null) {
-      ctx.fileLoaderPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
+    if (ctx.fileViewerPanel == null) {
+      ctx.fileViewerPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
@@ -5480,42 +5481,42 @@ DebugJS.prototype = {
       ctx.setStyle(fileInput, 'outline', 'none');
       ctx.setStyle(fileInput, 'font-size', fontSize);
       fileInput.addEventListener('change', ctx.onFileSelected, false);
-      ctx.fileLoaderPanel.appendChild(fileInput);
+      ctx.fileViewerPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
 
-      ctx.fileLoaderRadioB64 = document.createElement('input');
-      ctx.fileLoaderRadioB64.type = 'radio';
-      ctx.fileLoaderRadioB64.id = ctx.id + '-load-type-b64';
-      ctx.fileLoaderRadioB64.name = ctx.id + '-load-type';
-      ctx.fileLoaderRadioB64.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
-      ctx.fileLoaderRadioB64.value = 'base64';
-      ctx.fileLoaderRadioB64.checked = true;
-      ctx.fileLoaderRadioB64.onchange = ctx.openViewerB64;
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioB64);
-      ctx.fileLoaderLabelB64 = document.createElement('label');
-      ctx.fileLoaderLabelB64.htmlFor = ctx.id + '-load-type-b64';
-      ctx.fileLoaderLabelB64.innerText = 'Base64';
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelB64);
+      ctx.fileViewerRadioB64 = document.createElement('input');
+      ctx.fileViewerRadioB64.type = 'radio';
+      ctx.fileViewerRadioB64.id = ctx.id + '-load-type-b64';
+      ctx.fileViewerRadioB64.name = ctx.id + '-load-type';
+      ctx.fileViewerRadioB64.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      ctx.fileViewerRadioB64.value = 'base64';
+      ctx.fileViewerRadioB64.checked = true;
+      ctx.fileViewerRadioB64.onchange = ctx.openViewerB64;
+      ctx.fileViewerPanel.appendChild(ctx.fileViewerRadioB64);
+      ctx.fileViewerLabelB64 = document.createElement('label');
+      ctx.fileViewerLabelB64.htmlFor = ctx.id + '-load-type-b64';
+      ctx.fileViewerLabelB64.innerText = 'Base64';
+      ctx.fileViewerPanel.appendChild(ctx.fileViewerLabelB64);
 
-      ctx.fileLoaderRadioBin = document.createElement('input');
-      ctx.fileLoaderRadioBin.type = 'radio';
-      ctx.fileLoaderRadioBin.id = ctx.id + '-load-type-bin';
-      ctx.fileLoaderRadioBin.name = ctx.id + '-load-type';
-      ctx.fileLoaderRadioBin.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
-      ctx.fileLoaderRadioBin.value = 'binary';
-      ctx.fileLoaderRadioBin.onchange = ctx.openViewerBin;
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderRadioBin);
-      ctx.fileLoaderLabelBin = document.createElement('label');
-      ctx.fileLoaderLabelBin.htmlFor = ctx.id + '-load-type-bin';
-      ctx.fileLoaderLabelBin.innerText = 'Binary';
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderLabelBin);
+      ctx.fileViewerRadioBin = document.createElement('input');
+      ctx.fileViewerRadioBin.type = 'radio';
+      ctx.fileViewerRadioBin.id = ctx.id + '-load-type-bin';
+      ctx.fileViewerRadioBin.name = ctx.id + '-load-type';
+      ctx.fileViewerRadioBin.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      ctx.fileViewerRadioBin.value = 'binary';
+      ctx.fileViewerRadioBin.onchange = ctx.openViewerBin;
+      ctx.fileViewerPanel.appendChild(ctx.fileViewerRadioBin);
+      ctx.fileViewerLabelBin = document.createElement('label');
+      ctx.fileViewerLabelBin.htmlFor = ctx.id + '-load-type-bin';
+      ctx.fileViewerLabelBin.innerText = 'Binary';
+      ctx.fileViewerPanel.appendChild(ctx.fileViewerLabelBin);
 
-      var reloadBtn = ctx.createBtn(ctx, 'Reload', ctx.fileLoaderPanel);
+      var reloadBtn = ctx.createBtn(ctx, 'Reload', ctx.fileViewerPanel);
       reloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       reloadBtn.onclick = ctx.reloadFile;
       ctx.fileReloadBtn = reloadBtn;
 
-      var clearBtn = ctx.createBtn(ctx, 'Clear', ctx.fileLoaderPanel);
+      var clearBtn = ctx.createBtn(ctx, 'Clear', ctx.fileViewerPanel);
       clearBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       clearBtn.onclick = ctx.clearFile;
       ctx.fileClrBtn = clearBtn;
@@ -5529,7 +5530,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
       ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.handleFileDropOnFileViewer);
-      ctx.fileLoaderPanel.appendChild(ctx.filePreviewWrapper);
+      ctx.fileViewerPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
       ctx.setStyle(ctx.filePreview, 'min-height', 'calc(50% + 10px)');
@@ -5538,12 +5539,12 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
 
-      ctx.fileLoaderFooter = document.createElement('div');
-      ctx.fileLoaderFooter.style.width = 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)';
-      ctx.fileLoaderFooter.style.height = (ctx.computedFontSize + 3) + 'px';
-      ctx.fileLoaderFooter.style.opacity = 0;
-      ctx.fileLoaderFooter.style.transition = 'opacity 0.5s linear';
-      ctx.fileLoaderPanel.appendChild(ctx.fileLoaderFooter);
+      ctx.fileViewerFooter = document.createElement('div');
+      ctx.fileViewerFooter.style.width = 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)';
+      ctx.fileViewerFooter.style.height = (ctx.computedFontSize + 3) + 'px';
+      ctx.fileViewerFooter.style.opacity = 0;
+      ctx.fileViewerFooter.style.transition = 'opacity 0.5s linear';
+      ctx.fileViewerPanel.appendChild(ctx.fileViewerFooter);
 
       ctx.fileLoadProgressBar = document.createElement('div');
       ctx.fileLoadProgressBar.style.display = 'inline-block';
@@ -5551,7 +5552,7 @@ DebugJS.prototype = {
       ctx.fileLoadProgressBar.style.height = 'auto';
       ctx.fileLoadProgressBar.style.padding = 0;
       ctx.fileLoadProgressBar.style.border = '1px solid #ccc';
-      ctx.fileLoaderFooter.appendChild(ctx.fileLoadProgressBar);
+      ctx.fileViewerFooter.appendChild(ctx.fileLoadProgressBar);
 
       ctx.fileLoadProgress = document.createElement('div');
       ctx.fileLoadProgress.style.width = 'calc(100% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
@@ -5564,7 +5565,7 @@ DebugJS.prototype = {
       ctx.fileLoadProgress.innerText = '0%';
       ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
 
-      ctx.fileLoadCancelBtn = ctx.createBtn(ctx, '[CANCEL]', ctx.fileLoaderFooter);
+      ctx.fileLoadCancelBtn = ctx.createBtn(ctx, '[CANCEL]', ctx.fileViewerFooter);
       ctx.fileLoadCancelBtn.style.position = 'relative';
       ctx.fileLoadCancelBtn.style.top = '2px';
       ctx.fileLoadCancelBtn.style.float = 'right';
@@ -5580,7 +5581,7 @@ DebugJS.prototype = {
       var decodeBtn = ctx.createBtn(ctx, 'Decode', ctx.fileLoadB64dturl);
       decodeBtn.style.float = 'right';
       decodeBtn.style.marginRight = '4px';
-      decodeBtn.onclick = ctx.decodeB64data;
+      decodeBtn.onclick = ctx.decodeFileViewData;
 
       var imgBtn = ctx.createBtn(ctx, '<image>', ctx.fileLoadB64dturl);
       imgBtn.style.float = 'right';
@@ -5599,19 +5600,19 @@ DebugJS.prototype = {
 
       ctx.clearFile();
     } else {
-      ctx.toolsBodyPanel.appendChild(ctx.fileLoaderPanel);
+      ctx.toolsBodyPanel.appendChild(ctx.fileViewerPanel);
     }
 
     if (format != undefined) {
       if (format == DebugJS.FILE_LOAD_FMT_B64) {
-        ctx.fileLoaderRadioBin.checked = false;
-        ctx.fileLoaderRadioB64.checked = true;
+        ctx.fileViewerRadioBin.checked = false;
+        ctx.fileViewerRadioB64.checked = true;
       } else {
-        ctx.fileLoaderRadioBin.checked = true;
-        ctx.fileLoaderRadioB64.checked = false;
+        ctx.fileViewerRadioBin.checked = true;
+        ctx.fileViewerRadioB64.checked = false;
       }
       if (ctx.fileLoadFormat != format) {
-        ctx.loadFile(ctx.fileLoaderFile, format);
+        ctx.loadFile(ctx.fileViewerFile, format);
       }
     }
   },
@@ -5619,8 +5620,8 @@ DebugJS.prototype = {
   closeFileLoader: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) &&
-        (ctx.fileLoaderPanel != null)) {
-      ctx.removeToolFuncPanel(ctx, ctx.fileLoaderPanel);
+        (ctx.fileViewerPanel != null)) {
+      ctx.removeToolFuncPanel(ctx, ctx.fileViewerPanel);
     }
   },
 
@@ -5628,14 +5629,14 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.clearFile();
     if (e.target.files) {
-      var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+      var format = (ctx.fileViewerRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
       ctx.loadFile(e.target.files[0], format);
     }
   },
 
   handleFileDropOnFileViewer: function(e) {
     var ctx = DebugJS.ctx;
-    var format = (ctx.fileLoaderRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+    var format = (ctx.fileViewerRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
     ctx.handleFileDrop(ctx, e, format, null);
   },
 
@@ -5646,7 +5647,7 @@ DebugJS.prototype = {
     try {
       if (e.dataTransfer.files) {
         if (e.dataTransfer.files.length > 0) {
-          ctx.fileLoaderSysCb = cb;
+          ctx.fileViewerSysCb = cb;
           ctx.loadFile(e.dataTransfer.files[0], format);
         } else {
           DebugJS._log.w('handleFileDrop() e.dataTransfer.files.length == 0');
@@ -5715,7 +5716,8 @@ DebugJS.prototype = {
 
   loadFile: function(file, format) {
     var ctx = DebugJS.ctx;
-    ctx.fileLoaderFile = file;
+    ctx.fileViewerDataSrcType = 'file';
+    ctx.fileViewerFile = file;
     if (!file) return;
     if ((file.size == 0) && (file.type == '')) {
       var html = ctx.getFileInfo(file);
@@ -5745,13 +5747,17 @@ DebugJS.prototype = {
     ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
     var dtSrc = ctx.dataSrcType();
     if (dtSrc == 'file') {
-      if (ctx.fileLoaderByteArray) {
+      if (ctx.fileViewerByteArray) {
         ctx.viewBinAsB64(ctx);
       } else {
-        DebugJS.ctx.loadFile(ctx.fileLoaderFile, DebugJS.FILE_LOAD_FMT_B64);
+        DebugJS.ctx.loadFile(ctx.fileViewerFile, DebugJS.FILE_LOAD_FMT_B64);
       }
     } else if (dtSrc == 'b64') {
-      ctx.showB64Preview(ctx, null, ctx.fileLoaderDataUrl);
+      ctx.showB64Preview(ctx, null, ctx.fileViewerDataUrl);
+    } else if (dtSrc == 'bin') {
+      if (ctx.fileViewerByteArray) {
+        ctx.viewBinAsB64(ctx);
+      }
     }
   },
 
@@ -5763,12 +5769,14 @@ DebugJS.prototype = {
     }
     var dtSrc = ctx.dataSrcType();
     if (dtSrc == 'file') {
-      if (ctx.fileLoaderB64data) {
-        ctx.decodeB64dataAsB(ctx.fileLoaderB64data);
+      if (ctx.fileViewerB64data) {
+        ctx.decodeB64dataAsB(ctx.fileViewerB64data);
       } else {
-        DebugJS.ctx.loadFile(ctx.fileLoaderFile, DebugJS.FILE_LOAD_FMT_BIN);
+        DebugJS.ctx.loadFile(ctx.fileViewerFile, DebugJS.FILE_LOAD_FMT_BIN);
       }
     } else if (dtSrc == 'b64') {
+      ctx.decodeB64dataAsB(b64);
+    } else if (dtSrc == 'bin') {
       ctx.decodeB64dataAsB(b64);
     } else {
       ctx.updateFilePreview('');
@@ -5776,16 +5784,21 @@ DebugJS.prototype = {
   },
 
   viewBinAsB64: function(ctx) {
-    var file = ctx.fileLoaderFile;
-    var mime = file.type;
-    var dtscheme = 'data:' + mime + ';base64';
+    var file = ctx.fileViewerFile;
+    var dtscheme;
+    if (file) {
+      dtscheme = 'data:' + file.type + ';base64';
+    } else {
+      dtscheme = ctx.fileViewerDataSrc.schm;
+    }
     var limit = ctx.props.prevlimit;
-    if (file.size > limit) {
+    if (file && (file.size > limit)) {
       ctx.showFileSizeExceeds(ctx, file, limit);
       return;
     } else {
-      var data = DebugJS.Base64.encode(ctx.fileLoaderByteArray);
+      var data = DebugJS.Base64.encode(ctx.fileViewerByteArray);
       var dturl = dtscheme + ',' + data;
+      ctx.setDataUrl(ctx, dtscheme, data);
       ctx.showB64Preview(ctx, file, dturl);
     }
   },
@@ -5797,14 +5810,14 @@ DebugJS.prototype = {
   },
 
   onAbortLoadFile: function(e) {
-    DebugJS.ctx.fileLoaderSysCb = null;
+    DebugJS.ctx.fileViewerSysCb = null;
     DebugJS.file.finalize();
     DebugJS.ctx.updateFilePreview('File read cancelled.');
     setTimeout(DebugJS.ctx.fileLoadFinalize, 1000);
   },
 
   onFileLoadError: function(e) {
-    DebugJS.ctx.fileLoaderSysCb = null;
+    DebugJS.ctx.fileViewerSysCb = null;
     DebugJS.file.finalize();
     var err;
     switch (e.target.error.code) {
@@ -5839,7 +5852,7 @@ DebugJS.prototype = {
   },
 
   onFileLoadStart: function(e) {
-    DebugJS.addClass(DebugJS.ctx.fileLoaderFooter, DebugJS.ctx.id + '-loading');
+    DebugJS.addClass(DebugJS.ctx.fileViewerFooter, DebugJS.ctx.id + '-loading');
     DebugJS.ctx.updateFilePreview('LOADING...');
   },
 
@@ -5860,24 +5873,24 @@ DebugJS.prototype = {
     setTimeout(ctx.fileLoadFinalize, 1000);
     var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64);
     DebugJS.callEvtListener('fileloaded', file, content, isB64);
-    ctx.fileLoaderSysCb = null;
+    ctx.fileViewerSysCb = null;
     DebugJS.file.finalize();
   },
 
   switchFileScreen: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.fileLoaderRadioB64.checked) {
-      ctx.fileLoaderRadioBin.checked = true;
+    if (ctx.fileViewerRadioB64.checked) {
+      ctx.fileViewerRadioBin.checked = true;
       ctx.openViewerBin();
     } else {
-      ctx.fileLoaderRadioB64.checked = true;
+      ctx.fileViewerRadioB64.checked = true;
       ctx.openViewerB64();
     }
   },
 
   toggleBinMode: function() {
     var ctx = DebugJS.ctx;
-    var opt = ctx.fileLoaderBinViewOpt;
+    var opt = ctx.fileViewerBinViewOpt;
     switch (opt.mode) {
       case 'bin':
         opt.mode = 'dec';
@@ -5888,7 +5901,7 @@ DebugJS.prototype = {
       default:
         opt.mode = 'bin';
     }
-    ctx.showBinDump(ctx, ctx.fileLoaderByteArray);
+    ctx.showBinDump(ctx, ctx.fileViewerByteArray);
   },
 
   toggleShowAddr: function() {
@@ -5905,27 +5918,25 @@ DebugJS.prototype = {
 
   toggleBinVwrOpt: function(ctx, key) {
     var ctx = DebugJS.ctx;
-    var opt = ctx.fileLoaderBinViewOpt;
-    if (opt[key]) {
-      opt[key] = false;
-    } else {
-      opt[key] = true;
-    }
-    var html = ctx.getFileInfo(ctx.fileLoaderFile);
-    html += ctx.getBinDumpHtml(ctx.fileLoaderByteArray, opt.mode, opt.addr, opt.space, opt.ascii);
+    var opt = ctx.fileViewerBinViewOpt;
+    opt[key] = (opt[key] ? false : true);
+    var file = ctx.fileViewerFile;
+    var html = '';
+    if (file) html += ctx.getFileInfo(file);
+    html += ctx.getBinDumpHtml(ctx.fileViewerByteArray, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
   onFileLoadedBin: function(ctx, file, content) {
     var buf = new Uint8Array(content);
-    ctx.fileLoaderByteArray = buf;
+    ctx.fileViewerByteArray = buf;
     DebugJS.file.onLoaded(file, buf);
     ctx.showBinDump(ctx, buf);
   },
 
   showBinDump: function(ctx, buf) {
-    var file = ctx.fileLoaderFile;
-    var opt = ctx.fileLoaderBinViewOpt;
+    var file = ctx.fileViewerFile;
+    var opt = ctx.fileViewerBinViewOpt;
     var html = '';
     if (file) html += ctx.getFileInfo(file);
     html += ctx.getBinDumpHtml(buf, opt.mode, opt.addr, opt.space, opt.ascii);
@@ -5933,15 +5944,16 @@ DebugJS.prototype = {
   },
 
   onFileLoadedB64: function(ctx, file, dturl) {
+    var b64ctt = DebugJS.splitDataUrl(dturl);
     var cType = DebugJS.getContentType(null, file, dturl);
     if (cType == 'text') {
-      if (ctx.fileLoaderSysCb) {
-        var b64ctt = DebugJS.splitDataUrl(dturl);
+      if (ctx.fileViewerSysCb) {
         var decoded = DebugJS.decodeBase64(b64ctt.data);
-        ctx.fileLoaderSysCb(ctx, true, file, decoded);
+        ctx.fileViewerSysCb(ctx, true, file, decoded);
       }
     }
     DebugJS.file.onLoaded(file, dturl);
+    ctx.setDataUrl(ctx, b64ctt.scheme, b64ctt.data);
     ctx.showB64Preview(ctx, file, dturl);
   },
 
@@ -5959,9 +5971,7 @@ DebugJS.prototype = {
       html += ctx.getFileInfo(file);
     }
     var b64ctt = DebugJS.splitDataUrl(dturl);
-    ctx.fileLoadB64scheme.value = b64ctt.scheme + ',';
-    ctx.fileLoadB64txtarea.value = b64ctt.data;
-    ctx.fileLoaderB64data = b64ctt.data;
+    ctx.fileViewerB64data = b64ctt.data;
     var cType = DebugJS.getContentType(b64ctt.scheme, file, dturl);
     if (cType == 'image') {
       html += ctx.getImgPreview(ctx, dturl);
@@ -5970,6 +5980,12 @@ DebugJS.prototype = {
       html += ctx.getTextPreview(decoded);
     }
     ctx.updateFilePreview(html);
+  },
+
+  setDataUrl: function(ctx, scheme, data) {
+    scheme = scheme.replace(/,$/, '');
+    ctx.fileLoadB64scheme.value = scheme + ',';
+    ctx.fileLoadB64txtarea.value = data;
   },
 
   showFileSizeExceeds: function(ctx, file, limit) {
@@ -6135,30 +6151,36 @@ DebugJS.prototype = {
   },
 
   fileLoadFinalize: function() {
-    DebugJS.removeClass(DebugJS.ctx.fileLoaderFooter, DebugJS.ctx.id + '-loading');
+    DebugJS.removeClass(DebugJS.ctx.fileViewerFooter, DebugJS.ctx.id + '-loading');
   },
 
   reloadFile: function() {
     var ctx = DebugJS.ctx;
     var fmt;
-    if (ctx.fileLoaderRadioB64.checked) {
+    if (ctx.fileViewerRadioB64.checked) {
       fmt = DebugJS.FILE_LOAD_FMT_B64;
     } else {
       fmt = DebugJS.FILE_LOAD_FMT_BIN;
     }
-    ctx.loadFile(ctx.fileLoaderFile, fmt);
+    ctx.loadFile(ctx.fileViewerFile, fmt);
   },
 
   clearFile: function() {
     var ctx = DebugJS.ctx;
-    ctx.fileLoaderFile = null;
-    ctx.fileLoaderDataUrl = null;
-    ctx.fileLoaderB64data = null;
-    ctx.fileLoaderByteArray = null;
+    ctx.fileViewerDataSrcType = null;
+    ctx.fileViewerFile = null;
+    ctx.fileViewerDataSrc = null;
+    ctx.fileViewerDataUrl = null;
+    ctx.fileViewerB64data = null;
+    ctx.fileViewerByteArray = null;
     ctx.fileReader = null;
     ctx.filePreview.innerText = 'Drop a file here';
     ctx.setDtSchmTxt();
     ctx.fileLoadB64txtarea.value = '';
+  },
+
+  dataSrcType: function() {
+    return DebugJS.ctx.fileViewerDataSrcType;
   },
 
   setDtSchm: function(type) {
@@ -6173,28 +6195,39 @@ DebugJS.prototype = {
     DebugJS.ctx.setDtSchm('image/jpeg');
   },
 
-  decodeB64data: function() {
+  decodeFileViewData: function() {
     var ctx = DebugJS.ctx;
-    var d = ctx.fileLoadB64scheme.value + ctx.fileLoadB64txtarea.value;
+    var schm = ctx.fileLoadB64scheme.value;
+    var data = DebugJS.delAllSP(ctx.fileLoadB64txtarea.value);
     ctx.clearFile();
-    ctx.fileLoaderDataUrl = d;
+    ctx.fileViewerDataSrc = {schm: schm, data: data};
+    ctx.setDataUrl(ctx, schm, data);
+    if (data.match(/^[01]+$/) && (data.length % 8 == 0)) {
+      ctx.fileViewerDataSrcType = 'bin';
+      ctx.decodeBin(ctx, data);
+    } else {
+      var d = schm + data;
+      ctx.fileViewerDataSrcType = 'b64';
+      ctx.decodeB64data(ctx, d);
+    }
+  },
+
+  decodeB64data: function(ctx, d) {
+    ctx.fileViewerDataUrl = d;
     ctx.showB64Preview(ctx, null, d);
+  },
+
+  decodeBin: function(ctx, bin) {
+    var arr = DebugJS.str2bin(bin);
+    ctx.fileViewerByteArray = arr;
+    ctx.viewBinAsB64(ctx);
   },
 
   decodeB64dataAsB: function(b64) {
     var ctx = DebugJS.ctx;
     var arr = DebugJS.Base64.decode(b64);
-    ctx.fileLoaderByteArray = arr;
+    ctx.fileViewerByteArray = arr;
     ctx.showBinDump(ctx, arr);
-  },
-
-  dataSrcType: function() {
-    if (DebugJS.ctx.fileLoaderFile) {
-      return 'file';
-    } else if (DebugJS.ctx.fileLoaderDataUrl) {
-      return 'b64';
-    }
-    return '';
   },
 
   openHtmlEditor: function() {
@@ -10849,6 +10882,9 @@ DebugJS.Base64.decode = function(str) {
   }
   return arr;
 };
+DebugJS.buildDataUrl = function(schm, data) {
+  return schm + ',' + data;
+};
 DebugJS.splitDataUrl = function(dturl) {
   var a = dturl.split(',');
   var b64ctt = {
@@ -10856,6 +10892,16 @@ DebugJS.splitDataUrl = function(dturl) {
     data: (a[1] == undefined ? '' : a[1])
   };
   return b64ctt;
+};
+DebugJS.str2bin = function(str) {
+  var arr = [];
+  for (var i = 0; i < str.length; i += 8) {
+    var v = str.substr(i, 8);
+    if (v.length == 8) {
+      arr.push(DebugJS.parseInt('0b' + v));
+    }
+  }
+  return arr;
 };
 
 DebugJS.decodeUnicode = function(arg) {
