@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809030100';
+  this.v = '201809030707';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2988,6 +2988,7 @@ DebugJS.prototype = {
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.resizeDbgWin(ctx, x, y);
     if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, x, y);
     if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(x, y);
+    if (DebugJS.point.d) DebugJS.point.move(x, y, 0, 0);
     ctx.resizeMainHeight();
   },
 
@@ -3025,6 +3026,7 @@ DebugJS.prototype = {
       ctx.endResize(ctx);
       ctx.focusCmdLine();
     }
+    if (DebugJS.point.d) DebugJS.point.endDragging();
   },
 
   onDbgWinDblClick: function(e) {
@@ -13324,6 +13326,7 @@ DebugJS.point.ptrW = 12;
 DebugJS.point.ptrH = 19;
 DebugJS.point.x = 0;
 DebugJS.point.y = 0;
+DebugJS.point.d = false;
 DebugJS.point.CURSOR_DFLT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAATCAMAAACTKxybAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAD9QTFRFCwsY9PT3S0xX1tbYKCg04eHjLCw4wsLJMzM/zs7S+Pn7Q0ROs7S86OjqLi468PDzYWJsGBgkQkNN////////FEPnZwAAABV0Uk5T//////////////////////////8AK9l96gAAAF5JREFUeNpMzlcOwDAIA1Cyulcw9z9rQ0aLv3iSZUFZ/lBmC7DFL8WniqGGro6mgY0NcLMBTjZA4gpXBjQKRwf2vuZIJqSpotziZ3gFkxYiwlXQvvIByweJzyryCjAA+AIPnHnE+0kAAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_PTR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAYCAMAAADAi10DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJZQTFRF////EhQmHyIzPkBPT1Be+fn68fHywcHHFxorWltovr/E4+PmUlNgLS8//Pz8GRwuqquyFBcpSUtZeHqEa2x35ubo6enrQENRw8TKnJ6lTE5bc3R/9/f3paatRkhWKyw8NThHhoiRtra8lJWdFBYo1dbZKi092NjbFxkrMDJCMjVE0NDUx8jM9PT1ZWZyoqOqOz1M////QATI2QAAADJ0Uk5T/////////////////////////////////////////////////////////////////wANUJjvAAAAoUlEQVR42ozQ1xKDIBAF0GuwYO+a3nvn/38uChGFvOTODrNzXpZdMB7TZTIQ4mxdjfaRRTUyAOM/ehY/lCyKmqjU1NwPCVFo1LyPcqVRq5IosNaoBGzA4xRQTjIGAs/OU5WmY8C5KsSOFVCpxDJrALDO7cTZkPyQf+I1oEQsFJ96Wn53JHYnk+4S7HLjEG1SSSzO7wdnV/f3apO9TdF8BBgAC6AoMWCQ0+8AAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_TXT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAMAAADtX5XCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRFAAAA////pdmf3QAAAAJ0Uk5T/wDltzBKAAAAGElEQVR42mJgYGBgZAARjIx0xVB7AQIMABYAAFfcyzDzAAAAAElFTkSuQmCC';
@@ -13339,6 +13342,7 @@ DebugJS.point.createPtr = function() {
   ptr.style.left = point.x;
   ptr.style.zIndex = 0x7ffffffe;
   ptr.src = point.CURSOR_DFLT;
+  ptr.onmousedown = DebugJS.point.startDragging;
   document.body.appendChild(ptr);
   point.ptr = ptr;
 };
@@ -13789,7 +13793,14 @@ DebugJS.point.move.stop = function() {
     DebugJS.bat.unlock();
   }
 };
-
+DebugJS.point.startDragging = function() {
+  DebugJS.point.d = true;
+  DebugJS.point.ptr.style.cursor = 'move';
+};
+DebugJS.point.endDragging = function() {
+  DebugJS.point.d = false;
+  DebugJS.point.ptr.style.cursor = 'auto';
+};
 DebugJS.point.drag = function(arg) {
   var data = DebugJS.point.drag.data;
   DebugJS.point.drag.cancel();
