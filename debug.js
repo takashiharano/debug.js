@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809032055';
+  this.v = '201809032121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14760,6 +14760,8 @@ DebugJS.test.result = function() {
   var test = DebugJS.test;
   var data = test.data;
   var nm = data.name;
+  var tstSt = test.getStatus();
+  var cnt = test.getSumCount();
   var s = 'Test Result:\n';
   if (nm != '') {
     s += '[TEST NAME]\n' + nm + '\n\n';
@@ -14770,12 +14772,10 @@ DebugJS.test.result = function() {
     s += data.desc[i] + '\n';
   }
   if (data.desc.length > 0) s += '\n';
-  var tstSt = test.getStatus();
-  var cnt = DebugJS.test.getSumCount();
-  var details = DebugJS.test.getDetailStr(data.results);
+  if (test.countTotal(cnt) > 0) s += '[RESULTS]\n---------\n';
+  s += DebugJS.test.getDetailStr(data.results);
   s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n\n';
-  if (test.countTotal(cnt) > 0) s += '----\n';
-  s += details + DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
+  s += DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
   return s;
 };
 DebugJS.test.getDetailStr = function(results) {
