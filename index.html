@@ -881,6 +881,28 @@ demo.getFileLineDemo = function(idx, abs) {
   log(fl);
 };
 
+demo.sendLogDemo = function() {
+  var url = 'https://debugjs.net/savelog.py';
+  var params = {
+    foo: 'aaa',
+    bar: 'bbb'
+  };
+  var header = '[CLIENT LOG]';
+  var extInfo = {
+    head: 'additional header info 1\nadditional header info 2',
+    data: 'additional info 1\nadditional info 2\nadditional info 3'
+  };
+  dbg.sendLog(url, 'data', params, header, extInfo, true, demo.sendLogDemoCbFunc);
+};
+demo.sendLogDemoCbFunc = function(xhr) {
+  var st = xhr.status;
+  if (st == 200) {
+    log('Send Log OK');
+  } else {
+    log.e('Send Log ERR (' + st + ')');
+  }
+};
+
 function addScript() {
   var script = 'var demo2 = {};';
   script += 'demo2.printStackDemo = function(idx, silent) {';
@@ -1749,8 +1771,8 @@ dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="w
       arg1: url<br>
       arg2: paramName<br>
       arg3: params<br>
-      arg4: extHeader<br>
-      arg5: extData<br>
+      arg4: header<br>
+      arg5: extInfo<br>
       arg6: outputBuf<br>
       arg7: callback<br>
     </td>
@@ -1760,7 +1782,7 @@ dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="w
 paramName: request parameter name for log buffer<span class="annotation">(opt)</span>
 params   : other parameters to send (Map object)<span class="annotation">(opt)</span>
 extHeader: extra header text<span class="annotation">(opt)</span>
-extData  : extra info text<span class="annotation">(opt)</span>
+extInfo  : extra info text<span class="annotation">(opt)</span>
 outputBuf: output original log buffer (true|false)<span class="annotation">(opt)</span>
 callback : callback function<span class="annotation">(opt)</span>
 
@@ -1778,14 +1800,18 @@ var params = {
   foo: 'aaa',
   bar: 'bbb'
 };
-var extHeader = 'key1:value1\nkey2:value2';
-var extData = 'aaa\nbbb\nccc';
-dbg.sendLog(url, 'log', params, extHeader, extData, true, cbFunc);
+var header = '[CLIENT LOG]';
+var extInfo = {
+  head: 'additional header info 1\nadditional header info 2',
+  data: 'additional info 1\nadditional info 2\nadditional info 3'
+};
+dbg.sendLog(url, 'log', params, header, extInfo, true, cbFunc);
 
 -------------------------------------------------------
 <b>DEMO</b> This is the simplest example of the sending.
 
 dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
+dbg.sendLog(url, 'log', params, header, extInfo, true, cbFunc); <button class="demo-button2" onclick="demo.sendLogDemo();">DEMO</button>
 -&gt; <a href="log.txt" target="_blank">log.txt</a> <span class="pseudobtn" style="color:#c88" onclick="clrlog();" title="clear">x</span>
 
 <pre class="code emphasis" style="width:500px">

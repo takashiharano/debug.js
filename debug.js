@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809030730';
+  this.v = '201809032000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -626,6 +626,7 @@ DebugJS.CHR_LF_S = '<span style="color:#0f0">' + DebugJS.CHR_LF + '</span>';
 DebugJS.CHR_CR_S = '<span style="color:#f00">' + DebugJS.CHR_CR + '</span>';
 DebugJS.CHR_WIN_FULL = '&#x25A1;';
 DebugJS.CHR_WIN_RST = '&#x2750;';
+DebugJS.LOG_HEAD = '[LOG]';
 DebugJS.LOG_BOUNDARY_BUF = '-- ORIGINAL LOG BUFFER --';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
 DebugJS.HTML_SRC_FULL_OVERLAY = true;
@@ -11862,8 +11863,8 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   return l;
 };
 
-DebugJS.sendLog = function(url, pName, param, extHead, extData, wBf, cb) {
-  var b = DebugJS.createLogData(extHead, extData, wBf);
+DebugJS.sendLog = function(url, pName, param, header, extInfo, wBf, cb) {
+  var b = DebugJS.createLogData(header, extInfo, wBf);
   var data = DebugJS.http.buildParam(param);
   if (data != '') {data += '&';}
   if (DebugJS.isEmptyVal(pName)) {pName = 'data';}
@@ -11883,20 +11884,28 @@ DebugJS.sendLogCb = function(xhr) {
     DebugJS._log.e('Send Log ERR (' + st + ')');
   }
 };
-DebugJS.createLogData = function(extHead, extData, wBf) {
-  var line = '------------------------------------------------------------------------\n';
+DebugJS.createLogData = function(header, extInfo, wBf) {
+  var LINE = '------------------------------------------------------------------------\n';
+  var extHead = '';
+  var extData = '';
+  if (extInfo) {
+    if (extInfo.head) extHead = extInfo.head;
+    if (extInfo.data) extData = extInfo.data;
+  }
+  var hd = DebugJS.createLogHeader();
   var logTxt = DebugJS.dumpLog('text', false, true);
   logTxt = DebugJS.html2text(logTxt);
   logTxt = DebugJS.crlf2lf(logTxt);
-  var hd = DebugJS.createLogHeader();
-  var b = line + hd + line;
+  var b = '';
+  if (header) b += header + '\n';
+  b += LINE + hd + LINE;
   if (extHead) {
     extHead = DebugJS.crlf2lf(extHead);
     b += extHead;
     if (!DebugJS.endsWith(extHead, '\n')) {b += '\n';}
-    b += line;
+    b += LINE;
   }
-  b += '\n[Client Log]\n' + logTxt;
+  b += '\n' + DebugJS.LOG_HEAD + '\n' + logTxt;
   if (!DebugJS.endsWith(logTxt, '\n')) {b += '\n';}
   if (extData) {
     b += '\n' + extData;
