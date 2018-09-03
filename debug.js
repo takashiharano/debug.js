@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809032121';
+  this.v = '201809032137';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,6 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat'},
     {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
+    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', usage: 'condwait set -key key | pause [-timeout ms] | init'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
@@ -7179,6 +7180,13 @@ DebugJS.prototype = {
     } else {
       ctx.closeFeature(ctx, f);
     }
+  },
+
+  cmdClock: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    ctx.launchFunc(ctx, 'tool', 'timer', 'clock');
+    ctx.timerClockSSS = DebugJS.hasOpt(arg, 'sss');
+    ctx.updateSSS(ctx);
   },
 
   cmdCls: function(arg, tbl) {
