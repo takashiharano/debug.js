@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809032040';
+  this.v = '201809032055';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12138,6 +12138,10 @@ DebugJS.opacity = function(v) {
 DebugJS.isVisible = function() {
   if (DebugJS.ctx.uiStatus & DebugJS.UI_ST_VISIBLE) return true;
   return false;
+};
+
+DebugJS.getFeatureStack = function() {
+  return DebugJS.ctx.featStack.concat();
 };
 
 DebugJS._log = function(m) {
