@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809032137';
+  this.v = '201809040001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5642,6 +5642,11 @@ DebugJS.prototype = {
     }
   },
 
+  enableDnDFileLoad: function(target, cb) {
+    target.addEventListener('dragover', DebugJS.file.onDragOver, false);
+    target.addEventListener('drop', cb, false);
+  },
+
   onFileSelected: function(e) {
     var ctx = DebugJS.ctx;
     ctx.clearFile();
@@ -5649,12 +5654,6 @@ DebugJS.prototype = {
       var format = (ctx.fileViewerRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
       ctx.loadFile(e.target.files[0], format);
     }
-  },
-
-  handleFileDropOnFileViewer: function(e) {
-    var ctx = DebugJS.ctx;
-    var format = (ctx.fileViewerRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
-    ctx.handleFileDrop(ctx, e, format, null);
   },
 
   handleFileDrop: function(ctx, e, format, cb) {
@@ -5678,9 +5677,10 @@ DebugJS.prototype = {
     }
   },
 
-  enableDnDFileLoad: function(target, cb) {
-    target.addEventListener('dragover', DebugJS.file.onDragOver, false);
-    target.addEventListener('drop', cb, false);
+  handleFileDropOnFileViewer: function(e) {
+    var ctx = DebugJS.ctx;
+    var format = (ctx.fileViewerRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+    ctx.handleFileDrop(ctx, e, format, null);
   },
 
   handleFileDropAuto: function(e) {
@@ -5837,22 +5837,22 @@ DebugJS.prototype = {
   },
 
   decodeBin: function(ctx, bin) {
-    var arr = DebugJS.str2binArr(bin, 8, '0b');
-    ctx.fileViewerByteArray = arr;
+    var a = DebugJS.str2binArr(bin, 8, '0b');
+    ctx.fileViewerByteArray = a;
     ctx.viewBinAsB64(ctx);
   },
 
   decodeHex: function(ctx, hex) {
-    var arr = DebugJS.str2binArr(hex, 2, '0x');
-    ctx.fileViewerByteArray = arr;
+    var a = DebugJS.str2binArr(hex, 2, '0x');
+    ctx.fileViewerByteArray = a;
     ctx.viewBinAsB64(ctx);
   },
 
   decodeB64dataAsB: function(b64) {
     var ctx = DebugJS.ctx;
-    var arr = DebugJS.Base64.decode(b64);
-    ctx.fileViewerByteArray = arr;
-    ctx.showBinDump(ctx, arr);
+    var a = DebugJS.Base64.decode(b64);
+    ctx.fileViewerByteArray = a;
+    ctx.showBinDump(ctx, a);
   },
 
   viewBinAsB64: function(ctx) {
@@ -5891,22 +5891,23 @@ DebugJS.prototype = {
   onFileLoadError: function(e) {
     DebugJS.ctx.fileViewerSysCb = null;
     DebugJS.file.finalize();
+    var te = e.target.error;
     var err;
-    switch (e.target.error.code) {
-      case e.target.error.NOT_FOUND_ERR:
+    switch (te.code) {
+      case te.NOT_FOUND_ERR:
         err = 'NOT_FOUND_ERR';
         break;
-      case e.target.error.SECURITY_ERR:
+      case te.SECURITY_ERR:
         err = 'SECURITY_ERR';
         break;
-      case e.target.error.NOT_READABLE_ERR:
+      case te.NOT_READABLE_ERR:
         err = 'NOT_READABLE_ERR';
         break;
-      case e.target.error.ABORT_ERR:
+      case te.ABORT_ERR:
         err = 'ABORT_ERR';
         break;
       default:
-        err = 'FILE_READ_ERROR (' + e.target.error.code + ')';
+        err = 'FILE_READ_ERROR (' + te.code + ')';
     }
     DebugJS.ctx.updateFilePreview(err);
   },
@@ -6141,9 +6142,7 @@ DebugJS.prototype = {
     var lastRows = ctx.props.hexdumplastrows | 0;
     var lastLen = 0x10 * lastRows;
     var bLen = buf.length;
-    if (limit == 0) {
-      limit = bLen;
-    }
+    if (limit == 0) limit = bLen;
     var len = ((bLen > limit) ? limit : bLen);
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
@@ -13344,7 +13343,7 @@ DebugJS.point = function(x, y) {
     var e = DebugJS.event.create('mousemove');
     e.clientX = point.x;
     e.clientY = point.y;
-    var el = DebugJS.point.getElementFromCurrentPos();
+    var el = point.getElementFromCurrentPos();
     if (el) {
       el.dispatchEvent(e);
     } else {
@@ -14635,7 +14634,7 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
 };
 DebugJS.test.setStatus = function(st) {
   var test = DebugJS.test;
-  var data = DebugJS.test.data;
+  var data = test.data;
   switch (st) {
     case test.STATUS_NT:
       return;
@@ -14806,7 +14805,7 @@ DebugJS.test.getDetailStr = function(results) {
     }
     for (i = 0; i < results[id].results.length; i++) {
       var result = results[id].results[i];
-      var info = DebugJS.test.getStyledInfoStr(result);
+      var info = test.getStyledInfoStr(result);
       details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getStyledResultStr(result.status, info) + '\n';
     }
     details += '\n';
