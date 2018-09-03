@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809032000';
+  this.v = '201809032040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -621,9 +621,10 @@ DebugJS.CHR_DELTA = '&#x22BF;';
 DebugJS.CHR_CRLF = '&#x21b5;';
 DebugJS.CHR_LF = '&#x2193;';
 DebugJS.CHR_CR = '&#x2190;';
-DebugJS.CHR_CRLF_S = '<span style="color:#0cf">' + DebugJS.CHR_CRLF + '</span>';
-DebugJS.CHR_LF_S = '<span style="color:#0f0">' + DebugJS.CHR_LF + '</span>';
-DebugJS.CHR_CR_S = '<span style="color:#f00">' + DebugJS.CHR_CR + '</span>';
+DebugJS.CHR_CRLF_S = '<span style="color:#0cf" class="dbg-nl">' + DebugJS.CHR_CRLF + '</span>';
+DebugJS.CHR_LF_S = '<span style="color:#0f0" class="dbg-nl">' + DebugJS.CHR_LF + '</span>';
+DebugJS.CHR_CR_S = '<span style="color:#f00" class="dbg-nl">' + DebugJS.CHR_CR + '</span>';
+DebugJS.EOF = '<span style="color:#08f">[EOF]</span>';
 DebugJS.CHR_WIN_FULL = '&#x25A1;';
 DebugJS.CHR_WIN_RST = '&#x2750;';
 DebugJS.LOG_HEAD = '[LOG]';
@@ -2677,7 +2678,11 @@ DebugJS.prototype = {
     switch (e.keyCode) {
       case 9: // Tab
         if ((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) {
-          ctx.switchFileScreen();
+          if (e.shiftKey) {
+            if (ctx.fileViewerRadioB64.checked) ctx.toggleShowHideNL();
+          } else {
+            ctx.switchFileScreen();
+          }
           e.preventDefault();
         }
         break;
@@ -6071,6 +6076,18 @@ DebugJS.prototype = {
     ctx.fileLoadB64txtarea.value = data;
   },
 
+  getFileInfo: function(file) {
+    var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
+    var dt = DebugJS.getDateTime(lastMod);
+    var fileDate = DebugJS.convDateTimeStr(dt);
+    var s = '<span style="color:#cff">' +
+    'file    : ' + file.name + '\n' +
+    'type    : ' + file.type + '\n' +
+    'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
+    'modified: ' + fileDate + '</span>\n';
+    return s;
+  },
+
   showFileSizeExceeds: function(ctx, file, limit) {
     var html = ctx.getFileInfo(file) +
     '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
@@ -6083,25 +6100,19 @@ DebugJS.prototype = {
     txt = txt.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
     txt = txt.replace(/([^>])\n/g, '$1' + DebugJS.CHR_LF_S + '\n');
     txt = txt.replace(/\r/g, DebugJS.CHR_CR_S + '\n');
-    var eof = '<span style="color:#08f">[EOF]</span>';
-    return (txt + eof + '\n');
+    return (txt + DebugJS.EOF + '\n');
+  },
+
+  toggleShowHideNL: function() {
+    var el = document.getElementsByClassName('dbg-nl');
+    for (var i = 0; i < el.length; i++) {
+      DebugJS.toggleElShowHide(el[i]);
+    }
   },
 
   getImgPreview: function(ctx, b64content) {
     var ctxSizePos = ctx.getSelfSizePos();
     return '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
-  },
-
-  getFileInfo: function(file) {
-    var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
-    var dt = DebugJS.getDateTime(lastMod);
-    var fileDate = DebugJS.convDateTimeStr(dt);
-    var s = '<span style="color:#cff">' +
-    'file    : ' + file.name + '\n' +
-    'type    : ' + file.type + '\n' +
-    'size    : ' + DebugJS.formatDec(file.size) + ' byte' + ((file.size >= 2) ? 's' : '') + '\n' +
-    'modified: ' + fileDate + '</span>\n';
-    return s;
   },
 
   resizeImgPreview: function() {
@@ -14975,6 +14986,14 @@ DebugJS.isFocusable = function(n) {
       return true;
   }
   return false;
+};
+
+DebugJS.toggleElShowHide = function(el) {
+  if (el.style.display == 'none') {
+    el.style.display = '';
+  } else {
+    el.style.display = 'none';
+  }
 };
 
 DebugJS.createBtn = function(label, base) {
