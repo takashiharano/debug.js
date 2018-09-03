@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809040001';
+  this.v = '201809040104';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -201,7 +201,6 @@ var DebugJS = DebugJS || function() {
   this.fileViewerDataSrcType = null;
   this.fileViewerFile = null;
   this.fileViewerDataSrc = null;
-  this.fileViewerB64data = null;
   this.fileViewerByteArray = null;
   this.fileViewerBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
   this.fileViewerSysCb = null;
@@ -5772,7 +5771,7 @@ DebugJS.prototype = {
         }
         break;
       case 'b64':
-        ctx.showB64Preview(ctx, null, ctx.fileViewerDataUrl);
+        ctx.showB64Preview(ctx, null, ctx.fileViewerDataSrc.cheme, ctx.fileViewerDataSrc.data);
         break;
       case 'bin':
       case 'hex':
@@ -5789,8 +5788,8 @@ DebugJS.prototype = {
     var dtSrc = ctx.dataSrcType();
     switch (dtSrc) {
       case 'file':
-        if (ctx.fileViewerB64data) {
-          ctx.decodeB64dataAsB(ctx.fileViewerB64data);
+        if (ctx.fileViewerDataSrc) {
+          ctx.decodeB64dataAsB(ctx.fileViewerDataSrc.data);
         } else {
           DebugJS.ctx.loadFile(ctx.fileViewerFile, DebugJS.FILE_LOAD_FMT_BIN);
         }
@@ -5798,7 +5797,7 @@ DebugJS.prototype = {
       case 'b64':
       case 'bin':
       case 'hex':
-        ctx.decodeB64dataAsB(ctx.fileViewerB64data);
+        ctx.decodeB64dataAsB(ctx.fileViewerDataSrc.data);
         break;
       default:
         ctx.updateFilePreview('');
@@ -5808,13 +5807,13 @@ DebugJS.prototype = {
   decodeFileViewData: function() {
     var ctx = DebugJS.ctx;
     var mode = ctx.fileViewerDecMode;
-    var schm = ctx.fileLoadB64scheme.value;
+    var scheme = ctx.fileLoadB64scheme.value;
     var data = ctx.fileLoadB64txtarea.value;
     ctx.clearFile();
     data = DebugJS.delAllSP(data);
     data = DebugJS.delAllNL(data);
-    ctx.fileViewerDataSrc = {schm: schm, data: data};
-    ctx.setDataUrl(ctx, schm, data);
+    ctx.fileViewerDataSrc = {scheme: scheme, data: data};
+    ctx.setDataUrl(ctx, scheme, data);
     switch (mode) {
       case 'bin':
         ctx.fileViewerDataSrcType = 'bin';
@@ -5825,15 +5824,9 @@ DebugJS.prototype = {
         ctx.decodeHex(ctx, data);
         break;
       default:
-        var d = DebugJS.buildDataUrl(schm, data);
         ctx.fileViewerDataSrcType = 'b64';
-        ctx.decodeB64data(ctx, d);
+        ctx.showB64Preview(ctx, null, scheme, data);
     }
-  },
-
-  decodeB64data: function(ctx, d) {
-    ctx.fileViewerDataUrl = d;
-    ctx.showB64Preview(ctx, null, d);
   },
 
   decodeBin: function(ctx, bin) {
@@ -5857,11 +5850,11 @@ DebugJS.prototype = {
 
   viewBinAsB64: function(ctx) {
     var file = ctx.fileViewerFile;
-    var dtscheme;
+    var scheme;
     if (file) {
-      dtscheme = 'data:' + file.type + ';base64';
+      scheme = 'data:' + file.type + ';base64';
     } else {
-      dtscheme = ctx.fileViewerDataSrc.schm;
+      scheme = ctx.fileViewerDataSrc.scheme;
     }
     var limit = ctx.props.prevlimit;
     if (file && (file.size > limit)) {
@@ -5869,9 +5862,9 @@ DebugJS.prototype = {
       return;
     } else {
       var data = DebugJS.Base64.encode(ctx.fileViewerByteArray);
-      var dturl = DebugJS.buildDataUrl(dtscheme, data);
-      ctx.setDataUrl(ctx, dtscheme, data);
-      ctx.showB64Preview(ctx, file, dturl);
+      ctx.fileViewerDataSrc = {scheme: scheme, data: data};
+      ctx.setDataUrl(ctx, scheme, data);
+      ctx.showB64Preview(ctx, file, scheme, data);
     }
   },
 
@@ -5934,7 +5927,7 @@ DebugJS.prototype = {
     var file = ctx.fileReader.file;
     var content = '';
     try {
-      if (ctx.fileReader.result != null) {content = ctx.fileReader.result;}
+      if (ctx.fileReader.result != null) content = ctx.fileReader.result;
     } catch (e) {
       DebugJS._log.e('onFileLoaded: ' + e);
     }
@@ -5948,6 +5941,38 @@ DebugJS.prototype = {
     DebugJS.callEvtListener('fileloaded', file, content, isB64);
     ctx.fileViewerSysCb = null;
     DebugJS.file.finalize();
+  },
+
+  onFileLoadedB64: function(ctx, file, dturl) {
+    if (file) {
+      var LIMIT = ctx.props.prevlimit;
+      if (file.size > LIMIT) {
+        ctx.showFileSizeExceeds(ctx, file, LIMIT);
+        return;
+      } else if (file.size == 0) {
+        ctx.updateFilePreview(ctx.getFileInfo(file));
+        return;
+      }
+    }
+    var b64ctt = DebugJS.splitDataUrl(dturl);
+    ctx.fileViewerDataSrc = b64ctt;
+    var cType = DebugJS.getContentType(null, file, b64ctt.data);
+    if (cType == 'text') {
+      if (ctx.fileViewerSysCb) {
+        var decoded = DebugJS.decodeBase64(b64ctt.data);
+        ctx.fileViewerSysCb(ctx, true, file, decoded);
+      }
+    }
+    DebugJS.file.onLoaded(file, b64ctt.data);
+    ctx.setDataUrl(ctx, b64ctt.scheme, b64ctt.data);
+    ctx.showB64Preview(ctx, file, b64ctt.scheme, b64ctt.data);
+  },
+
+  onFileLoadedBin: function(ctx, file, content) {
+    var buf = new Uint8Array(content);
+    ctx.fileViewerByteArray = buf;
+    DebugJS.file.onLoaded(file, buf);
+    ctx.showBinDump(ctx, buf);
   },
 
   switchFileScreen: function() {
@@ -6017,13 +6042,6 @@ DebugJS.prototype = {
     ctx.updateFilePreview(html);
   },
 
-  onFileLoadedBin: function(ctx, file, content) {
-    var buf = new Uint8Array(content);
-    ctx.fileViewerByteArray = buf;
-    DebugJS.file.onLoaded(file, buf);
-    ctx.showBinDump(ctx, buf);
-  },
-
   showBinDump: function(ctx, buf) {
     var file = ctx.fileViewerFile;
     var opt = ctx.fileViewerBinViewOpt;
@@ -6033,26 +6051,12 @@ DebugJS.prototype = {
     ctx.updateFilePreview(html);
   },
 
-  onFileLoadedB64: function(ctx, file, dturl) {
-    var b64ctt = DebugJS.splitDataUrl(dturl);
-    var cType = DebugJS.getContentType(null, file, dturl);
-    if (cType == 'text') {
-      if (ctx.fileViewerSysCb) {
-        var decoded = DebugJS.decodeBase64(b64ctt.data);
-        ctx.fileViewerSysCb(ctx, true, file, decoded);
-      }
-    }
-    DebugJS.file.onLoaded(file, dturl);
-    ctx.setDataUrl(ctx, b64ctt.scheme, b64ctt.data);
-    ctx.showB64Preview(ctx, file, dturl);
-  },
-
-  showB64Preview: function(ctx, file, dturl) {
+  showB64Preview: function(ctx, file, scheme, data) {
     var html = '';
     if (file) {
-      var limit = ctx.props.prevlimit;
-      if (file.size > limit) {
-        ctx.showFileSizeExceeds(ctx, file, limit);
+      var LIMIT = ctx.props.prevlimit;
+      if (file.size > LIMIT) {
+        ctx.showFileSizeExceeds(ctx, file, LIMIT);
         return;
       } else if (file.size == 0) {
         ctx.updateFilePreview(html);
@@ -6060,13 +6064,11 @@ DebugJS.prototype = {
       }
       html += ctx.getFileInfo(file);
     }
-    var b64ctt = DebugJS.splitDataUrl(dturl);
-    ctx.fileViewerB64data = b64ctt.data;
-    var cType = DebugJS.getContentType(b64ctt.scheme, file, dturl);
+    var cType = DebugJS.getContentType(scheme, file, data);
     if (cType == 'image') {
-      html += ctx.getImgPreview(ctx, dturl);
+      html += ctx.getImgPreview(ctx, scheme, data);
     } else {
-      var decoded = DebugJS.decodeBase64(b64ctt.data);
+      var decoded = DebugJS.decodeBase64(data);
       html += ctx.getTextPreview(decoded);
     }
     ctx.updateFilePreview(html);
@@ -6112,9 +6114,9 @@ DebugJS.prototype = {
     }
   },
 
-  getImgPreview: function(ctx, b64content) {
+  getImgPreview: function(ctx, scheme, data) {
     var ctxSizePos = ctx.getSelfSizePos();
-    return '<img src="' + b64content + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
+    return '<img src="' + DebugJS.buildDataUrl(scheme, data) + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
   },
 
   resizeImgPreview: function() {
@@ -6264,8 +6266,6 @@ DebugJS.prototype = {
     ctx.fileViewerDataSrcType = null;
     ctx.fileViewerFile = null;
     ctx.fileViewerDataSrc = null;
-    ctx.fileViewerDataUrl = null;
-    ctx.fileViewerB64data = null;
     ctx.fileViewerByteArray = null;
     ctx.fileReader = null;
     ctx.filePreview.innerText = 'Drop a file here';
@@ -9769,14 +9769,13 @@ DebugJS.isTypographic = function(ch) {
   return false;
 };
 
-DebugJS.getContentType = function(mime, file, dturl) {
+DebugJS.getContentType = function(mime, file, dturlData) {
   var t = '';
   var ext = ['bat', 'csv', 'ini', 'java', 'js', 'json', 'log', 'md'];
   var re = '';
   for (var i = 0; i < ext.length; i++) {
     if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
   }
-  var cnmIdx = dturl.indexOf(',');
   var xmlHead = 'PD94bWw';
   if (mime) {
     if (mime.match(/image\//)) {
@@ -9787,7 +9786,7 @@ DebugJS.getContentType = function(mime, file, dturl) {
   } else if (file) {
     if (file.type.match(/image\//)) {
       t = 'image';
-    } else if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || DebugJS.startsWith(dturl, xmlHead, cnmIdx + 1)) {
+    } else if ((file.type.match(/text\//)) || ((new RegExp(re)).test(file.name)) || DebugJS.startsWith(dturlData, xmlHead)) {
       t = 'text';
     }
   }
@@ -12049,14 +12048,11 @@ DebugJS.isTargetEl = function(target, el) {
 };
 DebugJS.file.onLoaded = function(file, content) {
   var loader = DebugJS.file.ongoingLoader;
-  if (loader == null) return;
+  if ((loader == null) || (!loader.cb)) return;
   if ((loader.mode == 'b64') && (loader.decode == true)) {
-    var contents = content.split(',');
-    content = DebugJS.decodeBase64(contents[1]);
+    content = DebugJS.decodeBase64(content);
   }
-  if (loader.cb) {
-    loader.cb(file, content);
-  }
+  loader.cb(file, content);
 };
 DebugJS.file.finalize = function() {
   DebugJS.file.ongoingLoader = null;
@@ -14781,7 +14777,7 @@ DebugJS.test.result = function() {
   if (data.desc.length > 0) s += '\n';
   if (test.countTotal(cnt) > 0) s += '[RESULTS]\n---------\n';
   s += DebugJS.test.getDetailStr(data.results);
-  s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n\n';
+  s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n';
   s += DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
   return s;
 };
