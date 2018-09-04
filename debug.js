@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809040104';
+  this.v = '201809042119';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7058,7 +7058,7 @@ DebugJS.prototype = {
           if ((s == null) && (e == null) && (a[1] != '-arg')) {
             s = a[1];
             if ((s != undefined) && (!isNaN(s))) {
-              e = s;
+              return DebugJS.bat.exec1(s);
             }
           }
           if (ag == null) {ag = undefined;}
@@ -11538,7 +11538,6 @@ DebugJS.substr = function(txt, len) {
   }
   return str;
 };
-
 DebugJS.startsWith = function(s, p, o) {
   if (o) {s = s.substr(o);}
   if (s.substr(0, p.length) == p) {
@@ -11546,11 +11545,9 @@ DebugJS.startsWith = function(s, p, o) {
   }
   return false;
 };
-
 DebugJS.endsWith = function(s, t) {
   return (s.charAt(s.length - 1) == t);
 };
-
 DebugJS.strcount = function(s, p) {
   var cnt = 0;
   var pos = s.indexOf(p);
@@ -11560,24 +11557,16 @@ DebugJS.strcount = function(s, p) {
   }
   return cnt;
 };
-
 DebugJS.strcmpWOsp = function(s1, s2) {
   s1 = DebugJS.delLeadingAndTrailingSP(s1);
   s2 = DebugJS.delLeadingAndTrailingSP(s2);
   return (s1 == s2);
 };
-
-DebugJS.hasKey = function(s, k, d) {
-  if (!s) return false;
-  var a = s.split(d);
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] == k) {
-      return true;
-    }
-  }
-  return false;
+DebugJS.strcatWnl = function(s1, s2) {
+  s1 += s2;
+  if (!DebugJS.endsWith(s2, '\n')) {s1 += '\n';}
+  return s1;
 };
-
 DebugJS.strPadding = function(s, c, l, p) {
   var txt = s + '';
   var d = l - txt.length;
@@ -11590,13 +11579,11 @@ DebugJS.strPadding = function(s, c, l, p) {
   }
   return txt;
 };
-
 DebugJS.repeatCh = function(c, n) {
   var s = '';
   for (var i = 0; i < n; i++) s += c;
   return s;
 };
-
 DebugJS.crlf2lf = function(s) {
   return s.replace(/\r\n/g, '\n');
 };
@@ -11612,7 +11599,6 @@ DebugJS.trimDownText = function(txt, maxLen, style) {
   }
   return s;
 };
-
 DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
   var snip = '...';
   if (style) {
@@ -11642,6 +11628,17 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
     }
   }
   return str;
+};
+
+DebugJS.hasKey = function(s, k, d) {
+  if (!s) return false;
+  var a = s.split(d);
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] == k) {
+      return true;
+    }
+  }
+  return false;
 };
 
 DebugJS.isEmptyVal = function(o) {
@@ -11880,8 +11877,8 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   return l;
 };
 
-DebugJS.sendLog = function(url, pName, param, header, extInfo, wBf, cb) {
-  var b = DebugJS.createLogData(header, extInfo, wBf);
+DebugJS.sendLog = function(url, pName, param, extInfo, wBf, cb) {
+  var b = DebugJS.createLogData(extInfo, wBf);
   var data = DebugJS.http.buildParam(param);
   if (data != '') {data += '&';}
   if (DebugJS.isEmptyVal(pName)) {pName = 'data';}
@@ -11901,36 +11898,42 @@ DebugJS.sendLogCb = function(xhr) {
     DebugJS._log.e('Send Log ERR (' + st + ')');
   }
 };
-DebugJS.createLogData = function(header, extInfo, wBf) {
+DebugJS.createLogData = function(extInfo, wBf) {
   var LINE = '------------------------------------------------------------------------\n';
-  var extHead = '';
-  var extData = '';
+  var info = ['', '', '', ''];
   if (extInfo) {
-    if (extInfo.head) extHead = extInfo.head;
-    if (extInfo.data) extData = extInfo.data;
+    if (extInfo.info1) info[0] = extInfo.info1;
+    if (extInfo.info2) info[1] = extInfo.info2;
+    if (extInfo.info3) info[2] = extInfo.info3;
+    if (extInfo.info4) info[3] = extInfo.info4;
   }
   var hd = DebugJS.createLogHeader();
   var logTxt = DebugJS.dumpLog('text', false, true);
   logTxt = DebugJS.html2text(logTxt);
   logTxt = DebugJS.crlf2lf(logTxt);
   var b = '';
-  if (header) b += header + '\n';
+  if (info[0]) {
+    b = DebugJS.strcatWnl(b, info[0]);
+  }
   b += LINE + hd + LINE;
-  if (extHead) {
-    extHead = DebugJS.crlf2lf(extHead);
-    b += extHead;
-    if (!DebugJS.endsWith(extHead, '\n')) {b += '\n';}
+  if (info[1]) {
+    info[1] = DebugJS.crlf2lf(info[1]);
+    b = DebugJS.strcatWnl(b, info[1]);
     b += LINE;
   }
   b += '\n' + DebugJS.LOG_HEAD + '\n' + logTxt;
   if (!DebugJS.endsWith(logTxt, '\n')) {b += '\n';}
-  if (extData) {
-    b += '\n' + extData;
-    if (!DebugJS.endsWith(extData, '\n')) {b += '\n';}
+  if (info[2]) {
+    b += '\n';
+    b = DebugJS.strcatWnl(b, info[2]);
   }
   if (wBf) {
     var logBuf = DebugJS.dumpLog('json', true, false);
     b += '\n' + DebugJS.LOG_BOUNDARY_BUF + '\n' + logBuf + '\n';
+  }
+  if (info[3]) {
+    b += '\n';
+    b = DebugJS.strcatWnl(b, info[3]);
   }
   return b;
 };
@@ -12638,6 +12641,41 @@ DebugJS.bat.exec = function() {
 DebugJS.bat.next = function() {
   DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
 };
+DebugJS.bat.exec1 = function(l) {
+  var cmd = DebugJS.bat.cmds[l - 1];
+  if (cmd == undefined) return;
+  if (DebugJS.bat.isPpTkn(cmd)) {
+    DebugJS._log(cmd);
+    return;
+  }
+  return DebugJS.ctx._execCmd(cmd, true);
+};
+DebugJS.bat.isPpTkn = function(cmd) {
+  var c = DebugJS.splitCmdLineInTwo(cmd)[0];
+  if (c.match(/^\s*@/)) {
+    c = c.substr(c.indexOf('@') + 1);
+  }
+  if (((c.charAt(0) == '#') || (c.substr(0, 2) == '//')) ||
+      (DebugJS.delLeadingSP(cmd).substr(0, 2) == '/*') ||
+      (DebugJS.delTrailingSP(cmd).slice(-2) == '*/') ||
+      (c.charAt(0) == DebugJS.BAT_TKN_LABEL)) {
+    return 1;
+  }
+  switch (c) {
+    case DebugJS.BAT_TKN_IF:
+    case DebugJS.BAT_TKN_LOOP:
+    case DebugJS.BAT_TKN_BREAK:
+    case DebugJS.BAT_TKN_CONTINUE:
+    case DebugJS.BAT_TKN_JS:
+    case DebugJS.BAT_TKN_TXT:
+    case DebugJS.BAT_TKN_BLOCK_END:
+      return 1;
+  }
+  if (DebugJS.delAllSP(cmd) == DebugJS.RE_ELSE) {
+    return 1;
+  }
+  return 0;
+};
 DebugJS.bat._exit = function(st) {
   var bat = DebugJS.bat;
   bat.setExitStatus(st);
@@ -12879,7 +12917,8 @@ DebugJS.bat.findEndOfBlock = function(type) {
     l++;
   }
   if (l > ctrl.endPc) {
-    DebugJS._log.e('end of block ' + DebugJS.BAT_TKN_BLOCK_END + ' not found');
+    DebugJS._log.e('End of block "' + DebugJS.BAT_TKN_BLOCK_END + '" not found');
+    DebugJS._log.e('L' + ctrl.pc + ': ' + bat.cmds[ctrl.pc - 1]);
   }
   data.l = l;
   return data;
