@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809042119';
+  this.v = '201809050012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -177,33 +177,33 @@ var DebugJS = DebugJS || function() {
   this.txtChkLabelBgB = null;
   this.txtChkTargetEl = null;
   this.txtChkItalic = false;
-  this.fileViewerBtn = null;
-  this.fileViewerPanel = null;
+  this.fileVwrBtn = null;
+  this.fileVwrPanel = null;
   this.fileInput = null;
-  this.fileViewerLabelB64 = null;
-  this.fileViewerRadioB64 = null;
-  this.fileViewerLabelBin = null;
-  this.fileViewerRadioBin = null;
+  this.fileVwrLabelB64 = null;
+  this.fileVwrRadioB64 = null;
+  this.fileVwrLabelBin = null;
+  this.fileVwrRadioBin = null;
   this.fileReloadBtn = null;
   this.fileClrBtn = null;
-  this.filePreviewWrapper = null;
-  this.filePreview = null;
-  this.fileLoadB64dturl = null;
-  this.fileLoadB64scheme = null;
-  this.fileLoadB64txtarea = null;
-  this.fileViewerFooter = null;
+  this.fileVwrFooter = null;
   this.fileLoadProgressBar = null;
   this.fileLoadProgress = null;
   this.fileLoadCancelBtn = null;
   this.fileLoadFormat = DebugJS.FILE_LOAD_FMT_B64;
-  this.fileViewerDecMode = 'b64';
-  this.fileViewerDecModeBtn = null;
-  this.fileViewerDataSrcType = null;
-  this.fileViewerFile = null;
-  this.fileViewerDataSrc = null;
-  this.fileViewerByteArray = null;
-  this.fileViewerBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
-  this.fileViewerSysCb = null;
+  this.filePreviewWrapper = null;
+  this.filePreview = null;
+  this.fileVwrDtUrlWrp = null;
+  this.fileVwrDtUrlScheme = null;
+  this.fileVwrDtTxtArea = null;
+  this.fileVwrDecMode = 'b64';
+  this.fileVwrDecModeBtn = null;
+  this.fileVwrDataSrcType = null;
+  this.fileVwrFile = null;
+  this.fileVwrDataSrc = null;
+  this.fileVwrByteArray = null;
+  this.fileVwrBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
+  this.fileVwrSysCb = null;
   this.fileReader = null;
   this.jsBtn = null;
   this.jsPanel = null;
@@ -556,7 +556,7 @@ DebugJS.WIN_SHADOW = 10;
 DebugJS.WIN_BORDER = 1;
 DebugJS.WIN_PADDING = 1;
 DebugJS.WIN_ADJUST = ((DebugJS.WIN_BORDER * 2) + (DebugJS.WIN_PADDING * 2));
-DebugJS.OVERLAY_PANEL_HEIGHT = 77; //%
+DebugJS.OVERLAY_PANEL_HEIGHT = 77;
 DebugJS.CMD_LINE_PADDING = 3;
 DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.SBPNL_COLOR_ACTIVE = '#6cf';
@@ -621,10 +621,10 @@ DebugJS.CHR_DELTA = '&#x22BF;';
 DebugJS.CHR_CRLF = '&#x21b5;';
 DebugJS.CHR_LF = '&#x2193;';
 DebugJS.CHR_CR = '&#x2190;';
-DebugJS.CHR_CRLF_S = '<span style="color:#0cf" class="dbg-nl">' + DebugJS.CHR_CRLF + '</span>';
-DebugJS.CHR_LF_S = '<span style="color:#0f0" class="dbg-nl">' + DebugJS.CHR_LF + '</span>';
-DebugJS.CHR_CR_S = '<span style="color:#f00" class="dbg-nl">' + DebugJS.CHR_CR + '</span>';
-DebugJS.EOF = '<span style="color:#08f">[EOF]</span>';
+DebugJS.CHR_CRLF_S = '<span style="color:#0cf" class="dbg-cc">' + DebugJS.CHR_CRLF + '</span>';
+DebugJS.CHR_LF_S = '<span style="color:#0f0" class="dbg-cc">' + DebugJS.CHR_LF + '</span>';
+DebugJS.CHR_CR_S = '<span style="color:#f00" class="dbg-cc">' + DebugJS.CHR_CR + '</span>';
+DebugJS.EOF = '<span style="color:#08f" class="dbg-cc">[EOF]</span>';
 DebugJS.CHR_WIN_FULL = '&#x25A1;';
 DebugJS.CHR_WIN_RST = '&#x2750;';
 DebugJS.LOG_HEAD = '[LOG]';
@@ -1688,14 +1688,14 @@ DebugJS.prototype = {
       ctx.toolsHeaderPanel.style.height = fontSize;
       ctx.toolsBodyPanel.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
     }
-    if (ctx.fileViewerPanel != null) {
+    if (ctx.fileVwrPanel != null) {
       ctx.setStyle(ctx.fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
       ctx.setStyle(ctx.fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
       ctx.setStyle(ctx.fileInput, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
-      ctx.fileViewerFooter.style.height = (ctx.computedFontSize + 3) + 'px';
+      ctx.fileVwrFooter.style.height = (ctx.computedFontSize + 3) + 'px';
       ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
       ctx.setStyle(ctx.fileLoadProgress, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
     }
@@ -2679,7 +2679,7 @@ DebugJS.prototype = {
       case 9: // Tab
         if ((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) {
           if (e.shiftKey) {
-            if (ctx.fileViewerRadioB64.checked) ctx.toggleShowHideNL();
+            if (ctx.fileVwrRadioB64.checked) ctx.toggleShowHideCC();
           } else {
             ctx.switchFileScreen();
           }
@@ -4488,7 +4488,7 @@ DebugJS.prototype = {
     ctx.timerBtn = ctx.createToolsHeaderBtn('TIMER', 'TOOLS_FNC_TIMER', 'timerBtn');
     ctx.txtChkBtn = ctx.createToolsHeaderBtn('TEXT', 'TOOLS_FNC_TEXT', 'txtChkBtn');
     ctx.htmlPrevBtn = ctx.createToolsHeaderBtn('HTML', 'TOOLS_FNC_HTML', 'htmlPrevBtn');
-    ctx.fileViewerBtn = ctx.createToolsHeaderBtn('FILE', 'TOOLS_FNC_FILE', 'fileViewerBtn');
+    ctx.fileVwrBtn = ctx.createToolsHeaderBtn('FILE', 'TOOLS_FNC_FILE', 'fileVwrBtn');
     ctx.batBtn = ctx.createToolsHeaderBtn('BAT', 'TOOLS_FNC_BAT', 'batBtn');
   },
 
@@ -4517,7 +4517,7 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.timerBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
     ctx.setStyle(ctx.txtChkBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
     ctx.setStyle(ctx.htmlPrevBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
-    ctx.setStyle(ctx.fileViewerBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
+    ctx.setStyle(ctx.fileVwrBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
     ctx.setStyle(ctx.batBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
   },
 
@@ -5477,8 +5477,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
-    if (ctx.fileViewerPanel == null) {
-      ctx.fileViewerPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
+    if (ctx.fileVwrPanel == null) {
+      ctx.fileVwrPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
       var fileInput = document.createElement('input');
       fileInput.type = 'file';
@@ -5491,42 +5491,42 @@ DebugJS.prototype = {
       ctx.setStyle(fileInput, 'outline', 'none');
       ctx.setStyle(fileInput, 'font-size', fontSize);
       fileInput.addEventListener('change', ctx.onFileSelected, false);
-      ctx.fileViewerPanel.appendChild(fileInput);
+      ctx.fileVwrPanel.appendChild(fileInput);
       ctx.fileInput = fileInput;
 
-      ctx.fileViewerRadioB64 = document.createElement('input');
-      ctx.fileViewerRadioB64.type = 'radio';
-      ctx.fileViewerRadioB64.id = ctx.id + '-load-type-b64';
-      ctx.fileViewerRadioB64.name = ctx.id + '-load-type';
-      ctx.fileViewerRadioB64.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
-      ctx.fileViewerRadioB64.value = 'base64';
-      ctx.fileViewerRadioB64.checked = true;
-      ctx.fileViewerRadioB64.onchange = ctx.openViewerB64;
-      ctx.fileViewerPanel.appendChild(ctx.fileViewerRadioB64);
-      ctx.fileViewerLabelB64 = document.createElement('label');
-      ctx.fileViewerLabelB64.htmlFor = ctx.id + '-load-type-b64';
-      ctx.fileViewerLabelB64.innerText = 'Base64';
-      ctx.fileViewerPanel.appendChild(ctx.fileViewerLabelB64);
+      ctx.fileVwrRadioB64 = document.createElement('input');
+      ctx.fileVwrRadioB64.type = 'radio';
+      ctx.fileVwrRadioB64.id = ctx.id + '-load-type-b64';
+      ctx.fileVwrRadioB64.name = ctx.id + '-load-type';
+      ctx.fileVwrRadioB64.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      ctx.fileVwrRadioB64.value = 'base64';
+      ctx.fileVwrRadioB64.checked = true;
+      ctx.fileVwrRadioB64.onchange = ctx.openViewerB64;
+      ctx.fileVwrPanel.appendChild(ctx.fileVwrRadioB64);
+      ctx.fileVwrLabelB64 = document.createElement('label');
+      ctx.fileVwrLabelB64.htmlFor = ctx.id + '-load-type-b64';
+      ctx.fileVwrLabelB64.innerText = 'Base64';
+      ctx.fileVwrPanel.appendChild(ctx.fileVwrLabelB64);
 
-      ctx.fileViewerRadioBin = document.createElement('input');
-      ctx.fileViewerRadioBin.type = 'radio';
-      ctx.fileViewerRadioBin.id = ctx.id + '-load-type-bin';
-      ctx.fileViewerRadioBin.name = ctx.id + '-load-type';
-      ctx.fileViewerRadioBin.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
-      ctx.fileViewerRadioBin.value = 'binary';
-      ctx.fileViewerRadioBin.onchange = ctx.openViewerBin;
-      ctx.fileViewerPanel.appendChild(ctx.fileViewerRadioBin);
-      ctx.fileViewerLabelBin = document.createElement('label');
-      ctx.fileViewerLabelBin.htmlFor = ctx.id + '-load-type-bin';
-      ctx.fileViewerLabelBin.innerText = 'Binary';
-      ctx.fileViewerPanel.appendChild(ctx.fileViewerLabelBin);
+      ctx.fileVwrRadioBin = document.createElement('input');
+      ctx.fileVwrRadioBin.type = 'radio';
+      ctx.fileVwrRadioBin.id = ctx.id + '-load-type-bin';
+      ctx.fileVwrRadioBin.name = ctx.id + '-load-type';
+      ctx.fileVwrRadioBin.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+      ctx.fileVwrRadioBin.value = 'binary';
+      ctx.fileVwrRadioBin.onchange = ctx.openViewerBin;
+      ctx.fileVwrPanel.appendChild(ctx.fileVwrRadioBin);
+      ctx.fileVwrLabelBin = document.createElement('label');
+      ctx.fileVwrLabelBin.htmlFor = ctx.id + '-load-type-bin';
+      ctx.fileVwrLabelBin.innerText = 'Binary';
+      ctx.fileVwrPanel.appendChild(ctx.fileVwrLabelBin);
 
-      var reloadBtn = ctx.createBtn(ctx, 'Reload', ctx.fileViewerPanel);
+      var reloadBtn = ctx.createBtn(ctx, 'Reload', ctx.fileVwrPanel);
       reloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       reloadBtn.onclick = ctx.reloadFile;
       ctx.fileReloadBtn = reloadBtn;
 
-      var clearBtn = ctx.createBtn(ctx, 'Clear', ctx.fileViewerPanel);
+      var clearBtn = ctx.createBtn(ctx, 'Clear', ctx.fileVwrPanel);
       clearBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
       clearBtn.onclick = ctx.clearFile;
       ctx.fileClrBtn = clearBtn;
@@ -5540,7 +5540,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
       ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.handleFileDropOnFileViewer);
-      ctx.fileViewerPanel.appendChild(ctx.filePreviewWrapper);
+      ctx.fileVwrPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
       ctx.setStyle(ctx.filePreview, 'min-height', 'calc(50% + 10px)');
@@ -5549,12 +5549,12 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
       ctx.filePreviewWrapper.appendChild(ctx.filePreview);
 
-      ctx.fileViewerFooter = document.createElement('div');
-      ctx.fileViewerFooter.style.width = 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)';
-      ctx.fileViewerFooter.style.height = (ctx.computedFontSize + 3) + 'px';
-      ctx.fileViewerFooter.style.opacity = 0;
-      ctx.fileViewerFooter.style.transition = 'opacity 0.5s linear';
-      ctx.fileViewerPanel.appendChild(ctx.fileViewerFooter);
+      ctx.fileVwrFooter = document.createElement('div');
+      ctx.fileVwrFooter.style.width = 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)';
+      ctx.fileVwrFooter.style.height = (ctx.computedFontSize + 3) + 'px';
+      ctx.fileVwrFooter.style.opacity = 0;
+      ctx.fileVwrFooter.style.transition = 'opacity 0.5s linear';
+      ctx.fileVwrPanel.appendChild(ctx.fileVwrFooter);
 
       ctx.fileLoadProgressBar = document.createElement('div');
       ctx.fileLoadProgressBar.style.display = 'inline-block';
@@ -5562,7 +5562,7 @@ DebugJS.prototype = {
       ctx.fileLoadProgressBar.style.height = 'auto';
       ctx.fileLoadProgressBar.style.padding = 0;
       ctx.fileLoadProgressBar.style.border = '1px solid #ccc';
-      ctx.fileViewerFooter.appendChild(ctx.fileLoadProgressBar);
+      ctx.fileVwrFooter.appendChild(ctx.fileLoadProgressBar);
 
       ctx.fileLoadProgress = document.createElement('div');
       ctx.fileLoadProgress.style.width = 'calc(100% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
@@ -5575,60 +5575,60 @@ DebugJS.prototype = {
       ctx.fileLoadProgress.innerText = '0%';
       ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
 
-      ctx.fileLoadCancelBtn = ctx.createBtn(ctx, '[CANCEL]', ctx.fileViewerFooter);
+      ctx.fileLoadCancelBtn = ctx.createBtn(ctx, '[CANCEL]', ctx.fileVwrFooter);
       ctx.fileLoadCancelBtn.style.position = 'relative';
       ctx.fileLoadCancelBtn.style.top = '2px';
       ctx.fileLoadCancelBtn.style.float = 'right';
       ctx.fileLoadCancelBtn.onclick = ctx.cancelLoadFile;
 
-      ctx.fileLoadB64dturl = document.createElement('div');
-      ctx.setStyle(ctx.fileLoadB64dturl, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
-      ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
+      ctx.fileVwrDtUrlWrp = document.createElement('div');
+      ctx.setStyle(ctx.fileVwrDtUrlWrp, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
+      ctx.filePreviewWrapper.appendChild(ctx.fileVwrDtUrlWrp);
 
-      ctx.fileLoadB64scheme = ctx.createTextInput('calc(100% - 15.5em)', null, ctx.opt.fontColor, '', null);
-      ctx.fileLoadB64dturl.appendChild(ctx.fileLoadB64scheme);
+      ctx.fileVwrDtUrlScheme = ctx.createTextInput('calc(100% - 15.5em)', null, ctx.opt.fontColor, '', null);
+      ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrDtUrlScheme);
 
-      var decodeBtn = ctx.createBtn(ctx, 'Decode', ctx.fileLoadB64dturl);
+      var decodeBtn = ctx.createBtn(ctx, 'Decode', ctx.fileVwrDtUrlWrp);
       decodeBtn.style.float = 'right';
       decodeBtn.style.marginRight = '4px';
       decodeBtn.onclick = ctx.decodeFileViewData;
 
-      var decModeBtn = ctx.createBtn(ctx, '[B64]', ctx.fileLoadB64dturl);
+      var decModeBtn = ctx.createBtn(ctx, '[B64]', ctx.fileVwrDtUrlWrp);
       decModeBtn.style.float = 'right';
       decModeBtn.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
       decModeBtn.onclick = ctx.toggleDecMode;
-      ctx.fileViewerDecModeBtn = decModeBtn;
+      ctx.fileVwrDecModeBtn = decModeBtn;
 
-      var imgBtn = ctx.createBtn(ctx, '<image>', ctx.fileLoadB64dturl);
+      var imgBtn = ctx.createBtn(ctx, '<image>', ctx.fileVwrDtUrlWrp);
       imgBtn.style.float = 'right';
       imgBtn.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
       imgBtn.onclick = ctx.setDtSchmImg;
 
-      var txtBtn = ctx.createBtn(ctx, '<text>', ctx.fileLoadB64dturl);
+      var txtBtn = ctx.createBtn(ctx, '<text>', ctx.fileVwrDtUrlWrp);
       txtBtn.style.float = 'right';
       txtBtn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
       txtBtn.onclick = ctx.setDtSchmTxt;
 
-      ctx.fileLoadB64txtarea = document.createElement('textarea');
-      ctx.fileLoadB64txtarea.className = ctx.id + '-editor';
-      ctx.setStyle(ctx.fileLoadB64txtarea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
-      ctx.fileLoadB64dturl.appendChild(ctx.fileLoadB64txtarea);
+      ctx.fileVwrDtTxtArea = document.createElement('textarea');
+      ctx.fileVwrDtTxtArea.className = ctx.id + '-editor';
+      ctx.setStyle(ctx.fileVwrDtTxtArea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
+      ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrDtTxtArea);
 
       ctx.clearFile();
     } else {
-      ctx.toolsBodyPanel.appendChild(ctx.fileViewerPanel);
+      ctx.toolsBodyPanel.appendChild(ctx.fileVwrPanel);
     }
 
     if (format != undefined) {
       if (format == DebugJS.FILE_LOAD_FMT_B64) {
-        ctx.fileViewerRadioBin.checked = false;
-        ctx.fileViewerRadioB64.checked = true;
+        ctx.fileVwrRadioBin.checked = false;
+        ctx.fileVwrRadioB64.checked = true;
       } else {
-        ctx.fileViewerRadioBin.checked = true;
-        ctx.fileViewerRadioB64.checked = false;
+        ctx.fileVwrRadioBin.checked = true;
+        ctx.fileVwrRadioB64.checked = false;
       }
       if (ctx.fileLoadFormat != format) {
-        ctx.loadFile(ctx.fileViewerFile, format);
+        ctx.loadFile(ctx.fileVwrFile, format);
       }
     }
   },
@@ -5636,8 +5636,8 @@ DebugJS.prototype = {
   closeFileLoader: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) &&
-        (ctx.fileViewerPanel != null)) {
-      ctx.removeToolFuncPanel(ctx, ctx.fileViewerPanel);
+        (ctx.fileVwrPanel != null)) {
+      ctx.removeToolFuncPanel(ctx, ctx.fileVwrPanel);
     }
   },
 
@@ -5650,7 +5650,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.clearFile();
     if (e.target.files) {
-      var format = (ctx.fileViewerRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+      var format = (ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
       ctx.loadFile(e.target.files[0], format);
     }
   },
@@ -5662,7 +5662,7 @@ DebugJS.prototype = {
     try {
       if (e.dataTransfer.files) {
         if (e.dataTransfer.files.length > 0) {
-          ctx.fileViewerSysCb = cb;
+          ctx.fileVwrSysCb = cb;
           ctx.loadFile(e.dataTransfer.files[0], format);
         } else {
           DebugJS._log.w('handleFileDrop() e.dataTransfer.files.length == 0');
@@ -5678,7 +5678,7 @@ DebugJS.prototype = {
 
   handleFileDropOnFileViewer: function(e) {
     var ctx = DebugJS.ctx;
-    var format = (ctx.fileViewerRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+    var format = (ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
     ctx.handleFileDrop(ctx, e, format, null);
   },
 
@@ -5732,8 +5732,8 @@ DebugJS.prototype = {
 
   loadFile: function(file, format) {
     var ctx = DebugJS.ctx;
-    ctx.fileViewerDataSrcType = 'file';
-    ctx.fileViewerFile = file;
+    ctx.fileVwrDataSrcType = 'file';
+    ctx.fileVwrFile = file;
     if (!file) return;
     if ((file.size == 0) && (file.type == '')) {
       var html = ctx.getFileInfo(file);
@@ -5760,18 +5760,18 @@ DebugJS.prototype = {
 
   openViewerB64: function() {
     var ctx = DebugJS.ctx;
-    ctx.filePreviewWrapper.appendChild(ctx.fileLoadB64dturl);
+    ctx.filePreviewWrapper.appendChild(ctx.fileVwrDtUrlWrp);
     var dtSrc = ctx.dataSrcType();
     switch (dtSrc) {
       case 'file':
-        if (ctx.fileViewerByteArray) {
+        if (ctx.fileVwrByteArray) {
           ctx.viewBinAsB64(ctx);
         } else {
-          DebugJS.ctx.loadFile(ctx.fileViewerFile, DebugJS.FILE_LOAD_FMT_B64);
+          DebugJS.ctx.loadFile(ctx.fileVwrFile, DebugJS.FILE_LOAD_FMT_B64);
         }
         break;
       case 'b64':
-        ctx.showB64Preview(ctx, null, ctx.fileViewerDataSrc.cheme, ctx.fileViewerDataSrc.data);
+        ctx.showB64Preview(ctx, null, ctx.fileVwrDataSrc.cheme, ctx.fileVwrDataSrc.data);
         break;
       case 'bin':
       case 'hex':
@@ -5782,22 +5782,22 @@ DebugJS.prototype = {
 
   openViewerBin: function() {
     var ctx = DebugJS.ctx;
-    if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileLoadB64dturl)) {
-      ctx.filePreviewWrapper.removeChild(ctx.fileLoadB64dturl);
+    if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileVwrDtUrlWrp)) {
+      ctx.filePreviewWrapper.removeChild(ctx.fileVwrDtUrlWrp);
     }
     var dtSrc = ctx.dataSrcType();
     switch (dtSrc) {
       case 'file':
-        if (ctx.fileViewerDataSrc) {
-          ctx.decodeB64dataAsB(ctx.fileViewerDataSrc.data);
+        if (ctx.fileVwrDataSrc) {
+          ctx.decodeB64dataAsB(ctx.fileVwrDataSrc.data);
         } else {
-          DebugJS.ctx.loadFile(ctx.fileViewerFile, DebugJS.FILE_LOAD_FMT_BIN);
+          DebugJS.ctx.loadFile(ctx.fileVwrFile, DebugJS.FILE_LOAD_FMT_BIN);
         }
         break;
       case 'b64':
       case 'bin':
       case 'hex':
-        ctx.decodeB64dataAsB(ctx.fileViewerDataSrc.data);
+        ctx.decodeB64dataAsB(ctx.fileVwrDataSrc.data);
         break;
       default:
         ctx.updateFilePreview('');
@@ -5806,63 +5806,63 @@ DebugJS.prototype = {
 
   decodeFileViewData: function() {
     var ctx = DebugJS.ctx;
-    var mode = ctx.fileViewerDecMode;
-    var scheme = ctx.fileLoadB64scheme.value;
-    var data = ctx.fileLoadB64txtarea.value;
+    var mode = ctx.fileVwrDecMode;
+    var scheme = ctx.fileVwrDtUrlScheme.value;
+    var data = ctx.fileVwrDtTxtArea.value;
     ctx.clearFile();
     data = DebugJS.delAllSP(data);
     data = DebugJS.delAllNL(data);
-    ctx.fileViewerDataSrc = {scheme: scheme, data: data};
+    ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     ctx.setDataUrl(ctx, scheme, data);
     switch (mode) {
       case 'bin':
-        ctx.fileViewerDataSrcType = 'bin';
+        ctx.fileVwrDataSrcType = 'bin';
         ctx.decodeBin(ctx, data);
         break;
       case 'hex':
-        ctx.fileViewerDataSrcType = 'hex';
+        ctx.fileVwrDataSrcType = 'hex';
         ctx.decodeHex(ctx, data);
         break;
       default:
-        ctx.fileViewerDataSrcType = 'b64';
+        ctx.fileVwrDataSrcType = 'b64';
         ctx.showB64Preview(ctx, null, scheme, data);
     }
   },
 
   decodeBin: function(ctx, bin) {
     var a = DebugJS.str2binArr(bin, 8, '0b');
-    ctx.fileViewerByteArray = a;
+    ctx.fileVwrByteArray = a;
     ctx.viewBinAsB64(ctx);
   },
 
   decodeHex: function(ctx, hex) {
     var a = DebugJS.str2binArr(hex, 2, '0x');
-    ctx.fileViewerByteArray = a;
+    ctx.fileVwrByteArray = a;
     ctx.viewBinAsB64(ctx);
   },
 
   decodeB64dataAsB: function(b64) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.Base64.decode(b64);
-    ctx.fileViewerByteArray = a;
+    ctx.fileVwrByteArray = a;
     ctx.showBinDump(ctx, a);
   },
 
   viewBinAsB64: function(ctx) {
-    var file = ctx.fileViewerFile;
+    var file = ctx.fileVwrFile;
     var scheme;
     if (file) {
       scheme = 'data:' + file.type + ';base64';
     } else {
-      scheme = ctx.fileViewerDataSrc.scheme;
+      scheme = ctx.fileVwrDataSrc.scheme;
     }
     var limit = ctx.props.prevlimit;
     if (file && (file.size > limit)) {
       ctx.showFileSizeExceeds(ctx, file, limit);
       return;
     } else {
-      var data = DebugJS.Base64.encode(ctx.fileViewerByteArray);
-      ctx.fileViewerDataSrc = {scheme: scheme, data: data};
+      var data = DebugJS.Base64.encode(ctx.fileVwrByteArray);
+      ctx.fileVwrDataSrc = {scheme: scheme, data: data};
       ctx.setDataUrl(ctx, scheme, data);
       ctx.showB64Preview(ctx, file, scheme, data);
     }
@@ -5875,14 +5875,14 @@ DebugJS.prototype = {
   },
 
   onAbortLoadFile: function(e) {
-    DebugJS.ctx.fileViewerSysCb = null;
+    DebugJS.ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
     DebugJS.ctx.updateFilePreview('File read cancelled.');
     setTimeout(DebugJS.ctx.fileLoadFinalize, 1000);
   },
 
   onFileLoadError: function(e) {
-    DebugJS.ctx.fileViewerSysCb = null;
+    DebugJS.ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
     var te = e.target.error;
     var err;
@@ -5918,7 +5918,7 @@ DebugJS.prototype = {
   },
 
   onFileLoadStart: function(e) {
-    DebugJS.addClass(DebugJS.ctx.fileViewerFooter, DebugJS.ctx.id + '-loading');
+    DebugJS.addClass(DebugJS.ctx.fileVwrFooter, DebugJS.ctx.id + '-loading');
     DebugJS.ctx.updateFilePreview('LOADING...');
   },
 
@@ -5939,7 +5939,7 @@ DebugJS.prototype = {
     setTimeout(ctx.fileLoadFinalize, 1000);
     var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64);
     DebugJS.callEvtListener('fileloaded', file, content, isB64);
-    ctx.fileViewerSysCb = null;
+    ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
   },
 
@@ -5955,12 +5955,12 @@ DebugJS.prototype = {
       }
     }
     var b64ctt = DebugJS.splitDataUrl(dturl);
-    ctx.fileViewerDataSrc = b64ctt;
+    ctx.fileVwrDataSrc = b64ctt;
     var cType = DebugJS.getContentType(null, file, b64ctt.data);
     if (cType == 'text') {
-      if (ctx.fileViewerSysCb) {
+      if (ctx.fileVwrSysCb) {
         var decoded = DebugJS.decodeBase64(b64ctt.data);
-        ctx.fileViewerSysCb(ctx, true, file, decoded);
+        ctx.fileVwrSysCb(ctx, true, file, decoded);
       }
     }
     DebugJS.file.onLoaded(file, b64ctt.data);
@@ -5970,25 +5970,25 @@ DebugJS.prototype = {
 
   onFileLoadedBin: function(ctx, file, content) {
     var buf = new Uint8Array(content);
-    ctx.fileViewerByteArray = buf;
+    ctx.fileVwrByteArray = buf;
     DebugJS.file.onLoaded(file, buf);
     ctx.showBinDump(ctx, buf);
   },
 
   switchFileScreen: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.fileViewerRadioB64.checked) {
-      ctx.fileViewerRadioBin.checked = true;
+    if (ctx.fileVwrRadioB64.checked) {
+      ctx.fileVwrRadioBin.checked = true;
       ctx.openViewerBin();
     } else {
-      ctx.fileViewerRadioB64.checked = true;
+      ctx.fileVwrRadioB64.checked = true;
       ctx.openViewerB64();
     }
   },
 
   toggleDecMode: function() {
     var ctx = DebugJS.ctx;
-    var mode = ctx.fileViewerDecMode;
+    var mode = ctx.fileVwrDecMode;
     switch (mode) {
       case 'b64':
         mode = 'hex';
@@ -5999,13 +5999,13 @@ DebugJS.prototype = {
       default:
         mode = 'b64';
     }
-    ctx.fileViewerDecMode = mode;
-    ctx.fileViewerDecModeBtn.innerText = '[' + mode.toUpperCase() + ']';
+    ctx.fileVwrDecMode = mode;
+    ctx.fileVwrDecModeBtn.innerText = '[' + mode.toUpperCase() + ']';
   },
 
   toggleBinMode: function() {
     var ctx = DebugJS.ctx;
-    var opt = ctx.fileViewerBinViewOpt;
+    var opt = ctx.fileVwrBinViewOpt;
     switch (opt.mode) {
       case 'bin':
         opt.mode = 'dec';
@@ -6016,7 +6016,7 @@ DebugJS.prototype = {
       default:
         opt.mode = 'bin';
     }
-    ctx.showBinDump(ctx, ctx.fileViewerByteArray);
+    ctx.showBinDump(ctx, ctx.fileVwrByteArray);
   },
 
   toggleShowAddr: function() {
@@ -6033,18 +6033,18 @@ DebugJS.prototype = {
 
   toggleBinVwrOpt: function(ctx, key) {
     var ctx = DebugJS.ctx;
-    var opt = ctx.fileViewerBinViewOpt;
+    var opt = ctx.fileVwrBinViewOpt;
     opt[key] = (opt[key] ? false : true);
-    var file = ctx.fileViewerFile;
+    var file = ctx.fileVwrFile;
     var html = '';
     if (file) html += ctx.getFileInfo(file);
-    html += ctx.getBinDumpHtml(ctx.fileViewerByteArray, opt.mode, opt.addr, opt.space, opt.ascii);
+    html += ctx.getBinDumpHtml(ctx.fileVwrByteArray, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
 
   showBinDump: function(ctx, buf) {
-    var file = ctx.fileViewerFile;
-    var opt = ctx.fileViewerBinViewOpt;
+    var file = ctx.fileVwrFile;
+    var opt = ctx.fileVwrBinViewOpt;
     var html = '';
     if (file) html += ctx.getFileInfo(file);
     html += ctx.getBinDumpHtml(buf, opt.mode, opt.addr, opt.space, opt.ascii);
@@ -6076,8 +6076,8 @@ DebugJS.prototype = {
 
   setDataUrl: function(ctx, scheme, data) {
     scheme = scheme.replace(/,$/, '');
-    ctx.fileLoadB64scheme.value = scheme + ',';
-    ctx.fileLoadB64txtarea.value = data;
+    ctx.fileVwrDtUrlScheme.value = scheme + ',';
+    ctx.fileVwrDtTxtArea.value = data;
   },
 
   getFileInfo: function(file) {
@@ -6107,8 +6107,8 @@ DebugJS.prototype = {
     return (txt + DebugJS.EOF + '\n');
   },
 
-  toggleShowHideNL: function() {
-    var el = document.getElementsByClassName('dbg-nl');
+  toggleShowHideCC: function() {
+    var el = document.getElementsByClassName('dbg-cc');
     for (var i = 0; i < el.length; i++) {
       DebugJS.toggleElShowHide(el[i]);
     }
@@ -6247,38 +6247,38 @@ DebugJS.prototype = {
   },
 
   fileLoadFinalize: function() {
-    DebugJS.removeClass(DebugJS.ctx.fileViewerFooter, DebugJS.ctx.id + '-loading');
+    DebugJS.removeClass(DebugJS.ctx.fileVwrFooter, DebugJS.ctx.id + '-loading');
   },
 
   reloadFile: function() {
     var ctx = DebugJS.ctx;
     var fmt;
-    if (ctx.fileViewerRadioB64.checked) {
+    if (ctx.fileVwrRadioB64.checked) {
       fmt = DebugJS.FILE_LOAD_FMT_B64;
     } else {
       fmt = DebugJS.FILE_LOAD_FMT_BIN;
     }
-    ctx.loadFile(ctx.fileViewerFile, fmt);
+    ctx.loadFile(ctx.fileVwrFile, fmt);
   },
 
   clearFile: function() {
     var ctx = DebugJS.ctx;
-    ctx.fileViewerDataSrcType = null;
-    ctx.fileViewerFile = null;
-    ctx.fileViewerDataSrc = null;
-    ctx.fileViewerByteArray = null;
+    ctx.fileVwrDataSrcType = null;
+    ctx.fileVwrFile = null;
+    ctx.fileVwrDataSrc = null;
+    ctx.fileVwrByteArray = null;
     ctx.fileReader = null;
     ctx.filePreview.innerText = 'Drop a file here';
     ctx.setDtSchmTxt();
-    ctx.fileLoadB64txtarea.value = '';
+    ctx.fileVwrDtTxtArea.value = '';
   },
 
   dataSrcType: function() {
-    return DebugJS.ctx.fileViewerDataSrcType;
+    return DebugJS.ctx.fileVwrDataSrcType;
   },
 
   setDtSchm: function(type) {
-    DebugJS.ctx.fileLoadB64scheme.value = 'data:' + type + ';base64,';
+    DebugJS.ctx.fileVwrDtUrlScheme.value = 'data:' + type + ';base64,';
   },
 
   setDtSchmTxt: function() {
@@ -12042,17 +12042,15 @@ DebugJS.file.onDrop = function(e) {
 };
 DebugJS.isTargetEl = function(target, el) {
   do {
-    if (target == el) {
-      return true;
-    }
+    if (target == el) return true;
     target = target.parentNode;
   } while (target != null);
   return false;
 };
 DebugJS.file.onLoaded = function(file, content) {
   var loader = DebugJS.file.ongoingLoader;
-  if ((loader == null) || (!loader.cb)) return;
-  if ((loader.mode == 'b64') && (loader.decode == true)) {
+  if ((!loader) || (!loader.cb)) return;
+  if ((loader.mode == 'b64') && (loader.decode)) {
     content = DebugJS.decodeBase64(content);
   }
   loader.cb(file, content);
@@ -14805,9 +14803,7 @@ DebugJS.test.result = function() {
   var tstSt = test.getStatus();
   var cnt = test.getSumCount();
   var s = 'Test Result:\n';
-  if (nm != '') {
-    s += '[TEST NAME]\n' + nm + '\n\n';
-  }
+  if (nm != '') s += '[TEST NAME]\n' + nm + '\n\n';
   if (data.desc.length > 0) s += '[DESCRIPTION]\n';
   var i;
   for (i = 0; i < data.desc.length; i++) {
@@ -14827,10 +14823,7 @@ DebugJS.test.getDetailStr = function(results) {
   if (n > M) n = M;
   var details = '';
   for (var id in results) {
-    var testId = id;
-    if (id == '') {
-      testId = '<span style="color:#ccc">&lt;No Test ID&gt;</span>';
-    }
+    var testId = (id == '' ? '<span style="color:#ccc">&lt;No Test ID&gt;</span>' : id);
     var st = test.chkResult(results[id].results);
     var rs = test.getStyledStStr(st);
     details += rs + ' ' + testId + '\n';
@@ -14957,9 +14950,7 @@ DebugJS.test.countLongestLabel = function() {
 };
 
 DebugJS.getElement = function(selector, idx) {
-  if (typeof selector != 'string') {
-    return selector;
-  }
+  if (typeof selector != 'string') return selector;
   idx |= 0;
   var el = null;
   try {
@@ -15324,70 +15315,71 @@ DebugJS.x.setBtnLabel = function(l) {
   if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
 DebugJS.balse = function() {
-  DebugJS.boot = DebugJS.f_;
-  DebugJS.start = DebugJS.f_;
-  DebugJS.log = DebugJS.f_;
-  DebugJS.log.e = DebugJS.f_;
-  DebugJS.log.w = DebugJS.f_;
-  DebugJS.log.i = DebugJS.f_;
-  DebugJS.log.d = DebugJS.f_;
-  DebugJS.log.v = DebugJS.f_;
-  DebugJS.log.t = DebugJS.f_;
-  DebugJS.log.p = DebugJS.f_;
-  DebugJS.log.json = DebugJS.f_;
-  DebugJS.log.clear = DebugJS.f_;
-  DebugJS.log.res = DebugJS.f_;
-  DebugJS.log.res.err = DebugJS.f_;
-  DebugJS.log.suspend = DebugJS.f_;
-  DebugJS.log.resume = DebugJS.f_;
-  DebugJS.log.root = DebugJS.f_;
-  DebugJS.addEvtListener = DebugJS.f_;
-  DebugJS.addFileLoader = DebugJS.f_;
-  DebugJS.adjustResBox = DebugJS.f_;
-  DebugJS.cmd = DebugJS.f_;
-  DebugJS.bat = DebugJS.f_;
-  DebugJS.bat.set = DebugJS.f_;
-  DebugJS.bat.run = DebugJS.f_;
-  DebugJS.bat.pause = DebugJS.f_;
-  DebugJS.bat.resume = DebugJS.f_;
-  DebugJS.bat.stop = DebugJS.f_;
-  DebugJS.bat.list = DebugJS.f_;
-  DebugJS.bat.status = DebugJS.f_;
-  DebugJS.bat.isRunning = DebugJS.f_;
-  DebugJS.bat.setCond = DebugJS.f_;
-  DebugJS.countElements = DebugJS.f_;
-  DebugJS.getHTML = DebugJS.f_;
-  DebugJS.init = DebugJS.f_;
-  DebugJS.dumpLog = DebugJS.f_;
-  DebugJS.show = DebugJS.f_;
-  DebugJS.hide = DebugJS.f_;
-  DebugJS.http = DebugJS.f_;
-  DebugJS.led = DebugJS.f_;
-  DebugJS.led.on = DebugJS.f_;
-  DebugJS.led.off = DebugJS.f_;
-  DebugJS.msg = DebugJS.f_;
-  DebugJS.msg.clear = DebugJS.f_;
-  DebugJS.opacity = DebugJS.f_;
-  DebugJS.stack = DebugJS.f_;
-  DebugJS.stopwatch = DebugJS.f_;
-  DebugJS.stopwatch.start = DebugJS.f_;
-  DebugJS.stopwatch.stop = DebugJS.f_;
-  DebugJS.stopwatch.end = DebugJS.f_;
-  DebugJS.stopwatch.split = DebugJS.f_;
-  DebugJS.stopwatch.reset = DebugJS.f_;
-  DebugJS.time.start = DebugJS.f_;
-  DebugJS.time.split = DebugJS.f_;
-  DebugJS.time.end = DebugJS.f_;
-  DebugJS.time.check = DebugJS.f_;
-  DebugJS.ver = DebugJS.f_;
-  DebugJS.wd.start = DebugJS.f_;
-  DebugJS.wd.stop = DebugJS.f_;
-  DebugJS.x.addCmdTbl = DebugJS.f_;
-  DebugJS.x.addPanel = DebugJS.f_;
-  DebugJS.x.getPanel = DebugJS.f_;
-  DebugJS.x.removePanel = DebugJS.f_;
-  DebugJS.x.setBtnLabel = DebugJS.f_;
-  DebugJS._createResBox = DebugJS.f_;
+  var x = DebugJS.f_;
+  DebugJS.boot = x;
+  DebugJS.start = x;
+  DebugJS.log = x;
+  DebugJS.log.e = x;
+  DebugJS.log.w = x;
+  DebugJS.log.i = x;
+  DebugJS.log.d = x;
+  DebugJS.log.v = x;
+  DebugJS.log.t = x;
+  DebugJS.log.p = x;
+  DebugJS.log.json = x;
+  DebugJS.log.clear = x;
+  DebugJS.log.res = x;
+  DebugJS.log.res.err = x;
+  DebugJS.log.suspend = x;
+  DebugJS.log.resume = x;
+  DebugJS.log.root = x;
+  DebugJS.addEvtListener = x;
+  DebugJS.addFileLoader = x;
+  DebugJS.adjustResBox = x;
+  DebugJS.cmd = x;
+  DebugJS.bat = x;
+  DebugJS.bat.set = x;
+  DebugJS.bat.run = x;
+  DebugJS.bat.pause = x;
+  DebugJS.bat.resume = x;
+  DebugJS.bat.stop = x;
+  DebugJS.bat.list = x;
+  DebugJS.bat.status = x;
+  DebugJS.bat.isRunning = x;
+  DebugJS.bat.setCond = x;
+  DebugJS.countElements = x;
+  DebugJS.getHTML = x;
+  DebugJS.init = x;
+  DebugJS.dumpLog = x;
+  DebugJS.show = x;
+  DebugJS.hide = x;
+  DebugJS.http = x;
+  DebugJS.led = x;
+  DebugJS.led.on = x;
+  DebugJS.led.off = x;
+  DebugJS.msg = x;
+  DebugJS.msg.clear = x;
+  DebugJS.opacity = x;
+  DebugJS.stack = x;
+  DebugJS.stopwatch = x;
+  DebugJS.stopwatch.start = x;
+  DebugJS.stopwatch.stop = x;
+  DebugJS.stopwatch.end = x;
+  DebugJS.stopwatch.split = x;
+  DebugJS.stopwatch.reset = x;
+  DebugJS.time.start = x;
+  DebugJS.time.split = x;
+  DebugJS.time.end = x;
+  DebugJS.time.check = x;
+  DebugJS.ver = x;
+  DebugJS.wd.start = x;
+  DebugJS.wd.stop = x;
+  DebugJS.x.addCmdTbl = x;
+  DebugJS.x.addPanel = x;
+  DebugJS.x.getPanel = x;
+  DebugJS.x.removePanel = x;
+  DebugJS.x.setBtnLabel = x;
+  DebugJS._createResBox = x;
 };
 DebugJS.boot = function() {
   DebugJS.rootFncs();
