@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809050012';
+  this.v = '201809050045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1307,7 +1307,6 @@ DebugJS.prototype = {
       ctx.setIntervalL(ctx);
     }
 
-    // -- R to L
     if (opt.togglableShowHide) {
       ctx.closeBtn = ctx.createBtn(ctx, 'x', ctx.headPanel);
       ctx.closeBtn.style.float = 'right';
@@ -1392,7 +1391,6 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(measureBtn);
       ctx.measureBtn = measureBtn;
     }
-    // -- R to L
 
     if (opt.useLed) {
       ctx.ledPanel = document.createElement('span');
@@ -13405,7 +13403,7 @@ DebugJS.point.createPtr = function() {
   ptr.style.left = point.x;
   ptr.style.zIndex = 0x7ffffffe;
   ptr.src = point.CURSOR_DFLT;
-  ptr.onmousedown = DebugJS.point.startDragging;
+  ptr.onmousedown = point.startDragging;
   document.body.appendChild(ptr);
   point.ptr = ptr;
 };
@@ -13625,8 +13623,7 @@ DebugJS.point.mouseevt = function(el, ev, b) {
   el.dispatchEvent(e);
 };
 DebugJS.point.keyevt = function(args) {
-  var point = DebugJS.point;
-  var el = point.getElementFromCurrentPos();
+  var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
   var ev = args[0];
   var e = DebugJS.event.create(ev);
@@ -13644,7 +13641,7 @@ DebugJS.point.keyevt = function(args) {
   e.ctrlKey = false;
   e.altKey = false;
   e.metaKey = false;
-  e = point.setKeyFlag(e, args);
+  e = DebugJS.point.setKeyFlag(e, args);
 
   el.dispatchEvent(e);
 };
@@ -13849,10 +13846,9 @@ DebugJS.point._move = function() {
   }
 };
 DebugJS.point.move.stop = function() {
-  var point = DebugJS.point;
-  if (point.move.tmid > 0) {
-    clearTimeout(point.move.tmid);
-    point.move.tmid = 0;
+  if (DebugJS.point.move.tmid > 0) {
+    clearTimeout(DebugJS.point.move.tmid);
+    DebugJS.point.move.tmid = 0;
     DebugJS.bat.unlock();
   }
 };
@@ -14689,21 +14685,18 @@ DebugJS.test.getLastResult = function() {
   return DebugJS.test.data.lastRslt;
 };
 DebugJS.test.prepare = function() {
-  var test = DebugJS.test;
-  test.setId(test.data.executingTestId);
+  DebugJS.test.setId(DebugJS.test.data.executingTestId);
 };
 DebugJS.test.setId = function(id) {
-  var test = DebugJS.test;
-  var data = test.data;
+  var data = DebugJS.test.data;
   if (data.results[id] == undefined) {
     data.results[id] = {comment: [], results: []};
   }
   data.executingTestId = id;
 };
 DebugJS.test.setCmnt = function(c) {
-  var test = DebugJS.test;
-  test.prepare();
-  test.data.results[test.data.executingTestId].comment.push(c);
+  DebugJS.test.prepare();
+  DebugJS.test.data.results[DebugJS.test.data.executingTestId].comment.push(c);
   DebugJS._log('# ' + c);
 };
 DebugJS.test.chkResult = function(results) {
@@ -14811,7 +14804,7 @@ DebugJS.test.result = function() {
   }
   if (data.desc.length > 0) s += '\n';
   if (test.countTotal(cnt) > 0) s += '[RESULTS]\n---------\n';
-  s += DebugJS.test.getDetailStr(data.results);
+  s += test.getDetailStr(data.results);
   s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n';
   s += DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
   return s;
