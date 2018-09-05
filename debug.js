@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809050045';
+  this.v = '201809051900';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11900,10 +11900,10 @@ DebugJS.createLogData = function(extInfo, wBf) {
   var LINE = '------------------------------------------------------------------------\n';
   var info = ['', '', '', ''];
   if (extInfo) {
-    if (extInfo.info1) info[0] = extInfo.info1;
-    if (extInfo.info2) info[1] = extInfo.info2;
-    if (extInfo.info3) info[2] = extInfo.info3;
-    if (extInfo.info4) info[3] = extInfo.info4;
+    if (extInfo.info0) info[0] = extInfo.info0;
+    if (extInfo.info1) info[1] = extInfo.info1;
+    if (extInfo.info2) info[2] = extInfo.info2;
+    if (extInfo.info3) info[3] = extInfo.info3;
   }
   var hd = DebugJS.createLogHeader();
   var logTxt = DebugJS.dumpLog('text', false, true);
