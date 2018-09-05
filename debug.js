@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809060035';
+  this.v = '201809060130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -320,7 +320,7 @@ var DebugJS = DebugJS || function() {
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
-    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat'},
+    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
@@ -477,6 +477,7 @@ DebugJS.STATE_BAT_PAUSE = 1 << 17;
 DebugJS.STATE_BAT_PAUSE_CMD = 1 << 18;
 DebugJS.STATE_BAT_PAUSE_CMD_KEY = 1 << 19;
 DebugJS.STATE_BAT_CONT = 1 << 20;
+DebugJS.STATE_BAT_BREAK = 1 << 21;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -7107,6 +7108,9 @@ DebugJS.prototype = {
       case 'clear':
         bat[a[0]]();
         break;
+      case 'set':
+        ctx._cmdBatSet(DebugJS.getArgsFrom(arg, 2), echo);
+        break;
       case 'stop':
         bat.terminate();
         break;
@@ -7132,6 +7136,28 @@ DebugJS.prototype = {
       default:
         DebugJS.printUsage(tbl.usage);
     }
+  },
+  _cmdBatSet: function(arg, echo) {
+    var a = DebugJS.splitArgsEx(arg);
+    var key = a[0];
+    var v = a[1];
+    if (!v) {DebugJS.printUsage('bat set break|delay val'); return;}
+    try {
+      v = eval(v);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return;
+    }
+    switch (key) {
+      case 'break':
+      case 'delay':
+        break;
+      default:
+        DebugJS.printUsage('bat set break|delay val');
+        return;
+    }
+    DebugJS.bat.ctrl[key] = v;
+    if (echo) DebugJS._log.res(v);
   },
 
   cmdBin: function(arg, tbl) {
@@ -12466,6 +12492,8 @@ DebugJS.bat.ctrl = {
   pc: 0,
   startPc: 0,
   endPc: 0,
+  break: 0,
+  delay: 0,
   echo: true,
   tmpEchoOff: false,
   cmnt: 0,
@@ -12662,6 +12690,15 @@ DebugJS.bat.exec = function() {
     bat.initCtrl(false);
     return;
   }
+  if (ctx.status & DebugJS.STATE_BAT_BREAK) {
+    ctx.status &= ~DebugJS.STATE_BAT_BREAK;
+  } else {
+    if (ctrl.pc == ctrl.break - 1) {
+      ctx.status |= DebugJS.STATE_BAT_BREAK;
+      bat.pause();
+      return;
+    }
+  }
   if (ctrl.pc > ctrl.endPc) {
     bat._exit(DebugJS.EXIT_SUCCESS);
     return;
@@ -12694,7 +12731,7 @@ DebugJS.bat.exec = function() {
   bat.next();
 };
 DebugJS.bat.next = function() {
-  DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, 0);
+  DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, DebugJS.bat.ctrl.delay);
 };
 DebugJS.bat.exec1 = function(l) {
   var cmd = DebugJS.bat.cmds[l - 1];
