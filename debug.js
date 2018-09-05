@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809052257';
+  this.v = '201809060035';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9927,6 +9927,19 @@ DebugJS.getDateTimeIso = function(s) {
   var dt = new Date(yyyy, (mm | 0) - 1, dd, hh, mi, ss, sss);
   return DebugJS.getDateTime(dt);
 };
+DebugJS.getDateTimeEx = function(s) {
+  if (DebugJS.isDateTimeFormatIso(s)) {
+    return DebugJS.getDateTimeIso(s);
+  }
+  if (typeof s == 'string') {
+    s = s.replace(/-/g, '/');
+    var dec = s.split('.');
+    if (dec.length > 0) s = dec[0];
+    s = (new Date(s)).getTime();
+    if (dec.length > 0) s += (dec[1] | 0);
+  }
+  return DebugJS.getDateTime(s);
+};
 DebugJS.date = function(val, iso) {
   val += '';
   val = DebugJS.delLeadingAndTrailingSP(val);
@@ -9982,7 +9995,7 @@ DebugJS.isDateTimeFormat = function(s, p) {
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isDateTimeFormatIso = function(s, p) {
-  if (s == null) {return false;}
+  if (typeof s != 'string') {return false;}
   var r = '^\\d{8}T\\d{0,6}\.?\\d{0,3}';
   if (!p) {r += '$';}
   return (s.match(new RegExp(r)) ? true : false);
@@ -10097,22 +10110,10 @@ DebugJS.getTimeOffsetStr = function(v, e) {
 };
 DebugJS.getTimeDurationStr = function(t1, t2) {
   var dec;
-  if (isNaN(t1)) {
-    t1 = t1.replace(/-/g, '/');
-    dec = t1.split('.');
-    if (dec.length > 0) t1 = dec[0];
-    t1 = (new Date(t1)).getTime();
-    if (dec.length > 0) t1 += (dec[1] | 0);
-  }
+  if (isNaN(t1)) t1 = DebugJS.getDateTimeEx(t1).time;
   var ms = t1;
   if (t2 != undefined) {
-    if (isNaN(t2)) {
-      t2 = t2.replace(/-/g, '/');
-      dec = t2.split('.');
-      if (dec.length > 0) t2 = dec[0];
-      t2 = (new Date(t2)).getTime();
-      if (dec.length > 0) t2 += (dec[1] | 0);
-    }
+    if (isNaN(t2)) t2 = DebugJS.getDateTimeEx(t2).time;
     ms = t2 - t1;
   }
   var s = '';
