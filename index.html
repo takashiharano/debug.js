@@ -3020,6 +3020,17 @@ var args = dbg.splitArgsEx('<input type="text" id="args-ex-txt" class="demo-text
   </tr>
 
   <tr>
+    <td class="name">dbg.countArgs</td>
+    <td>argument-string</td>
+    <td>
+      Returns number of arguments.<br>
+<pre>
+dbg.countArgs('<input type="text" id="cnt-args-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.res(dbg.countArgs(getVal('cnt-args-txt')));">DEMO</button>
+<span id="isvisible-ret"></span></pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.getArgVal</td>
     <td>
       argument-string<br>
@@ -3042,7 +3053,7 @@ var val = dbg.getArgVal('<input type="text" id="getargval-arg-txt" class="demo-t
     <td>
       Returns a value of an option.<br>
 <pre>
-var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b 123'>', '<input type="text" id="opt-val-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVal(getVal('opt-val-arg-txt'), getVal('opt-val-opt-txt')), 0, 'val =');">DEMO</button>
+var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-text" style="width:190px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>', '<input type="text" id="opt-val-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVal(getVal('opt-val-arg-txt'), getVal('opt-val-opt-txt')), 0, 'val =');">DEMO</button>
 <span id="isvisible-ret"></span></pre>
     </td>
   </tr>
@@ -3053,7 +3064,7 @@ var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-tex
     <td>
       Returns values of options.<br>
 <pre>
-var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b 123 -c'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVals(getVal('opt-vals-arg-txt')), 0, 'val =');">DEMO</button>
+var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-text" style="width:200px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVals(getVal('opt-vals-arg-txt')), 0, 'val =');">DEMO</button>
 <span id="isvisible-ret"></span></pre>
     </td>
   </tr>
@@ -4191,6 +4202,23 @@ $ test set result NT -label "result4" -info "nt test"
 
 $ test fin
 $ test result
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">time</td>
+    <td>
+      ms|time-string
+    </td>
+    <td>
+      Time duration calculator.<br><br>
+<pre class="eg">
+$ time 86400000
+-&gt; 1d 0h 0m 0s
+
+$ time -t1 "2018-09-05 10:00:00.000" -t2 "2018-09-05 12:34:56.789"
+-&gt; 2h 34m 56s 789ms
 </pre>
     </td>
   </tr>
