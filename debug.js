@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809060130';
+  this.v = '201809060730';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -727,9 +727,7 @@ DebugJS.prototype = {
       ctx.status |= DebugJS.STATE_INITIALIZED;
       return false;
     }
-    if (!ctx.bodyEl) {
-      return false;
-    }
+    if (!ctx.bodyEl) return false;
     ctx.initUi(ctx, restoreOpt);
     ctx.initCommandTable(ctx);
     ctx.status |= DebugJS.STATE_INITIALIZED;
@@ -6751,18 +6749,14 @@ DebugJS.prototype = {
 
   nextValidExtPanelIdx: function(ctx, idx) {
     for (var i = idx + 1; i < ctx.extPanels.length; i++) {
-      if (ctx.extPanels[i] != null) {
-        return i;
-      }
+      if (ctx.extPanels[i] != null) return i;
     }
     return -1;
   },
 
   existsValidExtPanel: function(ctx) {
     for (var i = 0; i < ctx.extPanels.length; i++) {
-      if (ctx.extPanels[i] != null) {
-        return true;
-      }
+      if (ctx.extPanels[i] != null) return true;
     }
     return false;
   },
@@ -12717,7 +12711,7 @@ DebugJS.bat.exec = function() {
   switch (bat.prepro(c)) {
     case 1:
       ctrl.tmpEchoOff = false;
-      bat.next();
+      bat.next(0);
       return;
     case 2:
       ctrl.tmpEchoOff = false;
@@ -12728,10 +12722,11 @@ DebugJS.bat.exec = function() {
   if (ctrl.pc > ctrl.startPc) {
     ctx._execCmd(c, echoFlg);
   }
-  bat.next();
+  bat.next(1);
 };
-DebugJS.bat.next = function() {
-  DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, DebugJS.bat.ctrl.delay);
+DebugJS.bat.next = function(f) {
+  var d = (f == 1 ? DebugJS.bat.ctrl.delay : 0);
+  DebugJS.bat.ctrl.tmid = setTimeout(DebugJS.bat.exec, d);
 };
 DebugJS.bat.exec1 = function(l) {
   var cmd = DebugJS.bat.cmds[l - 1];
@@ -13301,7 +13296,7 @@ DebugJS.bat.ldCtx = function() {
   ctx.updateTotalLine();
   ctx.updateBatNestLv();
   ctx.updateCurPc();
-  bat.next();
+  bat.next(1);
   return true;
 };
 DebugJS.bat.save = function() {
