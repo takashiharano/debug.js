@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809070007';
+  this.v = '201809070110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8527,7 +8527,7 @@ DebugJS.prototype = {
     if (DebugJS.hasOpt(arg, 'd')) fn = DebugJS.decodeRB64;
     var n = DebugJS.getOptVal(arg, 'n');
     if (n == null) {
-       n = 0;
+       n = 1;
     } else {
       if (n.length > 1) {
         var d = n.charAt(n.length - 1);
@@ -11011,6 +11011,9 @@ DebugJS.bitrot8R = function(v, n) {
   n = n % 8;
   return ((v << (8 - n)) | (v >> n)) & 255;
 };
+DebugJS.bitinv8 = function(v) {
+  return (~v) & 255;
+};
 
 DebugJS.utf8toByteArr = function(s) {
   var a = [];
@@ -11064,18 +11067,20 @@ DebugJS.decodeRB64 = function(rb64, n, toR) {
 DebugJS.RB64 = {};
 DebugJS.RB64.encode = function(a, n, toR) {
   var fn = (toR ? DebugJS.bitrot8R : DebugJS.bitrot8L);
+  if (n % 8 == 0) fn = DebugJS.bitinv8;
   var b = [];
   for (var i = 0; i < a.length; i++) {
     b.push(fn(a[i], n, toR));
   }
   var rb64 = DebugJS.Base64.encode(b);
   rb64 = DebugJS.cnvB64symE(rb64);
-  return DebugJS.strrev(rb64);
+  return rb64;
 };
 DebugJS.RB64.decode = function(rb64, n, toR) {
   var fn = (toR ? DebugJS.bitrot8R : DebugJS.bitrot8L);
+  if (n % 8 == 0) fn = DebugJS.bitinv8;
   rb64 = DebugJS.cnvB64symD(rb64);
-  var b = DebugJS.Base64.decode(DebugJS.strrev(rb64));
+  var b = DebugJS.Base64.decode(rb64);
   var a = [];
   for (var i = 0; i < b.length; i++) {
     a.push(fn(b[i], n, toR));
@@ -11093,13 +11098,6 @@ DebugJS.cnvB64symE = function(s) {
   s = s.replace(/\//g, '!');
   s = s.replace(/=/g, '$');
   return s;
-};
-DebugJS.strrev = function(s) {
-  var r = '';
-  for (var i = 0; i < s.length; i++) {
-    r = s.charAt(i) + r;
-  }
-  return r;
 };
 
 DebugJS.encodeBase64 = function(str) {
