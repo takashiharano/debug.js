@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809062000';
+  this.v = '201809070007';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -319,7 +319,8 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64 string', usage: 'base64 [-e|-d] string'},
+    {cmd: 'b64', fn: this.cmdBase64, usage: 'b64 [-e|-d] string', attr: DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', usage: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
@@ -358,6 +359,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
+    {cmd: 'rb64', fn: this.cmdRB64, desc: 'Encodes/Decodes Rotated Base64', usage: 'rb64 [-e|-d] -i str -n &lt;n&gt[L|R];'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
@@ -370,8 +372,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
     {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', usage: 'time ms|-t1 ms|datestr -t2 ms|datestr'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
-    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] string|codePoint(s)'},
-    {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] string'},
+    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] str|codePoint(s)'},
+    {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] str'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
@@ -8515,6 +8517,39 @@ DebugJS.prototype = {
     }
   },
 
+  cmdRB64: function(arg, tbl) {
+    if (DebugJS.countArgs(arg) == 0) {
+      DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    var toR = false;
+    var fn = DebugJS.encodeRB64;
+    if (DebugJS.hasOpt(arg, 'd')) fn = DebugJS.decodeRB64;
+    var n = DebugJS.getOptVal(arg, 'n');
+    if (n == null) {
+       n = 0;
+    } else {
+      if (n.length > 1) {
+        var d = n.charAt(n.length - 1);
+        if (isNaN(d)) {
+          if (d == 'R') toR = true;
+          n = n.substr(0, n.length - 1);
+        }
+      }
+    }
+    n |= 0;
+    var i = DebugJS.getOptVal(arg, 'i');
+    try {
+      i = eval(i);
+      var ret = fn(i, n, toR);
+      ret = DebugJS.encStringIfNeeded(ret);
+      DebugJS._log.res(ret);
+      return ret;
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
+  },
+
   cmdResume: function(arg, tbl) {
     var args = DebugJS.parseArgs(arg);
     if (arg == '') {
@@ -10943,7 +10978,6 @@ DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
   }
   return bin;
 };
-
 DebugJS.formatDec = function(v10) {
   v10 += '';
   var len = v10.length;
@@ -10958,7 +10992,6 @@ DebugJS.formatDec = function(v10) {
   }
   return dec;
 };
-
 DebugJS.formatHex = function(v16, prefix, upper) {
   var hex = v16;
   if (upper) {
@@ -10968,6 +11001,105 @@ DebugJS.formatHex = function(v16, prefix, upper) {
     hex = '0x' + hex;
   }
   return hex;
+};
+
+DebugJS.bitrot8L = function(v, n) {
+  n = n % 8;
+  return ((v << n) | (v >> (8 - n))) & 255;
+};
+DebugJS.bitrot8R = function(v, n) {
+  n = n % 8;
+  return ((v << (8 - n)) | (v >> n)) & 255;
+};
+
+DebugJS.utf8toByteArr = function(s) {
+  var a = [];
+  if (!s) return a;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charCodeAt(i);
+    if (c <= 0x7F) {
+      a.push(c);
+    } else if (c <= 0x07FF) {
+      a.push(((c >> 6) & 0x1F) | 0xC0);
+      a.push((c & 0x3F) | 0x80);
+    } else {
+      a.push(((c >> 12) & 0x0F) | 0xE0);
+      a.push(((c >> 6) & 0x3F) | 0x80);
+      a.push((c & 0x3F) | 0x80);
+    }
+  }
+  return a;
+};
+DebugJS.byteArrToUtf8 = function(a) {
+  if (!a) return null;
+  var s = '';
+  var i, c;
+  while (i = a.shift()) {
+    if (i <= 0x7F) {
+      s += String.fromCharCode(i);
+    } else if (i <= 0xDF) {
+      c = ((i & 0x1F) << 6);
+      c += a.shift() & 0x3F;
+      s += String.fromCharCode(c);
+    } else if (i <= 0xE0) {
+      c = ((a.shift() & 0x1F) << 6) | 0x0800;
+      c += a.shift() & 0x3F;
+      s += String.fromCharCode(c);
+    } else {
+      c = ((i & 0x0F) << 12);
+      c += (a.shift() & 0x3F) << 6;
+      c += a.shift() & 0x3F;
+      s += String.fromCharCode(c);
+    }
+  }
+  return s;
+};
+
+DebugJS.encodeRB64 = function(s, n, toR) {
+  return DebugJS.RB64.encode(DebugJS.utf8toByteArr(s), n, toR);
+};
+DebugJS.decodeRB64 = function(rb64, n, toR) {
+  return DebugJS.RB64.decode(rb64, n, (toR ? false : true));
+};
+DebugJS.RB64 = {};
+DebugJS.RB64.encode = function(a, n, toR) {
+  var fn = (toR ? DebugJS.bitrot8R : DebugJS.bitrot8L);
+  var b = [];
+  for (var i = 0; i < a.length; i++) {
+    b.push(fn(a[i], n, toR));
+  }
+  var rb64 = DebugJS.Base64.encode(b);
+  rb64 = DebugJS.cnvB64symE(rb64);
+  return DebugJS.strrev(rb64);
+};
+DebugJS.RB64.decode = function(rb64, n, toR) {
+  var fn = (toR ? DebugJS.bitrot8R : DebugJS.bitrot8L);
+  rb64 = DebugJS.cnvB64symD(rb64);
+  var b = DebugJS.Base64.decode(DebugJS.strrev(rb64));
+  var a = [];
+  for (var i = 0; i < b.length; i++) {
+    a.push(fn(b[i], n, toR));
+  }
+  return DebugJS.byteArrToUtf8(a);
+};
+DebugJS.cnvB64symD = function(s) {
+  s = s.replace(/-/g, '+');
+  s = s.replace(/!/g, '/');
+  s = s.replace(/\$/g, '=');
+  return s;
+};
+DebugJS.cnvB64symE = function(s) {
+  s = s.replace(/\+/g, '-');
+  s = s.replace(/\//g, '!');
+  s = s.replace(/=/g, '$');
+  return s;
+};
+DebugJS.strrev = function(s) {
+  var r = '';
+  for (var i = 0; i < s.length; i++) {
+    r = s.charAt(i) + r;
+  }
+  return r;
 };
 
 DebugJS.encodeBase64 = function(str) {
