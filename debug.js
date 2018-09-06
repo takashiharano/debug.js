@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809060730';
+  this.v = '201809062000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7146,6 +7146,9 @@ DebugJS.prototype = {
       case 'break':
       case 'delay':
         break;
+      case 'pc':
+        DebugJS.bat.setPc(v | 0);
+        break;
       default:
         DebugJS.printUsage('bat set break|delay val');
         return;
@@ -12484,6 +12487,7 @@ DebugJS.bat = function(b, a, sl, el) {
 DebugJS.bat.cmds = [];
 DebugJS.bat.ctrl = {
   pc: 0,
+  lr: 0,
   startPc: 0,
   endPc: 0,
   break: 0,
@@ -13234,9 +13238,12 @@ DebugJS.bat.exit = function() {
 DebugJS.bat.hasBatStopCond = function(key) {
   return DebugJS.hasKey(DebugJS.ctx.props.batstop, key, '|');
 };
-DebugJS.bat.resetPc = function() {
-  DebugJS.bat.ctrl.pc = 0;
+DebugJS.bat.setPc = function(v) {
+  DebugJS.bat.ctrl.pc = v;
   DebugJS.ctx.updateCurPc();
+};
+DebugJS.bat.resetPc = function() {
+  DebugJS.bat.setPc(0);
 };
 DebugJS.bat.clear = function() {
   DebugJS.bat.set('');
@@ -15282,6 +15289,13 @@ DebugJS.log.suspend = function() {
 };
 DebugJS.log.resume = function() {
   DebugJS.ctx.resumeLog();
+};
+DebugJS.log.preserve = function(f) {
+  var ctx = DebugJS.ctx;
+  if (f == undefined) {
+    return ((ctx.status & DebugJS.STATE_LOG_PRESERVED) ? true : false);
+  }
+  if (DebugJS.LS_AVAILABLE) ctx.setLogPreserve(ctx, f);
 };
 DebugJS.log.root = function(m) {
   if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
