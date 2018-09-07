@@ -4026,7 +4026,7 @@ max: maximum number / length
     <td class="name">rb64</td>
     <td></td>
     <td>
-     Encodes / Decodes Rotated Base64 string.<br><br>
+     Encodes / Decodes RB64(Rotated Base64) reversible encryption string.<br><br>
 <pre class="eg">
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
@@ -4044,7 +4044,12 @@ $ rb64 -e -i "abc" -n 1
 $ rb64 -d -i "wsTG" -n 1
 -&gt; abc
 
-Algorithm
+Simple usage:
+$ rb64 abc
+$ rb64 -e abc
+$ rb64 -d wsTG
+
+RB64 Algorithm:
 String &gt; bit rotate/bit inversion &gt; Base64
 </pre>
     </td>
