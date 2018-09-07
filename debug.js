@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809070700';
+  this.v = '201809072347';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -359,7 +359,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
-    {cmd: 'rb64', fn: this.cmdRB64, desc: 'Encodes/Decodes Rotated Base64', usage: 'rb64 [-e|-d] -i str -n &lt;n&gt[L|R];'},
+    {cmd: 'rb64', fn: this.cmdRB64, desc: 'Encodes/Decodes Rotated Base64', usage: 'rb64 -e|-d -i "&lt;str&gt;" -n &lt;n&gt[L|R];'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
@@ -7145,14 +7145,17 @@ DebugJS.prototype = {
       return;
     }
     switch (key) {
+      case 'b':
       case 'break':
+        DebugJS.bat.ctrl.break = v;
+        break;
       case 'delay':
         break;
       case 'pc':
-        DebugJS.bat.setPc(v | 0);
+        DebugJS.bat.setPc(v);
         break;
       default:
-        DebugJS.printUsage('bat set break|delay val');
+        DebugJS.printUsage('bat set b|break|delay|pc val');
         return;
     }
     DebugJS.bat.ctrl[key] = v;
@@ -12801,15 +12804,6 @@ DebugJS.bat.exec = function() {
     bat.initCtrl(false);
     return;
   }
-  if (ctx.status & DebugJS.STATE_BAT_BREAK) {
-    ctx.status &= ~DebugJS.STATE_BAT_BREAK;
-  } else {
-    if (ctrl.pc == ctrl.break - 1) {
-      ctx.status |= DebugJS.STATE_BAT_BREAK;
-      bat.pause();
-      return;
-    }
-  }
   if (ctrl.pc > ctrl.endPc) {
     bat._exit(DebugJS.EXIT_SUCCESS);
     return;
@@ -12817,6 +12811,17 @@ DebugJS.bat.exec = function() {
   if (bat.isLocked()) {
     ctrl.tmid = setTimeout(bat.exec, 50);
     return;
+  }
+  if (ctx.status & DebugJS.STATE_BAT_BREAK) {
+    ctx.status &= ~DebugJS.STATE_BAT_BREAK;
+    bat.setPc(--ctrl.pc);
+  } else {
+    if (ctrl.pc + 1 == ctrl.break) {
+      ctx.status |= DebugJS.STATE_BAT_BREAK;
+      bat.setPc(++ctrl.pc);
+      bat.pause();
+      return;
+    }
   }
   var c = bat.cmds[ctrl.pc];
   if (c == undefined) {
@@ -13322,6 +13327,7 @@ DebugJS.bat._stop = function(st) {
   bat.stopNext();
   bat.ctx = [];
   ctx.updateBatNestLv();
+  ctx.status &= ~DebugJS.STATE_BAT_BREAK;
   ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
   bat.setRunningSt(false);
