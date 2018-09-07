@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809080044';
+  this.v = '201809080106';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7969,7 +7969,7 @@ DebugJS.prototype = {
     return DebugJS.ctx.led;
   },
 
-  cmdLog: function(arg, tbl) {
+  cmdLog: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitArgs(arg);
     var fn = null;
@@ -7998,7 +7998,7 @@ DebugJS.prototype = {
       case 'lv':
         fn = ctx._cmdLogLv;
     }
-    if (fn) {return fn(ctx, arg);}
+    if (fn) {return fn(ctx, arg, echo);}
     DebugJS.printUsage(tbl.usage);
   },
   _cmdLogBufsize: function(ctx, arg) {
@@ -8074,7 +8074,7 @@ DebugJS.prototype = {
       }
     }
   },
-  _cmdLogPreserve: function(ctx, arg) {
+  _cmdLogPreserve: function(ctx, arg, echo) {
     var op = DebugJS.splitArgs(arg)[1];
     if (op == 'on') {
       ctx.setLogPreserve(ctx, true);
@@ -8082,7 +8082,10 @@ DebugJS.prototype = {
       ctx.setLogPreserve(ctx, false);
     } else {
       var st = ((ctx.status & DebugJS.STATE_LOG_PRESERVED) ? true : false);
-      DebugJS.printUsage('log preserve on|off');
+      if (echo) {
+        DebugJS._log.res(st);
+        DebugJS.printUsage('log preserve on|off');
+      }
       return st;
     }
   },
