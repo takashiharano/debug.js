@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809081438';
+  this.v = '201809081516';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7105,7 +7105,7 @@ DebugJS.prototype = {
         bat[a[0]]();
         break;
       case 'set':
-        ctx._cmdBatSet(DebugJS.getArgsFrom(arg, 2), echo);
+        ctx._cmdBatSet(DebugJS.getArgsFrom(arg, 1), echo);
         break;
       case 'stop':
         bat.terminate();
@@ -7117,7 +7117,7 @@ DebugJS.prototype = {
             if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
               bat.stCtx();
             }
-            var a = DebugJS.getArgsFrom(arg, 3);
+            var a = DebugJS.getArgsFrom(arg, 2);
             try {
               a = eval(a);
               bat(b, a);
@@ -7447,7 +7447,7 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    var c = DebugJS.getArgsFrom(arg, 2);
+    var c = DebugJS.getArgsFrom(arg, 1);
     ctx.cmdDelayData.cmd = c;
     ctx._cmdDelayCancel(ctx);
     ctx.cmdDelayData.tmid = setTimeout(ctx._cmdDelayExec, d | 0);
@@ -8102,7 +8102,7 @@ DebugJS.prototype = {
     }
   },
   _cmdLogLv: function(ctx, arg) {
-    var a = DebugJS.getArgsFrom(arg, 2);
+    var a = DebugJS.getArgsFrom(arg, 1);
     a = DebugJS.delAllSP(a);
     var lv = a.split('|');
     if (lv[0] == '') {
@@ -8323,7 +8323,7 @@ DebugJS.prototype = {
     } else if (op == 'hint') {
       op = args[1];
       if (op == 'msg') {
-        msg = DebugJS.getArgsFrom(arg, 3);
+        msg = DebugJS.getArgsFrom(arg, 2);
         point.hint(msg);
       } else if (op == 'hide') {
         point.hint.hide();
@@ -8361,7 +8361,7 @@ DebugJS.prototype = {
     } else if (op == 'getprop') {
       ret = point.getProp(args[1]);
     } else if (op == 'setprop') {
-      point.setProp(args[1], DebugJS.getArgsFrom(arg, 3), echo);
+      point.setProp(args[1], DebugJS.getArgsFrom(arg, 2), echo);
     } else if (op == 'verify') {
       ret = ctx._cmdPointVerify(arg);
     } else if (op == 'mouse') {
@@ -8429,12 +8429,12 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgsEx(arg);
     var prop = a[1];
     var method = a[2];
-    var exp = DebugJS.getArgsFrom(arg, 4);
+    var exp = DebugJS.getArgsFrom(arg, 3);
     var label = DebugJS.getOptVal(a, 'label');
     if (label != null) {
       prop = a[3];
       method = a[4];
-      exp = DebugJS.getArgsFrom(arg, 6);
+      exp = DebugJS.getArgsFrom(arg, 5);
     }
     var ret = DebugJS.point.verify(prop, method, exp, label);
     return ret;
@@ -8898,7 +8898,7 @@ DebugJS.prototype = {
         fn = test.setCmnt;
         break;
       case 'result':
-        DebugJS.ctx._cmdTestSetRslt(DebugJS.getArgsFrom(arg, 3));
+        DebugJS.ctx._cmdTestSetRslt(DebugJS.getArgsFrom(arg, 2));
         return;
       default:
         DebugJS.printUsage('test set name|desc|id|comment|result val');
@@ -8916,12 +8916,12 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgsEx(arg);
     var got = a[1];
     var method = a[2];
-    var exp = DebugJS.getArgsFrom(arg, 4);
+    var exp = DebugJS.getArgsFrom(arg, 3);
     var label = DebugJS.getOptVal(a, 'label');
     if (label != null) {
       got = a[3];
       method = a[4];
-      exp = DebugJS.getArgsFrom(arg, 6);
+      exp = DebugJS.getArgsFrom(arg, 5);
     }
     return DebugJS.test.verify(got, method, exp, true, label);
   },
@@ -9234,7 +9234,7 @@ DebugJS.prototype = {
         if ((!DebugJS.hasOpt(arg, 'd')) && (!DebugJS.hasOpt(arg, 'e'))) {
           i = arg;
         } else {
-          i = DebugJS.getArgsFrom(arg, 2);
+          i = DebugJS.getArgsFrom(arg, 1);
         }
       } else {
         i = eval(i);
@@ -9650,10 +9650,10 @@ DebugJS.splitCmdLineInTwoLast = function(str) {
   return args;
 };
 
-// " 1  2  3  4 " (3)-> " 3  4 "
+// " 1  2  3  4 " (2)-> " 3  4 "
 DebugJS.getArgsFrom = function(str, n) {
   var res = str;
-  for (var i = 1; i < n; i++) {
+  for (var i = 0; i < n; i++) {
     res = DebugJS.splitCmdLineInTwo(res)[1];
   }
   return res;
@@ -10220,11 +10220,11 @@ DebugJS.execCmdP = function(arg) {
   var noMaxLimit = false;
   var valLenLimit = DebugJS.ctx.props.dumpvallen;
   if (opt != null) {
-    start = 2;
+    start = 1;
     levelLimit = opt[1];
   } else {
     if (args[0] == '-a') {
-      start = 2;
+      start = 1;
       noMaxLimit = true;
     }
   }
