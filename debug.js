@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809081416';
+  this.v = '201809081438';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8430,11 +8430,11 @@ DebugJS.prototype = {
     var prop = a[1];
     var method = a[2];
     var exp = DebugJS.getArgsFrom(arg, 4);
-    var label = DebugJS.getOptVal2(a, 'label');
+    var label = DebugJS.getOptVal(a, 'label');
     if (label != null) {
-      prop = a[2];
-      method = a[3];
-      exp = DebugJS.getArgsFrom(arg, 5);
+      prop = a[3];
+      method = a[4];
+      exp = DebugJS.getArgsFrom(arg, 6);
     }
     var ret = DebugJS.point.verify(prop, method, exp, label);
     return ret;
@@ -8917,11 +8917,11 @@ DebugJS.prototype = {
     var got = a[1];
     var method = a[2];
     var exp = DebugJS.getArgsFrom(arg, 4);
-    var label = DebugJS.getOptVal2(a, 'label');
+    var label = DebugJS.getOptVal(a, 'label');
     if (label != null) {
-      got = a[2];
-      method = a[3];
-      exp = DebugJS.getArgsFrom(arg, 5);
+      got = a[3];
+      method = a[4];
+      exp = DebugJS.getArgsFrom(arg, 6);
     }
     return DebugJS.test.verify(got, method, exp, true, label);
   },
@@ -9687,19 +9687,6 @@ DebugJS.getOptVals = function(args) {
     }
   }
   return o;
-};
-DebugJS.getOptVal2 = function(args, opt) {
-  if (typeof args == 'string') {
-    args = DebugJS.splitArgsEx(args);
-  }
-  var v = null;
-  for (var i = 0; i < args.length; i++) {
-    if (DebugJS.startsWith(args[i], '-' + opt + ':')) {
-      v = args[i].split(':')[1];
-      break;
-    }
-  }
-  return v;
 };
 DebugJS.hasOpt = function(arg, opt) {
   var b = false;
