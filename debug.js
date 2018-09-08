@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809080106';
+  this.v = '201809081257';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8523,14 +8523,8 @@ DebugJS.prototype = {
     }
   },
 
-  cmdRB64: function(arg, tbl) {
-    if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage(tbl.usage);
-      return;
-    }
+  cmdRB64: function(arg, tbl, echo) {
     var toR = false;
-    var fn = DebugJS.encodeRB64;
-    if (DebugJS.hasOpt(arg, 'd')) fn = DebugJS.decodeRB64;
     var n = DebugJS.getOptVal(arg, 'n');
     if (n == null) {
        n = 1;
@@ -8543,24 +8537,7 @@ DebugJS.prototype = {
         }
       }
     }
-    var i = DebugJS.getOptVal(arg, 'i');
-    try {
-      if (i == null) {
-        if ((!DebugJS.hasOpt(arg, 'd')) && (!DebugJS.hasOpt(arg, 'e'))) {
-          i = arg;
-        } else {
-          i = DebugJS.getArgsFrom(arg, 2);
-        }
-      } else {
-        i = eval(i);
-      }
-      var ret = fn(i, n | 0, toR);
-      ret = DebugJS.encStringIfNeeded(ret);
-      DebugJS._log.res(ret);
-      return ret;
-    } catch (e) {
-      DebugJS._log.e(e);
-    }
+    return DebugJS.ctx.execEncAndDec(arg, tbl, DebugJS.encodeRB64, DebugJS.decodeRB64, n | 0, toR);
   },
 
   cmdResume: function(arg, tbl) {
@@ -9107,7 +9084,7 @@ DebugJS.prototype = {
   },
 
   cmdUri: function(arg, tbl) {
-    return DebugJS.ctx.execEncAndDec(arg, tbl, DebugJS.encodeUri, DebugJS.decodeUri, DebugJS.decodeUri);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, DebugJS.encodeUri, DebugJS.decodeUri);
   },
 
   cmdV: function(arg, tbl) {
@@ -9243,34 +9220,35 @@ DebugJS.prototype = {
 
   cmdNop: function(arg, tbl) {},
 
-  execEncAndDec: function(arg, tbl, encFnc, decFnc, dfltFnc) {
-    var args = DebugJS.parseArgs(arg);
-    if (!dfltFnc) {dfltFnc = encFnc;}
-    var ret = '';
-    if (args.data == '') {
+  execEncAndDec: function(arg, tbl, encFnc, decFnc, a1, a2) {
+    if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage(tbl.usage);
-    } else {
-      try {
-        switch (args.opt) {
-          case '':
-            ret = dfltFnc(args.dataRaw);
-            break;
-          case 'e':
-            ret = encFnc(args.dataRaw);
-            break;
-          case 'd':
-            ret = decFnc(args.dataRaw);
-            break;
-          default:
-            DebugJS.printUsage(tbl.usage);
-        }
-        ret = DebugJS.encStringIfNeeded(ret);
-        DebugJS._log.res(ret);
-      } catch (e) {
-        DebugJS._log.e(e);
-      }
+      return;
     }
-    return ret;
+    var fn = encFnc;
+    if (DebugJS.hasOpt(arg, 'd')) {
+      fn = decFnc;
+    } else if (DebugJS.hasOpt(arg, 'e')) {
+      fn = encFnc;
+    }
+    var i = DebugJS.getOptVal(arg, 'i');
+    try {
+      if (i == null) {
+        if ((!DebugJS.hasOpt(arg, 'd')) && (!DebugJS.hasOpt(arg, 'e'))) {
+          i = arg;
+        } else {
+          i = DebugJS.getArgsFrom(arg, 2);
+        }
+      } else {
+        i = eval(i);
+      }
+      var ret = fn(i, a1, a2);
+      ret = DebugJS.encStringIfNeeded(ret);
+      DebugJS._log.res(ret);
+      return ret;
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
   },
 
   doHttpRequest: function(method, arg) {
