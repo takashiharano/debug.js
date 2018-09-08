@@ -3116,6 +3116,17 @@ debug.js will not use aliases in case of those that are already defined.
   </tr>
 
   <tr>
+    <td class="name">alias</td>
+    <td>name=command</td>
+    <td>
+     Define or display aliases.
+<pre class="eg">
+$ alias [name=['command']]
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">base64</td>
     <td>
       arg1: operation<br>
@@ -4276,6 +4287,17 @@ $ time -t1 "2018-09-05 10:00:00.000" -t2 "2018-09-05 12:34:56.789"
       arg2: timer name<span class="annotation">(opt)</span>
     </td>
     <td>Manipulate the timer.</td>
+  </tr>
+
+  <tr>
+    <td class="name">unalias</td>
+    <td>name(s)</td>
+    <td>
+     Remove each NAME from the list of defined aliases
+<pre class="eg">
+$ unalias name [name ...]
+</pre>
+    </td>
   </tr>
 
   <tr>
