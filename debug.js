@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809081257';
+  this.v = '201809081337';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -337,7 +337,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'hex', fn: this.cmdHex, desc: 'Convert a number to hexadecimal', usage: 'hex num digit'},
-    {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset] [n]', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
     {cmd: 'input', fn: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', usage: 'js exec'},
@@ -7696,16 +7696,18 @@ DebugJS.prototype = {
 
   cmdHistory: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.parseArgs(arg);
     try {
-      if ((args.opt == '') && (args.data == '')) {
+      if (DebugJS.countArgs(arg) == 0) {
         ctx.showHistory();
-      } else if (args.opt == 'c') {
+      } else if (DebugJS.hasOpt(arg, 'c')) {
         ctx.clearHistory();
-      } else if (args.opt == 'd') {
-        ctx.delHistory(ctx, args.data);
       } else {
-        DebugJS.printUsage(tbl.usage);
+        var d = DebugJS.getOptVal(arg, 'd');
+        if (d != null) {
+          ctx.delHistory(ctx, d | 0);
+        } else {
+          DebugJS.printUsage(tbl.usage);
+        }
       }
     } catch (e) {
       DebugJS._log.e(e);
@@ -8055,18 +8057,16 @@ DebugJS.prototype = {
     }
   },
   _cmdLogLoad: function(ctx, arg) {
-    var args = DebugJS.splitCmdLineInTwo(arg);
-    args = DebugJS.parseArgs(args[1]);
-    if (args.data == '') {
+    var arg = DebugJS.splitCmdLineInTwo(arg)[1];
+    var data = DebugJS.getOptVal(arg, 'b64');
+    if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage('log load [-b64] log-buffer-json');
     } else {
       try {
-        switch (args.opt) {
-          case 'b64':
-            DebugJS.loadLog(args.data, true);
-            break;
-          default:
-            DebugJS.loadLog(args.data);
+        if (data != null) {
+          DebugJS.loadLog(data, true);
+        } else {
+          DebugJS.loadLog(arg);
         }
         ctx.printLogs();
       } catch (e) {
@@ -8541,11 +8541,10 @@ DebugJS.prototype = {
   },
 
   cmdResume: function(arg, tbl) {
-    var args = DebugJS.parseArgs(arg);
+    var key = DebugJS.getOptVal(arg, 'key');
     if (arg == '') {
       DebugJS.bat._resume('cmd-key');
-    } else if (args.opt == 'key') {
-      var key = args.data;
+    } else if (key != null) {
       DebugJS.bat.resume(key);
     } else {
       DebugJS.printUsage(tbl.usage);
@@ -9144,8 +9143,7 @@ DebugJS.prototype = {
   },
 
   cmdWin: function(arg, tbl) {
-    var args = DebugJS.parseArgs(arg);
-    var size = args.data;
+    var size = DebugJS.delLeadingAndTrailingSP(arg);
     switch (size) {
       case 'min':
       case 'normal':
@@ -9201,8 +9199,7 @@ DebugJS.prototype = {
 
   cmdZoom: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.parseArgs(arg);
-    var zoom = args.data;
+    var zoom = DebugJS.delLeadingAndTrailingSP(arg);
     if (zoom == '') {
       DebugJS.printUsage(tbl.usage);
     } else if (zoom != ctx.opt.zoom) {
@@ -9661,30 +9658,6 @@ DebugJS.getArgsFrom = function(str, n) {
     res = DebugJS.splitCmdLineInTwo(res)[1];
   }
   return res;
-};
-
-// " 1  2 3  4 "
-// opt: ""
-// data: "1  2 3  4"
-// dataRaw: " 1  2 3  4 "
-//
-// " -a  1  2 3  4 "
-// opt: "a"
-// data: "1  2 3  4"
-// dataRaw: " 1  2 3  4 "
-DebugJS.parseArgs = function(arg) {
-  var args = {opt: '', data: '', dataRaw: ''};
-  var wkArgs = DebugJS.delLeadingSP(arg);
-  wkArgs = wkArgs.match(/-{1}([^\s]*)\s{0,1}(.*)/);
-  if (wkArgs == null) {
-    args.dataRaw = arg;
-    args.data = DebugJS.delLeadingAndTrailingSP(arg);
-  } else {
-    args.opt = wkArgs[1];
-    args.dataRaw = wkArgs[2];
-    args.data = DebugJS.delLeadingAndTrailingSP(wkArgs[2]);
-  }
-  return args;
 };
 
 DebugJS.getArgVal = function(a, idx) {
