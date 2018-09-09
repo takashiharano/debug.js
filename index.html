@@ -937,6 +937,24 @@ demo.sendLogDemoCbFunc = function(xhr) {
   }
 };
 
+
+demo.led = {};
+demo.led.speed = 500; // ms
+demo.led.i = 0;
+demo.led.ledDemo = function() {
+  dbg.led(demo.led.i);
+  var i16 = dbg.toHex(demo.led.i);
+  i16 = DebugJS.formatHex(i16, true, true);
+  dbg.msg('LED = ' + demo.led.i + ' (' + i16 + ')');
+  if (demo.led.i <= 255) {
+    setTimeout(demo.led.ledDemo, demo.led.speed);
+  } else {
+    dbg.led(0);
+    dbg.msg.clear();
+  }
+  demo.led.i++;
+}
+
 function addScript() {
   var script = 'var demo2 = {};';
   script += 'demo2.printStackDemo = function(idx, silent) {';
@@ -5016,6 +5034,9 @@ log() log.d() log.i() ...<br>
 <tr>
 <td>
 <button id="led-demo-btn" onclick="ledDemo();">LED DEMO</button>
+</td>
+<td>
+<button id="led-demo-btn" onclick="demo.led.ledDemo();">LED DEMO2</button>
 </td>
 </tr>
 </table>
