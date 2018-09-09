@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809091409';
+  this.v = '201809091415';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8888,7 +8888,7 @@ DebugJS.prototype = {
     var test = DebugJS.test;
     switch (op) {
       case 'init':
-        var nm = DebugJS.splitArgsEx(arg, 2)[1];
+        var nm = DebugJS.getOptVal(arg, 'name');
         try {
           var nm = eval(nm);
           test.init(nm);

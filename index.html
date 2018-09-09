@@ -4230,7 +4230,7 @@ $ stopwatch sw1 stop
     <td>
       Manage unit test.<br><br>
       [operation type]<br>
-      init: Reset the test results. ($ test init "TestName"<span class="annotation">(opt)</span>)<br>
+      init: Reset the test results. ($ test init -name "TestName"<span class="annotation">(opt)</span>)<br>
       set: Set Test ID / Label / Description / Comment / Result ($ test set id|label|desc|comment|result "STRING")<br>
       verify: Evaluate a value<br>
       count: Displays the test count.<br>
@@ -4240,7 +4240,7 @@ $ stopwatch sw1 stop
       fin: Finalize the test execution.<br><br>
 
 <pre class="eg">
-$ test init "TestName"
+$ test init -name "TestName"
 
 $ test set desc "Description"
 
