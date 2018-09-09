@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809100152';
+  this.v = '20180910700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11197,15 +11197,23 @@ DebugJS.str2ms = function(t) {
 };
 
 DebugJS.subTime = function(tL, tR, byTheDay) {
+  var A_DAY = 86400000;
   var res = tL - tR;
   var days = 0;
   if ((res < 0) && (byTheDay)) {
     res *= (-1);
-    days = ((res / 86400000) | 0) + 1;
-    res -= days * 86400000;
-    res *= (-1);
+    days = ((res / A_DAY) | 0);
+    if (tL == 0) {
+      days = days + ((res % A_DAY != 0) ? 1 : 0);
+    } else {
+      days = days + ((res < A_DAY) ? 1 : 1);
+      if ((res % A_DAY == 0) && (res != A_DAY)) {
+        days += 1;
+      }
+    }
+    res = A_DAY - (res - days * A_DAY);
   }
-  return DebugJS.calcTime(res, days, true);
+  return DebugJS.calcTime(res, days, byTheDay, true);
 };
 
 DebugJS.addTime = function(tL, tR, byTheDay) {
@@ -11215,18 +11223,19 @@ DebugJS.addTime = function(tL, tR, byTheDay) {
     days = (res / 86400000) | 0;
     res -= days * 86400000;
   }
-  return DebugJS.calcTime(res, days, false);
+  return DebugJS.calcTime(res, days, byTheDay, false);
 };
 
-DebugJS.calcTime = function(res, days, isSub) {
+DebugJS.calcTime = function(res, days, byTheDay, isSub) {
   var t = DebugJS.ms2struct(res);
   var ex = '';
   if (days > 0) {
     ex = ' (' + (isSub ? '-' : '+') + days +
          ' Day' + ((days >= 2) ? 's' : '') + ')';
   }
-  if (t.hh < 10) t.hh = '0' + t.hh;
-  var ret = (t.sign ? '-' : '') + t.hh + ':' +
+  var hh = (byTheDay ? t.hr : t.hh);
+  if (hh < 10) hh = '0' + hh;
+  var ret = (t.sign ? '-' : '') + hh + ':' +
             ('0' + t.mi).slice(-2) + ':' +
             ('0' + t.ss).slice(-2) + '.' + ('00' + t.sss).slice(-3) + ex;
   return ret;
