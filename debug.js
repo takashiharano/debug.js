@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809090045';
+  this.v = '201809091409';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -372,7 +372,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
     {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', usage: 'time ms|-t1 ms|datestr -t2 ms|datestr'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
-    {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', usage: 'alias name [name ...]'},
+    {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', usage: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] str|codePoint(s)'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] str'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -9127,8 +9127,12 @@ DebugJS.prototype = {
 
   cmdUnAlias: function(arg, tbl, echo) {
     var nm = DebugJS.splitArgs(arg);
-    if (DebugJS.countArgs(arg) == 0) {
+    if (nm[0] == '') {
       DebugJS.printUsage(tbl.usage);
+      return;
+    }
+    if (nm[0] == '-a') {
+      DebugJS.ctx.CMD_ALIAS = {};
       return;
     }
     var tbl = DebugJS.ctx.CMD_ALIAS;
@@ -12178,15 +12182,16 @@ DebugJS.loadLog = function(json, b64) {
 
 DebugJS.saveStatus = function() {
   if (!DebugJS.LS_AVAILABLE) return;
+  var ctx = DebugJS.ctx;
   var data = {
-    status: DebugJS.ctx.status,
-    swElapsedTime: DebugJS.ctx.swElapsedTime,
-    props: DebugJS.ctx.props
+    status: ctx.status,
+    swElapsedTime: ctx.swElapsedTime,
+    props: ctx.props,
+    alias: ctx.CMD_ALIAS
   };
   var st = JSON.stringify(data);
   localStorage.setItem('DebugJS-st', st);
 };
-
 DebugJS.loadStatus = function() {
   if (!DebugJS.LS_AVAILABLE) return 0;
   var st = localStorage.getItem('DebugJS-st');
@@ -12201,7 +12206,6 @@ DebugJS.preserveLog = function() {
   var json = DebugJS.dumpLog('json');
   localStorage.setItem('DebugJS-log', json);
 };
-
 DebugJS.restoreLog = function() {
   if (!DebugJS.LS_AVAILABLE) return;
   var json = localStorage.getItem('DebugJS-log');
@@ -15468,6 +15472,7 @@ DebugJS.restoreStatus = function(ctx) {
     ctx.updateSwLabel();
   }
   DebugJS.restoreProps(ctx, data.props);
+  DebugJS.ctx.CMD_ALIAS = data.alias;
 };
 DebugJS.restoreProps = function(ctx, props) {
   for (var key in props) {
