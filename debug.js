@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809100000';
+  this.v = '201809100050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -380,8 +380,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
-    {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
-    {cmd: 'wait', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
+    {cmd: 'wait', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
@@ -12785,7 +12785,7 @@ DebugJS.bat.exec = function() {
   }
   ctrl.pc++;
   ctx.updateCurPc();
-  switch (bat.prepro(c)) {
+  switch (bat.prepro(ctx, c)) {
     case 1:
       ctrl.tmpEchoOff = false;
       bat.next(0);
@@ -12871,13 +12871,21 @@ DebugJS.bat.setExitStatus = function(st) {
   }
   DebugJS.ctx.CMDVALS['?'] = st;
 };
-DebugJS.bat.prepro = function(cmd) {
-  var ctx = DebugJS.ctx;
-  cmd = DebugJS.replaceCmdVals(cmd);
-  var cmds = DebugJS.splitCmdLineInTwo(cmd);
+DebugJS.bat.prepro = function(ctx, cmd) {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
+  cmd = DebugJS.replaceCmdVals(cmd);
+  var cmds = DebugJS.splitCmdLineInTwo(cmd);
   var c = cmds[0];
+  for (var key in ctx.CMD_ALIAS) {
+    if (c == key) {
+      cmd = cmd.replace(new RegExp(c), ctx.CMD_ALIAS[key]);
+      cmd = DebugJS.replaceCmdVals(cmd);
+      cmds = DebugJS.splitCmdLineInTwo(cmd);
+      c = cmds[0];
+      break;
+    }
+  }
   var a = DebugJS.splitArgs(cmds[1]);
   var b;
   if (c.match(/^\s*@/)) {
