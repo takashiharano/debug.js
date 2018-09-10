@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809102134';
+  this.v = '201809110111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -359,7 +359,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
-    {cmd: 'rb64', fn: this.cmdRB64, desc: 'Encodes/Decodes Rotated Base64', usage: 'rb64 -e|-d -i "&lt;str&gt;" -n &lt;n&gt[L|R];'},
+    {cmd: 'rb64', fn: this.cmdRB64, desc: 'Encodes/Decodes RB64(Rotated Base64) reversible encryption string', usage: 'rb64 -e|-d -i "&lt;str&gt;" -n &lt;n&gt[L|R];'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
@@ -370,7 +370,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
-    {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', usage: 'time ms|-t1 ms|datestr -t2 ms|datestr'},
+    {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', usage: 'time ms|-t1 ms|"datestr" -t2 ms|"datestr"'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', usage: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] str|codePoint(s)'},
@@ -1086,7 +1086,6 @@ DebugJS.prototype = {
     area.className = ctx.id + '-resize-corner';
     area.style.cursor = cursor;
     area.onmousedown = function(e) {
-      var ctx = DebugJS.ctx;
       if (!(ctx.uiStatus & DebugJS.UI_ST_RESIZABLE)) return;
       ctx.startResize(ctx, e);
       ctx.uiStatus |= state;
@@ -2890,7 +2889,7 @@ DebugJS.prototype = {
           DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
           ctx.resetStopWatch();
         }
-        if (DebugJS.ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
+        if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
           DebugJS.bat._resume('cmd');
         }
         break;
@@ -5717,7 +5716,7 @@ DebugJS.prototype = {
         if (ctx.fileVwrByteArray) {
           ctx.viewBinAsB64(ctx);
         } else {
-          DebugJS.ctx.loadFile(ctx.fileVwrFile, DebugJS.FILE_LOAD_FMT_B64);
+          ctx.loadFile(ctx.fileVwrFile, DebugJS.FILE_LOAD_FMT_B64);
         }
         break;
       case 'b64':
@@ -5741,7 +5740,7 @@ DebugJS.prototype = {
         if (ctx.fileVwrDataSrc) {
           ctx.decodeB64dataAsB(ctx.fileVwrDataSrc.data);
         } else {
-          DebugJS.ctx.loadFile(ctx.fileVwrFile, DebugJS.FILE_LOAD_FMT_BIN);
+          ctx.loadFile(ctx.fileVwrFile, DebugJS.FILE_LOAD_FMT_BIN);
         }
         break;
       case 'b64':
@@ -6070,7 +6069,7 @@ DebugJS.prototype = {
   resizeImgPreview: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.ST_TOOLS)) ||
-        (!(DebugJS.ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) ||
+        (!(ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) ||
         (!(ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64))) {
       return;
     }
@@ -6314,7 +6313,7 @@ DebugJS.prototype = {
       ctx.batResumeBtn = ctx.createBtn(ctx, '[RESUME]', basePanel);
       ctx.batResumeBtn.style.float = 'right';
       ctx.batRunBtn = ctx.createBtn(ctx, '[ RUN ]', basePanel);
-      ctx.batRunBtn.onclick = DebugJS.ctx.startPauseBat;
+      ctx.batRunBtn.onclick = ctx.startPauseBat;
       ctx.batStopBtn = ctx.createBtn(ctx, '[STOP]', basePanel);
       ctx.batStopBtn.onclick = DebugJS.bat.terminate;
       ctx.createLabel(' FROM:', basePanel);
@@ -7049,7 +7048,7 @@ DebugJS.prototype = {
           if ((s == null) && (e == null) && (a[1] != '-arg')) {
             s = a[1];
             if ((s != undefined) && (!isNaN(s))) {
-              return DebugJS.bat.exec1(s);
+              return bat.exec1(s);
             }
           }
           if (ag == null) {ag = undefined;}
@@ -7242,10 +7241,10 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     switch (a[0]) {
       case 'hide':
-        DebugJS.ctx.closeDbgWin();
+        ctx.closeDbgWin();
         break;
       case 'show':
-        DebugJS.ctx.showDbgWin();
+        ctx.showDbgWin();
         break;
       case 'opacity':
         var v = a[1];
@@ -7586,7 +7585,7 @@ DebugJS.prototype = {
     var len = ctx.CMD_TBL.length;
     for (var i = 0; i < len; i++) {
       if (!(ctx.CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
-        s += '<tr><td>' + ctx.CMD_TBL[i].cmd + '</td><td>' + ctx.CMD_TBL[i].desc + '</td></tr>';
+        s += '<tr><td style="vertical-align:top;white-space:nowrap">' + ctx.CMD_TBL[i].cmd + '</td><td>' + ctx.CMD_TBL[i].desc + '</td></tr>';
       }
     }
     if (!ctx.opt.disableAllCommands) {
@@ -8384,7 +8383,7 @@ DebugJS.prototype = {
         if (((method == 'get') || (method == 'set')) &&
             ((type == 'text') || (type == 'value'))) {
           val = args[3];
-          ret = DebugJS.ctx._cmdSelect(el, method, type, val);
+          ret = ctx._cmdSelect(el, method, type, val);
         } else {
           DebugJS._log.e('Usage: point selectoption get|set text|value val');
         }
@@ -12653,12 +12652,12 @@ DebugJS.bat.parseLabels = function() {
 };
 DebugJS.bat.run = function(s, e, a) {
   var bat = DebugJS.bat;
-  DebugJS.bat.run.arg.s = s;
-  DebugJS.bat.run.arg.e = e;
+  bat.run.arg.s = s;
+  bat.run.arg.e = e;
   if (a != undefined) {
     bat.setExecArg(a);
   }
-  DebugJS.bat._run();
+  bat._run();
 };
 DebugJS.bat._run = function() {
   var ctx = DebugJS.ctx;
@@ -13308,11 +13307,11 @@ DebugJS.bat._stop = function(st) {
   bat.setRunningSt(false);
   ctx.status &= ~DebugJS.ST_BAT_PAUSE;
   ctx.updateBatRunBtn();
-  delete DebugJS.ctx.CMDVALS['%%ARG%%'];
-  delete DebugJS.ctx.CMDVALS['%ARG%'];
-  delete DebugJS.ctx.CMDVALS['%RET%'];
-  delete DebugJS.ctx.CMDVALS['%LABEL%'];
-  delete DebugJS.ctx.CMDVALS['%TEXT%'];
+  delete ctx.CMDVALS['%%ARG%%'];
+  delete ctx.CMDVALS['%ARG%'];
+  delete ctx.CMDVALS['%RET%'];
+  delete ctx.CMDVALS['%LABEL%'];
+  delete ctx.CMDVALS['%TEXT%'];
   bat.setExitStatus(st);
   DebugJS.callEvtListener('batstop', ctx.CMDVALS['?']);
 };
@@ -13436,7 +13435,7 @@ DebugJS.bat.setRunningSt = function(f) {
   var ctx = DebugJS.ctx;
   if (f) {
     ctx.status |= DebugJS.ST_BAT_RUNNING;
-    if (DebugJS.ctx.props.batcont == 'on') {
+    if (ctx.props.batcont == 'on') {
       ctx.status |= DebugJS.ST_BAT_CONT;
     }
   } else {
@@ -13462,7 +13461,7 @@ DebugJS.bat.status = function() {
   } else if ((ctx.status & DebugJS.ST_BAT_PAUSE_CMD) ||
              (ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY)) {
     st = 'PAUSED2';
-  } else if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) {
+  } else if (ctx.status & DebugJS.ST_BAT_RUNNING) {
     st = 'RUNNING';
   }
   return st;
@@ -13483,8 +13482,8 @@ DebugJS.bat.setCond = function(key) {
 DebugJS.bat._initCond = function() {
   var bat = DebugJS.bat;
   if (bat.ctrl.condKey == null) return;
-  if (DebugJS.bat.ctrl.pauseKey == bat.ctrl.condKey) {
-    DebugJS.bat._resume('cmd-key');
+  if (bat.ctrl.pauseKey == bat.ctrl.condKey) {
+    bat._resume('cmd-key');
   }
   bat.ctrl.condKey = null;
 };
