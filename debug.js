@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809110111';
+  this.v = '201809110732';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7215,8 +7215,7 @@ DebugJS.prototype = {
 
   cmdCondWait: function(arg, tbl) {
     var bat = DebugJS.bat;
-    var args = DebugJS.splitArgsEx(arg);
-    var op = args[0];
+    var op = DebugJS.splitArgsEx(arg)[0];
     switch (op) {
       case 'init':
         bat._initCond();
@@ -7906,8 +7905,8 @@ DebugJS.prototype = {
   },
 
   cmdKeyPress: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    var keyCode = args[0];
+    var a = DebugJS.splitArgs(arg);
+    var keyCode = a[0];
     if ((keyCode == '') || isNaN(keyCode)) {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -7966,9 +7965,9 @@ DebugJS.prototype = {
 
   cmdLog: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
+    var a = DebugJS.splitArgs(arg);
     var fn = null;
-    switch (args[0]) {
+    switch (a[0]) {
       case 'bufsize':
         fn = ctx._cmdLogBufsize;
         break;
@@ -8169,10 +8168,10 @@ DebugJS.prototype = {
 
   cmdOpen: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var fn = args[0];
-    var subfn = args[1];
-    var opt = args[2];
+    var a = DebugJS.splitArgs(arg);
+    var fn = a[0];
+    var subfn = a[1];
+    var opt = a[2];
     if ((fn == '') || (!ctx.launchFunc(ctx, fn, subfn, opt))) {
       DebugJS.printUsage(tbl.usage);
     }
@@ -11139,10 +11138,10 @@ DebugJS.str2binArr = function(str, blkSize, pFix) {
 
 DebugJS.decodeUnicode = function(arg) {
   var str = '';
-  var args = arg.split(' ');
-  for (var i = 0; i < args.length; i++) {
-    if (args[i] == '') continue;
-    var codePoint = args[i].replace(/^U\+/i, '');
+  var a = arg.split(' ');
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] == '') continue;
+    var codePoint = a[i].replace(/^U\+/i, '');
     if (codePoint == '20') {
       str += ' ';
     } else {
@@ -13268,7 +13267,7 @@ DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
     if (resumed) {ctrl.pauseTimeout = 0;}
     var msg;
     if (resumed) {
-      bat.ctrl.pauseKey = null;
+      ctrl.pauseKey = null;
       msg = 'Resumed.';
       if (to) msg += ' (timed out)';
       if (key != undefined) msg += ' (' + key + ')';
@@ -13836,12 +13835,12 @@ DebugJS.point.keyevt = function(args) {
 
   el.dispatchEvent(e);
 };
-DebugJS.point.setKeyFlag = function(e, args) {
-  for (var i = 0; i < args.length; i++) {
-    if (args[i] == '-s') {e.shiftKey = true;}
-    if (args[i] == '-c') {e.ctrlKey = true;}
-    if (args[i] == '-a') {e.altKey = true;}
-    if (args[i] == '-m') {e.metaKey = true;}
+DebugJS.point.setKeyFlag = function(e, a) {
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] == '-s') {e.shiftKey = true;}
+    if (a[i] == '-c') {e.ctrlKey = true;}
+    if (a[i] == '-a') {e.altKey = true;}
+    if (a[i] == '-m') {e.metaKey = true;}
   }
   return e;
 };
