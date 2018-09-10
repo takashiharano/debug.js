@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809102000';
+  this.v = '201809102010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3528,7 +3528,7 @@ DebugJS.prototype = {
     var INDENT = '          ';
     var links = document.getElementsByTagName('link');
     var loadedStyles = '<span class="' + ctx.id + '-na">not loaded</span>';
-    for (var i = 0; i < links.length; i++) {
+    for (i = 0; i < links.length; i++) {
       if (links[i].rel == 'stylesheet') {
         if (i == 0) {
           loadedStyles = ctx.createFoldingText(links[i].href, 'linkHref' + i, DebugJS.OMIT_MID);
@@ -3540,7 +3540,7 @@ DebugJS.prototype = {
 
     var scripts = document.getElementsByTagName('script');
     var loadedScripts = '<span class="' + ctx.id + '-na">not loaded</span>';
-    for (var i = 0; i < scripts.length; i++) {
+    for (i = 0; i < scripts.length; i++) {
       if (scripts[i].src) {
         if (i == 0) {
           loadedScripts = ctx.createFoldingText(scripts[i].src, 'scriptSrc' + i, DebugJS.OMIT_MID);
@@ -6956,7 +6956,7 @@ DebugJS.prototype = {
 
     if (ctx.opt.disableAllCommands) return;
 
-    for (var i = 0; i < ctx.EXT_CMD_TBL.length; i++) {
+    for (i = 0; i < ctx.EXT_CMD_TBL.length; i++) {
       if (cmd == ctx.EXT_CMD_TBL[i].cmd) {
         return ctx.EXT_CMD_TBL[i].fn(arg, ctx.EXT_CMD_TBL[i], echo);
       }
@@ -7595,7 +7595,7 @@ DebugJS.prototype = {
         s += '<tr><td colspan="2">' +
                '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
       }
-      for (var i = 0; i < len; i++) {
+      for (i = 0; i < len; i++) {
         if (!(ctx.EXT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
           var style1 = '';
           var style2 = '';
@@ -7636,7 +7636,7 @@ DebugJS.prototype = {
         } else if (hex.length < data.digit) {
           var padding = data.digit - hex.length;
           var zero = '';
-          for (var i = 0; i < padding; i++) {
+          for (i = 0; i < padding; i++) {
             zero += ((val < 0) ? 'F' : '0');
           }
           ret = zero + hex;
@@ -9336,7 +9336,7 @@ DebugJS.prototype = {
     }
     var pnls = ctx.extPanels;
     if (pnls.length > 0) {
-      for (var i = 0; i < pnls.length; i++) {
+      for (i = 0; i < pnls.length; i++) {
         var p = pnls[i];
         if (p != null) {
           ctx.extHeaderPanel.appendChild(p.btn);
@@ -10290,7 +10290,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
         arg.dump += '<span style="color:#e4b">[Array][' + obj.length + ']</span>';
       }
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
-        for (var i in obj) {
+        for (i in obj) {
           arg.lv++; indent += DebugJS.INDENT_SP;
           if (toJson) {
             if (sibling > 0) {
@@ -11091,13 +11091,13 @@ DebugJS.Base64.encode = function(arr) {
 };
 DebugJS.Base64.decode = function(str) {
   var tbl = {61: 64, 47: 63, 43: 62};
-  for (i = 0; i < 62; i++) {
+  for (var i = 0; i < 62; i++) {
     tbl[i < 26 ? i + 65 : (i < 52 ? i + 71 : i - 4)] = i;
   }
   var buf = [];
   var arr = [];
   if (str.length == 0) return arr;
-  for (var i = 0; i < str.length; i += 4) {
+  for (i = 0; i < str.length; i += 4) {
     for (var j = 0; j < 4; j++) {
       buf[j] = tbl[str.charCodeAt(i + j) || 0];
     }
