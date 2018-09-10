@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809102010';
+  this.v = '201809102134';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -388,7 +388,7 @@ var DebugJS = DebugJS || function() {
   this.CMD_ALIAS = {b64: 'base64'};
   this.CMDVALS = {};
   this.opt = null;
-  this.errStatus = DebugJS.ERR_STATE_NONE;
+  this.errStatus = DebugJS.ERR_ST_NONE;
   this.PROPS_RESTRICTION = {
     batcont: /^on$|^off$/,
     batstop: /^[^|][a-z|]+[^|]$/,
@@ -459,29 +459,29 @@ var DebugJS = DebugJS || function() {
   DebugJS.deepCopy(this.PROPS_DFLT_VALS, this.props);
 };
 DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
-DebugJS.DEFAULT_UNIT = 32;
+DebugJS.DFLT_UNIT = 32;
 DebugJS.INIT_CAUSE_ZOOM = 1;
-DebugJS.STATE_INITIALIZED = 1;
-DebugJS.STATE_MEASURE = 1 << 2;
-DebugJS.STATE_MEASURING = 1 << 3;
-DebugJS.STATE_SYS_INFO = 1 << 4;
-DebugJS.STATE_ELM_INSPECTING = 1 << 5;
-DebugJS.STATE_ELM_EDIT = 1 << 6;
-DebugJS.STATE_TOOLS = 1 << 7;
-DebugJS.STATE_JS = 1 << 8;
-DebugJS.STATE_HTML_SRC = 1 << 9;
-DebugJS.STATE_LOG_SUSPENDING = 1 << 10;
-DebugJS.STATE_LOG_PRESERVED = 1 << 11;
-DebugJS.STATE_STOPWATCH_RUNNING = 1 << 12;
-DebugJS.STATE_STOPWATCH_LAPTIME = 1 << 13;
-DebugJS.STATE_WD = 1 << 14;
-DebugJS.STATE_EXT_PANEL = 1 << 15;
-DebugJS.STATE_BAT_RUNNING = 1 << 16;
-DebugJS.STATE_BAT_PAUSE = 1 << 17;
-DebugJS.STATE_BAT_PAUSE_CMD = 1 << 18;
-DebugJS.STATE_BAT_PAUSE_CMD_KEY = 1 << 19;
-DebugJS.STATE_BAT_CONT = 1 << 20;
-DebugJS.STATE_BAT_BREAK = 1 << 21;
+DebugJS.ST_INITIALIZED = 1;
+DebugJS.ST_MEASURE = 1 << 2;
+DebugJS.ST_MEASURING = 1 << 3;
+DebugJS.ST_SYS_INFO = 1 << 4;
+DebugJS.ST_ELM_INSPECTING = 1 << 5;
+DebugJS.ST_ELM_EDIT = 1 << 6;
+DebugJS.ST_TOOLS = 1 << 7;
+DebugJS.ST_JS = 1 << 8;
+DebugJS.ST_HTML_SRC = 1 << 9;
+DebugJS.ST_LOG_SUSPENDING = 1 << 10;
+DebugJS.ST_LOG_PRESERVED = 1 << 11;
+DebugJS.ST_STOPWATCH_RUNNING = 1 << 12;
+DebugJS.ST_STOPWATCH_LAPTIME = 1 << 13;
+DebugJS.ST_WD = 1 << 14;
+DebugJS.ST_EXT_PANEL = 1 << 15;
+DebugJS.ST_BAT_RUNNING = 1 << 16;
+DebugJS.ST_BAT_PAUSE = 1 << 17;
+DebugJS.ST_BAT_PAUSE_CMD = 1 << 18;
+DebugJS.ST_BAT_PAUSE_CMD_KEY = 1 << 19;
+DebugJS.ST_BAT_CONT = 1 << 20;
+DebugJS.ST_BAT_BREAK = 1 << 21;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -526,10 +526,10 @@ DebugJS.LOG_TYPE_RES = 0x100;
 DebugJS.LOG_TYPE_ERES = 0x200;
 DebugJS.ELMINFO_STATE_SELECT = 0x1;
 DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
-DebugJS.ERR_STATE_NONE = 0;
-DebugJS.ERR_STATE_SCRIPT = 0x1;
-DebugJS.ERR_STATE_LOAD = 0x2;
-DebugJS.ERR_STATE_LOG = 0x4;
+DebugJS.ERR_ST_NONE = 0;
+DebugJS.ERR_ST_SCRIPT = 0x1;
+DebugJS.ERR_ST_LOAD = 0x2;
+DebugJS.ERR_ST_LOG = 0x4;
 DebugJS.TOOLS_FNC_TIMER = 0x1;
 DebugJS.TOOLS_FNC_TEXT = 0x2;
 DebugJS.TOOLS_FNC_HTML = 0x4;
@@ -647,7 +647,7 @@ DebugJS.JS_SNIPPET = [
 '',
 '',
 '',
-'// logging performance check\nvar i = 0;\nvar n = 1000;\ndbg.msg(\'loop = \' + n);\ndbg.time.start(\'total\');\ntest();\nfunction test() {\n  dbg.time.start();\n  dbg.time.end();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
+'// Logging performance check\nvar i = 0;\nvar n = 1000;\ndbg.msg(\'loop = \' + n);\ndbg.time.start(\'total\');\ntest();\nfunction test() {\n  dbg.time.start();\n  dbg.time.end();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
@@ -697,7 +697,7 @@ DebugJS.prototype = {
       }
     }
     if (!keepStatus) {
-      var preserveStatus = DebugJS.STATE_LOG_PRESERVED | DebugJS.STATE_STOPWATCH_RUNNING | DebugJS.STATE_WD | DebugJS.STATE_BAT_RUNNING | DebugJS.STATE_BAT_PAUSE | DebugJS.STATE_BAT_PAUSE_CMD | DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+      var preserveStatus = DebugJS.ST_LOG_PRESERVED | DebugJS.ST_STOPWATCH_RUNNING | DebugJS.ST_WD | DebugJS.ST_BAT_RUNNING | DebugJS.ST_BAT_PAUSE | DebugJS.ST_BAT_PAUSE_CMD | DebugJS.ST_BAT_PAUSE_CMD_KEY;
       ctx.status &= preserveStatus;
       ctx.uiStatus = 0;
     }
@@ -718,8 +718,8 @@ DebugJS.prototype = {
       }
     }
     if (ctx.msgBuf.getSize() != ctx.opt.bufsize) {
-      if (!(ctx.status & DebugJS.STATE_LOG_PRESERVED) ||
-          ((ctx.status & DebugJS.STATE_LOG_PRESERVED) &&
+      if (!(ctx.status & DebugJS.ST_LOG_PRESERVED) ||
+          ((ctx.status & DebugJS.ST_LOG_PRESERVED) &&
            (ctx.msgBuf.getSize() < ctx.opt.bufsize))) {
         ctx.initBuf(ctx, ctx.opt.bufsize);
       }
@@ -728,13 +728,13 @@ DebugJS.prototype = {
       ctx.removeEventHandlers(ctx);
       ctx.init = DebugJS.f_;
       DebugJS.init = DebugJS.f_;
-      ctx.status |= DebugJS.STATE_INITIALIZED;
+      ctx.status |= DebugJS.ST_INITIALIZED;
       return false;
     }
     if (!ctx.bodyEl) return false;
     ctx.initUi(ctx, restoreOpt);
     ctx.initCommandTable(ctx);
-    ctx.status |= DebugJS.STATE_INITIALIZED;
+    ctx.status |= DebugJS.ST_INITIALIZED;
     ctx.initExtension(ctx);
     ctx.printLogs();
     ctx.showDbgWinOnError(ctx);
@@ -1158,11 +1158,11 @@ DebugJS.prototype = {
     if ((ctx.opt.visible) || (ctx.opt.target != null)) {
       ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     } else if (ctx.errStatus) {
-      if (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
-          ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
-          ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG))) {
+      if (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
+          ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
+          ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG))) {
         ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
-        ctx.errStatus = DebugJS.ERR_STATE_NONE;
+        ctx.errStatus = DebugJS.ERR_ST_NONE;
       }
     }
     if (ctx.opt.resizable) ctx.uiStatus |= DebugJS.UI_ST_RESIZABLE;
@@ -1295,11 +1295,11 @@ DebugJS.prototype = {
     }
 
     if (opt.useSuspendLogButton) {
-      ctx.suspendLogBtn = ctx.createHeaderBtn('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'STATE_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
+      ctx.suspendLogBtn = ctx.createHeaderBtn('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'ST_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
     }
 
     if (DebugJS.LS_AVAILABLE) {
-      ctx.preserveLogBtn = ctx.createHeaderBtn('preserveLogBtn', '*', 5, fontSize, ctx.toggleLogPreserve, 'status', 'STATE_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
+      ctx.preserveLogBtn = ctx.createHeaderBtn('preserveLogBtn', '*', 5, fontSize, ctx.toggleLogPreserve, 'status', 'ST_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
     }
 
     if (opt.useStopWatch) {
@@ -1315,27 +1315,27 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.swBtnPanel);
     }
 
-    ctx.extBtn = ctx.createHeaderBtn('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'STATE_EXT_PANEL', 'EXT_BTN_COLOR', false);
+    ctx.extBtn = ctx.createHeaderBtn('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'ST_EXT_PANEL', 'EXT_BTN_COLOR', false);
     ctx.extBtn.style.display = 'none';
 
     if (opt.useTools) {
-      ctx.toolsBtn = ctx.createHeaderBtn('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'STATE_TOOLS', 'TOOLS_BTN_COLOR', false);
+      ctx.toolsBtn = ctx.createHeaderBtn('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'ST_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
 
     if (opt.useJsEditor) {
-      ctx.jsBtn = ctx.createHeaderBtn('jsBtn', 'JS', 2, null, ctx.toggleJs, 'status', 'STATE_JS', 'JS_BTN_COLOR', false);
+      ctx.jsBtn = ctx.createHeaderBtn('jsBtn', 'JS', 2, null, ctx.toggleJs, 'status', 'ST_JS', 'JS_BTN_COLOR', false);
     }
 
     if (opt.useElementInfo) {
-      ctx.elmInfoBtn = ctx.createHeaderBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'STATE_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
+      ctx.elmInfoBtn = ctx.createHeaderBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'ST_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
     }
 
     if (opt.useHtmlSrc) {
-      ctx.htmlSrcBtn = ctx.createHeaderBtn('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'STATE_HTML_SRC', 'HTML_BTN_COLOR', false);
+      ctx.htmlSrcBtn = ctx.createHeaderBtn('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'ST_HTML_SRC', 'HTML_BTN_COLOR', false);
     }
 
     if (opt.useSystemInfo) {
-      ctx.sysInfoBtn = ctx.createHeaderBtn('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfo, 'status', 'STATE_SYS_INFO', 'SYS_BTN_COLOR', false);
+      ctx.sysInfoBtn = ctx.createHeaderBtn('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfo, 'status', 'ST_SYS_INFO', 'SYS_BTN_COLOR', false);
     }
 
     if (opt.useScreenMeasure) {
@@ -1350,7 +1350,7 @@ DebugJS.prototype = {
       measureBtn.innerText = ' ';
       measureBtn.onclick = ctx.toggleMeasure;
       measureBtn.onmouseover = new Function('DebugJS.ctx.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BTN_COLOR + '\';');
-      measureBtn.onmouseout = new Function('DebugJS.ctx.measureBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
+      measureBtn.onmouseout = new Function('DebugJS.ctx.measureBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
       ctx.headPanel.appendChild(measureBtn);
       ctx.measureBtn = measureBtn;
     }
@@ -1751,7 +1751,7 @@ DebugJS.prototype = {
       var w = window.outerWidth;
       var h = window.outerHeight;
       ctx.windowSizeLabel.innerText = 'WIN:w=' + w + ',h=' + h;
-      if (ctx.status & DebugJS.STATE_SYS_INFO) {
+      if (ctx.status & DebugJS.ST_SYS_INFO) {
         document.getElementById(ctx.id + '-sys-win-w').innerText = w;
         document.getElementById(ctx.id + '-sys-win-h').innerText = h;
       }
@@ -1763,7 +1763,7 @@ DebugJS.prototype = {
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
     ctx.clientSizeLabel.innerText = 'CLI:w=' + w + ',h=' + h;
-    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+    if (ctx.status & DebugJS.ST_SYS_INFO) {
       document.getElementById(ctx.id + '-sys-cli-w').innerText = w;
       document.getElementById(ctx.id + '-sys-cli-h').innerText = h;
     }
@@ -1774,7 +1774,7 @@ DebugJS.prototype = {
     var w = this.bodyEl.clientWidth;
     var h = this.bodyEl.clientHeight;
     ctx.bodySizeLabel.innerText = 'BODY:w=' + w + ',h=' + h;
-    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+    if (ctx.status & DebugJS.ST_SYS_INFO) {
       document.getElementById(ctx.id + '-sys-body-w').innerText = w;
       document.getElementById(ctx.id + '-sys-body-h').innerText = h;
     }
@@ -1836,36 +1836,36 @@ DebugJS.prototype = {
   },
 
   updateMeasureBtn: function(ctx) {
-    ctx.measureBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.STATE_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.measureBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   updateSysInfoBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.sysInfoBtn, DebugJS.STATE_SYS_INFO, DebugJS.SYS_BTN_COLOR);
+    ctx.updateBtnActive(ctx.sysInfoBtn, DebugJS.ST_SYS_INFO, DebugJS.SYS_BTN_COLOR);
   },
 
   updateElmInfoBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.elmInfoBtn, DebugJS.STATE_ELM_INSPECTING, DebugJS.DOM_BTN_COLOR);
+    ctx.updateBtnActive(ctx.elmInfoBtn, DebugJS.ST_ELM_INSPECTING, DebugJS.DOM_BTN_COLOR);
   },
 
   updateHtmlSrcBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.htmlSrcBtn, DebugJS.STATE_HTML_SRC, DebugJS.HTML_BTN_COLOR);
+    ctx.updateBtnActive(ctx.htmlSrcBtn, DebugJS.ST_HTML_SRC, DebugJS.HTML_BTN_COLOR);
   },
 
   updateJsBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.jsBtn, DebugJS.STATE_JS, DebugJS.JS_BTN_COLOR);
+    ctx.updateBtnActive(ctx.jsBtn, DebugJS.ST_JS, DebugJS.JS_BTN_COLOR);
   },
 
   updateToolsBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.toolsBtn, DebugJS.STATE_TOOLS, DebugJS.TOOLS_BTN_COLOR);
+    ctx.updateBtnActive(ctx.toolsBtn, DebugJS.ST_TOOLS, DebugJS.TOOLS_BTN_COLOR);
   },
 
   updateExtBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.extBtn, DebugJS.STATE_EXT_PANEL, DebugJS.EXT_BTN_COLOR);
+    ctx.updateBtnActive(ctx.extBtn, DebugJS.ST_EXT_PANEL, DebugJS.EXT_BTN_COLOR);
   },
 
   updateSwBtnPanel: function(ctx) {
     if (!ctx.swBtnPanel) return;
-    var btn = (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) ? '||' : '>>';
+    var btn = (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) ? '||' : '>>';
     var margin = (2 * ctx.opt.zoom) + 'px';
     var btns = ctx.createBtnHtml(ctx, '0', 'DebugJS.ctx.resetStopWatch();', 'margin-right:' + margin) +
                ctx.createBtnHtml(ctx, btn, 'DebugJS.ctx.startStopStopWatch();', 'margin-right:' + margin);
@@ -1877,23 +1877,23 @@ DebugJS.prototype = {
     ctx.updateStopWatch();
     ctx.swElapsedTimeDisp = DebugJS.getTimerStr(ctx.swElapsedTime);
     if (ctx.swLabel) {
-      if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+      if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
         ctx.swLabel.innerHTML = '<span style="color:' + ctx.opt.timerColor + ' !important">' + ctx.swElapsedTimeDisp + '</span>';
       } else {
         ctx.swLabel.innerHTML = ctx.swElapsedTimeDisp;
       }
     }
-    if (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       setTimeout(ctx.updateSwLabel, DebugJS.UPDATE_INTERVAL_H);
     }
   },
 
   updatePreserveLogBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.preserveLogBtn, DebugJS.STATE_LOG_PRESERVED, DebugJS.LOG_PRESERVE_BTN_COLOR);
+    ctx.updateBtnActive(ctx.preserveLogBtn, DebugJS.ST_LOG_PRESERVED, DebugJS.LOG_PRESERVE_BTN_COLOR);
   },
 
   updateSuspendLogBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.suspendLogBtn, DebugJS.STATE_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BTN_COLOR);
+    ctx.updateBtnActive(ctx.suspendLogBtn, DebugJS.ST_LOG_SUSPENDING, DebugJS.LOG_SUSPEND_BTN_COLOR);
   },
 
   updatePinBtn: function(ctx) {
@@ -2328,7 +2328,7 @@ DebugJS.prototype = {
 
   toggleLogSuspend: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_LOG_SUSPENDING) {
+    if (ctx.status & DebugJS.ST_LOG_SUSPENDING) {
       ctx.resumeLog();
     } else {
       ctx.suspendLog();
@@ -2337,19 +2337,19 @@ DebugJS.prototype = {
 
   suspendLog: function() {
     var ctx = DebugJS.ctx;
-    ctx.status |= DebugJS.STATE_LOG_SUSPENDING;
+    ctx.status |= DebugJS.ST_LOG_SUSPENDING;
     ctx.updateSuspendLogBtn(ctx);
   },
 
   resumeLog: function() {
     var ctx = DebugJS.ctx;
-    ctx.status &= ~DebugJS.STATE_LOG_SUSPENDING;
+    ctx.status &= ~DebugJS.ST_LOG_SUSPENDING;
     ctx.updateSuspendLogBtn(ctx);
   },
 
   toggleLogPreserve: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_LOG_PRESERVED) {
+    if (ctx.status & DebugJS.ST_LOG_PRESERVED) {
       ctx.setLogPreserve(ctx, false);
     } else {
       ctx.setLogPreserve(ctx, true);
@@ -2358,16 +2358,16 @@ DebugJS.prototype = {
 
   setLogPreserve: function(ctx, flg) {
     if (flg) {
-      ctx.status |= DebugJS.STATE_LOG_PRESERVED;
+      ctx.status |= DebugJS.ST_LOG_PRESERVED;
     } else {
-      ctx.status &= ~DebugJS.STATE_LOG_PRESERVED;
+      ctx.status &= ~DebugJS.ST_LOG_PRESERVED;
     }
     ctx.updatePreserveLogBtn(ctx);
   },
 
   toggleMeasure: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_MEASURE) {
+    if (ctx.status & DebugJS.ST_MEASURE) {
       ctx.closeScreenMeasure(ctx);
     } else {
       ctx.openScreenMeasure(ctx);
@@ -2376,8 +2376,8 @@ DebugJS.prototype = {
 
   openScreenMeasure: function(ctx, q) {
     if (!q) DebugJS._log.s('Screen Measure ON');
-    ctx.status |= DebugJS.STATE_MEASURE;
-    ctx.featStack.push(DebugJS.STATE_MEASURE);
+    ctx.status |= DebugJS.ST_MEASURE;
+    ctx.featStack.push(DebugJS.ST_MEASURE);
     ctx.bodyCursor = ctx.bodyEl.style.cursor;
     ctx.bodyEl.style.cursor = 'default';
     ctx.updateMeasureBtn(ctx);
@@ -2386,8 +2386,8 @@ DebugJS.prototype = {
   closeScreenMeasure: function(ctx, q) {
     ctx.stopMeasure(ctx);
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
-    ctx.status &= ~DebugJS.STATE_MEASURE;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_MEASURE);
+    ctx.status &= ~DebugJS.ST_MEASURE;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_MEASURE);
     if (!q) DebugJS._log.s('Screen Measure OFF');
     ctx.updateMeasureBtn(ctx);
   },
@@ -2422,7 +2422,7 @@ DebugJS.prototype = {
   },
 
   startStopStopWatch: function() {
-    if (DebugJS.ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (DebugJS.ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       DebugJS.ctx.stopStopWatch();
     } else {
       DebugJS.ctx.startStopWatch();
@@ -2431,7 +2431,7 @@ DebugJS.prototype = {
 
   startStopWatch: function() {
     var ctx = DebugJS.ctx;
-    ctx.status |= DebugJS.STATE_STOPWATCH_RUNNING;
+    ctx.status |= DebugJS.ST_STOPWATCH_RUNNING;
     ctx.swStartTime = (new Date()).getTime() - ctx.swElapsedTime;
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
@@ -2439,9 +2439,9 @@ DebugJS.prototype = {
 
   stopStopWatch: function() {
     var ctx = DebugJS.ctx;
-    ctx.status &= ~DebugJS.STATE_STOPWATCH_RUNNING;
-    if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
-      ctx.status &= ~DebugJS.STATE_STOPWATCH_LAPTIME;
+    ctx.status &= ~DebugJS.ST_STOPWATCH_RUNNING;
+    if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
+      ctx.status &= ~DebugJS.ST_STOPWATCH_LAPTIME;
       ctx.resetStopWatch();
     }
     ctx.updateSwBtnPanel(ctx);
@@ -2456,7 +2456,7 @@ DebugJS.prototype = {
 
   updateStopWatch: function() {
     var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.STATE_STOPWATCH_RUNNING)) return;
+    if (!(ctx.status & DebugJS.ST_STOPWATCH_RUNNING)) return;
     var swCurrentTime = (new Date()).getTime();
     ctx.swElapsedTime = swCurrentTime - ctx.swStartTime;
   },
@@ -2473,22 +2473,22 @@ DebugJS.prototype = {
   openFeature: function(ctx, f, subfnc, opt) {
     ctx.closeFeature(ctx, f);
     switch (f) {
-      case DebugJS.STATE_MEASURE:
+      case DebugJS.ST_MEASURE:
         ctx.openScreenMeasure(ctx, opt);
         return true;
-      case DebugJS.STATE_SYS_INFO:
+      case DebugJS.ST_SYS_INFO:
         ctx.openSystemInfo(ctx);
         return true;
-      case DebugJS.STATE_HTML_SRC:
+      case DebugJS.ST_HTML_SRC:
         ctx.openHtmlSrc(ctx);
         return true;
-      case DebugJS.STATE_ELM_INSPECTING:
+      case DebugJS.ST_ELM_INSPECTING:
         ctx.openElmInfo(ctx);
         return true;
-      case DebugJS.STATE_JS:
+      case DebugJS.ST_JS:
         ctx.openJsEditor(ctx);
         return true;
-      case DebugJS.STATE_TOOLS:
+      case DebugJS.ST_TOOLS:
         var kind;
         var param;
         switch (subfnc) {
@@ -2528,7 +2528,7 @@ DebugJS.prototype = {
         ctx.openTools(ctx);
         ctx.switchToolsFunction(kind, param);
         return true;
-      case DebugJS.STATE_EXT_PANEL:
+      case DebugJS.ST_EXT_PANEL:
         if (ctx.extPanels.length == 0) {
           DebugJS._log('No extension panel');
           return false;
@@ -2540,7 +2540,7 @@ DebugJS.prototype = {
           DebugJS._log.e('No such panel: ' + idx + ' (0-' + (ctx.extPanels.length - 1) + ')');
           return false;
         }
-        if (!(ctx.status & DebugJS.STATE_EXT_PANEL)) {
+        if (!(ctx.status & DebugJS.ST_EXT_PANEL)) {
           ctx.openExtPanel(ctx);
         }
         ctx.switchExtPanel(idx);
@@ -2551,25 +2551,25 @@ DebugJS.prototype = {
 
   closeFeature: function(ctx, f) {
     switch (f) {
-      case DebugJS.STATE_MEASURE:
+      case DebugJS.ST_MEASURE:
         ctx.closeScreenMeasure(ctx);
         break;
-      case DebugJS.STATE_SYS_INFO:
+      case DebugJS.ST_SYS_INFO:
         ctx.closeSystemInfo(ctx);
         break;
-      case DebugJS.STATE_HTML_SRC:
+      case DebugJS.ST_HTML_SRC:
         ctx.closeHtmlSrc(ctx);
         break;
-      case DebugJS.STATE_ELM_INSPECTING:
+      case DebugJS.ST_ELM_INSPECTING:
         ctx.closeElmInfo(ctx);
         break;
-      case DebugJS.STATE_JS:
+      case DebugJS.ST_JS:
         ctx.closeJsEditor();
         break;
-      case DebugJS.STATE_TOOLS:
+      case DebugJS.ST_TOOLS:
         ctx.closeTools(ctx);
         break;
-      case DebugJS.STATE_EXT_PANEL:
+      case DebugJS.ST_EXT_PANEL:
         ctx.closeExtPanel(ctx);
         break;
       default:
@@ -2592,38 +2592,38 @@ DebugJS.prototype = {
   },
 
   closeAllFeatures: function(ctx, q) {
-    if (ctx.status & DebugJS.STATE_MEASURE) {ctx.closeScreenMeasure(ctx, q);}
-    if (ctx.status & DebugJS.STATE_SYS_INFO) {ctx.closeSystemInfo(ctx);}
-    if (ctx.status & DebugJS.STATE_HTML_SRC) {ctx.closeHtmlSrc(ctx);}
-    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {ctx.closeElmInfo(ctx);}
-    if (ctx.status & DebugJS.STATE_JS) {ctx.closeJsEditor();}
-    if (ctx.status & DebugJS.STATE_TOOLS) {ctx.closeTools(ctx);}
-    if (ctx.status & DebugJS.STATE_EXT_PANEL) {ctx.closeExtPanel(ctx);}
+    if (ctx.status & DebugJS.ST_MEASURE) {ctx.closeScreenMeasure(ctx, q);}
+    if (ctx.status & DebugJS.ST_SYS_INFO) {ctx.closeSystemInfo(ctx);}
+    if (ctx.status & DebugJS.ST_HTML_SRC) {ctx.closeHtmlSrc(ctx);}
+    if (ctx.status & DebugJS.ST_ELM_INSPECTING) {ctx.closeElmInfo(ctx);}
+    if (ctx.status & DebugJS.ST_JS) {ctx.closeJsEditor();}
+    if (ctx.status & DebugJS.ST_TOOLS) {ctx.closeTools(ctx);}
+    if (ctx.status & DebugJS.ST_EXT_PANEL) {ctx.closeExtPanel(ctx);}
   },
 
   launchFunc: function(ctx, fn, subfn, opt) {
     var f = 0;
     switch (fn) {
       case 'measure':
-        f = DebugJS.STATE_MEASURE;
+        f = DebugJS.ST_MEASURE;
         break;
       case 'sys':
-        f = DebugJS.STATE_SYS_INFO;
+        f = DebugJS.ST_SYS_INFO;
         break;
       case 'html':
-        f = DebugJS.STATE_HTML_SRC;
+        f = DebugJS.ST_HTML_SRC;
         break;
       case 'dom':
-        f = DebugJS.STATE_ELM_INSPECTING;
+        f = DebugJS.ST_ELM_INSPECTING;
         break;
       case 'js':
-        f = DebugJS.STATE_JS;
+        f = DebugJS.ST_JS;
         break;
       case 'tool':
-        f = DebugJS.STATE_TOOLS;
+        f = DebugJS.ST_TOOLS;
         break;
       case 'ext':
-        f = DebugJS.STATE_EXT_PANEL;
+        f = DebugJS.ST_EXT_PANEL;
     }
     return (ctx.openFeature(ctx, f, subfn, opt));
   },
@@ -2632,12 +2632,12 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
     var cmds;
-    if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
+    if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
       DebugJS.bat._resume('cmd');
     }
     switch (e.keyCode) {
       case 9: // Tab
-        if ((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) {
+        if ((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) {
           if (e.shiftKey) {
             if (ctx.fileVwrRadioB64.checked) ctx.toggleShowHideCC();
           } else {
@@ -2714,7 +2714,7 @@ DebugJS.prototype = {
       case 67: // C
         if ((e.ctrlKey) && (document.activeElement == ctx.cmdLine)) {
           if (((ctx.cmdLine.selectionEnd - ctx.cmdLine.selectionStart) == 0)) {
-            if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
+            if (ctx.status & DebugJS.ST_BAT_RUNNING) {
               DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGINT);
             }
             ctx._cmdDelayCancel(ctx);
@@ -2808,7 +2808,7 @@ DebugJS.prototype = {
     if (ctx.opt.useKeyStatusInfo) {
       ctx.updateStatusInfoOnKeyUp(ctx, e);
     }
-     ctx.keyHandlerUp(ctx, e);
+    ctx.keyHandlerUp(ctx, e);
   },
 
   updateStatusInfoOnKeyDown: function(ctx, e) {
@@ -2861,7 +2861,7 @@ DebugJS.prototype = {
       ctx.scrollPosY = window.scrollY;
     }
     ctx.updateScrollPosLabel();
-    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+    if (ctx.status & DebugJS.ST_SYS_INFO) {
       ctx.updateSysInfoScrollPosLabel(ctx);
     }
     ctx.resizeMainHeight();
@@ -2883,14 +2883,14 @@ DebugJS.prototype = {
     switch (e.button) {
       case 0:
         ctx.mouseClick0 = DebugJS.COLOR_ACTIVE;
-        if (ctx.status & DebugJS.STATE_MEASURE) {
+        if (ctx.status & DebugJS.ST_MEASURE) {
           ctx.startMeasure(ctx, posX, posY);
         }
-        if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+        if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
           DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
           ctx.resetStopWatch();
         }
-        if (DebugJS.ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
+        if (DebugJS.ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
           DebugJS.bat._resume('cmd');
         }
         break;
@@ -2899,7 +2899,7 @@ DebugJS.prototype = {
         break;
       case 2:
         ctx.mouseClick2 = DebugJS.COLOR_ACTIVE;
-        if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {
+        if (ctx.status & DebugJS.ST_ELM_INSPECTING) {
           if (ctx.isOnDbgWin(posX, posY)) {
             if ((DebugJS.el) && (DebugJS.el != ctx.targetElm)) {
               ctx.showElementInfo(DebugJS.el);
@@ -2920,7 +2920,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var x = e.changedTouches[0].pageX;
     var y = e.changedTouches[0].pageY;
-    if (ctx.status & DebugJS.STATE_MEASURE) {
+    if (ctx.status & DebugJS.ST_MEASURE) {
       ctx.startMeasure(ctx, x, y);
       e.preventDefault();
     }
@@ -2946,8 +2946,8 @@ DebugJS.prototype = {
     }
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.moveDbgWin(ctx, x, y);
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.resizeDbgWin(ctx, x, y);
-    if (ctx.status & DebugJS.STATE_MEASURING) ctx.doMeasure(ctx, x, y);
-    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) ctx.inspectElement(x, y);
+    if (ctx.status & DebugJS.ST_MEASURING) ctx.doMeasure(ctx, x, y);
+    if (ctx.status & DebugJS.ST_ELM_INSPECTING) ctx.inspectElement(x, y);
     if (DebugJS.point.d) DebugJS.point.move(x, y, 0, 0);
     ctx.resizeMainHeight();
   },
@@ -2973,7 +2973,7 @@ DebugJS.prototype = {
     DebugJS.ctx._onPointerUp(DebugJS.ctx);
   },
   _onPointerUp: function(ctx) {
-    if (ctx.status & DebugJS.STATE_MEASURING) {
+    if (ctx.status & DebugJS.ST_MEASURING) {
       ctx.stopMeasure(ctx);
     }
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
@@ -3294,21 +3294,21 @@ DebugJS.prototype = {
   },
 
   showDbgWinOnError: function(ctx) {
-    if ((ctx.status & DebugJS.STATE_INITIALIZED) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
+    if ((ctx.status & DebugJS.ST_INITIALIZED) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
       if (((ctx.errStatus) &&
-           (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_STATE_SCRIPT)) ||
-           ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_STATE_LOAD)) ||
-           ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_STATE_LOG)))) ||
-          ((ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.bat.hasBatStopCond('error')) && (DebugJS.bat.ctrl.stopReq))) {
+           (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
+           ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
+           ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG)))) ||
+          ((ctx.status & DebugJS.ST_BAT_RUNNING) && (DebugJS.bat.hasBatStopCond('error')) && (DebugJS.bat.ctrl.stopReq))) {
         ctx.showDbgWin();
-        ctx.errStatus = DebugJS.ERR_STATE_NONE;
+        ctx.errStatus = DebugJS.ERR_ST_NONE;
       }
     }
   },
 
   hideDbgWin: function(ctx) {
     if ((!ctx.opt.togglableShowHide) || (!ctx.win)) return;
-    ctx.errStatus = DebugJS.ERR_STATE_NONE;
+    ctx.errStatus = DebugJS.ERR_ST_NONE;
     ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
     ctx.uiStatus &= ~DebugJS.UI_ST_VISIBLE;
     ctx.win.style.display = 'none';
@@ -3316,10 +3316,10 @@ DebugJS.prototype = {
 
   closeDbgWin: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_MEASURE) {
+    if (ctx.status & DebugJS.ST_MEASURE) {
       ctx.closeScreenMeasure(ctx);
     }
-    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {
+    if (ctx.status & DebugJS.ST_ELM_INSPECTING) {
       ctx.closeElmInfo(ctx);
     }
     ctx.hideDbgWin(ctx);
@@ -3336,7 +3336,7 @@ DebugJS.prototype = {
 
   startMeasure: function(ctx, posX, posY) {
     if (ctx.isOnDbgWin(posX, posY)) return;
-    ctx.status |= DebugJS.STATE_MEASURING;
+    ctx.status |= DebugJS.ST_MEASURING;
     ctx.clickedPosX = posX;
     ctx.clickedPosY = posY;
     if (ctx.measureBox == null) {
@@ -3421,12 +3421,12 @@ DebugJS.prototype = {
       ctx.measureBox = null;
     }
     ctx.enableTextSelect(ctx);
-    ctx.status &= ~DebugJS.STATE_MEASURING;
+    ctx.status &= ~DebugJS.ST_MEASURING;
   },
 
   toggleSystemInfo: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_SYS_INFO) {
+    if (ctx.status & DebugJS.ST_SYS_INFO) {
       ctx.closeSystemInfo(ctx);
     } else {
       ctx.openSystemInfo(ctx);
@@ -3434,8 +3434,8 @@ DebugJS.prototype = {
   },
 
   openSystemInfo: function(ctx) {
-    ctx.status |= DebugJS.STATE_SYS_INFO;
-    ctx.featStack.push(DebugJS.STATE_SYS_INFO);
+    ctx.status |= DebugJS.ST_SYS_INFO;
+    ctx.featStack.push(DebugJS.ST_SYS_INFO);
     if (ctx.sysInfoPanel == null) {
       ctx.createSysInfoPanel(ctx);
     }
@@ -3468,7 +3468,7 @@ DebugJS.prototype = {
   },
 
   updateSystemTime: function() {
-    if (!(DebugJS.ctx.status & DebugJS.STATE_SYS_INFO)) return;
+    if (!(DebugJS.ctx.status & DebugJS.ST_SYS_INFO)) return;
     var time = (new Date()).getTime();
     var timeBin = DebugJS.formatBin(time.toString(2), false, 1);
     var html = '<pre><span style="color:' + DebugJS.ITEM_NAME_COLOR + '">SYSTEM TIME</span> : ' + DebugJS.convDateTimeStr(DebugJS.getDateTime(time)) + '\n' +
@@ -3488,8 +3488,8 @@ DebugJS.prototype = {
       }
       ctx.sysInfoPanel = null;
     }
-    ctx.status &= ~DebugJS.STATE_SYS_INFO;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_SYS_INFO);
+    ctx.status &= ~DebugJS.ST_SYS_INFO;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_SYS_INFO);
     ctx.updateSysInfoBtn(ctx);
     ctx.setIntervalL(ctx);
   },
@@ -3794,7 +3794,7 @@ DebugJS.prototype = {
 
   toggleElmInfo: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_ELM_INSPECTING) {
+    if (ctx.status & DebugJS.ST_ELM_INSPECTING) {
       ctx.closeElmInfo(ctx);
     } else {
       ctx.openElmInfo(ctx);
@@ -3802,8 +3802,8 @@ DebugJS.prototype = {
   },
 
   openElmInfo: function(ctx) {
-    ctx.status |= DebugJS.STATE_ELM_INSPECTING;
-    ctx.featStack.push(DebugJS.STATE_ELM_INSPECTING);
+    ctx.status |= DebugJS.ST_ELM_INSPECTING;
+    ctx.featStack.push(DebugJS.ST_ELM_INSPECTING);
     if (ctx.elmInfoPanel == null) {
       ctx.createElmInfoPanel(ctx);
     }
@@ -3912,8 +3912,8 @@ DebugJS.prototype = {
       ctx.elmNumPanel = null;
     }
     ctx.updateTargetElm(null);
-    ctx.status &= ~DebugJS.STATE_ELM_INSPECTING;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_ELM_INSPECTING);
+    ctx.status &= ~DebugJS.ST_ELM_INSPECTING;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_ELM_INSPECTING);
     ctx.updateElmInfoBtn(ctx);
   },
 
@@ -4191,7 +4191,7 @@ DebugJS.prototype = {
 
   updateElementInfoInterval: function() {
     var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.STATE_ELM_INSPECTING)) {
+    if (!(ctx.status & DebugJS.ST_ELM_INSPECTING)) {
       return;
     }
     ctx.updateElementInfo();
@@ -4240,7 +4240,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     DebugJS.el = elm;
     if (DebugJS.G_EL_AVAILABLE) el = elm;
-    if (ctx.status & DebugJS.STATE_ELM_EDIT) {
+    if (ctx.status & DebugJS.ST_ELM_EDIT) {
       ctx.updateEditable(ctx, elm);
     }
     DebugJS._log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + (DebugJS.G_EL_AVAILABLE ? 'el' : ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el') + '</span>');
@@ -4285,7 +4285,7 @@ DebugJS.prototype = {
 
   toggleHtmlSrc: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_HTML_SRC) {
+    if (ctx.status & DebugJS.ST_HTML_SRC) {
       ctx.closeHtmlSrc(ctx);
     } else {
       ctx.openHtmlSrc(ctx);
@@ -4293,8 +4293,8 @@ DebugJS.prototype = {
   },
 
   openHtmlSrc: function(ctx) {
-    ctx.status |= DebugJS.STATE_HTML_SRC;
-    ctx.featStack.push(DebugJS.STATE_HTML_SRC);
+    ctx.status |= DebugJS.ST_HTML_SRC;
+    ctx.featStack.push(DebugJS.ST_HTML_SRC);
     if (ctx.htmlSrcPanel == null) {
       ctx.createHtmlSrcPanel(ctx);
     }
@@ -4368,8 +4368,8 @@ DebugJS.prototype = {
       }
       ctx.htmlSrcPanel = null;
     }
-    ctx.status &= ~DebugJS.STATE_HTML_SRC;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_HTML_SRC);
+    ctx.status &= ~DebugJS.ST_HTML_SRC;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_HTML_SRC);
     ctx.updateHtmlSrcBtn(ctx);
   },
 
@@ -4396,7 +4396,7 @@ DebugJS.prototype = {
 
   updateHtmlSrcInterval: function() {
     var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.STATE_HTML_SRC)) return;
+    if (!(ctx.status & DebugJS.ST_HTML_SRC)) return;
     ctx.showHtmlSrc();
     if (ctx.htmlSrcUpdateInterval > 0) {
       ctx.elmUpdateTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdateInterval);
@@ -4405,7 +4405,7 @@ DebugJS.prototype = {
 
   toggleTools: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_TOOLS) {
+    if (ctx.status & DebugJS.ST_TOOLS) {
       ctx.closeTools(ctx);
     } else {
       ctx.openTools(ctx);
@@ -4413,8 +4413,8 @@ DebugJS.prototype = {
   },
 
   openTools: function(ctx) {
-    ctx.status |= DebugJS.STATE_TOOLS;
-    ctx.featStack.push(DebugJS.STATE_TOOLS);
+    ctx.status |= DebugJS.ST_TOOLS;
+    ctx.featStack.push(DebugJS.ST_TOOLS);
     if (ctx.toolsPanel == null) {
       ctx.createToolsPanel(ctx);
     }
@@ -4457,8 +4457,8 @@ DebugJS.prototype = {
       ctx.removeOverlayPanelFull(ctx.toolsPanel);
       ctx.switchToolsFunction(0);
     }
-    ctx.status &= ~DebugJS.STATE_TOOLS;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_TOOLS);
+    ctx.status &= ~DebugJS.ST_TOOLS;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_TOOLS);
     ctx.updateToolsBtn(ctx);
   },
 
@@ -4863,7 +4863,7 @@ DebugJS.prototype = {
 
   updateTimerClock: function() {
     var ctx = DebugJS.ctx;
-    if ((!(ctx.status & DebugJS.STATE_TOOLS)) || (ctx.toolTimerMode != DebugJS.TOOL_TIMER_MODE_CLOCK)) return;
+    if ((!(ctx.status & DebugJS.ST_TOOLS)) || (ctx.toolTimerMode != DebugJS.TOOL_TIMER_MODE_CLOCK)) return;
     var tm = DebugJS.getDateTime();
     ctx.timerClockLabel.innerHTML = ctx.createClockStr(tm);
     setTimeout(ctx.updateTimerClock, ctx.clockUpdInt);
@@ -4956,7 +4956,7 @@ DebugJS.prototype = {
 
   updateTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
-    if ((!(ctx.status & DebugJS.STATE_TOOLS)) ||
+    if ((!(ctx.status & DebugJS.ST_TOOLS)) ||
         (ctx.toolTimerMode != DebugJS.TOOL_TIMER_MODE_SW_CU) ||
         ((!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING)) &&
         (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END)))) return;
@@ -5076,7 +5076,7 @@ DebugJS.prototype = {
 
   updateTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
-    if ((!(ctx.status & DebugJS.STATE_TOOLS)) ||
+    if ((!(ctx.status & DebugJS.ST_TOOLS)) ||
         (ctx.toolTimerMode != DebugJS.TOOL_TIMER_MODE_SW_CD) ||
         ((!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING)) &&
         (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_END)))) return;
@@ -5308,11 +5308,11 @@ DebugJS.prototype = {
 
   toggleElmEditable: function(btn) {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_ELM_EDIT) {
-      ctx.status &= ~DebugJS.STATE_ELM_EDIT;
+    if (ctx.status & DebugJS.ST_ELM_EDIT) {
+      ctx.status &= ~DebugJS.ST_ELM_EDIT;
       ctx.updateEditable(ctx, ctx.txtChkTxt);
     } else {
-      ctx.status |= DebugJS.STATE_ELM_EDIT;
+      ctx.status |= DebugJS.ST_ELM_EDIT;
       if (DebugJS.el) {
         ctx.updateEditable(ctx, DebugJS.el);
       }
@@ -5322,7 +5322,7 @@ DebugJS.prototype = {
 
   updateElBtn: function(btn) {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_ELM_EDIT) {
+    if (ctx.status & DebugJS.ST_ELM_EDIT) {
       ctx.setStyle(btn, 'color', ctx.opt.btnColor);
     } else {
       ctx.setStyle(btn, 'color', DebugJS.COLOR_INACTIVE);
@@ -5634,13 +5634,13 @@ DebugJS.prototype = {
 
   handleFileDropAuto: function(e) {
     var ctx = DebugJS.ctx;
-    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedAuto);
   },
 
   onFileLoadedAuto: function(ctx, success, file, content) {
     if (!success) {
-      ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
+      ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
       return;
     }
     if (DebugJS.isBat(content)) {
@@ -5649,13 +5649,13 @@ DebugJS.prototype = {
       ctx.onJsLoaded(ctx, success, file, content);
     } else if (file.name.match(/\.json$/)) {
       DebugJS.execCmdJson(content, true);
-      ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
+      ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
     }
   },
 
   handleFileDropOnBat: function(e) {
     var ctx = DebugJS.ctx;
-    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onBatLoaded);
   },
 
@@ -5668,14 +5668,14 @@ DebugJS.prototype = {
 
   handleFileDropOnJS: function(e) {
     var ctx = DebugJS.ctx;
-    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', 'b64');
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onJsLoaded);
   },
 
   onJsLoaded: function(ctx, success, file, content) {
     if (success) {
-      ctx.closeFeature(ctx, DebugJS.STATE_TOOLS);
-      ctx.openFeature(ctx, DebugJS.STATE_JS);
+      ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
+      ctx.openFeature(ctx, DebugJS.ST_JS);
       ctx.jsEditor.value = ctx.jsBuf = content;
     }
   },
@@ -6069,7 +6069,7 @@ DebugJS.prototype = {
 
   resizeImgPreview: function() {
     var ctx = DebugJS.ctx;
-    if ((!(ctx.status & DebugJS.STATE_TOOLS)) ||
+    if ((!(ctx.status & DebugJS.ST_TOOLS)) ||
         (!(DebugJS.ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE)) ||
         (!(ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64))) {
       return;
@@ -6351,8 +6351,8 @@ DebugJS.prototype = {
 
   startPauseBat: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
-      if (ctx.status & DebugJS.STATE_BAT_PAUSE) {
+    if (ctx.status & DebugJS.ST_BAT_RUNNING) {
+      if (ctx.status & DebugJS.ST_BAT_PAUSE) {
         DebugJS.bat._resume();
       } else {
         DebugJS.bat.pause();
@@ -6384,8 +6384,8 @@ DebugJS.prototype = {
     if (!ctx.batRunBtn) return;
     var label = ' RUN ';
     var color = '#0f0';
-    if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
-      if (!(ctx.status & DebugJS.STATE_BAT_PAUSE)) {
+    if (ctx.status & DebugJS.ST_BAT_RUNNING) {
+      if (!(ctx.status & DebugJS.ST_BAT_PAUSE)) {
         label = 'PAUSE';
         color = '#ff0';
       }
@@ -6402,10 +6402,10 @@ DebugJS.prototype = {
     if (!ctx.batResumeBtn) return;
     var color = DebugJS.COLOR_INACTIVE;
     var handler = null;
-    if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
+    if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY) {
       color = ctx.opt.btnColor;
       handler = ctx.batResume;
-    } else if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
+    } else if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
       color = ctx.opt.btnColor;
     }
     ctx.setStyle(ctx.batResumeBtn, 'color', color);
@@ -6470,7 +6470,7 @@ DebugJS.prototype = {
 
   toggleJs: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_JS) {
+    if (ctx.status & DebugJS.ST_JS) {
       ctx.closeJsEditor();
     } else {
       ctx.openJsEditor(ctx);
@@ -6478,8 +6478,8 @@ DebugJS.prototype = {
   },
 
   openJsEditor: function(ctx) {
-    ctx.status |= DebugJS.STATE_JS;
-    ctx.featStack.push(DebugJS.STATE_JS);
+    ctx.status |= DebugJS.ST_JS;
+    ctx.featStack.push(DebugJS.ST_JS);
     if (ctx.jsPanel == null) {
       ctx.createJsPanel(ctx);
     }
@@ -6607,14 +6607,14 @@ DebugJS.prototype = {
       ctx.removeOverlayPanel(ctx, ctx.jsPanel);
       ctx.jsPanel = null;
     }
-    ctx.status &= ~DebugJS.STATE_JS;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_JS);
+    ctx.status &= ~DebugJS.ST_JS;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_JS);
     ctx.updateJsBtn(ctx);
   },
 
   toggleExtPanel: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_EXT_PANEL) {
+    if (ctx.status & DebugJS.ST_EXT_PANEL) {
       ctx.closeExtPanel(ctx);
     } else {
       ctx.openExtPanel(ctx);
@@ -6622,8 +6622,8 @@ DebugJS.prototype = {
   },
 
   openExtPanel: function(ctx) {
-    ctx.status |= DebugJS.STATE_EXT_PANEL;
-    ctx.featStack.push(DebugJS.STATE_EXT_PANEL);
+    ctx.status |= DebugJS.ST_EXT_PANEL;
+    ctx.featStack.push(DebugJS.ST_EXT_PANEL);
     ctx.addOverlayPanelFull(ctx.extPanel);
     var activePanel = ctx.extActivePanel;
     if (activePanel == -1) {
@@ -6655,8 +6655,8 @@ DebugJS.prototype = {
       if ((p) && (p.onInActive)) p.onInActive(p.panel);
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
-    ctx.status &= ~DebugJS.STATE_EXT_PANEL;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.STATE_EXT_PANEL);
+    ctx.status &= ~DebugJS.ST_EXT_PANEL;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_EXT_PANEL);
     ctx.updateExtBtn(ctx);
   },
 
@@ -6668,7 +6668,7 @@ DebugJS.prototype = {
     if (ctx.extActivePanel != -1) {
       var p2 = pnls[ctx.extActivePanel];
       if (p2) {
-        if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p2.onInActive)) {
+        if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p2.onInActive)) {
           p2.onInActive(p2.panel);
         }
         ctx.extBodyPanel.removeChild(p2.base);
@@ -6678,7 +6678,7 @@ DebugJS.prototype = {
     var p1 = pnls[idx];
     ctx.extBodyPanel.appendChild(p1.base);
     if (p1) {
-      if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p1.onActive)) {
+      if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p1.onActive)) {
         p1.onActive(p1.panel);
       }
     }
@@ -7038,8 +7038,8 @@ DebugJS.prototype = {
     var ret;
     switch (a[0]) {
       case 'run':
-        if ((ctx.status & DebugJS.STATE_BAT_RUNNING) &&
-            (ctx.status & DebugJS.STATE_BAT_PAUSE)) {
+        if ((ctx.status & DebugJS.ST_BAT_RUNNING) &&
+            (ctx.status & DebugJS.ST_BAT_PAUSE)) {
           bat._resume();
         } else {
           if (ctx.batTextEditor) {bat.store(ctx.batTextEditor.value);}
@@ -7082,7 +7082,7 @@ DebugJS.prototype = {
           if (bat.cmds.length == 0) {
             st += 'No batch script';
           } else {
-            st += ((ctx.status & DebugJS.STATE_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
+            st += ((ctx.status & DebugJS.ST_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
             st += '\nNest Lv: ' + bat.ctx.length;
           }
           DebugJS._log.p(bat.ctrl, 0, st, false);
@@ -7109,7 +7109,7 @@ DebugJS.prototype = {
         if (a[1] != undefined) {
           var b = DebugJS.decodeBase64(a[1], true);
           if (b != '') {
-            if (ctx.status & DebugJS.STATE_BAT_RUNNING) {
+            if (ctx.status & DebugJS.ST_BAT_RUNNING) {
               bat.stCtx();
             }
             var a = DebugJS.getArgsFrom(arg, 2);
@@ -7172,25 +7172,25 @@ DebugJS.prototype = {
     var f = 0;
     switch (fn) {
       case 'measure':
-        f = DebugJS.STATE_MEASURE;
+        f = DebugJS.ST_MEASURE;
         break;
       case 'sys':
-        f = DebugJS.STATE_SYS_INFO;
+        f = DebugJS.ST_SYS_INFO;
         break;
       case 'html':
-        f = DebugJS.STATE_HTML_SRC;
+        f = DebugJS.ST_HTML_SRC;
         break;
       case 'dom':
-        f = DebugJS.STATE_ELM_INSPECTING;
+        f = DebugJS.ST_ELM_INSPECTING;
         break;
       case 'js':
-        f = DebugJS.STATE_JS;
+        f = DebugJS.ST_JS;
         break;
       case 'tool':
-        f = DebugJS.STATE_TOOLS;
+        f = DebugJS.ST_TOOLS;
         break;
       case 'ext':
-        f = DebugJS.STATE_EXT_PANEL;
+        f = DebugJS.ST_EXT_PANEL;
         break;
       case 'all':
         ctx.closeAllFeatures(ctx);
@@ -7538,10 +7538,10 @@ DebugJS.prototype = {
     ctx.finalizeFeatures(ctx);
     ctx.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
     if (ctx.opt.useSuspendLogButton) {
-      ctx.status &= ~DebugJS.STATE_LOG_SUSPENDING;
+      ctx.status &= ~DebugJS.ST_LOG_SUSPENDING;
       ctx.updateSuspendLogBtn(ctx);
     }
-    if (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+    if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       ctx.stopStopWatch();
     }
     ctx.resetStopWatch();
@@ -7619,7 +7619,7 @@ DebugJS.prototype = {
       var v16 = '';
       var val = eval(data.exp);
       if (val < 0) {
-        for (var i = (DebugJS.DEFAULT_UNIT - 1); i >= 0; i--) {
+        for (var i = (DebugJS.DFLT_UNIT - 1); i >= 0; i--) {
           v2 += (val & 1 << i) ? '1' : '0';
         }
         v16 = parseInt(v2, 2).toString(16);
@@ -7941,14 +7941,14 @@ DebugJS.prototype = {
 
   cmdLaptime: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.STATE_STOPWATCH_LAPTIME) {
+    if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
       ctx.stopStopWatch();
     } else {
-      if (ctx.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+      if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
         ctx.stopStopWatch();
         ctx.resetStopWatch();
       }
-      ctx.status |= DebugJS.STATE_STOPWATCH_LAPTIME;
+      ctx.status |= DebugJS.ST_STOPWATCH_LAPTIME;
       ctx.startStopWatch();
     }
   },
@@ -8075,7 +8075,7 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       ctx.setLogPreserve(ctx, false);
     } else {
-      var st = ((ctx.status & DebugJS.STATE_LOG_PRESERVED) ? true : false);
+      var st = ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? true : false);
       if (echo) {
         DebugJS._log.res(st);
         DebugJS.printUsage('log preserve on|off');
@@ -8090,7 +8090,7 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       DebugJS.ctx.resumeLog();
     } else {
-      var st = ((ctx.status & DebugJS.STATE_LOG_SUSPENDING) ? true : false);
+      var st = ((ctx.status & DebugJS.ST_LOG_SUSPENDING) ? true : false);
       DebugJS.printUsage('log suspend on|off');
       return st;
     }
@@ -8208,7 +8208,7 @@ DebugJS.prototype = {
     timeout |= 0;
     ctx.CMDVALS['%KEY%'] = null;
     if (op == 's') {
-      ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD;
+      ctx.status |= DebugJS.ST_BAT_PAUSE_CMD;
       DebugJS._log('Click or press any key to continue...');
     } else {
       if (op == '') {
@@ -8223,7 +8223,7 @@ DebugJS.prototype = {
       if (timeout > 0) {
         DebugJS.bat.ctrl.pauseTimeout = (new Date()).getTime() + timeout;
       }
-      ctx.status |= DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+      ctx.status |= DebugJS.ST_BAT_PAUSE_CMD_KEY;
     }
     ctx.updateBatResumeBtn();
     return true;
@@ -8739,9 +8739,9 @@ DebugJS.prototype = {
   setPropBatContCb: function(ctx, v) {
     if (DebugJS.bat.isRunning()) {
       if (v == 'on') {
-        ctx.status |= DebugJS.STATE_BAT_CONT;
+        ctx.status |= DebugJS.ST_BAT_CONT;
       } else {
-        ctx.status &= ~DebugJS.STATE_BAT_CONT;
+        ctx.status &= ~DebugJS.ST_BAT_CONT;
       }
     }
   },
@@ -9144,7 +9144,7 @@ DebugJS.prototype = {
         DebugJS.wd.stop();
         break;
       default:
-        if (ctx.status & DebugJS.STATE_WD) {
+        if (ctx.status & DebugJS.ST_WD) {
           DebugJS._log('Running ' + ctx.props.wdt + 'ms: ' + DebugJS.wd.cnt);
         } else {
           DebugJS._log('Not Running');
@@ -10807,7 +10807,7 @@ DebugJS.convRGB10to16 = function(rgb10) {
 
 DebugJS.convRadixFromHEX = function(v16) {
   var v10 = parseInt(v16, 16).toString(10);
-  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DEFAULT_UNIT});
+  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
   if (v10 > 0xffffffff) {
     var v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
@@ -10823,8 +10823,8 @@ DebugJS.convRadixFromHEX = function(v16) {
 };
 
 DebugJS.convRadixFromDEC = function(v10) {
-  var unit = DebugJS.DEFAULT_UNIT;
-  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DEFAULT_UNIT});
+  var unit = DebugJS.DFLT_UNIT;
+  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
   var v16 = parseInt(v10).toString(16);
   if (v10 < 0) {
     var v2 = '';
@@ -10850,7 +10850,7 @@ DebugJS.convRadixFromBIN = function(v2) {
   v2 = v2.replace(/\s/g, '');
   var v10 = parseInt(v2, 2).toString(10);
   var v16 = parseInt(v2, 2).toString(16);
-  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DEFAULT_UNIT});
+  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
   if (v10 > 0xffffffff) {
     v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
@@ -10876,7 +10876,7 @@ DebugJS.toHex = function(v, uc) {
 DebugJS.convertBin = function(data) {
   var digit = data.digit;
   if (digit == 0) {
-    digit = DebugJS.DEFAULT_UNIT;
+    digit = DebugJS.DFLT_UNIT;
   }
   var val;
   try {
@@ -11804,7 +11804,7 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
   return str;
 };
 
-DebugJS.hasKey = function(s, k, d) {
+DebugJS.hasKeyWd = function(s, k, d) {
   if (!s) return false;
   var a = s.split(d);
   for (var i = 0; i < a.length; i++) {
@@ -12197,8 +12197,8 @@ DebugJS.file.onDrop = function(e) {
   if (loader.mode == 'b64') {
     format = DebugJS.FILE_LOAD_FMT_B64;
   }
-  if (!((ctx.status & DebugJS.STATE_TOOLS) && (ctx.toolsActiveFnc == DebugJS.TOOLS_FNC_FILE))) {
-    ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'file', loader.mode);
+  if (!((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc == DebugJS.TOOLS_FNC_FILE))) {
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
   }
   ctx.handleFileDrop(ctx, e, format, null);
 };
@@ -12251,13 +12251,13 @@ DebugJS.onUnload = function() {
   if (DebugJS.test.data.running) {
     DebugJS.test.save();
   }
-  if ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) && (DebugJS.ctx.props.batcont == 'on')) {
+  if ((DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) && (DebugJS.ctx.props.batcont == 'on')) {
     DebugJS.bat.save();
   }
-  if ((DebugJS.ctx.status & DebugJS.STATE_LOG_PRESERVED) || (DebugJS.ctx.status & DebugJS.STATE_BAT_CONT)) {
+  if ((DebugJS.ctx.status & DebugJS.ST_LOG_PRESERVED) || (DebugJS.ctx.status & DebugJS.ST_BAT_CONT)) {
     DebugJS.saveStatus();
   }
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_PRESERVED) {
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_PRESERVED) {
     DebugJS.preserveLog();
   }
 };
@@ -12265,14 +12265,14 @@ DebugJS.onUnload = function() {
 DebugJS.onError = function(e) {
   var ctx = DebugJS.ctx;
   var msg;
-  ctx.errStatus |= DebugJS.ERR_STATE_SCRIPT;
+  ctx.errStatus |= DebugJS.ERR_ST_SCRIPT;
   if ((e.error) && (e.error.stack)) {
     msg = e.error.stack;
   } else {
     if ((e.message == undefined) && (e.filename == undefined)) {
       if ((e.target) && (e.target.outerHTML)) {
-        ctx.errStatus |= DebugJS.ERR_STATE_LOAD;
-        ctx.errStatus &= ~DebugJS.ERR_STATE_SCRIPT;
+        ctx.errStatus |= DebugJS.ERR_ST_LOAD;
+        ctx.errStatus &= ~DebugJS.ERR_ST_SCRIPT;
         msg = 'LOAD_ERROR: ' + (e.target.outerHTML).replace(/</g, '&lt;').replace(/>/g, '&gt;');
       } else {
         msg = 'UNKNOWN_ERROR';
@@ -12363,14 +12363,14 @@ DebugJS._log.out = function(m, type) {
   if (typeof m != 'string') {m = m.toString();}
   var data = {type: type, time: (new Date()).getTime(), msg: m};
   DebugJS.ctx.msgBuf.add(data);
-  if (!(DebugJS.ctx.status & DebugJS.STATE_INITIALIZED)) {
+  if (!(DebugJS.ctx.status & DebugJS.ST_INITIALIZED)) {
     if (!DebugJS._init()) return;
   }
   DebugJS.ctx.printLogs();
 };
 
 DebugJS.stack = function(ldx, q) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   var stk;
   try {
     DebugJS.a.b;
@@ -12477,7 +12477,7 @@ DebugJS.stopwatch = function() {
   var ctx = DebugJS.ctx;
   if (!ctx.isAvailableTools(ctx)) return false;
   ctx.showDbgWin();
-  ctx.openFeature(ctx, DebugJS.STATE_TOOLS, 'timer', 'cu');
+  ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'timer', 'cu');
   return true;
 };
 
@@ -12595,7 +12595,7 @@ DebugJS.bat.labels = {};
 DebugJS.bat.ctx = [];
 DebugJS.bat.set = function(b) {
   var bat = DebugJS.bat;
-  if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
+  if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) {
     if (bat.ctx.length == 0) {
       bat.stop(DebugJS.EXIT_CLEARED);
     } else {
@@ -12731,7 +12731,7 @@ DebugJS.bat.exec = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   ctrl.tmid = 0;
-  if ((ctx.status & DebugJS.STATE_BAT_PAUSE) || (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD)) {
+  if ((ctx.status & DebugJS.ST_BAT_PAUSE) || (ctx.status & DebugJS.ST_BAT_PAUSE_CMD)) {
     return;
   }
   if (ctrl.stopReq) {
@@ -12756,7 +12756,7 @@ DebugJS.bat.exec = function() {
     bat._exit(DebugJS.EXIT_FAILURE);
     return;
   }
-  if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
+  if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY) {
     if (ctrl.pauseTimeout > 0) {
       if ((new Date).getTime() >= ctrl.pauseTimeout) {
         bat._resume('cmd-key', undefined, true);
@@ -12766,7 +12766,7 @@ DebugJS.bat.exec = function() {
     }
     return;
   }
-  if (!(ctx.status & DebugJS.STATE_BAT_RUNNING)) {
+  if (!(ctx.status & DebugJS.ST_BAT_RUNNING)) {
     bat.initCtrl(false);
     return;
   }
@@ -12778,12 +12778,12 @@ DebugJS.bat.exec = function() {
     ctrl.tmid = setTimeout(bat.exec, 50);
     return;
   }
-  if (ctx.status & DebugJS.STATE_BAT_BREAK) {
-    ctx.status &= ~DebugJS.STATE_BAT_BREAK;
+  if (ctx.status & DebugJS.ST_BAT_BREAK) {
+    ctx.status &= ~DebugJS.ST_BAT_BREAK;
     bat.setPc(--ctrl.pc);
   } else {
     if (ctrl.pc + 1 == ctrl.break) {
-      ctx.status |= DebugJS.STATE_BAT_BREAK;
+      ctx.status |= DebugJS.ST_BAT_BREAK;
       bat.setPc(++ctrl.pc, true);
       bat.pause();
       ctx.showDbgWin();
@@ -13226,7 +13226,7 @@ DebugJS.bat.list = function(s, e) {
   return l;
 };
 DebugJS.bat.pause = function() {
-  DebugJS.ctx.status |= DebugJS.STATE_BAT_PAUSE;
+  DebugJS.ctx.status |= DebugJS.ST_BAT_PAUSE;
   DebugJS.ctx.updateBatRunBtn();
 };
 DebugJS.bat.resume = function(key) {
@@ -13238,7 +13238,7 @@ DebugJS.bat.resume = function(key) {
       bat._resume('cmd-key', key);
     } else {
       if (bat.ctrl.pauseKey != null) {
-        if (DebugJS.hasKey(DebugJS.delAllSP(bat.ctrl.pauseKey), key, '|')) {
+        if (DebugJS.hasKeyWd(DebugJS.delAllSP(bat.ctrl.pauseKey), key, '|')) {
           bat._resume('cmd-key', key);
         }
       }
@@ -13252,14 +13252,14 @@ DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
   if (trigger) {
     var resumed = false;
     if (trigger == 'cmd') {
-      if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) {
-        ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD;
+      if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
+        ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD;
         ctx.updateBatResumeBtn();
         resumed = true;
       }
     } else if (trigger == 'cmd-key') {
-      if (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY) {
-        ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+      if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY) {
+        ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD_KEY;
         ctrl.pauseKey = null;
         ctx.CMDVALS['%KEY%'] = (key == undefined ? '' : key);
         ctx.updateBatResumeBtn();
@@ -13278,7 +13278,7 @@ DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
     }
     if (msg) DebugJS._log(msg);
   } else {
-    ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
+    ctx.status &= ~DebugJS.ST_BAT_PAUSE;
     ctx.updateBatRunBtn();
   }
   bat.stopNext();
@@ -13302,11 +13302,11 @@ DebugJS.bat._stop = function(st) {
   bat.stopNext();
   bat.ctx = [];
   ctx.updateBatNestLv();
-  ctx.status &= ~DebugJS.STATE_BAT_BREAK;
-  ctx.status &= ~DebugJS.STATE_BAT_PAUSE_CMD_KEY;
+  ctx.status &= ~DebugJS.ST_BAT_BREAK;
+  ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
   bat.setRunningSt(false);
-  ctx.status &= ~DebugJS.STATE_BAT_PAUSE;
+  ctx.status &= ~DebugJS.ST_BAT_PAUSE;
   ctx.updateBatRunBtn();
   delete DebugJS.ctx.CMDVALS['%%ARG%%'];
   delete DebugJS.ctx.CMDVALS['%ARG%'];
@@ -13330,7 +13330,7 @@ DebugJS.bat.exit = function() {
   DebugJS.bat.clear();
 };
 DebugJS.bat.hasBatStopCond = function(key) {
-  return DebugJS.hasKey(DebugJS.ctx.props.batstop, key, '|');
+  return DebugJS.hasKeyWd(DebugJS.ctx.props.batstop, key, '|');
 };
 DebugJS.bat.setPc = function(v, b) {
   DebugJS.bat.ctrl.pc = v;
@@ -13362,7 +13362,7 @@ DebugJS.bat.initCtrl = function(all) {
   if (all) {
     ctrl.echo = true;
     ctrl.execArg = '';
-    DebugJS.ctx.status &= ~DebugJS.STATE_BAT_CONT;
+    DebugJS.ctx.status &= ~DebugJS.ST_BAT_CONT;
   }
   if (ctrl.tmid > 0) {
     clearTimeout(ctrl.tmid);
@@ -13435,20 +13435,20 @@ DebugJS.bat.load = function() {
 DebugJS.bat.setRunningSt = function(f) {
   var ctx = DebugJS.ctx;
   if (f) {
-    ctx.status |= DebugJS.STATE_BAT_RUNNING;
+    ctx.status |= DebugJS.ST_BAT_RUNNING;
     if (DebugJS.ctx.props.batcont == 'on') {
-      ctx.status |= DebugJS.STATE_BAT_CONT;
+      ctx.status |= DebugJS.ST_BAT_CONT;
     }
   } else {
-    ctx.status &= ~DebugJS.STATE_BAT_RUNNING;
-    ctx.status &= ~DebugJS.STATE_BAT_CONT;
+    ctx.status &= ~DebugJS.ST_BAT_RUNNING;
+    ctx.status &= ~DebugJS.ST_BAT_CONT;
   }
 };
 DebugJS.bat.isRunning = function() {
-  return ((DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) ? true : false);
+  return ((DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) ? true : false);
 };
 DebugJS.bat.isCmdExecutable = function() {
-  if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
+  if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) {
     return true;
   }
   DebugJS._log('BAT dedicated command');
@@ -13457,12 +13457,12 @@ DebugJS.bat.isCmdExecutable = function() {
 DebugJS.bat.status = function() {
   var ctx = DebugJS.ctx;
   var st = 'STOPPED';
-  if (ctx.status & DebugJS.STATE_BAT_PAUSE) {
+  if (ctx.status & DebugJS.ST_BAT_PAUSE) {
     st = 'PAUSED';
-  } else if ((ctx.status & DebugJS.STATE_BAT_PAUSE_CMD) ||
-             (ctx.status & DebugJS.STATE_BAT_PAUSE_CMD_KEY)) {
+  } else if ((ctx.status & DebugJS.ST_BAT_PAUSE_CMD) ||
+             (ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY)) {
     st = 'PAUSED2';
-  } else if (DebugJS.ctx.status & DebugJS.STATE_BAT_RUNNING) {
+  } else if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) {
     st = 'RUNNING';
   }
   return st;
@@ -13475,7 +13475,7 @@ DebugJS.bat.getCondKey = function() {
 };
 DebugJS.bat.setCond = function(key) {
   var bat = DebugJS.bat;
-  if (DebugJS.hasKey(bat.ctrl.condKey, key, '|')) {
+  if (DebugJS.hasKeyWd(bat.ctrl.condKey, key, '|')) {
     bat._resume('cmd-key', key, false, true);
     bat.ctrl.condKey = null;
   }
@@ -15265,7 +15265,7 @@ DebugJS.wd.start = function(interval) {
   var wd = DebugJS.wd;
   interval |= 0;
   if (interval > 0) ctx.props.wdt = interval;
-  ctx.status |= DebugJS.STATE_WD;
+  ctx.status |= DebugJS.ST_WD;
   wd.cnt = 0;
   wd.wdPetTime = (new Date()).getTime();
   DebugJS._log.s('Start watchdog (' + ctx.props.wdt + 'ms)');
@@ -15274,7 +15274,7 @@ DebugJS.wd.start = function(interval) {
 };
 DebugJS.wd.pet = function() {
   var ctx = DebugJS.ctx;
-  if (!(ctx.status & DebugJS.STATE_WD)) return;
+  if (!(ctx.status & DebugJS.ST_WD)) return;
   var wd = DebugJS.wd;
   var now = (new Date()).getTime();
   var elapsed = now - wd.wdPetTime;
@@ -15292,7 +15292,7 @@ DebugJS.wd.stop = function() {
     clearTimeout(wd.wdTmId);
     wd.wdTmId = 0;
   }
-  DebugJS.ctx.status &= ~DebugJS.STATE_WD;
+  DebugJS.ctx.status &= ~DebugJS.ST_WD;
   DebugJS._log.s('Stop watchdog');
 };
 
@@ -15316,7 +15316,7 @@ DebugJS.setConsoleLogOut = function(f) {
 };
 
 DebugJS._init = function() {
-  if (DebugJS.ctx.status & DebugJS.STATE_INITIALIZED) {
+  if (DebugJS.ctx.status & DebugJS.ST_INITIALIZED) {
     return true;
   } else {
     return DebugJS.ctx.init(null, null);
@@ -15328,54 +15328,54 @@ DebugJS.init = function(opt) {
 };
 
 DebugJS.log = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log(m);
 };
 DebugJS.log.e = function(m) {
   var ctx = DebugJS.ctx;
-  if (ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
-  ctx.errStatus |= DebugJS.ERR_STATE_LOG;
+  if (ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
+  ctx.errStatus |= DebugJS.ERR_ST_LOG;
   DebugJS._log.e(m);
 };
 DebugJS.log.w = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.w(m);
 };
 DebugJS.log.i = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.i(m);
 };
 DebugJS.log.d = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.d(m);
 };
 DebugJS.log.v = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.v(m);
 };
 DebugJS.log.t = function(m, n) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS.timeLog(m, n);
 };
 DebugJS.log.p = function(o, l, m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.p(o, l, m, false);
 };
 DebugJS.log.json = function(o, l, m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.p(o, l, m, true);
 };
 DebugJS.log.j = DebugJS.log.json;
 DebugJS.log.res = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.res(m);
 };
 DebugJS.log.res.err = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.res.err(m);
 };
 DebugJS.log.clear = function() {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS.ctx.clearLog();
 };
 DebugJS.log.suspend = function() {
@@ -15387,12 +15387,12 @@ DebugJS.log.resume = function() {
 DebugJS.log.preserve = function(f) {
   var ctx = DebugJS.ctx;
   if (f == undefined) {
-    return ((ctx.status & DebugJS.STATE_LOG_PRESERVED) ? true : false);
+    return ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? true : false);
   }
   if (DebugJS.LS_AVAILABLE) ctx.setLogPreserve(ctx, f);
 };
 DebugJS.log.root = function(m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   if (window.opener) {
     window.opener.log.root(m);
   } else if (window.top.opener) {
@@ -15402,7 +15402,7 @@ DebugJS.log.root = function(m) {
   }
 };
 DebugJS.log.root.fn = function(lv, m) {
-  if (DebugJS.ctx.status & DebugJS.STATE_LOG_SUSPENDING) return;
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   if (window.opener) {
     window.opener.log[lv].root(m);
   } else if (window.top.opener) {
@@ -15421,18 +15421,18 @@ DebugJS.rootFncs = function() {
 
 DebugJS.restoreStatus = function(ctx) {
   var data = DebugJS.loadStatus();
-  if ((data == null) || !((data.status & DebugJS.STATE_LOG_PRESERVED) || (data.status & DebugJS.STATE_BAT_CONT))) {
+  if ((data == null) || !((data.status & DebugJS.ST_LOG_PRESERVED) || (data.status & DebugJS.ST_BAT_CONT))) {
     return;
   }
-  if (data.status & DebugJS.STATE_LOG_PRESERVED) {
-    ctx.status |= DebugJS.STATE_LOG_PRESERVED;
+  if (data.status & DebugJS.ST_LOG_PRESERVED) {
+    ctx.status |= DebugJS.ST_LOG_PRESERVED;
     DebugJS.restoreLog();
   }
-  if (data.status & DebugJS.STATE_BAT_CONT) {
-    ctx.status |= DebugJS.STATE_BAT_CONT;
+  if (data.status & DebugJS.ST_BAT_CONT) {
+    ctx.status |= DebugJS.ST_BAT_CONT;
   }
   ctx.swElapsedTime = data.swElapsedTime;
-  if (data.status & DebugJS.STATE_STOPWATCH_RUNNING) {
+  if (data.status & DebugJS.ST_STOPWATCH_RUNNING) {
     ctx.startStopWatch();
   } else {
     ctx.updateSwLabel();
@@ -15464,7 +15464,7 @@ DebugJS.x.addPanel = function(p) {
   var ctx = DebugJS.ctx;
   p.base = null; p.btn = null;
   var idx = ctx.extPanels.push(p) - 1;
-  if (ctx.status & DebugJS.STATE_INITIALIZED) {
+  if (ctx.status & DebugJS.ST_INITIALIZED) {
     ctx.initExtPanel(ctx);
   }
   return idx;
@@ -15486,8 +15486,8 @@ DebugJS.x.removePanel = function(idx) {
       nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
     }
   }
-  if (ctx.status & DebugJS.STATE_INITIALIZED) {
-    if ((ctx.status & DebugJS.STATE_EXT_PANEL) && (p.onInActive)) {
+  if (ctx.status & DebugJS.ST_INITIALIZED) {
+    if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p.onInActive)) {
       p.onInActive(p.panel);
     }
     ctx.redrawExtPanelBtn(ctx);
