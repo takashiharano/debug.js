@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '20180910700';
+  this.v = '201809101915';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2762,15 +2762,12 @@ DebugJS.prototype = {
 
   procOnProtectedD: function(ctx, e) {
     switch (e.keyCode) {
-      case 13:
-        if (ctx.unlockCode == ctx.opt.lockCode) {
-          ctx.uiStatus &= ~DebugJS.UI_ST_PROTECTED;
-          ctx.unlockCode = null;
-        }
-        break;
       case 17:
         if (ctx.unlockCode == null) {
           ctx.unlockCode = '';
+        } else if (ctx.unlockCode == ctx.opt.lockCode) {
+          ctx.uiStatus &= ~DebugJS.UI_ST_PROTECTED;
+          ctx.unlockCode = null;
         }
         break;
       case 27:
@@ -12102,7 +12099,7 @@ DebugJS.createLogData = function(extInfo, wBf) {
 DebugJS.createLogHeader = function() {
   var dt = DebugJS.getDateTime();
   var brw = DebugJS.getBrowserType();
-  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + ' (' + dt.time + ')\n';
   s += 'Browser      : ' + brw.name + ' ' + brw.version + '\n';
   s += 'User Agent   : ' + navigator.userAgent + '\n';
   s += 'Screen Size  : w=' + screen.width + ' h=' + screen.height + '\n';
