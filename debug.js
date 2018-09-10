@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809101915';
+  this.v = '201809102000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6435,7 +6435,7 @@ DebugJS.prototype = {
     }
   },
 
-  updateCurPc: function() {
+  updateCurPc: function(b) {
     var pc = DebugJS.bat.ctrl.pc;
     var df = DebugJS.digits(DebugJS.bat.cmds.length) - DebugJS.digits(pc);
     var pdng = '';
@@ -6444,6 +6444,7 @@ DebugJS.prototype = {
     }
     if (DebugJS.ctx.batCurPc) {
       DebugJS.ctx.batCurPc.innerText = pdng + pc;
+      DebugJS.ctx.batCurPc.style.color = (b ? '#f66' : '');
     }
   },
 
@@ -11012,10 +11013,12 @@ DebugJS.byteArrToUtf8 = function(a) {
 };
 
 DebugJS.encodeRB64 = function(s, n, toR) {
-  return DebugJS.RB64.encode(DebugJS.utf8toByteArr(s), n, toR);
+  var a = DebugJS.utf8toByteArr(s);
+  return DebugJS.RB64.encode(a, n, toR);
 };
 DebugJS.decodeRB64 = function(rb64, n, toR) {
-  return DebugJS.RB64.decode(rb64, n, (toR ? false : true));
+  var a = DebugJS.RB64.decode(rb64, n, (toR ? false : true));
+  return DebugJS.byteArrToUtf8(a);
 };
 DebugJS.RB64 = {};
 DebugJS.RB64.encode = function(a, n, toR) {
@@ -11035,7 +11038,7 @@ DebugJS.RB64.decode = function(rb64, n, toR) {
   for (var i = 0; i < b.length; i++) {
     a.push(fn(b[i], n, toR));
   }
-  return DebugJS.byteArrToUtf8(a);
+  return a;
 };
 
 DebugJS.encodeBase64 = function(str) {
@@ -12781,8 +12784,9 @@ DebugJS.bat.exec = function() {
   } else {
     if (ctrl.pc + 1 == ctrl.break) {
       ctx.status |= DebugJS.STATE_BAT_BREAK;
-      bat.setPc(++ctrl.pc);
+      bat.setPc(++ctrl.pc, true);
       bat.pause();
+      ctx.showDbgWin();
       return;
     }
   }
@@ -13328,9 +13332,9 @@ DebugJS.bat.exit = function() {
 DebugJS.bat.hasBatStopCond = function(key) {
   return DebugJS.hasKey(DebugJS.ctx.props.batstop, key, '|');
 };
-DebugJS.bat.setPc = function(v) {
+DebugJS.bat.setPc = function(v, b) {
   DebugJS.bat.ctrl.pc = v;
-  DebugJS.ctx.updateCurPc();
+  DebugJS.ctx.updateCurPc(b);
 };
 DebugJS.bat.resetPc = function() {
   DebugJS.bat.setPc(0);
