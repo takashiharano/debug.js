@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809112124';
+  this.v = '201809112200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -82,7 +82,7 @@ var DebugJS = DebugJS || function() {
     lockCode: null,
     target: null
   };
-  this.DEFAULT_ELM_ID = '_debug_';
+  this.DFLT_ELM_ID = '_debug_';
   this.id = null;
   this.bodyEl = null;
   this.bodyCursor = '';
@@ -122,7 +122,7 @@ var DebugJS = DebugJS || function() {
   this.elmUpdateInput = null;
   this.elmNumPanel = null;
   this.elmInfoBodyPanel = null;
-  this.elmInfoStatus = DebugJS.ELMINFO_STATE_SELECT | DebugJS.ELMINFO_STATE_HIGHLIGHT;
+  this.elmInfoStatus = DebugJS.ELMINFO_ST_SELECT | DebugJS.ELMINFO_ST_HIGHLIGHT;
   this.elmUpdateInterval = 0;
   this.elmUpdateTimerId = 0;
   this.elmInfoShowHideStatus = {text: false, allStyles: false, elBorder: false, htmlSrc: false};
@@ -256,9 +256,9 @@ var DebugJS = DebugJS || function() {
   this.keyDownLabel = null;
   this.keyPressLabel = null;
   this.keyUpLabel = null;
-  this.keyDownCode = DebugJS.KEY_STATUS_DEFAULT;
-  this.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
-  this.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
+  this.keyDownCode = DebugJS.KEY_ST_DFLT;
+  this.keyPressCode = DebugJS.KEY_ST_DFLT;
+  this.keyUpCode = DebugJS.KEY_ST_DFLT;
   this.ledPanel = null;
   this.led = 0;
   this.msgLabel = null;
@@ -524,8 +524,8 @@ DebugJS.LOG_TYPE_SYS = 0x40;
 DebugJS.LOG_TYPE_MLT = 0x80;
 DebugJS.LOG_TYPE_RES = 0x100;
 DebugJS.LOG_TYPE_ERES = 0x200;
-DebugJS.ELMINFO_STATE_SELECT = 0x1;
-DebugJS.ELMINFO_STATE_HIGHLIGHT = 0x2;
+DebugJS.ELMINFO_ST_SELECT = 0x1;
+DebugJS.ELMINFO_ST_HIGHLIGHT = 0x2;
 DebugJS.ERR_ST_NONE = 0;
 DebugJS.ERR_ST_SCRIPT = 0x1;
 DebugJS.ERR_ST_LOAD = 0x2;
@@ -582,12 +582,12 @@ DebugJS.FLT_BTN_COLOR = '#eee';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
-DebugJS.KEY_STATUS_DEFAULT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + '">SCAM</span>';
+DebugJS.KEY_ST_DFLT = '- <span style="color:' + DebugJS.COLOR_INACTIVE + '">SCAM</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.WDAYS_COLOR = ['f74', 'fff', 'fff', 'fff', 'fff', 'fff', '8fd'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
-DebugJS.DEFAULT_TIMER_NAME = 'timer0';
+DebugJS.DFLT_TIMER_NAME = 'timer0';
 DebugJS.TIMER_NAME_SW_CU = 'sw1';
 DebugJS.TIMER_NAME_SW_CD = 'sw2';
 DebugJS.LED_BIT = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
@@ -748,7 +748,7 @@ DebugJS.prototype = {
     ctx.computedFontSize = Math.round(ctx.opt.fontSize * ctx.opt.zoom);
     ctx.computedWidth = Math.round(ctx.opt.width * ctx.opt.zoom);
     if (ctx.opt.target == null) {
-      ctx.id = ctx.DEFAULT_ELM_ID;
+      ctx.id = ctx.DFLT_ELM_ID;
       ctx.win = document.createElement('div');
       ctx.win.id = ctx.id;
       ctx.win.style.position = 'fixed';
@@ -1320,19 +1320,15 @@ DebugJS.prototype = {
     if (opt.useTools) {
       ctx.toolsBtn = ctx.createHeaderBtn('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'ST_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
-
     if (opt.useJsEditor) {
       ctx.jsBtn = ctx.createHeaderBtn('jsBtn', 'JS', 2, null, ctx.toggleJs, 'status', 'ST_JS', 'JS_BTN_COLOR', false);
     }
-
     if (opt.useElementInfo) {
       ctx.elmInfoBtn = ctx.createHeaderBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'ST_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
     }
-
     if (opt.useHtmlSrc) {
       ctx.htmlSrcBtn = ctx.createHeaderBtn('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'ST_HTML_SRC', 'HTML_BTN_COLOR', false);
     }
-
     if (opt.useSystemInfo) {
       ctx.sysInfoBtn = ctx.createHeaderBtn('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfo, 'status', 'ST_SYS_INFO', 'SYS_BTN_COLOR', false);
     }
@@ -2814,9 +2810,9 @@ DebugJS.prototype = {
     var modKey = DebugJS.checkModKey(e);
     ctx.keyDownCode = e.keyCode + '(' + e.key + ') ' + modKey;
     ctx.updateKeyDownLabel();
-    ctx.keyPressCode = DebugJS.KEY_STATUS_DEFAULT;
+    ctx.keyPressCode = DebugJS.KEY_ST_DFLT;
     ctx.updateKeyPressLabel();
-    ctx.keyUpCode = DebugJS.KEY_STATUS_DEFAULT;
+    ctx.keyUpCode = DebugJS.KEY_ST_DFLT;
     ctx.updateKeyUpLabel();
     ctx.resizeMainHeight();
   },
@@ -3763,9 +3759,9 @@ DebugJS.prototype = {
 
   createFoldingText: function(obj, name, omitpart, lineMaxLen, style, show) {
     var ctx = DebugJS.ctx;
-    var DEFAULT_MAX_LEN = 50;
+    var DFLT_MAX_LEN = 50;
     var foldingText;
-    if ((lineMaxLen == undefined) || (lineMaxLen < 0)) lineMaxLen = DEFAULT_MAX_LEN;
+    if ((lineMaxLen == undefined) || (lineMaxLen < 0)) lineMaxLen = DFLT_MAX_LEN;
     if (!style) style = 'color:#aaa';
     if (!obj) {
       foldingText = '<span class="' + ctx.id + '-na">' + obj + '</span>';
@@ -3918,7 +3914,7 @@ DebugJS.prototype = {
 
   inspectElement: function(x, y) {
     var ctx = DebugJS.ctx;
-    if (!(ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT)) {
+    if (!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT)) {
       return;
     }
     if (ctx.isOnDbgWin(x, y)) return;
@@ -4143,7 +4139,7 @@ DebugJS.prototype = {
 
   updateTargetElm: function(el) {
     var ctx = DebugJS.ctx;
-    if (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) {
+    if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
       ctx.highlightElement(ctx.targetElm, el);
     }
     if (el) {
@@ -4201,32 +4197,32 @@ DebugJS.prototype = {
 
   toggleElmSelectMode: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) {
-      ctx.elmInfoStatus &= ~DebugJS.ELMINFO_STATE_SELECT;
+    if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) {
+      ctx.elmInfoStatus &= ~DebugJS.ELMINFO_ST_SELECT;
     } else {
-      ctx.elmInfoStatus |= DebugJS.ELMINFO_STATE_SELECT;
+      ctx.elmInfoStatus |= DebugJS.ELMINFO_ST_SELECT;
     }
     ctx.updateElmSelectBtn();
   },
 
   updateElmSelectBtn: function() {
-    DebugJS.ctx.setStyle(DebugJS.ctx.elmSelectBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_SELECT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
+    DebugJS.ctx.setStyle(DebugJS.ctx.elmSelectBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
   },
 
   toggleElmHighlightMode: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) {
-      ctx.elmInfoStatus &= ~DebugJS.ELMINFO_STATE_HIGHLIGHT;
+    if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
+      ctx.elmInfoStatus &= ~DebugJS.ELMINFO_ST_HIGHLIGHT;
       ctx.highlightElement(ctx.targetElm, null);
     } else {
-      ctx.elmInfoStatus |= DebugJS.ELMINFO_STATE_HIGHLIGHT;
+      ctx.elmInfoStatus |= DebugJS.ELMINFO_ST_HIGHLIGHT;
       ctx.highlightElement(null, ctx.targetElm);
     }
     ctx.updateElmHighlightBtn();
   },
 
   updateElmHighlightBtn: function() {
-    DebugJS.ctx.setStyle(DebugJS.ctx.elmHighlightBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_STATE_HIGHLIGHT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
+    DebugJS.ctx.setStyle(DebugJS.ctx.elmHighlightBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
   },
 
   exportTargetElm: function() {
@@ -8953,7 +8949,7 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     var op = a[0];
     var timerName = a[1];
-    if (timerName == undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
+    if (timerName == undefined) timerName = DebugJS.DFLT_TIMER_NAME;
     switch (op) {
       case 'start':
         DebugJS.timeStart(timerName);
@@ -11242,7 +11238,7 @@ DebugJS.timeStart = function(timerName, msg) {
   var ctx = DebugJS.ctx;
   var _timerName = timerName;
   if ((timerName === undefined) || (timerName === null)) {
-    _timerName = DebugJS.DEFAULT_TIMER_NAME;
+    _timerName = DebugJS.DFLT_TIMER_NAME;
   }
   ctx.timers[_timerName] = {};
   ctx.timers[_timerName].start = (new Date()).getTime();
@@ -11299,7 +11295,7 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
   var _timerName = timerName;
 
   if ((timerName === undefined) || (timerName === null)) {
-    _timerName = DebugJS.DEFAULT_TIMER_NAME;
+    _timerName = DebugJS.DFLT_TIMER_NAME;
   }
 
   if (!ctx.timers[_timerName]) {
@@ -11363,7 +11359,7 @@ DebugJS.timeLog = function(msg, timerName) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
   if (!timerName) {
-    timerName = DebugJS.DEFAULT_TIMER_NAME;
+    timerName = DebugJS.DFLT_TIMER_NAME;
   }
   var t;
   var tLap;
@@ -11386,7 +11382,7 @@ DebugJS.timeLog = function(msg, timerName) {
 
 DebugJS.timeCheck = function(timerName, now) {
   var ctx = DebugJS.ctx;
-  if (timerName === undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
+  if (timerName === undefined) timerName = DebugJS.DFLT_TIMER_NAME;
   if (!ctx.timers[timerName]) return null;
   var t = DebugJS.getElapsedTimeStr(ctx.timers[timerName].start, now);
   return t;
