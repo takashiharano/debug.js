@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809112200';
+  this.v = '201809120000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1964,7 +1964,7 @@ DebugJS.prototype = {
           break;
         case DebugJS.LOG_TYPE_MLT:
           if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
-          style = 'display:inline-block;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0';
+          style = 'display:inline-block;width:100%;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0';
           break;
         default:
           if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
