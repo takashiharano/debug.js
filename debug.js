@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809112048';
+  this.v = '201809112124';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7492,19 +7492,19 @@ DebugJS.prototype = {
   },
 
   cmdEvent: function(arg, tbl) {
-    var args = DebugJS.splitArgsEx(arg);
-    var op = args[0];
+    var a = DebugJS.splitArgsEx(arg);
+    var op = a[0];
     switch (op) {
       case 'create':
-        if (args[1]) {
-          DebugJS.event.create(args[1]);
+        if (a[1]) {
+          DebugJS.event.create(a[1]);
           return;
         }
         break;
       case 'set':
-        if (args[1]) {
+        if (a[1]) {
           try {
-            DebugJS.event.set(args[1], eval(args[2]));
+            DebugJS.event.set(a[1], eval(a[2]));
           } catch (e) {
             DebugJS._log.e(e);
           }
@@ -7512,12 +7512,12 @@ DebugJS.prototype = {
         }
         break;
       case 'dispatch':
-        var target = args[1];
+        var target = a[1];
         if (target) {
           if (target.charAt(0) == '(') {
             target = target.substr(1, target.length - 2);
           }
-          DebugJS.event.dispatch(target, args[2]);
+          DebugJS.event.dispatch(target, a[2]);
           return;
         }
         break;
@@ -7791,9 +7791,9 @@ DebugJS.prototype = {
   },
 
   cmdHttp: function(arg, tbl) {
-    args = DebugJS.splitCmdLineInTwo(arg);
-    var method = args[0];
-    var data = args[1];
+    var a = DebugJS.splitCmdLineInTwo(arg);
+    var method = a[0];
+    var data = a[1];
     if (method == '') {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -7805,11 +7805,11 @@ DebugJS.prototype = {
   },
 
   cmdInput: function(arg, tbl) {
-    var args = DebugJS.splitArgsEx(arg);
-    var type = args[0];
+    var a = DebugJS.splitArgsEx(arg);
+    var type = a[0];
     if (type == 'text') {
-      var id = args[1];
-      var txt = args[2];
+      var id = a[1];
+      var txt = a[2];
       var speed = DebugJS.getOptVal(arg, 'speed');
       var step = DebugJS.getOptVal(arg, 'step');
       var start = DebugJS.getOptVal(arg, 'start');
@@ -7924,10 +7924,10 @@ DebugJS.prototype = {
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
-      var args = arg.split(' ');
-      for (var i = 0; i < args.length; i++) {
-        if (args[i] == '') continue;
-        var cmd = 'DebugJS.buf="' + args[i] + ' = ";DebugJS.buf+=DebugJS.getKeysStr(' + args[i] + ');DebugJS._log.mlt(DebugJS.buf);';
+      var a = arg.split(' ');
+      for (var i = 0; i < a.length; i++) {
+        if (a[i] == '') continue;
+        var cmd = 'DebugJS.buf="' + a[i] + ' = ";DebugJS.buf+=DebugJS.getKeysStr(' + a[i] + ');DebugJS._log.mlt(DebugJS.buf);';
         try {
           eval(cmd);
         } catch (e) {
@@ -8468,20 +8468,20 @@ DebugJS.prototype = {
   },
 
   cmdRandom: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    var type = args[0] || DebugJS.RND_TYPE_NUM;
+    var a = DebugJS.splitArgs(arg);
+    var type = a[0] || DebugJS.RND_TYPE_NUM;
     var min, max;
-    if (args[0] == '') {
+    if (a[0] == '') {
       type = DebugJS.RND_TYPE_NUM;
     } else {
-      if ((args[0] == DebugJS.RND_TYPE_NUM) || (args[0] == DebugJS.RND_TYPE_STR)) {
-        type = args[0];
-        min = args[1];
-        max = args[2];
-      } else if (args[0].match(/[0-9]{1,}/)) {
+      if ((a[0] == DebugJS.RND_TYPE_NUM) || (a[0] == DebugJS.RND_TYPE_STR)) {
+        type = a[0];
+        min = a[1];
+        max = a[2];
+      } else if (a[0].match(/[0-9]{1,}/)) {
         type = DebugJS.RND_TYPE_NUM;
-        min = args[0];
-        max = args[1];
+        min = a[0];
+        max = a[1];
       } else {
         DebugJS.printUsage(tbl.usage);
       }
@@ -8578,22 +8578,22 @@ DebugJS.prototype = {
 
   cmdScrollTo: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var target = args[0];
+    var a = DebugJS.splitArgs(arg);
+    var target = a[0];
     if (target == '') {
       DebugJS.printUsage(tbl.usage);
     } else if (target == 'log') {
-      var pos = args[1];
+      var pos = a[1];
       ctx._cmdScrollToLog(ctx, tbl, pos);
     } else if (target == 'window') {
-      var posX = args[1];
-      var posY = args[2];
+      var posX = a[1];
+      var posY = a[2];
       var speed = DebugJS.getOptVal(arg, 'speed');
       var step = DebugJS.getOptVal(arg, 'step');
       ctx._cmdScrollToWin(ctx, tbl, posX, posY, speed, step);
     } else {
-      var x = args[1];
-      var y = args[2];
+      var x = a[1];
+      var y = a[2];
       DebugJS.scrollElTo(target, x, y);
     }
   },
@@ -8676,13 +8676,13 @@ DebugJS.prototype = {
   },
 
   cmdSelect: function(arg, tbl) {
-    var args = DebugJS.splitArgsEx(arg);
-    var sel = args[0];
-    var method = args[1];
-    var type = args[2];
-    var val = args[3];
-    if ((args.length >= 4) && (sel != '') &&
-        ((method == 'set') || (method == 'get')) &&
+    var a = DebugJS.splitArgsEx(arg);
+    var sel = a[0];
+    var method = a[1];
+    var type = a[2];
+    var val = a[3];
+    if ((sel != '') &&
+        (((method == 'set') && (a.length >= 4)) || ((method == 'get') && (a.length >= 3))) &&
         ((type == 'text') || (type == 'value'))) {
       return DebugJS.ctx._cmdSelect(sel, method, type, val);
     }
@@ -8703,9 +8703,9 @@ DebugJS.prototype = {
 
   cmdSet: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var name = args[0];
-    var val = ((args[1] == undefined) ? '' : args[1]);
+    var a = DebugJS.splitArgs(arg);
+    var name = a[0];
+    var val = ((a[1] == undefined) ? '' : a[1]);
     if ((name == '') || (val == '')) {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -8759,15 +8759,15 @@ DebugJS.prototype = {
 
   cmdSetAttr: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var sel = args[0];
+    var a = DebugJS.splitArgs(arg);
+    var sel = a[0];
     var idx = 0;
-    var nm = args[1];
-    var vl = args[2];
-    if (args[3] != undefined) {
-      idx = args[1];
-      nm = args[2];
-      vl = args[3];
+    var nm = a[1];
+    var vl = a[2];
+    if (a[3] != undefined) {
+      idx = a[1];
+      nm = a[2];
+      vl = a[3];
     }
     if ((sel == '') || (nm == undefined) || (vl == undefined)) {
       DebugJS.printUsage(tbl.usage);
@@ -8950,9 +8950,9 @@ DebugJS.prototype = {
   },
 
   cmdTimer: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    var op = args[0];
-    var timerName = args[1];
+    var a = DebugJS.splitArgs(arg);
+    var op = a[0];
+    var timerName = a[1];
     if (timerName == undefined) timerName = DebugJS.DEFAULT_TIMER_NAME;
     switch (op) {
       case 'start':
@@ -8974,12 +8974,12 @@ DebugJS.prototype = {
 
   cmdStopwatch: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
+    var a = DebugJS.splitArgs(arg);
     var sw = 0;
-    var op = args[0];
-    if (args[0].substr(0, 2) == 'sw') {
-      sw = args[0].charAt(2) | 0;
-      op = args[1];
+    var op = a[0];
+    if (a[0].substr(0, 2) == 'sw') {
+      sw = a[0].charAt(2) | 0;
+      op = a[1];
     }
     var ret = false;
     if (sw == 0) {
@@ -9130,10 +9130,9 @@ DebugJS.prototype = {
   },
 
   cmdWatchdog: function(arg, tbl) {
-    var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgs(arg);
-    var op = args[0];
-    var time = args[1];
+    var a = DebugJS.splitArgs(arg);
+    var op = a[0];
+    var time = a[1];
     switch (op) {
       case 'start':
         DebugJS.wd.start(time);
@@ -9142,8 +9141,8 @@ DebugJS.prototype = {
         DebugJS.wd.stop();
         break;
       default:
-        if (ctx.status & DebugJS.ST_WD) {
-          DebugJS._log('Running ' + ctx.props.wdt + 'ms: ' + DebugJS.wd.cnt);
+        if (DebugJS.ctx.status & DebugJS.ST_WD) {
+          DebugJS._log('Running ' + DebugJS.ctx.props.wdt + 'ms: ' + DebugJS.wd.cnt);
         } else {
           DebugJS._log('Not Running');
         }
@@ -9257,9 +9256,9 @@ DebugJS.prototype = {
   },
 
   doHttpRequest: function(method, arg) {
-    var args = DebugJS.splitCmdLineInTwo(arg);
-    var url = args[0];
-    var data = args[1];
+    var a = DebugJS.splitCmdLineInTwo(arg);
+    var url = a[0];
+    var data = a[1];
     var user = '';
     var pass = '';
     if (url == '--user') {
