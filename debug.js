@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809112025';
+  this.v = '201809112048';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5720,7 +5720,7 @@ DebugJS.prototype = {
         }
         break;
       case 'b64':
-        ctx.showB64Preview(ctx, null, ctx.fileVwrDataSrc.cheme, ctx.fileVwrDataSrc.data);
+        ctx.showB64Preview(ctx, null, ctx.fileVwrDataSrc.scheme, ctx.fileVwrDataSrc.data);
         break;
       case 'bin':
       case 'hex':
