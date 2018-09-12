@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809120000';
+  this.v = '201809122100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6978,7 +6978,7 @@ DebugJS.prototype = {
     if (ret != null) return ret;
 
     if (cmdline.match(/^\s*U\+/i)) {
-      return ctx.cmdUnicode('-d ' + cmdline);
+      return ctx.cmdUnicode('-d ' + cmdline, null, echo);
     }
 
     return ctx.execCode(cmdline, echo);
@@ -6986,9 +6986,8 @@ DebugJS.prototype = {
 
   cmdAlias: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var lst;
     if (DebugJS.countArgs(arg) == 0) {
-      lst = DebugJS.getKeys(ctx.CMD_ALIAS);
+      var lst = DebugJS.getKeys(ctx.CMD_ALIAS);
       return ctx._cmdAliasList(ctx, lst);
     }
     var p = arg.indexOf('=');
@@ -7675,10 +7674,7 @@ DebugJS.prototype = {
         return null;
       }
     }
-    var data = {
-      exp: exp,
-      digit: (digit | 0)
-    };
+    var data = {exp: exp, digit: (digit | 0)};
     return data;
   },
 
@@ -8200,7 +8196,7 @@ DebugJS.prototype = {
   _cmdPause: function(op, key, timeout) {
     var ctx = DebugJS.ctx;
     timeout |= 0;
-    ctx.CMDVALS['%KEY%'] = null;
+    ctx.CMDVALS['%RESUMED_KEY%'] = null;
     if (op == 's') {
       ctx.status |= DebugJS.ST_BAT_PAUSE_CMD;
       DebugJS._log('Click or press any key to continue...');
@@ -8480,11 +8476,12 @@ DebugJS.prototype = {
         max = a[1];
       } else {
         DebugJS.printUsage(tbl.usage);
+        return;
       }
     }
-    var random = DebugJS.getRandom(type, min, max);
-    DebugJS._log(random);
-    return random;
+    var rnd = DebugJS.getRandom(type, min, max);
+    DebugJS._log(rnd);
+    return rnd;
   },
 
   cmdRadixConv: function(v, echo) {
@@ -8828,7 +8825,7 @@ DebugJS.prototype = {
       case 'init':
         var nm = DebugJS.getOptVal(arg, 'name');
         try {
-          var nm = eval(nm);
+          nm = eval(nm);
           test.init(nm);
           DebugJS._log('Test has been initialized.' + (nm == undefined ? '' : ' (' + nm + ')'));
         } catch (e) {
@@ -8990,7 +8987,6 @@ DebugJS.prototype = {
     }
     return ret;
   },
-
   cmdStopwatch0: function(ctx, op) {
     switch (op) {
       case 'start':
@@ -9010,7 +9006,6 @@ DebugJS.prototype = {
     }
     return ctx.swElapsedTime;
   },
-
   cmdStopwatch1: function(ctx, op) {
     if (!ctx.isAvailableTools(ctx)) return false;
     switch (op) {
@@ -9038,7 +9033,6 @@ DebugJS.prototype = {
     }
     return 0;
   },
-
   cmdStopwatch2: function(ctx, op) {
     if (!ctx.isAvailableTools(ctx)) return false;
     switch (op) {
@@ -13254,7 +13248,7 @@ DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
       if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY) {
         ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD_KEY;
         ctrl.pauseKey = null;
-        ctx.CMDVALS['%KEY%'] = (key == undefined ? '' : key);
+        ctx.CMDVALS['%RESUMED_KEY%'] = (key == undefined ? '' : key);
         ctx.updateBatResumeBtn();
         resumed = true;
       }
