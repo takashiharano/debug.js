@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809122100';
+  this.v = '201809122243';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10266,30 +10266,49 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
     for (var i = 0; i < arg.lv; i++) {
       indent += DebugJS.INDENT_SP;
     }
-    if (obj instanceof Array) {
+    if ((obj instanceof Array) || (obj instanceof Set)) {
       arg.cnt++;
+      var len = ((obj instanceof Set) ? obj.size : obj.length);
       if (toJson) {
         arg.dump += '[';
-        if (obj.length > 0) {
+        if (len > 0) {
           arg.dump += '\n';
         }
       } else {
-        arg.dump += '<span style="color:#e4b">[Array][' + obj.length + ']</span>';
+        if (obj instanceof Set) {
+          arg.dump += '<span style="color:#6cf">[Set]{' + len + '}</span>';
+        } else {
+          arg.dump += '<span style="color:#e4b">[Array][' + len + ']</span>';
+        }
       }
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
-        for (i in obj) {
+        var avil = true;
+        for (i = 0; i < len; i++) {
           arg.lv++; indent += DebugJS.INDENT_SP;
+          v = obj[i];
+          if (obj instanceof Set) {
+            try {
+              var it = obj.entries();
+              for (var j = 0; j <= i; j++) {
+                v = it.next().value[0];
+              }
+            } catch (e) {avil = false;}
+          }
           if (toJson) {
             if (sibling > 0) {
               arg.dump += ',\n';
             }
-            if ((typeof obj[i] == 'number') || (typeof obj[i] == 'string') || (typeof obj[i] == 'boolean') || (obj[i] instanceof Array)) {
+            if ((typeof v == 'number') || (typeof v == 'string') || (typeof v == 'boolean') || (v instanceof Array)) {
               arg.dump += indent;
             }
           } else {
             arg.dump += '\n' + indent + '[' + i + '] ';
           }
-          arg = DebugJS._objDump(obj[i], arg, toJson, levelLimit, noMaxLimit, valLenLimit);
+          if (avil) {
+            arg = DebugJS._objDump(v, arg, toJson, levelLimit, noMaxLimit, valLenLimit);
+          } else {
+            arg.dump += 'N/A';
+          }
           arg.lv--; indent = indent.replace(DebugJS.INDENT_SP, '');
           sibling++;
         }
@@ -10298,7 +10317,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
         if (sibling > 0) {
           arg.dump += '\n';
         }
-        if (obj.length > 0) {
+        if (len > 0) {
           if ((levelLimit >= 1) && (arg.lv >= levelLimit)) {
             arg.dump += indent + DebugJS.INDENT_SP + '<span style="color:#aaa">...</span>\n';
           }
