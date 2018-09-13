@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809132338';
+  this.v = '201809140123';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -267,20 +267,20 @@ var DebugJS = DebugJS || function() {
   this.overlayBasePanel = null;
   this.overlayPanels = [];
   this.logHeaderPanel = null;
-  this.filterBtnAll = null;
-  this.filterBtnStd = null;
-  this.filterBtnVrb = null;
-  this.filterBtnDbg = null;
-  this.filterBtnInf = null;
-  this.filterBtnWrn = null;
-  this.filterBtnErr = null;
-  this.filterInputLabel = null;
-  this.filterInput = null;
-  this.filterText = '';
-  this.filterCase = false;
-  this.filterCaseBtn = null;
-  this.filterTxtHtml = true;
-  this.filterTxtHtmlBtn = null;
+  this.fltrBtnAll = null;
+  this.fltrBtnStd = null;
+  this.fltrBtnVrb = null;
+  this.fltrBtnDbg = null;
+  this.fltrBtnInf = null;
+  this.fltrBtnWrn = null;
+  this.fltrBtnErr = null;
+  this.fltrInputLabel = null;
+  this.fltrInput = null;
+  this.fltrText = '';
+  this.fltrCase = false;
+  this.fltrCaseBtn = null;
+  this.fltrTxtHtml = true;
+  this.fltrTxtHtmlBtn = null;
   this.logPanel = null;
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
@@ -1564,44 +1564,44 @@ DebugJS.prototype = {
   },
 
   createLogFilter: function(ctx) {
-    ctx.filterBtnAll = ctx.createLogFilterBtn('ALL', 'filterBtnAll', 'btnColor');
-    ctx.filterBtnStd = ctx.createLogFilterBtn('LOG', 'filterBtnStd', 'fontColor');
-    ctx.filterBtnErr = ctx.createLogFilterBtn('ERR', 'filterBtnErr', 'logColorE');
-    ctx.filterBtnWrn = ctx.createLogFilterBtn('WRN', 'filterBtnWrn', 'logColorW');
-    ctx.filterBtnInf = ctx.createLogFilterBtn('INF', 'filterBtnInf', 'logColorI');
-    ctx.filterBtnDbg = ctx.createLogFilterBtn('DBG', 'filterBtnDbg', 'logColorD');
-    ctx.filterBtnVrb = ctx.createLogFilterBtn('VRB', 'filterBtnVrb', 'logColorV');
+    ctx.fltrBtnAll = ctx.createLogFilterBtn('ALL', 'fltrBtnAll', 'btnColor');
+    ctx.fltrBtnStd = ctx.createLogFilterBtn('LOG', 'fltrBtnStd', 'fontColor');
+    ctx.fltrBtnErr = ctx.createLogFilterBtn('ERR', 'fltrBtnErr', 'logColorE');
+    ctx.fltrBtnWrn = ctx.createLogFilterBtn('WRN', 'fltrBtnWrn', 'logColorW');
+    ctx.fltrBtnInf = ctx.createLogFilterBtn('INF', 'fltrBtnInf', 'logColorI');
+    ctx.fltrBtnDbg = ctx.createLogFilterBtn('DBG', 'fltrBtnDbg', 'logColorD');
+    ctx.fltrBtnVrb = ctx.createLogFilterBtn('VRB', 'fltrBtnVrb', 'logColorV');
 
-    ctx.filterInputLabel = document.createElement('span');
-    ctx.filterInputLabel.style.marginLeft = '4px';
-    ctx.setStyle(ctx.filterInputLabel, 'color', ctx.opt.sysInfoColor);
-    ctx.filterInputLabel.innerText = 'Filter:';
-    ctx.logHeaderPanel.appendChild(ctx.filterInputLabel);
+    ctx.fltrInputLabel = document.createElement('span');
+    ctx.fltrInputLabel.style.marginLeft = '4px';
+    ctx.setStyle(ctx.fltrInputLabel, 'color', ctx.opt.sysInfoColor);
+    ctx.fltrInputLabel.innerText = 'Filter:';
+    ctx.logHeaderPanel.appendChild(ctx.fltrInputLabel);
 
     var filterW = 'calc(100% - 31em)';
-    ctx.filterInput = ctx.createTextInput(filterW, null, ctx.opt.sysInfoColor, ctx.filterText, DebugJS.ctx.onchangeLogFilter);
-    ctx.setStyle(ctx.filterInput, 'position', 'relative');
-    ctx.setStyle(ctx.filterInput, 'top', '-2px');
-    ctx.setStyle(ctx.filterInput, 'margin-left', '2px');
-    ctx.logHeaderPanel.appendChild(ctx.filterInput);
+    ctx.fltrInput = ctx.createTextInput(filterW, null, ctx.opt.sysInfoColor, ctx.fltrText, DebugJS.ctx.onchangeLogFilter);
+    ctx.setStyle(ctx.fltrInput, 'position', 'relative');
+    ctx.setStyle(ctx.fltrInput, 'top', '-2px');
+    ctx.setStyle(ctx.fltrInput, 'margin-left', '2px');
+    ctx.logHeaderPanel.appendChild(ctx.fltrInput);
 
-    ctx.filterCaseBtn = ctx.createBtn(ctx, 'Aa', ctx.logHeaderPanel);
-    ctx.filterCaseBtn.style.marginLeft = '2px';
-    ctx.filterCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
-    ctx.setStyle(ctx.filterCaseBtn, 'color', (DebugJS.ctx.filterCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
-    ctx.filterCaseBtn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.filterCaseBtn, \'color\', DebugJS.FLT_BTN_COLOR);');
-    ctx.filterCaseBtn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.filterCaseBtn, \'color\', (DebugJS.ctx.filterCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
+    ctx.fltrCaseBtn = ctx.createBtn(ctx, 'Aa', ctx.logHeaderPanel);
+    ctx.fltrCaseBtn.style.marginLeft = '2px';
+    ctx.fltrCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
+    ctx.setStyle(ctx.fltrCaseBtn, 'color', (DebugJS.ctx.fltrCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.fltrCaseBtn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrCaseBtn, \'color\', DebugJS.FLT_BTN_COLOR);');
+    ctx.fltrCaseBtn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrCaseBtn, \'color\', (DebugJS.ctx.fltrCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
 
-    ctx.filterTxtHtmlBtn = ctx.createBtn(ctx, '</>', ctx.logHeaderPanel);
-    ctx.filterTxtHtmlBtn.style.marginLeft = '2px';
-    ctx.filterTxtHtmlBtn.onclick = DebugJS.ctx.toggleFilterTxtHtml;
-    ctx.setStyle(ctx.filterTxtHtmlBtn, 'color', (DebugJS.ctx.filterTxtHtml) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
-    ctx.filterTxtHtmlBtn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.filterTxtHtmlBtn, \'color\', DebugJS.FLT_BTN_COLOR);');
-    ctx.filterTxtHtmlBtn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.filterTxtHtmlBtn, \'color\', (DebugJS.ctx.filterTxtHtml) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
+    ctx.fltrTxtHtmlBtn = ctx.createBtn(ctx, '</>', ctx.logHeaderPanel);
+    ctx.fltrTxtHtmlBtn.style.marginLeft = '2px';
+    ctx.fltrTxtHtmlBtn.onclick = DebugJS.ctx.toggleFilterTxtHtml;
+    ctx.setStyle(ctx.fltrTxtHtmlBtn, 'color', (DebugJS.ctx.fltrTxtHtml) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.fltrTxtHtmlBtn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrTxtHtmlBtn, \'color\', DebugJS.FLT_BTN_COLOR);');
+    ctx.fltrTxtHtmlBtn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrTxtHtmlBtn, \'color\', (DebugJS.ctx.fltrTxtHtml) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
   },
 
   setLogFilter: function(ctx, s, cs) {
-    ctx.filterInput.value = s;
+    ctx.fltrInput.value = s;
     if (cs != undefined) {
       ctx.setFilterCase(ctx, cs);
     }
@@ -1926,8 +1926,8 @@ DebugJS.prototype = {
     var cnt = ctx.msgBuf.count();
     var len = buf.length;
     var lineCnt = cnt - len;
-    var filter = ctx.filterText;
-    var fltCase = ctx.filterCase;
+    var filter = ctx.fltrText;
+    var fltCase = ctx.fltrCase;
     if (!fltCase) {
       filter = filter.toLowerCase();
     }
@@ -1935,7 +1935,7 @@ DebugJS.prototype = {
     for (var i = 0; i < len; i++) {
       lineCnt++;
       var data = buf[i];
-      var msg = (ctx.filterTxtHtml ? data.msg : DebugJS.escTags(data.msg));
+      var msg = (ctx.fltrTxtHtml ? data.msg : DebugJS.escTags(data.msg));
       var style = '';
       switch (data.type) {
         case DebugJS.LOG_TYPE_DBG:
@@ -2057,37 +2057,37 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
     var filter = ctx.logFilter;
-    ctx.setStyle(ctx.filterBtnAll, 'color', ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? opt.btnColor : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.filterBtnStd, 'color', (filter & DebugJS.LOG_FILTER_LOG) ? opt.fontColor : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.filterBtnVrb, 'color', (filter & DebugJS.LOG_FILTER_VRB) ? opt.logColorV : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.filterBtnDbg, 'color', (filter & DebugJS.LOG_FILTER_DBG) ? opt.logColorD : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.filterBtnInf, 'color', (filter & DebugJS.LOG_FILTER_INF) ? opt.logColorI : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.filterBtnWrn, 'color', (filter & DebugJS.LOG_FILTER_WRN) ? opt.logColorW : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.filterBtnErr, 'color', (filter & DebugJS.LOG_FILTER_ERR) ? opt.logColorE : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnAll, 'color', ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? opt.btnColor : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnStd, 'color', (filter & DebugJS.LOG_FILTER_LOG) ? opt.fontColor : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnVrb, 'color', (filter & DebugJS.LOG_FILTER_VRB) ? opt.logColorV : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnDbg, 'color', (filter & DebugJS.LOG_FILTER_DBG) ? opt.logColorD : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnInf, 'color', (filter & DebugJS.LOG_FILTER_INF) ? opt.logColorI : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnWrn, 'color', (filter & DebugJS.LOG_FILTER_WRN) ? opt.logColorW : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnErr, 'color', (filter & DebugJS.LOG_FILTER_ERR) ? opt.logColorE : DebugJS.COLOR_INACTIVE);
   },
 
   onchangeLogFilter: function() {
-    DebugJS.ctx.filterText = DebugJS.ctx.filterInput.value;
+    DebugJS.ctx.fltrText = DebugJS.ctx.fltrInput.value;
     DebugJS.ctx.printLogs();
   },
 
   toggleFilterCase: function() {
     var ctx = DebugJS.ctx;
-    ctx.setFilterCase(ctx, (ctx.filterCase ? false : true));
+    ctx.setFilterCase(ctx, (ctx.fltrCase ? false : true));
   },
   setFilterCase: function(ctx, f) {
-    ctx.filterCase = f;
-    ctx.setStyle(ctx.filterCaseBtn, 'color', (DebugJS.ctx.filterCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.fltrCase = f;
+    ctx.setStyle(ctx.fltrCaseBtn, 'color', (DebugJS.ctx.fltrCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
     ctx.onchangeLogFilter();
   },
 
   toggleFilterTxtHtml: function() {
     var ctx = DebugJS.ctx;
-    ctx.setFilterTxtHtml(ctx, (ctx.filterTxtHtml ? false : true));
+    ctx.setFilterTxtHtml(ctx, (ctx.fltrTxtHtml ? false : true));
   },
   setFilterTxtHtml: function(ctx, f) {
-    ctx.filterTxtHtml = f;
-    ctx.setStyle(ctx.filterTxtHtmlBtn, 'color', (ctx.filterTxtHtml ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE));
+    ctx.fltrTxtHtml = f;
+    ctx.setStyle(ctx.fltrTxtHtmlBtn, 'color', (ctx.fltrTxtHtml ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE));
     ctx.onchangeLogFilter();
   },
 
@@ -7561,8 +7561,8 @@ DebugJS.prototype = {
       }
     }
     ctx.jsBuf = '';
-    ctx.filterText = '';
-    if (ctx.filterInput) ctx.filterInput.value = '';
+    ctx.fltrText = '';
+    if (ctx.fltrInput) ctx.fltrInput.value = '';
     ctx.closeDbgWin();
     ctx.clearLog();
     ctx.logFilter = DebugJS.LOG_FILTER_ALL;
@@ -8039,7 +8039,7 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       ctx.setFilterTxtHtml(ctx, false);
     } else {
-      var st = ctx.filterTxtHtml;
+      var st = ctx.fltrTxtHtml;
       DebugJS.printUsage('log html on|off');
       return st;
     }
@@ -11047,12 +11047,12 @@ DebugJS.decodeBase64 = function(s) {
 };
 DebugJS.Base64 = {};
 DebugJS.Base64.encode = function(arr) {
-  if (arr.length == 0) return '';
+  var len = arr.length;
+  if (len == 0) return '';
   var tbl = {64: 61, 63: 47, 62: 43};
   for (var i = 0; i < 62; i++) {
     tbl[i] = (i < 26 ? i + 65 : (i < 52 ? i + 71 : i - 4));
   }
-  var len = arr.length;
   var str = '';
   var buf = [];
   for (i = 0; i < len; i += 3) {
