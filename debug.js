@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809150000';
+  this.v = '201809150010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14980,7 +14980,7 @@ DebugJS.test.getStyledInfoStr = function(result) {
   } else {
     echoGot = DebugJS.styleValue(echoGot);
   }
-  var s = 'Exp=' + echoExp + ' ' + result.method + ' Got=' + echoGot;
+  var s = 'Got=' + echoGot + ' ' + result.method + ' Exp=' + echoExp;
   return s;
 };
 DebugJS.test.getCountStr = function(cnt) {
