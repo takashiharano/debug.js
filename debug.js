@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809142311';
+  this.v = '201809150000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11086,13 +11086,20 @@ DebugJS.Base64.encode = function(arr) {
   return str;
 };
 DebugJS.Base64.decode = function(str) {
+  var arr = [];
+  if (str.length == 0) return arr;
+  for (var i = 0; i < str.length; i++) {
+    var c = str.charCodeAt(i);
+    if (!(((c >= 0x30) && (c <= 0x39)) || ((c >= 0x41) && (c <= 0x5A)) || ((c >= 0x61) && (c <= 0x7A)) || (c == 0x2B) || (c == 0x2F) || (c == 0x3D))) {
+      DebugJS._log.e('invalid b64 char: 0x' + c.toString(16).toUpperCase() + ' at ' + i);
+      return arr;
+    }
+  }
   var tbl = {61: 64, 47: 63, 43: 62};
-  for (var i = 0; i < 62; i++) {
+  for (i = 0; i < 62; i++) {
     tbl[i < 26 ? i + 65 : (i < 52 ? i + 71 : i - 4)] = i;
   }
   var buf = [];
-  var arr = [];
-  if (str.length == 0) return arr;
   for (i = 0; i < str.length; i += 4) {
     for (var j = 0; j < 4; j++) {
       buf[j] = tbl[str.charCodeAt(i + j) || 0];
