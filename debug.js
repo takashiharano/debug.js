@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809140123';
+  this.v = '201809142311';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7105,7 +7105,7 @@ DebugJS.prototype = {
         break;
       case 'exec':
         if (a[1] != undefined) {
-          var b = DebugJS.decodeBase64(a[1]);
+          var b = DebugJS.decodeBase64(a[1], true);
           if (b != '') {
             if (ctx.status & DebugJS.ST_BAT_RUNNING) {
               bat.stCtx();
@@ -11038,12 +11038,32 @@ DebugJS.UTF8.fmByte = function(a) {
 };
 
 DebugJS.encodeBase64 = function(s) {
-  var a = DebugJS.UTF8.toByte(s);
-  return DebugJS.Base64.encode(a);
+  if (!window.btoa) return '';
+  var ret = '';
+  try {
+    ret = btoa(s);
+  } catch (e) {
+    ret = btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+      return String.fromCharCode('0x' + p1);
+    }));
+  }
+  return ret;
 };
-DebugJS.decodeBase64 = function(s) {
-  var a = DebugJS.Base64.decode(s);
-  return DebugJS.UTF8.fmByte(a);
+DebugJS.decodeBase64 = function(s, q) {
+  if (!window.atob) return '';
+  var ret = '';
+  try {
+    ret = decodeURIComponent(Array.prototype.map.call(atob(s), function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  } catch (e) {
+    try {
+      ret = atob(s);
+    } catch (e) {
+      if (!q) DebugJS._log.e('decodeBase64(): ' + e);
+    }
+  }
+  return ret;
 };
 DebugJS.Base64 = {};
 DebugJS.Base64.encode = function(arr) {
