@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809150010';
+  this.v = '201809152100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8127,11 +8127,12 @@ DebugJS.prototype = {
   },
 
   cmdMsg: function(arg, tbl) {
+    var m = ((DebugJS.hasOpt(arg, 'c') || (DebugJS.delLeadingAndTrailingSP(arg) == '')) ? '""' : arg);
     try {
-      var m = (arg == '' ? '' : eval(arg));
-      DebugJS.ctx.setMsg(m);
+      DebugJS.ctx.setMsg(eval(m));
     } catch (e) {
       DebugJS._log.e(e);
+      DebugJS.printUsage(tbl.usage);
     }
   },
 
@@ -14798,6 +14799,8 @@ DebugJS.test.initData();
 DebugJS.test.init = function(name) {
   var test = DebugJS.test;
   test.initData();
+  DebugJS.ctx.CMDVALS['%TEST_STATUS%'] = test.STATUS_NT;
+  DebugJS.ctx.CMDVALS['%TEST_LAST_RESULT%'] = test.STATUS_NT;
   var data = test.data;
   data.name = ((name == undefined) ? '' : name);
   data.running = true;
@@ -14897,12 +14900,14 @@ DebugJS.test.setStatus = function(st) {
       if (data.status == test.STATUS_ERR) return;
   }
   data.status = st;
+  DebugJS.ctx.CMDVALS['%TEST_STATUS%'] = st;
 };
 DebugJS.test.getStatus = function() {
   return DebugJS.test.data.status;
 };
 DebugJS.test.setLastResult = function(st) {
   DebugJS.test.data.lastRslt = st;
+  DebugJS.ctx.CMDVALS['%TEST_LAST_RESULT%'] = st;
 };
 DebugJS.test.getLastResult = function() {
   return DebugJS.test.data.lastRslt;

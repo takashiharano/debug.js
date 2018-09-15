@@ -3730,7 +3730,10 @@ $ log lv NONE
   <tr>
     <td class="name">msg</td>
     <td>message</td>
-    <td>Set a string to the message display.</td>
+    <td>
+      Set a string to the message display.<br>
+      -c option: Clear the message.
+    </td>
   </tr>
 
   <tr>
@@ -4683,6 +4686,20 @@ $ set batstop error|test
     <td class="name">${%RESUMED_KEY%}</td>
     <td>
       Last key value of resume command
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%TEST_STATUS%}</td>
+    <td>
+      Total test status
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%TEST_LAST_RESULT%}</td>
+    <td>
+      Last result of test/point verify command
     </td>
   </tr>
 </table>
