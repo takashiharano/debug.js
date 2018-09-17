@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809152100';
+  this.v = '201809180045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11075,7 +11075,6 @@ DebugJS.Base64.encode = function(arr) {
     tbl[i] = (i < 26 ? i + 65 : (i < 52 ? i + 71 : i - 4));
   }
   var str = '';
-  var buf = [];
   for (i = 0; i < len; i += 3) {
     str += String.fromCharCode(
       tbl[arr[i] >>> 2],
