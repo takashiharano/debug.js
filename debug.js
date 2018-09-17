@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809180045';
+  this.v = '201809180111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9993,25 +9993,25 @@ DebugJS.diffDate = function(d1, d2) {
   return (dt2.time - dt1.time) / 86400000;
 };
 DebugJS.isDateFormat = function(s, p) {
-  if (s == null) {return false;}
+  if (s == null) return false;
   var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}';
   if (!p) {r += '$';}
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isBasicDateFormat = function(s, p) {
-  if (s == null) {return false;}
+  if (s == null) return false;
   var r = '^\\d{4}[0-1][0-9][0-3][0-9]';
   if (!p) {r += '$';}
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isDateTimeFormat = function(s, p) {
-  if (s == null) {return false;}
+  if (s == null) return false;
   var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2} {1,}\\d{1,2}:\\d{2}:?\\d{0,2}\.?\\d{0,3}';
   if (!p) {r += '$';}
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isDateTimeFormatIso = function(s, p) {
-  if (typeof s != 'string') {return false;}
+  if (typeof s != 'string') return false;
   var r = '^\\d{8}T\\d{0,6}\.?\\d{0,3}';
   if (!p) {r += '$';}
   return (s.match(new RegExp(r)) ? true : false);
