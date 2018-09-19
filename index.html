@@ -3224,6 +3224,39 @@ $ bin (1 + 2) 8
   </tr>
 
   <tr>
+    <td class="name">bsb64</td>
+    <td></td>
+    <td>
+     Encodes / Decodes BSB64(Bit Shifted Base64) reversible encryption string.<br><br>
+<pre class="eg">
+operation: -e encode<span class="annotation">(default option)</span>
+           -d decode
+
+-i Iput string
+-n Number of bit totation
+    1 : 1 bit rotate left<span class="annotation">(default)</span>
+   1L : 1 bit rotate left
+   1R : 1 bit rotate right
+    0 : bit inversion
+
+$ bsb64 -e -i "abc" -n 1
+-&gt; wsTG
+
+$ bsb64 -d -i "wsTG" -n 1
+-&gt; abc
+
+Simple usage:
+$ bsb64 abc
+$ bsb64 -e abc
+$ bsb64 -d wsTG
+
+BSB64 Algorithm:
+String &gt; bit rotation/bit inversion &gt; Base64
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">close</td>
     <td>
       function<br>
@@ -4051,39 +4084,6 @@ type: -d number
 min: minimun number / length
 
 max: maximum number / length
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">rb64</td>
-    <td></td>
-    <td>
-     Encodes / Decodes RB64(Rotated Base64) reversible encryption string.<br><br>
-<pre class="eg">
-operation: -e encode<span class="annotation">(default option)</span>
-           -d decode
-
--i Iput string
--n Number of bit totation
-    1 : 1 bit rotate left<span class="annotation">(default)</span>
-   1L : 1 bit rotate left
-   1R : 1 bit rotate right
-    0 : bit inversion
-
-$ rb64 -e -i "abc" -n 1
--&gt; wsTG
-
-$ rb64 -d -i "wsTG" -n 1
--&gt; abc
-
-Simple usage:
-$ rb64 abc
-$ rb64 -e abc
-$ rb64 -d wsTG
-
-RB64 Algorithm:
-String &gt; bit rotate/bit inversion &gt; Base64
 </pre>
     </td>
   </tr>

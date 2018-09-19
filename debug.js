@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809180111';
+  this.v = '201809200000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -31,7 +31,7 @@ var DebugJS = DebugJS || function() {
     fontSize: 12,
     fontFamily: 'Consolas, monospace',
     fontColor: '#fff',
-    logColorV: '#99b8b8',
+    logColorV: '#99bcc8',
     logColorD: '#ccc',
     logColorI: '#9ef',
     logColorW: '#fe0',
@@ -323,6 +323,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', usage: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
+    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64(Bit Shifted Base64) reversible encryption string', usage: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -359,7 +360,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a rondom number/string', usage: 'random [-d|-s] [min] [max]'},
-    {cmd: 'rb64', fn: this.cmdRB64, desc: 'Encodes/Decodes RB64(Rotated Base64) reversible encryption string', usage: 'rb64 -e|-d -i "&lt;str&gt;" -n &lt;n&gt[L|R];'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
@@ -4186,9 +4186,7 @@ DebugJS.prototype = {
 
   updateElementInfoInterval: function() {
     var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.ST_ELM_INSPECTING)) {
-      return;
-    }
+    if (!(ctx.status & DebugJS.ST_ELM_INSPECTING)) return;
     ctx.updateElementInfo();
     if (ctx.elmUpdateInterval > 0) {
       ctx.elmUpdateTimerId = setTimeout(ctx.updateElementInfoInterval, ctx.elmUpdateInterval);
@@ -7164,6 +7162,28 @@ DebugJS.prototype = {
     }
   },
 
+  cmdBSB64: function(arg, tbl, echo) {
+    var iIdx = 0;
+    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
+      iIdx++;
+    }
+    var toR = false;
+    var n = DebugJS.getOptVal(arg, 'n');
+    if (n == null) {
+       n = 1;
+    } else {
+      iIdx += 2;
+      if (n.length > 1) {
+        var d = n.charAt(n.length - 1);
+        if (isNaN(d)) {
+          if (d == 'R') toR = true;
+          n = n.substr(0, n.length - 1);
+        }
+      }
+    }
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0, toR);
+  },
+
   cmdClose: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var fn = DebugJS.splitArgs(arg)[0];
@@ -7972,7 +7992,7 @@ DebugJS.prototype = {
         break;
       case 'filter':
         fn = ctx._cmdLogFilter;
-       break;
+        break;
       case 'html':
         fn = ctx._cmdLogHtml;
         break;
@@ -8511,28 +8531,6 @@ DebugJS.prototype = {
     } else if (rdx == 2) {
       DebugJS.convRadixFromBIN(v.substr(2));
     }
-  },
-
-  cmdRB64: function(arg, tbl, echo) {
-    var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
-      iIdx++;
-    }
-    var toR = false;
-    var n = DebugJS.getOptVal(arg, 'n');
-    if (n == null) {
-       n = 1;
-    } else {
-      iIdx += 2;
-      if (n.length > 1) {
-        var d = n.charAt(n.length - 1);
-        if (isNaN(d)) {
-          if (d == 'R') toR = true;
-          n = n.substr(0, n.length - 1);
-        }
-      }
-    }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeRB64, DebugJS.decodeRB64, iIdx, n | 0, toR);
   },
 
   cmdResume: function(arg, tbl) {
@@ -10982,11 +10980,11 @@ DebugJS.formatHex = function(v16, prefix, upper) {
 };
 
 DebugJS.bit8 = {};
-DebugJS.bit8.leftRotate = function(v, n) {
+DebugJS.bit8.rotateL = function(v, n) {
   n = n % 8;
   return ((v << n) | (v >> (8 - n))) & 255;
 };
-DebugJS.bit8.rightRotate = function(v, n) {
+DebugJS.bit8.rotateR = function(v, n) {
   n = n % 8;
   return ((v >> n) | (v << (8 - n))) & 255;
 };
@@ -11119,17 +11117,17 @@ DebugJS.Base64.decode = function(str) {
   return arr;
 };
 
-DebugJS.encodeRB64 = function(s, n, toR) {
+DebugJS.encodeBSB64 = function(s, n, toR) {
   var a = DebugJS.UTF8.toByte(s);
-  return DebugJS.RB64.encode(a, n, toR);
+  return DebugJS.BSB64.encode(a, n, toR);
 };
-DebugJS.decodeRB64 = function(rb64, n, toR) {
-  var a = DebugJS.RB64.decode(rb64, n, (toR ? false : true));
+DebugJS.decodeBSB64 = function(s, n, toR) {
+  var a = DebugJS.BSB64.decode(s, n, (toR ? false : true));
   return DebugJS.UTF8.fmByte(a);
 };
-DebugJS.RB64 = {};
-DebugJS.RB64.encode = function(a, n, toR) {
-  var fn = (toR ? DebugJS.bit8.rightRotate : DebugJS.bit8.leftRotate);
+DebugJS.BSB64 = {};
+DebugJS.BSB64.encode = function(a, n, toR) {
+  var fn = (toR ? DebugJS.bit8.rotateR : DebugJS.bit8.rotateL);
   if (n % 8 == 0) fn = DebugJS.bit8.invert;
   var b = [];
   for (var i = 0; i < a.length; i++) {
@@ -11137,10 +11135,10 @@ DebugJS.RB64.encode = function(a, n, toR) {
   }
   return DebugJS.Base64.encode(b);
 };
-DebugJS.RB64.decode = function(rb64, n, toR) {
-  var fn = (toR ? DebugJS.bit8.rightRotate : DebugJS.bit8.leftRotate);
+DebugJS.BSB64.decode = function(s, n, toR) {
+  var fn = (toR ? DebugJS.bit8.rotateR : DebugJS.bit8.rotateL);
   if (n % 8 == 0) fn = DebugJS.bit8.invert;
-  var b = DebugJS.Base64.decode(rb64);
+  var b = DebugJS.Base64.decode(s);
   var a = [];
   for (var i = 0; i < b.length; i++) {
     a.push(fn(b[i], n));
@@ -11721,9 +11719,7 @@ DebugJS.substr = function(txt, len) {
       } else {
         cnt += 2;
       }
-      if (cnt > len) {
-        break;
-      }
+      if (cnt > len) break;
       str += txt.charAt(i);
     }
   } else {
@@ -11735,9 +11731,7 @@ DebugJS.substr = function(txt, len) {
       } else {
         cnt += 2;
       }
-      if (cnt >= len) {
-        break;
-      }
+      if (cnt >= len) break;
     }
     str = txt.substr(i);
   }
@@ -12019,9 +12013,7 @@ DebugJS.sleep = function(ms) {
   var t1 = (new Date()).getTime();
   while (true) {
     var t2 = (new Date()).getTime();
-    if (t2 - t1 > ms) {
-      break;
-    }
+    if (t2 - t1 > ms) break;
   }
 };
 
