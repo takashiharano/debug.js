@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809200000';
+  this.v = '201809210000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -351,7 +351,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...'},
-    {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC.'},
+    {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] object'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-key key [-timeout ms]|-s]'},
@@ -775,27 +775,20 @@ DebugJS.prototype = {
     ctx.win.style.fontSize = ctx.computedFontSize + 'px',
     ctx.win.style.opacity = ctx.opt.opacity;
     ctx.createPanels(ctx);
-
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) {
       ctx.initResize(ctx);
     }
-
     ctx.initStyles(ctx);
     ctx.initDbgWin(ctx);
     ctx.setupEventHandler(ctx);
-
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
       if (ctx.opt.mode == 'kiosk') {
         ctx.focusCmdLine();
       } else {
         ctx.setupMove(ctx);
-
-        // move to initial window position
         ctx.initWidth = ctx.win.offsetWidth;
         ctx.initHeight = ctx.win.offsetHeight;
         ctx.resetDbgWinSizePos();
-        ctx.updateWinCtrlBtnPanel();
-
         if ((restoreOpt != null) && (restoreOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
           ctx.focusCmdLine();
         }
@@ -955,6 +948,10 @@ DebugJS.prototype = {
       'background': 'transparent !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important'
+    };
+    styles['.' + ctx.id + '-cmdtd'] = {
+      'vertical-align': 'top !important',
+      'white-space': 'nowrap !important'
     };
     styles['.' + ctx.id + '-txt-range'] = {
       'width': (256 * opt.zoom) + 'px',
@@ -1914,7 +1911,7 @@ DebugJS.prototype = {
     }
     fn += 'DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();';
     var b = '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.opt.zoom) + 'px;font-size:' + (16 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="' + fn + '" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">' + btn + '</span>' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.opt.zoom + 'px;margin-right:' + ctx.opt.zoom + 'px;font-size:' + (30 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">-</span>';
+    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.opt.zoom + 'px;margin-right:' + ctx.opt.zoom + 'px;font-size:' + (30 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.focusCmdLine();" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">-</span>';
     ctx.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -3233,7 +3230,10 @@ DebugJS.prototype = {
   },
 
   resetDbgWinSizePos: function() {
-    var ctx = DebugJS.ctx;
+    DebugJS.ctx._resetDbgWinSizePos(DebugJS.ctx);
+    DebugJS.ctx.updateWinCtrlBtnPanel();
+  },
+  _resetDbgWinSizePos: function(ctx) {
     var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
     var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
     if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
@@ -6868,9 +6868,9 @@ DebugJS.prototype = {
       }
       cl = event + cl.substr(2);
     } else if (cl.substr(0, 1) == '!') {
-      var str = cl.substr(1).match(/(\d*)(.*)/);
-      var num = str[1];
-      var arg = str[2];
+      var s = cl.substr(1).match(/(\d*)(.*)/);
+      var num = s[1];
+      var arg = s[2];
       if (num != '') {
         var event = ctx.getHistory((num | 0) - 1);
         if (event == '') {
@@ -7575,9 +7575,8 @@ DebugJS.prototype = {
       if (ctx.opt.usePinButton) {
         ctx.enableDraggable(ctx);
       }
-      if (!ctx.opt.mode == 'kiosk') {
+      if (ctx.opt.mode != 'kiosk') {
         ctx.resetDbgWinSizePos();
-        ctx.updateWinCtrlBtnPanel();
       }
     }
     ctx.jsBuf = '';
@@ -7599,33 +7598,30 @@ DebugJS.prototype = {
 
   cmdHelp: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var s = 'Available Commands:\n<table>';
-    var len = ctx.CMD_TBL.length;
-    for (var i = 0; i < len; i++) {
-      if (!(ctx.CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
-        s += '<tr><td style="vertical-align:top;white-space:nowrap">' + ctx.CMD_TBL[i].cmd + '</td><td>' + ctx.CMD_TBL[i].desc + '</td></tr>';
-      }
-    }
+    var s = 'Available Commands:\n<table>' + ctx._cmdHelpTbl(ctx, ctx.CMD_TBL);
     if (!ctx.opt.disableAllCommands) {
-      len = ctx.EXT_CMD_TBL.length;
-      if (len > 0) {
-        s += '<tr><td colspan="2">' +
-               '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
+      if (ctx.EXT_CMD_TBL.length > 0) {
+        s += '<tr><td colspan="2">' + '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
       }
-      for (i = 0; i < len; i++) {
-        if (!(ctx.EXT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
-          var style1 = '';
-          var style2 = '';
-          if (ctx.EXT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DISABLED) {
-            style1 = '<span style="color:#aaa">';
-            style2 = '</span>';
-          }
-          s += '<tr><td>' + style1 + ctx.EXT_CMD_TBL[i].cmd + style2 + '</td><td>' + style1 + ctx.EXT_CMD_TBL[i].desc + style2 + '</td></tr>';
-        }
-      }
+      s += ctx._cmdHelpTbl(ctx, ctx.EXT_CMD_TBL);
     }
     s += '</table>';
     DebugJS._log.mlt(s);
+  },
+  _cmdHelpTbl: function(ctx, tbl) {
+    var s = '';
+    for (var i = 0; i < tbl.length; i++) {
+      if (!(tbl[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
+        var style1 = '';
+        var style2 = '';
+        if (tbl[i].attr & DebugJS.CMD_ATTR_DISABLED) {
+          style1 = '<span style="color:#aaa">';
+          style2 = '</span>';
+        }
+        s += '<tr><td class="' + ctx.id + '-cmdtd">' + style1 + tbl[i].cmd + style2 + '</td><td>' + style1 + tbl[i].desc + style2 + '</td></tr>';
+      }
+    }
+    return s;
   },
 
   cmdHex: function(arg, tbl) {
@@ -7739,7 +7735,7 @@ DebugJS.prototype = {
       var cmd = bf[i];
       cmd = DebugJS.escTags(cmd);
       cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
-      s += '<tr><td style="vertical-align:top;text-align:right;white-space:nowrap">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
+      s += '<tr><td class="' + DebugJS.ctx.id + '-cmdtd" style="text-align:right">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
     s += '</table>';
     DebugJS._log.mlt(s);
@@ -9118,7 +9114,7 @@ DebugJS.prototype = {
   _cmdVals: function(ctx) {
     var v = '';
     for (var key in ctx.CMDVALS) {
-      v += '<tr><td style="vertical-align:top;white-space:nowrap">' + key + '</td><td>' + DebugJS.objDump(ctx.CMDVALS[key], false, -1) + '</td></tr>';
+      v += '<tr><td class="' + ctx.id + '-cmdtd">' + key + '</td><td>' + DebugJS.objDump(ctx.CMDVALS[key], false, -1) + '</td></tr>';
     }
     if (v == '') {
       DebugJS._log('no variables');
@@ -9201,7 +9197,6 @@ DebugJS.prototype = {
         break;
       case 'reset':
         ctx.resetDbgWinSizePos();
-        ctx.updateWinCtrlBtnPanel();
         break;
       case 'center':
       case 'full':
