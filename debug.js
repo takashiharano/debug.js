@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809210000';
+  this.v = '201809230208';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -375,6 +375,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', usage: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] str|codePoint(s)'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] str'},
+    {cmd: 'utf8bytes', fn: this.cmdUtf8Bytes, desc: 'Dump UTF-8 byte sequence', usage: 'utf8bytes "str"'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
@@ -9097,6 +9098,41 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeUri, DebugJS.decodeUri, iIdx);
   },
 
+  cmdUtf8Bytes: function(arg, tbl, echo) {
+    try {
+      var s = eval(arg);
+      if (typeof s == 'string') {
+        var bf = DebugJS.UTF8.toByte(s);
+        if (echo) {
+          var r = '';
+          if (!DebugJS.isStr(arg)) {
+            r += DebugJS.encString(s) + '\n';
+          }
+          r += DebugJS.ctx._dumpByteSeq(bf);
+          DebugJS._log.mlt(r);
+        }
+      } else {
+        DebugJS.printUsage(tbl.usage);
+      }
+    } catch (e) {
+      DebugJS._log.e(e);
+      DebugJS.printUsage(tbl.usage);
+    }
+    return a;
+  },
+  _dumpByteSeq: function(a) {
+    var s = '';
+    for (var i = 0; i < a.length; i++) {
+      var v = a[i];
+      s += '[' + DebugJS.strPadding(i, ' ', DebugJS.digits(a.length), 'L') + '] ';
+      s += DebugJS.strPadding(v, ' ', 3, 'L') + '  ';
+      s += DebugJS.toHex(v, true, true) + '  ';
+      s += DebugJS.toBin(v);
+      s += '\n';
+    }
+    return s;
+  },
+
   cmdV: function(arg, tbl) {
     DebugJS._log(DebugJS.ctx.v);
     return DebugJS.ctx.v;
@@ -10879,11 +10915,13 @@ DebugJS.convRadixFromBIN = function(v2) {
   DebugJS._log.mlt(res);
 };
 
-DebugJS.toHex = function(v, uc) {
+DebugJS.toBin = function(v) {
+  return ('0000000' + v.toString(2)).slice(-8);
+};
+DebugJS.toHex = function(v, uc, pFix) {
   var hex = parseInt(v).toString(16);
-  if (uc) {
-    hex = hex.toUpperCase();
-  }
+  if (uc) hex = hex.toUpperCase();
+  if (pFix) hex = '0x' + hex;
   return hex;
 };
 
@@ -11781,6 +11819,9 @@ DebugJS.repeatCh = function(c, n) {
 DebugJS.crlf2lf = function(s) {
   return s.replace(/\r\n/g, '\n');
 };
+DebugJS.isStr = function(s) {
+  return (s + '').match(/\s*\"|'/);
+};
 
 DebugJS.trimDownText = function(txt, maxLen, style) {
   var snip = '...';
@@ -11853,7 +11894,7 @@ DebugJS.dumpAddr = function(i) {
 };
 
 DebugJS.dumpBin = function(i, buf) {
-  return ((buf[i] == undefined) ? '        ' : ('0000000' + buf[i].toString(2)).slice(-8));
+  return ((buf[i] == undefined) ? '        ' : DebugJS.toBin(buf[i]));
 };
 
 DebugJS.dumpDec = function(i, buf) {
