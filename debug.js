@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809230208';
+  this.v = '201809232205';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -375,7 +375,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', usage: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] str|codePoint(s)'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] str'},
-    {cmd: 'utf8bytes', fn: this.cmdUtf8Bytes, desc: 'Dump UTF-8 byte sequence', usage: 'utf8bytes "str"'},
+    {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', usage: 'utf8 "str"'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
@@ -399,6 +399,7 @@ var DebugJS = DebugJS || function() {
     prevlimit: /^[0-9]+$/,
     hexdumplimit: /^[0-9]+$/,
     hexdumplastrows: /^[0-9]+$/,
+    radix: /^[^|][a-z|]+[^|]$/,
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
     scrollspeed: /^[0-9]+$/,
@@ -421,6 +422,7 @@ var DebugJS = DebugJS || function() {
     prevlimit: 5 * 1024 * 1024,
     hexdumplimit: 1048576,
     hexdumplastrows: 16,
+    radix: 'bin|dec|hex',
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
     scrollspeed: DebugJS.scrollWinTo.data.speed,
@@ -647,7 +649,7 @@ DebugJS.JS_SNIPPET = [
 'dbg.time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.end();\n\'done\';\n',
 '',
 '',
-'',
+' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~',
 '// Logging performance check\nvar i = 0;\nvar n = 1000;\ndbg.msg(\'loop = \' + n);\ndbg.time.start(\'total\');\ntest();\nfunction test() {\n  dbg.time.start();\n  dbg.time.end();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
@@ -9098,19 +9100,13 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeUri, DebugJS.decodeUri, iIdx);
   },
 
-  cmdUtf8Bytes: function(arg, tbl, echo) {
+  cmdUtf8: function(arg, tbl, echo) {
     try {
       var s = eval(arg);
       if (typeof s == 'string') {
         var bf = DebugJS.UTF8.toByte(s);
-        if (echo) {
-          var r = '';
-          if (!DebugJS.isStr(arg)) {
-            r += DebugJS.encString(s) + '\n';
-          }
-          r += DebugJS.ctx._dumpByteSeq(bf);
-          DebugJS._log.mlt(r);
-        }
+        if (echo) DebugJS.ctx._dumpByteSeq(s, bf.length);
+        return bf;
       } else {
         DebugJS.printUsage(tbl.usage);
       }
@@ -9118,19 +9114,25 @@ DebugJS.prototype = {
       DebugJS._log.e(e);
       DebugJS.printUsage(tbl.usage);
     }
-    return a;
   },
-  _dumpByteSeq: function(a) {
+  _dumpByteSeq: function(str, len) {
     var s = '';
-    for (var i = 0; i < a.length; i++) {
-      var v = a[i];
-      s += '[' + DebugJS.strPadding(i, ' ', DebugJS.digits(a.length), 'L') + '] ';
-      s += DebugJS.strPadding(v, ' ', 3, 'L') + '  ';
-      s += DebugJS.toHex(v, true, true) + '  ';
-      s += DebugJS.toBin(v);
-      s += '\n';
+    var cnt = 0;
+    for (var i = 0; i < str.length; i++) {
+      var ch = str.charAt(i);
+      var a = DebugJS.UTF8.toByte(ch);
+      for (var j = 0; j < a.length; j++) {
+        var v = a[j];
+        s += '[' + DebugJS.strPadding(cnt, ' ', DebugJS.digits(len), 'L') + '] ';
+        s += DebugJS.strPadding(v, ' ', 3, 'L') + '  ';
+        s += DebugJS.toHex(v, true, 2, true) + '  ';
+        s += DebugJS.toBin(v);
+        if (j == 0) s += '  ' + DebugJS.hlCtrlChr(ch, true);
+        s += '\n';
+        cnt++;
+      }
     }
-    return s;
+    DebugJS._log.mlt(s);
   },
 
   cmdV: function(arg, tbl) {
@@ -10866,10 +10868,7 @@ DebugJS.convRadixFromHEX = function(v16) {
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
-  var res = 'HEX ' + hex + '\n' +
-  'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'BIN ' + bin + '\n';
-  DebugJS._log.mlt(res);
+  DebugJS.printRadixConv(v10, hex, bin);
 };
 
 DebugJS.convRadixFromDEC = function(v10) {
@@ -10890,10 +10889,7 @@ DebugJS.convRadixFromDEC = function(v10) {
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
-  var res = 'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'HEX ' + hex + '<br>' +
-  'BIN ' + bin + '\n';
-  DebugJS._log.mlt(res);
+  DebugJS.printRadixConv(v10, hex, bin);
 };
 
 DebugJS.convRadixFromBIN = function(v2) {
@@ -10909,18 +10905,24 @@ DebugJS.convRadixFromBIN = function(v2) {
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
-  var res = 'BIN ' + bin + '\n' +
-  'DEC ' + DebugJS.formatDec(v10) + '\n' +
-  'HEX ' + hex + '\n';
-  DebugJS._log.mlt(res);
+  DebugJS.printRadixConv(v10, hex, bin);
+};
+DebugJS.printRadixConv = function(v10, hex, bin) {
+  var rdx = DebugJS.ctx.props.radix;
+  var s = '';
+  if (DebugJS.hasKeyWd(rdx, 'dec', '|')) s += 'DEC ' + DebugJS.formatDec(v10) + '\n';
+  if (DebugJS.hasKeyWd(rdx, 'hex', '|')) s += 'HEX ' + hex + '\n';
+  if (DebugJS.hasKeyWd(rdx, 'bin', '|')) s += 'BIN ' + bin + '\n';
+  DebugJS._log.mlt(s);
 };
 
 DebugJS.toBin = function(v) {
   return ('0000000' + v.toString(2)).slice(-8);
 };
-DebugJS.toHex = function(v, uc, pFix) {
+DebugJS.toHex = function(v, uc, d, pFix) {
   var hex = parseInt(v).toString(16);
   if (uc) hex = hex.toUpperCase();
+  if (d) hex = (DebugJS.repeatCh('0', d) + hex).slice(d * (-1));
   if (pFix) hex = '0x' + hex;
   return hex;
 };
@@ -11985,9 +11987,10 @@ DebugJS.replaceCtrlChr = function(s, d) {
   return s;
 };
 
-DebugJS.hlCtrlChr = function(s) {
+DebugJS.hlCtrlChr = function(s, sp) {
   var st = '<span class="' + DebugJS.ctx.id + '-txt-hl">';
   var et = '</span>';
+  if (sp) s = s.replace(/ /g, st + ' ' + et);
   s = s.replace(/\t/g, st + '\\t' + et);
   s = s.replace(/\r/g, st + '\\r' + et);
   s = s.replace(/\n/g, st + '\\n' + et);
