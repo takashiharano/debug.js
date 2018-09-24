@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809232205';
+  this.v = '201809241957';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7642,7 +7642,7 @@ DebugJS.prototype = {
       } else {
         v16 = parseInt(val).toString(16);
       }
-      var hex = DebugJS.formatHex(v16, false, true);
+      var hex = DebugJS.formatHex(v16, true, false);
       var ret = hex;
       if (data.digit > 0) {
         if (hex.length > data.digit) {
@@ -9125,7 +9125,7 @@ DebugJS.prototype = {
         var v = a[j];
         s += '[' + DebugJS.strPadding(cnt, ' ', DebugJS.digits(len), 'L') + '] ';
         s += DebugJS.strPadding(v, ' ', 3, 'L') + '  ';
-        s += DebugJS.toHex(v, true, 2, true) + '  ';
+        s += DebugJS.toHex(v, true, true, 2) + '  ';
         s += DebugJS.toBin(v);
         if (j == 0) s += '  ' + DebugJS.hlCtrlChr(ch, true);
         s += '\n';
@@ -10864,7 +10864,7 @@ DebugJS.convRadixFromHEX = function(v16) {
     var v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
   }
-  var hex = DebugJS.formatHex(v16, false, true);
+  var hex = DebugJS.formatHex(v16, true, false);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -10885,7 +10885,7 @@ DebugJS.convRadixFromDEC = function(v10) {
     var v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
   }
-  var hex = DebugJS.formatHex(v16, false, true);
+  var hex = DebugJS.formatHex(v16, true, false);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -10901,7 +10901,7 @@ DebugJS.convRadixFromBIN = function(v2) {
     v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
   }
-  var hex = DebugJS.formatHex(v16, false, true);
+  var hex = DebugJS.formatHex(v16, true, false);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -10919,12 +10919,9 @@ DebugJS.printRadixConv = function(v10, hex, bin) {
 DebugJS.toBin = function(v) {
   return ('0000000' + v.toString(2)).slice(-8);
 };
-DebugJS.toHex = function(v, uc, d, pFix) {
+DebugJS.toHex = function(v, uc, pFix, d) {
   var hex = parseInt(v).toString(16);
-  if (uc) hex = hex.toUpperCase();
-  if (d) hex = (DebugJS.repeatCh('0', d) + hex).slice(d * (-1));
-  if (pFix) hex = '0x' + hex;
-  return hex;
+  return DebugJS.formatHex(hex, uc, pFix, d);
 };
 
 DebugJS.convertBin = function(data) {
@@ -11003,14 +11000,10 @@ DebugJS.formatDec = function(v10) {
   }
   return dec;
 };
-DebugJS.formatHex = function(v16, prefix, upper) {
-  var hex = v16;
-  if (upper) {
-    hex = v16.toUpperCase();
-  }
-  if (prefix) {
-    hex = '0x' + hex;
-  }
+DebugJS.formatHex = function(hex, uc, pFix, d) {
+  if (uc) hex = hex.toUpperCase();
+  if (d) hex = (DebugJS.repeatCh('0', d) + hex).slice(d * (-1));
+  if (pFix) hex = '0x' + hex;
   return hex;
 };
 
