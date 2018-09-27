@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809271935';
+  this.v = '201809271952';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2197,11 +2197,13 @@ DebugJS.prototype = {
           (el == ctx.filePreviewWrapper) ||
           (el == ctx.toolsPanel) ||
           (el == ctx.extBodyPanel)) {
-        var scrollBarW = 17;
+        var scrollBarWH = 17;
         var rect = el.getBoundingClientRect();
-        var scrollL = rect.left + rect.width - scrollBarW;
+        var scrollL = rect.left + rect.width - scrollBarWH;
         var scrollR = rect.left + rect.width;
-        if ((x >= scrollL) && (y <= scrollR)) {
+        var scrollT = rect.top + rect.height - scrollBarWH;
+        var scrollB = rect.top + rect.height;
+        if (((x >= scrollL) && (x <= scrollR)) || ((y >= scrollT) && (y <= scrollB))) {
           return false;
         }
       }
