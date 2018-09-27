@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809250000';
+  this.v = '201809271935';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1030,11 +1030,13 @@ DebugJS.prototype = {
       'border-radius': '3px !important',
       'background': 'rgba(0,0,0,0.65) !important'
     };
-    styles['.dbg-resbox'] = {
+    styles['.dbg-resbox.box'] = {
       'display': 'inline-block !important',
       'min-width': 'calc(100% - 18px) !important',
       'height': '1.5em',
       'margin-top': '4px !important',
+    };
+    styles['.dbg-resbox'] = {
       'border': '1px solid #2c6cb8 !important',
       'padding': '5px !important',
       'background': 'linear-gradient(rgba(8,8,16,0.6),rgba(0,0,68,0.6)) !important',
@@ -9089,7 +9091,7 @@ DebugJS.prototype = {
     if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
       iIdx++;
     }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeUnicode, DebugJS.decodeUnicode, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
   },
 
   cmdUri: function(arg, tbl, echo) {
@@ -9127,7 +9129,10 @@ DebugJS.prototype = {
         s += DebugJS.strPadding(v, ' ', 3, 'L') + '  ';
         s += DebugJS.toHex(v, true, true, 2) + '  ';
         s += DebugJS.toBin(v);
-        if (j == 0) s += '  ' + DebugJS.hlCtrlChr(ch, true);
+        if (j == 0) {
+          s += '  ' + DebugJS.getUnicodePoints(ch);
+          s += ' ' + DebugJS.hlCtrlChr(ch, true);
+        }
         s += '\n';
         cnt++;
       }
@@ -11002,7 +11007,9 @@ DebugJS.formatDec = function(v10) {
 };
 DebugJS.formatHex = function(hex, uc, pFix, d) {
   if (uc) hex = hex.toUpperCase();
-  if (d) hex = (DebugJS.repeatCh('0', d) + hex).slice(d * (-1));
+  if ((d) && (hex.length < d)) {
+    hex = (DebugJS.repeatCh('0', d) + hex).slice(d * (-1));
+  }
   if (pFix) hex = '0x' + hex;
   return hex;
 };
@@ -11211,14 +11218,14 @@ DebugJS.decodeUnicode = function(arg) {
   }
   return str;
 };
-DebugJS.encodeUnicode = function(str) {
+DebugJS.getUnicodePoints = function(str) {
   var code = '';
   for (var i = 0; i < str.length; i++) {
     var point = str.charCodeAt(i);
     if (i > 0) {
       code += ' ';
     }
-    code += 'U+' + DebugJS.toHex(point, true);
+    code += 'U+' + DebugJS.toHex(point, true, '', 4);
   }
   return code;
 };
@@ -15300,7 +15307,7 @@ DebugJS.createResBoxErr = function(m) {
   return DebugJS._createResBox(m, true);
 };
 DebugJS._createResBox = function(m, e) {
-  return '<textarea class="dbg-resbox' + (e ? ' err' : '') + '" readonly>' + m + '</textarea>';
+  return '<textarea class="dbg-resbox box' + (e ? ' err' : '') + '" readonly>' + m + '</textarea>';
 };
 DebugJS.adjustResBox = function(adj) {
   DebugJS.adjustResBox.a = adj | 0;
@@ -15308,7 +15315,7 @@ DebugJS.adjustResBox = function(adj) {
 };
 DebugJS.adjustResBox.a = 0;
 DebugJS._adjustResBox = function() {
-  var el = document.getElementsByClassName('dbg-resbox');
+  var el = document.getElementsByClassName('dbg-resbox box');
   for (var i = 0; i < el.length; i++) {
     var e = el[i];
     e.style.height = (e.scrollHeight + DebugJS.adjustResBox.a) + 'px';
