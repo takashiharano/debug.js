@@ -1,11 +1,11 @@
 /*!
  * debug.js
- * Copyright 2018 Takashi Harano
+ * Copyright 2015 Takashi Harano
  * Released under the MIT license
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809271952';
+  this.v = '201809282203';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -447,8 +447,9 @@ var DebugJS = DebugJS || function() {
   this.extPanel = null;
   this.extHeaderPanel = null;
   this.extBodyPanel = null;
+  this.extActivePanel = null;
   this.extPanels = [];
-  this.extActivePanel = -1;
+  this.extActivePanelIdx = -1;
   this.evtListener = {
     'batstart': [],
     'batstop': [],
@@ -1037,15 +1038,17 @@ DebugJS.prototype = {
       'margin-top': '4px !important',
     };
     styles['.dbg-resbox'] = {
-      'border': '1px solid #2c6cb8 !important',
       'padding': '5px !important',
-      'background': 'linear-gradient(rgba(8,8,16,0.6),rgba(0,0,68,0.6)) !important',
       'color': '#fff !important',
       'font-size': fontSize + ' !important',
       'font-family': 'Consolas !important',
       'overflow': 'auto',
       'cursor': 'text !important',
       'resize': 'none !important'
+    };
+    styles['.dbg-resbox.ok'] = {
+      'border': '1px solid #2c6cb8 !important',
+      'background': 'linear-gradient(rgba(8,8,16,0.6),rgba(0,0,68,0.6)) !important',
     };
     styles['.dbg-resbox.err'] = {
       'border': '1px solid #c00 !important',
@@ -2196,6 +2199,7 @@ DebugJS.prototype = {
           (el == ctx.htmlSrcBodyPanel) ||
           (el == ctx.filePreviewWrapper) ||
           (el == ctx.toolsPanel) ||
+          (el == ctx.extPanel) ||
           (el == ctx.extBodyPanel)) {
         var scrollBarWH = 17;
         var rect = el.getBoundingClientRect();
@@ -2533,7 +2537,7 @@ DebugJS.prototype = {
           return false;
         }
         var idx = subfnc;
-        if (idx == undefined) idx = ctx.extActivePanel;
+        if (idx == undefined) idx = ctx.extActivePanelIdx;
         if (idx < 0) idx = 0;
         if (idx >= ctx.extPanels.length) {
           DebugJS._log.e('No such panel: ' + idx + ' (0-' + (ctx.extPanels.length - 1) + ')');
@@ -2956,7 +2960,7 @@ DebugJS.prototype = {
     switch (e.button) {
       case 0:
         ctx.mouseClick0 = DebugJS.COLOR_INACTIVE;
-        ctx._onPointerUp(ctx);
+        ctx._onPointerUp(ctx, e);
         break;
       case 1:
         ctx.mouseClick1 = DebugJS.COLOR_INACTIVE;
@@ -2969,15 +2973,18 @@ DebugJS.prototype = {
     }
   },
   onTouchEnd: function(e) {
-    DebugJS.ctx._onPointerUp(DebugJS.ctx);
+    DebugJS.ctx._onPointerUp(DebugJS.ctx, e);
   },
-  _onPointerUp: function(ctx) {
+  _onPointerUp: function(ctx, e) {
+    var el = e.target;
     if (ctx.status & DebugJS.ST_MEASURING) {
       ctx.stopMeasure(ctx);
     }
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
       ctx.endMove(ctx);
-      ctx.focusCmdLine();
+      if ((el != ctx.extActivePanel) && (!DebugJS.isDescendant(el, ctx.extActivePanel))) {
+        ctx.focusCmdLine();
+      }
     }
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) {
       ctx.endResize(ctx);
@@ -6625,13 +6632,13 @@ DebugJS.prototype = {
     ctx.status |= DebugJS.ST_EXT_PANEL;
     ctx.featStack.push(DebugJS.ST_EXT_PANEL);
     ctx.addOverlayPanelFull(ctx.extPanel);
-    var activePanel = ctx.extActivePanel;
+    var activePanel = ctx.extActivePanelIdx;
     if (activePanel == -1) {
       var activePanel = ctx.nextValidExtPanelIdx(ctx, activePanel);
       ctx.switchExtPanel(activePanel);
     } else {
       var p = ctx.extPanels[activePanel];
-      if ((p) && (p.onActive)) p.onActive(p.panel);
+      if ((p) && (p.onActive)) ctx.onExtPanelActive(ctx, p);
     }
     ctx.updateExtBtns(ctx);
     ctx.updateExtBtn(ctx);
@@ -6645,14 +6652,14 @@ DebugJS.prototype = {
     ctx.setStyle(btn, 'color', DebugJS.SBPNL_COLOR_INACTIVE);
     btn.onclick = new Function('DebugJS.ctx.switchExtPanel(' + idx + ');');
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', DebugJS.SBPNL_COLOR_ACTIVE);');
-    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', (DebugJS.ctx.extActivePanel == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);');
+    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', (DebugJS.ctx.extActivePanelIdx == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);');
     return btn;
   },
 
   closeExtPanel: function(ctx) {
     if ((ctx.extPanel != null) && (ctx.extPanel.parentNode)) {
-      var p = ctx.extPanels[ctx.extActivePanel];
-      if ((p) && (p.onInActive)) p.onInActive(p.panel);
+      var p = ctx.extPanels[ctx.extActivePanelIdx];
+      if ((p) && (p.onInActive)) ctx.onExtPanelInActive(ctx, p);
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.ST_EXT_PANEL;
@@ -6663,13 +6670,13 @@ DebugJS.prototype = {
   switchExtPanel: function(idx) {
     var ctx = DebugJS.ctx;
     var pnls = ctx.extPanels;
-    if (ctx.extActivePanel == idx) return;
+    if (ctx.extActivePanelIdx == idx) return;
 
-    if (ctx.extActivePanel != -1) {
-      var p2 = pnls[ctx.extActivePanel];
+    if (ctx.extActivePanelIdx != -1) {
+      var p2 = pnls[ctx.extActivePanelIdx];
       if (p2) {
         if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p2.onInActive)) {
-          p2.onInActive(p2.panel);
+          ctx.onExtPanelInActive(ctx, p2);
         }
         ctx.extBodyPanel.removeChild(p2.base);
       }
@@ -6679,12 +6686,22 @@ DebugJS.prototype = {
     ctx.extBodyPanel.appendChild(p1.base);
     if (p1) {
       if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p1.onActive)) {
-        p1.onActive(p1.panel);
+        ctx.onExtPanelActive(ctx, p1);
       }
     }
 
-    ctx.extActivePanel = idx;
+    ctx.extActivePanelIdx = idx;
     ctx.updateExtBtns(ctx);
+  },
+
+  onExtPanelActive: function(ctx, p) {
+    ctx.extActivePanel = p.panel;
+    p.onActive(p.panel);
+  },
+
+  onExtPanelInActive: function(ctx, p) {
+    ctx.extActivePanel = null;
+    p.onInActive(p.panel);
   },
 
   prevValidExtPanelIdx: function(ctx, idx) {
@@ -6717,7 +6734,7 @@ DebugJS.prototype = {
     for (var i = 0; i < pnls.length; i++) {
       var p = pnls[i];
       if (p != null) {
-        ctx.setStyle(p.btn, 'color', (ctx.extActivePanel == i) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
+        ctx.setStyle(p.btn, 'color', (ctx.extActivePanelIdx == i) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
       }
     }
   },
@@ -15309,7 +15326,7 @@ DebugJS.createResBoxErr = function(m) {
   return DebugJS._createResBox(m, true);
 };
 DebugJS._createResBox = function(m, e) {
-  return '<textarea class="dbg-resbox box' + (e ? ' err' : '') + '" readonly>' + m + '</textarea>';
+  return '<textarea class="dbg-resbox box ' + (e ? 'err' : 'ok') + '" readonly>' + m + '</textarea>';
 };
 DebugJS.adjustResBox = function(adj) {
   DebugJS.adjustResBox.a = adj | 0;
@@ -15549,7 +15566,7 @@ DebugJS.x.removePanel = function(idx) {
   var nIdx = -1;
   var p = ctx.extPanels[idx];
   ctx.extPanels[idx] = null;
-  if (ctx.extActivePanel == idx) {
+  if (ctx.extActivePanelIdx == idx) {
     nIdx = ctx.prevValidExtPanelIdx(ctx, idx);
     if (nIdx == -1) {
       nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
@@ -15557,7 +15574,7 @@ DebugJS.x.removePanel = function(idx) {
   }
   if (ctx.status & DebugJS.ST_INITIALIZED) {
     if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p.onInActive)) {
-      p.onInActive(p.panel);
+      ctx.onExtPanelInActive(ctx, p);
     }
     ctx.redrawExtPanelBtn(ctx);
     if (ctx.existsValidExtPanel(ctx)) {
@@ -15565,7 +15582,7 @@ DebugJS.x.removePanel = function(idx) {
         ctx.switchExtPanel(nIdx);
       }
     } else {
-      ctx.extActivePanel = -1;
+      ctx.extActivePanelIdx = -1;
       ctx.extPanels = [];
       ctx.closeExtPanel(ctx);
       if (ctx.extBtn) ctx.extBtn.style.display = 'none';
