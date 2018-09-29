@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809291544';
+  this.v = '201809292230';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -450,7 +450,7 @@ var DebugJS = DebugJS || function() {
   this.extBodyPanel = null;
   this.extActivePanel = null;
   this.extPanels = [];
-  this.extActivePanelIdx = -1;
+  this.extActPnlIdx = -1;
   this.evtListener = {
     'batstart': [],
     'batstop': [],
@@ -2538,7 +2538,7 @@ DebugJS.prototype = {
           return false;
         }
         var idx = subfnc;
-        if (idx == undefined) idx = ctx.extActivePanelIdx;
+        if (idx == undefined) idx = ctx.extActPnlIdx;
         if (idx < 0) idx = 0;
         if (idx >= ctx.extPanels.length) {
           DebugJS._log.e('No such panel: ' + idx + ' (0-' + (ctx.extPanels.length - 1) + ')');
@@ -6633,7 +6633,7 @@ DebugJS.prototype = {
     ctx.status |= DebugJS.ST_EXT_PANEL;
     ctx.featStack.push(DebugJS.ST_EXT_PANEL);
     ctx.addOverlayPanelFull(ctx.extPanel);
-    var activePanel = ctx.extActivePanelIdx;
+    var activePanel = ctx.extActPnlIdx;
     if (activePanel == -1) {
       var activePanel = ctx.nextValidExtPanelIdx(ctx, activePanel);
       ctx.switchExtPanel(activePanel);
@@ -6653,13 +6653,13 @@ DebugJS.prototype = {
     ctx.setStyle(btn, 'color', DebugJS.SBPNL_COLOR_INACTIVE);
     btn.onclick = new Function('DebugJS.ctx.switchExtPanel(' + idx + ');');
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', DebugJS.SBPNL_COLOR_ACTIVE);');
-    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', (DebugJS.ctx.extActivePanelIdx == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);');
+    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', (DebugJS.ctx.extActPnlIdx == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);');
     return btn;
   },
 
   closeExtPanel: function(ctx) {
     if ((ctx.extPanel != null) && (ctx.extPanel.parentNode)) {
-      var p = ctx.extPanels[ctx.extActivePanelIdx];
+      var p = ctx.extPanels[ctx.extActPnlIdx];
       if ((p) && (p.onInActive)) ctx.onExtPanelInActive(ctx, p);
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
@@ -6671,10 +6671,10 @@ DebugJS.prototype = {
   switchExtPanel: function(idx) {
     var ctx = DebugJS.ctx;
     var pnls = ctx.extPanels;
-    if (ctx.extActivePanelIdx == idx) return;
+    if (ctx.extActPnlIdx == idx) return;
 
-    if (ctx.extActivePanelIdx != -1) {
-      var p2 = pnls[ctx.extActivePanelIdx];
+    if (ctx.extActPnlIdx != -1) {
+      var p2 = pnls[ctx.extActPnlIdx];
       if (p2) {
         if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p2.onInActive)) {
           ctx.onExtPanelInActive(ctx, p2);
@@ -6691,7 +6691,7 @@ DebugJS.prototype = {
       }
     }
 
-    ctx.extActivePanelIdx = idx;
+    ctx.extActPnlIdx = idx;
     ctx.updateExtBtns(ctx);
   },
 
@@ -6735,7 +6735,7 @@ DebugJS.prototype = {
     for (var i = 0; i < pnls.length; i++) {
       var p = pnls[i];
       if (p != null) {
-        ctx.setStyle(p.btn, 'color', (ctx.extActivePanelIdx == i) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
+        ctx.setStyle(p.btn, 'color', (ctx.extActPnlIdx == i) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
       }
     }
   },
@@ -8626,21 +8626,18 @@ DebugJS.prototype = {
         DebugJS.printUsage(tbl.usage);
         return;
     }
-    return DebugJS.ctx._cmdROT(a, tbl, echo, x, fnE, fnD);
-  },
-  _cmdROT: function(arg, tbl, echo, x, fnE, fnD) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
+    if ((DebugJS.hasOpt(a, 'd')) || (DebugJS.hasOpt(a, 'e'))) {
       iIdx++;
     }
-    var n = DebugJS.getOptVal(arg, 'n');
+    var n = DebugJS.getOptVal(a, 'n');
     if (n == null) {
       n = x | 0;
     } else {
       n = n.replace(/\(|\)/g, '') | 0;
       iIdx += 2;
     }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, fnE, fnD, iIdx, n);
+    return DebugJS.ctx.execEncAndDec(a, tbl, echo, fnE, fnD, iIdx, n);
   },
 
   cmdScrollTo: function(arg, tbl) {
@@ -15735,7 +15732,7 @@ DebugJS.x.removePanel = function(idx) {
   var nIdx = -1;
   var p = ctx.extPanels[idx];
   ctx.extPanels[idx] = null;
-  if (ctx.extActivePanelIdx == idx) {
+  if (ctx.extActPnlIdx == idx) {
     nIdx = ctx.prevValidExtPanelIdx(ctx, idx);
     if (nIdx == -1) {
       nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
@@ -15751,7 +15748,7 @@ DebugJS.x.removePanel = function(idx) {
         ctx.switchExtPanel(nIdx);
       }
     } else {
-      ctx.extActivePanelIdx = -1;
+      ctx.extActPnlIdx = -1;
       ctx.extPanels = [];
       ctx.closeExtPanel(ctx);
       if (ctx.extBtn) ctx.extBtn.style.display = 'none';
