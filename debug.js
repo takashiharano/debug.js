@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809291423';
+  this.v = '201809291544';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -350,7 +350,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
-    {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...'},
+    {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] object'},
@@ -8178,6 +8178,7 @@ DebugJS.prototype = {
   },
 
   cmdNextTime: function(arg, tbl) {
+    var t, ms;
     var v = arg;
     var p = true;
     var idx = DebugJS.indexOfOptVal(arg, '-q');
@@ -8186,12 +8187,18 @@ DebugJS.prototype = {
       v = arg.substr(idx);
     }
     v = DebugJS.delLeadingAndTrailingSP(v);
-    if (!(v.match(/^T\d{4,6}/))) {
+    if ((v.match(/^T\d{4,6}/))) {
+      t = DebugJS.calcNextTime(v);
+    } else if (ms = DebugJS.parseToMillis(v)) {
+      var dt = DebugJS.getDateTime((new Date()).getTime() + ms);
+      t = {time: dt.time, t: 'T' + dt.hh + dt.mi + dt.ss};
+    } else if (DebugJS.isNum(v)) {
+      var dt = DebugJS.getDateTime((new Date()).getTime() + (v | 0));
+      t = {time: dt.time, t: 'T' + dt.hh + dt.mi + dt.ss};
+    } else {
       DebugJS.printUsage(tbl.usage);
       return '';
     }
-    var t = DebugJS.calcNextTime(v);
-    var idx = DebugJS.indexOfOptVal(arg, '-q');
     if (p) {
       DebugJS.log.res(DebugJS.convDateTimeStr(DebugJS.getDateTime(t.time)));
     }
@@ -9875,7 +9882,6 @@ DebugJS.isNumeric = function(ch) {
   }
   return false;
 };
-
 DebugJS.isAlphabetic = function(ch) {
   var c = ch.charCodeAt();
   if (((c >= 0x41) && (c <= 0x5A)) ||
@@ -9898,7 +9904,6 @@ DebugJS.isLowerCase = function(ch) {
   }
   return false;
 };
-
 DebugJS.isPunctuation = function(ch) {
   var c = ch.charCodeAt();
   if (((c >= 0x20) && (c <= 0x2F)) ||
@@ -9909,7 +9914,6 @@ DebugJS.isPunctuation = function(ch) {
   }
   return false;
 };
-
 DebugJS.isNumAlpha = function(ch) {
   var c = ch.charCodeAt();
   if (DebugJS.isNumeric(ch) || DebugJS.isAlphabetic(ch)) {
@@ -9917,13 +9921,16 @@ DebugJS.isNumAlpha = function(ch) {
   }
   return false;
 };
-
 DebugJS.isTypographic = function(ch) {
   var c = ch.charCodeAt();
   if (DebugJS.isNumAlpha(ch) || DebugJS.isPunctuation(ch)) {
     return true;
   }
   return false;
+};
+
+DebugJS.isNum = function(s) {
+  return (s.match(/^\d+$/) ? true : false);
 };
 
 DebugJS.getContentType = function(mime, file, dturlData) {
@@ -10313,6 +10320,35 @@ DebugJS.calcNextTime = function(times) {
   ret.t = ts[0];
   ret.time += 86400000;
   return ret;
+};
+DebugJS.parseToMillis = function(v) {
+  var d = 0, h = 0, m = 0, s = 0;
+  var a = v.split('d');
+  if (a.length > 1) {
+    d = a[0];
+    v = a[1];
+  } else {
+    v = a[0];
+  }
+  var a = v.split('h');
+  if (a.length > 1) {
+    h = a[0];
+    v = a[1];
+  } else {
+    v = a[0];
+  }
+  var a = v.split('m');
+  if (a.length > 1) {
+    m = a[0];
+    v = a[1];
+  } else {
+    v = a[0];
+  }
+  var a = v.split('s');
+  if (a.length > 1) {
+    s = a[0];
+  }
+  return (d * 86400000 + h * 3600000 + m * 60000 + s * 1000) | 0;
 };
 
 DebugJS.nan2zero = function(v) {

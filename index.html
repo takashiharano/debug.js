@@ -3779,6 +3779,14 @@ $ nexttime T0000|T0930|T1345
 -&gt; 2018-06-20 WED 00:00:00.000
    Returns "T0000"
 
+$ nexttime 1d2h3m4s
+-&gt; 2018-06-21 WED 02:03:04.000
+   Returns "T020304"
+
+$ nexttime 60000
+-&gt; 2018-06-20 WED 00:01:00.000
+   Returns "T000100"
+
 $ nexttime -q T0000|T0930|T1345
 -&gt; Quiet display option
 </pre>
