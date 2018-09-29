@@ -4114,6 +4114,35 @@ $ rgb 255 255 255
   </tr>
 
   <tr>
+    <td class="name">rot</td>
+    <td>5|13|47<br>string</td>
+    <td>
+      Encrypt/Decrypt string by ROT5, ROT13, ROT47.<br><br>
+<pre class="eg">
+operation: -e encode<span class="annotation">(default option)</span>
+           -d decode
+
+-i Iput string
+-n Number of shift
+
+$ rot 13 -e -i "abc"
+-&gt; nop
+
+$ rot 13 -e -n 1 -i "abc"
+-&gt; bcd
+
+$ rot 13 -e -n (-1) -i "abc"
+-&gt; zab
+
+$ rot 13 -d -i "nop"
+$ rot 13 -d -n 1 -i "bcd"
+$ rot 13 -d -n (-1) -i "zab"
+-&gt; abc
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">scrollto</td>
     <td>
       arg1: target<br>

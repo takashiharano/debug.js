@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809282203';
+  this.v = '201809291423';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -363,6 +363,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', usage: 'rot 5|13|47 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
     {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', usage: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
     {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors get|set text|value val'},
     {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
@@ -8597,6 +8598,44 @@ DebugJS.prototype = {
     }
   },
 
+  cmdROT: function(arg, tbl, echo) {
+    var x = DebugJS.splitArgs(arg)[0];
+    var a = DebugJS.getArgsFrom(arg, 1);
+    var fnE, fnD;
+    switch (x) {
+      case '5':
+        fnE = DebugJS.encodeROT5;
+        fnD = DebugJS.decodeROT5;
+        break;
+      case '13':
+        fnE = DebugJS.encodeROT13;
+        fnD = DebugJS.decodeROT13;
+        break;
+      case '47':
+        fnE = DebugJS.encodeROT47;
+        fnD = DebugJS.decodeROT47;
+        break;
+      default:
+        DebugJS.printUsage(tbl.usage);
+        return;
+    }
+    return DebugJS.ctx._cmdROT(a, tbl, echo, x, fnE, fnD);
+  },
+  _cmdROT: function(arg, tbl, echo, x, fnE, fnD) {
+    var iIdx = 0;
+    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
+      iIdx++;
+    }
+    var n = DebugJS.getOptVal(arg, 'n');
+    if (n == null) {
+      n = x | 0;
+    } else {
+      n = n.replace(/\(|\)/g, '') | 0;
+      iIdx += 2;
+    }
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, fnE, fnD, iIdx, n);
+  },
+
   cmdScrollTo: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
@@ -9841,6 +9880,20 @@ DebugJS.isAlphabetic = function(ch) {
   var c = ch.charCodeAt();
   if (((c >= 0x41) && (c <= 0x5A)) ||
       ((c >= 0x61) && (c <= 0x7A))) {
+    return true;
+  }
+  return false;
+};
+DebugJS.isUpperCase = function(ch) {
+  var c = ch.charCodeAt();
+  if ((c >= 0x41) && (c <= 0x5A)) {
+    return true;
+  }
+  return false;
+};
+DebugJS.isLowerCase = function(ch) {
+  var c = ch.charCodeAt();
+  if ((c >= 0x61) && (c <= 0x7A)) {
     return true;
   }
   return false;
@@ -11198,6 +11251,86 @@ DebugJS.BSB64.decode = function(s, n, toR) {
     a.push(fn(b[i], n));
   }
   return a;
+};
+
+DebugJS.encodeROT5 = function(s, n) {
+  if ((n < -9) || (n > 9)) n = n % 10;
+  var r = '';
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    var cc = c.charCodeAt();
+    if (DebugJS.isNumeric(c)) {
+      cc += n;
+      if (cc > 0x39) {
+        cc = 0x2F + (cc - 0x39);
+      } else if (cc < 0x30) {
+        cc = 0x3A - (0x30 - cc);
+      }
+      r += String.fromCharCode(cc);
+    } else {
+      r += c;
+    }
+  }
+  return r;
+};
+DebugJS.decodeROT5 = function(s, n) {
+  return DebugJS.encodeROT5(s, ((n | 0) * (-1)));
+};
+
+DebugJS.encodeROT13 = function(s, n) {
+  if ((n < -25) || (n > 25)) n = n % 26;
+  var r = '';
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    var cc = c.charCodeAt();
+    if (DebugJS.isAlphabetic(c)) {
+      cc += n;
+      if (DebugJS.isUpperCase(c)) {
+        if (cc > 0x5A) {
+          cc = 0x40 + (cc - 0x5A);
+        } else if (cc < 0x41) {
+          cc = 0x5B - (0x41 - cc);
+        }
+      } else if (DebugJS.isLowerCase(c)) {
+        if (cc > 0x7A) {
+          cc = 0x60 + (cc - 0x7A);
+        } else if (cc < 0x61) {
+          cc = 0x7B - (0x61 - cc);
+        }
+      }
+      r += String.fromCharCode(cc);
+    } else {
+      r += c;
+    }
+  }
+  return r;
+};
+DebugJS.decodeROT13 = function(s, n) {
+  return DebugJS.encodeROT13(s, ((n | 0) * (-1)));
+};
+
+DebugJS.encodeROT47 = function(s, n) {
+  if ((n < -93) || (n > 93)) n = n % 94;
+  var r = '';
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    var cc = c.charCodeAt();
+    if ((cc >= 0x21) && (cc <= 0x7E)) {
+      if (n < 0) {
+        cc += n;
+        if (cc < 0x21) cc = 0x7F - (0x21 - cc);
+      } else {
+        cc = ((cc - 0x21 + n) % 94) + 0x21;
+      }
+      r += String.fromCharCode(cc);
+    } else {
+      r += c;
+    }
+  }
+  return r;
+};
+DebugJS.decodeROT47 = function(s, n) {
+  return DebugJS.encodeROT47(s, ((n | 0) * (-1)));
 };
 
 DebugJS.buildDataUrl = function(scheme, data) {
