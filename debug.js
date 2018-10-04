@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201809292230';
+  this.v = '201810042315';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2098,9 +2098,7 @@ DebugJS.prototype = {
   },
 
   applyStyles: function(ctx, styles) {
-    if (ctx.styleEl != null) {
-      document.head.removeChild(ctx.styleEl);
-    }
+    if (ctx.styleEl != null) document.head.removeChild(ctx.styleEl);
     ctx.styleEl = document.createElement('style');
     document.head.appendChild(ctx.styleEl);
     ctx.styleEl.appendChild(document.createTextNode(''));
@@ -3929,10 +3927,7 @@ DebugJS.prototype = {
 
   inspectElement: function(x, y) {
     var ctx = DebugJS.ctx;
-    if (!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT)) {
-      return;
-    }
-    if (ctx.isOnDbgWin(x, y)) return;
+    if ((!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT)) || (ctx.isOnDbgWin(x, y))) return;
     var el = document.elementFromPoint(x, y);
     if (el != ctx.targetElm) {
       ctx.showElementInfo(el);
@@ -4239,9 +4234,7 @@ DebugJS.prototype = {
   },
 
   exportTargetElm: function() {
-    if (DebugJS.ctx.targetElm) {
-      DebugJS.ctx.captureElm(DebugJS.ctx.targetElm);
-    }
+    if (DebugJS.ctx.targetElm) DebugJS.ctx.captureElm(DebugJS.ctx.targetElm);
   },
 
   captureElm: function(elm) {
@@ -4303,9 +4296,7 @@ DebugJS.prototype = {
   openHtmlSrc: function(ctx) {
     ctx.status |= DebugJS.ST_HTML_SRC;
     ctx.featStack.push(DebugJS.ST_HTML_SRC);
-    if (ctx.htmlSrcPanel == null) {
-      ctx.createHtmlSrcPanel(ctx);
-    }
+    if (ctx.htmlSrcPanel == null) ctx.createHtmlSrcPanel(ctx);
     ctx.updateHtmlSrcBtn(ctx);
     ctx.showHtmlSrc();
   },
@@ -4319,9 +4310,7 @@ DebugJS.prototype = {
       ctx.htmlSrcPanel.className = ctx.id + '-overlay-panel';
       ctx.addOverlayPanel(ctx, ctx.htmlSrcPanel);
     }
-    if (DebugJS.HTML_SRC_EXPAND_H) {
-      ctx.expandHightIfNeeded(ctx);
-    }
+    if (DebugJS.HTML_SRC_EXPAND_H) ctx.expandHightIfNeeded(ctx);
     ctx.htmlSrcHeaderPanel = document.createElement('div');
     ctx.htmlSrcPanel.appendChild(ctx.htmlSrcHeaderPanel);
 
@@ -4371,9 +4360,7 @@ DebugJS.prototype = {
       } else {
         ctx.removeOverlayPanel(ctx, ctx.htmlSrcPanel);
       }
-      if (DebugJS.HTML_SRC_EXPAND_H) {
-        ctx.resetExpandedHeightIfNeeded(ctx);
-      }
+      if (DebugJS.HTML_SRC_EXPAND_H) ctx.resetExpandedHeightIfNeeded(ctx);
       ctx.htmlSrcPanel = null;
     }
     ctx.status &= ~DebugJS.ST_HTML_SRC;
@@ -4392,9 +4379,7 @@ DebugJS.prototype = {
   onchangeHtmlSrcUpdateInterval: function() {
     var ctx = DebugJS.ctx;
     var interval = ctx.htmlSrcUpdateInput.value;
-    if (interval == '') {
-      interval = 0;
-    }
+    if (interval == '') interval = 0;
     if (isFinite(interval)) {
       ctx.htmlSrcUpdateInterval = interval;
       clearTimeout(ctx.htmlSrcUpdateTimerId);
@@ -4423,9 +4408,7 @@ DebugJS.prototype = {
   openTools: function(ctx) {
     ctx.status |= DebugJS.ST_TOOLS;
     ctx.featStack.push(DebugJS.ST_TOOLS);
-    if (ctx.toolsPanel == null) {
-      ctx.createToolsPanel(ctx);
-    }
+    if (ctx.toolsPanel == null) ctx.createToolsPanel(ctx);
     ctx.addOverlayPanelFull(ctx.toolsPanel);
     ctx.resizeImgPreview();
     ctx.switchToolsFunction(ctx.toolsActiveFnc);
@@ -4739,9 +4722,7 @@ DebugJS.prototype = {
     var btn = ctx.createBtn(ctx, label, base);
     btn.style.marginRight = '0.5em';
     ctx.setStyle(btn, 'color', (disabled ? '#888' : DebugJS.TOOL_TIMER_BTN_COLOR));
-    if (fontSize) {
-      ctx.setStyle(btn, 'font-size', fontSize + 'px');
-    }
+    if (fontSize) ctx.setStyle(btn, 'font-size', fontSize + 'px');
     btn.onclick = handler;
     return btn;
   },
@@ -4886,9 +4867,7 @@ DebugJS.prototype = {
     var marginT = 20 * ctx.opt.zoom;
     var marginB = 10 * ctx.opt.zoom;
     var dot = '.';
-    if (tm.sss > 500) {
-      dot = '&nbsp;';
-    }
+    if (tm.sss > 500) dot = '&nbsp;';
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + ' !important;font-size:' + dtFontSize + 'px !important">' + DebugJS.WDAYS[tm.wday] + '</span>';
     var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (ssFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ' !important;font-size:' + ssFontSize + 'px !important">' + tm.ss + dot + '</span>';
     if (ctx.timerClockSSS) {
@@ -6602,7 +6581,7 @@ DebugJS.prototype = {
       if (typeof ret == 'string') {
         res = DebugJS.encString(ret);
       }
-      if (echo) {DebugJS._log.res(res);}
+      if (echo) DebugJS._log.res(res);
       return ret;
     } catch (e) {
       DebugJS._log.e(e);
@@ -7046,9 +7025,7 @@ DebugJS.prototype = {
 
   cmdBase64: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
-      iIdx++;
-    }
+    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeBase64, DebugJS.decodeBase64, iIdx);
   },
 
@@ -7189,9 +7166,7 @@ DebugJS.prototype = {
 
   cmdBSB64: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
-      iIdx++;
-    }
+    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
     var toR = false;
     var n = DebugJS.getOptVal(arg, 'n');
     if (n == null) {
@@ -9150,17 +9125,13 @@ DebugJS.prototype = {
 
   cmdUnicode: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
-      iIdx++;
-    }
+    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
   },
 
   cmdUri: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) {
-      iIdx++;
-    }
+    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeUri, DebugJS.decodeUri, iIdx);
   },
 
@@ -10635,8 +10606,12 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
         str = (toJson ? obj : DebugJS.escTags(obj));
       }
       str = str.replace(/\\/g, '\\\\');
-      str = str.replace(/\n/g, '\\n');
-      str = str.replace(/\r/g, '\\r');
+      if (toJson) {
+        str = str.replace(/\n/g, '\\n');
+        str = str.replace(/\r/g, '\\r');
+      } else {
+        str = DebugJS.hlCtrlChr(str);
+      }
       arg.dump += (toJson ? '"' + str.replace(/\"/g, '\\"') + '"' : DebugJS.encString(str));
       arg.cnt++;
     } else {
@@ -12176,6 +12151,7 @@ DebugJS.hlCtrlChr = function(s, sp) {
   var st = '<span class="' + DebugJS.ctx.id + '-txt-hl">';
   var et = '</span>';
   if (sp) s = s.replace(/ /g, st + ' ' + et);
+  s = s.replace(/\0/g, st + '\\0' + et);
   s = s.replace(/\t/g, st + '\\t' + et);
   s = s.replace(/\r/g, st + '\\r' + et);
   s = s.replace(/\n/g, st + '\\n' + et);
@@ -13753,6 +13729,9 @@ DebugJS.bat.getLabels = function(p) {
     }
   }
   return a;
+};
+DebugJS.bat.isAvailable = function() {
+  return DebugJS.bat.cmds.length > 0;
 };
 DebugJS.isBat = function(s) {
   var BAT_HEAD = '#!BAT!';

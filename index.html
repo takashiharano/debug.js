@@ -1689,7 +1689,7 @@ log.t('foo')
     <td class="name">log.res<br><span class="alias">( dbg.log.res )</span></td>
     <td>message</td>
     <td>
-      Output result log<br>
+      Output result/response log<br>
       <pre class="eg"><span style="color:#0cf;">&gt;</span> message</pre>
 <pre class="eg">
 log.res('<input type="text" id="log-res-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res(getVal('log-res-txt'));">DEMO</button>
@@ -1701,7 +1701,7 @@ log.res('<input type="text" id="log-res-txt" class="demo-text" style="width:100p
     <td class="name">log.res.err<br><span class="alias">( dbg.log.res.err )</span></td>
     <td>message</td>
     <td>
-      Output error result log<br>
+      Output error result/response log<br>
       <pre class="eg"><span style="color:#f45;">&gt;</span> message</pre>
 <pre class="eg">
 log.res.err('<input type="text" id="log-res-err-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res.err(getVal('log-res-err-txt'));">DEMO</button>
@@ -1892,16 +1892,9 @@ import cgi
 def save_log():
   form = cgi.FieldStorage()
   data = form.getvalue('data', '')
-
   f = open('log.txt', 'w')
   f.write(data)
   f.close()
-
-def send_result(status):
-  result = '{"status":"' + status + '"}'
-  print('Content-Type: application/json')
-  print()
-  print(result)
 
 def main():
   try:
@@ -1910,7 +1903,10 @@ def main():
   except Exception as e:
     status = 'ERROR'
 
-  send_result(status)
+  result = '{"status":"' + status + '"}'
+  print('Content-Type: application/json')
+  print()
+  print(result)
 
 main()
 </pre></pre>
@@ -2309,6 +2305,17 @@ dbg.bat.setCond('<input type="text" id="setcond-text" class="demo-text" style="w
 <pre class="eg">
 dbg.bat.getLabels() <button class="demo-button2" onclick="log(dbg.bat.getLabels());">DEMO</button>
 dbg.bat.getLabels('<input type="text" id="getlbls-txt" class="demo-text" style="width:100px;" value='^test_'>') <button class="demo-button2" onclick="log(dbg.bat.getLabels(getVal('getlbls-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.bat.isAvailable</td>
+    <td></td>
+    <td>
+      Returns if BAT script is available.
+<pre class="eg">
+dbg.bat.isAvailable() <button class="demo-button2" onclick="log(dbg.bat.isAvailable());">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -3227,7 +3234,7 @@ $ bin (1 + 2) 8
     <td class="name">bsb64</td>
     <td></td>
     <td>
-     Encodes / Decodes BSB64(Bit Shifted Base64) reversible encryption string.<br><br>
+     Encodes / Decodes <a href="https://bsb64.com/">BSB64</a>(Bit Shifted Base64) reversible encryption string.<br><br>
 <pre class="eg">
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
@@ -3249,9 +3256,6 @@ Simple usage:
 $ bsb64 abc
 $ bsb64 -e abc
 $ bsb64 -d wsTG
-
-BSB64 Algorithm:
-String &gt; bit rotation/bit inversion &gt; Base64
 </pre>
     </td>
   </tr>
