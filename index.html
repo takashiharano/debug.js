@@ -1234,7 +1234,7 @@ If you want to change the debugger settings, explicitly call for initialization 
   <tr>
     <td class="name">logColorW</td>
     <td>Warning log color</td>
-    <td>'#fe0'</td>
+    <td>'#eee000'</td>
   </tr>
 
   <tr>
@@ -4599,7 +4599,9 @@ goto label
 command
 
 $VAL = JavaScript Code;
-IF ($VAL == 123) (
+IF ($VAL == 1) (
+  command
+) ELSE IF ($VAL == 2) (
   command
 ) ELSE (
   command
