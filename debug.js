@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810061009';
+  this.v = '201810061915';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -627,7 +627,7 @@ DebugJS.BAT_TKN_CONTINUE = 'CONTINUE';
 DebugJS.BAT_TKN_BLOCK_START = '(';
 DebugJS.BAT_TKN_BLOCK_END = ')';
 DebugJS.BAT_TKN_LABEL = ':';
-DebugJS.RE_ELIF = '^\\' + DebugJS.BAT_TKN_BLOCK_END + '\\s?' + DebugJS.BAT_TKN_ELIF + '\\s?\\' + DebugJS.BAT_TKN_BLOCK_START + '?.+';
+DebugJS.RE_ELIF = new RegExp('^\\' + DebugJS.BAT_TKN_BLOCK_END + '\\s?' + DebugJS.BAT_TKN_ELIF + '\\s?\\' + DebugJS.BAT_TKN_BLOCK_START + '?.+');
 DebugJS.RE_ELSE = DebugJS.BAT_TKN_BLOCK_END + DebugJS.BAT_TKN_ELSE + DebugJS.BAT_TKN_BLOCK_START;
 DebugJS.CHR_LED = '&#x25CF;';
 DebugJS.CHR_DELTA = '&#x22BF;';
@@ -13215,7 +13215,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
       bat.text();
       return 1;
   }
-  if (DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(cmd)).match(new RegExp(DebugJS.RE_ELIF))) {
+  if (DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(cmd)).match(DebugJS.RE_ELIF)) {
     b = ctrl.block.pop();
     if (b != undefined) {
       ctrl.pc = bat.findEndOfBlock(DebugJS.BAT_TKN_BLOCK_END, ctrl.pc).l + 1;
@@ -13313,7 +13313,7 @@ DebugJS.bat.ppElIf = function(pc) {
     }
     var cmd = bat.cmds[pc - 1];
     var cnd = DebugJS.getArgsFrom(cmd, 3);
-    var r = DebugJS.bat.ppIf(DebugJS.BAT_TKN_IF, cnd, cmd);
+    var r = bat.ppIf(DebugJS.BAT_TKN_IF, cnd, cmd);
     if (r.err) break;
     if (r.cond) {
       ctrl.block.push({t: DebugJS.BAT_TKN_IF});
@@ -13328,10 +13328,9 @@ DebugJS.bat.findEndOfBlock = function(type, pc) {
   var l = pc;
   var ignoreBlkLv = 0;
   var data = {l: 0, endTkn: DebugJS.BAT_TKN_BLOCK_END};
-  var re = new RegExp(DebugJS.RE_ELIF);
   while (l <= ctrl.endPc) {
     var cmd = bat.cmds[l];
-    if (DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(cmd)).match(re)) {
+    if (DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(cmd)).match(DebugJS.RE_ELIF)) {
       if (ignoreBlkLv == 0) {
         if (type == DebugJS.BAT_TKN_ELIF) {
           data.endTkn = DebugJS.BAT_TKN_ELIF;
