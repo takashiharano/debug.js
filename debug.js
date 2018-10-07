@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810061915';
+  this.v = '201810071700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,6 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64(Bit Shifted Base64) reversible encryption string', usage: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
+    {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -627,6 +628,8 @@ DebugJS.BAT_TKN_CONTINUE = 'CONTINUE';
 DebugJS.BAT_TKN_BLOCK_START = '(';
 DebugJS.BAT_TKN_BLOCK_END = ')';
 DebugJS.BAT_TKN_LABEL = ':';
+DebugJS.BAT_TKN_FNC = 'FUNCTION';
+DebugJS.BAT_TKN_RET = 'return';
 DebugJS.RE_ELIF = new RegExp('^\\' + DebugJS.BAT_TKN_BLOCK_END + '\\s?' + DebugJS.BAT_TKN_ELIF + '\\s?\\' + DebugJS.BAT_TKN_BLOCK_START + '?.+');
 DebugJS.RE_ELSE = DebugJS.BAT_TKN_BLOCK_END + DebugJS.BAT_TKN_ELSE + DebugJS.BAT_TKN_BLOCK_START;
 DebugJS.CHR_LED = '&#x25CF;';
@@ -7186,6 +7189,12 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0, toR);
   },
 
+  cmdCall: function(arg, tbl) {
+    if (DebugJS.bat.isCmdExecutable()) {
+      DebugJS.ctx._cmdJump(DebugJS.ctx, arg, true, 'func');
+    }
+  },
+
   cmdClose: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var fn = DebugJS.splitArgs(arg)[0];
@@ -7594,7 +7603,7 @@ DebugJS.prototype = {
     var ctrl = DebugJS.bat.ctrl;
     if (DebugJS.bat.isCmdExecutable()) {
       var lbl = DebugJS.splitArgs(arg)[0];
-      DebugJS.ctx._cmdJump(DebugJS.ctx, arg, false);
+      DebugJS.ctx._cmdJump(DebugJS.ctx, arg, false, 'label');
     }
   },
 
@@ -7872,10 +7881,10 @@ DebugJS.prototype = {
 
   cmdJump: function(arg, tbl) {
     if (DebugJS.bat.isCmdExecutable()) {
-      DebugJS.ctx._cmdJump(DebugJS.ctx, arg, true);
+      DebugJS.ctx._cmdJump(DebugJS.ctx, arg, true, 'label');
     }
   },
-  _cmdJump: function(ctx, arg, lnk) {
+  _cmdJump: function(ctx, arg, lnk, type) {
     var ctrl = DebugJS.bat.ctrl;
     var fnArg;
     var a = DebugJS.splitCmdLineInTwo(arg);
@@ -7888,9 +7897,10 @@ DebugJS.prototype = {
         return;
       }
     }
-    var idx = DebugJS.bat.labels[lbl];
+    var tbl = (type == 'func' ? DebugJS.bat.fncs : DebugJS.bat.labels);
+    var idx = tbl[lbl];
     if (idx == undefined) {
-      DebugJS._log.e('L' + ctrl.pc + ': No such label (' + lbl + ')');
+      DebugJS._log.e('L' + ctrl.pc + ': No such ' + type + ' (' + lbl + ')');
       return;
     }
     if (lnk) {
@@ -7905,7 +7915,8 @@ DebugJS.prototype = {
         lr: ctrl.pc,
         fnArg: ctrl.fnArg,
         block: ctrl.block,
-        label: ctrl.label
+        label: ctrl.label,
+        fnnm: ctrl.fnnm
       };
       ctrl.stack.push(fnCtx);
       ctrl.fnArg = fnArg;
@@ -8550,27 +8561,7 @@ DebugJS.prototype = {
   },
 
   cmdReturn: function(arg, tbl) {
-    var bat = DebugJS.bat;
-    var ctrl = bat.ctrl;
-    if (bat.isCmdExecutable()) {
-      var fnCtx = ctrl.stack.pop();
-      if (!fnCtx) {
-        bat.syntaxErr('Illegal return statement');
-        return;
-      }
-      try {
-        DebugJS.ctx.CMDVALS['%RET%'] = eval(arg);
-      } catch (e) {
-        DebugJS._log.e(e);
-        return;
-      }
-      DebugJS.ctx.CMDVALS['%ARG%'] = fnCtx.fnArg;
-      ctrl.fnArg = fnCtx.fnArg;
-      ctrl.block = fnCtx.block;
-      ctrl.lr = fnCtx.lr;
-      ctrl.pc = ctrl.lr;
-      bat.setLabel(fnCtx.label);
-    }
+    DebugJS.bat.ret(arg);
   },
 
   cmdRGB: function(arg, tbl) {
@@ -12814,6 +12805,7 @@ DebugJS.bat.ctrl = {
   stopReq: false,
   execArg: '',
   label: '',
+  fnnm: '',
   stack: []
 };
 DebugJS.bat.labels = {};
@@ -12848,15 +12840,16 @@ DebugJS.bat.store = function(b) {
   if (last != '') {
     bat.cmds.push(last);
   }
-  bat.parseLabels();
+  bat.parseLabelFncs();
   bat.initCtrl(true);
   DebugJS.ctx.updateTotalLine();
   DebugJS.ctx.updateBatNestLv();
 };
-DebugJS.bat.parseLabels = function() {
+DebugJS.bat.parseLabelFncs = function() {
   var bat = DebugJS.bat;
   var cmnt = 0;
   bat.labels = {};
+  bat.fncs = {};
   for (var i = 0; i < bat.cmds.length; i++) {
     var c = bat.cmds[i];
     if (DebugJS.delLeadingSP(c).substr(0, 2) == '/*') {
@@ -12873,6 +12866,9 @@ DebugJS.bat.parseLabels = function() {
     if ((c.charAt(0) == DebugJS.BAT_TKN_LABEL) && c.length >= 2) {
       var label = c.substr(1);
       bat.labels[label] = i;
+    } else if (DebugJS.startsWith(c, DebugJS.BAT_TKN_FNC)) {
+      var fn = DebugJS.splitArgs(c)[1];
+      bat.fncs[fn] = i;
     }
   }
 };
@@ -13095,6 +13091,11 @@ DebugJS.bat.setLabel = function(s) {
   DebugJS.ctx.CMDVALS['%LABEL%'] = s;
   DebugJS.bat.ctrl.label = s;
 };
+DebugJS.bat.setFnNm = function(s) {
+  s = ((s === undefined) ? '' : s);
+  DebugJS.ctx.CMDVALS['%FUNCNAME%'] = s;
+  DebugJS.bat.ctrl.fnnm = s;
+};
 DebugJS.bat.setExitStatus = function(st) {
   if ((st == undefined) || (st == '')) {
     st = DebugJS.EXIT_SUCCESS;
@@ -13142,6 +13143,24 @@ DebugJS.bat.prepro = function(ctx, cmd) {
     return 1;
   }
   if (ctrl.cmnt > 0) {
+    return 1;
+  }
+  if (c == DebugJS.BAT_TKN_FNC) {
+    if (ctrl.stack.length > 0) {
+      bat.setFnNm(a[0]);
+      return 1;
+    } else {
+      ctrl.fncdef = true;
+      return 1;
+    }
+  }
+  if (c == DebugJS.BAT_TKN_RET) {
+    if (ctrl.fncdef) {
+      ctrl.fncdef = false;
+      return 1;
+    }
+  }
+  if (ctrl.fncdef) {
     return 1;
   }
   if (c.charAt(0) == DebugJS.BAT_TKN_LABEL) {
@@ -13410,6 +13429,30 @@ DebugJS.bat.ppEcho = function(c) {
     DebugJS._log.s(c);
   }
 };
+DebugJS.bat.ret = function(arg) {
+  var bat = DebugJS.bat;
+  var ctrl = bat.ctrl;
+  if (bat.isCmdExecutable()) {
+    var fnCtx = ctrl.stack.pop();
+    if (!fnCtx) {
+      bat.syntaxErr('Illegal return statement');
+      return;
+    }
+    try {
+      DebugJS.ctx.CMDVALS['%RET%'] = eval(arg);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return;
+    }
+    DebugJS.ctx.CMDVALS['%ARG%'] = fnCtx.fnArg;
+    ctrl.fnArg = fnCtx.fnArg;
+    ctrl.block = fnCtx.block;
+    ctrl.lr = fnCtx.lr;
+    ctrl.pc = ctrl.lr;
+    bat.setLabel(fnCtx.label);
+    bat.setFnNm(fnCtx.fnnm);
+  }
+};
 DebugJS.bat.syntaxErr = function(c) {
   DebugJS._log.e('BAT SyntaxError: ' + c);
 };
@@ -13606,6 +13649,7 @@ DebugJS.bat.initCtrl = function(all) {
   ctrl.endPc = 0;
   ctrl.tmpEchoOff = false;
   ctrl.cmnt = 0;
+  ctrl.fncdef = false;
   ctrl.block = [];
   ctrl.js = 0;
   ctrl.lock = 0;
@@ -13624,6 +13668,7 @@ DebugJS.bat.initCtrl = function(all) {
     ctrl.tmid = 0;
   }
   DebugJS.bat.setLabel('');
+  DebugJS.bat.setFnNm('');
   DebugJS.ctx.updateCurPc();
 };
 DebugJS.bat.stCtx = function() {
@@ -13646,6 +13691,7 @@ DebugJS.bat.ldCtx = function() {
   DebugJS.deepCopy(batCtx.ctrl, bat.ctrl);
   bat.setExecArg(bat.ctrl.execArg);
   bat.setLabel(bat.ctrl.label);
+  bat.setFnNm(bat.ctrl.fnnm);
   bat.cmds = batCtx.cmds;
   bat.labels = batCtx.labels;
   ctx.setBatTxt(ctx);
@@ -13678,7 +13724,7 @@ DebugJS.bat.load = function() {
   bat.ctx = bt.ctx;
   DebugJS.ctx.CMDVALS = bt.vals;
   bat.setExecArg(bat.ctrl.execArg);
-  bat.parseLabels();
+  bat.parseLabelFncs();
   if (DebugJS.ctx.props.batcont == 'on') {
     if (bat.ctrl.pauseKey != null) {
       DebugJS.ctx._cmdPause('key', bat.ctrl.pauseKey, 0);

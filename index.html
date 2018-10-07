@@ -4484,6 +4484,18 @@ $ zoom 1
   </tr>
 
   <tr>
+    <td class="name">call</td>
+    <td>arg1: label<br>arg2: argument<span class="annotation">(opt)</span></td>
+    <td>
+      Call a function.<br><br>
+<pre class="eg">
+call funcname
+call funcname argument
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">exit</td>
     <td>exit status</td>
     <td>
@@ -4580,9 +4592,7 @@ wait T0000|T1200
 //comment
 
 /*
-multi-
-line-
-comment
+multi-line-comment
 */
 
 !__TEXT__!
@@ -4598,14 +4608,16 @@ goto label
 <span class="emphasis">
 command
 
-$VAL = JavaScript Code;
-IF ($VAL == 1) (
+${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
+IF (${val} == 1) (
   command
-) ELSE IF ($VAL == 2) (
+) ELSE IF (${val} == 2) (
   command
 ) ELSE (
   command
 )
+
+%{val}<span class="annotation">inline expansion of the value</span>
 
 <span class="annotation">Inline JavaScript Section</span>
 !__JS__!
@@ -4620,17 +4632,8 @@ JavaScript Code;
 JavaScript Code;
 <span class="emphasis">!__JS__!
 
-${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
-command arg ${val} ... <span class="annotation">The variable ${val} will be replaced to its value.</span></span>
-IF (${val} == "abc") (
-  command
-)
-<span class="emphasis">
-%{val}<span class="annotation">inline expansion of the value</span>
-
-jump func1
-</span>
-${i} = 0<span class="emphasis">
+call func1
+${i} = 0
 LOOP (${i} &lt; 3) (</span>
   command
   ${i} = ${i} + 1
@@ -4646,9 +4649,7 @@ LOOP (</span>
   )
 <span class="emphasis">)
 
-exit
-
-:func1
+FUNCTION func1
   command
   return
 </span>
@@ -4732,6 +4733,13 @@ $ set batstop error|test
     <td class="name">${%LABEL%}</td>
     <td>
       Current executing label name
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">${%FUNCNAME%}</td>
+    <td>
+      Current executing function name
     </td>
   </tr>
 
