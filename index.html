@@ -4595,16 +4595,13 @@ wait T0000|T1200
 multi-line-comment
 */
 
-!__TEXT__!
-plain text
-plain text
-plain text
 !__TEXT__!</span>
+plain text
+plain text
+plain text
+<span class="emphasis">!__TEXT__!</span>
 <span class="annotation">This is also comment section.
 The difference from other comment section is the content will be set to the variable ${%TEXT%}.</span>
-<span class="emphasis">
-:label</span>
-goto label
 <span class="emphasis">
 ${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
 
@@ -4644,7 +4641,10 @@ LOOP (</span>
   )
 <span class="emphasis">)
 
-call func1 ${val}<span class="annotation">(opt)</span>
+:label</span>
+goto label
+
+<span class="emphasis">call func1 ${val}<span class="annotation">(opt)</span>
 ${val} = ${%RET%}
 
 FUNCTION func1
