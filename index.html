@@ -4485,7 +4485,7 @@ $ zoom 1
 
   <tr>
     <td class="name">call</td>
-    <td>arg1: label<br>arg2: argument<span class="annotation">(opt)</span></td>
+    <td>arg1: funcname<br>arg2: argument<span class="annotation">(opt)</span></td>
     <td>
       Call a function.<br><br>
 <pre class="eg">
@@ -4606,37 +4606,32 @@ The difference from other comment section is the content will be set to the vari
 :label</span>
 goto label
 <span class="emphasis">
-command
-
 ${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
-IF (${val} == 1) (
-  command
-) ELSE IF (${val} == 2) (
-  command
-) ELSE (
-  command
-)
 
-%{val}<span class="annotation">inline expansion of the value</span>
+IF (${val} == 1) (</span>
+  command
+<span class="emphasis">) ELSE IF (${val} == 2) (</span>
+  command
+<span class="emphasis">) ELSE (</span>
+  command
+<span class="emphasis">)
 
-<span class="annotation">Inline JavaScript Section</span>
-!__JS__!
+%{val} <span class="annotation">inline expansion of the value</span>
+
+!__JS__!</span> <span class="annotation">Inline JavaScript Section</span>
 JavaScript Code;
 JavaScript Code;
 JavaScript Code;
-!__JS__!
-<span class="annotation">This section will be executed at once.</span>
+<span class="emphasis">!__JS__! <span class="annotation">This section will be executed at once.</span>
 
-<span class="annotation">JavaScript section w/o variable substitution (${val})</span>
-!__JS__! pure</span>
+!__JS__! pure</span> <span class="annotation">JavaScript section w/o variable substitution (${val})</span>
 JavaScript Code;
 <span class="emphasis">!__JS__!
 
-call func1
-${i} = 0
-LOOP (${i} &lt; 3) (</span>
+</span>${i} = 0
+<span class="emphasis">LOOP (${i} &lt; 3) (</span>
   command
-  ${i} = ${i} + 1
+  ${i}++
 <span class="emphasis">)
 
 LOOP (</span>
@@ -4649,9 +4644,13 @@ LOOP (</span>
   )
 <span class="emphasis">)
 
+call func1 ${val}<span class="annotation">(opt)</span>
+${val} = ${%RET%}
+
 FUNCTION func1
+  ${val} = ${%ARG%}</span>
   command
-  return
+  <span class="emphasis">return ${val}<span class="annotation">(opt)</span>
 </span>
 </pre>
 
