@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810071700';
+  this.v = '201810081500';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2759,12 +2759,36 @@ DebugJS.prototype = {
         }
     }
   },
-
   keyHandlerUp: function(ctx, e) {
     switch (e.keyCode) {
       case 18:
         ctx.enableDraggable(ctx);
     }
+  },
+  onKeyDown: function(e) {
+    var ctx = DebugJS.ctx;
+    if (ctx.opt.useKeyStatusInfo) {
+      ctx.updateStatusInfoOnKeyDown(ctx, e);
+    }
+    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
+      ctx.procOnProtectedD(ctx, e);
+    }
+  },
+  onKeyPress: function(e) {
+    var ctx = DebugJS.ctx;
+    if (ctx.opt.useKeyStatusInfo) {
+      ctx.updateStatusInfoOnKeyPress(ctx, e);
+    }
+    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
+      ctx.procOnProtectedP(ctx, e);
+    }
+  },
+  onKeyUp: function(e) {
+    var ctx = DebugJS.ctx;
+    if (ctx.opt.useKeyStatusInfo) {
+      ctx.updateStatusInfoOnKeyUp(ctx, e);
+    }
+    ctx.keyHandlerUp(ctx, e);
   },
 
   procOnProtectedD: function(ctx, e) {
@@ -2781,41 +2805,12 @@ DebugJS.prototype = {
         ctx.unlockCode = null;
     }
   },
-
   procOnProtectedP: function(ctx, e) {
     if (ctx.unlockCode == null) return;
     var ch = DebugJS.cnvKey2Ch(e.key);
     if ((DebugJS.isTypographic(ch))) {
       ctx.unlockCode += ch;
     }
-  },
-
-  onKeyDown: function(e) {
-    var ctx = DebugJS.ctx;
-    if (ctx.opt.useKeyStatusInfo) {
-      ctx.updateStatusInfoOnKeyDown(ctx, e);
-    }
-    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
-      ctx.procOnProtectedD(ctx, e);
-    }
-  },
-
-  onKeyPress: function(e) {
-    var ctx = DebugJS.ctx;
-    if (ctx.opt.useKeyStatusInfo) {
-      ctx.updateStatusInfoOnKeyPress(ctx, e);
-    }
-    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
-      ctx.procOnProtectedP(ctx, e);
-    }
-  },
-
-  onKeyUp: function(e) {
-    var ctx = DebugJS.ctx;
-    if (ctx.opt.useKeyStatusInfo) {
-      ctx.updateStatusInfoOnKeyUp(ctx, e);
-    }
-    ctx.keyHandlerUp(ctx, e);
   },
 
   updateStatusInfoOnKeyDown: function(ctx, e) {
@@ -3400,32 +3395,19 @@ DebugJS.prototype = {
         sizeLabelY = sizeLabelH * (-1);
       }
     }
-
     if (posY < sizeLabelH) {
       if (ctx.clickedPosY > sizeLabelH) {
         sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
       }
     }
-
     if (((ctx.clickedPosX + sizeLabelW) > clientW) && ((posX + sizeLabelW) > clientW)) {
       sizeLabelX = (sizeLabelW - (clientW - ctx.clickedPosX)) * (-1);
     }
-
-    var endPointY = 'bottom';
-    var endPointX = 'right';
-    if (posX < ctx.clickedPosX) {
-      originX = 'right';
-      endPointX = 'left';
-    }
-    if (posY < ctx.clickedPosY) {
-      originY = 'bottom';
-      endPointY = 'top';
-    }
+    if (posX < ctx.clickedPosX) originX = 'right';
+    if (posY < ctx.clickedPosY) originY = 'bottom';
     var size = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + (deltaX | 0) + ' H=' + (deltaY | 0) + '</span>';
     var origin = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px">x=' + ctx.clickedPosX + ',y=' + ctx.clickedPosY + '</span>';
-    var endPoint = '';
-    //endPoint = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + endPointY + ':1px;' + endPointX + ':1px;padding:1px">x=' + posX + ',y=' + posY + '</span>';
-    ctx.measureBox.innerHTML = origin + size + endPoint;
+    ctx.measureBox.innerHTML = origin + size;
   },
 
   stopMeasure: function(ctx) {
@@ -3515,9 +3497,7 @@ DebugJS.prototype = {
     var languages = DebugJS.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
     var jq = '<span class="' + ctx.id + '-na">not loaded</span>';
-    if (typeof jQuery != 'undefined') {
-      jq = 'v' + jQuery.fn.jquery;
-    }
+    if (typeof jQuery != 'undefined') jq = 'v' + jQuery.fn.jquery;
 
     var metaTags = document.getElementsByTagName('meta');
     var charset;
@@ -6517,8 +6497,8 @@ DebugJS.prototype = {
       ctx.collapseLogPanel(ctx);
       ctx.overlayBasePanel = document.createElement('div');
       ctx.overlayBasePanel.className = ctx.id + '-overlay-base-panel';
-      //ctx.mainPanel.insertBefore(ctx.overlayBasePanel, ctx.logPanel); //bottom position
       ctx.mainPanel.appendChild(ctx.overlayBasePanel);
+      //ctx.mainPanel.insertBefore(ctx.overlayBasePanel, ctx.logPanel); // to bottom
     }
     ctx.overlayBasePanel.appendChild(panel);
     ctx.overlayPanels.push(panel);
@@ -9698,23 +9678,6 @@ DebugJS.splitCmdLineInTwo = function(s) {
     res[1] = s.substr(two[0].length + 1);
   }
   return res;
-};
-
-// " 1  2 3  4 " -> [0]="1 2 3" [1]="4"
-DebugJS.splitCmdLineInTwoLast = function(s) {
-  var a = DebugJS.splitArgsEx(s);
-  if (a.length == 1) {
-    return a;
-  }
-  var args = [];
-  var a1 = '';
-  for (var i = 0; i < a.length - 1; i++) {
-    if (i > 0) a1 += ' ';
-    a1 += a[i];
-  }
-  args.push(a1);
-  args.push(a[a.length - 1]);
-  return args;
 };
 
 // " 1  2  3  4 " (2)-> " 3  4 "
@@ -14895,15 +14858,11 @@ DebugJS.inputText.data = {el: null, txt: '', speed: 0, end: 0, i: 0, tmid: 0};
 
 DebugJS.getSpeed = function(v) {
   v += '';
-  if (v.indexOf('-') == -1) {
-    return v;
-  }
+  if (v.indexOf('-') == -1) return v;
   var a = v.split('-');
   var min = a[0];
   var max = a[1];
-  if ((min == '') || (max == '')) {
-    return 0;
-  }
+  if ((min == '') || (max == '')) return 0;
   var s = DebugJS.getRndNum(min, max);
   return s;
 };
@@ -15631,7 +15590,6 @@ DebugJS._init = function() {
     return DebugJS.ctx.init(null, null);
   }
 };
-
 DebugJS.init = function(opt) {
   DebugJS.ctx.init(opt, null);
 };
