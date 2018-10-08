@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810081500';
+  this.v = '201810090000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -94,8 +94,8 @@ var DebugJS = DebugJS || function() {
   this.clockLabel = null;
   this.clockUpdIntHCnt = 0;
   this.clockUpdInt = DebugJS.UPDATE_INTERVAL_L;
-  this.measureBtn = null;
-  this.measureBox = null;
+  this.measBtn = null;
+  this.measBox = null;
   this.sysInfoBtn = null;
   this.sysInfoPanel = null;
   this.htmlSrcBtn = null;
@@ -1290,7 +1290,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.closeBtn, 'font-size', (18 * opt.zoom) + 'px');
       ctx.closeBtn.onmouseover = new Function('DebugJS.ctx.setStyle(this, \'color\', \'#d88\');');
       ctx.closeBtn.onmouseout = new Function('DebugJS.ctx.setStyle(this, \'color\', \'#888\');');
-      ctx.closeBtn.onclick = new Function('DebugJS.ctx.closeDbgWin();');
+      ctx.closeBtn.onclick = DebugJS.hide;
     }
 
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) &&
@@ -1345,20 +1345,20 @@ DebugJS.prototype = {
     }
 
     if (opt.useScreenMeasure) {
-      var measureBtn = document.createElement('span');
-      measureBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
-      measureBtn.style.display = 'inline-block';
-      measureBtn.style.float = 'right';
-      measureBtn.style.marginTop = ((opt.zoom <= 1) ? 1 : (2 * opt.zoom)) + 'px';
-      measureBtn.style.marginLeft = '3px';
-      measureBtn.style.width = (10 * opt.zoom) + 'px';
-      measureBtn.style.height = (7 * opt.zoom) + 'px';
-      measureBtn.innerText = ' ';
-      measureBtn.onclick = ctx.toggleMeasure;
-      measureBtn.onmouseover = new Function('DebugJS.ctx.measureBtn.style.borderColor=\'' + DebugJS.MEASURE_BTN_COLOR + '\';');
-      measureBtn.onmouseout = new Function('DebugJS.ctx.measureBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
-      ctx.headPanel.appendChild(measureBtn);
-      ctx.measureBtn = measureBtn;
+      var measBtn = document.createElement('span');
+      measBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+      measBtn.style.display = 'inline-block';
+      measBtn.style.float = 'right';
+      measBtn.style.marginTop = ((opt.zoom <= 1) ? 1 : (2 * opt.zoom)) + 'px';
+      measBtn.style.marginLeft = '3px';
+      measBtn.style.width = (10 * opt.zoom) + 'px';
+      measBtn.style.height = (7 * opt.zoom) + 'px';
+      measBtn.innerText = ' ';
+      measBtn.onclick = ctx.toggleMeasure;
+      measBtn.onmouseover = new Function('DebugJS.ctx.measBtn.style.borderColor=\'' + DebugJS.MEASURE_BTN_COLOR + '\';');
+      measBtn.onmouseout = new Function('DebugJS.ctx.measBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
+      ctx.headPanel.appendChild(measBtn);
+      ctx.measBtn = measBtn;
     }
 
     if (opt.useLed) {
@@ -1486,7 +1486,7 @@ DebugJS.prototype = {
     if (ctx.isAllFeaturesDisabled(ctx)) return;
     if (opt.useLogFilter) ctx.updateLogFilterBtns();
     if (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK) ctx.updateClockLabel();
-    if (opt.useScreenMeasure) ctx.updateMeasureBtn(ctx);
+    if (opt.useScreenMeasure) ctx.updateMeasBtn(ctx);
     if (opt.useSystemInfo) ctx.updateSysInfoBtn(ctx);
     if (opt.useElementInfo) ctx.updateElmInfoBtn(ctx);
     if (opt.useHtmlSrc) ctx.updateHtmlSrcBtn(ctx);
@@ -1841,8 +1841,8 @@ DebugJS.prototype = {
     }
   },
 
-  updateMeasureBtn: function(ctx) {
-    ctx.measureBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+  updateMeasBtn: function(ctx) {
+    ctx.measBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   updateSysInfoBtn: function(ctx) {
@@ -2387,7 +2387,7 @@ DebugJS.prototype = {
     ctx.featStack.push(DebugJS.ST_MEASURE);
     ctx.bodyCursor = ctx.bodyEl.style.cursor;
     ctx.bodyEl.style.cursor = 'default';
-    ctx.updateMeasureBtn(ctx);
+    ctx.updateMeasBtn(ctx);
   },
 
   closeScreenMeasure: function(ctx, q) {
@@ -2396,7 +2396,7 @@ DebugJS.prototype = {
     ctx.status &= ~DebugJS.ST_MEASURE;
     DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_MEASURE);
     if (!q) DebugJS._log.s('Screen Measure OFF');
-    ctx.updateMeasureBtn(ctx);
+    ctx.updateMeasBtn(ctx);
   },
 
   toggleDraggable: function() {
@@ -2807,7 +2807,7 @@ DebugJS.prototype = {
   },
   procOnProtectedP: function(ctx, e) {
     if (ctx.unlockCode == null) return;
-    var ch = DebugJS.cnvKey2Ch(e.key);
+    var ch = DebugJS.key2ch(e.key);
     if ((DebugJS.isTypographic(ch))) {
       ctx.unlockCode += ch;
     }
@@ -3347,7 +3347,7 @@ DebugJS.prototype = {
     ctx.status |= DebugJS.ST_MEASURING;
     ctx.clickedPosX = posX;
     ctx.clickedPosY = posY;
-    if (ctx.measureBox == null) {
+    if (ctx.measBox == null) {
       var box = document.createElement('div');
       box.style.position = 'fixed';
       box.style.zIndex = 0x7fffffff;
@@ -3357,7 +3357,7 @@ DebugJS.prototype = {
       box.style.height = '0px';
       box.style.border = 'dotted 1px #333';
       box.style.background = 'rgba(0,0,0,0.1)';
-      ctx.measureBox = box;
+      ctx.measBox = box;
       ctx.bodyEl.appendChild(box);
     }
     ctx.disableTextSelect(ctx);
@@ -3368,15 +3368,15 @@ DebugJS.prototype = {
     var deltaY = posY - ctx.clickedPosY;
     var clientW = document.documentElement.clientWidth;
     if (deltaX < 0) {
-      ctx.measureBox.style.left = posX + 'px';
+      ctx.measBox.style.left = posX + 'px';
       deltaX *= -1;
     }
     if (deltaY < 0) {
-      ctx.measureBox.style.top = posY + 'px';
+      ctx.measBox.style.top = posY + 'px';
       deltaY *= -1;
     }
-    ctx.measureBox.style.width = deltaX + 'px';
-    ctx.measureBox.style.height = deltaY + 'px';
+    ctx.measBox.style.width = deltaX + 'px';
+    ctx.measBox.style.height = deltaY + 'px';
     var sizeLabelW = 210;
     var sizeLabelH = 40;
     var sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
@@ -3407,13 +3407,13 @@ DebugJS.prototype = {
     if (posY < ctx.clickedPosY) originY = 'bottom';
     var size = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + (deltaX | 0) + ' H=' + (deltaY | 0) + '</span>';
     var origin = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px">x=' + ctx.clickedPosX + ',y=' + ctx.clickedPosY + '</span>';
-    ctx.measureBox.innerHTML = origin + size;
+    ctx.measBox.innerHTML = origin + size;
   },
 
   stopMeasure: function(ctx) {
-    if (ctx.measureBox != null) {
-      ctx.bodyEl.removeChild(ctx.measureBox);
-      ctx.measureBox = null;
+    if (ctx.measBox != null) {
+      ctx.bodyEl.removeChild(ctx.measBox);
+      ctx.measBox = null;
     }
     ctx.enableTextSelect(ctx);
     ctx.status &= ~DebugJS.ST_MEASURING;
@@ -7103,7 +7103,7 @@ DebugJS.prototype = {
               DebugJS._log.e('BAT ERROR: Illegal argument (' + e + ')');
             }
           } else {
-            DebugJS._log.e('BAT ERROR: script bust be encoded in Base64.');
+            DebugJS._log.e('BAT ERROR: script must be encoded in Base64.');
           }
           break;
         }
@@ -7408,7 +7408,7 @@ DebugJS.prototype = {
     var d = DebugJS.getDateTime(t);
     if (isNaN(d.time)) return ret;
     ret = DebugJS.convDateStr(d, sp);
-    if (echo) {DebugJS._log.res(ret);}
+    if (echo) DebugJS._log.res(ret);
     return ret;
   },
 
@@ -7422,7 +7422,7 @@ DebugJS.prototype = {
     d1 = d1.replace(/-/g, '/');
     d2 = d2.replace(/-/g, '/');
     ret = DebugJS.diffDate(d1, d2);
-    if (echo && !isNaN(ret)) {DebugJS._log.res(ret);}
+    if (echo && !isNaN(ret)) DebugJS._log.res(ret);
     return ret;
   },
   _cmdFmtDate: function(d) {
@@ -8741,7 +8741,7 @@ DebugJS.prototype = {
           props[name] = ret;
         }
       }
-      if (echo) {DebugJS._log.res(val);}
+      if (echo) DebugJS._log.res(val);
     } else {
       DebugJS._log.e(name + ' is invalid property name.');
     }
@@ -8832,7 +8832,7 @@ DebugJS.prototype = {
     } else {
       ret = DebugJS.addTime(timeL, timeR, byTheDay);
     }
-    if (echo) {DebugJS._log.res(ret);}
+    if (echo) DebugJS._log.res(ret);
     return ret;
   },
 
@@ -9335,7 +9335,7 @@ DebugJS.prototype = {
       cache: false,
       user: user,
       pass: pass
-      //,userAgent: 'Mozilla/5.0 (' + DebugJS.getBrowserType().name + ') DebugJS/1.0'
+      //userAgent: 'Mozilla/5.0 (' + DebugJS.getBrowserType().name + ') DebugJS/1.0'
     };
     try {
       DebugJS.http(request, DebugJS.onHttpRequestDone);
@@ -9518,14 +9518,10 @@ DebugJS.RingBuffer.prototype = {
 
 DebugJS.getCmdValName = function(v, pfix, head) {
   var m = pfix + '\\{(.+?)\\}';
-  if (head) {
-    m = '^' + m;
-  }
+  if (head) m = '^' + m;
   var re = new RegExp(m);
   var r = re.exec(v);
-  if (r == null) {
-    return null;
-  }
+  if (r == null) return null;
   var idx = r.index;
   if ((idx > 0) && ((v.charAt(idx - 1) == '\\'))) {
     return null;
@@ -9773,24 +9769,6 @@ DebugJS.decodeEsc = function(s) {
   return s.replace(/\\\\/g, '\\');
 };
 
-DebugJS.indexOfQuote = function(str, from) {
-  if (from == undefined) from = 0;
-  while (from < str.length) {
-    idx = str.indexOf('"', from);
-    if (idx <= 0) {
-      break;
-    }
-    if (idx > 0) {
-      if (str.charAt(idx - 1) == '\\') {
-        from = idx + 1;
-      } else {
-        break;
-      }
-    }
-  }
-  return idx;
-};
-
 DebugJS.isCtrlChar = function(ch) {
   var c = ch.charCodeAt();
   if (((c >= 0x00) && (c <= 0x1F)) || (c == 0x7F)) {
@@ -9798,7 +9776,6 @@ DebugJS.isCtrlChar = function(ch) {
   }
   return false;
 };
-
 DebugJS.isNumeric = function(ch) {
   var c = ch.charCodeAt();
   if ((c >= 0x30) && (c <= 0x39)) {
@@ -9890,7 +9867,7 @@ DebugJS.KEYCH = {
   Divide: '/',
   Del: '.'
 };
-DebugJS.cnvKey2Ch = function(key) {
+DebugJS.key2ch = function(key) {
   return (DebugJS.KEYCH[key] == undefined ? key : DebugJS.KEYCH[key]);
 };
 DebugJS.unifySP = function(s) {
@@ -10596,7 +10573,7 @@ DebugJS.getKeysStr = function(obj) {
 };
 
 DebugJS.countElements = function(selector, showDetail) {
-  if (!selector) {selector = '*';}
+  if (!selector) selector = '*';
   var cnt = {};
   var el = null;
   var els = [];
@@ -10851,7 +10828,6 @@ DebugJS.convRGB = function(v) {
   DebugJS._log(rgb.rgb);
   return ret;
 };
-
 DebugJS.convRGB16to10 = function(rgb16) {
   var boxSize = '0.7em';
   var r16, g16, b16, r10, g10, b10;
@@ -10877,7 +10853,6 @@ DebugJS.convRGB16to10 = function(rgb16) {
   var rgb = {r: r10, g: g10, b: b10, rgb: rgb10};
   return rgb;
 };
-
 DebugJS.convRGB10to16 = function(rgb10) {
   var boxSize = '0.7em';
   rgb10 = DebugJS.unifySP(rgb10);
@@ -10911,7 +10886,6 @@ DebugJS.convRadixFromHEX = function(v16) {
   }
   DebugJS.printRadixConv(v10, hex, bin);
 };
-
 DebugJS.convRadixFromDEC = function(v10) {
   var unit = DebugJS.DFLT_UNIT;
   var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
@@ -10932,7 +10906,6 @@ DebugJS.convRadixFromDEC = function(v10) {
   }
   DebugJS.printRadixConv(v10, hex, bin);
 };
-
 DebugJS.convRadixFromBIN = function(v2) {
   v2 = v2.replace(/\s/g, '');
   var v10 = parseInt(v2, 2).toString(10);
@@ -11240,7 +11213,6 @@ DebugJS.encodeROT5 = function(s, n) {
 DebugJS.decodeROT5 = function(s, n) {
   return DebugJS.encodeROT5(s, ((n | 0) * (-1)));
 };
-
 DebugJS.encodeROT13 = function(s, n) {
   if ((n < -25) || (n > 25)) n = n % 26;
   var r = '';
@@ -11272,7 +11244,6 @@ DebugJS.encodeROT13 = function(s, n) {
 DebugJS.decodeROT13 = function(s, n) {
   return DebugJS.encodeROT13(s, ((n | 0) * (-1)));
 };
-
 DebugJS.encodeROT47 = function(s, n) {
   if ((n < -93) || (n > 93)) n = n % 94;
   var r = '';
@@ -11440,7 +11411,6 @@ DebugJS.timeStart = function(timerName, msg) {
   }
   DebugJS._log(s);
 };
-
 DebugJS.timeGetCount = function(timerName) {
   var ctx = DebugJS.ctx;
   if (!ctx.timers[timerName]) {
@@ -11449,7 +11419,6 @@ DebugJS.timeGetCount = function(timerName) {
     return ctx.timers[timerName].count;
   }
 };
-
 DebugJS.timePause = function(timerName) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
@@ -11457,7 +11426,6 @@ DebugJS.timePause = function(timerName) {
   ctx.timers[timerName].pause = now;
   ctx.timers[timerName].count = now - ctx.timers[timerName].start;
 };
-
 DebugJS.timeRestart = function(timerName, val) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
@@ -11475,7 +11443,6 @@ DebugJS.timeRestart = function(timerName, val) {
     };
   }
 };
-
 DebugJS.timeSplit = function(timerName, isEnd, msg) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
@@ -11527,7 +11494,6 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
   DebugJS._log(s);
   return t;
 };
-
 DebugJS.timeReset = function(timerName) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
@@ -11537,11 +11503,9 @@ DebugJS.timeReset = function(timerName) {
   ctx.timers[timerName].pause = now;
   ctx.timers[timerName].count = 0;
 };
-
 DebugJS.timeEnd = function(timerName, msg) {
   return DebugJS.timeSplit(timerName, true, msg);
 };
-
 DebugJS.timeLog = function(msg, timerName) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
@@ -11566,7 +11530,6 @@ DebugJS.timeLog = function(msg, timerName) {
   var s = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   DebugJS._log(s);
 };
-
 DebugJS.timeCheck = function(timerName, now) {
   var ctx = DebugJS.ctx;
   if (timerName === undefined) timerName = DebugJS.DFLT_TIMER_NAME;
@@ -11574,7 +11537,6 @@ DebugJS.timeCheck = function(timerName, now) {
   var t = DebugJS.getElapsedTimeStr(ctx.timers[timerName].start, now);
   return t;
 };
-
 DebugJS.timeList = function() {
   var ctx = DebugJS.ctx;
   var now = new Date();
@@ -11768,7 +11730,6 @@ DebugJS.getBrowserType = function() {
     }
     return browser;
   }
-
   if (ua.indexOf('OPR/') >= 1) {
     browser.name = 'Opera';
     ver = ua.match(/OPR\/(.*)/);
@@ -11777,7 +11738,6 @@ DebugJS.getBrowserType = function() {
     }
     return browser;
   }
-
   if (ua.indexOf('Chrome') >= 1) {
     browser.name = 'Chrome';
     ver = ua.match(/Chrome\/(.*)\s/);
@@ -11786,7 +11746,6 @@ DebugJS.getBrowserType = function() {
     }
     return browser;
   }
-
   if (ua.indexOf('Firefox') >= 1) {
     browser.name = 'Firefox';
     ver = ua.match(/Firefox\/(.*)/);
@@ -11795,25 +11754,21 @@ DebugJS.getBrowserType = function() {
     }
     return browser;
   }
-
   if (ua.indexOf('Trident/7.') >= 1) {
     browser.name = 'IE11';
     browser.family = 'IE';
     return browser;
   }
-
   if (ua.indexOf('Trident/6.') >= 1) {
     browser.name = 'IE10';
     browser.family = 'IE';
     return browser;
   }
-
   if (ua.indexOf('Trident/5.') >= 1) {
     browser.name = 'IE9';
     browser.family = 'IE';
     return browser;
   }
-
   if ((ua.indexOf('Safari/') >= 1) && (ua.indexOf('Version/') >= 1)) {
     browser.name = 'Safari';
     ver = ua.match(/Version\/(.*)\sSafari/);
@@ -11822,7 +11777,6 @@ DebugJS.getBrowserType = function() {
     }
     return browser;
   }
-
   return browser;
 };
 
@@ -11889,7 +11843,7 @@ DebugJS.substr = function(txt, len) {
   return str;
 };
 DebugJS.startsWith = function(s, p, o) {
-  if (o) {s = s.substr(o);}
+  if (o) s = s.substr(o);
   if (s.substr(0, p.length) == p) {
     return true;
   }
@@ -11914,7 +11868,7 @@ DebugJS.strcmpWOsp = function(s1, s2) {
 };
 DebugJS.strcatWnl = function(s1, s2) {
   s1 += s2;
-  if (!DebugJS.endsWith(s2, '\n')) {s1 += '\n';}
+  if (!DebugJS.endsWith(s2, '\n')) s1 += '\n';
   return s1;
 };
 DebugJS.strPadding = function(s, c, l, p) {
@@ -12010,19 +11964,15 @@ DebugJS.setStyleIfObjNA = function(obj, exceptFalse) {
 DebugJS.dumpAddr = function(i) {
   return ('0000000' + i.toString(16)).slice(-8).toUpperCase() + ' : ';
 };
-
 DebugJS.dumpBin = function(i, buf) {
   return ((buf[i] == undefined) ? '        ' : DebugJS.toBin(buf[i]));
 };
-
 DebugJS.dumpDec = function(i, buf) {
   return ((buf[i] == undefined) ? '   ' : ('  ' + buf[i].toString()).slice(-3));
 };
-
 DebugJS.dumpHex = function(i, buf) {
   return ((buf[i] == undefined) ? '  ' : ('0' + buf[i].toString(16)).slice(-2).toUpperCase());
 };
-
 DebugJS.dumpAscii = function(pos, buf, len) {
   var b = '';
   var end = pos + 0x10;
@@ -12093,12 +12043,16 @@ DebugJS.escSpclChr = function(s) {
 DebugJS.replaceCtrlChr = function(s, d) {
   if (d) {
     s = s.replace(/\\t/g, '\t');
+    s = s.replace(/\\v/g, '\v');
     s = s.replace(/\\r/g, '\r');
     s = s.replace(/\\n/g, '\n');
+    s = s.replace(/\\f/g, '\f');
   } else {
     s = s.replace(/\t/g, '\\t');
+    s = s.replace(/\v/g, '\\v');
     s = s.replace(/\r/g, '\\r');
     s = s.replace(/\n/g, '\\n');
+    s = s.replace(/\f/g, '\\f');
   }
   return s;
 };
@@ -12109,8 +12063,10 @@ DebugJS.hlCtrlChr = function(s, sp) {
   if (sp) s = s.replace(/ /g, st + ' ' + et);
   s = s.replace(/\0/g, st + '\\0' + et);
   s = s.replace(/\t/g, st + '\\t' + et);
+  s = s.replace(/\v/g, st + '\\v' + et);
   s = s.replace(/\r/g, st + '\\r' + et);
   s = s.replace(/\n/g, st + '\\n' + et);
+  s = s.replace(/\f/g, st + '\\f' + et);
   return s;
 };
 
@@ -12221,8 +12177,8 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
 DebugJS.sendLog = function(url, pName, param, extInfo, wBf, cb) {
   var b = DebugJS.createLogData(extInfo, wBf);
   var data = DebugJS.http.buildParam(param);
-  if (data != '') {data += '&';}
-  if (DebugJS.isEmptyVal(pName)) {pName = 'data';}
+  if (data != '') data += '&';
+  if (DebugJS.isEmptyVal(pName)) pName = 'data';
   data += pName + '=' + encodeURIComponent(b);
   var r = {
     url: url,
@@ -12263,7 +12219,7 @@ DebugJS.createLogData = function(extInfo, wBf) {
     b += LINE;
   }
   b += '\n' + DebugJS.LOG_HEAD + '\n' + logTxt;
-  if (!DebugJS.endsWith(logTxt, '\n')) {b += '\n';}
+  if (!DebugJS.endsWith(logTxt, '\n')) b += '\n';
   if (info[2]) {
     b += '\n';
     b = DebugJS.strcatWnl(b, info[2]);
@@ -12293,7 +12249,7 @@ DebugJS.createLogHeader = function() {
   if (navLangs) {
     s += ' (';
     for (var i = 0; i < navLangs.length; i++) {
-      if (i > 0) {s += ', ';}
+      if (i > 0) s += ', ';
       s += navLangs[i];
     }
     s += ')';
@@ -12416,6 +12372,29 @@ DebugJS.addFileLoader = function(el, cb, mode, decode) {
   DebugJS.file.loaders.push(loader);
 };
 
+DebugJS.getFeatureStack = function() {
+  return DebugJS.ctx.featStack.concat();
+};
+
+DebugJS.show = function() {
+  DebugJS.ctx.showDbgWin();
+};
+DebugJS.hide = function() {
+  DebugJS.ctx.closeDbgWin();
+};
+DebugJS.opacity = function(v) {
+  if (v > 1) {
+    v = 1;
+  } else if (v < 0.1) {
+    v = 0.1;
+  }
+  DebugJS.ctx.win.style.opacity = v;
+};
+DebugJS.isVisible = function() {
+  if (DebugJS.ctx.uiStatus & DebugJS.UI_ST_VISIBLE) return true;
+  return false;
+};
+
 DebugJS.onReady = function() {
   DebugJS._init();
 };
@@ -12461,32 +12440,6 @@ DebugJS.onError = function(e) {
     }
   }
   DebugJS._log.e(msg);
-};
-
-DebugJS.show = function() {
-  DebugJS.ctx.showDbgWin();
-};
-
-DebugJS.hide = function() {
-  DebugJS.ctx.closeDbgWin();
-};
-
-DebugJS.opacity = function(v) {
-  if (v > 1) {
-    v = 1;
-  } else if (v < 0.1) {
-    v = 0.1;
-  }
-  DebugJS.ctx.win.style.opacity = v;
-};
-
-DebugJS.isVisible = function() {
-  if (DebugJS.ctx.uiStatus & DebugJS.UI_ST_VISIBLE) return true;
-  return false;
-};
-
-DebugJS.getFeatureStack = function() {
-  return DebugJS.ctx.featStack.concat();
 };
 
 DebugJS._log = function(m) {
@@ -12536,7 +12489,6 @@ DebugJS._log.res.err = function(m) {
 DebugJS._log.mlt = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_MLT);
 };
-
 DebugJS._log.out = function(m, type) {
   m = DebugJS.setStyleIfObjNA(m);
   if (typeof m != 'string') {m = m.toString();}
@@ -12659,20 +12611,17 @@ DebugJS.stopwatch = function() {
   ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'timer', 'cu');
   return true;
 };
-
 DebugJS.stopwatch.start = function(m) {
   if (DebugJS.stopwatch()) {
     DebugJS.ctx.startTimerStopWatchCu();
     DebugJS.stopwatch.log(m);
   }
 };
-
 DebugJS.stopwatch.stop = function() {
   if (DebugJS.stopwatch()) {
     DebugJS.ctx.stopTimerStopWatchCu();
   }
 };
-
 DebugJS.stopwatch.end = function(m) {
   if (DebugJS.stopwatch()) {
     DebugJS.ctx.endTimerStopWatchCu();
@@ -12680,20 +12629,17 @@ DebugJS.stopwatch.end = function(m) {
   }
   return DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU);
 };
-
 DebugJS.stopwatch.split = function(m) {
   if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
     m = DebugJS.TIMER_NAME_SW_CU + ': %t(' + DebugJS.CHR_DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
     DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU, false, m);
   }
 };
-
 DebugJS.stopwatch.reset = function() {
   if (DebugJS.stopwatch()) {
     DebugJS.ctx.resetTimerStopWatchCu();
   }
 };
-
 DebugJS.stopwatch.log = function(msg) {
   var t = DebugJS.getTimerStr(DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU));
   var m = DebugJS.TIMER_NAME_SW_CU + ': <span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>';
@@ -13443,7 +13389,7 @@ DebugJS.bat.list = function(s, e) {
     e = len;
   } else {
     s -= 1;
-    if (s < 0) {s = 0;}
+    if (s < 0) s = 0;
     if (e == undefined) {
       e = s + 1;
     }
@@ -13483,7 +13429,7 @@ DebugJS.bat.list = function(s, e) {
       }
     }
   }
-  if (js) {l += '</span>';}
+  if (js) l += '</span>';
   return l;
 };
 DebugJS.bat.pause = function() {
@@ -13985,7 +13931,7 @@ DebugJS.point.click = function(button, target, speed, cb) {
   click.cb = cb;
   DebugJS.point.mouseevt(target, 'mousedown', button);
   var el = DebugJS.findFocusableEl(target);
-  if (el != null) {el.focus();}
+  if (el != null) el.focus();
   if (speed == undefined) speed = 100;
   click.tmid[button] = setTimeout('DebugJS.point.clickUp(' + button + ')', speed);
 };
@@ -14140,7 +14086,7 @@ DebugJS.point.getElementFromCurrentPos = function() {
     if (hide) {
       ctx.bodyEl.appendChild(ctx.win);
       ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
-      if (cmdActive) {ctx.cmdLine.focus();}
+      if (cmdActive) ctx.cmdLine.focus();
     }
   }
   ctx.bodyEl.appendChild(ptr);
@@ -14175,7 +14121,7 @@ DebugJS.point.setProp = function(prop, val, echo) {
     e = e[p[i]];
   }
   e[p[(p.length - 1)]] = v;
-  if (echo) {DebugJS._log.res(v);}
+  if (echo) DebugJS._log.res(v);
 };
 DebugJS.point.verify = function(prop, method, exp, label) {
   var test = DebugJS.test;
@@ -14625,7 +14571,7 @@ DebugJS.scrollWinTo = function(x, y, speed, step) {
 DebugJS._scrollWinTo = function() {
   var d = DebugJS.scrollWinTo.data;
   d.tmid = 0;
-  if (d.speed == 0) {d.step = 0;}
+  if (d.speed == 0) d.step = 0;
   var dX = DebugJS.calcDestPosAndStep(d.dstX, d.step);
   d.dstX = dX.dest;
   var dY = DebugJS.calcDestPosAndStep(d.dstY, d.step);
