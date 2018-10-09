@@ -2298,13 +2298,14 @@ dbg.bat.setCond('<input type="text" id="setcond-text" class="demo-text" style="w
   </tr>
 
   <tr>
-    <td class="name">dbg.bat.getLabels</td>
+    <td class="name">dbg.bat.getSymbols</td>
     <td></td>
     <td>
       Returns labels array list.
 <pre class="eg">
-dbg.bat.getLabels() <button class="demo-button2" onclick="log(dbg.bat.getLabels());">DEMO</button>
-dbg.bat.getLabels('<input type="text" id="getlbls-txt" class="demo-text" style="width:100px;" value='^test_'>') <button class="demo-button2" onclick="log(dbg.bat.getLabels(getVal('getlbls-txt')));">DEMO</button>
+dbg.bat.getSymbols('label') <button class="demo-button2" onclick="log(dbg.bat.getSymbols('label'));">DEMO</button>
+dbg.bat.getSymbols('function') <button class="demo-button2" onclick="log(dbg.bat.getSymbols('function'));">DEMO</button>
+dbg.bat.getSymbols('<input type="text" id="getsyms-type-txt" class="demo-text" style="width:70px;" value='label'>', '<input type="text" id="getsyms-ptn-txt" class="demo-text" style="width:100px;" value='^test_'>') <button class="demo-button2" onclick="log(dbg.bat.getSymbols(getVal('getsyms-type-txt'), getVal('getsyms-ptn-txt')));">DEMO</button>
 </pre>
     </td>
   </tr>

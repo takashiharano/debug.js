@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810091950';
+  this.v = '201810092020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -321,7 +321,7 @@ var DebugJS = DebugJS || function() {
   this.INT_CMD_TBL = [
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', usage: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', usage: 'base64 [-e|-d] str'},
-    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|labels|clear|exec b64-encoded-bat|set key val'},
+    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64(Bit Shifted Base64) reversible encryption string', usage: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -7040,15 +7040,20 @@ DebugJS.prototype = {
           bat.run(s, e, ag);
         }
         break;
-      case 'labels':
-        var p = DebugJS.splitCmdLineInTwo(arg)[1];
+      case 'symbols':
+        var t = a[1];
+        if ((t != 'label') && (t != 'function')) {
+          DebugJS.printUsage('bat synbols label|function "pattern"');
+          return;
+        }
+        var p = DebugJS.getArgsFrom(arg, 2);
         try {
           p = eval(p);
         } catch (e) {
-          DebugJS._log.e('bat labels: ' + e);
+          DebugJS._log.e('bat symbols: ' + e);
           return;
         }
-        ret = bat.getLabels(p);
+        ret = bat.getSymbols(t, p);
         if (echo) DebugJS._log.p(ret);
         return ret;
       case 'list':
@@ -13702,19 +13707,20 @@ DebugJS.bat._initCond = function() {
   }
   bat.ctrl.condKey = null;
 };
-DebugJS.bat.getLabels = function(p) {
+DebugJS.bat.getSymbols = function(t, p) {
   var a = [];
   var re = null;
   if (p) {
     try {
       var cnd = eval('/' + p + '/');
     } catch (e) {
-      DebugJS._log.e('Get labels error (' + e + ')');
+      DebugJS._log.e('Get symbols error (' + e + ')');
       return a;
     }
     re = new RegExp(cnd);
   }
-  for (var k in DebugJS.bat.labels) {
+  var o = (t == 'function' ? DebugJS.bat.fncs : DebugJS.bat.labels);
+  for (var k in o) {
     if ((!re) || ((re) && (k.match(re)))) {
       a.push(k);
     }
