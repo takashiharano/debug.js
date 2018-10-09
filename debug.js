@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810090000';
+  this.v = '201810091950';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6313,6 +6313,7 @@ DebugJS.prototype = {
       ctx.setBatTxt(ctx);
       ctx.setBatArgTxt(ctx);
       ctx.updateCurPc();
+      ctx.updateBatNestLv();
       ctx.updateBatRunBtn();
       ctx.updateBatResumeBtn();
     } else {
@@ -12718,6 +12719,7 @@ DebugJS.bat.ctrl = {
   stack: []
 };
 DebugJS.bat.labels = {};
+DebugJS.bat.fncs = {};
 DebugJS.bat.ctx = [];
 DebugJS.bat.set = function(b) {
   var bat = DebugJS.bat;
@@ -13588,7 +13590,8 @@ DebugJS.bat.stCtx = function() {
   var batCtx = {
     cmds: cmds,
     ctrl: ctrl,
-    labels: bat.labels
+    labels: bat.labels,
+    fncs: bat.fncs
   };
   bat.ctx.push(batCtx);
 };
@@ -13603,6 +13606,7 @@ DebugJS.bat.ldCtx = function() {
   bat.setFnNm(bat.ctrl.fnnm);
   bat.cmds = batCtx.cmds;
   bat.labels = batCtx.labels;
+  bat.fncs = batCtx.fncs;
   ctx.setBatTxt(ctx);
   ctx.updateTotalLine();
   ctx.updateBatNestLv();
