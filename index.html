@@ -4606,6 +4606,8 @@ The difference from other comment section is the content will be set to the vari
 <span class="emphasis">
 ${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
 
+%{val} <span class="annotation">inline expansion of the value</span>
+
 IF (${val} == 1) (</span>
   command
 <span class="emphasis">) ELSE IF (${val} == 2) (</span>
@@ -4613,18 +4615,6 @@ IF (${val} == 1) (</span>
 <span class="emphasis">) ELSE (</span>
   command
 <span class="emphasis">)
-
-%{val} <span class="annotation">inline expansion of the value</span>
-
-!__JS__!</span> <span class="annotation">Inline JavaScript Section</span>
-JavaScript Code;
-JavaScript Code;
-JavaScript Code;
-<span class="emphasis">!__JS__! <span class="annotation">This section will be executed at once.</span>
-
-!__JS__! pure</span> <span class="annotation">JavaScript section w/o variable substitution (${val})</span>
-JavaScript Code;
-<span class="emphasis">!__JS__!
 
 </span>${i} = 0
 <span class="emphasis">LOOP (${i} &lt; 3) (</span>
@@ -4641,6 +4631,18 @@ LOOP (</span>
     CONTINUE</span>
   )
 <span class="emphasis">)
+
+!__JS__!</span> <span class="annotation">Inline JavaScript Section</span>
+JavaScript Code;
+JavaScript Code;
+JavaScript Code;
+<span class="emphasis">!__JS__! <span class="annotation">This section will be executed at once.</span>
+
+!__JS__! pure</span> <span class="annotation">JavaScript section w/o variable substitution (${val})</span>
+JavaScript Code;
+JavaScript Code;
+JavaScript Code;
+<span class="emphasis">!__JS__!
 
 :label</span>
 goto label
