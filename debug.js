@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810100000';
+  this.v = '201810102210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12636,7 +12636,6 @@ DebugJS.bat.ctrl = {
   delay: 0,
   echo: true,
   tmpEchoOff: false,
-  cmnt: 0,
   js: 0,
   tmid: 0,
   lock: 0,
@@ -12971,23 +12970,13 @@ DebugJS.bat.prepro = function(ctx, cmd) {
   }
   var a = DebugJS.splitArgs(cmds[1]);
   var b;
-  if (c.match(/^\s*@/)) {
-    c = c.substr(c.indexOf('@') + 1);
+  if (c.match(/^@/)) {
+    c = c.substr(1);
     ctrl.tmpEchoOff = true;
   }
-  if ((c.charAt(0) == '#') || (c.substr(0, 2) == '//')) {
-    return 1;
-  }
-  if (DebugJS.delLeadingSP(cmd).substr(0, 2) == '/*') {
-    ctrl.cmnt++;
-    return 1;
-  }
-  if (DebugJS.delTrailingSP(cmd).slice(-2) == '*/') {
-    ctrl.cmnt--;
-    if (ctrl.cmnt < 0) bat.syntaxErr(cmd);
-    return 1;
-  }
-  if (ctrl.cmnt > 0) {
+  var pc = bat.nextExecLine(ctrl.pc - 1);
+  if (pc != ctrl.pc - 1) {
+    bat.setPc(pc);
     return 1;
   }
   if (c == DebugJS.BAT_TKN_FNC) {
@@ -13141,6 +13130,35 @@ DebugJS.bat.prepro = function(ctx, cmd) {
     return 1;
   }
   return 0;
+};
+DebugJS.bat.nextExecLine = function(pc) {
+  var cmnt = 0;
+  while (pc <= DebugJS.bat.ctrl.endPc) {
+    var cmd = DebugJS.bat.cmds[pc];
+    pc++;
+    var cmds = DebugJS.splitCmdLineInTwo(cmd);
+    var c = cmds[0];
+    if ((c == '') || (c.charAt(0) == '#') || (c.substr(0, 2) == '//')) {
+      continue;
+    }
+    if (DebugJS.delLeadingSP(cmd).substr(0, 2) == '/*') {
+      cmnt++;
+      continue;
+    }
+    if (DebugJS.delTrailingSP(cmd).slice(-2) == '*/') {
+      cmnt--;
+      if (cmnt < 0) {
+        DebugJS.bat.syntaxErr(cmd);
+        break;
+      }
+      continue;
+    }
+    if (cmnt == 0) {
+      pc--;
+      break;
+    }
+  }
+  return pc;
 };
 DebugJS.bat.ppIf = function(t, cnd, cmd) {
   var r = {cond: false, err: true};
