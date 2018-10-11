@@ -715,6 +715,10 @@ function onCtrlC() {
   stopRandomDemo();
 }
 
+function onBatStart() {
+  log('BAT start');
+}
+
 function onBatStop(code) {
   log('BAT exit status = ' + code);
 }
@@ -723,6 +727,7 @@ function onReady() {
   //log('ready');
   addFileLoadHandler();
   dbg.addEvtListener('ctrlc', onCtrlC);
+  dbg.addEvtListener('batstart', onBatStart);
   dbg.addEvtListener('batstop', onBatStop);
 }
 
