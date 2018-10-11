@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810111955';
+  this.v = '201810112100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2003,7 +2003,7 @@ DebugJS.prototype = {
       }
       var color = '';
       if ((data.type == DebugJS.LOG_TYPE_RES) || (data.type == DebugJS.LOG_TYPE_ERES)) {
-        msg = DebugJS.encStringIfNeeded(DebugJS.setStyleIfObjNA(msg));
+        msg = DebugJS.quoteStrIfNeeded(DebugJS.setStyleIfObjNA(msg));
         if (data.type == DebugJS.LOG_TYPE_RES) {
           color = opt.promptColor;
         } else {
@@ -6429,7 +6429,7 @@ DebugJS.prototype = {
 
   updateBatNestLv: function() {
     if (DebugJS.ctx.batNestLv) {
-      DebugJS.ctx.batNestLv.innerText = DebugJS.bat.ctx.length;
+      DebugJS.ctx.batNestLv.innerText = DebugJS.bat.nestLv();
     }
   },
 
@@ -6565,7 +6565,7 @@ DebugJS.prototype = {
       var ret = eval(code);
       var res = ret;
       if (typeof ret == 'string') {
-        res = DebugJS.encString(ret);
+        res = DebugJS.quoteStr(ret);
       }
       if (echo) DebugJS._log.res(res);
       return ret;
@@ -7070,7 +7070,7 @@ DebugJS.prototype = {
             st += 'No batch script';
           } else {
             st += ((ctx.status & DebugJS.ST_BAT_RUNNING) ? '<span style="color:#0f0">RUNNING</span>' : '<span style="color:#f44">STOPPED</span>');
-            st += '\nNest Lv: ' + bat.ctx.length;
+            st += '\nNest Lv: ' + bat.nestLv();
           }
           DebugJS._log.p(bat.ctrl, 0, st, false);
         } else {
@@ -7096,13 +7096,11 @@ DebugJS.prototype = {
         if (a[1] != undefined) {
           var b = DebugJS.decodeBase64(a[1], true);
           if (b != '') {
-            if (ctx.status & DebugJS.ST_BAT_RUNNING) {
-              bat.stCtx();
-            }
-            var a = DebugJS.getArgsFrom(arg, 2);
+            var ag = DebugJS.getArgsFrom(arg, 2);
             try {
-              a = eval(a);
-              bat(b, a);
+              ag = eval(ag);
+              if (ctx.status & DebugJS.ST_BAT_RUNNING) bat.stCtx();
+              bat(b, ag);
             } catch (e) {
               DebugJS._log.e('BAT ERROR: Illegal argument (' + e + ')');
             }
@@ -9298,7 +9296,7 @@ DebugJS.prototype = {
         i = eval(i);
       }
       var ret = fn(i, a1, a2);
-      if (echo) DebugJS._log.res(DebugJS.encStringIfNeeded(ret));
+      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(ret));
       return ret;
     } catch (e) {
       DebugJS._log.e(e);
@@ -9887,19 +9885,19 @@ DebugJS.delAllNL = function(s) {
   s = s.replace(/\n/g, '');
   return s;
 };
-DebugJS.encString = function(s) {
+DebugJS.quoteStr = function(s) {
   return '<span style="color:#0ff">"</span>' + s + '<span style="color:#0ff">"</span>';
 };
-DebugJS.encStringIfNeeded = function(s) {
+DebugJS.quoteStrIfNeeded = function(s) {
   s += '';
   if ((s.match(/^\s|^&#x3000/)) || (s.match(/\s$|&#x3000$/))) {
-    s = DebugJS.encString(s);
+    s = DebugJS.quoteStr(s);
   }
   return s;
 };
 DebugJS.escEncString = function(s) {
   s = DebugJS.escTags(s);
-  s = DebugJS.encString(s);
+  s = DebugJS.quoteStr(s);
   return s;
 };
 
@@ -9907,7 +9905,7 @@ DebugJS.styleValue = function(v) {
   var s = v;
   if (typeof s == 'string') {
     s = DebugJS.escTags(s);
-    s = DebugJS.encString(s);
+    s = DebugJS.quoteStr(s);
   } else {
     s = DebugJS.setStyleIfObjNA(s);
   }
@@ -10206,7 +10204,7 @@ DebugJS.calcNextTime = function(times) {
     var ss = t.substr(4, 2);
     if (ss == '') ss = '00';
     var tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
-    if (i == 0) {ret.time = tgt.time;}
+    if (i == 0) ret.time = tgt.time;
     if (now.time <= tgt.time) {
       ret.t = ts[i];
       ret.time = tgt.time;
@@ -10539,7 +10537,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
       } else {
         str = DebugJS.hlCtrlChr(str);
       }
-      arg.dump += (toJson ? '"' + str.replace(/\"/g, '\\"') + '"' : DebugJS.encString(str));
+      arg.dump += (toJson ? '"' + str.replace(/\"/g, '\\"') + '"' : DebugJS.quoteStr(str));
       arg.cnt++;
     } else {
       arg.dump += obj; arg.cnt++;
@@ -10668,7 +10666,6 @@ DebugJS.execCmdJson = function(json, flg, lv) {
     DebugJS._log.e(detail);
   }
 };
-
 DebugJS.checkJson = function(json) {
   var ctx = DebugJS.ctx;
   json = DebugJS.delLeadingAndTrailingSP(json);
@@ -10717,14 +10714,12 @@ DebugJS.checkJson = function(json) {
   }
   return res;
 };
-
 DebugJS.fromJSON = function(j, r) {
   return JSON.parse(j, r);
 };
 DebugJS.toJSON = function(o, r, s) {
   return JSON.stringify(o, r, s);
 };
-
 DebugJS.obj2json = function(o) {
   return DebugJS.objDump(o, true, 0, true, 0);
 };
@@ -12536,8 +12531,6 @@ DebugJS.time.end = function(timerName, msg) {
 DebugJS.time.check = function(timerName) {
   return DebugJS.timeCheck(timerName, new Date());
 };
-DebugJS.time.s = DebugJS.time.start;
-DebugJS.time.e = DebugJS.time.end;
 
 DebugJS.stopwatch = function() {
   var ctx = DebugJS.ctx;
@@ -12657,7 +12650,7 @@ DebugJS.bat.ctx = [];
 DebugJS.bat.set = function(b) {
   var bat = DebugJS.bat;
   if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) {
-    if (bat.ctx.length == 0) {
+    if (bat.nestLv() == 0) {
       bat.stop(DebugJS.EXIT_CLEARED);
     } else {
       bat.stopNext();
@@ -12667,13 +12660,13 @@ DebugJS.bat.set = function(b) {
     DebugJS.ctx.batTextEditor.value = b;
   }
   bat.store(b);
-  if (bat.ctx.length > 0) {
+  if (bat.nestLv() > 0) {
     bat.inheritSt();
   }
 };
 DebugJS.bat.inheritSt = function() {
   var bat = DebugJS.bat;
-  var callerCtrl = bat.ctx[bat.ctx.length - 1].ctrl;
+  var callerCtrl = bat.ctx[bat.nestLv() - 1].ctrl;
   bat.ctrl.echo = callerCtrl.echo;
 };
 DebugJS.bat.store = function(b) {
@@ -12772,7 +12765,7 @@ DebugJS.bat._run = function() {
   ctx.updateBatRunBtn();
   bat.initCtrl(false);
   var ctrl = bat.ctrl;
-  if (bat.ctx.length == 0) {
+  if (bat.nestLv() == 0) {
     ctrl.echo = ctx.cmdEchoFlg;
   }
   ctx.updateCurPc();
@@ -12780,8 +12773,8 @@ DebugJS.bat._run = function() {
   ctrl.endPc = el;
   bat.setExecArg(ctrl.execArg);
   bat.stopNext();
-  DebugJS.callEvtListener('batstart');
-  DebugJS.bat.exec();
+  if (bat.nestLv() == 0) DebugJS.callEvtListener('batstart');
+  bat.exec();
 };
 DebugJS.bat.run.arg = {s: 0, e: 0};
 DebugJS.bat.clearTimer = function() {
@@ -13441,7 +13434,7 @@ DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
         resumed = true;
       }
     }
-    if (resumed) {ctrl.pauseTimeout = 0;}
+    if (resumed) ctrl.pauseTimeout = 0;
     var msg;
     if (resumed) {
       ctrl.pauseKey = null;
@@ -13686,6 +13679,9 @@ DebugJS.bat.getSymbols = function(t, p) {
     }
   }
   return a;
+};
+DebugJS.bat.nestLv = function() {
+  return DebugJS.bat.ctx.length;
 };
 DebugJS.bat.isAvailable = function() {
   return DebugJS.bat.cmds.length > 0;
@@ -14003,10 +13999,10 @@ DebugJS.point.keyevt = function(args) {
   if (keyCode != null) {e.keyCode = keyCode | 0;}
 
   var code = DebugJS.getOptVal(args, 'code');
-  if (code != null) {e.code = code;}
+  if (code != null) e.code = code;
 
   var key = DebugJS.getOptVal(args, 'key');
-  if (key != null) {e.key = key;}
+  if (key != null) e.key = key;
 
   e.shiftKey = false;
   e.ctrlKey = false;
@@ -14018,10 +14014,10 @@ DebugJS.point.keyevt = function(args) {
 };
 DebugJS.point.setKeyFlag = function(e, a) {
   for (var i = 0; i < a.length; i++) {
-    if (a[i] == '-s') {e.shiftKey = true;}
-    if (a[i] == '-c') {e.ctrlKey = true;}
-    if (a[i] == '-a') {e.altKey = true;}
-    if (a[i] == '-m') {e.metaKey = true;}
+    if (a[i] == '-s') e.shiftKey = true;
+    if (a[i] == '-c') e.ctrlKey = true;
+    if (a[i] == '-a') e.altKey = true;
+    if (a[i] == '-m') e.metaKey = true;
   }
   return e;
 };
@@ -14314,7 +14310,6 @@ DebugJS.pointTarget = function(ps, alignX, alignY) {
 DebugJS.getCenterPos = function(ps) {
   return DebugJS.getAlignedPos(ps, 0.5, 0.5);
 };
-
 DebugJS.getAlignedPos = function(ps, alignX, alignY) {
   var x = ps.x;
   var y = ps.y;
@@ -14668,8 +14663,8 @@ DebugJS.scrollElTo = function(target, x, y) {
     }
   }
 
-  if (x != null) {el.scrollLeft = x;}
-  if (y != null) {el.scrollTop = y;}
+  if (x != null) el.scrollLeft = x;
+  if (y != null) el.scrollTop = y;
 };
 
 DebugJS.calcDestPosAndStep = function(dest, step) {
@@ -15471,25 +15466,6 @@ DebugJS.wd.stop = function() {
   DebugJS._log.s('Stop watchdog');
 };
 
-DebugJS.setConsoleLogOut = function(f) {
-  if (!window.console) return;
-  if (f) {
-    console.log = function(x) {log(x);};
-    console.info = function(x) {log.i(x);};
-    console.warn = function(x) {log.w(x);};
-    console.error = function(x) {log.e(x);};
-    console.time = function(x) {DebugJS.time.start(x);};
-    console.timeEnd = function(x) {DebugJS.time.end(x);};
-  } else {
-    console.log = DebugJS.bak.console.log;
-    console.info = DebugJS.bak.console.info;
-    console.warn = DebugJS.bak.console.warn;
-    console.error = DebugJS.bak.console.error;
-    console.time = DebugJS.bak.console.time;
-    console.timeEnd = DebugJS.bak.console.timeEnd;
-  }
-};
-
 DebugJS.log = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log(m);
@@ -15579,6 +15555,25 @@ DebugJS.rootFncs = function() {
   for (var i = 0; i < fn.length; i++) {
     var lv = fn[i];
     DebugJS.log[lv].root = (DebugJS.ENABLE ? DebugJS.log.root.fn.bind(undefined, lv) : DebugJS.f_);
+  }
+};
+
+DebugJS.setConsoleLogOut = function(f) {
+  if (!window.console) return;
+  if (f) {
+    console.log = function(x) {log(x);};
+    console.info = function(x) {log.i(x);};
+    console.warn = function(x) {log.w(x);};
+    console.error = function(x) {log.e(x);};
+    console.time = function(x) {DebugJS.time.start(x);};
+    console.timeEnd = function(x) {DebugJS.time.end(x);};
+  } else {
+    console.log = DebugJS.bak.console.log;
+    console.info = DebugJS.bak.console.info;
+    console.warn = DebugJS.bak.console.warn;
+    console.error = DebugJS.bak.console.error;
+    console.time = DebugJS.bak.console.time;
+    console.timeEnd = DebugJS.bak.console.timeEnd;
   }
 };
 
@@ -15827,5 +15822,7 @@ if (DebugJS.ENABLE) {
 } else {
   DebugJS.balse();
 }
+DebugJS.time.s = DebugJS.time.start;
+DebugJS.time.e = DebugJS.time.end;
 var dbg = (dbg === undefined ? DebugJS : dbg);
 var log = (log === undefined ? DebugJS.log : log);
