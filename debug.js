@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810112145';
+  this.v = '201810120035';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -653,11 +653,11 @@ DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
 DebugJS.G_EL_AVAILABLE = false;
 DebugJS.JS_SNIPPET = [
-'dbg.time.s();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.e();\n\'done\';\n',
+'dbg.time.s();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.e();\n\'done\';',
 '',
 '',
 ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~',
-'// Logging performance check\nvar i = 0;\nvar n = 1000;\ndbg.msg(\'loop = \' + n);\ndbg.time.s(\'total\');\ntest();\nfunction test() {\n  dbg.time.s();\n  dbg.time.e();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.e(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
+'// Logging performance check\nvar n = 1000;\nvar i = 0;\ndbg.time.s(\'total\');\ntest();\nfunction test() {\n  dbg.time.s();\n  dbg.time.e();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.e(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}'
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
@@ -1196,15 +1196,13 @@ DebugJS.prototype = {
   },
 
   disableAllFeatures: function(ctx) {
-    var len = DebugJS.FEATURES.length;
-    for (var i = 0; i < len; i++) {
+    for (var i = 0; i < DebugJS.FEATURES.length; i++) {
       ctx.opt[DebugJS.FEATURES[i]] = false;
     }
   },
 
   isAllFeaturesDisabled: function(ctx) {
-    var len = DebugJS.FEATURES.length;
-    for (var i = 0; i < len; i++) {
+    for (var i = 0; i < DebugJS.FEATURES.length; i++) {
       if (ctx.opt[DebugJS.FEATURES[i]]) return false;
     }
     return true;
@@ -15293,10 +15291,11 @@ DebugJS.test.onVrfyAftr = function(st) {
   }
 };
 DebugJS.test.countLongestLabel = function() {
+  var results = DebugJS.test.data.results;
   var l = 0;
-  for (var id in DebugJS.test.data.results) {
-    for (var i = 0; i < DebugJS.test.data.results[id].results.length; i++) {
-      var r = DebugJS.test.data.results[id].results[i];
+  for (var id in results) {
+    for (var i = 0; i < results[id].results.length; i++) {
+      var r = results[id].results[i];
       if (r.label.length > l) {
         l = r.label.length;
       }
