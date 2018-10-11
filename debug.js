@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810110050';
+  this.v = '201810111955';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -653,11 +653,11 @@ DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
 DebugJS.G_EL_AVAILABLE = false;
 DebugJS.JS_SNIPPET = [
-'dbg.time.start();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.end();\n\'done\';\n',
+'dbg.time.s();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.e();\n\'done\';\n',
 '',
 '',
 ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~',
-'// Logging performance check\nvar i = 0;\nvar n = 1000;\ndbg.msg(\'loop = \' + n);\ndbg.time.start(\'total\');\ntest();\nfunction test() {\n  dbg.time.start();\n  dbg.time.end();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.end(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
+'// Logging performance check\nvar i = 0;\nvar n = 1000;\ndbg.msg(\'loop = \' + n);\ndbg.time.s(\'total\');\ntest();\nfunction test() {\n  dbg.time.s();\n  dbg.time.e();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.e(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}\n'
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
@@ -6875,7 +6875,6 @@ DebugJS.prototype = {
     ctx.saveHistory(ctx, cl);
     ctx._execCmd(cl, ctx.cmdEchoFlg);
   },
-
   _execCmd: function(str, echo, recho) {
     var ctx = DebugJS.ctx;
     var setValName = null;
@@ -6915,7 +6914,6 @@ DebugJS.prototype = {
     }
     return ret;
   },
-
   __execCmd: function(ctx, cmdline, echo, aliased) {
     cmdline = DebugJS.replaceCtrlChr(cmdline);
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
@@ -10977,7 +10975,7 @@ DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
   } else {
     bin = v2;
   }
-  if (n) {;
+  if (n) {
     if (len >= n) {
       var digits = len;
       if (overflow == false) {
@@ -12538,6 +12536,8 @@ DebugJS.time.end = function(timerName, msg) {
 DebugJS.time.check = function(timerName) {
   return DebugJS.timeCheck(timerName, new Date());
 };
+DebugJS.time.s = DebugJS.time.start;
+DebugJS.time.e = DebugJS.time.end;
 
 DebugJS.stopwatch = function() {
   var ctx = DebugJS.ctx;
@@ -13487,6 +13487,7 @@ DebugJS.bat._stop = function(st) {
   delete ctx.CMDVALS['%ARG%'];
   delete ctx.CMDVALS['%RET%'];
   delete ctx.CMDVALS['%LABEL%'];
+  delete ctx.CMDVALS['%FUNCNAME%'];
   delete ctx.CMDVALS['%TEXT%'];
   bat.setExitStatus(st);
   DebugJS.callEvtListener('batstop', ctx.CMDVALS['?']);
