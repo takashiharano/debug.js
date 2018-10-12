@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810120035';
+  this.v = '201810122025';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -837,10 +837,10 @@ DebugJS.prototype = {
       'font-family': opt.fontFamily + ' !important'
     };
     styles['#' + ctx.id + ' td'] = {
-      'width': 'initial',
-      'padding': '0 3px',
-      'border': 'initial !important',
-      'background': 'initial !important',
+      'width': 'auto !important',
+      'padding': '0 3px !important',
+      'border': 'none !important',
+      'background': 'none !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important'
     };
@@ -849,8 +849,9 @@ DebugJS.prototype = {
       'height': 'auto !important',
       'margin': '0 !important',
       'line-height': '1em !important',
-      'border': 'initial !important',
-      'background': 'initial !important',
+      'border': 'none !important',
+      'border-radius': '0 !important',
+      'background': 'none !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important',
       'white-space': 'pre-wrap !important',
