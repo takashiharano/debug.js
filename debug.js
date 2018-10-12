@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810122025';
+  this.v = '201810122317';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -277,6 +277,8 @@ var DebugJS = DebugJS || function() {
   this.fltrInputLabel = null;
   this.fltrInput = null;
   this.fltrText = '';
+  this.fltr = false;
+  this.fltrBtn = null;
   this.fltrCase = false;
   this.fltrCaseBtn = null;
   this.fltrTxtHtml = true;
@@ -750,7 +752,6 @@ DebugJS.prototype = {
     ctx.showDbgWinOnError(ctx);
     return true;
   },
-
   initUi: function(ctx, restoreOpt) {
     ctx.initUiStatus(ctx, ctx.opt, restoreOpt);
     ctx.computedMinW = DebugJS.DBGWIN_MIN_W * ctx.opt.zoom;
@@ -817,7 +818,6 @@ DebugJS.prototype = {
       ctx.restoreDbgWinSize(ctx, restoreOpt.sizeStatus);
     }
   },
-
   initStyles: function(ctx) {
     var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
@@ -1063,7 +1063,6 @@ DebugJS.prototype = {
     };
     ctx.applyStyles(ctx, styles);
   },
-
   initBuf: function(ctx, newSize) {
     var buf = DebugJS.ctx.msgBuf.getAll();
     var oldSize = buf.length;
@@ -1251,9 +1250,7 @@ DebugJS.prototype = {
       ctx.clearBtn.onclick = ctx.onClr;
     }
 
-    if (opt.useLogFilter) {
-      ctx.createLogFilter(ctx);
-    }
+    if (opt.useLogFilter) ctx.createLogFilter(ctx);
 
     if (opt.useLogFilter) {
       ctx.logPanelHeightAdjust = ' - 1em';
@@ -1526,7 +1523,7 @@ DebugJS.prototype = {
     return btn;
   },
 
-  createHeaderBtn: function(btnobj, label, marginLeft, fontSize, handler, status, state, activeColor, reverse, title) {
+  createHeaderBtn: function(btnObj, label, marginLeft, fontSize, handler, status, state, activeColor, reverse, title) {
     var ctx = DebugJS.ctx;
     var btn = ctx.createBtn(ctx, label, ctx.headPanel);
     btn.style.float = 'right';
@@ -1534,11 +1531,11 @@ DebugJS.prototype = {
     if (fontSize) ctx.setStyle(btn, 'font-size', fontSize);
     btn.onclick = handler;
     ctx.setStyle(btn, 'color', DebugJS.COLOR_INACTIVE);
-    btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnobj + ', \'color\', DebugJS.' + activeColor + ');');
+    btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.' + activeColor + ');');
     if (reverse) {
-      btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnobj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? DebugJS.COLOR_INACTIVE : DebugJS.' + activeColor + ');');
+      btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? DebugJS.COLOR_INACTIVE : DebugJS.' + activeColor + ');');
     } else {
-      btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnobj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? DebugJS.' + activeColor + ' : DebugJS.COLOR_INACTIVE);');
+      btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? DebugJS.' + activeColor + ' : DebugJS.COLOR_INACTIVE);');
     }
     if (title) btn.title = title;
     return btn;
@@ -1574,59 +1571,55 @@ DebugJS.prototype = {
   },
 
   createLogFilter: function(ctx) {
-    ctx.fltrBtnAll = ctx.createLogFilterBtn('ALL', 'fltrBtnAll', 'btnColor');
-    ctx.fltrBtnStd = ctx.createLogFilterBtn('LOG', 'fltrBtnStd', 'fontColor');
-    ctx.fltrBtnErr = ctx.createLogFilterBtn('ERR', 'fltrBtnErr', 'logColorE');
-    ctx.fltrBtnWrn = ctx.createLogFilterBtn('WRN', 'fltrBtnWrn', 'logColorW');
-    ctx.fltrBtnInf = ctx.createLogFilterBtn('INF', 'fltrBtnInf', 'logColorI');
-    ctx.fltrBtnDbg = ctx.createLogFilterBtn('DBG', 'fltrBtnDbg', 'logColorD');
-    ctx.fltrBtnVrb = ctx.createLogFilterBtn('VRB', 'fltrBtnVrb', 'logColorV');
+    ctx.fltrBtnAll = ctx.createLogFltBtn('ALL', 'fltrBtnAll', 'btnColor');
+    ctx.fltrBtnStd = ctx.createLogFltBtn('LOG', 'fltrBtnStd', 'fontColor');
+    ctx.fltrBtnErr = ctx.createLogFltBtn('ERR', 'fltrBtnErr', 'logColorE');
+    ctx.fltrBtnWrn = ctx.createLogFltBtn('WRN', 'fltrBtnWrn', 'logColorW');
+    ctx.fltrBtnInf = ctx.createLogFltBtn('INF', 'fltrBtnInf', 'logColorI');
+    ctx.fltrBtnDbg = ctx.createLogFltBtn('DBG', 'fltrBtnDbg', 'logColorD');
+    ctx.fltrBtnVrb = ctx.createLogFltBtn('VRB', 'fltrBtnVrb', 'logColorV');
 
     ctx.fltrInputLabel = document.createElement('span');
     ctx.fltrInputLabel.style.marginLeft = '4px';
     ctx.setStyle(ctx.fltrInputLabel, 'color', ctx.opt.sysInfoColor);
-    ctx.fltrInputLabel.innerText = 'Filter:';
+    ctx.fltrInputLabel.innerText = 'Search:';
     ctx.logHeaderPanel.appendChild(ctx.fltrInputLabel);
 
-    var filterW = 'calc(100% - 31em)';
+    var filterW = 'calc(100% - 32.3em)';
     ctx.fltrInput = ctx.createTextInput(filterW, null, ctx.opt.sysInfoColor, ctx.fltrText, DebugJS.ctx.onchangeLogFilter);
     ctx.setStyle(ctx.fltrInput, 'position', 'relative');
     ctx.setStyle(ctx.fltrInput, 'top', '-2px');
     ctx.setStyle(ctx.fltrInput, 'margin-left', '2px');
     ctx.logHeaderPanel.appendChild(ctx.fltrInput);
 
-    ctx.fltrCaseBtn = ctx.createBtn(ctx, 'Aa', ctx.logHeaderPanel);
-    ctx.fltrCaseBtn.style.marginLeft = '2px';
-    ctx.fltrCaseBtn.onclick = DebugJS.ctx.toggleFilterCase;
-    ctx.setStyle(ctx.fltrCaseBtn, 'color', (DebugJS.ctx.fltrCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
-    ctx.fltrCaseBtn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrCaseBtn, \'color\', DebugJS.FLT_BTN_COLOR);');
-    ctx.fltrCaseBtn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrCaseBtn, \'color\', (DebugJS.ctx.fltrCase) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
-
-    ctx.fltrTxtHtmlBtn = ctx.createBtn(ctx, '</>', ctx.logHeaderPanel);
-    ctx.fltrTxtHtmlBtn.style.marginLeft = '2px';
-    ctx.fltrTxtHtmlBtn.onclick = DebugJS.ctx.toggleFilterTxtHtml;
-    ctx.setStyle(ctx.fltrTxtHtmlBtn, 'color', (DebugJS.ctx.fltrTxtHtml) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
-    ctx.fltrTxtHtmlBtn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrTxtHtmlBtn, \'color\', DebugJS.FLT_BTN_COLOR);');
-    ctx.fltrTxtHtmlBtn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.fltrTxtHtmlBtn, \'color\', (DebugJS.ctx.fltrTxtHtml) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
+    ctx.fltrBtn = ctx.createLogFltBtn2(ctx, 'FL', 'fltrBtn', ctx.fltr, 'fltr', ctx.toggleFilter);
+    ctx.fltrCaseBtn = ctx.createLogFltBtn2(ctx, 'Aa', 'fltrCaseBtn', ctx.fltrCase, 'fltrCase', ctx.toggleFilterCase);
+    ctx.fltrTxtHtmlBtn = ctx.createLogFltBtn2(ctx, '</>', 'fltrTxtHtmlBtn', ctx.fltrTxtHtml, 'fltrTxtHtml', ctx.toggleFilterTxtHtml);
   },
-
-  setLogFilter: function(ctx, s, cs) {
-    ctx.fltrInput.value = s;
-    if (cs != undefined) {
-      ctx.setFilterCase(ctx, cs);
-    }
-    ctx.onchangeLogFilter();
-  },
-
-  createLogFilterBtn: function(type, btnobj, color) {
+  createLogFltBtn: function(type, btnObj, color) {
     var ctx = DebugJS.ctx;
     var label = '[' + type + ']';
     var btn = ctx.createBtn(ctx, label, ctx.logHeaderPanel);
     btn.style.marginLeft = '2px';
     btn.onclick = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FILTER_' + type + ');');
-    btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnobj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
+    btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
     btn.onmouseout = ctx.updateLogFilterBtns;
     return btn;
+  },
+  createLogFltBtn2: function(ctx, label, btnNm, flg, flgNm, fn) {
+    var btn = ctx.createBtn(ctx, label, ctx.logHeaderPanel);
+    btn.style.marginLeft = '2px';
+    btn.onclick = fn;
+    ctx.setStyle(btn, 'color', (flg) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnNm + ', \'color\', DebugJS.FLT_BTN_COLOR);');
+    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnNm + ', \'color\', (DebugJS.ctx.' + flgNm + ') ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
+    return btn;
+  },
+  setLogFilter: function(ctx, s, cs, fl) {
+    ctx.fltrInput.value = s;
+    ctx.setFilterCase(ctx, cs);
+    ctx.setFilter(ctx, fl);
+    ctx.onchangeLogFilter();
   },
 
   initCommandTable: function(ctx) {
@@ -1697,8 +1690,8 @@ DebugJS.prototype = {
     var top, left;
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
-    if (clientW > window.outerWidth) {clientW = window.outerWidth;}
-    if (clientH > window.outerHeight) {clientH = window.outerHeight;}
+    if (clientW > window.outerWidth) clientW = window.outerWidth;
+    if (clientH > window.outerHeight) clientH = window.outerHeight;
     switch (pos) {
       case 'se':
         top = (clientH - dbgWinH - opt.adjPosY) + 'px';
@@ -1986,7 +1979,7 @@ DebugJS.prototype = {
             var key = msg.substr(pos, filter.length);
             var hl = '<span class="' + ctx.id + '-txt-hl">' + key + '</span>';
             msg = msg.replace(key, hl, 'ig');
-          } else {
+          } else if (ctx.fltr) {
             continue;
           }
         } catch (e) {}
@@ -2079,6 +2072,15 @@ DebugJS.prototype = {
   onchangeLogFilter: function() {
     DebugJS.ctx.fltrText = DebugJS.ctx.fltrInput.value;
     DebugJS.ctx.printLogs();
+  },
+  toggleFilter: function() {
+    var ctx = DebugJS.ctx;
+    ctx.setFilter(ctx, (ctx.fltr ? false : true));
+  },
+  setFilter: function(ctx, f) {
+    ctx.fltr = f;
+    ctx.setStyle(ctx.fltrBtn, 'color', (DebugJS.ctx.fltr) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.onchangeLogFilter();
   },
 
   toggleFilterCase: function() {
@@ -3341,17 +3343,17 @@ DebugJS.prototype = {
     if (DebugJS.ctx.cmdLine) DebugJS.ctx.cmdLine.focus();
   },
 
-  startMeasure: function(ctx, posX, posY) {
-    if (ctx.isOnDbgWin(posX, posY)) return;
+  startMeasure: function(ctx, x, y) {
+    if (ctx.isOnDbgWin(x, y)) return;
     ctx.status |= DebugJS.ST_MEASURING;
-    ctx.clickedPosX = posX;
-    ctx.clickedPosY = posY;
+    ctx.clickedPosX = x;
+    ctx.clickedPosY = y;
     if (ctx.measBox == null) {
       var box = document.createElement('div');
       box.style.position = 'fixed';
       box.style.zIndex = 0x7fffffff;
-      box.style.top = posY + 'px';
-      box.style.left = posX + 'px';
+      box.style.top = y + 'px';
+      box.style.left = x + 'px';
       box.style.width = '0px';
       box.style.height = '0px';
       box.style.border = 'dotted 1px #333';
@@ -4417,13 +4419,13 @@ DebugJS.prototype = {
     ctx.batBtn = ctx.createToolsHeaderBtn('BAT', 'TOOLS_FNC_BAT', 'batBtn');
   },
 
-  createToolsHeaderBtn: function(label, state, btnobj) {
+  createToolsHeaderBtn: function(label, state, btnObj) {
     var ctx = DebugJS.ctx;
     var btn = ctx.createBtn(ctx, '<' + label + '>', ctx.toolsHeaderPanel);
     btn.style.marginRight = '4px';
     btn.onclick = new Function('DebugJS.ctx.switchToolsFunction(DebugJS.' + state + ');');
-    btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnobj + ', \'color\', DebugJS.SBPNL_COLOR_ACTIVE);');
-    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnobj + ', \'color\', (DebugJS.ctx.toolsActiveFnc & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);');
+    btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.SBPNL_COLOR_ACTIVE);');
+    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.toolsActiveFnc & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);');
     return btn;
   },
 
@@ -6636,7 +6638,6 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var pnls = ctx.extPanels;
     if (ctx.extActPnlIdx == idx) return;
-
     if (ctx.extActPnlIdx != -1) {
       var p2 = pnls[ctx.extActPnlIdx];
       if (p2) {
@@ -6646,7 +6647,6 @@ DebugJS.prototype = {
         ctx.extBodyPanel.removeChild(p2.base);
       }
     }
-
     var p1 = pnls[idx];
     ctx.extBodyPanel.appendChild(p1.base);
     if (p1) {
@@ -6654,7 +6654,6 @@ DebugJS.prototype = {
         ctx.onExtPanelActive(ctx, p1);
       }
     }
-
     ctx.extActPnlIdx = idx;
     ctx.updateExtBtns(ctx);
   },
@@ -8023,24 +8022,21 @@ DebugJS.prototype = {
     DebugJS._log.res(l);
   },
   _cmdLogFilter: function(ctx, arg) {
-    var a = DebugJS.splitArgsEx(arg);
-    var f = a[1];
-    if (f == undefined) {
-      DebugJS.printUsage('log filter [-case] string');
+    var a = DebugJS.getArgsFrom(arg, 1);
+    var s = DebugJS.getOptVal(a, 'case');
+    if (!s) s = DebugJS.getOptVal(a, 'fl');
+    if (!s) s = DebugJS.getOptVal(a, '')[0];
+    if (s == '') {
+      DebugJS.printUsage('log filter [-case] [-fl] "string"');
       return;
     }
-    var cs = false;
-    if (f == '-case') {
-      cs = true;
-      f = a[2];
-    }
     try {
-      f = eval(f);
+      s = eval(s);
     } catch (e) {
       DebugJS._log.e(e);
       return;
     }
-    ctx.setLogFilter(ctx, f, cs);
+    ctx.setLogFilter(ctx, s, DebugJS.hasOpt(arg, 'case'), DebugJS.hasOpt(arg, 'fl'));
   },
   _cmdLogHtml: function(ctx, arg) {
     var op = DebugJS.splitArgs(arg)[1];
@@ -9538,7 +9534,7 @@ DebugJS._replaceCmdVals = function(s, il) {
     }
     prevN = name;
     var reNm = name;
-    if (name == '?') {reNm = '\\?';}
+    if (name == '?') reNm = '\\?';
     var re = new RegExp(pfix + '\\{' + reNm + '\\}', 'g');
     var r;
     if (il) {
@@ -10003,25 +9999,25 @@ DebugJS.diffDate = function(d1, d2) {
 DebugJS.isDateFormat = function(s, p) {
   if (s == null) return false;
   var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}';
-  if (!p) {r += '$';}
+  if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isBasicDateFormat = function(s, p) {
   if (s == null) return false;
   var r = '^\\d{4}[0-1][0-9][0-3][0-9]';
-  if (!p) {r += '$';}
+  if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isDateTimeFormat = function(s, p) {
   if (s == null) return false;
   var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2} {1,}\\d{1,2}:\\d{2}:?\\d{0,2}\.?\\d{0,3}';
-  if (!p) {r += '$';}
+  if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isDateTimeFormatIso = function(s, p) {
   if (typeof s != 'string') return false;
   var r = '^\\d{8}T\\d{0,6}\.?\\d{0,3}';
-  if (!p) {r += '$';}
+  if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isTimeFormat = function(s) {
