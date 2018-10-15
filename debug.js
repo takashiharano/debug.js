@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810122317';
+  this.v = '201810160000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -848,6 +848,7 @@ DebugJS.prototype = {
       'width': 'auto !important',
       'height': 'auto !important',
       'margin': '0 !important',
+      'padding': '0 !important',
       'line-height': '1em !important',
       'border': 'none !important',
       'border-radius': '0 !important',
@@ -914,7 +915,7 @@ DebugJS.prototype = {
       'overflow': 'auto'
     };
     styles['.' + ctx.id + '-overlay-panel pre'] = {
-      'padding': '0 1px',
+      'padding': '0 1px !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important'
     };
@@ -965,8 +966,8 @@ DebugJS.prototype = {
       'white-space': 'nowrap !important'
     };
     styles['.' + ctx.id + '-txt-range'] = {
-      'width': (256 * opt.zoom) + 'px',
-      'height': (15 * opt.zoom) + 'px',
+      'width': (256 * opt.zoom) + 'px !important',
+      'height': (15 * opt.zoom) + 'px !important',
       'padding': '0 !important',
       'border': 'none !important',
       'outline': 'none !important',
@@ -980,17 +981,17 @@ DebugJS.prototype = {
       'opacity': '1.0 !important'
     };
     styles['#' + ctx.id + ' label'] = {
-      'display': 'inline',
-      'margin': '0',
-      'line-height': '1em',
+      'display': 'inline !important',
+      'margin': '0 !important',
+      'line-height': '1em !important',
       'color': opt.fontColor + ' !important',
       'font-size': fontSize + ' !important',
-      'font-weight': 'normal'
+      'font-weight': 'normal !important'
     };
     styles['#' + ctx.id + ' input[type="radio"]'] = {
-      'margin': '0 3px',
-      'width': 13 * opt.zoom + 'px',
-      'height': 13 * opt.zoom + 'px'
+      'margin': '0 3px !important',
+      'width': 13 * opt.zoom + 'px !important',
+      'height': 13 * opt.zoom + 'px !important'
     };
     styles['.' + ctx.id + '-editor'] = {
       'width': 'calc(100% - 6px) !important',
@@ -1041,7 +1042,7 @@ DebugJS.prototype = {
     styles['.dbg-resbox.box'] = {
       'display': 'inline-block !important',
       'min-width': 'calc(100% - 18px) !important',
-      'height': '1.5em',
+      'height': '1.5em !important',
       'margin-top': '4px !important',
     };
     styles['.dbg-resbox'] = {
@@ -1049,7 +1050,7 @@ DebugJS.prototype = {
       'color': '#fff !important',
       'font-size': fontSize + ' !important',
       'font-family': 'Consolas !important',
-      'overflow': 'auto',
+      'overflow': 'auto !important',
       'cursor': 'text !important',
       'resize': 'none !important'
     };
@@ -2010,7 +2011,7 @@ DebugJS.prototype = {
         logs += lineNum + m + '\n';
       }
     }
-    ctx.logPanel.innerHTML = '<pre style="padding:0 3px">' + logs + '</pre>';
+    ctx.logPanel.innerHTML = '<pre style="padding:0 3px !important">' + logs + '</pre>';
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
       ctx.uiStatus |= DebugJS.UI_ST_NEED_TO_SCROLL;
@@ -5218,7 +5219,7 @@ DebugJS.prototype = {
     '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ' !important;" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'' + ctx.opt.btnColor + '\');" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
     '<br>' +
     'font-family: <input value="' + dfltFontFamily + '" class="' + ctx.id + '-txt-text" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
-    'font-weight: <input type="range" min="100" max="900" step="100" value="' + dfltFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
+    'font-weight: <input type="range" min="100" max="900" step="100" value="' + dfltFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px !important" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
     '<table class="' + ctx.id + '-txt-tbl">' +
     '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="' + ctx.id + '-txt-text" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>' +
     '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-r" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-r"></span></td></tr>' +
