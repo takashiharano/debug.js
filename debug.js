@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810160000';
+  this.v = '201810170000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -317,7 +317,7 @@ var DebugJS = DebugJS || function() {
   this.toolStatus = 0;
   this.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
   this.sizeStatus = 0;
-  this.logFilter = DebugJS.LOG_FILTER_ALL;
+  this.logFilter = DebugJS.LOG_FLTR_ALL;
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
@@ -464,7 +464,7 @@ var DebugJS = DebugJS || function() {
   };
   this.unlockCode = null;
   this.setupDefaultOptions();
-  DebugJS.deepCopy(this.PROPS_DFLT_VALS, this.props);
+  DebugJS.copyProp(this.PROPS_DFLT_VALS, this.props);
 };
 DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DFLT_UNIT = 32;
@@ -515,13 +515,13 @@ DebugJS.TOOL_TIMER_MODE_CLOCK = 0;
 DebugJS.TOOL_TIMER_MODE_SW_CU = 1;
 DebugJS.TOOL_TIMER_MODE_SW_CD = 2;
 DebugJS.TOOL_TIMER_BTN_COLOR = '#eee';
-DebugJS.LOG_FILTER_LOG = 0x1;
-DebugJS.LOG_FILTER_VRB = 0x2;
-DebugJS.LOG_FILTER_DBG = 0x4;
-DebugJS.LOG_FILTER_INF = 0x8;
-DebugJS.LOG_FILTER_WRN = 0x10;
-DebugJS.LOG_FILTER_ERR = 0x20;
-DebugJS.LOG_FILTER_ALL = DebugJS.LOG_FILTER_LOG | DebugJS.LOG_FILTER_DBG | DebugJS.LOG_FILTER_INF | DebugJS.LOG_FILTER_WRN | DebugJS.LOG_FILTER_ERR;
+DebugJS.LOG_FLTR_LOG = 0x1;
+DebugJS.LOG_FLTR_VRB = 0x2;
+DebugJS.LOG_FLTR_DBG = 0x4;
+DebugJS.LOG_FLTR_INF = 0x8;
+DebugJS.LOG_FLTR_WRN = 0x10;
+DebugJS.LOG_FLTR_ERR = 0x20;
+DebugJS.LOG_FLTR_ALL = DebugJS.LOG_FLTR_LOG | DebugJS.LOG_FLTR_DBG | DebugJS.LOG_FLTR_INF | DebugJS.LOG_FLTR_WRN | DebugJS.LOG_FLTR_ERR;
 DebugJS.LOG_TYPE_LOG = 0x1;
 DebugJS.LOG_TYPE_VRB = 0x2;
 DebugJS.LOG_TYPE_DBG = 0x4;
@@ -966,6 +966,7 @@ DebugJS.prototype = {
       'white-space': 'nowrap !important'
     };
     styles['.' + ctx.id + '-txt-range'] = {
+      'display': 'inline-block !important',
       'width': (256 * opt.zoom) + 'px !important',
       'height': (15 * opt.zoom) + 'px !important',
       'padding': '0 !important',
@@ -1109,7 +1110,7 @@ DebugJS.prototype = {
 
   setupDefaultOptions: function() {
     this.opt = {};
-    DebugJS.deepCopy(this.DEFAULT_OPTIONS, this.opt);
+    DebugJS.copyProp(this.DEFAULT_OPTIONS, this.opt);
   },
 
   setupEventHandler: function(ctx) {
@@ -1586,8 +1587,8 @@ DebugJS.prototype = {
     ctx.fltrInputLabel.innerText = 'Search:';
     ctx.logHeaderPanel.appendChild(ctx.fltrInputLabel);
 
-    var filterW = 'calc(100% - 32.3em)';
-    ctx.fltrInput = ctx.createTextInput(filterW, null, ctx.opt.sysInfoColor, ctx.fltrText, DebugJS.ctx.onchangeLogFilter);
+    var fltrW = 'calc(100% - 32.3em)';
+    ctx.fltrInput = ctx.createTextInput(fltrW, null, ctx.opt.sysInfoColor, ctx.fltrText, DebugJS.ctx.onchangeLogFilter);
     ctx.setStyle(ctx.fltrInput, 'position', 'relative');
     ctx.setStyle(ctx.fltrInput, 'top', '-2px');
     ctx.setStyle(ctx.fltrInput, 'margin-left', '2px');
@@ -1602,7 +1603,7 @@ DebugJS.prototype = {
     var label = '[' + type + ']';
     var btn = ctx.createBtn(ctx, label, ctx.logHeaderPanel);
     btn.style.marginLeft = '2px';
-    btn.onclick = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FILTER_' + type + ');');
+    btn.onclick = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FLTR_' + type + ');');
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
     btn.onmouseout = ctx.updateLogFilterBtns;
     return btn;
@@ -1943,15 +1944,15 @@ DebugJS.prototype = {
       var style = '';
       switch (data.type) {
         case DebugJS.LOG_TYPE_DBG:
-          if (!(ctx.logFilter & DebugJS.LOG_FILTER_DBG)) continue;
+          if (!(ctx.logFilter & DebugJS.LOG_FLTR_DBG)) continue;
           style = 'color:' + opt.logColorD;
           break;
         case DebugJS.LOG_TYPE_INF:
-          if (!(ctx.logFilter & DebugJS.LOG_FILTER_INF)) continue;
+          if (!(ctx.logFilter & DebugJS.LOG_FLTR_INF)) continue;
           style = 'color:' + opt.logColorI;
           break;
         case DebugJS.LOG_TYPE_ERR:
-          if (!(ctx.logFilter & DebugJS.LOG_FILTER_ERR)) continue;
+          if (!(ctx.logFilter & DebugJS.LOG_FLTR_ERR)) continue;
           style = 'color:' + opt.logColorE;
           break;
         case DebugJS.LOG_TYPE_WRN:
@@ -1963,15 +1964,15 @@ DebugJS.prototype = {
           style = 'color:' + opt.logColorV;
           break;
         case DebugJS.LOG_TYPE_SYS:
-          if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
+          if (!(ctx.logFilter & DebugJS.LOG_FLTR_LOG)) continue;
           style = 'color:' + opt.logColorS + ';text-shadow:0 0 3px';
           break;
         case DebugJS.LOG_TYPE_MLT:
-          if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
+          if (!(ctx.logFilter & DebugJS.LOG_FLTR_LOG)) continue;
           style = 'display:inline-block;width:100%;margin:' + Math.round(ctx.computedFontSize * 0.5) + 'px 0';
           break;
         default:
-          if (!(ctx.logFilter & DebugJS.LOG_FILTER_LOG)) continue;
+          if (!(ctx.logFilter & DebugJS.LOG_FLTR_LOG)) continue;
       }
       if (filter != '') {
         try {
@@ -2028,28 +2029,28 @@ DebugJS.prototype = {
     DebugJS.ctx.printLogs();
   },
 
-  toggleLogFilter: function(filter) {
+  toggleLogFilter: function(fltr) {
     var ctx = DebugJS.ctx;
-    if (filter == DebugJS.LOG_FILTER_ALL) {
-      if ((ctx.logFilter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) {
+    if (fltr == DebugJS.LOG_FLTR_ALL) {
+      if ((ctx.logFilter & ~DebugJS.LOG_FLTR_VRB) == DebugJS.LOG_FLTR_ALL) {
         ctx.logFilter = 0;
       } else {
-        ctx.logFilter |= filter;
+        ctx.logFilter |= fltr;
       }
-    } else if (filter == DebugJS.LOG_FILTER_VRB) {
-      if (ctx.logFilter & DebugJS.LOG_FILTER_VRB) {
-        ctx.logFilter &= ~filter;
+    } else if (fltr == DebugJS.LOG_FLTR_VRB) {
+      if (ctx.logFilter & DebugJS.LOG_FLTR_VRB) {
+        ctx.logFilter &= ~fltr;
       } else {
-        ctx.logFilter |= filter;
+        ctx.logFilter |= fltr;
       }
     } else {
-      if ((ctx.logFilter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) {
-        ctx.logFilter = filter;
+      if ((ctx.logFilter & ~DebugJS.LOG_FLTR_VRB) == DebugJS.LOG_FLTR_ALL) {
+        ctx.logFilter = fltr;
       } else {
-        if (ctx.logFilter & filter) {
-          ctx.logFilter &= ~filter;
+        if (ctx.logFilter & fltr) {
+          ctx.logFilter &= ~fltr;
         } else {
-          ctx.logFilter |= filter;
+          ctx.logFilter |= fltr;
         }
       }
     }
@@ -2060,14 +2061,14 @@ DebugJS.prototype = {
   updateLogFilterBtns: function() {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
-    var filter = ctx.logFilter;
-    ctx.setStyle(ctx.fltrBtnAll, 'color', ((filter & ~DebugJS.LOG_FILTER_VRB) == DebugJS.LOG_FILTER_ALL) ? opt.btnColor : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.fltrBtnStd, 'color', (filter & DebugJS.LOG_FILTER_LOG) ? opt.fontColor : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.fltrBtnVrb, 'color', (filter & DebugJS.LOG_FILTER_VRB) ? opt.logColorV : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.fltrBtnDbg, 'color', (filter & DebugJS.LOG_FILTER_DBG) ? opt.logColorD : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.fltrBtnInf, 'color', (filter & DebugJS.LOG_FILTER_INF) ? opt.logColorI : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.fltrBtnWrn, 'color', (filter & DebugJS.LOG_FILTER_WRN) ? opt.logColorW : DebugJS.COLOR_INACTIVE);
-    ctx.setStyle(ctx.fltrBtnErr, 'color', (filter & DebugJS.LOG_FILTER_ERR) ? opt.logColorE : DebugJS.COLOR_INACTIVE);
+    var fltr = ctx.logFilter;
+    ctx.setStyle(ctx.fltrBtnAll, 'color', ((fltr & ~DebugJS.LOG_FLTR_VRB) == DebugJS.LOG_FLTR_ALL) ? opt.btnColor : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnStd, 'color', (fltr & DebugJS.LOG_FLTR_LOG) ? opt.fontColor : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnVrb, 'color', (fltr & DebugJS.LOG_FLTR_VRB) ? opt.logColorV : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnDbg, 'color', (fltr & DebugJS.LOG_FLTR_DBG) ? opt.logColorD : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnInf, 'color', (fltr & DebugJS.LOG_FLTR_INF) ? opt.logColorI : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnWrn, 'color', (fltr & DebugJS.LOG_FLTR_WRN) ? opt.logColorW : DebugJS.COLOR_INACTIVE);
+    ctx.setStyle(ctx.fltrBtnErr, 'color', (fltr & DebugJS.LOG_FLTR_ERR) ? opt.logColorE : DebugJS.COLOR_INACTIVE);
   },
 
   onchangeLogFilter: function() {
@@ -5559,8 +5560,7 @@ DebugJS.prototype = {
 
   closeFileLoader: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) &&
-        (ctx.fileVwrPanel != null)) {
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) && (ctx.fileVwrPanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.fileVwrPanel);
     }
   },
@@ -5601,9 +5601,8 @@ DebugJS.prototype = {
   },
 
   handleFileDropOnFileViewer: function(e) {
-    var ctx = DebugJS.ctx;
-    var format = (ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
-    ctx.handleFileDrop(ctx, e, format, null);
+    var format = (DebugJS.ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+    DebugJS.ctx.handleFileDrop(DebugJS.ctx, e, format, null);
   },
 
   handleFileDropAuto: function(e) {
@@ -5700,7 +5699,6 @@ DebugJS.prototype = {
       case 'bin':
       case 'hex':
         ctx.viewBinAsB64(ctx);
-        break;
     }
   },
 
@@ -5781,7 +5779,6 @@ DebugJS.prototype = {
     var limit = ctx.props.prevlimit;
     if (file && (file.size > limit)) {
       ctx.showFileSizeExceeds(ctx, file, limit);
-      return;
     } else {
       var data = DebugJS.Base64.encode(ctx.fileVwrByteArray);
       ctx.fileVwrDataSrc = {scheme: scheme, data: data};
@@ -5791,9 +5788,7 @@ DebugJS.prototype = {
   },
 
   cancelLoadFile: function() {
-    if (DebugJS.ctx.fileReader) {
-      DebugJS.ctx.fileReader.abort();
-    }
+    if (DebugJS.ctx.fileReader) DebugJS.ctx.fileReader.abort();
   },
 
   onAbortLoadFile: function(e) {
@@ -6275,8 +6270,7 @@ DebugJS.prototype = {
 
   closeHtmlEditor: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) &&
-        (ctx.htmlPrevBasePanel != null)) {
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) && (ctx.htmlPrevBasePanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.htmlPrevBasePanel);
     }
   },
@@ -6455,9 +6449,7 @@ DebugJS.prototype = {
   openJsEditor: function(ctx) {
     ctx.status |= DebugJS.ST_JS;
     ctx.featStack.push(DebugJS.ST_JS);
-    if (ctx.jsPanel == null) {
-      ctx.createJsPanel(ctx);
-    }
+    if (ctx.jsPanel == null) ctx.createJsPanel(ctx);
     ctx.updateJsBtn(ctx);
     ctx.jsEditor.focus();
   },
@@ -6672,9 +6664,7 @@ DebugJS.prototype = {
   prevValidExtPanelIdx: function(ctx, idx) {
     if (idx > 0) {
       for (var i = idx - 1; i >= 0; i--) {
-        if (ctx.extPanels[i] != null) {
-          return i;
-        }
+        if (ctx.extPanels[i] != null) return i;
       }
     }
     return -1;
@@ -6783,9 +6773,7 @@ DebugJS.prototype = {
   },
 
   expandHightIfNeeded: function(ctx) {
-    if (ctx.winExpandCnt == 0) {
-      ctx.expandHight(ctx, ctx.winExpandHeight);
-    }
+    if (ctx.winExpandCnt == 0) ctx.expandHight(ctx, ctx.winExpandHeight);
     ctx.winExpandCnt++;
   },
 
@@ -6804,9 +6792,7 @@ DebugJS.prototype = {
 
   resetExpandedHeightIfNeeded: function(ctx) {
     ctx.winExpandCnt--;
-    if (ctx.winExpandCnt == 0) {
-      ctx.resetExpandedHeight(ctx);
-    }
+    if (ctx.winExpandCnt == 0) ctx.resetExpandedHeight(ctx);
   },
 
   saveExpandModeOrgSizeAndPos: function(ctx) {
@@ -7145,9 +7131,7 @@ DebugJS.prototype = {
     var data = DebugJS.ctx.radixCmd(arg, tbl);
     if (data == null) return;
     var ret = DebugJS.convertBin(data);
-    if (ret != undefined) {
-      DebugJS._log(ret);
-    }
+    if (ret != undefined) DebugJS._log(ret);
   },
 
   cmdBSB64: function(arg, tbl, echo) {
@@ -7576,7 +7560,7 @@ DebugJS.prototype = {
     if (ctx.fltrInput) ctx.fltrInput.value = '';
     ctx.closeDbgWin();
     ctx.clearLog();
-    ctx.logFilter = DebugJS.LOG_FILTER_ALL;
+    ctx.logFilter = DebugJS.LOG_FLTR_ALL;
     ctx.updateLogFilterBtns();
   },
 
@@ -7715,9 +7699,7 @@ DebugJS.prototype = {
       ctx.CMD_HISTORY_MAX = ctx.opt.cmdHistoryMax;
       ctx.cmdHistoryBuf = new DebugJS.RingBuffer(ctx.CMD_HISTORY_MAX);
     }
-    if (DebugJS.LS_AVAILABLE) {
-      ctx.loadHistory(ctx);
-    }
+    if (DebugJS.LS_AVAILABLE) ctx.loadHistory(ctx);
   },
 
   showHistory: function() {
@@ -7789,9 +7771,7 @@ DebugJS.prototype = {
 
   clearHistory: function() {
     DebugJS.ctx.cmdHistoryBuf.clear();
-    if (DebugJS.LS_AVAILABLE) {
-      localStorage.removeItem('DebugJS-history');
-    }
+    if (DebugJS.LS_AVAILABLE) localStorage.removeItem('DebugJS-history');
   },
 
   cmdHttp: function(arg, tbl) {
@@ -8108,25 +8088,25 @@ DebugJS.prototype = {
     for (var i = 0; i < lv.length; i++) {
       switch (lv[i]) {
         case 'LOG':
-          ctx.logFilter |= DebugJS.LOG_FILTER_LOG;
+          ctx.logFilter |= DebugJS.LOG_FLTR_LOG;
           break;
         case 'VRB':
-          ctx.logFilter |= DebugJS.LOG_FILTER_VRB;
+          ctx.logFilter |= DebugJS.LOG_FLTR_VRB;
           break;
         case 'DBG':
-          ctx.logFilter |= DebugJS.LOG_FILTER_DBG;
+          ctx.logFilter |= DebugJS.LOG_FLTR_DBG;
           break;
         case 'INF':
-          ctx.logFilter |= DebugJS.LOG_FILTER_INF;
+          ctx.logFilter |= DebugJS.LOG_FLTR_INF;
           break;
         case 'WRN':
-          ctx.logFilter |= DebugJS.LOG_FILTER_WRN;
+          ctx.logFilter |= DebugJS.LOG_FLTR_WRN;
           break;
         case 'ERR':
-          ctx.logFilter |= DebugJS.LOG_FILTER_ERR;
+          ctx.logFilter |= DebugJS.LOG_FLTR_ERR;
           break;
         case 'ALL':
-          ctx.logFilter |= DebugJS.LOG_FILTER_ALL;
+          ctx.logFilter |= DebugJS.LOG_FLTR_ALL;
       }
     }
     ctx.updateLogFilterBtns();
@@ -8463,7 +8443,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
     if (a[0] == '-reset') {
-      DebugJS.deepCopy(ctx.PROPS_DFLT_VALS, ctx.props);
+      DebugJS.copyProp(ctx.PROPS_DFLT_VALS, ctx.props);
       DebugJS._log('debug properties have been reset.');
       return;
     } else if (a[0] != '') {
@@ -9172,9 +9152,7 @@ DebugJS.prototype = {
   },
   _cmdValsC: function(ctx) {
     for (var n in ctx.CMDVALS) {
-      if (!DebugJS.isSysVal(n)) {
-        delete ctx.CMDVALS[n];
-      }
+      if (!DebugJS.isSysVal(n)) delete ctx.CMDVALS[n];
     }
   },
 
@@ -9774,8 +9752,7 @@ DebugJS.isNumeric = function(ch) {
 };
 DebugJS.isAlphabetic = function(ch) {
   var c = ch.charCodeAt();
-  if (((c >= 0x41) && (c <= 0x5A)) ||
-      ((c >= 0x61) && (c <= 0x7A))) {
+  if (((c >= 0x41) && (c <= 0x5A)) || ((c >= 0x61) && (c <= 0x7A))) {
     return true;
   }
   return false;
@@ -10642,9 +10619,7 @@ DebugJS.getHTML = function(b64) {
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     if (cmdActive) ctx.cmdLine.focus();
   }
-  if (b64) {
-    html = DebugJS.encodeBase64(html);
-  }
+  if (b64) html = DebugJS.encodeBase64(html);
   return html;
 };
 
@@ -10780,9 +10755,7 @@ DebugJS.findArrVal = function(a, v, f) {
 DebugJS.countArrVal = function(a, v, f) {
   var c = 0;
   for (var i = 0; i < a.length; i++) {
-    if ((!f && (a[i] == v)) || (f && (a[i] === v))) {
-      c++;
-    }
+    if ((!f && (a[i] == v)) || (f && (a[i] === v))) c++;
   }
   return c;
 };
@@ -10918,9 +10891,7 @@ DebugJS.toHex = function(v, uc, pFix, d) {
 };
 DebugJS.convertBin = function(data) {
   var digit = data.digit;
-  if (digit == 0) {
-    digit = DebugJS.DFLT_UNIT;
-  }
+  if (digit == 0) digit = DebugJS.DFLT_UNIT;
   var val;
   try {
     val = eval(data.exp);
@@ -11486,9 +11457,7 @@ DebugJS.timeEnd = function(timerName, msg) {
 DebugJS.timeLog = function(msg, timerName) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
-  if (!timerName) {
-    timerName = DebugJS.DFLT_TIMER_NAME;
-  }
+  if (!timerName) timerName = DebugJS.DFLT_TIMER_NAME;
   var t;
   var tLap;
   if (ctx.timers[timerName]) {
@@ -11642,9 +11611,7 @@ DebugJS.http.buildParam = function(p) {
   var s = '';
   var cnt = 0;
   for (key in p) {
-    if (cnt > 0) {
-      s += '&';
-    }
+    if (cnt > 0) s += '&';
     s += key + '=' + encodeURIComponent(p[key]);
     cnt++;
   }
@@ -11702,33 +11669,25 @@ DebugJS.getBrowserType = function() {
   if (ua.indexOf('Edge') >= 1) {
     brws.name = 'Edge';
     ver = ua.match(/Edge\/(.*)/);
-    if (ver) {
-      brws.version = ver[1];
-    }
+    if (ver) brws.version = ver[1];
     return brws;
   }
   if (ua.indexOf('OPR/') >= 1) {
     brws.name = 'Opera';
     ver = ua.match(/OPR\/(.*)/);
-    if (ver) {
-      brws.version = ver[1];
-    }
+    if (ver) brws.version = ver[1];
     return brws;
   }
   if (ua.indexOf('Chrome') >= 1) {
     brws.name = 'Chrome';
     ver = ua.match(/Chrome\/(.*)\s/);
-    if (ver) {
-      brws.version = ver[1];
-    }
+    if (ver) brws.version = ver[1];
     return brws;
   }
   if (ua.indexOf('Firefox') >= 1) {
     brws.name = 'Firefox';
     ver = ua.match(/Firefox\/(.*)/);
-    if (ver) {
-      brws.version = ver[1];
-    }
+    if (ver) brws.version = ver[1];
     return brws;
   }
   if (ua.indexOf('Trident/7.') >= 1) {
@@ -11749,9 +11708,7 @@ DebugJS.getBrowserType = function() {
   if ((ua.indexOf('Safari/') >= 1) && (ua.indexOf('Version/') >= 1)) {
     brws.name = 'Safari';
     ver = ua.match(/Version\/(.*)\sSafari/);
-    if (ver) {
-      brws.version = ver[1];
-    }
+    if (ver) brws.version = ver[1];
     return brws;
   }
   return brws;
@@ -11999,7 +11956,6 @@ DebugJS.escape = function(s, c) {
 DebugJS._escape = function(s, c) {
   return s.replace(new RegExp(c, 'g'), '\\' + c);
 };
-
 DebugJS.escTags = function(s) {
   s = s.replace(/&/g, '&amp;');
   s = s.replace(/</g, '&lt;');
@@ -12058,7 +12014,6 @@ DebugJS.addClass = function(el, n) {
     el.className += ' ' + n;
   }
 };
-
 DebugJS.removeClass = function(el, n) {
   var names = el.className.split(' ');
   var removed = '';
@@ -12070,7 +12025,6 @@ DebugJS.removeClass = function(el, n) {
   }
   el.className = removed;
 };
-
 DebugJS.hasClass = function(el, n) {
   var className = el.className;
   var names = className.split(' ');
@@ -12080,7 +12034,7 @@ DebugJS.hasClass = function(el, n) {
   return false;
 };
 
-DebugJS.deepCopy = function(src, dest) {
+DebugJS.copyProp = function(src, dest) {
   for (var key in src) {
     dest[key] = src[key];
   }
@@ -13539,7 +13493,7 @@ DebugJS.bat.initCtrl = function(all) {
 DebugJS.bat.stCtx = function() {
   var bat = DebugJS.bat;
   var ctrl = {};
-  DebugJS.deepCopy(bat.ctrl, ctrl);
+  DebugJS.copyProp(bat.ctrl, ctrl);
   var cmds = bat.cmds.slice();
   var batCtx = {
     cmds: cmds,
@@ -13554,7 +13508,7 @@ DebugJS.bat.ldCtx = function() {
   var bat = DebugJS.bat;
   var batCtx = bat.ctx.pop();
   if (!batCtx) return false;
-  DebugJS.deepCopy(batCtx.ctrl, bat.ctrl);
+  DebugJS.copyProp(batCtx.ctrl, bat.ctrl);
   bat.setExecArg(bat.ctrl.execArg);
   bat.setLabel(bat.ctrl.label);
   bat.setFnNm(bat.ctrl.fnnm);
@@ -15418,7 +15372,7 @@ DebugJS._adjustResBox = function() {
   var el = document.getElementsByClassName('dbg-resbox box');
   for (var i = 0; i < el.length; i++) {
     var e = el[i];
-    e.style.height = (e.scrollHeight + DebugJS.adjustResBox.a) + 'px';
+    DebugJS.ctx.setStyle(e, 'height', (e.scrollHeight + DebugJS.adjustResBox.a) + 'px');
   }
 };
 
