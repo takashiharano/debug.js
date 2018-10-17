@@ -1870,15 +1870,15 @@ var extInfo = {
   info3: 'additional info 3-1\nadditional info 3-2'
 };
 
-dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);
+dbg.sendLog(url, 'data', params, extInfo, true, cbFunc);
 </pre>
 -------------------------------------------------------
 <b>DEMO</b>
 dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
-dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info1) <button class="demo-button2" onclick="demo.sendLogDemo1();">DEMO</button>
-dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info2) <button class="demo-button2" onclick="demo.sendLogDemo2();">DEMO</button>
-dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info3) <button class="demo-button2" onclick="demo.sendLogDemo3();">DEMO</button>
-dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info0-3) <button class="demo-button2" onclick="demo.sendLogDemo4();">DEMO</button>
+dbg.sendLog(url, 'data', params, extInfo, true, cbFunc);(info1) <button class="demo-button2" onclick="demo.sendLogDemo1();">DEMO</button>
+dbg.sendLog(url, 'data', params, extInfo, true, cbFunc);(info2) <button class="demo-button2" onclick="demo.sendLogDemo2();">DEMO</button>
+dbg.sendLog(url, 'data', params, extInfo, true, cbFunc);(info3) <button class="demo-button2" onclick="demo.sendLogDemo3();">DEMO</button>
+dbg.sendLog(url, 'data', params, extInfo, true, cbFunc);(info0-3) <button class="demo-button2" onclick="demo.sendLogDemo4();">DEMO</button>
 -&gt; <a href="log.txt" target="_blank">log.txt</a> <span class="pseudobtn" style="color:#c88" onclick="clrlog();" title="clear">x</span>
 
 <b>SENDING DATA FORMAT</b>
