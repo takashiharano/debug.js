@@ -44,6 +44,7 @@ pre {margin: 4px 0; font-family:Consolas;}
 .caption2 {font-size:25px;}
 .code {width:750px; margin:8px 0; padding:.5em; font-family:"Source Code Pro", Consolas, monospace; font-size:14px; color:#aaa; background:#333; border:solid 1px #888; border-radius:4px; white-space:pre-wrap; word-wrap:break-all; overflow:visible;}
 .emphasis {color:#eee;}
+.textfmt {color:#333; background:#f2f4f6; border:solid 1px #888;}
 .comment {color:#aaa;}
 .button-100 {width:100px !important;}
 .dl-button {position:relative; width:105px; height:25px; margin:0; font-size:14px;}
@@ -1838,13 +1839,14 @@ dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="w
     <td>
       Send log buffer to server.<br><br>
 <pre class="eg">url      : URL to send
-paramName: request parameter name for log buffer<span class="annotation">(opt)</span>
+paramName: request parameter name for log buffer<span class="annotation">(opt) "data" is used in default</span>
 params   : other parameters to send (Map object)<span class="annotation">(opt)</span>
 extInfo  : extra info text<span class="annotation">(opt)</span>
 outputBuf: output original log buffer (true|false)<span class="annotation">(opt)</span>
 callback : callback function<span class="annotation">(opt)</span>
 
 e.g.,)
+<pre class="code emphasis" style="width:500px">
 var cbFunc = function(xhr) {
   var st = xhr.status;
   if (st == 200) {
@@ -1853,22 +1855,25 @@ var cbFunc = function(xhr) {
     log.e('Send Log ERR (' + st + ')');
   }
 };
-var url = 'https://debugjs.net/xxx';
+
+var url = 'https://[hostname]/savelog.py';
+
 var params = {
   foo: 'aaa',
   bar: 'bbb'
 };
+
 var extInfo = {
   info0: 'additional info 0-1\nadditional info 0-2',
   info1: 'additional info 1-1\nadditional info 1-2',
   info2: 'additional info 2-1\nadditional info 2-2',
   info3: 'additional info 3-1\nadditional info 3-2'
 };
+
 dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);
-
+</pre>
 -------------------------------------------------------
-<b>DEMO</b> This is the simplest example of the sending.
-
+<b>DEMO</b>
 dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('https://debugjs.net/savelog.py');">DEMO</button>
 dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info1) <button class="demo-button2" onclick="demo.sendLogDemo1();">DEMO</button>
 dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info2) <button class="demo-button2" onclick="demo.sendLogDemo2();">DEMO</button>
@@ -1876,6 +1881,37 @@ dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info3) <button class="de
 dbg.sendLog(url, 'log', params, extInfo, true, cbFunc);(info0-3) <button class="demo-button2" onclick="demo.sendLogDemo4();">DEMO</button>
 -&gt; <a href="log.txt" target="_blank">log.txt</a> <span class="pseudobtn" style="color:#c88" onclick="clrlog();" title="clear">x</span>
 
+<b>SENDING DATA FORMAT</b>
+<pre class="code textfmt" style="width:500px">
+info0
+-------------------------------------------------------------
+Sending Time : 2018-10-17 07:58:44.200 -07:00 (1539788324200)
+Browser      : Chrome 70.0.3538.67
+User Agent   : Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36
+Screen Size  : w=1920 h=1200
+Window Size  : w=1903 h=1089
+Body Size    : w=1903 h=34341
+Zoom Ratio   : 100%
+Language     : en-US
+-------------------------------------------------------------
+info1
+-------------------------------------------------------------
+
+[LOG]
+2018-10-17 23:58:35.689	LOG	Hello, World!
+2018-10-17 23:58:36.192	DBG	Hello, World!
+2018-10-17 23:58:36.960	INF	Hello, World!
+2018-10-17 23:58:37.712	WRN	Hello, World!
+2018-10-17 23:58:38.296	ERR	Hello, World!
+2018-10-17 23:58:38.825	VRB	Hello, World!
+
+info2
+
+-- ORIGINAL LOG BUFFER --
+W3sidHlwZSI6MSwidGltZSI6MTUzOTc4ODMxNTY4OSwibXNnIjoiU0dWc2J...
+
+info3
+</pre>
 <pre class="code emphasis" style="width:500px">
 <span style="color:#0ff">SERVER SIDE PROGRAM SAMPLE (savelog.py)</span>
 
