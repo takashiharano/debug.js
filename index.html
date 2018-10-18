@@ -2156,10 +2156,7 @@ dbg.setCmdVal('<input type="text" id="setcmdval-name-text" class="demo-text" sty
 <pre class="eg">
 var commands = '
 <textarea id="bat-demo-text" class="demo-textarea2">
-#!BAT!
-# comment
-echo off
-echo "arg = " + ${%%ARG%%}
+@echo off
 point move #p1
 point hint msg "Hi!"
 wait 1000
@@ -5060,7 +5057,7 @@ $ hello<br>
 <span class="emphasis">example.onCreateP1 = function(panel) {
   <textarea id="ext-panel-create-code" class="demo-textarea" style="height:105px;">
 log('onCreateP1');
-var html = '&lt;div style="box-sizing:border-box; ' +
+var html = '&lt;div style="box-sizing:border-box !important; ' +
            'width:100%; height:100%; padding:4px;"&gt;' +
            'Extension Panel' +
            '&lt;/div&gt;';
