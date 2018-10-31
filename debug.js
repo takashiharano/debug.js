@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201810170000';
+  this.v = '201811010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2023,7 +2023,6 @@ DebugJS.prototype = {
     DebugJS.ctx.clearLog();
     DebugJS.ctx.focusCmdLine();
   },
-
   clearLog: function() {
     DebugJS.ctx.msgBuf.clear();
     DebugJS.ctx.printLogs();
@@ -2161,7 +2160,6 @@ DebugJS.prototype = {
     }
     ctx._startMove(ctx, target, x, y);
   },
-
   startMoveT: function(e) {
     var ctx = DebugJS.ctx;
     var x = e.changedTouches[0].pageX;
@@ -2173,7 +2171,6 @@ DebugJS.prototype = {
     ctx._startMove(ctx, target, x, y);
     e.preventDefault();
   },
-
   _startMove: function(ctx, target, x, y) {
     ctx.uiStatus |= DebugJS.UI_ST_DRAGGING;
     ctx.winBody.style.cursor = 'move';
@@ -6965,8 +6962,8 @@ DebugJS.prototype = {
     if (p == -1) {
       return ctx._cmdAliasList(ctx, DebugJS.splitArgsEx(arg));
     }
-    var al = DebugJS.delLeadingAndTrailingSP(arg.substr(0, p));
-    var v = DebugJS.delLeadingAndTrailingSP(arg.substring(p + 1, arg.length));
+    var al = arg.substr(0, p).trim();
+    var v = arg.substring(p + 1, arg.length).trim();
     var c = DebugJS.getQuotedStr(v);
     if (c == null) {
       c = DebugJS.splitArgs(v)[0];
@@ -7349,7 +7346,7 @@ DebugJS.prototype = {
 
   cmdDateConv: function(arg, echo) {
     var ret = null;
-    var d = DebugJS.delLeadingAndTrailingSP(arg);
+    var d = arg.trim();
     if (!(DebugJS.isDateFormat(d) || DebugJS.isDateTimeFormat(d) || DebugJS.isDateTimeFormatIso(d) || (d == 'today'))) {
       return ret;
     }
@@ -7363,7 +7360,7 @@ DebugJS.prototype = {
 
   cmdDateCalc: function(arg, echo) {
     var ret = null;
-    arg = DebugJS.delLeadingAndTrailingSP(arg);
+    arg = arg.trim();
     if ((!DebugJS.isBasicDateFormat(arg, true)) && (!DebugJS.isDateFormat(arg, true)) && (!DebugJS.startsWith(arg, 'today'))) {
       return ret;
     }
@@ -7478,7 +7475,7 @@ DebugJS.prototype = {
   },
 
   cmdElements: function(arg, tbl) {
-    arg = DebugJS.delLeadingAndTrailingSP(arg);
+    arg = arg.trim();
     if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -7995,7 +7992,7 @@ DebugJS.prototype = {
   _cmdLogDump: function(ctx, arg) {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var l;
-    if (DebugJS.delLeadingAndTrailingSP(arg) == '-b64') {
+    if (arg.trim() == '-b64') {
       l = DebugJS.dumpLog('json', true);
     } else {
       l = DebugJS.dumpLog('json', false);
@@ -8114,7 +8111,7 @@ DebugJS.prototype = {
   },
 
   cmdMsg: function(arg, tbl) {
-    var m = ((DebugJS.hasOpt(arg, 'c') || (DebugJS.delLeadingAndTrailingSP(arg) == '')) ? '""' : arg);
+    var m = ((DebugJS.hasOpt(arg, 'c') || (arg.trim() == '')) ? '""' : arg);
     try {
       DebugJS.ctx.setMsg(eval(m));
     } catch (e) {
@@ -8132,7 +8129,7 @@ DebugJS.prototype = {
       p = false;
       v = arg.substr(idx);
     }
-    v = DebugJS.delLeadingAndTrailingSP(v);
+    v = v.trim();
     if ((v.match(/^T\d{4,6}/))) {
       t = DebugJS.calcNextTime(v);
     } else if (ms = DebugJS.parseToMillis(v)) {
@@ -8485,7 +8482,7 @@ DebugJS.prototype = {
 
   cmdRadixConv: function(v, echo) {
     var ctx = DebugJS.ctx;
-    v = DebugJS.delLeadingAndTrailingSP(v);
+    v = v.trim();
     var rdx = DebugJS.checkRadix(v);
     if ((rdx == 10) || (rdx == 16) || (rdx == 2)) {
       ctx._cmdRadixConv(v, echo);
@@ -8523,7 +8520,7 @@ DebugJS.prototype = {
   },
 
   cmdRGB: function(arg, tbl) {
-    arg = DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(arg));
+    arg = DebugJS.unifySP(arg.trim());
     if (arg == '') {
       DebugJS.printUsage(tbl.usage);
     } else {
@@ -8782,7 +8779,7 @@ DebugJS.prototype = {
 
   cmdTimeCalc: function(arg, echo) {
     var ret = null;
-    arg = DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(arg));
+    arg = DebugJS.unifySP(arg.trim());
     if (!arg.match(/^\d{1,}:{1}\d{2}/)) {
       return ret;
     }
@@ -9178,7 +9175,7 @@ DebugJS.prototype = {
   },
 
   cmdWin: function(arg, tbl) {
-    var size = DebugJS.delLeadingAndTrailingSP(arg);
+    var size = arg.trim();
     switch (size) {
       case 'min':
       case 'normal':
@@ -9233,7 +9230,7 @@ DebugJS.prototype = {
 
   cmdZoom: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var zoom = DebugJS.delLeadingAndTrailingSP(arg);
+    var zoom = arg.trim();
     if (zoom == '') {
       DebugJS.printUsage(tbl.usage);
     } else if (zoom != ctx.opt.zoom) {
@@ -9527,7 +9524,7 @@ DebugJS._replaceCmdVals = function(s, il) {
 
 // " 1  2 3  4 " -> [0]="1" [1]="2" [2]="3" [3]="4"
 DebugJS.splitArgs = function(arg) {
-  return DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(arg)).split(' ');
+  return DebugJS.unifySP(arg.trim()).split(' ');
 };
 
 // ' 1 "abc" "d ef"  "g\"hi" 2 ("jkl" + 3) 4 '
@@ -9848,11 +9845,6 @@ DebugJS.delLeadingSP = function(s) {
 DebugJS.delTrailingSP = function(s) {
   return s.replace(/\s+$/, '');
 };
-DebugJS.delLeadingAndTrailingSP = function(s) {
-  s = s.replace(/^\s{1,}/, '');
-  s = s.replace(/\s+$/, '');
-  return s;
-};
 DebugJS.delAllNL = function(s) {
   s = s.replace(/\r/g, '');
   s = s.replace(/\n/g, '');
@@ -9940,7 +9932,7 @@ DebugJS.getDateTimeEx = function(s) {
 };
 DebugJS.date = function(val, iso) {
   val += '';
-  val = DebugJS.delLeadingAndTrailingSP(val);
+  val = val.trim();
   var s = null;
   var dt;
   if ((val == '') || isNaN(val)) {
@@ -10639,7 +10631,7 @@ DebugJS.execCmdJson = function(json, flg, lv) {
 };
 DebugJS.checkJson = function(json) {
   var ctx = DebugJS.ctx;
-  json = DebugJS.delLeadingAndTrailingSP(json);
+  json = json.trim();
   var wkJson = json.split('\\');
   var cnt = 0;
   var res = '';
@@ -10773,7 +10765,7 @@ DebugJS.convRGB = function(v) {
     v = v.replace(/rgb\(/, '');
     v = v.replace(/\)/, '');
     v = v.replace(/,/g, ' ');
-    v = DebugJS.delLeadingAndTrailingSP(v);
+    v = v.trim();
     v = DebugJS.unifySP(v);
     rgb = DebugJS.convRGB10to16(v);
     ret = '#' + rgb.r + rgb.g + rgb.b;
@@ -11713,7 +11705,6 @@ DebugJS.getBrowserType = function() {
   }
   return brws;
 };
-
 DebugJS.browserColoring = function(nm) {
   var s = nm;
   switch (nm) {
@@ -11796,9 +11787,7 @@ DebugJS.strcount = function(s, p) {
   return cnt;
 };
 DebugJS.strcmpWOsp = function(s1, s2) {
-  s1 = DebugJS.delLeadingAndTrailingSP(s1);
-  s2 = DebugJS.delLeadingAndTrailingSP(s2);
-  return (s1 == s2);
+  return (s1.trim() == s2.trim());
 };
 DebugJS.strcatWnl = function(s1, s2) {
   s1 += s2;
@@ -13000,7 +12989,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
       bat.text();
       return 1;
   }
-  if (DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(cmd)).match(DebugJS.RE_ELIF)) {
+  if (DebugJS.unifySP(cmd.trim()).match(DebugJS.RE_ELIF)) {
     b = ctrl.block.pop();
     if (b != undefined) {
       ctrl.pc = bat.findEndOfBlock(DebugJS.BAT_TKN_BLOCK_END, ctrl.pc).l + 1;
@@ -13012,7 +13001,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
       ctrl.pc = bat.findEndOfBlock(DebugJS.BAT_TKN_IF, ctrl.pc).l + 1;
       return 1;
     }
-  } else if (DebugJS.delLeadingAndTrailingSP(cmd) == DebugJS.BAT_TKN_BLOCK_END) {
+  } else if (cmd.trim() == DebugJS.BAT_TKN_BLOCK_END) {
     if (ctrl.block.length > 0) {
       b = ctrl.block[ctrl.block.length - 1];
       if (b.t == DebugJS.BAT_TKN_LOOP) {
@@ -13099,7 +13088,7 @@ DebugJS.bat.nextExecLine = function(pc) {
 };
 DebugJS.bat.ppIf = function(t, cnd, cmd) {
   var r = {cond: false, err: true};
-  var v = DebugJS.delLeadingAndTrailingSP(cnd);
+  var v = cnd.trim();
   if (DebugJS.endsWith(v, DebugJS.BAT_TKN_BLOCK_START)) {
     v = v.substr(0, v.length - 1);
     if ((t == DebugJS.BAT_TKN_LOOP) && (v == '')) {
@@ -13149,7 +13138,7 @@ DebugJS.bat.findEndOfBlock = function(type, pc) {
   while (l <= bat.ctrl.endPc) {
     var cmd = bat.cmds[l];
     var c = DebugJS.splitCmdLineInTwo(cmd)[0];
-    if (DebugJS.unifySP(DebugJS.delLeadingAndTrailingSP(cmd)).match(DebugJS.RE_ELIF)) {
+    if (DebugJS.unifySP(cmd.trim()).match(DebugJS.RE_ELIF)) {
       if (ignoreBlkLv == 0) {
         if (type == DebugJS.BAT_TKN_ELIF) {
           data.endTkn = DebugJS.BAT_TKN_ELIF;
@@ -13163,7 +13152,7 @@ DebugJS.bat.findEndOfBlock = function(type, pc) {
           break;
         }
       }
-    } else if (DebugJS.delLeadingAndTrailingSP(cmd) == DebugJS.BAT_TKN_BLOCK_END) {
+    } else if (cmd.trim() == DebugJS.BAT_TKN_BLOCK_END) {
       if (ignoreBlkLv == 0) {
         break;
       }
@@ -13192,7 +13181,7 @@ DebugJS.bat.findEndOfFnc = function(pc) {
     }
     if ((c == DebugJS.BAT_TKN_IF) || (c == DebugJS.BAT_TKN_LOOP)) {
       blkLv++;
-    } else if (DebugJS.delLeadingAndTrailingSP(cmd) == DebugJS.BAT_TKN_BLOCK_END) {
+    } else if (cmd.trim() == DebugJS.BAT_TKN_BLOCK_END) {
       blkLv--;
     } else if (c == DebugJS.BAT_TKN_RET) {
       if (blkLv == 0) break;
