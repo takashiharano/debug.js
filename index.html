@@ -1058,7 +1058,6 @@ var obj = {
 <span class="emphasis">log(obj);</span> <button class="demo-button" onclick="bar();">DEMO</button>
 </pre><br>
 
-
 <div class="caption">// Options</div>
 If you want to change the debugger settings, explicitly call for initialization function in advance.
 <pre class="code">
@@ -2073,6 +2072,7 @@ dbg.time.check('timer1')
     <td>
       arg1: command<br>
       arg2: echo<span class="annotation">(opt)</span>
+      arg3: saveHistory<span class="annotation">(opt)</span>
     </td>
     <td>
       Command execution<br>
@@ -2081,10 +2081,11 @@ dbg.time.check('timer1')
 <pre class="eg">
 dbg.cmd('rgb #fff'); <button class="demo-button2" onclick="dbg.cmd('rgb #fff');">DEMO</button>
 dbg.cmd('rgb #fff', true); <button class="demo-button2" onclick="dbg.cmd('rgb #fff', true);">DEMO</button>
+dbg.cmd('rgb #fff', true, true); <button class="demo-button2" onclick="dbg.cmd('rgb #fff', true, true);">DEMO</button>
 
 <span id="timecalc__button" class="showhide-button" onclick="showHideByName('timecalc')">&gt;</span>
-<span id="timecalc__partial-body"></span><div id="timecalc__body" style="display:none;">dbg.cmd('base64 -e <input type="text" id="b64-e-txt" class="demo-text" style="width:150px;" value="Hello, World!">');<button class="demo-button2" onclick="dbg.cmd('base64 -e ' + getVal('b64-e-txt'));">DEMO</button>
-dbg.cmd('base64 -d <input type="text" id="b64-d-txt" class="demo-text" style="width:150px;" value="SGVsbG8sIEJhc2U2NCE=">');<button class="demo-button2" onclick="dbg.cmd('base64 -d ' + getVal('b64-d-txt'));">DEMO</button>
+<span id="timecalc__partial-body"></span><div id="timecalc__body" style="display:none;">dbg.cmd('base64 -e <input type="text" id="b64-e-txt" class="demo-text" style="width:150px;" value="Hello, World!">', true);<button class="demo-button2" onclick="dbg.cmd('base64 -e ' + getVal('b64-e-txt'), true);">DEMO</button>
+dbg.cmd('base64 -d <input type="text" id="b64-d-txt" class="demo-text" style="width:150px;" value="SGVsbG8sIEJhc2U2NCE=">', true);<button class="demo-button2" onclick="dbg.cmd('base64 -d ' + getVal('b64-d-txt'), true);">DEMO</button>
 
 dbg.cmd('json {"name": "John Smith", "age": 25, "city": "New York"}'); <button class="demo-button2" onclick='dbg.cmd("json {\"name\": \"John Smith\", \"age\": 25, \"city\": \"New York\"}", true);'>DEMO</button>
 
@@ -2111,6 +2112,41 @@ time calc - 2days
 dbg.cmd('10:00 - 33:59'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 33:59', true);">DEMO</button>
 dbg.cmd('10:00 - 34:00'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 34:00', true);">DEMO</button>
 dbg.cmd('10:00 - 34:01'); <button class="demo-button2" onclick="dbg.cmd('10:00 - 34:01', true);">DEMO</button></div></pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.cmd.set</td>
+    <td>
+      command
+    </td>
+    <td>
+      Set a command line to command field.<br>
+<pre class="eg">
+dbg.cmd.set('<input type="text" id="cmd-set-text" class="demo-text" style="width:200px;" value="rgb #fff">'); <button class="demo-button2" onclick="dbg.cmd.set(getVal('cmd-set-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.cmd.exec</td>
+    <td></td>
+    <td>
+      Execute command line on the command field.<br>
+<pre class="eg">
+dbg.cmd.exec(); <button class="demo-button2" onclick="dbg.cmd.exec();">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.cmd.focus</td>
+    <td></td>
+    <td>
+      Focus on command line field.<br>
+<pre class="eg">
+dbg.cmd.focus(); <button class="demo-button2" onclick="dbg.cmd.focus();">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -5096,6 +5132,12 @@ Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/e
 and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-panel.js" target="_blank">extension-sample/debug-x-panel.js</a> for details.
 <br><br>
 
+<div class="caption">// Lazy Load</div>
+Execute the following code from F12 console.
+<pre class="code emphasis" style="margin-bottom:20px;">
+<span style="font-size:10px;">s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</span>
+</pre>
+
 <div class="caption">// Browser Support</div>
 <table class="desc-table">
   <tr>
@@ -5467,7 +5509,6 @@ oncontextmenu="log.i('> contextmenu');return false;">
 </div>
 </div>
 </div><!-- dummy__body -->
-<div style="color:#fff;font-size:10px;">s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</div>
 </div><!-- content -->
 </div><!-- main -->
 <div id="footer">

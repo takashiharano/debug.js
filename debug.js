@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811010000';
+  this.v = '201811072215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6833,32 +6833,32 @@ DebugJS.prototype = {
       return;
     }
     if (cl.substr(0, 2) == '!!') {
-      var event = ctx.getLastHistory();
-      if (event == '') {
+      var ev = ctx.getLastHistory();
+      if (ev == '') {
         DebugJS._log.w('!!: event not found');
         return;
       }
-      cl = event + cl.substr(2);
+      cl = ev + cl.substr(2);
     } else if (cl.substr(0, 1) == '!') {
       var s = cl.substr(1).match(/(\d*)(.*)/);
       var num = s[1];
       var arg = s[2];
       if (num != '') {
-        var event = ctx.getHistory((num | 0) - 1);
-        if (event == '') {
+        var ev = ctx.getHistory((num | 0) - 1);
+        if (ev == '') {
           DebugJS._log.w('!' + num + ': event not found');
           return;
         }
-        cl = event + arg;
+        cl = ev + arg;
       } else if (arg != '') {
         cl = '!' + arg;
       }
     }
-    ctx.saveHistory(ctx, cl);
-    ctx._execCmd(cl, ctx.cmdEchoFlg);
+    ctx._execCmd(cl, ctx.cmdEchoFlg, false, true);
   },
-  _execCmd: function(str, echo, recho) {
+  _execCmd: function(str, echo, recho, sv) {
     var ctx = DebugJS.ctx;
+    if (sv) ctx.saveHistory(ctx, str);
     var setValName = null;
     var cmdline = str;
     if (str.match(/^\s*@/)) {
@@ -7343,7 +7343,6 @@ DebugJS.prototype = {
     }
     return d;
   },
-
   cmdDateConv: function(arg, echo) {
     var ret = null;
     var d = arg.trim();
@@ -7357,7 +7356,6 @@ DebugJS.prototype = {
     }
     return ret;
   },
-
   cmdDateCalc: function(arg, echo) {
     var ret = null;
     arg = arg.trim();
@@ -7393,7 +7391,6 @@ DebugJS.prototype = {
     if (echo) DebugJS._log.res(ret);
     return ret;
   },
-
   cmdDateDiff: function(arg, echo) {
     var ret = NaN;
     var a = DebugJS.splitArgs(arg);
@@ -7690,7 +7687,6 @@ DebugJS.prototype = {
       DebugJS._log.e(e);
     }
   },
-
   initHistory: function(ctx) {
     if (ctx.cmdHistoryBuf == null) {
       ctx.CMD_HISTORY_MAX = ctx.opt.cmdHistoryMax;
@@ -7698,7 +7694,6 @@ DebugJS.prototype = {
     }
     if (DebugJS.LS_AVAILABLE) ctx.loadHistory(ctx);
   },
-
   showHistory: function() {
     var bf = DebugJS.ctx.cmdHistoryBuf.getAll();
     var s = '<table>';
@@ -7711,8 +7706,8 @@ DebugJS.prototype = {
     s += '</table>';
     DebugJS._log.mlt(s);
   },
-
   saveHistory: function(ctx, cmd) {
+    if (!ctx.cmdHistoryBuf) return;
     ctx.cmdHistoryBuf.add(cmd);
     ctx.cmdHistoryIdx = (ctx.cmdHistoryBuf.count() < ctx.CMD_HISTORY_MAX) ? ctx.cmdHistoryBuf.count() : ctx.CMD_HISTORY_MAX;
     if (DebugJS.LS_AVAILABLE) {
@@ -7724,7 +7719,6 @@ DebugJS.prototype = {
       localStorage.setItem('DebugJS-history', cmds);
     }
   },
-
   loadHistory: function(ctx) {
     if (DebugJS.LS_AVAILABLE) {
       var bf = localStorage.getItem('DebugJS-history');
@@ -7737,19 +7731,16 @@ DebugJS.prototype = {
       }
     }
   },
-
   getHistory: function(idx) {
     var cmds = DebugJS.ctx.cmdHistoryBuf.getAll();
     var c = cmds[idx];
     return ((c == undefined) ? '' : c);
   },
-
   getLastHistory: function() {
     var cmds = DebugJS.ctx.cmdHistoryBuf.getAll();
     var c = cmds[cmds.length - 1];
     return ((c == undefined) ? '' : c);
   },
-
   delHistory: function(ctx, idx) {
     var cmds = ctx.cmdHistoryBuf.getAll();
     ctx.clearHistory();
@@ -7765,7 +7756,6 @@ DebugJS.prototype = {
       }
     }
   },
-
   clearHistory: function() {
     DebugJS.ctx.cmdHistoryBuf.clear();
     if (DebugJS.LS_AVAILABLE) localStorage.removeItem('DebugJS-history');
@@ -9325,7 +9315,6 @@ DebugJS.prototype = {
   initExtension: function(ctx) {
     ctx.initExtPanel(ctx);
   },
-
   initExtPanel: function(ctx) {
     if (ctx.extPanel == null) {
       var bp = ctx.createSubBasePanel(ctx);
@@ -9345,7 +9334,6 @@ DebugJS.prototype = {
       }
     }
   },
-
   redrawExtPanelBtn: function(ctx) {
     for (var i = ctx.extHeaderPanel.childNodes.length - 1; i >= 0; i--) {
       ctx.extHeaderPanel.removeChild(ctx.extHeaderPanel.childNodes[i]);
@@ -9362,7 +9350,6 @@ DebugJS.prototype = {
       ctx.extBtn.style.display = 'none';
     }
   },
-
   createExtPanel: function(ctx, p, idx) {
     p.base = document.createElement('div');
     p.base.className = ctx.id + '-sbpnl';
@@ -12533,8 +12520,17 @@ DebugJS.isSysVal = function(n) {
   return (((n == '?') || (n.match(/^%.*%$/))) ? true : false);
 };
 
-DebugJS.cmd = function(c, echo) {
-  return DebugJS.ctx._execCmd(c, echo);
+DebugJS.cmd = function(c, echo, sv) {
+  return DebugJS.ctx._execCmd(c, echo, false, sv);
+};
+DebugJS.cmd.set = function(c) {
+  if (DebugJS.ctx.cmdLine) DebugJS.ctx.cmdLine.value = c;
+};
+DebugJS.cmd.exec = function() {
+  if (DebugJS.ctx.cmdLine) DebugJS.ctx.execCmd(DebugJS.ctx);
+};
+DebugJS.cmd.focus = function() {
+  DebugJS.ctx.focusCmdLine();
 };
 
 DebugJS.getCmdVal = function(n) {
