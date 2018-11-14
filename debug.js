@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811072215';
+  this.v = '201811150000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1007,6 +1007,15 @@ DebugJS.prototype = {
       'font-size': fontSize + ' !important',
       'overflow': 'auto !important',
       'resize': 'none !important'
+    };
+    styles['.' + ctx.id + '-strg'] = {
+      'width': 'calc(100% - 1em) !important',
+      'height': '8em !important',
+      'margin': '2px 0 0 .5em !important'
+    };
+    styles['.' + ctx.id + '-strgkey'] = {
+      'width': 'calc(100% - 10em) !important',
+      'margin': '0 !important'
     };
     styles['.' + ctx.id + '-txt-hl'] = {
       'background': 'rgba(192,192,192,0.5) !important'
@@ -3660,6 +3669,7 @@ DebugJS.prototype = {
     if (DebugJS.LS_AVAILABLE) {
       html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearLocalStrage();">clear()</span>\n' +
               '<span id="' + ctx.id + '-sys-ls"></span>\n';
+      html += DebugJS.ctx.createStorageEditor(ctx, 0);
     } else {
       html += ' <span class="' + ctx.id + '-na">undefined</span>';
     }
@@ -3668,6 +3678,7 @@ DebugJS.prototype = {
     if (DebugJS.SS_AVAILABLE) {
       html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearSessionStrage();">clear()</span>\n' +
               '<span id="' + ctx.id + '-sys-ss"></span>\n';
+      html += DebugJS.ctx.createStorageEditor(ctx, 1);
     } else {
       html += ' <span class="' + ctx.id + '-na">undefined</span>';
     }
@@ -3681,27 +3692,22 @@ DebugJS.prototype = {
       ctx.updateStrageInfo(1);
     }
   },
-
   clearLocalStrage: function() {
     localStorage.clear();
     DebugJS.ctx.updateStrageInfo(0);
   },
-
   removeLocalStrage: function(key) {
     localStorage.removeItem(key);
     DebugJS.ctx.updateStrageInfo(0);
   },
-
   clearSessionStrage: function() {
     sessionStorage.clear();
     DebugJS.ctx.updateStrageInfo(1);
   },
-
   removeSessionStrage: function(key) {
     sessionStorage.removeItem(key);
     DebugJS.ctx.updateStrageInfo(1);
   },
-
   updateStrageInfo: function(type) {
     var ctx = DebugJS.ctx;
     var strg, nm, rmvFn, id;
@@ -3717,20 +3723,36 @@ DebugJS.prototype = {
       id = 'ss';
     }
     var html = ' <span style="color:' + DebugJS.ITEM_NAME_COLOR + '">length</span> = ' + strg.length + '\n' +
-               ' <span style="color:' + DebugJS.ITEM_NAME_COLOR + '">key</span>';
+    ' <span style="color:' + DebugJS.ITEM_NAME_COLOR + '">key</span>';
     if (DebugJS.LS_AVAILABLE) {
       for (var i = 0; i < strg.length; i++) {
         var key = strg.key(i);
-        if (i != 0) {
-          html += '\n    ';
-        }
+        if (i != 0) html += '\n    ';
         var getCode = nm + '.getItem(\'' + key + '\')';
         var rmvCode = nm + '.removeItem(\'' + key + '\')';
-        html += '(' + i + ') = ' + '<span class="' + ctx.id + '-btn ' + ctx.id + '-btn-wh" onclick="DebugJS._log(DebugJS.escEncString(' + getCode + '));" title="' + getCode + '">' + key + '</span>' +
+        html += '(' + i + ') = ' + '<span class="' + ctx.id + '-btn ' + ctx.id + '-btn-wh" onclick="DebugJS.ctx.setStrgEdit(' + type + ', ' + getCode + ', \'' + key + '\');" title="' + getCode + '">' + (key == '' ? ' ' : key) + '</span>' +
                 ' <span class="' + ctx.id + '-btn ' + ctx.id + '-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');" title="' + rmvCode + '">x</span>';
       }
     }
     document.getElementById(ctx.id + '-sys-' + id).innerHTML = html;
+  },
+  createStorageEditor: function(ctx, type) {
+    return '<textarea id="' + ctx.id + '-strg' + type + '" class="' + ctx.id + '-editor ' + ctx.id + '-strg"></textarea>\n' +
+           ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.setStrg(' + type + ');">setItem</span>(\'<input id="' + ctx.id + '-strgkey' + type + '" class="' + ctx.id + '-txt-text ' + ctx.id + '-strgkey">\', v);';
+  },
+  setStrgEdit: function(type, v, k) {
+    var ctx = DebugJS.ctx;
+    document.getElementById(ctx.id + '-strg' + type).value = v;
+    document.getElementById(ctx.id + '-strgkey' + type).value = k;
+  },
+  setStrg: function(type) {
+    var ctx = DebugJS.ctx;
+    var v = document.getElementById(ctx.id + '-strg' + type).value;
+    var k = document.getElementById(ctx.id + '-strgkey' + type).value;
+    var strg = localStorage;
+    if (type == 1) strg = sessionStorage;
+    strg.setItem(k, v);
+    ctx.updateStrageInfo(type);
   },
 
   showHideByName: function(name) {
@@ -5554,19 +5576,16 @@ DebugJS.prototype = {
       }
     }
   },
-
   closeFileLoader: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) && (ctx.fileVwrPanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.fileVwrPanel);
     }
   },
-
   enableDnDFileLoad: function(target, cb) {
     target.addEventListener('dragover', DebugJS.file.onDragOver, false);
     target.addEventListener('drop', cb, false);
   },
-
   onFileSelected: function(e) {
     var ctx = DebugJS.ctx;
     ctx.clearFile();
@@ -5575,7 +5594,6 @@ DebugJS.prototype = {
       ctx.loadFile(e.target.files[0], format);
     }
   },
-
   handleFileDrop: function(ctx, e, format, cb) {
     ctx.clearFile();
     e.stopPropagation();
@@ -5596,18 +5614,15 @@ DebugJS.prototype = {
       DebugJS._log.e('handleFileDrop() ' + e);
     }
   },
-
   handleFileDropOnFileViewer: function(e) {
     var format = (DebugJS.ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
     DebugJS.ctx.handleFileDrop(DebugJS.ctx, e, format, null);
   },
-
   handleFileDropAuto: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedAuto);
   },
-
   onFileLoadedAuto: function(ctx, success, file, content) {
     if (!success) {
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
@@ -5622,26 +5637,22 @@ DebugJS.prototype = {
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
     }
   },
-
   handleFileDropOnBat: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onBatLoaded);
   },
-
   onBatLoaded: function(ctx, success, file, content) {
     if (success) {
       DebugJS.bat.set(content);
       ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
     }
   },
-
   handleFileDropOnJS: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onJsLoaded);
   },
-
   onJsLoaded: function(ctx, success, file, content) {
     if (success) {
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
@@ -5649,7 +5660,6 @@ DebugJS.prototype = {
       ctx.jsEditor.value = ctx.jsBuf = content;
     }
   },
-
   loadFile: function(file, format) {
     var ctx = DebugJS.ctx;
     ctx.fileVwrDataSrcType = 'file';
@@ -5677,7 +5687,6 @@ DebugJS.prototype = {
       ctx.fileReader.readAsArrayBuffer(file);
     }
   },
-
   openViewerB64: function() {
     var ctx = DebugJS.ctx;
     ctx.filePreviewWrapper.appendChild(ctx.fileVwrDtUrlWrp);
@@ -5698,7 +5707,6 @@ DebugJS.prototype = {
         ctx.viewBinAsB64(ctx);
     }
   },
-
   openViewerBin: function() {
     var ctx = DebugJS.ctx;
     if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileVwrDtUrlWrp)) {
@@ -5722,7 +5730,6 @@ DebugJS.prototype = {
         ctx.updateFilePreview('');
     }
   },
-
   decodeFileViewData: function() {
     var ctx = DebugJS.ctx;
     var mode = ctx.fileVwrDecMode;
@@ -5747,24 +5754,20 @@ DebugJS.prototype = {
         ctx.showB64Preview(ctx, null, scheme, data);
     }
   },
-
   decodeBin: function(ctx, bin) {
     ctx.fileVwrByteArray = DebugJS.str2binArr(bin, 8, '0b');
     ctx.viewBinAsB64(ctx);
   },
-
   decodeHex: function(ctx, hex) {
     ctx.fileVwrByteArray = DebugJS.str2binArr(hex, 2, '0x');
     ctx.viewBinAsB64(ctx);
   },
-
   decodeB64dataAsB: function(b64) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.Base64.decode(b64);
     ctx.fileVwrByteArray = a;
     ctx.showBinDump(ctx, a);
   },
-
   viewBinAsB64: function(ctx) {
     var file = ctx.fileVwrFile;
     var scheme;
@@ -5773,9 +5776,9 @@ DebugJS.prototype = {
     } else {
       scheme = ctx.fileVwrDataSrc.scheme;
     }
-    var limit = ctx.props.prevlimit;
-    if (file && (file.size > limit)) {
-      ctx.showFileSizeExceeds(ctx, file, limit);
+    var lm = ctx.props.prevlimit;
+    if (file && (file.size > lm)) {
+      ctx.showFileSizeExceeds(ctx, file, lm);
     } else {
       var data = DebugJS.Base64.encode(ctx.fileVwrByteArray);
       ctx.fileVwrDataSrc = {scheme: scheme, data: data};
@@ -5783,18 +5786,15 @@ DebugJS.prototype = {
       ctx.showB64Preview(ctx, file, scheme, data);
     }
   },
-
   cancelLoadFile: function() {
     if (DebugJS.ctx.fileReader) DebugJS.ctx.fileReader.abort();
   },
-
   onAbortLoadFile: function(e) {
     DebugJS.ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
     DebugJS.ctx.updateFilePreview('File read cancelled.');
     setTimeout(DebugJS.ctx.fileLoadFinalize, 1000);
   },
-
   onFileLoadError: function(e) {
     DebugJS.ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
@@ -5818,7 +5818,6 @@ DebugJS.prototype = {
     }
     DebugJS.ctx.updateFilePreview(err);
   },
-
   onFileLoadProgress: function(e) {
     if (e.lengthComputable) {
       var ctx = DebugJS.ctx;
@@ -5830,12 +5829,10 @@ DebugJS.prototype = {
       ctx.updateFilePreview('LOADING...\n' + DebugJS.formatDec(loaded) + ' / ' + DebugJS.formatDec(total) + ' bytes');
     }
   },
-
   onFileLoadStart: function(e) {
     DebugJS.addClass(DebugJS.ctx.fileVwrFooter, DebugJS.ctx.id + '-loading');
     DebugJS.ctx.updateFilePreview('LOADING...');
   },
-
   onFileLoaded: function(e) {
     var ctx = DebugJS.ctx;
     var file = ctx.fileReader.file;
@@ -5856,7 +5853,6 @@ DebugJS.prototype = {
     ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
   },
-
   onFileLoadedB64: function(ctx, file, dturl) {
     if (file) {
       var LIMIT = ctx.props.prevlimit;
@@ -5881,14 +5877,12 @@ DebugJS.prototype = {
     ctx.setDataUrl(ctx, b64ctt.scheme, b64ctt.data);
     ctx.showB64Preview(ctx, file, b64ctt.scheme, b64ctt.data);
   },
-
   onFileLoadedBin: function(ctx, file, content) {
     var buf = new Uint8Array(content);
     ctx.fileVwrByteArray = buf;
     DebugJS.file.onLoaded(file, buf);
     ctx.showBinDump(ctx, buf);
   },
-
   switchFileScreen: function() {
     var ctx = DebugJS.ctx;
     if (ctx.fileVwrRadioB64.checked) {
@@ -5899,7 +5893,6 @@ DebugJS.prototype = {
       ctx.openViewerB64();
     }
   },
-
   toggleDecMode: function() {
     var ctx = DebugJS.ctx;
     var mode = ctx.fileVwrDecMode;
@@ -5916,7 +5909,6 @@ DebugJS.prototype = {
     ctx.fileVwrDecMode = mode;
     ctx.fileVwrDecModeBtn.innerText = '[' + mode.toUpperCase() + ']';
   },
-
   toggleBinMode: function() {
     var ctx = DebugJS.ctx;
     var opt = ctx.fileVwrBinViewOpt;
@@ -5932,19 +5924,15 @@ DebugJS.prototype = {
     }
     ctx.showBinDump(ctx, ctx.fileVwrByteArray);
   },
-
   toggleShowAddr: function() {
     DebugJS.ctx.toggleBinVwrOpt(DebugJS.ctx, 'addr');
   },
-
   toggleShowSpace: function() {
     DebugJS.ctx.toggleBinVwrOpt(DebugJS.ctx, 'space');
   },
-
   toggleShowAscii: function() {
     DebugJS.ctx.toggleBinVwrOpt(DebugJS.ctx, 'ascii');
   },
-
   toggleBinVwrOpt: function(ctx, key) {
     var ctx = DebugJS.ctx;
     var opt = ctx.fileVwrBinViewOpt;
@@ -5955,7 +5943,6 @@ DebugJS.prototype = {
     html += ctx.getBinDumpHtml(ctx.fileVwrByteArray, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
-
   showBinDump: function(ctx, buf) {
     var file = ctx.fileVwrFile;
     var opt = ctx.fileVwrBinViewOpt;
@@ -5964,7 +5951,6 @@ DebugJS.prototype = {
     html += ctx.getBinDumpHtml(buf, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
-
   showB64Preview: function(ctx, file, scheme, data) {
     var html = '';
     if (file) {
@@ -5987,13 +5973,11 @@ DebugJS.prototype = {
     }
     ctx.updateFilePreview(html);
   },
-
   setDataUrl: function(ctx, scheme, data) {
     scheme = scheme.replace(/,$/, '');
     ctx.fileVwrDtUrlScheme.value = scheme + ',';
     ctx.fileVwrDtTxtArea.value = data;
   },
-
   getFileInfo: function(file) {
     var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
     var dt = DebugJS.getDateTime(lastMod);
@@ -6005,13 +5989,10 @@ DebugJS.prototype = {
     'modified: ' + fileDate + '</span>\n';
     return s;
   },
-
-  showFileSizeExceeds: function(ctx, file, limit) {
-    var html = ctx.getFileInfo(file) +
-    '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + limit + ')</span>';
+  showFileSizeExceeds: function(ctx, file, lm) {
+    var html = ctx.getFileInfo(file) + '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + lm + ')</span>';
     ctx.updateFilePreview(html);
   },
-
   getTextPreview: function(decoded) {
     if (decoded.length == 0) return '';
     var txt = DebugJS.escTags(decoded);
@@ -6020,19 +6001,16 @@ DebugJS.prototype = {
     txt = txt.replace(/\r/g, DebugJS.CHR_CR_S + '\n');
     return (txt + DebugJS.EOF + '\n');
   },
-
   toggleShowHideCC: function() {
     var el = document.getElementsByClassName('dbg-cc');
     for (var i = 0; i < el.length; i++) {
       DebugJS.toggleElShowHide(el[i]);
     }
   },
-
   getImgPreview: function(ctx, scheme, data) {
     var ctxSizePos = ctx.getSelfSizePos();
     return '<img src="' + DebugJS.buildDataUrl(scheme, data) + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
   },
-
   resizeImgPreview: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.ST_TOOLS)) ||
@@ -6050,16 +6028,15 @@ DebugJS.prototype = {
     imgPreview.style.maxWidth = maxW + 'px';
     imgPreview.style.maxHeight = maxH + 'px';
   },
-
   getBinDumpHtml: function(buf, mode, showAddr, showSpace, showAscii) {
     if (buf == null) return '';
     var ctx = DebugJS.ctx;
-    var limit = ctx.props.hexdumplimit | 0;
+    var lm = ctx.props.hexdumplimit | 0;
     var lastRows = ctx.props.hexdumplastrows | 0;
     var lastLen = 0x10 * lastRows;
     var bLen = buf.length;
-    if (limit == 0) limit = bLen;
-    var len = ((bLen > limit) ? limit : bLen);
+    if (lm == 0) lm = bLen;
+    var len = ((bLen > lm) ? lm : bLen);
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
@@ -6101,8 +6078,8 @@ DebugJS.prototype = {
     for (var i = 0; i < len; i++) {
       html += ctx.getDump(mode, i, buf, len, showSpace, showAddr, showAscii);
     }
-    if (bLen > limit) {
-      if (bLen - limit > (0x10 * lastRows)) {
+    if (bLen > lm) {
+      if (bLen - lm > (0x10 * lastRows)) {
         html += '\n<span style="color:#ccc">...</span>';
       }
       if (lastRows > 0) {
@@ -6125,7 +6102,6 @@ DebugJS.prototype = {
     html += '</pre>';
     return html;
   },
-
   getDump: function(mode, i, buf, len, showSpace, showAddr, showAscii) {
     var b;
     if (mode == 'bin') {
@@ -6154,16 +6130,13 @@ DebugJS.prototype = {
     }
     return b;
   },
-
   updateFilePreview: function(html) {
     DebugJS.ctx.filePreview.innerHTML = html + '\n';
     DebugJS.ctx.filePreviewWrapper.scrollTop = 0;
   },
-
   fileLoadFinalize: function() {
     DebugJS.removeClass(DebugJS.ctx.fileVwrFooter, DebugJS.ctx.id + '-loading');
   },
-
   reloadFile: function() {
     var ctx = DebugJS.ctx;
     var fmt;
@@ -6174,7 +6147,6 @@ DebugJS.prototype = {
     }
     ctx.loadFile(ctx.fileVwrFile, fmt);
   },
-
   clearFile: function() {
     var ctx = DebugJS.ctx;
     ctx.fileVwrDataSrcType = null;
@@ -6186,19 +6158,15 @@ DebugJS.prototype = {
     ctx.setDtSchmTxt();
     ctx.fileVwrDtTxtArea.value = '';
   },
-
   dataSrcType: function() {
     return DebugJS.ctx.fileVwrDataSrcType;
   },
-
   setDtSchm: function(type) {
     DebugJS.ctx.fileVwrDtUrlScheme.value = 'data:' + type + ';base64,';
   },
-
   setDtSchmTxt: function() {
     DebugJS.ctx.setDtSchm('text/plain');
   },
-
   setDtSchmImg: function() {
     DebugJS.ctx.setDtSchm('image/jpeg');
   },
@@ -9128,7 +9096,7 @@ DebugJS.prototype = {
   _cmdVals: function(ctx) {
     var v = '';
     for (var key in ctx.CMDVALS) {
-      v += '<tr><td class="' + ctx.id + '-cmdtd">' + key + '</td><td>' + DebugJS.objDump(ctx.CMDVALS[key], false, -1) + '</td></tr>';
+      v += '<tr><td class="' + ctx.id + '-cmdtd">' + key + '</td><td>' + DebugJS.objDump(ctx.CMDVALS[key], false) + '</td></tr>';
     }
     if (v == '') {
       DebugJS._log('no variables');
@@ -10215,8 +10183,6 @@ DebugJS.execCmdP = function(arg) {
   var opt = args[0].match(/-l(\d+)/);
   var start = 0;
   var levelLimit = 0;
-  var noMaxLimit = false;
-  var valLenLimit = DebugJS.ctx.props.dumpvallen;
   if (opt != null) {
     start = 1;
     levelLimit = opt[1];
@@ -10227,8 +10193,7 @@ DebugJS.execCmdP = function(arg) {
     }
   }
   var obj = DebugJS.getArgsFrom(arg, start);
-  var cmd = 'DebugJS.buf=DebugJS.objDump(' + obj + ', false, ' + levelLimit + ', ' + noMaxLimit + ', ' + valLenLimit + ');' +
-            'DebugJS._log.mlt(DebugJS.buf);';
+  var cmd = 'DebugJS.buf=DebugJS.objDump(' + obj + ', false, ' + levelLimit + ', ' + DebugJS.ctx.props.dumplimit + ', ' + DebugJS.ctx.props.dumpvallen + ');DebugJS._log.mlt(DebugJS.buf);';
   try {
     eval(cmd);
   } catch (e) {
@@ -10237,30 +10202,28 @@ DebugJS.execCmdP = function(arg) {
 };
 
 DebugJS.INDENT_SP = ' ';
-DebugJS.objDump = function(obj, toJson, levelLimit, noMaxLimit, valLenLimit) {
-  if (levelLimit == undefined) {
-    levelLimit = 0;
-  }
+DebugJS.objDump = function(obj, toJson, levelLimit, limit, valLenLimit) {
+  if (levelLimit == undefined) levelLimit = 0;
+  if (limit == undefined) limit = DebugJS.ctx.props.dumplimit;
+  if (valLenLimit == undefined) valLenLimit = 0;
   var arg = {lv: 0, cnt: 0, dump: ''};
   if (typeof obj === 'function') {
     arg.dump += (toJson ? 'function' : '<span style="color:#4c4">function</span>') + '()\n';
   }
-  var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimit);
-  if ((!noMaxLimit) && (ret.cnt >= DebugJS.ctx.props.dumplimit)) {
+  var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, limit, valLenLimit);
+  if ((limit > 0) && (ret.cnt > limit)) {
     DebugJS._log.w('The object is too large. (>=' + ret.cnt + ')');
   }
   ret.dump = ret.dump.replace(/: {2,}\{/g, ': {');
   ret.dump = ret.dump.replace(/\[\n {2,}\]/g, '\[\]');
   return ret.dump;
 };
-DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimit) {
-  var SNIP = '<span style="color:#aaa">...</span>';
+DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
+  var SNIP = (toJson ? '...' : '<span style="color:#aaa">...</span>');
   var sibling = 0;
   try {
-    if ((levelLimit >= 1) && (arg.lv > levelLimit)) {
-      return arg;
-    }
-    if ((!noMaxLimit) && (arg.cnt >= DebugJS.ctx.props.dumplimit)) {
+    if ((levelLimit > 0) && (arg.lv > levelLimit)) return arg;
+    if ((limit > 0) && (arg.cnt > limit)) {
       if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
         arg.dump += SNIP; arg.cnt++;
       }
@@ -10309,7 +10272,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
             arg.dump += '\n' + indent + '[' + i + '] ';
           }
           if (avil) {
-            arg = DebugJS._objDump(v, arg, toJson, levelLimit, noMaxLimit, valLenLimit);
+            arg = DebugJS._objDump(v, arg, toJson, levelLimit, limit, valLenLimit);
           } else {
             arg.dump += 'N/A';
           }
@@ -10406,7 +10369,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, noMaxLimit, valLenLimi
           }
           if ((typeof obj[key] !== 'function') || (hasChildren)) {
             arg.lv++;
-            arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, noMaxLimit, valLenLimit);
+            arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, limit, valLenLimit);
             arg.lv--;
           }
           if (typeof obj[key] === 'function') {
@@ -10605,8 +10568,7 @@ DebugJS.getHTML = function(b64) {
 DebugJS.execCmdJson = function(json, flg, lv) {
   try {
     var j = JSON.parse(json);
-    var valLen = DebugJS.ctx.props.dumpvallen;
-    var jsn = DebugJS.objDump(j, flg, lv, false, valLen);
+    var jsn = DebugJS.objDump(j, flg, lv, DebugJS.ctx.props.dumplimit, DebugJS.ctx.props.dumpvallen);
     if (flg) jsn = DebugJS.escTags(jsn);
     DebugJS._log.mlt(jsn);
     return jsn;
@@ -10671,7 +10633,7 @@ DebugJS.toJSON = function(o, r, s) {
   return JSON.stringify(o, r, s);
 };
 DebugJS.obj2json = function(o) {
-  return DebugJS.objDump(o, true, 0, true, 0);
+  return DebugJS.objDump(o, true, 0, 0, 0);
 };
 
 DebugJS.digits = function(x) {
@@ -11353,7 +11315,7 @@ DebugJS.timePause = function(timerName) {
   ctx.timers[timerName].pause = now;
   ctx.timers[timerName].count = now - ctx.timers[timerName].start;
 };
-DebugJS.timeRestart = function(timerName, val) {
+DebugJS.timeRestart = function(timerName) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
   if (ctx.timers[timerName]) {
@@ -11477,11 +11439,9 @@ DebugJS.timeList = function() {
   }
   DebugJS._log.mlt(l);
 };
-
 DebugJS.getElapsedTimeStr = function(t1, t2) {
   var delta = t2 - t1;
-  var elapsed = DebugJS.getTimerStr(delta);
-  return elapsed;
+  return DebugJS.getTimerStr(delta);
 };
 
 DebugJS.getRandom = function(type, min, max) {
@@ -12332,8 +12292,7 @@ DebugJS._log.s = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_SYS);
 };
 DebugJS._log.p = function(o, l, m, j) {
-  var valLen = DebugJS.ctx.props.dumpvallen;
-  var s = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, false, valLen);
+  var s = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, DebugJS.ctx.props.dumplimit, DebugJS.ctx.props.dumpvallen);
   if (j) s = DebugJS.escTags(s);
   DebugJS._log.out(s, DebugJS.LOG_TYPE_LOG);
 };
@@ -13642,8 +13601,8 @@ DebugJS.led.val = function() {
   return DebugJS.ctx.led;
 };
 
-DebugJS.msg = function(val) {
-  DebugJS.ctx.setMsg(val);
+DebugJS.msg = function(v) {
+  DebugJS.ctx.setMsg(v);
 };
 DebugJS.msg.clear = function() {
   DebugJS.ctx.setMsg('');
@@ -14775,10 +14734,10 @@ DebugJS.event.create = function(type) {
   DebugJS.event.evt = e;
   return e;
 };
-DebugJS.event.set = function(prop, val) {
+DebugJS.event.set = function(prop, v) {
   var e = DebugJS.event.evt;
   if (e) {
-    e[prop] = val;
+    e[prop] = v;
   } else {
     DebugJS._log.e('Event is not created');
   }
@@ -14917,7 +14876,7 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
   var ctx = DebugJS.ctx;
   var test = DebugJS.test;
   var data = test.data;
-  var limit = ctx.props.testvallimit;
+  var lm = ctx.props.testvallimit;
   switch (st) {
     case test.STATUS_OK:
       data.cnt.ok++;
@@ -14941,10 +14900,10 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
     label = eval(label);
   }
   if (typeof exp == 'string') {
-    exp = DebugJS.trimDownText(exp, limit);
+    exp = DebugJS.trimDownText(exp, lm);
   }
   if (typeof got == 'string') {
-    got = DebugJS.trimDownText(got, limit);
+    got = DebugJS.trimDownText(got, lm);
   }
   var rslt = {
     label: label,
