@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811150000';
+  this.v = '201811152300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1009,6 +1009,7 @@ DebugJS.prototype = {
       'resize': 'none !important'
     };
     styles['.' + ctx.id + '-strg'] = {
+      'display': 'inline-block !important',
       'width': 'calc(100% - 1em) !important',
       'height': '8em !important',
       'margin': '2px 0 0 .5em !important'
@@ -3181,18 +3182,15 @@ DebugJS.prototype = {
     ctx.saveSize(ctx);
     ctx.savePos(ctx);
   },
-
   saveSize: function(ctx) {
     var shadow = (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
     ctx.orgSizePos.w = (ctx.win.offsetWidth + DebugJS.WIN_BORDER - shadow);
     ctx.orgSizePos.h = (ctx.win.offsetHeight + DebugJS.WIN_BORDER - shadow);
   },
-
   savePos: function(ctx) {
     ctx.orgSizePos.t = ctx.win.offsetTop;
     ctx.orgSizePos.l = ctx.win.offsetLeft;
   },
-
   savePosNone: function(ctx) {
     ctx.orgSizePos.t = DebugJS.DBGWIN_POS_NONE;
     ctx.orgSizePos.l = DebugJS.DBGWIN_POS_NONE;
@@ -3428,6 +3426,45 @@ DebugJS.prototype = {
     ctx.status &= ~DebugJS.ST_MEASURING;
   },
 
+  addOverlayPanel: function(ctx, panel) {
+    if (ctx.overlayBasePanel == null) {
+      ctx.collapseLogPanel(ctx);
+      ctx.overlayBasePanel = document.createElement('div');
+      ctx.overlayBasePanel.className = ctx.id + '-overlay-base-panel';
+      ctx.mainPanel.appendChild(ctx.overlayBasePanel);
+      //ctx.mainPanel.insertBefore(ctx.overlayBasePanel, ctx.logPanel); // to bottom
+    }
+    ctx.overlayBasePanel.appendChild(panel);
+    ctx.overlayPanels.push(panel);
+  },
+  removeOverlayPanel: function(ctx, panel) {
+    if (ctx.overlayBasePanel != null) {
+      for (var i = 0; i < ctx.overlayPanels.length; i++) {
+        if (ctx.overlayPanels[i] == panel) {
+          ctx.overlayPanels.splice(i, 1);
+          ctx.overlayBasePanel.removeChild(panel);
+          break;
+        }
+      }
+      if (ctx.overlayPanels.length == 0) {
+        ctx.mainPanel.removeChild(ctx.overlayBasePanel);
+        ctx.overlayBasePanel = null;
+        ctx.expandLogPanel(ctx);
+      }
+    }
+  },
+  addOverlayPanelFull: function(panel) {
+    DebugJS.ctx.mainPanel.appendChild(panel);
+  },
+  removeOverlayPanelFull: function(panel) {
+    if (panel.parentNode) {
+      DebugJS.ctx.mainPanel.removeChild(panel);
+    }
+  },
+  createBtnHtml: function(ctx, label, onclick, style) {
+    return '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' + (style == undefined ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
+  },
+
   toggleSystemInfo: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_SYS_INFO) {
@@ -3436,7 +3473,6 @@ DebugJS.prototype = {
       ctx.openSystemInfo(ctx);
     }
   },
-
   openSystemInfo: function(ctx) {
     ctx.status |= DebugJS.ST_SYS_INFO;
     ctx.featStack.push(DebugJS.ST_SYS_INFO);
@@ -3447,7 +3483,6 @@ DebugJS.prototype = {
     ctx.showSystemInfo();
     ctx.setIntervalH(ctx);
   },
-
   createSysInfoPanel: function(ctx) {
     ctx.sysInfoPanel = document.createElement('div');
     var html = '<span style="color:' + DebugJS.SYS_BTN_COLOR + '">&lt;SYSTEM INFO&gt;</span>' +
@@ -3470,7 +3505,6 @@ DebugJS.prototype = {
     ctx.sysInfoPanel.appendChild(ctx.sysInfoPanelBody);
     ctx.updateSystemTime();
   },
-
   updateSystemTime: function() {
     if (!(DebugJS.ctx.status & DebugJS.ST_SYS_INFO)) return;
     var time = (new Date()).getTime();
@@ -3481,7 +3515,6 @@ DebugJS.prototype = {
     DebugJS.ctx.sysTimePanel.innerHTML = html;
     setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
-
   closeSystemInfo: function(ctx) {
     if (ctx.sysInfoPanel != null) {
       if (DebugJS.SYS_INFO_FULL_OVERLAY) {
@@ -3497,7 +3530,6 @@ DebugJS.prototype = {
     ctx.updateSysInfoBtn(ctx);
     ctx.setIntervalL(ctx);
   },
-
   showSystemInfo: function(e) {
     var ctx = DebugJS.ctx;
     var INDENT = '                  ';
@@ -3815,7 +3847,6 @@ DebugJS.prototype = {
       ctx.openElmInfo(ctx);
     }
   },
-
   openElmInfo: function(ctx) {
     ctx.status |= DebugJS.ST_ELM_INSPECTING;
     ctx.featStack.push(DebugJS.ST_ELM_INSPECTING);
@@ -3826,7 +3857,6 @@ DebugJS.prototype = {
     ctx.updateElmSelectBtn();
     ctx.updateElmHighlightBtn();
   },
-
   createElmInfoPanel: function(ctx) {
     ctx.elmInfoPanel = document.createElement('div');
     if (DebugJS.ELM_INFO_FULL_OVERLAY) {
@@ -3900,14 +3930,12 @@ DebugJS.prototype = {
     ctx.elmInfoBodyPanel.style.overflow = 'auto';
     ctx.elmInfoPanel.appendChild(ctx.elmInfoBodyPanel);
   },
-
   createElmInfoHeadBtn: function(label, handler) {
     var ctx = DebugJS.ctx;
     var btn = ctx.createBtn(ctx, label, ctx.elmInfoHeaderPanel);
     btn.onclick = handler;
     return btn;
   },
-
   closeElmInfo: function(ctx) {
     if (ctx.targetElm) {
       if (typeof ctx.targetElm.className == 'string') {
@@ -3931,7 +3959,6 @@ DebugJS.prototype = {
     DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_ELM_INSPECTING);
     ctx.updateElmInfoBtn(ctx);
   },
-
   inspectElement: function(x, y) {
     var ctx = DebugJS.ctx;
     if ((!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT)) || (ctx.isOnDbgWin(x, y))) return;
@@ -3941,7 +3968,6 @@ DebugJS.prototype = {
       ctx.updateTargetElm(el);
     }
   },
-
   showElementInfo: function(el) {
     if (!el) return;
     var ctx = DebugJS.ctx;
@@ -4102,7 +4128,6 @@ DebugJS.prototype = {
     ctx.elmInfoBodyPanel.innerHTML = html;
     ctx.showAllElmNum();
   },
-
   showPrevElem: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.targetElm) return;
@@ -4128,7 +4153,6 @@ DebugJS.prototype = {
       }
     }
   },
-
   showNextElem: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.targetElm) return;
@@ -4153,7 +4177,6 @@ DebugJS.prototype = {
       ctx.updateTargetElm(el);
     }
   },
-
   updateTargetElm: function(el) {
     var ctx = DebugJS.ctx;
     if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
@@ -4168,7 +4191,6 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.elmDelBtn, 'color', '#a88');
     }
   },
-
   highlightElement: function(removeTarget, setTarget) {
     var ctx = DebugJS.ctx;
     if ((removeTarget) && (typeof removeTarget.className == 'string')) {
@@ -4178,16 +4200,13 @@ DebugJS.prototype = {
       DebugJS.addClass(setTarget, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
   },
-
   updateElementInfo: function() {
     DebugJS.ctx.showAllElmNum();
     DebugJS.ctx.showElementInfo(DebugJS.ctx.targetElm);
   },
-
   showAllElmNum: function() {
     DebugJS.ctx.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
   },
-
   onchangeElmUpdateInterval: function() {
     var ctx = DebugJS.ctx;
     var interval = ctx.elmUpdateInput.value;
@@ -4200,7 +4219,6 @@ DebugJS.prototype = {
       ctx.elmUpdateTimerId = setTimeout(ctx.updateElementInfoInterval, ctx.elmUpdateInterval);
     }
   },
-
   updateElementInfoInterval: function() {
     var ctx = DebugJS.ctx;
     if (!(ctx.status & DebugJS.ST_ELM_INSPECTING)) return;
@@ -4209,7 +4227,6 @@ DebugJS.prototype = {
       ctx.elmUpdateTimerId = setTimeout(ctx.updateElementInfoInterval, ctx.elmUpdateInterval);
     }
   },
-
   toggleElmSelectMode: function() {
     var ctx = DebugJS.ctx;
     if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) {
@@ -4219,11 +4236,9 @@ DebugJS.prototype = {
     }
     ctx.updateElmSelectBtn();
   },
-
   updateElmSelectBtn: function() {
     DebugJS.ctx.setStyle(DebugJS.ctx.elmSelectBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
   },
-
   toggleElmHighlightMode: function() {
     var ctx = DebugJS.ctx;
     if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
@@ -4235,15 +4250,12 @@ DebugJS.prototype = {
     }
     ctx.updateElmHighlightBtn();
   },
-
   updateElmHighlightBtn: function() {
     DebugJS.ctx.setStyle(DebugJS.ctx.elmHighlightBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
   },
-
   exportTargetElm: function() {
     if (DebugJS.ctx.targetElm) DebugJS.ctx.captureElm(DebugJS.ctx.targetElm);
   },
-
   captureElm: function(elm) {
     var ctx = DebugJS.ctx;
     DebugJS.el = elm;
@@ -4253,7 +4265,6 @@ DebugJS.prototype = {
     }
     DebugJS._log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + (DebugJS.G_EL_AVAILABLE ? 'el' : ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el') + '</span>');
   },
-
   delTargetElm: function() {
     var e = DebugJS.ctx.targetElm;
     if (e) {
@@ -4265,7 +4276,6 @@ DebugJS.prototype = {
       }
     }
   },
-
   updateEditable: function(ctx, el) {
     if ((ctx.txtChkTargetEl) && (ctx.txtChkTargetEl.contentEditableBak)) {
       ctx.txtChkTargetEl.contentEditable = ctx.txtChkTargetEl.contentEditableBak;
@@ -4274,7 +4284,6 @@ DebugJS.prototype = {
     ctx.txtChkTargetEl.contentEditableBak = el.contentEditable;
     ctx.txtChkTargetEl.contentEditable = true;
   },
-
   getEvtHandlerStr: function(handler, name) {
     var MAX_LEN = 300;
     var s = '';
@@ -4299,7 +4308,6 @@ DebugJS.prototype = {
       ctx.openHtmlSrc(ctx);
     }
   },
-
   openHtmlSrc: function(ctx) {
     ctx.status |= DebugJS.ST_HTML_SRC;
     ctx.featStack.push(DebugJS.ST_HTML_SRC);
@@ -4307,7 +4315,6 @@ DebugJS.prototype = {
     ctx.updateHtmlSrcBtn(ctx);
     ctx.showHtmlSrc();
   },
-
   createHtmlSrcPanel: function(ctx) {
     ctx.htmlSrcPanel = document.createElement('div');
     if (DebugJS.HTML_SRC_FULL_OVERLAY) {
@@ -4359,7 +4366,6 @@ DebugJS.prototype = {
     ctx.htmlSrcBody = document.createElement('pre');
     ctx.htmlSrcBodyPanel.appendChild(ctx.htmlSrcBody);
   },
-
   closeHtmlSrc: function(ctx) {
     if (ctx.htmlSrcPanel != null) {
       if (DebugJS.HTML_SRC_FULL_OVERLAY) {
@@ -4374,7 +4380,6 @@ DebugJS.prototype = {
     DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_HTML_SRC);
     ctx.updateHtmlSrcBtn(ctx);
   },
-
   showHtmlSrc: function() {
     var ctx = DebugJS.ctx;
     ctx.htmlSrcBodyPanel.removeChild(ctx.htmlSrcBody);
@@ -4382,7 +4387,6 @@ DebugJS.prototype = {
     ctx.htmlSrcBodyPanel.appendChild(ctx.htmlSrcBody);
     ctx.htmlSrcBody.innerHTML = html;
   },
-
   onchangeHtmlSrcUpdateInterval: function() {
     var ctx = DebugJS.ctx;
     var interval = ctx.htmlSrcUpdateInput.value;
@@ -4393,7 +4397,6 @@ DebugJS.prototype = {
       ctx.htmlSrcUpdateTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdateInterval);
     }
   },
-
   updateHtmlSrcInterval: function() {
     var ctx = DebugJS.ctx;
     if (!(ctx.status & DebugJS.ST_HTML_SRC)) return;
@@ -4401,6 +4404,97 @@ DebugJS.prototype = {
     if (ctx.htmlSrcUpdateInterval > 0) {
       ctx.elmUpdateTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdateInterval);
     }
+  },
+
+  toggleJs: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.ST_JS) {
+      ctx.closeJsEditor();
+    } else {
+      ctx.openJsEditor(ctx);
+    }
+  },
+  openJsEditor: function(ctx) {
+    ctx.status |= DebugJS.ST_JS;
+    ctx.featStack.push(DebugJS.ST_JS);
+    if (ctx.jsPanel == null) ctx.createJsPanel(ctx);
+    ctx.updateJsBtn(ctx);
+    ctx.jsEditor.focus();
+  },
+  createJsPanel: function(ctx) {
+    ctx.jsPanel = document.createElement('div');
+    ctx.jsPanel.className = ctx.id + '-overlay-panel';
+    var html = '<div class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' +
+    'style="position:relative;top:-1px;float:right;' +
+    'font-size:' + (18 * ctx.opt.zoom) + 'px;color:#888 !important" ' +
+    'onclick="DebugJS.ctx.closeJsEditor();" ' +
+    'onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#d88\');" ' +
+    'onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">x</div>' +
+    '<span style="color:#ccc">JS Editor</span>' +
+    ctx.createBtnHtml(ctx, '[EXEC]', 'DebugJS.ctx.execJavaScript();', 'float:right;margin-right:4px') +
+    ctx.createBtnHtml(ctx, '[CLR]', 'DebugJS.ctx.insertJsSnippet();', 'margin-left:4px;margin-right:4px');
+    for (var i = 0; i < 5; i++) {
+      html += ctx.createJsSnippetBtn(ctx, i);
+    }
+    ctx.jsPanel.innerHTML = html;
+    ctx.addOverlayPanel(ctx, ctx.jsPanel);
+    ctx.jsEditor = document.createElement('textarea');
+    ctx.jsEditor.className = ctx.id + '-editor';
+    ctx.jsEditor.onblur = ctx.saveJsBuf;
+    ctx.jsEditor.value = ctx.jsBuf;
+    ctx.enableDnDFileLoad(ctx.jsEditor, ctx.handleFileDropOnJS);
+    ctx.jsPanel.appendChild(ctx.jsEditor);
+  },
+  createJsSnippetBtn: function(ctx, i) {
+    return ctx.createBtnHtml(ctx, '{CODE' + (i + 1) + '}', 'DebugJS.ctx.insertJsSnippet(' + i + ');', 'margin-left:4px');
+  },
+  insertJsSnippet: function(n) {
+    var ctx = DebugJS.ctx;
+    var editor = ctx.jsEditor;
+    if (n == undefined) {
+      editor.value = '';
+      editor.focus();
+    } else {
+      var code = DebugJS.JS_SNIPPET[n];
+      var buf = editor.value;
+      var posCursole = editor.selectionStart;
+      var leftBuf = buf.substr(0, posCursole);
+      var rightBuf = buf.substr(posCursole, buf.length);
+      buf = leftBuf + code + rightBuf;
+      ctx.jsEditor.focus();
+      ctx.jsEditor.value = buf;
+      editor.selectionStart = editor.selectionEnd = posCursole + code.length;
+    }
+  },
+  saveJsBuf: function() {
+    DebugJS.ctx.jsBuf = DebugJS.ctx.jsEditor.value;
+  },
+  execJavaScript: function() {
+    DebugJS.ctx.execCode(DebugJS.ctx.jsBuf, true);
+  },
+  execCode: function(code, echo) {
+    if (code == '') return;
+    try {
+      var ret = eval(code);
+      var res = ret;
+      if (typeof ret == 'string') {
+        res = DebugJS.quoteStr(ret);
+      }
+      if (echo) DebugJS._log.res(res);
+      return ret;
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
+  },
+  closeJsEditor: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.jsPanel != null) {
+      ctx.removeOverlayPanel(ctx, ctx.jsPanel);
+      ctx.jsPanel = null;
+    }
+    ctx.status &= ~DebugJS.ST_JS;
+    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_JS);
+    ctx.updateJsBtn(ctx);
   },
 
   toggleTools: function() {
@@ -4411,7 +4505,6 @@ DebugJS.prototype = {
       ctx.openTools(ctx);
     }
   },
-
   openTools: function(ctx) {
     ctx.status |= DebugJS.ST_TOOLS;
     ctx.featStack.push(DebugJS.ST_TOOLS);
@@ -4422,12 +4515,10 @@ DebugJS.prototype = {
     ctx.updateToolsBtns();
     ctx.updateToolsBtn(ctx);
   },
-
   isAvailableTools: function(ctx) {
     if ((ctx.win == null) || !(ctx.opt.useTools)) return false;
     return true;
   },
-
   createToolsPanel: function(ctx) {
     var p = ctx.createSubBasePanel(ctx);
     ctx.toolsPanel = p.base;
@@ -4439,7 +4530,6 @@ DebugJS.prototype = {
     ctx.fileVwrBtn = ctx.createToolsHeaderBtn('FILE', 'TOOLS_FNC_FILE', 'fileVwrBtn');
     ctx.batBtn = ctx.createToolsHeaderBtn('BAT', 'TOOLS_FNC_BAT', 'batBtn');
   },
-
   createToolsHeaderBtn: function(label, state, btnObj) {
     var ctx = DebugJS.ctx;
     var btn = ctx.createBtn(ctx, '<' + label + '>', ctx.toolsHeaderPanel);
@@ -4449,7 +4539,6 @@ DebugJS.prototype = {
     btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.toolsActiveFnc & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);');
     return btn;
   },
-
   closeTools: function(ctx) {
     if (ctx.toolsPanel != null) {
       ctx.removeOverlayPanelFull(ctx.toolsPanel);
@@ -4459,7 +4548,6 @@ DebugJS.prototype = {
     DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_TOOLS);
     ctx.updateToolsBtn(ctx);
   },
-
   updateToolsBtns: function() {
     var ctx = DebugJS.ctx;
     ctx.setStyle(ctx.timerBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
@@ -4468,7 +4556,6 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.fileVwrBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
     ctx.setStyle(ctx.batBtn, 'color', (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACTIVE);
   },
-
   switchToolsFunction: function(kind, param) {
     var ctx = DebugJS.ctx;
     if (kind & DebugJS.TOOLS_FNC_TIMER) {
@@ -4499,7 +4586,6 @@ DebugJS.prototype = {
     if (kind) ctx.toolsActiveFnc = kind;
     ctx.updateToolsBtns();
   },
-
   removeToolFuncPanel: function(ctx, panel) {
     if (panel.parentNode) {
       ctx.toolsBodyPanel.removeChild(panel);
@@ -4552,7 +4638,6 @@ DebugJS.prototype = {
       }
     }
   },
-
   createTimerClockSubPanel: function() {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize;
@@ -4577,18 +4662,15 @@ DebugJS.prototype = {
     ctx.clockSSSbtn = ctx.createTimerBtn(btns, 'sss', ctx.toggleSSS, false, (fontSize * 1.5));
     ctx.updateSSS(ctx);
   },
-
   toggleSSS: function() {
     var ctx = DebugJS.ctx;
     ctx.timerClockSSS = (ctx.timerClockSSS ? false : true);
     ctx.updateSSS(ctx);
   },
-
   updateSSS: function(ctx) {
     var color = (ctx.timerClockSSS ? DebugJS.TOOL_TIMER_BTN_COLOR : '#888');
     ctx.setStyle(ctx.clockSSSbtn, 'color', color);
   },
-
   createTimerStopWatchSubPanel: function(ctx, handlers) {
     var panel = {
       basePanel: null, stopWatchLabel: null, btns: null, startStopBtn: null, splitBtn: null
@@ -4618,7 +4700,6 @@ DebugJS.prototype = {
     panel.btns = btns;
     return panel;
   },
-
   createTimerStopWatchCuSubPanel: function() {
     var ctx = DebugJS.ctx;
     var handlers = {
@@ -4632,7 +4713,6 @@ DebugJS.prototype = {
     ctx.timerStartStopBtnCu = panel.startStopBtn;
     ctx.timerSplitBtnCu = panel.splitBtn;
   },
-
   createTimerStopWatchCdSubPanel: function() {
     var ctx = DebugJS.ctx;
     var handlers = {
@@ -4648,7 +4728,6 @@ DebugJS.prototype = {
     ctx.timer0CntBtnCd1 = ctx.createTimerBtn(panel.btns, '0=>', ctx.toggle0ContinueTimerStopWatchCd, false, (ctx.computedFontSize * 1.5));
     ctx.update0ContinueBtnTimerStopWatchCd();
   },
-
   createTimerStopWatchCdInpSubPanel: function() {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize;
@@ -4702,7 +4781,6 @@ DebugJS.prototype = {
 
     ctx.timerStopWatchCdInpSubPanel = basePanel;
   },
-
   createTimerInput: function(base, val, fontSize, width) {
     var ctx = DebugJS.ctx;
     var txt = document.createElement('input');
@@ -4715,7 +4793,6 @@ DebugJS.prototype = {
     base.appendChild(txt);
     return txt;
   },
-
   createTimerInputLabel: function(base, label, fontSize) {
     var ctx = DebugJS.ctx;
     var span = document.createElement('span');
@@ -4723,7 +4800,6 @@ DebugJS.prototype = {
     ctx.setStyle(span, 'font-size', fontSize + 'px');
     base.appendChild(span);
   },
-
   createTimerBtn: function(base, label, handler, disabled, fontSize) {
     var ctx = DebugJS.ctx;
     var btn = ctx.createBtn(ctx, label, base);
@@ -4733,7 +4809,6 @@ DebugJS.prototype = {
     btn.onclick = handler;
     return btn;
   },
-
   createTimerUpDwnBtn: function(up, part, area, fontSize, margin) {
     var ctx = DebugJS.ctx;
     var label = (up ? '+' : '-');
@@ -4744,7 +4819,6 @@ DebugJS.prototype = {
     btn.onclick = new Function('DebugJS.ctx.timerUpDwn(\'' + part + '\', ' + up + ')');
     return btn;
   },
-
   timerUpDwn: function(part, up) {
     var ctx = DebugJS.ctx;
     var val = ctx.calcTimeupTimeInp();
@@ -4770,12 +4844,10 @@ DebugJS.prototype = {
     ctx.updateTimeupTimeInp(val);
     ctx.drawStopWatchCd();
   },
-
   updatePropTimer: function(v) {
     var ctx = DebugJS.ctx;
     ctx.props.timer = ctx.timerTxtHH.value + ':' + ctx.timerTxtMI.value + ':' + ctx.timerTxtSS.value + '.' + ctx.timerTxtSSS.value;
   },
-
   calcTimeupTimeInp: function() {
     var ctx = DebugJS.ctx;
     var timeupHH = (ctx.timerTxtHH.value | 0) * 3600000;
@@ -4785,7 +4857,6 @@ DebugJS.prototype = {
     var timeup = timeupHH + timeupMI + timeupSS + timeupSSS;
     return timeup;
   },
-
   updateTimeupTimeInp: function(v) {
     var ctx = DebugJS.ctx;
     var tm = DebugJS.ms2struct(v, true);
@@ -4795,7 +4866,6 @@ DebugJS.prototype = {
     ctx.timerTxtSSS.value = tm.sss;
     ctx.updatePropTimer();
   },
-
   toggleTimerMode: function() {
     var ctx = DebugJS.ctx;
     var nextMode;
@@ -4808,7 +4878,6 @@ DebugJS.prototype = {
     }
     ctx.switchTimerMode(nextMode);
   },
-
   switchTimerMode: function(mode) {
     var ctx = DebugJS.ctx;
     if (mode == DebugJS.TOOL_TIMER_MODE_SW_CU) {
@@ -4819,14 +4888,12 @@ DebugJS.prototype = {
       ctx.switchTimerModeClock();
     }
   },
-
   switchTimerModeClock: function() {
     var ctx = DebugJS.ctx;
     ctx.replaceTimerSubPanel(ctx.timerClockSubPanel);
     ctx.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
     ctx.updateTimerClock();
   },
-
   switchTimerModeStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     ctx.toolTimerMode = DebugJS.TOOL_TIMER_MODE_SW_CU;
@@ -4835,7 +4902,6 @@ DebugJS.prototype = {
     ctx.updateTimerStopWatchCu();
     ctx.updateTimerSwBtnsCu();
   },
-
   switchTimerModeStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     ctx.toolTimerMode = DebugJS.TOOL_TIMER_MODE_SW_CD;
@@ -4848,7 +4914,6 @@ DebugJS.prototype = {
     }
     ctx.updateTimerSwBtnsCd();
   },
-
   replaceTimerSubPanel: function(panel) {
     var ctx = DebugJS.ctx;
     for (var i = ctx.timerBasePanel.childNodes.length - 1; i >= 0; i--) {
@@ -4856,7 +4921,6 @@ DebugJS.prototype = {
     }
     ctx.timerBasePanel.appendChild(panel);
   },
-
   updateTimerClock: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.ST_TOOLS)) || (ctx.toolTimerMode != DebugJS.TOOL_TIMER_MODE_CLOCK)) return;
@@ -4864,7 +4928,6 @@ DebugJS.prototype = {
     ctx.timerClockLabel.innerHTML = ctx.createClockStr(tm);
     setTimeout(ctx.updateTimerClock, ctx.clockUpdInt);
   },
-
   createClockStr: function(tm) {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize * 8;
@@ -4885,7 +4948,6 @@ DebugJS.prototype = {
                 '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
     return label;
   },
-
   startStopTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END) {
@@ -4897,7 +4959,6 @@ DebugJS.prototype = {
       ctx.startTimerStopWatchCu();
     }
   },
-
   startStopTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) {
@@ -4906,7 +4967,6 @@ DebugJS.prototype = {
       ctx.startTimerStopWatchCd();
     }
   },
-
   startTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END) {
@@ -4917,7 +4977,6 @@ DebugJS.prototype = {
     ctx.updateTimerStopWatchCu();
     ctx.updateTimerSwBtnsCu();
   },
-
   stopTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     ctx.updateTimerStopWatchCu();
@@ -4926,7 +4985,6 @@ DebugJS.prototype = {
     ctx.drawStopWatchCu();
     ctx.updateTimerSwBtnsCu();
   },
-
   endTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     ctx.updateTimerStopWatchCu();
@@ -4935,11 +4993,9 @@ DebugJS.prototype = {
     ctx.updateTimerStopWatchCu();
     ctx.updateTimerSwBtnsCu();
   },
-
   splitTimerStopWatchCu: function() {
     DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU);
   },
-
   resetTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CU_END;
@@ -4947,7 +5003,6 @@ DebugJS.prototype = {
     ctx.drawStopWatchCu();
     ctx.updateTimerSwBtnsCu();
   },
-
   updateTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.ST_TOOLS)) ||
@@ -4960,13 +5015,11 @@ DebugJS.prototype = {
     ctx.drawStopWatchCu();
     setTimeout(ctx.updateTimerStopWatchCu, DebugJS.UPDATE_INTERVAL_H);
   },
-
   drawStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     var tm = DebugJS.ms2struct(DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU), true);
     ctx.timerStopWatchCuLabel.innerHTML = ctx.createTimeStrCu(tm);
   },
-
   updateTimerSwBtnsCu: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.timerStartStopBtnCu) return;
@@ -4974,7 +5027,6 @@ DebugJS.prototype = {
     ctx.timerStartStopBtnCu.innerText = btn;
     ctx.updateTimerLapBtnCu();
   },
-
   updateTimerLapBtnCu: function() {
     var ctx = DebugJS.ctx;
     var color = '#888';
@@ -4986,7 +5038,6 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.timerSplitBtnCu, 'color', color);
     ctx.timerSplitBtnCu.onclick = handler;
   },
-
   toggle0ContinueTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) return;
@@ -4997,7 +5048,6 @@ DebugJS.prototype = {
     }
     ctx.update0ContinueBtnTimerStopWatchCd();
   },
-
   update0ContinueBtnTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     var color = DebugJS.TOOL_TIMER_BTN_COLOR;
@@ -5011,7 +5061,6 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.timer0CntBtnCd1, 'color', color);
     if (ctx.timer0CntBtnCd2) ctx.setStyle(ctx.timer0CntBtnCd2, 'color', color);
   },
-
   startTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     var now = (new Date()).getTime();
@@ -5034,7 +5083,6 @@ DebugJS.prototype = {
     ctx.updateTimerStopWatchCd();
     ctx.updateTimerSwBtnsCd();
   },
-
   stopTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     ctx.updateTimerStopWatchCd();
@@ -5042,7 +5090,6 @@ DebugJS.prototype = {
     ctx.drawStopWatchCd();
     ctx.updateTimerSwBtnsCd();
   },
-
   splitTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     var color = '#fff';
@@ -5052,7 +5099,6 @@ DebugJS.prototype = {
     var t = DebugJS.TIMER_NAME_SW_CD + ': ' + '<span style="color:' + color + '">' + DebugJS.getTimerStr(ctx.timerSwTimeCd) + '</span>';
     DebugJS._log(t);
   },
-
   resetTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_EXPIRED;
@@ -5067,7 +5113,6 @@ DebugJS.prototype = {
     }
     ctx.updateTimerSwBtnsCd();
   },
-
   updateTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.ST_TOOLS)) ||
@@ -5097,13 +5142,11 @@ DebugJS.prototype = {
     ctx.drawStopWatchCd();
     setTimeout(ctx.updateTimerStopWatchCd, DebugJS.UPDATE_INTERVAL_H);
   },
-
   drawStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     var tm = DebugJS.ms2struct(ctx.timerSwTimeCd, true);
     ctx.timerStopWatchCdLabel.innerHTML = ctx.createTimeStrCd(tm);
   },
-
   updateTimerSwBtnsCd: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.timerStartStopBtnCd) return;
@@ -5113,7 +5156,6 @@ DebugJS.prototype = {
     ctx.updateTimerLapBtnCd();
     ctx.update0ContinueBtnTimerStopWatchCd();
   },
-
   updateTimerLapBtnCd: function() {
     var ctx = DebugJS.ctx;
     var color = '#888';
@@ -5125,7 +5167,6 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.timerSplitBtnCd, 'color', color);
     ctx.timerSplitBtnCd.onclick = handler;
   },
-
   createTimeStrCu: function(tm) {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize * 7;
@@ -5145,7 +5186,6 @@ DebugJS.prototype = {
     var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
     return label;
   },
-
   createTimeStrCd: function(tm) {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize * 7;
@@ -5176,7 +5216,6 @@ DebugJS.prototype = {
     var label = '<div style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
     return label;
   },
-
   closeTimer: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) &&
@@ -5204,7 +5243,6 @@ DebugJS.prototype = {
       ctx.toolsBodyPanel.appendChild(ctx.txtChkPanel);
     }
   },
-
   createTxtChkPanel: function(ctx) {
     var dfltFontSize = ctx.computedFontSize;
     var dfltFontFamily = 'Consolas';
@@ -5277,7 +5315,6 @@ DebugJS.prototype = {
     ctx.onChangeFgRGB();
     ctx.onChangeBgRGB();
   },
-
   toggleTxtItalic: function(btn) {
     var ctx = DebugJS.ctx;
     var style = '';
@@ -5290,7 +5327,6 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.txtChkTargetEl, 'font-style', style);
     ctx.updateTxtItalicBtn(btn);
   },
-
   updateTxtItalicBtn: function(btn) {
     var ctx = DebugJS.ctx;
     if (ctx.txtChkItalic) {
@@ -5299,7 +5335,6 @@ DebugJS.prototype = {
       ctx.setStyle(btn, 'color', DebugJS.COLOR_INACTIVE);
     }
   },
-
   toggleElmEditable: function(btn) {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_ELM_EDIT) {
@@ -5313,7 +5348,6 @@ DebugJS.prototype = {
     }
     ctx.updateElBtn(btn);
   },
-
   updateElBtn: function(btn) {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_ELM_EDIT) {
@@ -5322,7 +5356,6 @@ DebugJS.prototype = {
       ctx.setStyle(btn, 'color', DebugJS.COLOR_INACTIVE);
     }
   },
-
   onChangeFgRGB: function() {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputFgRGB.value;
@@ -5333,7 +5366,6 @@ DebugJS.prototype = {
     ctx.onChangeFgColor(null);
     ctx.setStyle(ctx.txtChkTargetEl, 'color', rgb16);
   },
-
   onChangeBgRGB: function() {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputBgRGB.value;
@@ -5344,7 +5376,6 @@ DebugJS.prototype = {
     ctx.onChangeBgColor(null);
     ctx.setStyle(ctx.txtChkTargetEl, 'background', rgb16);
   },
-
   onChangeFgColor: function(callFromRange) {
     var ctx = DebugJS.ctx;
     var fgR = ctx.txtChkRangeFgR.value;
@@ -5359,7 +5390,6 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.txtChkTargetEl, 'color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')');
     }
   },
-
   onChangeBgColor: function(callFromRange) {
     var ctx = DebugJS.ctx;
     var bgR = ctx.txtChkRangeBgR.value;
@@ -5374,7 +5404,6 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.txtChkTargetEl, 'background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')');
     }
   },
-
   onChangeFontSizeTxt: function() {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.txtChkFontSizeInput.value;
@@ -5383,7 +5412,6 @@ DebugJS.prototype = {
     ctx.onChangeFontSize(null);
     ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + unit);
   },
-
   onChangeFontSize: function(callFromRange) {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.txtChkFontSizeRange.value;
@@ -5393,7 +5421,6 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.txtChkTargetEl, 'font-size', fontSize + unit);
     }
   },
-
   onChangeFontWeight: function() {
     var ctx = DebugJS.ctx;
     var fontWeight = ctx.txtChkFontWeightRange.value;
@@ -5405,11 +5432,9 @@ DebugJS.prototype = {
     }
     ctx.txtChkFontWeightLabel.innerText = fontWeight;
   },
-
   onChangeFontFamily: function(font) {
     DebugJS.ctx.setStyle(DebugJS.ctx.txtChkTargetEl, 'font-family', font.value);
   },
-
   closeTextChecker: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TEXT) && (ctx.txtChkPanel != null)) {
@@ -6202,11 +6227,9 @@ DebugJS.prototype = {
     }
     ctx.htmlPrevEditor.focus();
   },
-
   createHtmlSnippetBtn: function(ctx, i) {
     return ctx.createBtnHtml(ctx, '&lt;CODE' + (i + 1) + '&gt;', 'DebugJS.ctx.insertHtmlSnippet(' + i + ');', 'margin-left:4px');
   },
-
   insertHtmlSnippet: function(n) {
     var editor = DebugJS.ctx.htmlPrevEditor;
     if (n == undefined) {
@@ -6224,15 +6247,12 @@ DebugJS.prototype = {
       editor.selectionStart = editor.selectionEnd = posCursole + code.length;
     }
   },
-
   saveHtmlBuf: function() {
     DebugJS.ctx.htmlPrevBuf = DebugJS.ctx.htmlPrevEditor.value;
   },
-
   drawHtml: function() {
     DebugJS.ctx.htmlPrevPrevPanel.innerHTML = DebugJS.ctx.htmlPrevBuf;
   },
-
   closeHtmlEditor: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_HTML) && (ctx.htmlPrevBasePanel != null)) {
@@ -6282,7 +6302,6 @@ DebugJS.prototype = {
     }
     ctx.batTextEditor.focus();
   },
-
   startPauseBat: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_BAT_RUNNING) {
@@ -6295,7 +6314,6 @@ DebugJS.prototype = {
       ctx.runBat(ctx);
     }
   },
-
   runBat: function(ctx) {
     var bat = DebugJS.bat;
     bat.store(ctx.batTextEditor.value);
@@ -6312,7 +6330,6 @@ DebugJS.prototype = {
     if (e == '') e = undefined;
     bat.run(s, e);
   },
-
   updateBatRunBtn: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.batRunBtn) return;
@@ -6330,7 +6347,6 @@ DebugJS.prototype = {
     ctx.batRunBtn.innerText = '[' + label + ']';
     ctx.setStyle(ctx.batRunBtn, 'color', color);
   },
-
   updateBatResumeBtn: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.batResumeBtn) return;
@@ -6345,11 +6361,9 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.batResumeBtn, 'color', color);
     ctx.batResumeBtn.onclick = handler;
   },
-
   batResume: function() {
     DebugJS.bat._resume('cmd-key');
   },
-
   setBatTxt: function(ctx) {
     var b = '';
     var cmds = DebugJS.bat.cmds;
@@ -6360,7 +6374,6 @@ DebugJS.prototype = {
       ctx.batTextEditor.value = b;
     }
   },
-
   setBatArgTxt: function(ctx) {
     if (ctx.batArgTxt) {
       var a = DebugJS.bat.ctrl.execArg;
@@ -6368,7 +6381,6 @@ DebugJS.prototype = {
       ctx.batArgTxt.value = a + '';
     }
   },
-
   updateCurPc: function(b) {
     var pc = DebugJS.bat.ctrl.pc;
     var df = DebugJS.digits(DebugJS.bat.cmds.length) - DebugJS.digits(pc);
@@ -6381,167 +6393,22 @@ DebugJS.prototype = {
       DebugJS.ctx.batCurPc.style.color = (b ? '#f66' : '');
     }
   },
-
   updateTotalLine: function() {
     if (DebugJS.ctx.batTotalLine) {
       DebugJS.ctx.batTotalLine.innerText = DebugJS.bat.cmds.length;
     }
   },
-
   updateBatNestLv: function() {
     if (DebugJS.ctx.batNestLv) {
       DebugJS.ctx.batNestLv.innerText = DebugJS.bat.nestLv();
     }
   },
-
   closeBatEditor: function() {
     var ctx = DebugJS.ctx;
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) &&
         (ctx.batBasePanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.batBasePanel);
     }
-  },
-
-  toggleJs: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_JS) {
-      ctx.closeJsEditor();
-    } else {
-      ctx.openJsEditor(ctx);
-    }
-  },
-
-  openJsEditor: function(ctx) {
-    ctx.status |= DebugJS.ST_JS;
-    ctx.featStack.push(DebugJS.ST_JS);
-    if (ctx.jsPanel == null) ctx.createJsPanel(ctx);
-    ctx.updateJsBtn(ctx);
-    ctx.jsEditor.focus();
-  },
-
-  createJsPanel: function(ctx) {
-    ctx.jsPanel = document.createElement('div');
-    ctx.jsPanel.className = ctx.id + '-overlay-panel';
-    var html = '<div class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' +
-    'style="position:relative;top:-1px;float:right;' +
-    'font-size:' + (18 * ctx.opt.zoom) + 'px;color:#888 !important" ' +
-    'onclick="DebugJS.ctx.closeJsEditor();" ' +
-    'onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#d88\');" ' +
-    'onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">x</div>' +
-    '<span style="color:#ccc">JS Editor</span>' +
-    ctx.createBtnHtml(ctx, '[EXEC]', 'DebugJS.ctx.execJavaScript();', 'float:right;margin-right:4px') +
-    ctx.createBtnHtml(ctx, '[CLR]', 'DebugJS.ctx.insertJsSnippet();', 'margin-left:4px;margin-right:4px');
-    for (var i = 0; i < 5; i++) {
-      html += ctx.createJsSnippetBtn(ctx, i);
-    }
-    ctx.jsPanel.innerHTML = html;
-    ctx.addOverlayPanel(ctx, ctx.jsPanel);
-    ctx.jsEditor = document.createElement('textarea');
-    ctx.jsEditor.className = ctx.id + '-editor';
-    ctx.jsEditor.onblur = ctx.saveJsBuf;
-    ctx.jsEditor.value = ctx.jsBuf;
-    ctx.enableDnDFileLoad(ctx.jsEditor, ctx.handleFileDropOnJS);
-    ctx.jsPanel.appendChild(ctx.jsEditor);
-  },
-
-  createJsSnippetBtn: function(ctx, i) {
-    return ctx.createBtnHtml(ctx, '{CODE' + (i + 1) + '}', 'DebugJS.ctx.insertJsSnippet(' + i + ');', 'margin-left:4px');
-  },
-
-  createBtnHtml: function(ctx, label, onclick, style) {
-    return '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' + (style == undefined ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
-  },
-
-  addOverlayPanel: function(ctx, panel) {
-    if (ctx.overlayBasePanel == null) {
-      ctx.collapseLogPanel(ctx);
-      ctx.overlayBasePanel = document.createElement('div');
-      ctx.overlayBasePanel.className = ctx.id + '-overlay-base-panel';
-      ctx.mainPanel.appendChild(ctx.overlayBasePanel);
-      //ctx.mainPanel.insertBefore(ctx.overlayBasePanel, ctx.logPanel); // to bottom
-    }
-    ctx.overlayBasePanel.appendChild(panel);
-    ctx.overlayPanels.push(panel);
-  },
-
-  removeOverlayPanel: function(ctx, panel) {
-    if (ctx.overlayBasePanel != null) {
-      for (var i = 0; i < ctx.overlayPanels.length; i++) {
-        if (ctx.overlayPanels[i] == panel) {
-          ctx.overlayPanels.splice(i, 1);
-          ctx.overlayBasePanel.removeChild(panel);
-          break;
-        }
-      }
-      if (ctx.overlayPanels.length == 0) {
-        ctx.mainPanel.removeChild(ctx.overlayBasePanel);
-        ctx.overlayBasePanel = null;
-        ctx.expandLogPanel(ctx);
-      }
-    }
-  },
-
-  addOverlayPanelFull: function(panel) {
-    DebugJS.ctx.mainPanel.appendChild(panel);
-  },
-
-  removeOverlayPanelFull: function(panel) {
-    if (panel.parentNode) {
-      DebugJS.ctx.mainPanel.removeChild(panel);
-    }
-  },
-
-  insertJsSnippet: function(n) {
-    var ctx = DebugJS.ctx;
-    var editor = ctx.jsEditor;
-    if (n == undefined) {
-      editor.value = '';
-      editor.focus();
-    } else {
-      var code = DebugJS.JS_SNIPPET[n];
-      var buf = editor.value;
-      var posCursole = editor.selectionStart;
-      var leftBuf = buf.substr(0, posCursole);
-      var rightBuf = buf.substr(posCursole, buf.length);
-      buf = leftBuf + code + rightBuf;
-      ctx.jsEditor.focus();
-      ctx.jsEditor.value = buf;
-      editor.selectionStart = editor.selectionEnd = posCursole + code.length;
-    }
-  },
-
-  saveJsBuf: function() {
-    DebugJS.ctx.jsBuf = DebugJS.ctx.jsEditor.value;
-  },
-
-  execJavaScript: function() {
-    DebugJS.ctx.execCode(DebugJS.ctx.jsBuf, true);
-  },
-
-  execCode: function(code, echo) {
-    if (code == '') return;
-    try {
-      var ret = eval(code);
-      var res = ret;
-      if (typeof ret == 'string') {
-        res = DebugJS.quoteStr(ret);
-      }
-      if (echo) DebugJS._log.res(res);
-      return ret;
-    } catch (e) {
-      DebugJS._log.e(e);
-    }
-  },
-
-  closeJsEditor: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.jsPanel != null) {
-      ctx.removeOverlayPanel(ctx, ctx.jsPanel);
-      ctx.jsPanel = null;
-    }
-    ctx.status &= ~DebugJS.ST_JS;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_JS);
-    ctx.updateJsBtn(ctx);
   },
 
   toggleExtPanel: function() {
