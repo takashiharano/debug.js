@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811182035';
+  this.v = '201811190012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2299,9 +2299,7 @@ DebugJS.prototype = {
     var infoPanelH = (ctx.infoPanel) ? ctx.infoPanel.offsetHeight : 0;
     var cmdPanelH = (ctx.cmdPanel) ? ctx.cmdPanel.offsetHeight : 0;
     var mainPanelHeight = ctx.win.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WIN_ADJUST;
-    if (infoPanelH != 1) {
-      ctx.mainPanel.style.height = mainPanelHeight + 'px';
-    }
+    ctx.mainPanel.style.height = mainPanelHeight + 'px';
   },
 
   toggleLogSuspend: function() {
