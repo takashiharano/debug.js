@@ -3012,6 +3012,62 @@ dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('
   </tr>
 
   <tr>
+    <td class="name">dbg.pos</td>
+    <td>
+      arg1: x<br>
+      arg2: y
+    </td>
+    <td>
+      Set the debugger window position..<br>
+<pre>
+dbg.pos(<input type="text" id="pos-x-text" value="100" class="demo-text" style="width:30px;">, <input type="text" id="pos-y-text" value="200" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.pos(getVal('pos-x-text'), getVal('pos-y-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.size</td>
+    <td>
+      arg1: width<br>
+      arg2: height
+    </td>
+    <td>
+      Set the debugger window size.<br>
+<pre>
+dbg.size(<input type="text" id="size-w-text" value="600" class="demo-text" style="width:30px;">, <input type="text" id="size-h-text" value="400" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.size(getVal('size-w-text'), getVal('size-h-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.pin</td>
+    <td>
+      true|false
+    </td>
+    <td>
+      Fix the debug window in its position.<br>
+<pre>
+dbg.pin(<input type="text" id="pin-text" value="true" class="demo-text" style="width:50px;">); <button class="demo-button2" onclick="dbg.pin(getVal('pin-text') == 'true' ? true : false);">DEMO</button>
+return: status(true|false)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.zoom</td>
+    <td>
+      zoom ratio
+    </td>
+    <td>
+      Zoom the debug window.<br>
+<pre>
+dbg.zoom(<input type="text" id="zoom-text" value="1.4" class="demo-text" style="width:50px;">); <button class="demo-button2" onclick="dbg.zoom((getVal('zoom-text') == '' ? undefined : getVal('zoom-text')));">DEMO</button>
+return: the zoom ratio
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.getFeatureStack</td>
     <td></td>
     <td>

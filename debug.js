@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811171200';
+  this.v = '201811181531';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7081,10 +7081,10 @@ DebugJS.prototype = {
         }
         break;
       case 'pos':
-        ctx._cmdDbgWinPos(ctx, a);
+        ctx._cmdDbgWinPos(ctx, a[1], a[2]);
         break;
       case 'size':
-        ctx._cmdDbgWinSize(ctx, a);
+        ctx._cmdDbgWinSize(ctx, a[1], a[2]);
         break;
       case 'status':
         ctx._cmdDbgWinStatus(ctx);
@@ -7096,12 +7096,12 @@ DebugJS.prototype = {
         DebugJS.printUsage(tbl.usage);
     }
   },
-  _cmdDbgWinPos: function(ctx, args) {
+  _cmdDbgWinPos: function(ctx, x, y) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) || (ctx.opt.mode == 'kiosk')) {
       return;
     }
-    var pos = args[1];
-    switch (pos) {
+    var sp;
+    switch (x) {
       case 'n':
       case 'ne':
       case 'e':
@@ -7111,13 +7111,13 @@ DebugJS.prototype = {
       case 'w':
       case 'nw':
       case 'c':
-        var sp = ctx.getSelfSizePos();
-        ctx.setWinPos(pos, sp.w, sp.h);
+        sp = ctx.getSelfSizePos();
+        ctx.setWinPos(x, sp.w, sp.h);
         break;
       default:
-        var x = args[1];
-        var y = args[2];
         if (isNaN(x) || isNaN(y)) {
+          sp = ctx.getSelfSizePos();
+          DebugJS._log('x=' + (sp.x1 + 3) + ' y=' + (sp.y1 + 3));
           DebugJS.printUsage('dbgwin pos n|ne|e|se|s|sw|w|nw|c|x y');
           return;
         }
@@ -7125,13 +7125,13 @@ DebugJS.prototype = {
         DebugJS.ctx.setDbgWinPos(y, x);
     }
   },
-  _cmdDbgWinSize: function(ctx, args) {
+  _cmdDbgWinSize: function(ctx, w, h) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) || (ctx.opt.mode == 'kiosk')) {
       return;
     }
-    var w = args[1];
-    var h = args[2];
     if (isNaN(w) || isNaN(h)) {
+      var sp = ctx.getSelfSizePos();
+      DebugJS._log('w=' + (sp.w) + ' h=' + (sp.h));
       DebugJS.printUsage('dbgwin size width height');
       return;
     }
@@ -8043,14 +8043,12 @@ DebugJS.prototype = {
   cmdPin: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var op = DebugJS.splitArgs(arg)[0];
-    if (op == 'on') {
-      ctx.disableDraggable(ctx);
-    } else if (op == 'off') {
-      ctx.enableDraggable(ctx);
-    } else {
+    if ((op != 'on') && (op != 'off')) {
       var st = ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? false : true);
       DebugJS.printUsage(tbl.usage);
       return st;
+    } else {
+      DebugJS.pin(op == 'on');
     }
   },
 
@@ -9059,16 +9057,9 @@ DebugJS.prototype = {
     if (zoom == '') {
       DebugJS.printUsage(tbl.usage);
     } else if (zoom != ctx.opt.zoom) {
-      var restoreOpt = {
-        cause: DebugJS.INIT_CAUSE_ZOOM,
-        status: ctx.status,
-        sizeStatus: ctx.sizeStatus
-      };
-      ctx.featStackBak = ctx.featStack.concat();
-      ctx.finalizeFeatures(ctx);
-      ctx.setWinSize('normal');
-      ctx.init({zoom: zoom}, restoreOpt);
+      DebugJS.zoom(zoom);
     }
+    return DebugJS.zoom();
   },
 
   cmdNop: function(arg, tbl) {},
@@ -12124,6 +12115,32 @@ DebugJS.opacity = function(v) {
 DebugJS.isVisible = function() {
   if (DebugJS.ctx.uiStatus & DebugJS.UI_ST_VISIBLE) return true;
   return false;
+};
+DebugJS.pos = function(x, y) {
+  DebugJS.ctx._cmdDbgWinPos(DebugJS.ctx, x, y);
+};
+DebugJS.size = function(w, h) {
+  DebugJS.ctx._cmdDbgWinSize(DebugJS.ctx, w, h);
+};
+DebugJS.pin = function(f) {
+  if (f == undefined) return ((DebugJS.ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? false : true);
+  var fn = (f ? 'disableDraggable' : 'enableDraggable');
+  DebugJS.ctx[fn](DebugJS.ctx);
+  return DebugJS.pin();
+};
+DebugJS.zoom = function(zm) {
+  var ctx = DebugJS.ctx;
+  if (zm == undefined) return ctx.opt.zoom;
+  var restoreOpt = {
+    cause: DebugJS.INIT_CAUSE_ZOOM,
+    status: ctx.status,
+    sizeStatus: ctx.sizeStatus
+  };
+  ctx.featStackBak = ctx.featStack.concat();
+  ctx.finalizeFeatures(ctx);
+  ctx.setWinSize('normal');
+  ctx.init({zoom: zm}, restoreOpt);
+  return DebugJS.zoom();
 };
 
 DebugJS._log = function(m) {
