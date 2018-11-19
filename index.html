@@ -1969,6 +1969,29 @@ format time:
   </tr>
 
   <tr>
+    <td class="name">dbg.getLogBufSize</td>
+    <td></td>
+    <td>
+      Returns log buffer size.<br>
+<pre>
+dbg.getLogBufSize(); <button class="demo-button2" onclick="log.res(dbg.getLogBufSize());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="name">dbg.setLogBufSize</td>
+    <td>size</td>
+    <td>
+      Set log buffer size.<br>
+<pre>
+dbg.setLogBufSize('<input type="text" id="setlogbufsize-text" value="10" class="demo-text" style="width:50px;">'); <button class="demo-button2" onclick="log.res(dbg.setLogBufSize(getVal('setlogbufsize-text')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.time.start<br><span class="alias">( dbg.time.s )</span></td>
     <td>
       arg1: timer name<span class="annotation">(opt)</span><br>
@@ -3018,7 +3041,7 @@ dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('
       arg2: y
     </td>
     <td>
-      Set the debugger window position..<br>
+      Set the debugger window position.<br>
 <pre>
 dbg.pos(<input type="text" id="pos-x-text" value="100" class="demo-text" style="width:30px;">, <input type="text" id="pos-y-text" value="200" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.pos(getVal('pos-x-text'), getVal('pos-y-text'));">DEMO</button>
 </pre>
@@ -3068,10 +3091,43 @@ return: the zoom ratio
   </tr>
 
   <tr>
+    <td class="name">dbg.getOptionValue</td>
+    <td>key</td>
+    <td>
+      Returns debugger option value.<br>
+<pre>
+dbg.getOptionValue('<input type="text" id="getoptionvalue-text" value="" class="demo-text" style="width:200px;">'); <button class="demo-button2" onclick="log.res(dbg.getOptionValue(getVal('getoptionvalue-text')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getStatus</td>
+    <td></td>
+    <td>
+      Returns debugger inner status.<br>
+<pre>
+dbg.getStatus(); <button class="demo-button2" onclick="log.res(dbg.getStatus());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getUiStatus</td>
+    <td></td>
+    <td>
+      Returns debugger UI inner status.<br>
+<pre>
+dbg.getUiStatus(); <button class="demo-button2" onclick="log.res(dbg.getUiStatus());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.getFeatureStack</td>
     <td></td>
     <td>
-      Returns feature stack. (copy of inner status)<br>
+      Returns feature stack. (copy of inner value)<br>
 <pre>
 dbg.getFeatureStack(); <button class="demo-button2" onclick="log.p(dbg.getFeatureStack());">DEMO</button>
 </pre>
