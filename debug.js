@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811200015';
+  this.v = '201811210000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -951,16 +951,6 @@ DebugJS.prototype = {
     styles['.' + ctx.id + '-showhide-btn:hover'] = {
       'cursor': 'pointer'
     };
-    styles['.' + ctx.id + '-txt-text'] = {
-      'border': 'none !important',
-      'border-bottom': 'solid 1px #888 !important',
-      'border-radius': '0 !important',
-      'outline': 'none !important',
-      'box-shadow': 'none !important',
-      'background': 'transparent !important',
-      'color': opt.fontColor + ' !important',
-      'font-size': fontSize + ' !important'
-    };
     styles['.' + ctx.id + '-cmdtd'] = {
       'vertical-align': 'top !important',
       'white-space': 'nowrap !important'
@@ -1049,6 +1039,16 @@ DebugJS.prototype = {
       'box-shadow': '8px 8px 10px rgba(0,0,0,.3) !important',
       'border-radius': '3px !important',
       'background': 'rgba(0,0,0,0.65) !important'
+    };
+    styles['.dbg-txtbox'] = {
+      'border': 'none !important',
+      'border-bottom': 'solid 1px #888 !important',
+      'border-radius': '0 !important',
+      'outline': 'none !important',
+      'box-shadow': 'none !important',
+      'background': 'transparent !important',
+      'color': opt.fontColor + ' !important',
+      'font-size': fontSize + ' !important'
     };
     styles['.dbg-resbox.box'] = {
       'display': 'inline-block !important',
@@ -1351,7 +1351,7 @@ DebugJS.prototype = {
 
     if (opt.useScreenMeasure) {
       var measBtn = document.createElement('span');
-      measBtn.className = ctx.id + '-btn ' + ctx.id + '-nomove';
+      measBtn.className = ctx.id + '-btn dbg-nomove';
       measBtn.style.display = 'inline-block';
       measBtn.style.float = 'right';
       measBtn.style.marginTop = ((opt.zoom <= 1) ? 1 : (2 * opt.zoom)) + 'px';
@@ -1573,6 +1573,7 @@ DebugJS.prototype = {
     ctx.fltrCaseBtn = ctx.createLogFltBtn2(ctx, 'Aa', 'fltrCaseBtn', ctx.fltrCase, 'fltrCase', ctx.toggleFilterCase);
     ctx.fltrTxtHtmlBtn = ctx.createLogFltBtn2(ctx, '</>', 'fltrTxtHtmlBtn', ctx.fltrTxtHtml, 'fltrTxtHtml', ctx.toggleFilterTxtHtml);
   },
+
   createLogFltBtn: function(type, btnObj, color) {
     var ctx = DebugJS.ctx;
     var label = '[' + type + ']';
@@ -1583,6 +1584,7 @@ DebugJS.prototype = {
     btn.onmouseout = ctx.updateLogFilterBtns;
     return btn;
   },
+
   createLogFltBtn2: function(ctx, label, btnNm, flg, flgNm, fn) {
     var btn = DebugJS.ui.addBtn(ctx.logHeaderPanel, label, fn);
     btn.style.marginLeft = '2px';
@@ -1591,6 +1593,7 @@ DebugJS.prototype = {
     btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnNm + ', \'color\', (DebugJS.ctx.' + flgNm + ') ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACTIVE);');
     return btn;
   },
+
   setLogFilter: function(ctx, s, cs, fl) {
     ctx.fltrInput.value = s;
     ctx.setFilterCase(ctx, cs);
@@ -1889,8 +1892,8 @@ DebugJS.prototype = {
       btn = DebugJS.CHR_WIN_RST;
     }
     fn += 'DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();';
-    var b = '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.opt.zoom) + 'px;font-size:' + (16 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="' + fn + '" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">' + btn + '</span>' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.opt.zoom + 'px;margin-right:' + ctx.opt.zoom + 'px;font-size:' + (30 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.focusCmdLine();" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">-</span>';
+    var b = '<span class="' + ctx.id + '-btn dbg-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.opt.zoom) + 'px;font-size:' + (16 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="' + fn + '" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">' + btn + '</span>' +
+    '<span class="' + ctx.id + '-btn dbg-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.opt.zoom + 'px;margin-right:' + ctx.opt.zoom + 'px;font-size:' + (30 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.focusCmdLine();" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.ctx.setStyle(this, \'color\', \'#888\');">-</span>';
     ctx.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -2163,7 +2166,7 @@ DebugJS.prototype = {
   isMovable: function(ctx, el, x, y) {
     if (el.nodeName == 'INPUT') return false;
     if (el.nodeName == 'TEXTAREA') return false;
-    if (DebugJS.hasClass(el, ctx.id + '-nomove')) return false;
+    if (DebugJS.hasClass(el, 'dbg-nomove')) return false;
     var browser = DebugJS.getBrowserType();
     if ((browser.family == 'IE') || (browser.name == 'Firefox')) {
       if ((el == ctx.logPanel) ||
@@ -2394,6 +2397,7 @@ DebugJS.prototype = {
       DebugJS.ctx.startStopWatch();
     }
   },
+
   startStopWatch: function() {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.ST_STOPWATCH_RUNNING;
@@ -2401,6 +2405,7 @@ DebugJS.prototype = {
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
   },
+
   stopStopWatch: function() {
     var ctx = DebugJS.ctx;
     ctx.status &= ~DebugJS.ST_STOPWATCH_RUNNING;
@@ -2410,12 +2415,14 @@ DebugJS.prototype = {
     }
     ctx.updateSwBtnPanel(ctx);
   },
+
   resetStopWatch: function() {
     var ctx = DebugJS.ctx;
     ctx.swStartTime = (new Date()).getTime();
     ctx.swElapsedTime = 0;
     ctx.updateSwLabel();
   },
+
   updateStopWatch: function() {
     var ctx = DebugJS.ctx;
     if (!(ctx.status & DebugJS.ST_STOPWATCH_RUNNING)) return;
@@ -3393,6 +3400,7 @@ DebugJS.prototype = {
       }
     }
   },
+
   addOverlayPanelFull: function(panel) {
     DebugJS.ctx.mainPanel.appendChild(panel);
   },
@@ -3707,7 +3715,7 @@ DebugJS.prototype = {
   },
   createStorageEditor: function(ctx, type) {
     return '<textarea id="' + ctx.id + '-strg' + type + '" class="' + ctx.id + '-editor ' + ctx.id + '-strg"></textarea>\n' +
-           ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.setStrg(' + type + ');">setItem</span>(\'<input id="' + ctx.id + '-strgkey' + type + '" class="' + ctx.id + '-txt-text ' + ctx.id + '-strgkey">\', v);';
+    ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.setStrg(' + type + ');">setItem</span>(\'<input id="' + ctx.id + '-strgkey' + type + '" class="dbg-txtbox ' + ctx.id + '-strgkey">\', v);';
   },
   setStrgEdit: function(type, v, k) {
     document.getElementById(DebugJS.ctx.id + '-strg' + type).value = v;
@@ -3764,7 +3772,7 @@ DebugJS.prototype = {
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
         partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omitpart, style);
-        foldingText = '<span class="' + ctx.id + '-showhide-btn ' + ctx.id + '-nomove" id="' + ctx.id + '-' + name + '__button" onclick="DebugJS.ctx.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
+        foldingText = '<span class="' + ctx.id + '-showhide-btn dbg-nomove" id="' + ctx.id + '-' + name + '__button" onclick="DebugJS.ctx.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + ctx.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisplay + '" id="' + ctx.id + '-' + name + '__body">' + obj + '</div>';
       } else {
@@ -3947,16 +3955,16 @@ DebugJS.prototype = {
                       '            left  : ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + borderColorL + ' ' + borderColorL16 + ' ' + DebugJS.getColorBlock(borderColorL);
       var allStyles = '';
       var MIN_KEY_LEN = 20;
-      for (var key in computedStyle) {
-        if (!(key.match(/^\d.*/))) {
-          if (typeof computedStyle[key] != 'function') {
+      for (var k in computedStyle) {
+        if (!(k.match(/^\d.*/))) {
+          if (typeof computedStyle[k] != 'function') {
             var indent = '';
-            if (key.length < MIN_KEY_LEN) {
-              for (var i = 0; i < (MIN_KEY_LEN - key.length); i++) {
+            if (k.length < MIN_KEY_LEN) {
+              for (var i = 0; i < (MIN_KEY_LEN - k.length); i++) {
                 indent += ' ';
               }
             }
-            allStyles += ' ' + key + indent + ': ' + computedStyle[key] + '\n';
+            allStyles += ' ' + k + indent + ': ' + computedStyle[k] + '\n';
           }
         }
       }
@@ -4351,7 +4359,7 @@ DebugJS.prototype = {
   createJsPanel: function(ctx) {
     ctx.jsPanel = document.createElement('div');
     ctx.jsPanel.className = ctx.id + '-overlay-panel';
-    var html = '<div class="' + ctx.id + '-btn ' + ctx.id + '-nomove" ' +
+    var html = '<div class="' + ctx.id + '-btn dbg-nomove" ' +
     'style="position:relative;top:-1px;float:right;' +
     'font-size:' + (18 * ctx.opt.zoom) + 'px;color:#888 !important" ' +
     'onclick="DebugJS.ctx.closeJsEditor();" ' +
@@ -4384,9 +4392,9 @@ DebugJS.prototype = {
       var code = DebugJS.JS_SNIPPET[n];
       var buf = editor.value;
       var posCursole = editor.selectionStart;
-      var leftBuf = buf.substr(0, posCursole);
-      var rightBuf = buf.substr(posCursole, buf.length);
-      buf = leftBuf + code + rightBuf;
+      var bufL = buf.substr(0, posCursole);
+      var bufR = buf.substr(posCursole, buf.length);
+      buf = bufL + code + bufR;
       DebugJS.ctx.jsEditor.focus();
       DebugJS.ctx.jsEditor.value = buf;
       editor.selectionStart = editor.selectionEnd = posCursole + code.length;
@@ -4863,7 +4871,7 @@ DebugJS.prototype = {
       marginB -= 16 * ctx.opt.zoom;
     }
     var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + dtFontSize + 'px !important">' + date + '</div>' +
-                '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
+    '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
     return label;
   },
   startStopTimerStopWatchCu: function() {
@@ -5101,8 +5109,7 @@ DebugJS.prototype = {
       var dot = (((ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING) && (tm.sss > 500)) ? '&nbsp;' : '.');
       str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + ctx.opt.fontColor + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>';
     }
-    var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
-    return label;
+    return '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
   },
   createTimeStrCd: function(tm) {
     var ctx = DebugJS.ctx;
@@ -5131,8 +5138,7 @@ DebugJS.prototype = {
       }
       str = styleS + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>' + styleE;
     }
-    var label = '<div style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
-    return label;
+    return '<div style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
   },
   closeTimer: function() {
     var ctx = DebugJS.ctx;
@@ -5179,19 +5185,19 @@ DebugJS.prototype = {
     ctx.txtChkCtrl = document.createElement('div');
     ctx.txtChkPanel.appendChild(ctx.txtChkCtrl);
     var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
-    '<input value="' + dfltFontSize + '" id="' + ctx.id + '-font-size" class="' + ctx.id + '-txt-text" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">' +
-    '<input value="px" id="' + ctx.id + '-font-size-unit" class="' + ctx.id + '-txt-text" style="width:20px;" oninput="DebugJS.ctx.onChangeFontSizeTxt()">' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ' !important;font-style:italic;" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'' + ctx.opt.btnColor + '\');" onmouseout="DebugJS.ctx.updateTxtItalicBtn(this);" onclick="DebugJS.ctx.toggleTxtItalic(this);"> I </span>' +
-    '<span class="' + ctx.id + '-btn ' + ctx.id + '-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ' !important;" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'' + ctx.opt.btnColor + '\');" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
+    '<input value="' + dfltFontSize + '" id="' + ctx.id + '-font-size" class="dbg-txtbox" style="width:30px;text-align:right" oninput="DebugJS.ctx.onChangeFontSizeTxt()">' +
+    '<input value="px" id="' + ctx.id + '-font-size-unit" class="dbg-txtbox" style="width:20px;" oninput="DebugJS.ctx.onChangeFontSizeTxt()">' +
+    '<span class="' + ctx.id + '-btn dbg-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ' !important;font-style:italic;" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'' + ctx.opt.btnColor + '\');" onmouseout="DebugJS.ctx.updateTxtItalicBtn(this);" onclick="DebugJS.ctx.toggleTxtItalic(this);"> I </span>' +
+    '<span class="' + ctx.id + '-btn dbg-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ' !important;" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'' + ctx.opt.btnColor + '\');" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
     '<br>' +
-    'font-family: <input value="' + dfltFontFamily + '" class="' + ctx.id + '-txt-text" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
+    'font-family: <input value="' + dfltFontFamily + '" class=".dbg-txtbox" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + dfltFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px !important" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
     '<table class="' + ctx.id + '-txt-tbl">' +
-    '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="' + ctx.id + '-txt-text" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>' +
+    '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="dbg-txtbox" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>' +
     '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-r" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-r"></span></td></tr>' +
     '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-g" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-g"></span></td></tr>' +
     '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-b" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-b"></span></td></tr>' +
-    '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="' + ctx.id + '-txt-text" value="' + dfltBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>' +
+    '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="dbg-txtbox" value="' + dfltBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>' +
     '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-r" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-r"></span></td></tr>' +
     '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-g" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-g"></span></td></tr>' +
     '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-b" class="' + ctx.id + '-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-b"></span></td></tr>' +
@@ -5742,9 +5748,9 @@ DebugJS.prototype = {
     if (e.lengthComputable) {
       var total = e.total;
       var loaded = e.loaded;
-      var percent = (total == 0) ? 100 : Math.round((loaded / total) * 100);
-      DebugJS.ctx.fileLoadProgress.style.width = 'calc(' + percent + '% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
-      DebugJS.ctx.fileLoadProgress.textContent = percent + '%';
+      var pct = (total == 0) ? 100 : Math.round((loaded / total) * 100);
+      DebugJS.ctx.fileLoadProgress.style.width = 'calc(' + pct + '% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
+      DebugJS.ctx.fileLoadProgress.textContent = pct + '%';
       DebugJS.ctx.updateFilePreview('LOADING...\n' + DebugJS.formatDec(loaded) + ' / ' + DebugJS.formatDec(total) + ' bytes');
     }
   },
@@ -6133,9 +6139,9 @@ DebugJS.prototype = {
       var code = DebugJS.HTML_SNIPPET[n];
       var buf = editor.value;
       var posCursole = editor.selectionStart;
-      var leftBuf = buf.substr(0, posCursole);
-      var rightBuf = buf.substr(posCursole, buf.length);
-      buf = leftBuf + code + rightBuf;
+      var bufL = buf.substr(0, posCursole);
+      var bufR = buf.substr(posCursole, buf.length);
+      buf = bufL + code + bufR;
       DebugJS.ctx.htmlPrevEditor.focus();
       DebugJS.ctx.htmlPrevEditor.value = buf;
       editor.selectionStart = editor.selectionEnd = posCursole + code.length;
@@ -7743,7 +7749,7 @@ DebugJS.prototype = {
     }
   },
   _cmdLogLoad: function(ctx, arg) {
-    var arg = DebugJS.splitCmdLineInTwo(arg)[1];
+    arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var data = DebugJS.getOptVal(arg, 'b64');
     if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage('log load [-b64] log-buffer-json');
@@ -8156,8 +8162,8 @@ DebugJS.prototype = {
       return;
     }
     var s = 'Available properties:\n<table>';
-    for (var key in ctx.props) {
-      s += '<tr><td>' + key + '</td><td>' + ctx.props[key] + '</td></tr>';
+    for (var k in ctx.props) {
+      s += '<tr><td>' + k + '</td><td>' + ctx.props[k] + '</td></tr>';
     }
     s += '</table>';
     DebugJS._log.mlt(s);
@@ -8212,11 +8218,11 @@ DebugJS.prototype = {
   },
 
   cmdResume: function(arg, tbl) {
-    var key = DebugJS.getOptVal(arg, 'key');
+    var k = DebugJS.getOptVal(arg, 'key');
     if (arg == '') {
       DebugJS.bat._resume('cmd-key');
-    } else if (key != null) {
-      DebugJS.bat.resume(key);
+    } else if (k != null) {
+      DebugJS.bat.resume(k);
     } else {
       DebugJS.printUsage(tbl.usage);
     }
@@ -8385,11 +8391,11 @@ DebugJS.prototype = {
   _cmdSelect: function(sel, method, type, val) {
     try {
       var val = eval(val) + '';
-      var ret = DebugJS.selectOption(sel, method, type, val);
+      var r = DebugJS.selectOption(sel, method, type, val);
       if (method == 'get') {
-        DebugJS._log.res(ret);
+        DebugJS._log.res(r);
       }
-      return ret;
+      return r;
     } catch (e) {
       DebugJS._log.e(e);
     }
@@ -8673,18 +8679,16 @@ DebugJS.prototype = {
       sw = a[0].charAt(2) | 0;
       op = a[1];
     }
-    var ret = false;
+    var r = -1;
     if (sw == 0) {
-      ret = ctx.cmdStopwatch0(ctx, op);
+      r = ctx.cmdStopwatch0(ctx, op);
     } else if (sw == 1) {
-      ret = ctx.cmdStopwatch1(ctx, op);
+      r = ctx.cmdStopwatch1(ctx, op);
     } else if (sw == 2) {
-      ret = ctx.cmdStopwatch2(ctx, op);
+      r = ctx.cmdStopwatch2(ctx, op);
     }
-    if (ret == -1) {
-      DebugJS.printUsage(tbl.usage);
-    }
-    return ret;
+    if (r == -1) DebugJS.printUsage(tbl.usage);
+    return r;
   },
   cmdStopwatch0: function(ctx, op) {
     switch (op) {
@@ -8842,8 +8846,8 @@ DebugJS.prototype = {
   },
   _cmdVals: function(ctx) {
     var v = '';
-    for (var key in ctx.CMDVALS) {
-      v += '<tr><td class="' + ctx.id + '-cmdtd">' + key + '</td><td>' + DebugJS.objDump(ctx.CMDVALS[key], false) + '</td></tr>';
+    for (var k in ctx.CMDVALS) {
+      v += '<tr><td class="' + ctx.id + '-cmdtd">' + k + '</td><td>' + DebugJS.objDump(ctx.CMDVALS[k], false) + '</td></tr>';
     }
     if (v == '') {
       DebugJS._log('no variables');
@@ -8934,11 +8938,11 @@ DebugJS.prototype = {
   },
 
   cmdZoom: function(arg, tbl) {
-    var zoom = arg.trim();
-    if (zoom == '') {
+    var zm = arg.trim();
+    if (zm == '') {
       DebugJS.printUsage(tbl.usage);
-    } else if (zoom != DebugJS.ctx.opt.zoom) {
-      DebugJS.zoom(zoom);
+    } else if (zm != DebugJS.ctx.opt.zoom) {
+      DebugJS.zoom(zm);
     }
     return DebugJS.zoom();
   },
@@ -9488,8 +9492,8 @@ DebugJS.KEYCH = {
   Divide: '/',
   Del: '.'
 };
-DebugJS.key2ch = function(key) {
-  return (DebugJS.KEYCH[key] == undefined ? key : DebugJS.KEYCH[key]);
+DebugJS.key2ch = function(k) {
+  return (DebugJS.KEYCH[k] == undefined ? k : DebugJS.KEYCH[k]);
 };
 DebugJS.unifySP = function(s) {
   return s.replace(/\s{2,}/g, ' ');
@@ -10210,8 +10214,8 @@ DebugJS.countElements = function(selector, showDetail) {
   }
   if (showDetail) {
     var l = '<table>';
-    for (var key in cnt) {
-      l += '<tr><td>' + key + '</td><td style="text-align:right">' + cnt[key] + '</td></tr>';
+    for (var k in cnt) {
+      l += '<tr><td>' + k + '</td><td style="text-align:right">' + cnt[k] + '</td></tr>';
     }
     l += '<tr><td>Total</td><td style="text-align:right">' + total + '</td></tr></table>';
     DebugJS._log.mlt(l);
@@ -10386,6 +10390,7 @@ DebugJS.arr2set = function(a, f) {
   }
   return s;
 };
+
 DebugJS.findArrVal = function(a, v, f) {
   var r = -1;
   for (var i = 0; i < a.length; i++) {
@@ -10396,6 +10401,7 @@ DebugJS.findArrVal = function(a, v, f) {
   }
   return r;
 };
+
 DebugJS.countArrVal = function(a, v, f) {
   var c = 0;
   for (var i = 0; i < a.length; i++) {
@@ -11127,8 +11133,8 @@ DebugJS.timeList = function() {
     l = '<span style="color:#ccc">no timers</span>';
   } else {
     l = '<table>';
-    for (var key in DebugJS.ctx.timers) {
-      l += '<tr><td>' + key + '</td><td><span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.timeCheck(key, now) + '</font></td></tr>';
+    for (var k in DebugJS.ctx.timers) {
+      l += '<tr><td>' + k + '</td><td><span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.timeCheck(k, now) + '</font></td></tr>';
     }
     l += '</table>';
   }
@@ -11244,9 +11250,9 @@ DebugJS.http = function(rq, cb) {
 DebugJS.http.buildParam = function(p) {
   var s = '';
   var cnt = 0;
-  for (key in p) {
+  for (k in p) {
     if (cnt > 0) s += '&';
-    s += key + '=' + encodeURIComponent(p[key]);
+    s += k + '=' + encodeURIComponent(p[k]);
     cnt++;
   }
   return s;
@@ -11663,8 +11669,8 @@ DebugJS.hasClass = function(el, n) {
 };
 
 DebugJS.copyProp = function(src, dest) {
-  for (var key in src) {
-    dest[key] = src[key];
+  for (var k in src) {
+    dest[k] = src[k];
   }
 };
 
@@ -12809,32 +12815,32 @@ DebugJS.bat.ppElIf = function(pc) {
 DebugJS.bat.findEndOfBlock = function(type, pc) {
   var bat = DebugJS.bat;
   var l = pc;
-  var ignoreBlkLv = 0;
+  var ignrBlkLv = 0;
   var data = {l: 0, endTkn: DebugJS.BAT_TKN_BLOCK_END};
   while (l <= bat.ctrl.endPc) {
     var cmd = bat.cmds[l];
     var c = DebugJS.splitCmdLineInTwo(cmd)[0];
     if (DebugJS.unifySP(cmd.trim()).match(DebugJS.RE_ELIF)) {
-      if (ignoreBlkLv == 0) {
+      if (ignrBlkLv == 0) {
         if (type == DebugJS.BAT_TKN_ELIF) {
           data.endTkn = DebugJS.BAT_TKN_ELIF;
           break;
         }
       }
     } else if (DebugJS.delAllSP(cmd) == DebugJS.RE_ELSE) {
-      if (ignoreBlkLv == 0) {
+      if (ignrBlkLv == 0) {
         if ((type == DebugJS.BAT_TKN_IF) || (type == DebugJS.BAT_TKN_ELIF)) {
           data.endTkn = DebugJS.BAT_TKN_ELSE;
           break;
         }
       }
     } else if (cmd.trim() == DebugJS.BAT_TKN_BLOCK_END) {
-      if (ignoreBlkLv == 0) {
+      if (ignrBlkLv == 0) {
         break;
       }
-      ignoreBlkLv--;
+      ignrBlkLv--;
     } else if ((c == DebugJS.BAT_TKN_IF) || (c == DebugJS.BAT_TKN_LOOP)) {
-      ignoreBlkLv++;
+      ignrBlkLv++;
     }
     l++;
   }
@@ -13995,7 +14001,7 @@ DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
 };
 
 DebugJS.point.hint = function(msg) {
-  var BTN_PREFIX = '<span class="' + DebugJS.ctx.id + '-btn ' + DebugJS.ctx.id + '-nomove" ';
+  var BTN_PREFIX = '<span class="' + DebugJS.ctx.id + '-btn dbg-nomove" ';
   var BTN_SUFFIX = '</span>';
   var RESUME = BTN_PREFIX + 'onclick="DebugJS.ctx.batResume();">[RESUME]' + BTN_SUFFIX;
   var STOP = BTN_PREFIX + 'onclick="DebugJS.bat.cancel();">[STOP]' + BTN_SUFFIX;
@@ -15034,14 +15040,14 @@ DebugJS._adjustResBox = function() {
 DebugJS.ui = {};
 DebugJS.ui.addBtn = function(base, label, onclick) {
   var el = document.createElement('span');
-  el.className = DebugJS.ctx.id + '-btn ' + DebugJS.ctx.id + '-nomove';
+  el.className = DebugJS.ctx.id + '-btn dbg-nomove';
   el.innerText = label;
   el.onclick = onclick;
   base.appendChild(el);
   return el;
 };
 DebugJS.ui.createBtnHtml = function(label, onclick, style) {
-  return '<span class="' + DebugJS.ctx.id + '-btn ' + DebugJS.ctx.id + '-nomove" ' + (style == undefined ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
+  return '<span class="' + DebugJS.ctx.id + '-btn dbg-nomove" ' + (style == undefined ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
 };
 DebugJS.ui.addLabel = function(base, label) {
   var el = document.createElement('span');
@@ -15052,7 +15058,7 @@ DebugJS.ui.addLabel = function(base, label) {
 DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, inputHandler) {
   var ctx = DebugJS.ctx;
   var el = document.createElement('input');
-  el.className = ctx.id + '-txt-text';
+  el.className = 'dbg-txtbox';
   ctx.setStyle(el, 'width', width);
   ctx.setStyle(el, 'min-height', ctx.computedFontSize + 'px');
   ctx.setStyle(el, 'margin', '0');
@@ -15239,8 +15245,8 @@ DebugJS.restoreStatus = function(ctx) {
   DebugJS.ctx.CMD_ALIAS = data.alias;
 };
 DebugJS.restoreProps = function(ctx, props) {
-  for (var key in props) {
-    ctx._cmdSet(ctx, key, props[key], false);
+  for (var k in props) {
+    ctx._cmdSet(ctx, k, props[k], false);
   }
 };
 DebugJS.ver = function() {
