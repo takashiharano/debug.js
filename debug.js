@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811210000';
+  this.v = '201811220000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5190,7 +5190,7 @@ DebugJS.prototype = {
     '<span class="' + ctx.id + '-btn dbg-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ' !important;font-style:italic;" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'' + ctx.opt.btnColor + '\');" onmouseout="DebugJS.ctx.updateTxtItalicBtn(this);" onclick="DebugJS.ctx.toggleTxtItalic(this);"> I </span>' +
     '<span class="' + ctx.id + '-btn dbg-nomove" style="margin-left:5px;color:' + DebugJS.COLOR_INACTIVE + ' !important;" onmouseover="DebugJS.ctx.setStyle(this, \'color\', \'' + ctx.opt.btnColor + '\');" onmouseout="DebugJS.ctx.updateElBtn(this);" onclick="DebugJS.ctx.toggleElmEditable(this);">(el)</span>' +
     '<br>' +
-    'font-family: <input value="' + dfltFontFamily + '" class=".dbg-txtbox" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
+    'font-family: <input value="' + dfltFontFamily + '" class="dbg-txtbox" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + dfltFontWeight + '" id="' + ctx.id + '-fontweight-range" class="' + ctx.id + '-txt-range" style="width:80px !important" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
     '<table class="' + ctx.id + '-txt-tbl">' +
     '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="dbg-txtbox" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>' +
@@ -9380,6 +9380,15 @@ DebugJS.hasOpt = function(arg, opt) {
   }
   return b;
 };
+DebugJS.indexOfOptVal = function(a, o) {
+  var r = -1;
+  var i = a.indexOf(o);
+  if (i >= 0) {
+    r = i + o.length + 1;
+  }
+  return r;
+};
+
 DebugJS.getQuotedStr = function(str) {
   var r = null;
   var start = 0;
@@ -9404,14 +9413,6 @@ DebugJS.getQuotedStr = function(str) {
         break;
       }
     }
-  }
-  return r;
-};
-DebugJS.indexOfOptVal = function(a, o) {
-  var r = -1;
-  var i = a.indexOf(o);
-  if (i >= 0) {
-    r = i + o.length + 1;
   }
   return r;
 };
