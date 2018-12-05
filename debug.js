@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201811220000';
+  this.v = '201812060011';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -330,10 +330,10 @@ var DebugJS = DebugJS || function() {
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', usage: 'condwait set -key key | pause [-timeout ms] | init'},
+    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', usage: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
-    {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms|YYYYMMDDTHHMISS command'},
+    {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
@@ -357,7 +357,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] object'},
-    {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-key key [-timeout ms]|-s]'},
+    {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-key key [-timeout ms|1d2h3m4s500]|-s]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
@@ -4778,12 +4778,11 @@ DebugJS.prototype = {
   },
   calcTimeupTimeInp: function() {
     var ctx = DebugJS.ctx;
-    var timeupHH = (ctx.timerTxtHH.value | 0) * 3600000;
-    var timeupMI = (ctx.timerTxtMI.value | 0) * 60000;
-    var timeupSS = (ctx.timerTxtSS.value | 0) * 1000;
-    var timeupSSS = (ctx.timerTxtSSS.value | 0);
-    var timeup = timeupHH + timeupMI + timeupSS + timeupSSS;
-    return timeup;
+    var h = (ctx.timerTxtHH.value | 0) * 3600000;
+    var m = (ctx.timerTxtMI.value | 0) * 60000;
+    var s = (ctx.timerTxtSS.value | 0) * 1000;
+    var ms = (ctx.timerTxtSSS.value | 0);
+    return h + m + s + ms;
   },
   updateTimeupTimeInp: function(v) {
     var ctx = DebugJS.ctx;
@@ -6675,6 +6674,12 @@ DebugJS.prototype = {
     ret = ctx.cmdDateConv(cmdline, echo);
     if (ret != null) return ret;
 
+    if (DebugJS.isTmStr(cmdline)) {
+      ret = DebugJS.str2ms(cmdline);
+      if (echo) DebugJS._log.res(ret);
+      return ret;
+    }
+
     if (cmdline.match(/^\s*U\+/i)) {
       return ctx.cmdUnicode('-d ' + cmdline, null, echo);
     }
@@ -7154,6 +7159,8 @@ DebugJS.prototype = {
       d = DebugJS.calcTargetTime(d);
     } else if (DebugJS.isTimeFormat(d)) {
       d = DebugJS.calcTargetTime(d);
+    } else if (DebugJS.isTmStr(d)) {
+      d = DebugJS.str2ms(d);
     } else if ((d == '') || (isNaN(d))) {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -7908,25 +7915,26 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.usage);
     }
   },
-  _cmdPause: function(op, key, timeout) {
+  _cmdPause: function(op, key, tout) {
     var ctx = DebugJS.ctx;
-    timeout |= 0;
+    if (DebugJS.isTmStr(tout)) tout = DebugJS.str2ms(tout);
+    tout |= 0;
     ctx.CMDVALS['%RESUMED_KEY%'] = null;
     if (op == 's') {
       ctx.status |= DebugJS.ST_BAT_PAUSE_CMD;
       DebugJS._log('Click or press any key to continue...');
     } else {
       if (op == '') {
-        DebugJS._log('Type "resume" to continue...' + ((timeout > 0) ? ' (timeout=' + timeout + ')' : ''));
+        DebugJS._log('Type "resume" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
       } else if (op == 'key') {
         if (key == undefined) key = '';
         DebugJS.bat.ctrl.pauseKey = key;
-        DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((timeout > 0) ? ' (timeout=' + timeout + ')' : ''));
+        DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
       } else {
         return false;
       }
-      if (timeout > 0) {
-        DebugJS.bat.ctrl.pauseTimeout = (new Date()).getTime() + timeout;
+      if (tout > 0) {
+        DebugJS.bat.ctrl.pauseTimeout = (new Date()).getTime() + tout;
       }
       ctx.status |= DebugJS.ST_BAT_PAUSE_CMD_KEY;
     }
@@ -8505,8 +8513,8 @@ DebugJS.prototype = {
     if (vals.length < 2) {
       return ret;
     }
-    var timeL = DebugJS.str2ms(vals[0]);
-    var timeR = DebugJS.str2ms(vals[1]);
+    var timeL = DebugJS.tmStr2ms(vals[0]);
+    var timeR = DebugJS.tmStr2ms(vals[1]);
     if ((timeL == null) || (timeR == null)) {
       ret = 'Invalid time format';
       DebugJS._log.e(ret);
@@ -10906,9 +10914,7 @@ DebugJS.getUnicodePoints = function(str) {
   var code = '';
   for (var i = 0; i < str.length; i++) {
     var point = str.charCodeAt(i);
-    if (i > 0) {
-      code += ' ';
-    }
+    if (i > 0) code += ' ';
     code += 'U+' + DebugJS.toHex(point, true, '', 4);
   }
   return code;
@@ -10921,7 +10927,7 @@ DebugJS.encodeUri = function(s) {
   return encodeURIComponent(s);
 };
 
-DebugJS.str2ms = function(t) {
+DebugJS.tmStr2ms = function(t) {
   var hour = min = sec = msec = 0;
   var s = '0';
   var times = t.split(':');
@@ -10942,6 +10948,37 @@ DebugJS.str2ms = function(t) {
   }
   var time = (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
   return time;
+};
+DebugJS.str2ms = function(t) {
+  var d = 0, h = 0, m = 0, s = 0, ms = 0;
+  var i = t.indexOf('d');
+  if (i > 0) {
+    d = t.substr(0, i) | 0;
+    t = t.substr(i + 1);
+  }
+  i = t.indexOf('h');
+  if (i > 0) {
+    h = t.substr(0, i) | 0;
+    t = t.substr(i + 1);
+  }
+  i = t.indexOf('m');
+  if (i > 0) {
+    m = t.substr(0, i) | 0;
+    t = t.substr(i + 1);
+  }
+  i = t.indexOf('s');
+  if (i > 0) {
+    s = t.substr(0, i) | 0;
+    t = t.substr(i + 1);
+  }
+  if (!isNaN(t)) ms = t | 0;
+  return d * 86400000 + h * 3600000 + m * 60000 + s * 1000 + ms;
+};
+DebugJS.isTmStr = function(s) {
+  s = (s + '').trim();
+  if (!s.match(/^\d/) || s.match(/[^\ddhms]/)) return false;
+  var m = s.match(/\d*d?\d*h?\d*m?\d*s?/);
+  return (isNaN(s) && m && (m != ''));
 };
 
 DebugJS.subTime = function(tL, tR, byTheDay) {
@@ -12709,6 +12746,8 @@ DebugJS.bat.prepro = function(ctx, cmd) {
       var w = cmds[1];
       if (w == '') {
         w = ctx.props.wait;
+      } else if (DebugJS.isTmStr(w)) {
+        w = DebugJS.str2ms(w);
       } else if (!((DebugJS.isTimeFormat(w)) || (w.match(/\|/)))) {
         try {
           w = eval(w);

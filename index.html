@@ -3492,7 +3492,7 @@ function
       Sets condition key and pause BAT execution.
 <pre class="eg">
 $ condwait set -key &lt;key&gt;
-$ condwait pause
+$ condwait pause [-timeout ms|1d2h3m4s500]
 dbg.bat.setCond(&lt;key&gt;);
 
 $ condwait init
@@ -3598,6 +3598,7 @@ $ delay 1000 echo "abc"
 $ delay 20180520T170030 echo "abc"
 $ delay T170030 echo "abc"
 $ delay T0000|T1200 echo "abc"
+$ delay 1d2h3m4s500 echo "abc"
 
 $ delay -c
 Cancel delay execution
@@ -4060,11 +4061,11 @@ $ p -a object
 $ pause
 <span class="annotation">$ resume</span>
 
-$ pause -key aaa
+$ pause -key aaa [-timeout ms|1d2h3m4s500]
 <span class="annotation">$ resume</span>
 <span class="annotation">$ resume -key aaa</span>
 
-$ pause -key aaa|bbb
+$ pause -key aaa|bbb [-timeout ms|1d2h3m4s500]
 <span class="annotation">$ resume</span>
 <span class="annotation">$ resume -key aaa</span>
 <span class="annotation">$ resume -key bbb</span>
@@ -4758,6 +4759,7 @@ wait 1000
 wait 20180614T123045
 wait T1230
 wait T0000|T1200
+wait 1d2h3m4s500
 </pre>
     </td>
   </tr>
