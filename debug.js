@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812112243';
+  this.v = '201812120012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5545,9 +5545,11 @@ DebugJS.prototype = {
     DebugJS.ctx.handleDroppedFile(DebugJS.ctx, e, format, null);
   },
   onDropOnLogPanel: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     var ctx = DebugJS.ctx;
     var d = e.dataTransfer.getData('text');
-    if (d == '') {
+    if (!d) {
       ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
       ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedAuto);
     } else {
