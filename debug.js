@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812070000';
+  this.v = '201812112243';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1272,7 +1272,7 @@ DebugJS.prototype = {
     ctx.logPanel.style.height = 'calc(100%' + ctx.logPanelHeightAdjust + ')';
     ctx.logPanel.style.padding = '0';
     ctx.logPanel.style.overflow = 'auto';
-    ctx.enableDnDFileLoad(ctx.logPanel, ctx.handleFileDropAuto);
+    ctx.enableDnDFileLoad(ctx.logPanel, ctx.onDropOnLogPanel);
     ctx.mainPanel.appendChild(ctx.logPanel);
 
     if (ctx.isAllFeaturesDisabled(ctx)) return;
@@ -4377,7 +4377,7 @@ DebugJS.prototype = {
     ctx.jsEditor.className = ctx.id + '-editor';
     ctx.jsEditor.onblur = ctx.saveJsBuf;
     ctx.jsEditor.value = ctx.jsBuf;
-    ctx.enableDnDFileLoad(ctx.jsEditor, ctx.handleFileDropOnJS);
+    ctx.enableDnDFileLoad(ctx.jsEditor, ctx.onDropOnJS);
     ctx.jsPanel.appendChild(ctx.jsEditor);
   },
   createJsSnippetBtn: function(ctx, i) {
@@ -5417,7 +5417,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
-      ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.handleFileDropOnFileViewer);
+      ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.onDropOnFileViewer);
       ctx.fileVwrPanel.appendChild(ctx.filePreviewWrapper);
 
       ctx.filePreview = document.createElement('pre');
@@ -5520,7 +5520,7 @@ DebugJS.prototype = {
       DebugJS.ctx.loadFile(e.target.files[0], format);
     }
   },
-  handleFileDrop: function(ctx, e, format, cb) {
+  handleDroppedFile: function(ctx, e, format, cb) {
     ctx.clearFile();
     e.stopPropagation();
     e.preventDefault();
@@ -5530,24 +5530,32 @@ DebugJS.prototype = {
           ctx.fileVwrSysCb = cb;
           ctx.loadFile(e.dataTransfer.files[0], format);
         } else {
-          DebugJS._log.w('handleFileDrop() e.dataTransfer.files.length == 0');
+          DebugJS._log.w('handleDroppedFile() e.dataTransfer.files.length == 0');
           if (cb) {
             cb(ctx, false, null, null);
           }
         }
       }
     } catch (e) {
-      DebugJS._log.e('handleFileDrop() ' + e);
+      DebugJS._log.e('handleDroppedFile() ' + e);
     }
   },
-  handleFileDropOnFileViewer: function(e) {
+  onDropOnFileViewer: function(e) {
     var format = (DebugJS.ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
-    DebugJS.ctx.handleFileDrop(DebugJS.ctx, e, format, null);
+    DebugJS.ctx.handleDroppedFile(DebugJS.ctx, e, format, null);
   },
-  handleFileDropAuto: function(e) {
+  onDropOnLogPanel: function(e) {
     var ctx = DebugJS.ctx;
-    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
-    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedAuto);
+    var d = e.dataTransfer.getData('text');
+    if (d == '') {
+      ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
+      ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedAuto);
+    } else {
+      ctx.onTxtDrop(ctx, d);
+    }
+  },
+  onTxtDrop: function(ctx, t) {
+    ctx._execCmd('json ' + t, true, false, true);
   },
   onFileLoadedAuto: function(ctx, success, file, content) {
     if (!success) {
@@ -5563,10 +5571,10 @@ DebugJS.prototype = {
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
     }
   },
-  handleFileDropOnBat: function(e) {
+  onDropOnBat: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
-    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onBatLoaded);
+    ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onBatLoaded);
   },
   onBatLoaded: function(ctx, success, file, content) {
     if (success) {
@@ -5574,10 +5582,10 @@ DebugJS.prototype = {
       ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
     }
   },
-  handleFileDropOnJS: function(e) {
+  onDropOnJS: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
-    ctx.handleFileDrop(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onJsLoaded);
+    ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onJsLoaded);
   },
   onJsLoaded: function(ctx, success, file, content) {
     if (success) {
@@ -6182,7 +6190,7 @@ DebugJS.prototype = {
       ctx.batTextEditor = document.createElement('textarea');
       ctx.batTextEditor.className = ctx.id + '-editor';
       ctx.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 2) + 'px)');
-      ctx.enableDnDFileLoad(ctx.batTextEditor, ctx.handleFileDropOnBat);
+      ctx.enableDnDFileLoad(ctx.batTextEditor, ctx.onDropOnBat);
       basePanel.appendChild(ctx.batTextEditor);
       ctx.batBasePanel = basePanel;
       ctx.setBatTxt(ctx);
@@ -11935,7 +11943,7 @@ DebugJS.file.onDrop = function(e) {
   if (!((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc == DebugJS.TOOLS_FNC_FILE))) {
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
   }
-  ctx.handleFileDrop(ctx, e, format, null);
+  ctx.handleDroppedFile(ctx, e, format, null);
 };
 DebugJS.isTargetEl = function(target, el) {
   do {
