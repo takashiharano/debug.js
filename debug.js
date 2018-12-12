@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812122307';
+  this.v = '201812130105';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10325,11 +10325,11 @@ DebugJS._cmdJson = function(s, f, lv) {
     return jsn;
   } catch (e) {
     DebugJS._log.e('JSON format error.');
-    var detail = DebugJS.checkJson(s);
+    var detail = DebugJS.chkJson(s);
     DebugJS._log.e(detail);
   }
 };
-DebugJS.checkJson = function(json) {
+DebugJS.chkJson = function(json) {
   var ctx = DebugJS.ctx;
   json = json.trim();
   var wkJson = json.split('\\');
@@ -11968,13 +11968,10 @@ DebugJS.file.onDrop = function(e) {
   if (d) {
     if (loader.cb) loader.cb(null, d);
   } else {
-    var format = DebugJS.FILE_LOAD_FMT_BIN;
-    if (loader.mode == 'b64') {
-      format = DebugJS.FILE_LOAD_FMT_B64;
-    }
-    if (!((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc == DebugJS.TOOLS_FNC_FILE))) {
-      ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
-    }
+    var format = (loader.mode == 'b64' ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+    var f = (ctx.status & DebugJS.ST_TOOLS ? false : true);
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
+    if (f) ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
     ctx.handleDroppedFile(ctx, e, format, null);
   }
 };
@@ -13463,12 +13460,13 @@ DebugJS.point.createPtr = function() {
   point.x = 0;
   point.y = 0;
   var el = document.createElement('img');
-  el.style.position = 'fixed';
-  el.style.width = point.ptrW + 'px';
-  el.style.height = point.ptrH + 'px';
-  el.style.top = point.y;
-  el.style.left = point.x;
-  el.style.zIndex = 0x7ffffffe;
+  var st = el.style;
+  st.position = 'fixed';
+  st.width = point.ptrW + 'px';
+  st.height = point.ptrH + 'px';
+  st.top = point.y;
+  st.left = point.x;
+  st.zIndex = 0x7ffffffe;
   el.src = point.CURSOR_DFLT;
   el.onmousedown = point.startDragging;
   document.body.appendChild(el);
