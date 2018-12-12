@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812122045';
+  this.v = '201812122307';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -187,8 +187,8 @@ var DebugJS = DebugJS || function() {
   this.fileReloadBtn = null;
   this.fileClrBtn = null;
   this.fileVwrFooter = null;
-  this.fileLoadProgressBar = null;
-  this.fileLoadProgress = null;
+  this.fileLoadProgBar = null;
+  this.fileLoadProg = null;
   this.fileLoadCancelBtn = null;
   this.fileLoadFormat = DebugJS.FILE_LOAD_FMT_B64;
   this.filePreviewWrapper = null;
@@ -1634,8 +1634,8 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
       ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
       ctx.fileVwrFooter.style.height = (ctx.computedFontSize + 3) + 'px';
-      ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
-      ctx.setStyle(ctx.fileLoadProgress, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
+      ctx.fileLoadProgBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
+      ctx.setStyle(ctx.fileLoadProg, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
     }
     if (ctx.extPanel != null) {
       ctx.extHeaderPanel.style.height = fontSize;
@@ -1802,11 +1802,8 @@ DebugJS.prototype = {
     if (ctx.msgLabel) {
       var html = '<pre>' + s + '</pre>';
       ctx.msgLabel.innerHTML = html;
-      if (s == '') {
-        ctx.msgLabel.style.opacity = 0;
-      } else {
-        ctx.msgLabel.style.opacity = 1;
-      }
+      var o = (s == '' ? 0 : 1);
+      ctx.msgLabel.style.opacity = o;
     }
   },
 
@@ -5434,24 +5431,24 @@ DebugJS.prototype = {
       ctx.fileVwrFooter.style.transition = 'opacity 0.5s linear';
       ctx.fileVwrPanel.appendChild(ctx.fileVwrFooter);
 
-      ctx.fileLoadProgressBar = document.createElement('div');
-      ctx.fileLoadProgressBar.style.display = 'inline-block';
-      ctx.fileLoadProgressBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
-      ctx.fileLoadProgressBar.style.height = 'auto';
-      ctx.fileLoadProgressBar.style.padding = 0;
-      ctx.fileLoadProgressBar.style.border = '1px solid #ccc';
-      ctx.fileVwrFooter.appendChild(ctx.fileLoadProgressBar);
+      ctx.fileLoadProgBar = document.createElement('div');
+      ctx.fileLoadProgBar.style.display = 'inline-block';
+      ctx.fileLoadProgBar.style.width = 'calc(100% - ' + (ctx.computedFontSize * 5) + 'px)';
+      ctx.fileLoadProgBar.style.height = 'auto';
+      ctx.fileLoadProgBar.style.padding = 0;
+      ctx.fileLoadProgBar.style.border = '1px solid #ccc';
+      ctx.fileVwrFooter.appendChild(ctx.fileLoadProgBar);
 
-      ctx.fileLoadProgress = document.createElement('div');
-      ctx.fileLoadProgress.style.width = 'calc(100% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
-      ctx.fileLoadProgress.style.height = 'auto';
-      ctx.fileLoadProgress.style.padding = '1px';
-      ctx.fileLoadProgress.style.border = 'none';
-      ctx.fileLoadProgress.style.background = '#00f';
-      ctx.setStyle(ctx.fileLoadProgress, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
-      ctx.fileLoadProgress.style.fontFamily = opt.fontFamily + 'px';
-      ctx.fileLoadProgress.innerText = '0%';
-      ctx.fileLoadProgressBar.appendChild(ctx.fileLoadProgress);
+      ctx.fileLoadProg = document.createElement('div');
+      ctx.fileLoadProg.style.width = 'calc(100% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
+      ctx.fileLoadProg.style.height = 'auto';
+      ctx.fileLoadProg.style.padding = '1px';
+      ctx.fileLoadProg.style.border = 'none';
+      ctx.fileLoadProg.style.background = '#00f';
+      ctx.setStyle(ctx.fileLoadProg, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
+      ctx.fileLoadProg.style.fontFamily = opt.fontFamily + 'px';
+      ctx.fileLoadProg.innerText = '0%';
+      ctx.fileLoadProgBar.appendChild(ctx.fileLoadProg);
 
       ctx.fileLoadCancelBtn = DebugJS.ui.addBtn(ctx.fileVwrFooter, '[CANCEL]', ctx.cancelLoadFile);
       ctx.fileLoadCancelBtn.style.position = 'relative';
@@ -5522,8 +5519,6 @@ DebugJS.prototype = {
   },
   handleDroppedFile: function(ctx, e, format, cb) {
     ctx.clearFile();
-    e.stopPropagation();
-    e.preventDefault();
     try {
       if (e.dataTransfer.files) {
         if (e.dataTransfer.files.length > 0) {
@@ -5540,14 +5535,27 @@ DebugJS.prototype = {
       DebugJS._log.e('handleDroppedFile() ' + e);
     }
   },
-  onDropOnFileViewer: function(e) {
-    var format = (DebugJS.ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
-    DebugJS.ctx.handleDroppedFile(DebugJS.ctx, e, format, null);
-  },
-  onDropOnLogPanel: function(e) {
+  onDrop: function(e) {
     e.stopPropagation();
     e.preventDefault();
+  },
+  onDropOnFileViewer: function(e) {
     var ctx = DebugJS.ctx;
+    ctx.onDrop(e);
+    var d = e.dataTransfer.getData('text');
+    if (d) {
+      var u = DebugJS.delAllNL(d.trim());
+      if (DebugJS.isDataURL(u)) {
+        ctx.decodeDataURL(ctx, u);
+      }
+    } else {
+      var format = (ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+      ctx.handleDroppedFile(ctx, e, format, null);
+    }
+  },
+  onDropOnLogPanel: function(e) {
+    var ctx = DebugJS.ctx;
+    ctx.onDrop(e);
     var d = e.dataTransfer.getData('text');
     if (d) {
       ctx.onTxtDrop(ctx, d);
@@ -5561,7 +5569,12 @@ DebugJS.prototype = {
       ctx.openFeature(ctx, DebugJS.ST_TOOLS);
       ctx.onBatLoaded(ctx, null, t);
     } else {
-      ctx._execCmd('json ' + t, true, false, true);
+      var u = DebugJS.delAllNL(t.trim());
+      if (DebugJS.isDataURL(u)) {
+        ctx.decodeDataURL(ctx, u);
+      } else {
+        ctx._execCmd('json ' + t, true, false, true);
+      }
     }
   },
   onFileLoadedAuto: function(ctx, file, content) {
@@ -5576,6 +5589,7 @@ DebugJS.prototype = {
   },
   onDropOnBat: function(e) {
     var ctx = DebugJS.ctx;
+    ctx.onDrop(e);
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onBatLoaded);
   },
@@ -5585,6 +5599,7 @@ DebugJS.prototype = {
   },
   onDropOnJS: function(e) {
     var ctx = DebugJS.ctx;
+    ctx.onDrop(e);
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onJsLoaded);
   },
@@ -5603,11 +5618,11 @@ DebugJS.prototype = {
       ctx.updateFilePreview(html);
       return;
     }
-    ctx.fileLoadProgress.style.width = '0%';
-    ctx.fileLoadProgress.textContent = '0%';
+    ctx.fileLoadProg.style.width = '0%';
+    ctx.fileLoadProg.textContent = '0%';
     ctx.fileReader = new FileReader();
     ctx.fileReader.onloadstart = ctx.onFileLoadStart;
-    ctx.fileReader.onprogress = ctx.onFileLoadProgress;
+    ctx.fileReader.onprogress = ctx.onFileLoadProg;
     ctx.fileReader.onload = ctx.onFileLoaded;
     ctx.fileReader.onabort = ctx.onAbortLoadFile;
     ctx.fileReader.onerror = ctx.onFileLoadError;
@@ -5627,13 +5642,13 @@ DebugJS.prototype = {
     DebugJS.addClass(DebugJS.ctx.fileVwrFooter, DebugJS.ctx.id + '-loading');
     DebugJS.ctx.updateFilePreview('LOADING...');
   },
-  onFileLoadProgress: function(e) {
+  onFileLoadProg: function(e) {
     if (e.lengthComputable) {
       var total = e.total;
       var loaded = e.loaded;
       var pct = (total == 0) ? 100 : Math.round((loaded / total) * 100);
-      DebugJS.ctx.fileLoadProgress.style.width = 'calc(' + pct + '% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
-      DebugJS.ctx.fileLoadProgress.textContent = pct + '%';
+      DebugJS.ctx.fileLoadProg.style.width = 'calc(' + pct + '% - ' + (DebugJS.WIN_BORDER * 2) + 'px)';
+      DebugJS.ctx.fileLoadProg.textContent = pct + '%';
       DebugJS.ctx.updateFilePreview('LOADING...\n' + DebugJS.formatDec(loaded) + ' / ' + DebugJS.formatDec(total) + ' bytes');
     }
   },
@@ -5837,6 +5852,9 @@ DebugJS.prototype = {
       default:
         mode = 'b64';
     }
+    ctx.setDecMode(ctx, mode);
+  },
+  setDecMode: function(ctx, mode) {
     ctx.fileVwrDecMode = mode;
     ctx.fileVwrDecModeBtn.innerText = '[' + mode.toUpperCase() + ']';
   },
@@ -6100,6 +6118,15 @@ DebugJS.prototype = {
   },
   setDtSchmImg: function() {
     DebugJS.ctx.setDtSchm('image/jpeg');
+  },
+  decodeDataURL: function(ctx, s) {
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
+    ctx.clearFile();
+    ctx.openViewerB64();
+    var d = DebugJS.splitDataUrl(s);
+    ctx.setDataUrl(ctx, d.scheme, d.data);
+    ctx.setDecMode(ctx, 'b64');
+    ctx.decodeFileViewData();
   },
 
   openHtmlEditor: function() {
@@ -10289,7 +10316,7 @@ DebugJS.getHTML = function(b64) {
 };
 
 DebugJS._cmdJson = function(s, f, lv) {
-  if (s) s = s.replace(/\\r\\n|\\r|\\n$/, '');
+  if (s) s = s.replace(/\\r\\n|\\r|\\n$/g, '');
   try {
     var j = JSON.parse(s);
     var jsn = DebugJS.objDump(j, f, lv, DebugJS.ctx.props.dumplimit, DebugJS.ctx.props.dumpvallen);
@@ -10885,8 +10912,8 @@ DebugJS.buildDataUrl = function(scheme, data) {
   scheme = scheme.replace(/,$/, '');
   return scheme + ',' + data;
 };
-DebugJS.splitDataUrl = function(dturl) {
-  var a = dturl.split(',');
+DebugJS.splitDataUrl = function(url) {
+  var a = url.split(',');
   var b64ctt = {scheme: a[0], data: (a[1] == undefined ? '' : a[1])};
   return b64ctt;
 };
@@ -11924,6 +11951,7 @@ DebugJS.file.onDragOver = function(e) {
 };
 DebugJS.file.onDrop = function(e) {
   var ctx = DebugJS.ctx;
+  ctx.onDrop(e);
   var loader = null;
   for (var i = 0; i < DebugJS.file.loaders.length; i++) {
     loader = DebugJS.file.loaders[i];
@@ -13360,6 +13388,10 @@ DebugJS.bat.isAvailable = function() {
 DebugJS.isBat = function(s) {
   var BAT_HEAD = '#!BAT!';
   return DebugJS.startsWith(s, BAT_HEAD);
+};
+
+DebugJS.isDataURL = function(s) {
+  return DebugJS.startsWith(s, 'data:');
 };
 
 DebugJS.led = function(v) {
