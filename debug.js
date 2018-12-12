@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812120012';
+  this.v = '201812122045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5549,27 +5549,28 @@ DebugJS.prototype = {
     e.preventDefault();
     var ctx = DebugJS.ctx;
     var d = e.dataTransfer.getData('text');
-    if (!d) {
+    if (d) {
+      ctx.onTxtDrop(ctx, d);
+    } else {
       ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
       ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onFileLoadedAuto);
-    } else {
-      ctx.onTxtDrop(ctx, d);
     }
   },
   onTxtDrop: function(ctx, t) {
-    ctx._execCmd('json ' + t, true, false, true);
-  },
-  onFileLoadedAuto: function(ctx, success, file, content) {
-    if (!success) {
-      ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
-      return;
+    if (DebugJS.isBat(t)) {
+      ctx.openFeature(ctx, DebugJS.ST_TOOLS);
+      ctx.onBatLoaded(ctx, null, t);
+    } else {
+      ctx._execCmd('json ' + t, true, false, true);
     }
+  },
+  onFileLoadedAuto: function(ctx, file, content) {
     if (DebugJS.isBat(content)) {
-      ctx.onBatLoaded(ctx, success, file, content);
+      ctx.onBatLoaded(ctx, file, content);
     } else if (file.name.match(/\.js$/)) {
-      ctx.onJsLoaded(ctx, success, file, content);
+      ctx.onJsLoaded(ctx, file, content);
     } else if (file.name.match(/\.json$/)) {
-      DebugJS.execCmdJson(content, true);
+      DebugJS._cmdJson(content, true);
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
     }
   },
@@ -5578,23 +5579,19 @@ DebugJS.prototype = {
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onBatLoaded);
   },
-  onBatLoaded: function(ctx, success, file, content) {
-    if (success) {
-      DebugJS.bat.set(content);
-      ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
-    }
+  onBatLoaded: function(ctx, file, content) {
+    DebugJS.bat.set(content);
+    ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
   onDropOnJS: function(e) {
     var ctx = DebugJS.ctx;
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.handleDroppedFile(ctx, e, DebugJS.FILE_LOAD_FMT_B64, ctx.onJsLoaded);
   },
-  onJsLoaded: function(ctx, success, file, content) {
-    if (success) {
-      ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
-      ctx.openFeature(ctx, DebugJS.ST_JS);
-      ctx.jsEditor.value = ctx.jsBuf = content;
-    }
+  onJsLoaded: function(ctx, file, content) {
+    ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
+    ctx.openFeature(ctx, DebugJS.ST_JS);
+    ctx.jsEditor.value = ctx.jsBuf = content;
   },
   loadFile: function(file, format) {
     var ctx = DebugJS.ctx;
@@ -5804,7 +5801,7 @@ DebugJS.prototype = {
     if (cType == 'text') {
       if (ctx.fileVwrSysCb) {
         var decoded = DebugJS.decodeBase64(b64ctt.data);
-        ctx.fileVwrSysCb(ctx, true, file, decoded);
+        ctx.fileVwrSysCb(ctx, file, decoded);
       }
     }
     DebugJS.file.onLoaded(file, dturl);
@@ -7567,7 +7564,7 @@ DebugJS.prototype = {
         }
       }
       if (json) {
-        return DebugJS.execCmdJson(json, jsnFlg, lv);
+        return DebugJS._cmdJson(json, jsnFlg, lv);
       } else {
         DebugJS.printUsage(tbl.usage);
       }
@@ -10291,16 +10288,17 @@ DebugJS.getHTML = function(b64) {
   return html;
 };
 
-DebugJS.execCmdJson = function(json, f, lv) {
+DebugJS._cmdJson = function(s, f, lv) {
+  if (s) s = s.replace(/\\r\\n|\\r|\\n$/, '');
   try {
-    var j = JSON.parse(json);
+    var j = JSON.parse(s);
     var jsn = DebugJS.objDump(j, f, lv, DebugJS.ctx.props.dumplimit, DebugJS.ctx.props.dumpvallen);
     if (f) jsn = DebugJS.escTags(jsn);
     DebugJS._log.mlt(jsn);
     return jsn;
   } catch (e) {
     DebugJS._log.e('JSON format error.');
-    var detail = DebugJS.checkJson(json);
+    var detail = DebugJS.checkJson(s);
     DebugJS._log.e(detail);
   }
 };
@@ -11938,14 +11936,19 @@ DebugJS.file.onDrop = function(e) {
     DebugJS._log.e('onDrop(): loader not found');
     return;
   }
-  var format = DebugJS.FILE_LOAD_FMT_BIN;
-  if (loader.mode == 'b64') {
-    format = DebugJS.FILE_LOAD_FMT_B64;
+  var d = e.dataTransfer.getData('text');
+  if (d) {
+    if (loader.cb) loader.cb(null, d);
+  } else {
+    var format = DebugJS.FILE_LOAD_FMT_BIN;
+    if (loader.mode == 'b64') {
+      format = DebugJS.FILE_LOAD_FMT_B64;
+    }
+    if (!((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc == DebugJS.TOOLS_FNC_FILE))) {
+      ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
+    }
+    ctx.handleDroppedFile(ctx, e, format, null);
   }
-  if (!((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc == DebugJS.TOOLS_FNC_FILE))) {
-    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
-  }
-  ctx.handleDroppedFile(ctx, e, format, null);
 };
 DebugJS.isTargetEl = function(target, el) {
   do {
