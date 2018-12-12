@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812130105';
+  this.v = '201812130740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9084,6 +9084,7 @@ DebugJS.prototype = {
         if ((p != null) && (p.base == null)) {
           ctx.createExtPanel(ctx, p, i);
         }
+        DebugJS.x.addFileLdr(p);
       }
     }
   },
@@ -15352,6 +15353,10 @@ DebugJS.x.addPanel = function(p) {
     ctx.initExtPanel(ctx);
   }
   return idx;
+};
+DebugJS.x.addFileLdr = function(p) {
+  var d = p.fileloader;
+  if (d) DebugJS.addFileLoader(p.panel, d.fn, d.mode, d.decode);
 };
 DebugJS.x.getPanel = function(idx) {
   var p = DebugJS.ctx.extPanels[idx];
