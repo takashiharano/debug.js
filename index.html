@@ -369,7 +369,7 @@ function foo() {
 
 function bar() {
   var obj = {
-    key1: 'value1',
+    key1: 'abc',
     key2: 123,
     key3: true
   }
@@ -1056,7 +1056,7 @@ Put log messages anywhere you want.</div>
 You can also print all the properties of an object.</div>
 <pre class="code">
 var obj = {
-  key1: 'value1',
+  key1: 'abc',
   key2: 123,
   key3: true
 };
@@ -2698,7 +2698,8 @@ Callback function which is called when file load has been completed<br>
     <td>
       Add File Loader Handler<br><br>
       Handler format:<br>
-      function(file, content)
+      function(file, content)<br><br>
+      In case that mode is 'bin', arg4 decode is ignored.
     </td>
   </tr>
 
@@ -2892,6 +2893,18 @@ dbg.getKeys(obj);
 <pre>
 var obj = <input type="text" id="dump-json-text" class="demo-text" style="width:400px;" value="{a:'b', c:'123'}">;
 dbg.obj2json(obj); <button class="demo-button2" onclick="eval('obj=' + getVal('dump-json-text'));log('\n' + dbg.obj2json(obj));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.formatJSON</td>
+    <td>string</td>
+    <td>
+      Returns JSON string of given 1-line JSON in a Friendly Readable Format.<br>
+<pre>
+var str = '<input type="text" id="format-json-text" class="demo-text" style="width:400px;" value='{"key1":"abc", "key2":"123"}'>';
+dbg.formatJSON(str); <button class="demo-button2" onclick="log('\n' + dbg.formatJSON(getVal('format-json-text')));">DEMO</button>
 </pre>
     </td>
   </tr>

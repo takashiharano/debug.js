@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812130740';
+  this.v = '201812132037';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10316,18 +10316,23 @@ DebugJS.getHTML = function(b64) {
   return html;
 };
 
-DebugJS._cmdJson = function(s, f, lv) {
+DebugJS.formatJSON = function(s) {
+  return DebugJS.fmtJSON(s, true, 0, 0, 0);
+};
+DebugJS.fmtJSON = function(s, f, lv, lmt, vlen) {
   if (s) s = s.replace(/\\r\\n|\\r|\\n$/g, '');
+  var j = JSON.parse(s);
+  return DebugJS.objDump(j, f, lv, lmt, vlen);
+};
+DebugJS._cmdJson = function(s, f, lv) {
+  var p = DebugJS.ctx.props;
   try {
-    var j = JSON.parse(s);
-    var jsn = DebugJS.objDump(j, f, lv, DebugJS.ctx.props.dumplimit, DebugJS.ctx.props.dumpvallen);
-    if (f) jsn = DebugJS.escTags(jsn);
-    DebugJS._log.mlt(jsn);
-    return jsn;
+    var j = DebugJS.fmtJSON(s, f, lv, p.dumplimit, p.dumpvallen);
+    if (f) j = DebugJS.escTags(j);
+    DebugJS._log.mlt(j);
+    return j;
   } catch (e) {
-    DebugJS._log.e('JSON format error.');
-    var detail = DebugJS.chkJson(s);
-    DebugJS._log.e(detail);
+    DebugJS._log.e('JSON format error: ' + DebugJS.chkJson(s));
   }
 };
 DebugJS.chkJson = function(json) {
