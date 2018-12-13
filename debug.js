@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812132333';
+  this.v = '201812140020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -461,6 +461,7 @@ var DebugJS = DebugJS || function() {
     'batstart': [],
     'batstop': [],
     'ctrlc': [],
+    'drop': [],
     'error': [],
     'fileloaded': [],
     'watchdog': []
@@ -2693,7 +2694,7 @@ DebugJS.prototype = {
             DebugJS.inputText.stop();
             DebugJS._log.s(ctx.cmdLine.value + '^C');
             ctx.cmdLine.value = '';
-            DebugJS.callEvtListener('ctrlc');
+            DebugJS.callEvtListeners('ctrlc');
           }
         }
         break;
@@ -5559,6 +5560,7 @@ DebugJS.prototype = {
   onDropOnLogPanel: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
+    if (!DebugJS.callEvtListeners('drop', e)) return;
     var d = e.dataTransfer.getData('text');
     if (d) {
       ctx.onTxtDrop(ctx, d);
@@ -5611,7 +5613,7 @@ DebugJS.prototype = {
     ctx.openFeature(ctx, DebugJS.ST_JS);
     ctx.jsEditor.value = ctx.jsBuf = content;
   },
-  loadFile: function(file, format) {
+  loadFile: function(file, fmt) {
     var ctx = DebugJS.ctx;
     ctx.fileVwrDataSrcType = 'file';
     ctx.fileVwrFile = file;
@@ -5630,7 +5632,7 @@ DebugJS.prototype = {
     ctx.fileReader.onabort = ctx.onAbortLoadFile;
     ctx.fileReader.onerror = ctx.onFileLoadError;
     ctx.fileReader.file = file;
-    if (format == DebugJS.FILE_LOAD_FMT_B64) {
+    if (fmt == DebugJS.FILE_LOAD_FMT_B64) {
       ctx.fileLoadFormat = DebugJS.FILE_LOAD_FMT_B64;
       ctx.fileReader.readAsDataURL(file);
     } else {
@@ -5671,7 +5673,7 @@ DebugJS.prototype = {
     }
     setTimeout(ctx.fileLoadFinalize, 1000);
     var isB64 = (ctx.fileLoadFormat == DebugJS.FILE_LOAD_FMT_B64);
-    DebugJS.callEvtListener('fileloaded', file, content, isB64);
+    DebugJS.callEvtListeners('fileloaded', file, content, isB64);
     ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
   },
@@ -6091,12 +6093,7 @@ DebugJS.prototype = {
   },
   reloadFile: function() {
     var ctx = DebugJS.ctx;
-    var fmt;
-    if (ctx.fileVwrRadioB64.checked) {
-      fmt = DebugJS.FILE_LOAD_FMT_B64;
-    } else {
-      fmt = DebugJS.FILE_LOAD_FMT_BIN;
-    }
+    var fmt = (ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
     ctx.loadFile(ctx.fileVwrFile, fmt);
   },
   clearFile: function() {
@@ -12093,7 +12090,7 @@ DebugJS._log.e = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_ERR);
   DebugJS.ctx.showDbgWinOnError(DebugJS.ctx);
   if (!DebugJS.ctx.fromCmdLine) {
-    DebugJS.callEvtListener('error');
+    DebugJS.callEvtListeners('error');
   }
 };
 DebugJS._log.w = function(m) {
@@ -12276,17 +12273,22 @@ DebugJS.stopwatch.log = function(msg) {
 };
 
 DebugJS.addEvtListener = function(type, listener) {
-  if (DebugJS.ctx.evtListener[type] == undefined) {
+  var list = DebugJS.ctx.evtListener[type];
+  if (!list) {
     DebugJS._log.e('No such event: ' + type);
   } else {
-    DebugJS.ctx.evtListener[type].push(listener);
+    list.push(listener);
   }
 };
-DebugJS.callEvtListener = function(type, a1, a2, a3) {
-  for (var i = 0; i < DebugJS.ctx.evtListener[type].length; i++) {
-    var cb = DebugJS.ctx.evtListener[type][i];
-    if (cb) cb(a1, a2, a3);
+DebugJS.callEvtListeners = function(type, a1, a2, a3) {
+  var list = DebugJS.ctx.evtListener[type];
+  for (var i = 0; i < list.length; i++) {
+    var cb = list[i];
+    if (cb) {
+      if (cb(a1, a2, a3) === false) return false;
+    }
   }
+  return true;
 };
 
 DebugJS.cmd = function(c, echo, sv) {
@@ -12479,7 +12481,7 @@ DebugJS.bat._run = function() {
   ctrl.endPc = el;
   bat.setExecArg(ctrl.execArg);
   bat.stopNext();
-  if (bat.nestLv() == 0) DebugJS.callEvtListener('batstart');
+  if (bat.nestLv() == 0) DebugJS.callEvtListeners('batstart');
   bat.exec();
 };
 DebugJS.bat.run.arg = {s: 0, e: 0};
@@ -13191,7 +13193,7 @@ DebugJS.bat._stop = function(st) {
   delete ctx.CMDVALS['%FUNCNAME%'];
   delete ctx.CMDVALS['%TEXT%'];
   bat.setExitStatus(st);
-  DebugJS.callEvtListener('batstop', ctx.CMDVALS['?']);
+  DebugJS.callEvtListeners('batstop', ctx.CMDVALS['?']);
 };
 DebugJS.bat.terminate = function() {
   DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGTERM);
@@ -15187,7 +15189,7 @@ DebugJS.wd.pet = function() {
   if (elapsed > ctx.props.wdt) {
     wd.cnt++;
     DebugJS._log.w('Watchdog bark! (' + elapsed + 'ms)');
-    DebugJS.callEvtListener('watchdog', elapsed);
+    DebugJS.callEvtListeners('watchdog', elapsed);
   }
   wd.wdPetTime = now;
   wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);
@@ -15248,6 +15250,10 @@ DebugJS.log.res = function(m) {
 DebugJS.log.res.err = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
   DebugJS._log.res.err(m);
+};
+DebugJS.log.mlt = function(m) {
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
+  DebugJS._log.mlt(m);
 };
 DebugJS.log.clear = function() {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
@@ -15475,6 +15481,7 @@ DebugJS.balse = function() {
   DebugJS.log.t = x;
   DebugJS.log.p = x;
   DebugJS.log.json = x;
+  DebugJS.log.mlt = x;
   DebugJS.log.clear = x;
   DebugJS.log.res = x;
   DebugJS.log.res.err = x;

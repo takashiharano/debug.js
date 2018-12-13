@@ -719,12 +719,23 @@ function onBatStop(code) {
   log('BAT exit status = ' + code);
 }
 
+function onDrop(e) {
+  log('onDrop');
+  var d = e.dataTransfer.getData('text');
+  log(d);
+  if (d == 'abc') {
+    return false;
+  }
+  return true;
+}
+
 function onReady() {
   //log('ready');
   addFileLoadHandler();
   dbg.addEvtListener('ctrlc', onCtrlC);
   dbg.addEvtListener('batstart', onBatStart);
   dbg.addEvtListener('batstop', onBatStop);
+  //dbg.addEvtListener('drop', onDrop);
 }
 
 function onLoad() {
@@ -1709,6 +1720,21 @@ log.res.err('<input type="text" id="log-res-err-txt" class="demo-text" style="wi
   </tr>
 
   <tr>
+    <td class="name">log.mlt<br><span class="alias">( dbg.log.mlt )</span></td>
+    <td>message</td>
+    <td>
+      Output multi line log<br>
+<pre class="eg">
+var msg = <textarea id="log-mlt-txt" class="demo-textarea2" style="height:60px;">Hello, World! 1
+Hello, World! 2
+Hello, World! 3
+</textarea>
+log.mlt(msg);<button class="demo-button2" onclick="log.mlt(getVal('log-mlt-txt'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">log.clear<br><span class="alias">( dbg.log.clear )</span></td>
     <td></td>
     <td>
@@ -2665,6 +2691,11 @@ Adds the specified EventListener function to the list of event listeners for the
       Callback function which is called when Ctrl+C is pressed on the command line.<br>
 <pre class="eg">Function format:
   function onCtrlC() {}</pre>
+<br>
+      type: <b>drop</b><br>
+      Callback function which is called when a file or text is dropped on the log window.<br>
+<pre class="eg">Function format:
+  function onDrop(event) {}</pre>
 <br>
       type: <b>error</b><br>
       Callback function which is called when an error log is printed.<br>
