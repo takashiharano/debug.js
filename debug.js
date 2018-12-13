@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812132113';
+  this.v = '201812132203';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3570,11 +3570,11 @@ DebugJS.prototype = {
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoProp('charset', charset);
     html += DebugJS.addPropSeparator(ctx);
-    html += DebugJS.addSysInfoProp('jQuery ', jq);
-    html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoProp('css    ', loadedStyles);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoProp('script ', loadedScripts);
+    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addSysInfoProp('jQuery ', jq);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('navigator');
     html += DebugJS.addSysInfoProp('appCodeName  ', DebugJS.setStyleIfObjNA(navigator.appCodeName));
@@ -3589,6 +3589,13 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('cookieEnabled', navigator.cookieEnabled);
     html += DebugJS.addPropSeparator(ctx);
     html += DebugJS.addSysInfoPropH('window');
+    html += DebugJS.addSysInfoPropH(' location');
+    html += DebugJS.addSysInfoProp(' href    ', ctx.createFoldingText(window.location, 'docLocation', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' origin  ', ctx.createFoldingText(window.location.origin, 'origin', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' protocol', window.location.protocol);
+    html += DebugJS.addSysInfoProp(' host    ', ctx.createFoldingText(window.location.host, 'host', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' port    ', window.location.port);
+    html += DebugJS.addSysInfoProp(' pathname', ctx.createFoldingText(window.location.pathname, 'pathname', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('devicePixelRatio', window.devicePixelRatio, 'sys-win-h');
     html += DebugJS.addSysInfoProp('outerWidth   ', window.outerWidth, 'sys-win-w');
     html += DebugJS.addSysInfoProp('outerHeight  ', window.outerHeight, 'sys-win-h');
@@ -3632,13 +3639,6 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onselectstart', docOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', docOncontextmenu);
     html += DebugJS.addPropSeparator(ctx);
-    html += DebugJS.addSysInfoPropH(' location');
-    html += DebugJS.addSysInfoProp(' href    ', ctx.createFoldingText(document.location, 'docLocation', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp(' origin  ', ctx.createFoldingText(document.location.origin, 'origin', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp(' protocol', location.protocol);
-    html += DebugJS.addSysInfoProp(' host    ', ctx.createFoldingText(document.location.host, 'host', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp(' port    ', location.port);
-    html += DebugJS.addSysInfoProp(' pathname', ctx.createFoldingText(document.location.pathname, 'pathname', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('baseURI  ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('cookie', ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID));
     html += DebugJS.addPropSeparator(ctx);
@@ -15129,6 +15129,16 @@ DebugJS._adjustResBox = function() {
   }
 };
 
+DebugJS.getProtocol = function() {
+  return location.protocol;
+};
+DebugJS.getHost = function() {
+  return location.host.split(':')[0];
+};
+DebugJS.getPort = function() {
+  return location.port;
+};
+
 DebugJS.ui = {};
 DebugJS.ui.addBtn = function(base, label, onclick) {
   var el = document.createElement('span');
@@ -15374,6 +15384,9 @@ DebugJS.x.getPanel = function(idx) {
   if (p) return p.panel;
   return null;
 };
+DebugJS.x.getActivePanel = function() {
+  return DebugJS.x.getPanel(DebugJS.ctx.extActPnlIdx);
+};
 DebugJS.x.removePanel = function(idx) {
   var ctx = DebugJS.ctx;
   if (!ctx.extPanels[idx]) return;
@@ -15524,6 +15537,7 @@ DebugJS.balse = function() {
   DebugJS.x.addCmdTbl = x;
   DebugJS.x.addPanel = x;
   DebugJS.x.getPanel = x;
+  DebugJS.x.getActivePanel = x;
   DebugJS.x.removePanel = x;
   DebugJS.x.setBtnLabel = x;
   DebugJS._createResBox = x;
