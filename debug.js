@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812132037';
+  this.v = '201812132113';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -403,6 +403,7 @@ var DebugJS = DebugJS || function() {
     prevlimit: /^[0-9]+$/,
     hexdumplimit: /^[0-9]+$/,
     hexdumplastrows: /^[0-9]+$/,
+    indent: /^[0-9]+$/,
     radix: /^[^|][a-z|]+[^|]$/,
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
@@ -426,6 +427,7 @@ var DebugJS = DebugJS || function() {
     prevlimit: 5 * 1024 * 1024,
     hexdumplimit: 1048576,
     hexdumplastrows: 16,
+    indent: 1,
     radix: 'bin|dec|hex',
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
@@ -442,6 +444,7 @@ var DebugJS = DebugJS || function() {
   };
   this.PROPS_CB = {
     batcont: this.setPropBatContCb,
+    indent: this.setPropIndentCb,
     timer: this.setPropTimerCb,
     consolelog: this.setPropConsoleLogCb
   };
@@ -8455,25 +8458,25 @@ DebugJS.prototype = {
   },
   _cmdSet: function(ctx, name, val, echo) {
     var props = ctx.props;
-    if (props[name] != undefined) {
-      var restriction = ctx.PROPS_RESTRICTION[name];
-      if (restriction != undefined) {
-        if (!(val + '').match(restriction)) {
-          DebugJS._log.e(val + ' is invalid. (' + restriction + ')');
-          return;
-        }
-      }
-      props[name] = val;
-      if (ctx.PROPS_CB[name]) {
-        var ret = ctx.PROPS_CB[name](ctx, val);
-        if (ret != undefined) {
-          props[name] = ret;
-        }
-      }
-      if (echo) DebugJS._log.res(val);
-    } else {
+    if (!props[name]) {
       DebugJS._log.e(name + ' is invalid property name.');
+      return;
     }
+    var restriction = ctx.PROPS_RESTRICTION[name];
+    if (restriction) {
+      if (!(val + '').match(restriction)) {
+        DebugJS._log.e(val + ' is invalid. (' + restriction + ')');
+        return;
+      }
+    }
+    props[name] = val;
+    if (ctx.PROPS_CB[name]) {
+      var ret = ctx.PROPS_CB[name](ctx, val);
+      if (ret != undefined) {
+        props[name] = ret;
+      }
+    }
+    if (echo) DebugJS._log.res(val);
   },
   setPropBatContCb: function(ctx, v) {
     if (DebugJS.bat.isRunning()) {
@@ -8483,6 +8486,9 @@ DebugJS.prototype = {
         ctx.status &= ~DebugJS.ST_BAT_CONT;
       }
     }
+  },
+  setPropIndentCb: function(ctx, v) {
+    DebugJS.INDENT_SP = DebugJS.repeatCh(' ', v);
   },
   setPropTimerCb: function(ctx, v) {
     var tm = DebugJS.timestr2struct(v);
