@@ -5273,7 +5273,12 @@ var panel1 = {
   name: '<input type="text" id="ext-panel-name-text" class="inline-text-input" style="width:30px;" value="P1">',
   onCreate: example.onCreateP1,
   onActive: example.onActiveP1,
-  onInActive: example.onInActiveP1
+  onInActive: example.onInActiveP1</span>,
+  fileloader: { // optional
+    cb: example.onFileLoaded,
+    mode: 'b64',
+    decode: true
+  }<span class="emphasis">
 };
 <span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = dbg.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span>
 </span></pre>

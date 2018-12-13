@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812132203';
+  this.v = '201812132333';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13328,9 +13328,7 @@ DebugJS.bat.isRunning = function() {
   return ((DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) ? true : false);
 };
 DebugJS.bat.isCmdExecutable = function() {
-  if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) {
-    return true;
-  }
+  if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) return true;
   DebugJS._log('BAT dedicated command');
   return false;
 };
@@ -13719,7 +13717,6 @@ DebugJS.point.keyevt = function(args) {
   e.altKey = false;
   e.metaKey = false;
   e = DebugJS.point.setKeyFlag(e, args);
-
   el.dispatchEvent(e);
 };
 DebugJS.point.setKeyFlag = function(e, a) {
@@ -14121,10 +14118,7 @@ DebugJS.point.hint = function(msg) {
 };
 DebugJS.point.hint.area = null;
 DebugJS.point.hint.pre = null;
-DebugJS.point.hint.st = {
-  visible: false,
-  hasMsg: false
-};
+DebugJS.point.hint.st = {visible: false, hasMsg: false};
 DebugJS.point.hint.createArea = function() {
   var ctx = DebugJS.ctx;
   var hint = DebugJS.point.hint;
@@ -14476,8 +14470,7 @@ DebugJS.getSpeed = function(v) {
   var min = a[0];
   var max = a[1];
   if ((min == '') || (max == '')) return 0;
-  var s = DebugJS.getRndNum(min, max);
-  return s;
+  return DebugJS.getRndNum(min, max);
 };
 
 DebugJS.selectOption = function(el, method, type, val) {
@@ -14829,8 +14822,7 @@ DebugJS.test.getStyledInfoStr = function(result) {
   } else {
     echoGot = DebugJS.styleValue(echoGot);
   }
-  var s = 'Got=' + echoGot + ' ' + result.method + ' Exp=' + echoExp;
-  return s;
+  return 'Got=' + echoGot + ' ' + result.method + ' Exp=' + echoExp;
 };
 DebugJS.test.getCountStr = function(cnt) {
   var test = DebugJS.test;
@@ -15093,11 +15085,8 @@ DebugJS.isFocusable = function(n) {
 };
 
 DebugJS.toggleElShowHide = function(el) {
-  if (el.style.display == 'none') {
-    el.style.display = '';
-  } else {
-    el.style.display = 'none';
-  }
+  var v = (el.style.display == 'none' ? '' : 'none');
+  el.style.display = v;
 };
 
 DebugJS.random = function(min, max) {
@@ -15124,8 +15113,7 @@ DebugJS.adjustResBox.a = 0;
 DebugJS._adjustResBox = function() {
   var el = document.getElementsByClassName('dbg-resbox box');
   for (var i = 0; i < el.length; i++) {
-    var e = el[i];
-    DebugJS.ctx.setStyle(e, 'height', (e.scrollHeight + DebugJS.adjustResBox.a) + 'px');
+    DebugJS.ctx.setStyle(el[i], 'height', (el[i].scrollHeight + DebugJS.adjustResBox.a) + 'px');
   }
 };
 
@@ -15377,7 +15365,7 @@ DebugJS.x.addPanel = function(p) {
 };
 DebugJS.x.addFileLdr = function(p) {
   var d = p.fileloader;
-  if (d) DebugJS.addFileLoader(p.panel, d.fn, d.mode, d.decode);
+  if (d) DebugJS.addFileLoader(p.panel, d.cb, d.mode, d.decode);
 };
 DebugJS.x.getPanel = function(idx) {
   var p = DebugJS.ctx.extPanels[idx];
