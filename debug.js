@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812140020';
+  this.v = '201812150000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -735,8 +735,7 @@ DebugJS.prototype = {
     }
     if (ctx.msgBuf.getSize() != ctx.opt.bufsize) {
       if (!(ctx.status & DebugJS.ST_LOG_PRESERVED) ||
-          ((ctx.status & DebugJS.ST_LOG_PRESERVED) &&
-           (ctx.msgBuf.getSize() < ctx.opt.bufsize))) {
+          ((ctx.status & DebugJS.ST_LOG_PRESERVED) && (ctx.msgBuf.getSize() < ctx.opt.bufsize))) {
         ctx.initBuf(ctx, ctx.opt.bufsize);
       }
     }
@@ -1132,8 +1131,7 @@ DebugJS.prototype = {
     }
     if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ||
         (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) ||
-        (ctx.opt.useMouseStatusInfo) ||
-        (ctx.opt.useScreenMeasure)) {
+        (ctx.opt.useMouseStatusInfo) || (ctx.opt.useScreenMeasure)) {
       window.addEventListener('mousedown', ctx.onMouseDown, true);
       window.addEventListener('mousemove', ctx.onMouseMove, true);
       window.addEventListener('mouseup', ctx.onMouseUp, true);
@@ -1302,9 +1300,7 @@ DebugJS.prototype = {
       ctx.closeBtn.onmouseout = new Function('DebugJS.ctx.setStyle(this, \'color\', \'#888\');');
     }
 
-    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) &&
-        (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) &&
-        (opt.useWinCtrlButton)) {
+    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && (opt.useWinCtrlButton)) {
       ctx.winCtrlBtnPanel = document.createElement('span');
       ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
@@ -1613,10 +1609,8 @@ DebugJS.prototype = {
           ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
         }
       } else {
-        if (!(!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) &&
-               (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
-            (!((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) &&
-             (ctx.opt.mode == 'kiosk') &&
+        if (!(!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
+            (!((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.opt.mode == 'kiosk') &&
              (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_NO_KIOSK)))) {
           ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
         }
@@ -1778,11 +1772,9 @@ DebugJS.prototype = {
   updateKeyDownLabel: function() {
     this.keyDownLabel.innerHTML = 'Key Down:' + this.keyDownCode;
   },
-
   updateKeyPressLabel: function() {
     this.keyPressLabel.innerHTML = 'Press:' + this.keyPressCode;
   },
-
   updateKeyUpLabel: function() {
     this.keyUpLabel.innerHTML = 'Up:' + this.keyUpCode;
   },
@@ -2972,8 +2964,7 @@ DebugJS.prototype = {
     var sp = ctx.getSelfSizePos();
     var border = DebugJS.WIN_BORDER * 2;
     if ((mode == 'expand') &&
-        (sp.w == DebugJS.DBGWIN_EXPAND_W + border) &&
-        (sp.h == DebugJS.DBGWIN_EXPAND_H + border)) {
+        (sp.w == DebugJS.DBGWIN_EXPAND_W + border) && (sp.h == DebugJS.DBGWIN_EXPAND_H + border)) {
       return;
     }
     ctx.saveSizeAndPos(ctx);
@@ -2982,8 +2973,7 @@ DebugJS.prototype = {
         ctx.setDbgWinFull(ctx);
         break;
       case 'expand':
-        if ((sp.w < DebugJS.DBGWIN_EXPAND_W) &&
-            (sp.h < DebugJS.DBGWIN_EXPAND_H)) {
+        if ((sp.w < DebugJS.DBGWIN_EXPAND_W) && (sp.h < DebugJS.DBGWIN_EXPAND_H)) {
           ctx._expandDbgWin(ctx);
         } else {
           ctx._expandDbgWinAuto(ctx, sp);
@@ -3561,34 +3551,22 @@ DebugJS.prototype = {
     html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.getTimeOffsetStr(offset, true) + ')\n';
     html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">screen.</span>     : ' + screenSize + '\n';
     html += '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">Browser</span>     : ' + DebugJS.browserColoring(browser.name) + ' ' + browser.version + '\n';
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('navigator');
     html += DebugJS.addSysInfoProp('userAgent  ', navUserAgent);
     html += DebugJS.addSysInfoProp('language       ', DebugJS.setStyleIfObjNA(navigator.language));
     html += DebugJS.addSysInfoProp('browserLanguage', DebugJS.setStyleIfObjNA(navigator.browserLanguage));
     html += DebugJS.addSysInfoProp('userLanguage   ', DebugJS.setStyleIfObjNA(navigator.userLanguage));
     html += DebugJS.addSysInfoProp('languages      ', languages);
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoProp('charset', charset);
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoProp('css    ', loadedStyles);
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoProp('script ', loadedScripts);
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoProp('jQuery ', jq);
-    html += DebugJS.addPropSeparator(ctx);
-    html += DebugJS.addSysInfoPropH('navigator');
-    html += DebugJS.addSysInfoProp('appCodeName  ', DebugJS.setStyleIfObjNA(navigator.appCodeName));
-    html += DebugJS.addSysInfoProp('appName      ', DebugJS.setStyleIfObjNA(navigator.appName));
-    html += DebugJS.addSysInfoProp('appVersion   ', navAppVersion);
-    html += DebugJS.addSysInfoProp('buildID      ', DebugJS.setStyleIfObjNA(navigator.buildID));
-    html += DebugJS.addSysInfoProp('product      ', DebugJS.setStyleIfObjNA(navigator.product));
-    html += DebugJS.addSysInfoProp('productSub   ', DebugJS.setStyleIfObjNA(navigator.productSub));
-    html += DebugJS.addSysInfoProp('vendor       ', DebugJS.setStyleIfObjNA(navigator.vendor));
-    html += DebugJS.addSysInfoProp('platform     ', DebugJS.setStyleIfObjNA(navigator.platform));
-    html += DebugJS.addSysInfoProp('oscpu        ', DebugJS.setStyleIfObjNA(navigator.oscpu));
-    html += DebugJS.addSysInfoProp('cookieEnabled', navigator.cookieEnabled);
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('window');
     html += DebugJS.addSysInfoPropH(' location');
     html += DebugJS.addSysInfoProp(' href    ', ctx.createFoldingText(window.location, 'docLocation', DebugJS.OMIT_MID));
@@ -3619,17 +3597,29 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onselectstart', winOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', winOncontextmenu);
     html += DebugJS.addSysInfoProp('onerror      ', winOnerror);
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
+    html += DebugJS.addSysInfoPropH('navigator');
+    html += DebugJS.addSysInfoProp('appCodeName  ', DebugJS.setStyleIfObjNA(navigator.appCodeName));
+    html += DebugJS.addSysInfoProp('appName      ', DebugJS.setStyleIfObjNA(navigator.appName));
+    html += DebugJS.addSysInfoProp('appVersion   ', navAppVersion);
+    html += DebugJS.addSysInfoProp('buildID      ', DebugJS.setStyleIfObjNA(navigator.buildID));
+    html += DebugJS.addSysInfoProp('product      ', DebugJS.setStyleIfObjNA(navigator.product));
+    html += DebugJS.addSysInfoProp('productSub   ', DebugJS.setStyleIfObjNA(navigator.productSub));
+    html += DebugJS.addSysInfoProp('vendor       ', DebugJS.setStyleIfObjNA(navigator.vendor));
+    html += DebugJS.addSysInfoProp('platform     ', DebugJS.setStyleIfObjNA(navigator.platform));
+    html += DebugJS.addSysInfoProp('oscpu        ', DebugJS.setStyleIfObjNA(navigator.oscpu));
+    html += DebugJS.addSysInfoProp('cookieEnabled', navigator.cookieEnabled);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('document');
+    html += DebugJS.addSysInfoPropH(' body');
+    html += DebugJS.addSysInfoProp(' clientWidth ', document.body.clientWidth, 'sys-body-w');
+    html += DebugJS.addSysInfoProp(' clientHeight', document.body.clientHeight, 'sys-body-h');
     html += DebugJS.addSysInfoPropH(' documentElement');
     html += DebugJS.addSysInfoProp(' clientWidth ', document.documentElement.clientWidth, 'sys-cli-w');
     html += DebugJS.addSysInfoProp(' clientHeight', document.documentElement.clientHeight, 'sys-cli-h');
     html += DebugJS.addSysInfoProp(' scrollLeft  ', document.documentElement.scrollLeft, 'sys-cli-scroll-x');
     html += DebugJS.addSysInfoProp(' scrollTop   ', document.documentElement.scrollTop, 'sys-cli-scroll-y');
-    html += DebugJS.addSysInfoPropH(' body');
-    html += DebugJS.addSysInfoProp(' clientWidth ', document.body.clientWidth, 'sys-body-w');
-    html += DebugJS.addSysInfoProp(' clientHeight', document.body.clientHeight, 'sys-body-h');
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoProp('onclick      ', docOnclick);
     html += DebugJS.addSysInfoProp('onmousedown  ', docOnmousedown);
     html += DebugJS.addSysInfoProp('onmousemove  ', docOnmousemove);
@@ -3639,10 +3629,10 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onkeyup      ', docOnkeyup);
     html += DebugJS.addSysInfoProp('onselectstart', docOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', docOncontextmenu);
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoProp('baseURI  ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('cookie', ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID));
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('localStorage');
     if (DebugJS.LS_AVAILABLE) {
       html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearLocalStrage();">clear()</span>\n' +
@@ -3651,7 +3641,7 @@ DebugJS.prototype = {
     } else {
       html += ' <span class="' + ctx.id + '-na">undefined</span>';
     }
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('sessionStorage');
     if (DebugJS.SS_AVAILABLE) {
       html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearSessionStrage();">clear()</span>\n' +
@@ -3660,7 +3650,7 @@ DebugJS.prototype = {
     } else {
       html += ' <span class="' + ctx.id + '-na">undefined</span>';
     }
-    html += DebugJS.addPropSeparator(ctx);
+    html += DebugJS.addPropSep(ctx);
     html += '\n</pre>';
     ctx.sysInfoPanelBody.innerHTML = html;
     if (DebugJS.LS_AVAILABLE) {
@@ -3974,14 +3964,14 @@ DebugJS.prototype = {
       var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclChr(el.value);
 
       html += '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'id        : ' + el.id + '\n' +
       'className : ' + className + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'object    : ' + Object.prototype.toString.call(el) + '\n' +
       'tagName   : ' + el.tagName + '\n' +
       'type      : ' + DebugJS.setStyleIfObjNA(el.type) + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'display   : ' + computedStyle.display + '\n' +
       'position  : ' + computedStyle.position + '\n' +
       'z-index   : ' + computedStyle.zIndex + '\n' +
@@ -3991,7 +3981,7 @@ DebugJS.prototype = {
       'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.elBorder) + '\n' +
       'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
       'lineHeight: ' + computedStyle.lineHeight + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'location  : <span style="color:#aaa">winOffset + pageOffset = pos (computedStyle)</span>\n' +
       '            top   : ' + rectT + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
       '            left  : ' + rectL + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
@@ -4000,7 +3990,7 @@ DebugJS.prototype = {
       'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
       'overflow  : ' + computedStyle.overflow + '\n' +
       'opacity   : ' + computedStyle.opacity + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
       'bg-image  : ' + ctx.createFoldingText(computedStyle.backgroundImage, 'bgimg', DebugJS.OMIT_LAST, -1, OMIT_STYLE) + '\n' +
       'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
@@ -4008,9 +3998,9 @@ DebugJS.prototype = {
       '            -family: ' + computedStyle.fontFamily + '\n' +
       '            -weight: ' + computedStyle.fontWeight + '\n' +
       '            -style : ' + computedStyle.fontStyle + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'name      : ' + name + '\n' +
       'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
       'disabled  : ' + DebugJS.setStyleIfObjNA(el.disabled, true) + '\n' +
@@ -4022,10 +4012,10 @@ DebugJS.prototype = {
       'htmlFor   : ' + DebugJS.setStyleIfObjNA(el.htmlFor) + '\n' +
       'selectedIndex: ' + DebugJS.setStyleIfObjNA(el.selectedIndex) + '\n' +
       'contentEditable: ' + el.contentEditable + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'href      : ' + href + '\n' +
       'src       : ' + src + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'onclick      : ' + ctx.getEvtHandlerStr(el.onclick, 'elOnclick') + '\n' +
       'ondblclick   : ' + ctx.getEvtHandlerStr(el.ondblclick, 'elOnDblClick') + '\n' +
       'onmousedown  : ' + ctx.getEvtHandlerStr(el.onmousedown, 'elOnMouseDown') + '\n' +
@@ -4034,11 +4024,11 @@ DebugJS.prototype = {
       'onmouseout   : ' + ctx.getEvtHandlerStr(el.onmouseout, 'elOnMouseOut') + '\n' +
       'onmousemove  : ' + ctx.getEvtHandlerStr(el.onmousemove, 'elOnMouseMove') + '\n' +
       'oncontextmenu: ' + ctx.getEvtHandlerStr(el.oncontextmenu, 'elOnContextmenu') + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'onkeydown    : ' + ctx.getEvtHandlerStr(el.onkeydown, 'elOnKeyDown') + '\n' +
       'onkeypress   : ' + ctx.getEvtHandlerStr(el.onkeypress, 'elOnKeyPress') + '\n' +
       'onkeyup      : ' + ctx.getEvtHandlerStr(el.onkeyup, 'elOnKeyUp') + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'onfocus      : ' + ctx.getEvtHandlerStr(el.onfocus, 'elOnFocus') + '\n' +
       'onblur       : ' + ctx.getEvtHandlerStr(el.onblur, 'elOnBlur') + '\n' +
       'onchange     : ' + ctx.getEvtHandlerStr(el.onchange, 'elOnChange') + '\n' +
@@ -4046,9 +4036,9 @@ DebugJS.prototype = {
       'onselect     : ' + ctx.getEvtHandlerStr(el.onselect, 'elOnSelect') + '\n' +
       'onselectstart: ' + ctx.getEvtHandlerStr(el.onselectstart, 'elOnSelectStart') + '\n' +
       'onsubmit     : ' + ctx.getEvtHandlerStr(el.onsubmit, 'elOnSubmit') + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'onscroll     : ' + ctx.getEvtHandlerStr(el.onscroll, 'elOnScroll') + '\n' +
-      DebugJS.addPropSeparator(ctx) +
+      DebugJS.addPropSep(ctx) +
       'dataset (data-*):\n';
       if (el.dataset) {
         html += '{' + ((Object.keys(el.dataset).length > 0) ? '\n' : '');
@@ -4061,7 +4051,7 @@ DebugJS.prototype = {
       }
       var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : DebugJS.setStyleIfObjNA(el.outerHTML));
       htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.htmlSrc);
-      html += DebugJS.addPropSeparator(ctx) +
+      html += DebugJS.addPropSep(ctx) +
       'outerHTML: ' + htmlSrc;
     }
     html += '</pre>';
@@ -4392,13 +4382,13 @@ DebugJS.prototype = {
     } else {
       var code = DebugJS.JS_SNIPPET[n];
       var buf = editor.value;
-      var posCursole = editor.selectionStart;
-      var bufL = buf.substr(0, posCursole);
-      var bufR = buf.substr(posCursole, buf.length);
+      var posCursor = editor.selectionStart;
+      var bufL = buf.substr(0, posCursor);
+      var bufR = buf.substr(posCursor, buf.length);
       buf = bufL + code + bufR;
       DebugJS.ctx.jsEditor.focus();
       DebugJS.ctx.jsEditor.value = buf;
-      editor.selectionStart = editor.selectionEnd = posCursole + code.length;
+      editor.selectionStart = editor.selectionEnd = posCursor + code.length;
     }
   },
   saveJsBuf: function() {
@@ -6171,13 +6161,13 @@ DebugJS.prototype = {
     } else {
       var code = DebugJS.HTML_SNIPPET[n];
       var buf = editor.value;
-      var posCursole = editor.selectionStart;
-      var bufL = buf.substr(0, posCursole);
-      var bufR = buf.substr(posCursole, buf.length);
+      var posCursor = editor.selectionStart;
+      var bufL = buf.substr(0, posCursor);
+      var bufR = buf.substr(posCursor, buf.length);
       buf = bufL + code + bufR;
       DebugJS.ctx.htmlPrevEditor.focus();
       DebugJS.ctx.htmlPrevEditor.value = buf;
-      editor.selectionStart = editor.selectionEnd = posCursole + code.length;
+      editor.selectionStart = editor.selectionEnd = posCursor + code.length;
     }
   },
   saveHtmlBuf: function() {
@@ -6333,8 +6323,7 @@ DebugJS.prototype = {
   },
   closeBatEditor: function() {
     var ctx = DebugJS.ctx;
-    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) &&
-        (ctx.batBasePanel != null)) {
+    if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) && (ctx.batBasePanel != null)) {
       ctx.removeToolFuncPanel(ctx, ctx.batBasePanel);
     }
   },
@@ -6729,7 +6718,7 @@ DebugJS.prototype = {
     }
     var p = arg.indexOf('=');
     if (p == -1) {
-      return ctx._cmdAliasList(ctx, DebugJS.splitArgsEx(arg));
+      return ctx._cmdAliasList(ctx, DebugJS.splitCmdLine(arg));
     }
     var al = arg.substr(0, p).trim();
     var v = arg.substring(p + 1, arg.length).trim();
@@ -6771,8 +6760,7 @@ DebugJS.prototype = {
     var ret;
     switch (a[0]) {
       case 'run':
-        if ((ctx.status & DebugJS.ST_BAT_RUNNING) &&
-            (ctx.status & DebugJS.ST_BAT_PAUSE)) {
+        if ((ctx.status & DebugJS.ST_BAT_RUNNING) && (ctx.status & DebugJS.ST_BAT_PAUSE)) {
           bat._resume();
         } else {
           if (ctx.batTextEditor) bat.store(ctx.batTextEditor.value);
@@ -6865,7 +6853,7 @@ DebugJS.prototype = {
     }
   },
   _cmdBatSet: function(arg, echo) {
-    var a = DebugJS.splitArgsEx(arg);
+    var a = DebugJS.splitCmdLine(arg);
     var key = a[0];
     var v = a[1];
     if (!v) {DebugJS.printUsage('bat set break|delay val'); return;}
@@ -6976,7 +6964,7 @@ DebugJS.prototype = {
 
   cmdCondWait: function(arg, tbl) {
     var bat = DebugJS.bat;
-    var op = DebugJS.splitArgsEx(arg)[0];
+    var op = DebugJS.splitCmdLine(arg)[0];
     switch (op) {
       case 'init':
         bat._initCond();
@@ -7252,7 +7240,7 @@ DebugJS.prototype = {
   },
 
   cmdEvent: function(arg, tbl) {
-    var a = DebugJS.splitArgsEx(arg);
+    var a = DebugJS.splitCmdLine(arg);
     var op = a[0];
     switch (op) {
       case 'create':
@@ -7547,7 +7535,7 @@ DebugJS.prototype = {
   },
 
   cmdInput: function(arg, tbl) {
-    var a = DebugJS.splitArgsEx(arg);
+    var a = DebugJS.splitCmdLine(arg);
     var type = a[0];
     if (type == 'text') {
       var id = a[1];
@@ -7989,7 +7977,7 @@ DebugJS.prototype = {
 
   cmdPoint: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
-    var args = DebugJS.splitArgsEx(arg);
+    var args = DebugJS.splitCmdLine(arg);
     var point = DebugJS.point;
     var op = args[0];
     var x, y, idx, speed, step, ret, p, el, start, end;
@@ -8164,7 +8152,7 @@ DebugJS.prototype = {
     return ret;
   },
   _cmdPointVerify: function(arg) {
-    var a = DebugJS.splitArgsEx(arg);
+    var a = DebugJS.splitCmdLine(arg);
     var prop = a[1];
     var method = a[2];
     var exp = DebugJS.getArgsFrom(arg, 3);
@@ -8418,7 +8406,7 @@ DebugJS.prototype = {
   },
 
   cmdSelect: function(arg, tbl) {
-    var a = DebugJS.splitArgsEx(arg);
+    var a = DebugJS.splitCmdLine(arg);
     var sel = a[0];
     var method = a[1];
     var type = a[2];
@@ -8568,7 +8556,7 @@ DebugJS.prototype = {
   },
 
   cmdTest: function(arg, tbl) {
-    var args = DebugJS.splitArgsEx(arg, 4);
+    var args = DebugJS.splitCmdLine(arg, 4);
     var op = args[0];
     var test = DebugJS.test;
     switch (op) {
@@ -8613,7 +8601,7 @@ DebugJS.prototype = {
   },
   _cmdTestSet: function(arg) {
     var test = DebugJS.test;
-    var args = DebugJS.splitArgsEx(arg, 3);
+    var args = DebugJS.splitCmdLine(arg, 3);
     var target = args[1];
     var fn;
     switch (target) {
@@ -8645,7 +8633,7 @@ DebugJS.prototype = {
     }
   },
   _CmdTestVerify: function(arg) {
-    var a = DebugJS.splitArgsEx(arg);
+    var a = DebugJS.splitCmdLine(arg);
     var got = a[1];
     var method = a[2];
     var exp = DebugJS.getArgsFrom(arg, 3);
@@ -8695,17 +8683,17 @@ DebugJS.prototype = {
   cmdTimer: function(arg, tbl) {
     var a = DebugJS.splitArgs(arg);
     var op = a[0];
-    var timerName = a[1];
-    if (timerName == undefined) timerName = DebugJS.DFLT_TIMER_NAME;
+    var tmrNm = a[1];
+    if (tmrNm == undefined) tmrNm = DebugJS.DFLT_TIMER_NAME;
     switch (op) {
       case 'start':
-        DebugJS.timeStart(timerName);
+        DebugJS.timeStart(tmrNm);
         break;
       case 'split':
-        DebugJS.timeSplit(timerName, false);
+        DebugJS.timeSplit(tmrNm, false);
         break;
       case 'stop':
-        DebugJS.timeEnd(timerName);
+        DebugJS.timeEnd(tmrNm);
         break;
       case 'list':
         DebugJS.timeList();
@@ -9134,20 +9122,12 @@ DebugJS.addSubPanel = function(base) {
   return el;
 };
 
-DebugJS.addPropSeparator = function(ctx) {
+DebugJS.addPropSep = function(ctx) {
   return '<div class="' + ctx.id + '-sep"></div>';
 };
-
-DebugJS.getColorBlock = function(color) {
-  var w = DebugJS.ctx.computedFontSize / 2;
-  var h = DebugJS.ctx.computedFontSize;
-  return '<span style="background:' + color + ';width:' + w + 'px;height:' + h + 'px;display:inline-block"> </span>';
-};
-
 DebugJS.addSysInfoPropH = function(n) {
   return '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '">' + n + '.</span>\n';
 };
-
 DebugJS.addSysInfoProp = function(n, v, id) {
   var s = '<span style="color:' + DebugJS.ITEM_NAME_COLOR + '"> ' + n + '</span>: ';
   if (id == undefined) {
@@ -9157,6 +9137,12 @@ DebugJS.addSysInfoProp = function(n, v, id) {
   }
   s += '\n';
   return s;
+};
+
+DebugJS.getColorBlock = function(color) {
+  var w = DebugJS.ctx.computedFontSize / 2;
+  var h = DebugJS.ctx.computedFontSize;
+  return '<span style="background:' + color + ';width:' + w + 'px;height:' + h + 'px;display:inline-block"> </span>';
 };
 
 DebugJS.getElmHexColor = function(color) {
@@ -9272,7 +9258,7 @@ DebugJS.splitArgs = function(arg) {
 };
 // ' 1 "abc" "d ef"  "g\"hi" 2 ("jkl" + 3) 4 '
 // -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2 [5]=("jkl" + 3) [6]=4
-DebugJS.splitArgsEx = function(arg, limit) {
+DebugJS.splitCmdLine = function(arg, limit) {
   var args = [];
   var start = 0;
   var len = 0;
@@ -9364,7 +9350,7 @@ DebugJS.splitArgsEx = function(arg, limit) {
 DebugJS.splitCmdLineInTwo = function(s) {
   var r = [];
   s = DebugJS.delLeadingSP(s);
-  var two = DebugJS.splitArgsEx(s);
+  var two = DebugJS.splitCmdLine(s);
   if (two.length == 1) {
     r[0] = two[0];
     r[1] = '';
@@ -9383,13 +9369,13 @@ DebugJS.getArgsFrom = function(s, n) {
   return r;
 };
 DebugJS.countArgs = function(a) {
-  var b = DebugJS.splitArgsEx(a);
+  var b = DebugJS.splitCmdLine(a);
   var c = b.length;
   if (b[0] == '') c = 0;
   return c;
 };
 DebugJS.getArgVal = function(a, idx) {
-  return DebugJS.splitArgsEx(a)[idx];
+  return DebugJS.splitCmdLine(a)[idx];
 };
 DebugJS.getOptVal = function(args, opt) {
   var v = DebugJS.getOptVals(args);
@@ -9399,7 +9385,7 @@ DebugJS.getOptVals = function(args) {
   var i, k, v;
   var o = {'': []};
   if (typeof args == 'string') {
-    args = DebugJS.splitArgsEx(args);
+    args = DebugJS.splitCmdLine(args);
   }
   for (i = 0; i < args.length; i++) {
     if ((args[i].charAt(0) == '-') && ((k = args[i].substring(1)) != '')) {
@@ -10428,9 +10414,8 @@ DebugJS.checkRadix = function(v) {
     return 16;
   } else if (v.match(/^\-{0,1}0b[01\s]+$/)) {
     return 2;
-  } else {
-    return 0;
   }
+  return 0;
 };
 
 DebugJS.arr2set = function(a, f) {
@@ -10546,14 +10531,14 @@ DebugJS.convRadixFromDEC = function(v10) {
   var unit = DebugJS.DFLT_UNIT;
   var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
   var v16 = parseInt(v10).toString(16);
+  var v2 = '';
   if (v10 < 0) {
-    var v2 = '';
     for (var i = (unit - 1); i >= 0; i--) {
       v2 += (v10 & 1 << i) ? '1' : '0';
     }
     v16 = parseInt(v2, 2).toString(16);
   } else if (v10 > 0xffffffff) {
-    var v2 = parseInt(v10).toString(2);
+    v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THRESHOLD);
   }
   var hex = DebugJS.formatHex(v16, true, false);
@@ -11056,8 +11041,7 @@ DebugJS.calcTime = function(res, days, byTheDay, isSub) {
   var t = DebugJS.ms2struct(res);
   var ex = '';
   if (days > 0) {
-    ex = ' (' + (isSub ? '-' : '+') + days +
-         ' Day' + ((days >= 2) ? 's' : '') + ')';
+    ex = ' (' + (isSub ? '-' : '+') + days + ' Day' + ((days >= 2) ? 's' : '') + ')';
   }
   var hh = (byTheDay ? t.hr : t.hh);
   if (hh < 10) hh = '0' + hh;
@@ -11065,48 +11049,48 @@ DebugJS.calcTime = function(res, days, byTheDay, isSub) {
   return r;
 };
 
-DebugJS.timeStart = function(timerName, msg) {
-  var _timerName = timerName;
-  if ((timerName === undefined) || (timerName === null)) {
-    _timerName = DebugJS.DFLT_TIMER_NAME;
+DebugJS.timeStart = function(tmrNm, msg) {
+  var _tmrNm = tmrNm;
+  if ((tmrNm === undefined) || (tmrNm === null)) {
+    _tmrNm = DebugJS.DFLT_TIMER_NAME;
   }
-  DebugJS.ctx.timers[_timerName] = {};
-  DebugJS.ctx.timers[_timerName].start = (new Date()).getTime();
-  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+  DebugJS.ctx.timers[_tmrNm] = {};
+  DebugJS.ctx.timers[_tmrNm].start = (new Date()).getTime();
+  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
     return;
   }
   var s;
   if (msg === undefined) {
-    s = _timerName + ': timer started';
+    s = _tmrNm + ': timer started';
   } else {
-    s = msg.replace(/%n/g, _timerName).replace(/%t/g, '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.TIME_RST_STR + '</span>');
+    s = msg.replace(/%n/g, _tmrNm).replace(/%t/g, '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.TIME_RST_STR + '</span>');
   }
   DebugJS._log(s);
 };
-DebugJS.timeGetCount = function(timerName) {
-  if (!DebugJS.ctx.timers[timerName]) {
+DebugJS.timeGetCount = function(tmrNm) {
+  if (!DebugJS.ctx.timers[tmrNm]) {
     return 0;
   } else {
-    return DebugJS.ctx.timers[timerName].count;
+    return DebugJS.ctx.timers[tmrNm].count;
   }
 };
-DebugJS.timePause = function(timerName) {
+DebugJS.timePause = function(tmrNm) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
-  if (!ctx.timers[timerName]) return;
-  ctx.timers[timerName].pause = now;
-  ctx.timers[timerName].count = now - ctx.timers[timerName].start;
+  if (!ctx.timers[tmrNm]) return;
+  ctx.timers[tmrNm].pause = now;
+  ctx.timers[tmrNm].count = now - ctx.timers[tmrNm].start;
 };
-DebugJS.timeRestart = function(timerName) {
+DebugJS.timeRestart = function(tmrNm) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
-  if (ctx.timers[timerName]) {
-    var paused = now - ctx.timers[timerName].pause;
-    ctx.timers[timerName].start = now - ctx.timers[timerName].count;
-    ctx.timers[timerName].pause = 0;
-    ctx.timers[timerName].split += paused;
+  if (ctx.timers[tmrNm]) {
+    var paused = now - ctx.timers[tmrNm].pause;
+    ctx.timers[tmrNm].start = now - ctx.timers[tmrNm].count;
+    ctx.timers[tmrNm].pause = 0;
+    ctx.timers[tmrNm].split += paused;
   } else {
-    ctx.timers[timerName] = {
+    ctx.timers[tmrNm] = {
       start: now,
       pause: 0,
       split: 0,
@@ -11114,31 +11098,31 @@ DebugJS.timeRestart = function(timerName) {
     };
   }
 };
-DebugJS.timeSplit = function(timerName, isEnd, msg) {
+DebugJS.timeSplit = function(tmrNm, isEnd, msg) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
-  var _timerName = timerName;
+  var _tmrNm = tmrNm;
 
-  if ((timerName === undefined) || (timerName === null)) {
-    _timerName = DebugJS.DFLT_TIMER_NAME;
+  if ((tmrNm === undefined) || (tmrNm === null)) {
+    _tmrNm = DebugJS.DFLT_TIMER_NAME;
   }
 
-  if (!ctx.timers[_timerName]) {
-    DebugJS._log.w(_timerName + ': timer undefined');
+  if (!ctx.timers[_tmrNm]) {
+    DebugJS._log.w(_tmrNm + ': timer undefined');
     return null;
   }
 
-  var prevSplit = ctx.timers[_timerName].split;
-  var t = DebugJS.getElapsedTimeStr(ctx.timers[_timerName].start, now);
+  var prevSplit = ctx.timers[_tmrNm].split;
+  var t = DebugJS.getElapsedTimeStr(ctx.timers[_tmrNm].start, now);
   var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
 
   if (isEnd) {
-    delete ctx.timers[_timerName];
+    delete ctx.timers[_tmrNm];
   } else {
-    ctx.timers[_timerName].split = now;
+    ctx.timers[_tmrNm].split = now;
   }
 
-  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
     return t;
   }
 
@@ -11154,63 +11138,61 @@ DebugJS.timeSplit = function(timerName, isEnd, msg) {
 
   var s;
   if (msg === undefined) {
-    s = _timerName + ': ' + dt;
+    s = _tmrNm + ': ' + dt;
     if (dtLap != '') {
       s += '(' + DebugJS.CHR_DELTA + dtLap + ')';
     }
   } else {
-    s = msg.replace(/%n/g, _timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+    s = msg.replace(/%n/g, _tmrNm).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   }
 
   DebugJS._log(s);
   return t;
 };
-DebugJS.timeReset = function(timerName) {
+DebugJS.timeReset = function(tmrNm) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
-  ctx.timers[timerName] = ctx.timers[timerName] || {};
-  ctx.timers[timerName].start = now;
-  ctx.timers[timerName].split = now;
-  ctx.timers[timerName].pause = now;
-  ctx.timers[timerName].count = 0;
+  ctx.timers[tmrNm] = ctx.timers[tmrNm] || {};
+  ctx.timers[tmrNm].start = now;
+  ctx.timers[tmrNm].split = now;
+  ctx.timers[tmrNm].pause = now;
+  ctx.timers[tmrNm].count = 0;
 };
-DebugJS.timeEnd = function(timerName, msg) {
-  return DebugJS.timeSplit(timerName, true, msg);
+DebugJS.timeEnd = function(tmrNm, msg) {
+  return DebugJS.timeSplit(tmrNm, true, msg);
 };
-DebugJS.timeLog = function(msg, timerName) {
+DebugJS.timeLog = function(msg, tmrNm) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
-  if (!timerName) timerName = DebugJS.DFLT_TIMER_NAME;
+  if (!tmrNm) tmrNm = DebugJS.DFLT_TIMER_NAME;
   var t;
   var tLap;
-  if (ctx.timers[timerName]) {
-    t = DebugJS.getElapsedTimeStr(ctx.timers[timerName].start, now);
-    tLap = DebugJS.getElapsedTimeStr(ctx.timers[timerName].split, now);
-    ctx.timers[timerName].split = now;
+  if (ctx.timers[tmrNm]) {
+    t = DebugJS.getElapsedTimeStr(ctx.timers[tmrNm].start, now);
+    tLap = DebugJS.getElapsedTimeStr(ctx.timers[tmrNm].split, now);
+    ctx.timers[tmrNm].split = now;
   } else {
-    ctx.timers[timerName] = {};
-    ctx.timers[timerName].start = now;
-    ctx.timers[timerName].split = now;
+    ctx.timers[tmrNm] = {};
+    ctx.timers[tmrNm].start = now;
+    ctx.timers[tmrNm].split = now;
     t = DebugJS.TIME_RST_STR;
     tLap = t;
   }
   var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
   var dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
-  var s = dt + ' ' + msg.replace(/%n/g, timerName).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+  var s = dt + ' ' + msg.replace(/%n/g, tmrNm).replace(/%lt/g, dtLap).replace(/%t/g, dt);
   DebugJS._log(s);
 };
-DebugJS.timeCheck = function(timerName, now) {
-  if (timerName === undefined) timerName = DebugJS.DFLT_TIMER_NAME;
-  if (!DebugJS.ctx.timers[timerName]) return null;
-  var t = DebugJS.getElapsedTimeStr(DebugJS.ctx.timers[timerName].start, now);
+DebugJS.timeCheck = function(tmrNm, now) {
+  if (tmrNm === undefined) tmrNm = DebugJS.DFLT_TIMER_NAME;
+  if (!DebugJS.ctx.timers[tmrNm]) return null;
+  var t = DebugJS.getElapsedTimeStr(DebugJS.ctx.timers[tmrNm].start, now);
   return t;
 };
 DebugJS.timeList = function() {
   var now = new Date();
-  var l;
-  if (Object.keys(DebugJS.ctx.timers).length == 0) {
-    l = '<span style="color:#ccc">no timers</span>';
-  } else {
+  var l = '<span style="color:#ccc">no timers</span>';
+  if (Object.keys(DebugJS.ctx.timers).length > 0) {
     l = '<table>';
     for (var k in DebugJS.ctx.timers) {
       l += '<tr><td>' + k + '</td><td><span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.timeCheck(k, now) + '</font></td></tr>';
@@ -11729,18 +11711,17 @@ DebugJS.addClass = function(el, n) {
 };
 DebugJS.removeClass = function(el, n) {
   var names = el.className.split(' ');
-  var removed = '';
+  var nm = '';
   for (var i = 0; i < names.length; i++) {
     if (names[i] != n) {
-      if (i > 0) removed += ' ';
-      removed += names[i];
+      if (i > 0) nm += ' ';
+      nm += names[i];
     }
   }
-  el.className = removed;
+  el.className = nm;
 };
 DebugJS.hasClass = function(el, n) {
-  var className = el.className;
-  var names = className.split(' ');
+  var names = el.className.split(' ');
   for (var i = 0; i < names.length; i++) {
     if (names[i] == n) return true;
   }
@@ -11952,7 +11933,7 @@ DebugJS.loadStatus = function() {
 
 DebugJS.file = {};
 DebugJS.file.loaders = [];
-DebugJS.file.ongoingLoader = null;
+DebugJS.file.ongoingLdr = null;
 DebugJS.file.onDragOver = function(e) {
   e.stopPropagation();
   e.preventDefault();
@@ -11965,7 +11946,7 @@ DebugJS.file.onDrop = function(e) {
   for (var i = 0; i < DebugJS.file.loaders.length; i++) {
     loader = DebugJS.file.loaders[i];
     if (DebugJS.isTargetEl(e.target, loader.el)) {
-      DebugJS.file.ongoingLoader = loader;
+      DebugJS.file.ongoingLdr = loader;
       break;
     }
   }
@@ -11992,7 +11973,7 @@ DebugJS.isTargetEl = function(target, el) {
   return false;
 };
 DebugJS.file.onLoaded = function(file, ctt) {
-  var loader = DebugJS.file.ongoingLoader;
+  var loader = DebugJS.file.ongoingLdr;
   if ((!loader) || (!loader.cb)) return;
   if ((loader.mode == 'b64') && (loader.decode)) {
     ctt = DebugJS.decodeBase64(DebugJS.splitDataUrl(ctt).data);
@@ -12000,7 +11981,7 @@ DebugJS.file.onLoaded = function(file, ctt) {
   loader.cb(file, ctt);
 };
 DebugJS.file.finalize = function() {
-  DebugJS.file.ongoingLoader = null;
+  DebugJS.file.ongoingLdr = null;
 };
 DebugJS.addFileLoader = function(el, cb, mode, decode) {
   el = DebugJS.getElement(el);
@@ -12208,25 +12189,25 @@ DebugJS.fileline = function(idx, abs) {
 };
 
 DebugJS.time = {};
-DebugJS.time.start = function(timerName, msg) {
-  DebugJS.timeStart(timerName, msg);
+DebugJS.time.start = function(tmrNm, msg) {
+  DebugJS.timeStart(tmrNm, msg);
 };
-DebugJS.time.split = function(timerName, msg) {
-  var t = DebugJS.timeSplit(timerName, false, msg);
-  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+DebugJS.time.split = function(tmrNm, msg) {
+  var t = DebugJS.timeSplit(tmrNm, false, msg);
+  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
     return t;
   }
   return;
 };
-DebugJS.time.end = function(timerName, msg) {
-  var t = DebugJS.timeEnd(timerName, msg);
-  if ((msg === null) || ((timerName === null) && (msg === undefined))) {
+DebugJS.time.end = function(tmrNm, msg) {
+  var t = DebugJS.timeEnd(tmrNm, msg);
+  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
     return t;
   }
   return;
 };
-DebugJS.time.check = function(timerName) {
-  return DebugJS.timeCheck(timerName, new Date());
+DebugJS.time.check = function(tmrNm) {
+  return DebugJS.timeCheck(tmrNm, new Date());
 };
 
 DebugJS.stopwatch = function() {
@@ -15147,7 +15128,7 @@ DebugJS.ui.addLabel = function(base, label) {
   base.appendChild(el);
   return el;
 };
-DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, inputHandler) {
+DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, oninput) {
   var ctx = DebugJS.ctx;
   var el = document.createElement('input');
   el.className = 'dbg-txtbox';
@@ -15158,7 +15139,7 @@ DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, inputHandl
   ctx.setStyle(el, 'color', color);
   if (txtAlign) ctx.setStyle(el, 'text-align', txtAlign);
   el.value = val;
-  el.oninput = inputHandler;
+  el.oninput = oninput;
   base.appendChild(el);
   return el;
 };
@@ -15353,8 +15334,7 @@ DebugJS.x.addCmdTbl = function(table) {
   var ctx = DebugJS.ctx;
   for (var i = 0; i < table.length; i++) {
     var c = table[i];
-    if ((ctx.existCmd(c.cmd, ctx.INT_CMD_TBL)) ||
-        (ctx.existCmd(c.cmd, ctx.EXT_CMD_TBL))) {
+    if ((ctx.existCmd(c.cmd, ctx.INT_CMD_TBL)) || (ctx.existCmd(c.cmd, ctx.EXT_CMD_TBL))) {
       c.attr |= DebugJS.CMD_ATTR_DISABLED;
     }
     ctx.EXT_CMD_TBL.push(c);

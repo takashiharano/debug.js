@@ -3300,12 +3300,12 @@ var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" sty
   </tr>
 
   <tr>
-    <td class="name">dbg.splitArgsEx</td>
+    <td class="name">dbg.splitCmdLine</td>
     <td>argument-string</td>
     <td>
       An extended version of splitArgs().<br>
 <pre>
-var args = dbg.splitArgsEx('<input type="text" id="args-ex-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitArgsEx(document.getElementById('args-ex-txt').value), 0, 'args =');">DEMO</button>
+var args = dbg.splitCmdLine('<input type="text" id="args-ex-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitCmdLine(document.getElementById('args-ex-txt').value), 0, 'args =');">DEMO</button>
 <span id="isvisible-ret"></span></pre>
     </td>
   </tr>
