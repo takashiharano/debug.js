@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812152120';
+  this.v = '201812152140';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2472,11 +2472,8 @@ DebugJS.prototype = {
             break;
           case 'file':
             kind = DebugJS.TOOLS_FNC_FILE;
-            if (opt == 'b64') {
-              param = DebugJS.FILE_LOAD_FMT_B64;
-            } else {
-              param = DebugJS.FILE_LOAD_FMT_BIN;
-            }
+            if (!opt) opt = (ctx.fileVwrRadioBin && ctx.fileVwrRadioBin.checked ? 'bin' : 'b64');
+            param = (opt == 'bin' ? DebugJS.FILE_LOAD_FMT_BIN : DebugJS.FILE_LOAD_FMT_B64);
             break;
           case 'bat':
             kind = DebugJS.TOOLS_FNC_BAT;
