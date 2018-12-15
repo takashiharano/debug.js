@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812150000';
+  this.v = '201812152120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1576,9 +1576,9 @@ DebugJS.prototype = {
 
   createLogFltBtn: function(type, btnObj, color) {
     var ctx = DebugJS.ctx;
-    var label = '[' + type + ']';
+    var lbl = '[' + type + ']';
     var fn = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FLTR_' + type + ');');
-    var btn = DebugJS.ui.addBtn(ctx.logHeaderPanel, label, fn);
+    var btn = DebugJS.ui.addBtn(ctx.logHeaderPanel, lbl, fn);
     btn.style.marginLeft = '2px';
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
     btn.onmouseout = ctx.updateLogFilterBtns;
@@ -2160,8 +2160,8 @@ DebugJS.prototype = {
     if (el.nodeName == 'INPUT') return false;
     if (el.nodeName == 'TEXTAREA') return false;
     if (DebugJS.hasClass(el, 'dbg-nomove')) return false;
-    var browser = DebugJS.getBrowserType();
-    if ((browser.family == 'IE') || (browser.name == 'Firefox')) {
+    var ua = DebugJS.getBrowserType();
+    if ((ua.family == 'IE') || (ua.name == 'Firefox')) {
       if ((el == ctx.logPanel) ||
           (el == ctx.sysInfoPanel) ||
           (el == ctx.elmInfoBodyPanel) ||
@@ -3753,19 +3753,19 @@ DebugJS.prototype = {
       foldingText = '<span class="' + ctx.id + '-na">' + obj + '</span>';
     } else {
       var btn = DebugJS.EXPANDBTN;
-      var partDisplay = 'inline';
-      var bodyDisplay = 'none';
+      var partDisp = 'inline';
+      var bodyDisp = 'none';
       if (show) {
         btn = DebugJS.CLOSEBTN;
-        partDisplay = 'none';
-        bodyDisplay = 'block';
+        partDisp = 'none';
+        bodyDisp = 'block';
       }
       foldingText = obj + '';
       if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
         partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omitpart, style);
         foldingText = '<span class="' + ctx.id + '-showhide-btn dbg-nomove" id="' + ctx.id + '-' + name + '__button" onclick="DebugJS.ctx.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
-        '<span id="' + ctx.id + '-' + name + '__partial-body" style="display:' + partDisplay + '">' + partial + '</span>' +
-        '<div style="display:' + bodyDisplay + '" id="' + ctx.id + '-' + name + '__body">' + obj + '</div>';
+        '<span id="' + ctx.id + '-' + name + '__partial-body" style="display:' + partDisp + '">' + partial + '</span>' +
+        '<div style="display:' + bodyDisp + '" id="' + ctx.id + '-' + name + '__body">' + obj + '</div>';
       } else {
         foldingText = obj;
       }
@@ -4731,9 +4731,9 @@ DebugJS.prototype = {
     return btn;
   },
   createTimerUpDwnBtn: function(up, part, area, fontSize, margin) {
-    var label = (up ? '+' : '-');
+    var lbl = (up ? '+' : '-');
     var fn = new Function('DebugJS.ctx.timerUpDwn(\'' + part + '\', ' + up + ')');
-    var btn = DebugJS.ui.addBtn(area, label, fn);
+    var btn = DebugJS.ui.addBtn(area, lbl, fn);
     btn.style.marginRight = margin + 'em';
     DebugJS.ctx.setStyle(btn, 'color', DebugJS.TOOL_TIMER_BTN_COLOR);
     DebugJS.ctx.setStyle(btn, 'font-size', fontSize + 'px');
@@ -4785,13 +4785,11 @@ DebugJS.prototype = {
     ctx.updatePropTimer();
   },
   toggleTimerMode: function() {
-    var nextMode;
+    var nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
     if (DebugJS.ctx.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) {
       nextMode = DebugJS.TOOL_TIMER_MODE_SW_CU;
     } else if (DebugJS.ctx.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CU) {
       nextMode = DebugJS.TOOL_TIMER_MODE_SW_CD;
-    } else {
-      nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
     }
     DebugJS.ctx.switchTimerMode(nextMode);
   },
@@ -4860,9 +4858,9 @@ DebugJS.prototype = {
       time += '<span style="font-size:' + msFontSize + 'px !important">' + tm.sss + '</span>';
       marginB -= 16 * ctx.opt.zoom;
     }
-    var label = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + dtFontSize + 'px !important">' + date + '</div>' +
+    var s = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + dtFontSize + 'px !important">' + date + '</div>' +
     '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
-    return label;
+    return s;
   },
   startStopTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
@@ -4957,11 +4955,7 @@ DebugJS.prototype = {
   toggle0ContinueTimerStopWatchCd: function() {
     var ctx = DebugJS.ctx;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) return;
-    if (ctx.timerSwTimeCdContinue) {
-      ctx.timerSwTimeCdContinue = false;
-    } else {
-      ctx.timerSwTimeCdContinue = true;
-    }
+    ctx.timerSwTimeCdContinue = (ctx.timerSwTimeCdContinue ? false : true);
     ctx.update0ContinueBtnTimerStopWatchCd();
   },
   update0ContinueBtnTimerStopWatchCd: function() {
@@ -5489,7 +5483,7 @@ DebugJS.prototype = {
         ctx.fileVwrRadioBin.checked = true;
         ctx.fileVwrRadioB64.checked = false;
       }
-      if (ctx.fileLoadFormat != format) {
+      if ((ctx.fileLoadFormat != format) && (ctx.fileVwrFile)) {
         ctx.loadFile(ctx.fileVwrFile, format);
       }
     }
@@ -5507,8 +5501,8 @@ DebugJS.prototype = {
   onFileSelected: function(e) {
     DebugJS.ctx.clearFile();
     if (e.target.files) {
-      var format = (DebugJS.ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
-      DebugJS.ctx.loadFile(e.target.files[0], format);
+      var fmt = (DebugJS.ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+      DebugJS.ctx.loadFile(e.target.files[0], fmt);
     }
   },
   handleDroppedFile: function(ctx, e, format, cb) {
@@ -5543,8 +5537,8 @@ DebugJS.prototype = {
         ctx.decodeDataURL(ctx, u);
       }
     } else {
-      var format = (ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
-      ctx.handleDroppedFile(ctx, e, format, null);
+      var fmt = (ctx.fileVwrRadioB64.checked ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+      ctx.handleDroppedFile(ctx, e, fmt, null);
     }
   },
   onDropOnLogPanel: function(e) {
@@ -6093,9 +6087,11 @@ DebugJS.prototype = {
     ctx.fileVwrDataSrc = null;
     ctx.fileVwrByteArray = null;
     ctx.fileReader = null;
-    ctx.filePreview.innerText = 'Drop a file here';
-    ctx.setDtSchmTxt();
-    ctx.fileVwrDtTxtArea.value = '';
+    if (ctx.fileVwrPanel) {
+      ctx.filePreview.innerText = 'Drop a file here';
+      ctx.setDtSchmTxt();
+      ctx.fileVwrDtTxtArea.value = '';
+    }
   },
   dataSrcType: function() {
     return DebugJS.ctx.fileVwrDataSrcType;
@@ -6110,8 +6106,8 @@ DebugJS.prototype = {
     DebugJS.ctx.setDtSchm('image/jpeg');
   },
   decodeDataURL: function(ctx, s) {
-    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.clearFile();
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
     ctx.openViewerB64();
     var d = DebugJS.splitDataUrl(s);
     ctx.setDataUrl(ctx, d.scheme, d.data);
@@ -11958,11 +11954,11 @@ DebugJS.file.onDrop = function(e) {
   if (d) {
     if (loader.cb) loader.cb(null, d);
   } else {
-    var format = (loader.mode == 'b64' ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
+    var fmt = (loader.mode == 'b64' ? DebugJS.FILE_LOAD_FMT_B64 : DebugJS.FILE_LOAD_FMT_BIN);
     var f = (ctx.status & DebugJS.ST_TOOLS ? false : true);
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
     if (f) ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
-    ctx.handleDroppedFile(ctx, e, format, null);
+    ctx.handleDroppedFile(ctx, e, fmt, null);
   }
 };
 DebugJS.isTargetEl = function(target, el) {
@@ -13150,9 +13146,8 @@ DebugJS.bat.stopNext = function() {
     DebugJS.bat.clearTimer();
   }
 };
-DebugJS.bat.stop = function(c) {
-  var ctx = DebugJS.ctx;
-  DebugJS.bat._stop(c);
+DebugJS.bat.stop = function(st) {
+  DebugJS.bat._stop(st);
   DebugJS.bat.resetPc();
 };
 DebugJS.bat._stop = function(st) {
