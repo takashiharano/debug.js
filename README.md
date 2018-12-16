@@ -1,7 +1,7 @@
 # debug.js
 debug.js is embedded JavaScript debugger for web development.
 
-It allows you to debug easily without the F12 Tools.  
+It allows you to debug easily without the F12 Tools.
 The library has useful features such as logging, DOM element inspector, screen measure, file viewer, command-line, original script interpreter for automated testing, etc.
 
 ## Quick Start
