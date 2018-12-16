@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812170000';
+  this.v = '201812170132';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1794,8 +1794,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var s = ctx.msgString;
     if (ctx.msgLabel) {
-      var html = '<pre>' + s + '</pre>';
-      ctx.msgLabel.innerHTML = html;
+      ctx.msgLabel.innerHTML = '<pre>' + s + '</pre>';
       var o = (s == '' ? 0 : 1);
       ctx.msgLabel.style.opacity = o;
     }
@@ -3413,9 +3412,7 @@ DebugJS.prototype = {
   },
   createSysInfoPanel: function(ctx) {
     ctx.sysInfoPanel = document.createElement('div');
-    var html = '<span style="color:' + DebugJS.SYS_BTN_COLOR + '">&lt;SYSTEM INFO&gt;</span>' +
-    '<span style="float:right">v' + ctx.v + '</span>';
-    ctx.sysInfoPanel.innerHTML = html;
+    ctx.sysInfoPanel.innerHTML = '<span style="color:' + DebugJS.SYS_BTN_COLOR + '">&lt;SYSTEM INFO&gt;</span><span style="float:right">v' + ctx.v + '</span>';
     if (DebugJS.SYS_INFO_FULL_OVERLAY) {
       ctx.sysInfoPanel.className = ctx.id + '-overlay-panel-full';
       ctx.addOverlayPanelFull(ctx.sysInfoPanel);
@@ -3627,8 +3624,7 @@ DebugJS.prototype = {
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('localStorage');
     if (DebugJS.LS_AVAILABLE) {
-      html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearLocalStrage();">clear()</span>\n' +
-              '<span id="' + ctx.id + '-sys-ls"></span>\n';
+      html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearLocalStrage();">clear()</span>\n<span id="' + ctx.id + '-sys-ls"></span>\n';
       html += DebugJS.ctx.createStorageEditor(ctx, 0);
     } else {
       html += ' <span class="' + ctx.id + '-na">undefined</span>';
@@ -3636,8 +3632,7 @@ DebugJS.prototype = {
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('sessionStorage');
     if (DebugJS.SS_AVAILABLE) {
-      html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearSessionStrage();">clear()</span>\n' +
-              '<span id="' + ctx.id + '-sys-ss"></span>\n';
+      html += ' <span class="' + ctx.id + '-btn" onclick="DebugJS.ctx.clearSessionStrage();">clear()</span>\n<span id="' + ctx.id + '-sys-ss"></span>\n';
       html += DebugJS.ctx.createStorageEditor(ctx, 1);
     } else {
       html += ' <span class="' + ctx.id + '-na">undefined</span>';
@@ -3691,7 +3686,7 @@ DebugJS.prototype = {
         var getCode = nm + '.getItem(\'' + key + '\')';
         var rmvCode = nm + '.removeItem(\'' + key + '\')';
         html += '(' + i + ') = ' + '<span class="' + ctx.id + '-btn ' + ctx.id + '-btn-wh" onclick="DebugJS.ctx.setStrgEdit(' + type + ', ' + getCode + ', \'' + key + '\');" title="' + getCode + '">' + (key == '' ? ' ' : key) + '</span>' +
-                ' <span class="' + ctx.id + '-btn ' + ctx.id + '-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');" title="' + rmvCode + '">x</span>';
+        ' <span class="' + ctx.id + '-btn ' + ctx.id + '-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');" title="' + rmvCode + '">x</span>';
       }
     }
     document.getElementById(ctx.id + '-sys-' + id).innerHTML = html;
