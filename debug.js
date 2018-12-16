@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812162032';
+  this.v = '201812162256';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -356,7 +356,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
-    {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] object'},
+    {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] [-json] object'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-key key [-timeout ms|1d2h3m4s500]|-s]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
@@ -7897,12 +7897,7 @@ DebugJS.prototype = {
   },
 
   cmdP: function(arg, tbl) {
-    arg = DebugJS.unifySP(arg);
-    if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
-    } else {
-      DebugJS.execCmdP(arg);
-    }
+    DebugJS._cmdP(arg, tbl);
   },
 
   cmdPause: function(arg, tbl) {
@@ -9902,24 +9897,38 @@ DebugJS.checkModKey = function(e) {
   return metaKey;
 };
 
-DebugJS.execCmdP = function(arg) {
-  var args = arg.split(' ');
-  var opt = args[0].match(/-l(\d+)/);
-  var start = 0;
-  var levelLimit = 0;
-  if (opt != null) {
-    start = 1;
-    levelLimit = opt[1];
-  } else {
-    if (args[0] == '-a') {
-      start = 1;
-      noMaxLimit = true;
+DebugJS._cmdP = function(_arg, _tbl) {
+  var _obj;
+  var _jsn = false;
+  var _dmpLmt = DebugJS.ctx.props.dumplimit;
+  var _vlLen = DebugJS.ctx.props.dumpvallen;
+  var _lvLmt = 0;
+  var _opt = DebugJS.getOptVals(_arg);
+  for (var _k in _opt) {
+    if ((_k == '') && (_opt[_k].length > 0)) {
+      _obj = _opt[_k][0];
+    }
+    var _lv = _k.match(/l(\d+)/);
+    if (_lv != null) {
+      _lvLmt = _lv[1];
+      if (!_obj) _obj = _opt[_k];
+    }
+    if (_k == 'json') {
+      _jsn = true;
+      if (!_obj) _obj = _opt[_k];
+    }
+    if (_k == 'a') {
+      _dmpLmt = _vlLen = 0;
+      if (!_obj) _obj = _opt[_k];
     }
   }
-  var obj = DebugJS.getArgsFrom(arg, start);
-  var cmd = 'DebugJS.buf=DebugJS.objDump(' + obj + ', false, ' + levelLimit + ', ' + DebugJS.ctx.props.dumplimit + ', ' + DebugJS.ctx.props.dumpvallen + ');DebugJS._log.mlt(DebugJS.buf);';
+  if (!_obj) {
+    DebugJS.printUsage(_tbl.usage);
+    return;
+  }
+  var _cl = 'DebugJS.buf=DebugJS.objDump(' + _obj + ', _jsn, ' + _lvLmt + ', ' + _dmpLmt + ', ' + _vlLen + ');DebugJS._log.mlt(DebugJS.buf);';
   try {
-    eval(cmd);
+    eval(_cl);
   } catch (e) {
     DebugJS._log.e(e);
   }
