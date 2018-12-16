@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812152140';
+  this.v = '201812161636';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6743,7 +6743,7 @@ DebugJS.prototype = {
   cmdBase64: function(arg, tbl, echo) {
     var iIdx = 0;
     if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeBase64, DebugJS.decodeBase64, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBase64, DebugJS.decodeBase64, iIdx);
   },
 
   cmdBat: function(arg, tbl, echo) {
@@ -6898,7 +6898,7 @@ DebugJS.prototype = {
         }
       }
     }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0, toR);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0, toR);
   },
 
   cmdCall: function(arg, tbl) {
@@ -8296,7 +8296,7 @@ DebugJS.prototype = {
       n = n.replace(/\(|\)/g, '') | 0;
       iIdx += 2;
     }
-    return DebugJS.ctx.execEncAndDec(a, tbl, echo, fnE, fnD, iIdx, n);
+    return DebugJS.ctx.execEncAndDec(a, tbl, echo, true, fnE, fnD, iIdx, n);
   },
 
   cmdScrollTo: function(arg, tbl) {
@@ -8809,13 +8809,13 @@ DebugJS.prototype = {
   cmdUnicode: function(arg, tbl, echo) {
     var iIdx = 0;
     if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, false, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
   },
 
   cmdUri: function(arg, tbl, echo) {
     var iIdx = 0;
     if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, DebugJS.encodeUri, DebugJS.decodeUri, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeUri, DebugJS.decodeUri, iIdx);
   },
 
   cmdUtf8: function(arg, tbl, echo) {
@@ -8975,7 +8975,7 @@ DebugJS.prototype = {
 
   cmdNop: function(arg, tbl) {},
 
-  execEncAndDec: function(arg, tbl, echo, encFnc, decFnc, iIdx, a1, a2) {
+  execEncAndDec: function(arg, tbl, echo, esc, encFnc, decFnc, iIdx, a1, a2) {
     if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage(tbl.usage);
       return;
@@ -8994,7 +8994,8 @@ DebugJS.prototype = {
         i = eval(i);
       }
       var ret = fn(i, a1, a2);
-      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(ret));
+      var r = (esc ? DebugJS.escTags(ret) : ret);
+      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(r));
       return ret;
     } catch (e) {
       DebugJS._log.e(e);
