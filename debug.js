@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812172030';
+  this.v = '201812172155';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -407,6 +407,7 @@ var DebugJS = DebugJS || function() {
     radix: /^[^|][a-z|]+[^|]$/,
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
+    pointmsgsize: /.*/,
     scrollspeed: /^[0-9]+$/,
     scrollstep: /^[0-9]+$/,
     textinputspeed: /^[0-9\-]+$/,
@@ -431,6 +432,7 @@ var DebugJS = DebugJS || function() {
     radix: 'bin|dec|hex',
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
+    pointmsgsize: '12px',
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     scrollstep: DebugJS.scrollWinTo.data.step,
     textinputspeed: 30,
@@ -445,6 +447,7 @@ var DebugJS = DebugJS || function() {
   this.PROPS_CB = {
     batcont: this.setPropBatContCb,
     indent: this.setPropIndentCb,
+    pointmsgsize: this.setPropPointMsgSizeCb,
     timer: this.setPropTimerCb,
     consolelog: this.setPropConsoleLogCb
   };
@@ -8414,36 +8417,34 @@ DebugJS.prototype = {
   },
 
   cmdSet: function(arg, tbl, echo) {
-    var a = DebugJS.splitArgs(arg);
-    var name = a[0];
-    var val = ((a[1] == undefined) ? '' : a[1]);
-    if ((name == '') || (val == '')) {
+    var a = DebugJS.splitCmdLine(arg);
+    var nm = a[0];
+    var v = ((a[1] == undefined) ? '' : a[1]);
+    if ((nm == '') || (v == '')) {
       DebugJS.printUsage(tbl.usage);
       return;
     }
-    DebugJS.ctx._cmdSet(DebugJS.ctx, name, val, echo);
+    DebugJS.ctx._cmdSet(DebugJS.ctx, nm, v, echo);
   },
-  _cmdSet: function(ctx, name, val, echo) {
+  _cmdSet: function(ctx, nm, val, echo) {
     var props = ctx.props;
-    if (!props[name]) {
-      DebugJS._log.e(name + ' is invalid property name.');
+    if (!props[nm]) {
+      DebugJS._log.e(nm + ' is invalid property name.');
       return;
     }
-    var restriction = ctx.PROPS_RESTRICTION[name];
+    var restriction = ctx.PROPS_RESTRICTION[nm];
     if (restriction) {
       if (!(val + '').match(restriction)) {
         DebugJS._log.e(val + ' is invalid. (' + restriction + ')');
         return;
       }
     }
-    props[name] = val;
-    if (ctx.PROPS_CB[name]) {
-      var r = ctx.PROPS_CB[name](ctx, val);
-      if (r != undefined) {
-        props[name] = r;
-      }
+    props[nm] = val;
+    if (ctx.PROPS_CB[nm]) {
+      var r = ctx.PROPS_CB[nm](ctx, val);
+      if (r != undefined) props[nm] = r;
     }
-    if (echo) DebugJS._log.res(val);
+    if (echo) DebugJS._log.res(props[nm]);
   },
   setPropBatContCb: function(ctx, v) {
     if (DebugJS.bat.isRunning()) {
@@ -8456,6 +8457,17 @@ DebugJS.prototype = {
   },
   setPropIndentCb: function(ctx, v) {
     DebugJS.INDENT_SP = DebugJS.repeatCh(' ', v);
+  },
+  setPropPointMsgSizeCb: function(ctx, v) {
+    try {
+      v = eval(v);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return ctx.PROPS_DFLT_VALS.pointmsgsize;
+    }
+    ctx.props.pointmsgsize = v;
+    var el = DebugJS.point.hint.pre;
+    if (el) ctx.setStyle(el, 'font-size', v);
   },
   setPropTimerCb: function(ctx, v) {
     var tm = DebugJS.timestr2struct(v);
@@ -14104,7 +14116,7 @@ DebugJS.point.hint.createArea = function() {
   ctx.setStyle(pre, 'padding', 0);
   ctx.setStyle(pre, 'line-height', '1.2');
   ctx.setStyle(pre, 'color', ctx.opt.fontColor);
-  ctx.setStyle(pre, 'font-size', '12px');
+  ctx.setStyle(pre, 'font-size', ctx.props.pointmsgsize);
   ctx.setStyle(pre, 'font-family', ctx.opt.fontFamily);
   el.appendChild(pre);
   hint.pre = pre;
