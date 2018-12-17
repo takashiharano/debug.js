@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812172155';
+  this.v = '201812172305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10330,21 +10330,21 @@ DebugJS._cmdJson = function(s, f, lv) {
     DebugJS._log.mlt(j);
     return j;
   } catch (e) {
-    DebugJS._log.e('JSON format error: ' + DebugJS.chkJson(s));
+    DebugJS._log.e('JSON format error: ' + DebugJS.hlJsonErr(s));
   }
 };
-DebugJS.chkJson = function(json) {
+DebugJS.hlJsonErr = function(json) {
   var ctx = DebugJS.ctx;
-  json = json.trim();
-  var wkJson = json.split('\\');
+  var jsn = json.trim().split('\\');
   var cnt = 0;
   var res = '';
-  for (var i = 0; i < wkJson.length; i++) {
-    if (wkJson[i] == '') {
+  for (var i = 0; i < jsn.length; i++) {
+    var chnk = jsn[i];
+    if (chnk == '') {
       cnt++;
     } else {
       if (i == 0) {
-        res += wkJson[i];
+        res += chnk;
         continue;
       }
       if (cnt >= 1) {
@@ -10357,13 +10357,13 @@ DebugJS.chkJson = function(json) {
         } else {
           res += '\\';
         }
-        res += wkJson[i];
+        res += chnk;
         cnt = 0;
       } else {
-        if (wkJson[i].match(/^n|^r|^t|^b|^"/)) {
-          res += '\\' + wkJson[i];
+        if (chnk.match(/^n|^r|^t|^b|^"/)) {
+          res += '\\' + chnk;
         } else {
-          res += '<span class="' + ctx.id + '-txt-hl">\\</span>' + wkJson[i];
+          res += '<span class="' + ctx.id + '-txt-hl">\\</span>' + chnk;
         }
       }
     }
