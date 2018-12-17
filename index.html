@@ -733,6 +733,10 @@ function onErrorEvt() {
   log('onError');
 }
 
+function onUnlock() {
+  log('onUnlock');
+}
+
 function onReady() {
   //log('ready');
   addFileLoadHandler();
@@ -741,6 +745,7 @@ function onReady() {
   dbg.addEvtListener('batstop', onBatStop);
   //dbg.addEvtListener('drop', onDrop);
   //dbg.addEvtListener('error', onErrorEvt);
+  //dbg.addEvtListener('unlock', onUnlock);
 }
 
 function onLoad() {
@@ -2716,6 +2721,11 @@ Callback function which is called when file load has been completed<br>
   content: File content
   isB64  : true = Base64 encoded / false = Binary ArrayBuffer
 </pre>
+<br>
+      type: <b>unlock</b><br>
+      Callback function which is called when the debug window is unlocked.<br>
+<pre class="eg">Function format:
+  function onUnlock() {}</pre>
 <br>
       type: <b>watchdog</b><br>
       Callback function which is called when the watchdog timer has been timed out.<br>

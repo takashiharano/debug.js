@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812180040';
+  this.v = '201812180050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -461,13 +461,14 @@ var DebugJS = DebugJS || function() {
   this.extPanels = [];
   this.extActPnlIdx = -1;
   this.evtListener = {
-    'batstart': [],
-    'batstop': [],
-    'ctrlc': [],
-    'drop': [],
-    'error': [],
-    'fileloaded': [],
-    'watchdog': []
+    batstart: [],
+    batstop: [],
+    ctrlc: [],
+    drop: [],
+    error: [],
+    fileloaded: [],
+    unlock: [],
+    watchdog: []
   };
   this.unlockCode = null;
   this.setupDefaultOptions();
@@ -2750,6 +2751,7 @@ DebugJS.prototype = {
         } else if (ctx.unlockCode == ctx.opt.lockCode) {
           ctx.uiStatus &= ~DebugJS.UI_ST_PROTECTED;
           ctx.unlockCode = null;
+          DebugJS.callEvtListeners('unlock');
         }
         break;
       case 27:
