@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812172305';
+  this.v = '201812180040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3833,7 +3833,6 @@ DebugJS.prototype = {
     ctx.elmNumPanel.style.float = 'right';
     ctx.elmNumPanel.style.marginRight = '4px';
     ctx.elmInfoHeaderPanel.appendChild(ctx.elmNumPanel);
-    ctx.updateElementInfoInterval();
 
     ctx.elmDelBtn = ctx.createElmInfoHeadBtn('DEL', ctx.delTargetElm);
     ctx.elmDelBtn.style.float = 'right';
@@ -3850,6 +3849,8 @@ DebugJS.prototype = {
     ctx.elmInfoBodyPanel.style.height = 'calc(100% - 1.3em)';
     ctx.elmInfoBodyPanel.style.overflow = 'auto';
     ctx.elmInfoPanel.appendChild(ctx.elmInfoBodyPanel);
+
+    ctx.updateElmInfoInterval();
   },
   createElmInfoHeadBtn: function(label, handler) {
     return DebugJS.ui.addBtn(DebugJS.ctx.elmInfoHeaderPanel, label, handler);
@@ -3887,164 +3888,168 @@ DebugJS.prototype = {
     }
   },
   showElementInfo: function(el) {
-    if (!el) return;
     var ctx = DebugJS.ctx;
-    var OMIT_STYLE = 'color:#888';
-    var OMIT_STYLE2 = 'color:#666';
     var html = '<pre>';
-    if (el.tagName) {
-      DebugJS.dom = el;
-      var computedStyle = window.getComputedStyle(el);
-      var rect = el.getBoundingClientRect();
-      var rectT = Math.round(rect.top);
-      var rectL = Math.round(rect.left);
-      var rectR = Math.round(rect.right);
-      var rectB = Math.round(rect.bottom);
-      var MAX_LEN = 50;
-      var text = '';
-      if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
-        if (el.tagName == 'META') {
-          text = DebugJS.escTags(el.outerHTML);
-        } else {
-          if (el.innerText != undefined) {
-            text = DebugJS.escTags(el.innerText);
-          }
-        }
-      }
-      var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.text);
-      var className = el.className + '';
-      className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
-      var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.href));
-      var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.src));
-      var backgroundColor = computedStyle.backgroundColor;
-      var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
-      var color = computedStyle.color;
-      var color16 = DebugJS.getElmHexColor(color);
-      var borderColorT = computedStyle.borderTopColor;
-      var borderColorT16 = DebugJS.getElmHexColor(borderColorT);
-      var borderColorR = computedStyle.borderRightColor;
-      var borderColorR16 = DebugJS.getElmHexColor(borderColorR);
-      var borderColorB = computedStyle.borderBottomColor;
-      var borderColorB16 = DebugJS.getElmHexColor(borderColorB);
-      var borderColorL = computedStyle.borderLeftColor;
-      var borderColorL16 = DebugJS.getElmHexColor(borderColorL);
-      var borderT = 'top   : ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + borderColorT + ' ' + borderColorT16 + ' ' + DebugJS.getColorBlock(borderColorT);
-      var borderRBL = '            right : ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + borderColorR + ' ' + borderColorR16 + ' ' + DebugJS.getColorBlock(borderColorR) + '\n' +
-                      '            bottom: ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + borderColorR + ' ' + borderColorB16 + ' ' + DebugJS.getColorBlock(borderColorB) + '\n' +
-                      '            left  : ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + borderColorL + ' ' + borderColorL16 + ' ' + DebugJS.getColorBlock(borderColorL);
-      var allStyles = '';
-      var MIN_KEY_LEN = 20;
-      for (var k in computedStyle) {
-        if (!(k.match(/^\d.*/))) {
-          if (typeof computedStyle[k] != 'function') {
-            var indent = '';
-            if (k.length < MIN_KEY_LEN) {
-              for (var i = 0; i < (MIN_KEY_LEN - k.length); i++) {
-                indent += ' ';
-              }
-            }
-            allStyles += ' ' + k + indent + ': ' + computedStyle[k] + '\n';
-          }
-        }
-      }
-      allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
-      var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escTags(el.name);
-      var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclChr(el.value);
-
-      html += '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'id        : ' + el.id + '\n' +
-      'className : ' + className + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'object    : ' + Object.prototype.toString.call(el) + '\n' +
-      'tagName   : ' + el.tagName + '\n' +
-      'type      : ' + DebugJS.setStyleIfObjNA(el.type) + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'display   : ' + computedStyle.display + '\n' +
-      'position  : ' + computedStyle.position + '\n' +
-      'z-index   : ' + computedStyle.zIndex + '\n' +
-      'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
-      'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
-      'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
-      'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.elBorder) + '\n' +
-      'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
-      'lineHeight: ' + computedStyle.lineHeight + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'location  : <span style="color:#aaa">winOffset + pageOffset = pos (computedStyle)</span>\n' +
-      '            top   : ' + rectT + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
-      '            left  : ' + rectL + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
-      '            right : ' + rectR + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.right + window.pageXOffset) + ' px (' + computedStyle.right + ')\n' +
-      '            bottom: ' + rectB + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.bottom + window.pageYOffset) + ' px (' + computedStyle.bottom + ')\n' +
-      'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
-      'overflow  : ' + computedStyle.overflow + '\n' +
-      'opacity   : ' + computedStyle.opacity + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
-      'bg-image  : ' + ctx.createFoldingText(computedStyle.backgroundImage, 'bgimg', DebugJS.OMIT_LAST, -1, OMIT_STYLE) + '\n' +
-      'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
-      'font      : -size  : ' + computedStyle.fontSize + '\n' +
-      '            -family: ' + computedStyle.fontFamily + '\n' +
-      '            -weight: ' + computedStyle.fontWeight + '\n' +
-      '            -style : ' + computedStyle.fontStyle + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'name      : ' + name + '\n' +
-      'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
-      'disabled  : ' + DebugJS.setStyleIfObjNA(el.disabled, true) + '\n' +
-      'hidden    : ' + el.hidden + '\n' +
-      'tabIndex  : ' + el.tabIndex + '\n' +
-      'accessKey : ' + el.accessKey + '\n' +
-      'maxLength : ' + DebugJS.setStyleIfObjNA(el.maxLength) + '\n' +
-      'checked   : ' + DebugJS.setStyleIfObjNA(el.checked, true) + '\n' +
-      'htmlFor   : ' + DebugJS.setStyleIfObjNA(el.htmlFor) + '\n' +
-      'selectedIndex: ' + DebugJS.setStyleIfObjNA(el.selectedIndex) + '\n' +
-      'contentEditable: ' + el.contentEditable + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'href      : ' + href + '\n' +
-      'src       : ' + src + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'onclick      : ' + ctx.getEvtHandlerStr(el.onclick, 'elOnclick') + '\n' +
-      'ondblclick   : ' + ctx.getEvtHandlerStr(el.ondblclick, 'elOnDblClick') + '\n' +
-      'onmousedown  : ' + ctx.getEvtHandlerStr(el.onmousedown, 'elOnMouseDown') + '\n' +
-      'onmouseup    : ' + ctx.getEvtHandlerStr(el.onmouseup, 'elOnMouseUp') + '\n' +
-      'onmouseover  : ' + ctx.getEvtHandlerStr(el.onmouseover, 'elOnMouseOver') + '\n' +
-      'onmouseout   : ' + ctx.getEvtHandlerStr(el.onmouseout, 'elOnMouseOut') + '\n' +
-      'onmousemove  : ' + ctx.getEvtHandlerStr(el.onmousemove, 'elOnMouseMove') + '\n' +
-      'oncontextmenu: ' + ctx.getEvtHandlerStr(el.oncontextmenu, 'elOnContextmenu') + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'onkeydown    : ' + ctx.getEvtHandlerStr(el.onkeydown, 'elOnKeyDown') + '\n' +
-      'onkeypress   : ' + ctx.getEvtHandlerStr(el.onkeypress, 'elOnKeyPress') + '\n' +
-      'onkeyup      : ' + ctx.getEvtHandlerStr(el.onkeyup, 'elOnKeyUp') + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'onfocus      : ' + ctx.getEvtHandlerStr(el.onfocus, 'elOnFocus') + '\n' +
-      'onblur       : ' + ctx.getEvtHandlerStr(el.onblur, 'elOnBlur') + '\n' +
-      'onchange     : ' + ctx.getEvtHandlerStr(el.onchange, 'elOnChange') + '\n' +
-      'oninput      : ' + ctx.getEvtHandlerStr(el.oninput, 'elOnInput') + '\n' +
-      'onselect     : ' + ctx.getEvtHandlerStr(el.onselect, 'elOnSelect') + '\n' +
-      'onselectstart: ' + ctx.getEvtHandlerStr(el.onselectstart, 'elOnSelectStart') + '\n' +
-      'onsubmit     : ' + ctx.getEvtHandlerStr(el.onsubmit, 'elOnSubmit') + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'onscroll     : ' + ctx.getEvtHandlerStr(el.onscroll, 'elOnScroll') + '\n' +
-      DebugJS.addPropSep(ctx) +
-      'dataset (data-*):\n';
-      if (el.dataset) {
-        html += '{' + ((Object.keys(el.dataset).length > 0) ? '\n' : '');
-        for (var data in el.dataset) {
-          html += ' ' + data + ': ' + el.dataset[data] + '\n';
-        }
-        html += '}';
-      } else {
-        html += '<span style="color:#aaa">' + el.dataset + '</span>';
-      }
-      var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : DebugJS.setStyleIfObjNA(el.outerHTML));
-      htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.htmlSrc);
-      html += DebugJS.addPropSep(ctx) +
-      'outerHTML: ' + htmlSrc;
+    if (el && el.tagName) {
+      html += ctx.getElmInfo(ctx, el);
     }
     html += '</pre>';
     ctx.elmInfoBodyPanel.innerHTML = html;
     ctx.showAllElmNum();
+  },
+  getElmInfo: function(ctx, el) {
+    var OMIT_STYLE = 'color:#888';
+    var OMIT_STYLE2 = 'color:#666';
+    DebugJS.dom = el;
+    var computedStyle = window.getComputedStyle(el);
+    var rect = el.getBoundingClientRect();
+    var rectT = Math.round(rect.top);
+    var rectL = Math.round(rect.left);
+    var rectR = Math.round(rect.right);
+    var rectB = Math.round(rect.bottom);
+    var MAX_LEN = 50;
+    var text = '';
+    if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
+      if (el.tagName == 'META') {
+        text = DebugJS.escTags(el.outerHTML);
+      } else {
+        if (el.innerText != undefined) {
+          text = DebugJS.escTags(el.innerText);
+        }
+      }
+    }
+    var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.text);
+    var className = el.className + '';
+    className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
+    var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.href));
+    var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.src));
+    var backgroundColor = computedStyle.backgroundColor;
+    var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
+    var color = computedStyle.color;
+    var color16 = DebugJS.getElmHexColor(color);
+    var borderColorT = computedStyle.borderTopColor;
+    var borderColorT16 = DebugJS.getElmHexColor(borderColorT);
+    var borderColorR = computedStyle.borderRightColor;
+    var borderColorR16 = DebugJS.getElmHexColor(borderColorR);
+    var borderColorB = computedStyle.borderBottomColor;
+    var borderColorB16 = DebugJS.getElmHexColor(borderColorB);
+    var borderColorL = computedStyle.borderLeftColor;
+    var borderColorL16 = DebugJS.getElmHexColor(borderColorL);
+    var borderT = 'top   : ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + borderColorT + ' ' + borderColorT16 + ' ' + DebugJS.getColorBlock(borderColorT);
+    var borderRBL = '            right : ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + borderColorR + ' ' + borderColorR16 + ' ' + DebugJS.getColorBlock(borderColorR) + '\n' +
+                    '            bottom: ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + borderColorR + ' ' + borderColorB16 + ' ' + DebugJS.getColorBlock(borderColorB) + '\n' +
+                    '            left  : ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + borderColorL + ' ' + borderColorL16 + ' ' + DebugJS.getColorBlock(borderColorL);
+    var allStyles = '';
+    var MIN_KEY_LEN = 20;
+    for (var k in computedStyle) {
+      if (!(k.match(/^\d.*/))) {
+        if (typeof computedStyle[k] != 'function') {
+          var indent = '';
+          if (k.length < MIN_KEY_LEN) {
+            for (var i = 0; i < (MIN_KEY_LEN - k.length); i++) {
+              indent += ' ';
+            }
+          }
+          allStyles += ' ' + k + indent + ': ' + computedStyle[k] + '\n';
+        }
+      }
+    }
+    allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
+    var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escTags(el.name);
+    var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclChr(el.value);
+
+    var html = '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'id        : ' + el.id + '\n' +
+    'className : ' + className + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'object    : ' + Object.prototype.toString.call(el) + '\n' +
+    'tagName   : ' + el.tagName + '\n' +
+    'type      : ' + DebugJS.setStyleIfObjNA(el.type) + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'display   : ' + computedStyle.display + '\n' +
+    'position  : ' + computedStyle.position + '\n' +
+    'z-index   : ' + computedStyle.zIndex + '\n' +
+    'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
+    'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
+    'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
+    'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.elBorder) + '\n' +
+    'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
+    'lineHeight: ' + computedStyle.lineHeight + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'location  : <span style="color:#aaa">winOffset + pageOffset = pos (computedStyle)</span>\n' +
+    '            top   : ' + rectT + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
+    '            left  : ' + rectL + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
+    '            right : ' + rectR + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.right + window.pageXOffset) + ' px (' + computedStyle.right + ')\n' +
+    '            bottom: ' + rectB + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.bottom + window.pageYOffset) + ' px (' + computedStyle.bottom + ')\n' +
+    'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
+    'overflow  : ' + computedStyle.overflow + '\n' +
+    'opacity   : ' + computedStyle.opacity + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
+    'bg-image  : ' + ctx.createFoldingText(computedStyle.backgroundImage, 'bgimg', DebugJS.OMIT_LAST, -1, OMIT_STYLE) + '\n' +
+    'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
+    'font      : -size  : ' + computedStyle.fontSize + '\n' +
+    '            -family: ' + computedStyle.fontFamily + '\n' +
+    '            -weight: ' + computedStyle.fontWeight + '\n' +
+    '            -style : ' + computedStyle.fontStyle + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'action    : ' + DebugJS.setStyleIfObjNA(el.action) + '\n' +
+    'method    : ' + DebugJS.setStyleIfObjNA(el.method) + '\n' +
+    'name      : ' + name + '\n' +
+    'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
+    'disabled  : ' + DebugJS.setStyleIfObjNA(el.disabled, true) + '\n' +
+    'hidden    : ' + el.hidden + '\n' +
+    'tabIndex  : ' + el.tabIndex + '\n' +
+    'accessKey : ' + el.accessKey + '\n' +
+    'maxLength : ' + DebugJS.setStyleIfObjNA(el.maxLength) + '\n' +
+    'checked   : ' + DebugJS.setStyleIfObjNA(el.checked, true) + '\n' +
+    'htmlFor   : ' + DebugJS.setStyleIfObjNA(el.htmlFor) + '\n' +
+    'selectedIndex: ' + DebugJS.setStyleIfObjNA(el.selectedIndex) + '\n' +
+    'contentEditable: ' + el.contentEditable + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'href      : ' + href + '\n' +
+    'src       : ' + src + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'onclick      : ' + ctx.getEvtHandlerStr(el.onclick, 'elOnclick') + '\n' +
+    'ondblclick   : ' + ctx.getEvtHandlerStr(el.ondblclick, 'elOnDblClick') + '\n' +
+    'onmousedown  : ' + ctx.getEvtHandlerStr(el.onmousedown, 'elOnMouseDown') + '\n' +
+    'onmouseup    : ' + ctx.getEvtHandlerStr(el.onmouseup, 'elOnMouseUp') + '\n' +
+    'onmouseover  : ' + ctx.getEvtHandlerStr(el.onmouseover, 'elOnMouseOver') + '\n' +
+    'onmouseout   : ' + ctx.getEvtHandlerStr(el.onmouseout, 'elOnMouseOut') + '\n' +
+    'onmousemove  : ' + ctx.getEvtHandlerStr(el.onmousemove, 'elOnMouseMove') + '\n' +
+    'oncontextmenu: ' + ctx.getEvtHandlerStr(el.oncontextmenu, 'elOnContextmenu') + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'onkeydown    : ' + ctx.getEvtHandlerStr(el.onkeydown, 'elOnKeyDown') + '\n' +
+    'onkeypress   : ' + ctx.getEvtHandlerStr(el.onkeypress, 'elOnKeyPress') + '\n' +
+    'onkeyup      : ' + ctx.getEvtHandlerStr(el.onkeyup, 'elOnKeyUp') + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'onfocus      : ' + ctx.getEvtHandlerStr(el.onfocus, 'elOnFocus') + '\n' +
+    'onblur       : ' + ctx.getEvtHandlerStr(el.onblur, 'elOnBlur') + '\n' +
+    'onchange     : ' + ctx.getEvtHandlerStr(el.onchange, 'elOnChange') + '\n' +
+    'oninput      : ' + ctx.getEvtHandlerStr(el.oninput, 'elOnInput') + '\n' +
+    'onselect     : ' + ctx.getEvtHandlerStr(el.onselect, 'elOnSelect') + '\n' +
+    'onselectstart: ' + ctx.getEvtHandlerStr(el.onselectstart, 'elOnSelectStart') + '\n' +
+    'onsubmit     : ' + ctx.getEvtHandlerStr(el.onsubmit, 'elOnSubmit') + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'onscroll     : ' + ctx.getEvtHandlerStr(el.onscroll, 'elOnScroll') + '\n' +
+    DebugJS.addPropSep(ctx) +
+    'dataset (data-*):\n';
+    if (el.dataset) {
+      html += '{' + ((Object.keys(el.dataset).length > 0) ? '\n' : '');
+      for (var data in el.dataset) {
+        html += ' ' + data + ': ' + el.dataset[data] + '\n';
+      }
+      html += '}';
+    } else {
+      html += '<span style="color:#aaa">' + el.dataset + '</span>';
+    }
+    var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : DebugJS.setStyleIfObjNA(el.outerHTML));
+    htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.htmlSrc);
+    html += DebugJS.addPropSep(ctx) + 'outerHTML: ' + htmlSrc;
+    return html;
   },
   showPrevElem: function() {
     var ctx = DebugJS.ctx;
@@ -4126,22 +4131,20 @@ DebugJS.prototype = {
   },
   onchangeElmUpdateInterval: function() {
     var ctx = DebugJS.ctx;
-    var interval = ctx.elmUpdateInput.value;
-    if (interval == '') {
-      interval = 0;
-    }
-    if (isFinite(interval)) {
-      ctx.elmUpdateInterval = interval;
+    var v = ctx.elmUpdateInput.value;
+    if (v == '') v = 0;
+    if (isFinite(v)) {
+      ctx.elmUpdateInterval = v;
       clearTimeout(ctx.elmUpdateTimerId);
-      ctx.elmUpdateTimerId = setTimeout(ctx.updateElementInfoInterval, ctx.elmUpdateInterval);
+      ctx.elmUpdateTimerId = setTimeout(ctx.updateElmInfoInterval, v);
     }
   },
-  updateElementInfoInterval: function() {
+  updateElmInfoInterval: function() {
     var ctx = DebugJS.ctx;
     if (!(ctx.status & DebugJS.ST_ELM_INSPECTING)) return;
     ctx.updateElementInfo();
     if (ctx.elmUpdateInterval > 0) {
-      ctx.elmUpdateTimerId = setTimeout(ctx.updateElementInfoInterval, ctx.elmUpdateInterval);
+      ctx.elmUpdateTimerId = setTimeout(ctx.updateElmInfoInterval, ctx.elmUpdateInterval);
     }
   },
   toggleElmSelectMode: function() {
