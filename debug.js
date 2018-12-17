@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812170132';
+  this.v = '201812172030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -287,7 +287,7 @@ var DebugJS = DebugJS || function() {
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
   this.cmdLine = null;
-  this.fromCmdLine = false;
+  this.stopErrCb = false;
   this.cmdHistoryBuf = null;
   this.CMD_HISTORY_MAX = this.DEFAULT_OPTIONS.cmdHistoryMax;
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
@@ -2604,9 +2604,9 @@ DebugJS.prototype = {
 
       case 13: // Enter
         if (document.activeElement == ctx.cmdLine) {
-          ctx.fromCmdLine = true;
+          ctx.stopErrCb = true;
           ctx.execCmd(ctx);
-          ctx.fromCmdLine = false;
+          ctx.stopErrCb = false;
           e.preventDefault();
         }
         break;
@@ -5496,9 +5496,7 @@ DebugJS.prototype = {
           }
         }
       }
-    } catch (e) {
-      DebugJS._log.e('handleDroppedFile() ' + e);
-    }
+    } catch (e) {DebugJS._log.e('handleDroppedFile() ' + e);}
   },
   onDrop: function(e) {
     e.stopPropagation();
@@ -5507,27 +5505,35 @@ DebugJS.prototype = {
   onDropOnFileViewer: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
-    var d = e.dataTransfer.getData('text');
-    if (d) {
-      var u = DebugJS.delAllNL(d.trim());
-      if (DebugJS.isDataURL(u)) {
-        ctx.decodeDataURL(ctx, u);
+    ctx.stopErrCb = true;
+    try {
+      var d = e.dataTransfer.getData('text');
+      if (d) {
+        var u = DebugJS.delAllNL(d.trim());
+        if (DebugJS.isDataURL(u)) {
+          ctx.decodeDataURL(ctx, u);
+        }
+      } else {
+        ctx.handleDroppedFile(ctx, e, ctx.fileVwrMode, null);
       }
-    } else {
-      ctx.handleDroppedFile(ctx, e, ctx.fileVwrMode, null);
-    }
+    } catch (e) {DebugJS._log.e(e);}
+    ctx.stopErrCb = false;
   },
   onDropOnLogPanel: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
-    if (!DebugJS.callEvtListeners('drop', e)) return;
-    var d = e.dataTransfer.getData('text');
-    if (d) {
-      ctx.onTxtDrop(ctx, d);
-    } else {
-      ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
-      ctx.handleDroppedFile(ctx, e, 'b64', ctx.onFileLoadedAuto);
-    }
+    ctx.stopErrCb = true;
+    try {
+      if (!DebugJS.callEvtListeners('drop', e)) return;
+      var d = e.dataTransfer.getData('text');
+      if (d) {
+        ctx.onTxtDrop(ctx, d);
+      } else {
+        ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', 'b64');
+        ctx.handleDroppedFile(ctx, e, 'b64', ctx.onFileLoadedAuto);
+      }
+    } catch (e) {DebugJS._log.e(e);}
+    ctx.stopErrCb = false;
   },
   onTxtDrop: function(ctx, t) {
     if (DebugJS.isBat(t)) {
@@ -12055,7 +12061,7 @@ DebugJS._log.e = function(m) {
   }
   DebugJS._log.out(m, DebugJS.LOG_TYPE_ERR);
   DebugJS.ctx.showDbgWinOnError(DebugJS.ctx);
-  if (!DebugJS.ctx.fromCmdLine) {
+  if (!DebugJS.ctx.stopErrCb) {
     DebugJS.callEvtListeners('error');
   }
 };

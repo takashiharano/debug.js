@@ -729,6 +729,10 @@ function onDrop(e) {
   return true;
 }
 
+function onErrorEvt() {
+  log('onError');
+}
+
 function onReady() {
   //log('ready');
   addFileLoadHandler();
@@ -736,6 +740,7 @@ function onReady() {
   dbg.addEvtListener('batstart', onBatStart);
   dbg.addEvtListener('batstop', onBatStop);
   //dbg.addEvtListener('drop', onDrop);
+  //dbg.addEvtListener('error', onErrorEvt);
 }
 
 function onLoad() {
