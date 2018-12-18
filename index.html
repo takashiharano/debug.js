@@ -65,6 +65,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .demo-table-green td {color:#060;}
 .desc-small {color:#666;font-size:12px;}
 .eg {font-family:Consolas, monospace; line-height:1em;}
+.eg-s {font-size:10px;}
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
 .annotation {font-size:10px; color:#888; font-style:italic; margin-left:2px;}
 .annotation2 {font-size:12px;}
@@ -4584,7 +4585,7 @@ $ test set comment "Comment"
 
 $ test verify a == 1
 
-$ test verify -label:"text" b == 2
+$ test verify -label "text" b == 2
 
 $ test set result OK -label "result1" -info "ok test"
 $ test set result NG -label "result2" -info "ng test"
@@ -4593,6 +4594,32 @@ $ test set result NT -label "result4" -info "nt test"
 
 $ test fin
 $ test result
+
+[Result Output Example]
+</pre>
+<pre class="eg eg-s">
+Test Result:
+[TEST NAME]
+TestName
+
+[DESCRIPTION]
+Description
+
+[RESULTS]
+---------
+[ERR] Test01
+ # Comment
+         [NG] Got=[object Object] == Exp=1
+ text    [NG] Got=1,2,3 == Exp=2
+ result1 [OK] ok test
+ result2 [NG] ng test
+ result3 [ERR] err test
+ result4 [NT] nt test
+
+[SUMMARY]
+OK:0/1 NG:0 ERR:1 NT:0 (OK:1/6 NG:3 ERR:1 NT:1)
+-----
+[ERR]
 </pre>
     </td>
   </tr>
@@ -5349,9 +5376,7 @@ and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sam
 
 <div class="caption">// Lazy Load</div>
 Execute the following code from F12 console.
-<pre class="code emphasis" style="margin-bottom:20px;">
-<span style="font-size:10px;">s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</span>
-</pre>
+<textarea class="code emphasis" style="height:12px;font-size:10px;resize:none;margin-bottom:20px;" readonly>s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</textarea>
 
 <div class="caption">// Browser Support</div>
 <table class="desc-table">
