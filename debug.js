@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812180050';
+  this.v = '201812182118';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -432,7 +432,7 @@ var DebugJS = DebugJS || function() {
     radix: 'bin|dec|hex',
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
-    pointmsgsize: '12px',
+    pointmsgsize: '"12px"',
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     scrollstep: DebugJS.scrollWinTo.data.step,
     textinputspeed: 30,
@@ -8444,11 +8444,12 @@ DebugJS.prototype = {
         return;
       }
     }
-    props[nm] = val;
+    var r;
     if (ctx.PROPS_CB[nm]) {
       var r = ctx.PROPS_CB[nm](ctx, val);
       if (r != undefined) props[nm] = r;
     }
+    props[nm] = (r === undefined ? val : r);
     if (echo) DebugJS._log.res(props[nm]);
   },
   setPropBatContCb: function(ctx, v) {
@@ -8464,15 +8465,16 @@ DebugJS.prototype = {
     DebugJS.INDENT_SP = DebugJS.repeatCh(' ', v);
   },
   setPropPointMsgSizeCb: function(ctx, v) {
+    var s;
     try {
-      v = eval(v);
+      s = eval(v);
     } catch (e) {
       DebugJS._log.e(e);
-      return ctx.PROPS_DFLT_VALS.pointmsgsize;
+      return ctx.props.pointmsgsize;
     }
-    ctx.props.pointmsgsize = v;
+    ctx.props.pointmsgsize = s;
     var el = DebugJS.point.hint.pre;
-    if (el) ctx.setStyle(el, 'font-size', v);
+    if (el) ctx.setStyle(el, 'font-size', s);
   },
   setPropTimerCb: function(ctx, v) {
     var tm = DebugJS.timestr2struct(v);
@@ -14114,6 +14116,10 @@ DebugJS.point.hint.createArea = function() {
   var hint = DebugJS.point.hint;
   var el = document.createElement('div');
   el.className = ctx.id + '-hint';
+  var sz = ctx.props.pointmsgsize;
+  try {
+    sz = eval(sz);
+  } catch (e) {DebugJS._log.e(e);}
   var pre = document.createElement('pre');
   ctx.setStyle(pre, 'width', 'auto');
   ctx.setStyle(pre, 'height', 'auto');
@@ -14121,7 +14127,7 @@ DebugJS.point.hint.createArea = function() {
   ctx.setStyle(pre, 'padding', 0);
   ctx.setStyle(pre, 'line-height', '1.2');
   ctx.setStyle(pre, 'color', ctx.opt.fontColor);
-  ctx.setStyle(pre, 'font-size', ctx.props.pointmsgsize);
+  ctx.setStyle(pre, 'font-size', sz);
   ctx.setStyle(pre, 'font-family', ctx.opt.fontFamily);
   el.appendChild(pre);
   hint.pre = pre;
