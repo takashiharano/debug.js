@@ -3266,7 +3266,86 @@ dbg.test.getResult(); <button class="demo-button2" onclick="log.p(dbg.test.getRe
       Returns the test result JSON.<br>
 <pre>
 dbg.test.getResultJSON(); <button class="demo-button2" onclick="log(dbg.test.getResultJSON());">DEMO</button>
-</pre>
+
+<b>JSON FORMAT EXAMPLE:</b>
+<pre class="eg-s">
+a = 1
+b = 3
+c = 'abc'
+
+test init -name "TestName"
+test set desc "Description1"
+test set desc "Description2"
+
+test set id "Test01"
+test set comment "Comment1"
+test verify a == 1
+test verify -label "label1" b == 2
+
+test set id "Test02"
+test set comment "Comment2"
+test verify -label "label2" c == "abc"
+
+test fin</pre>
+dbg.test.getResultJSON();
+<pre class="code textfmt" style="width:500px">
+{
+ "name": "TestName",
+ "desc": [
+  "Description1",
+  "Description2"
+ ],
+ "startTime": 1545228305003,
+ "endTime": 1545228305093,
+ "status": "NG",
+ "count": {
+  "ok": 2,
+  "ng": 1,
+  "err": 0,
+  "nt": 0
+ },
+ "results": {
+  "Test01": {
+   "comment": [
+    "Comment1"
+   ],
+   "results": [
+    {
+     "label": "",
+     "status": "OK",
+     "method": "==",
+     "exp": 1,
+     "got": 1,
+     "info": ""
+    },
+    {
+     "label": "label1",
+     "status": "NG",
+     "method": "==",
+     "exp": 2,
+     "got": 3,
+     "info": ""
+    }
+   ]
+  },
+  "Test02": {
+   "comment": [
+    "Comment2"
+   ],
+   "results": [
+    {
+     "label": "label2",
+     "status": "OK",
+     "method": "==",
+     "exp": "abc",
+     "got": "abc",
+     "info": ""
+    }
+   ]
+  }
+ }
+}
+</pre></pre>
     </td>
   </tr>
 
