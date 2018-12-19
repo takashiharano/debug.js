@@ -1580,7 +1580,7 @@ Unlock: [ESC] -> [Ctrl] -> lockCode -> [Ctrl]
     <td>
       Output standard log<br>
 <pre class="eg">
-log('<input type="text" id="log-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log(getVal('log-txt'));">DEMO</button>
+log('<input type="text" id="log-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log(getVal('log-txt'));">DEMO</button>
 </pre>
       <span class="name annotation">log.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
@@ -1592,7 +1592,7 @@ log('<input type="text" id="log-txt" class="demo-text" style="width:100px;" valu
     <td>
       Output debug log<br>
 <pre class="eg">
-log.d('<input type="text" id="log-d-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.d(getVal('log-d-txt'));">DEMO</button>
+log.d('<input type="text" id="log-d-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.d(getVal('log-d-txt'));">DEMO</button>
 </pre>
       <span class="name annotation">log.d.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
@@ -1604,7 +1604,7 @@ log.d('<input type="text" id="log-d-txt" class="demo-text" style="width:100px;" 
     <td>
       Output information log<br>
 <pre class="eg">
-log.i('<input type="text" id="log-i-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.i(getVal('log-i-txt'));">DEMO</button>
+log.i('<input type="text" id="log-i-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.i(getVal('log-i-txt'));">DEMO</button>
 </pre>
       <span class="name annotation">log.i.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
@@ -1616,7 +1616,7 @@ log.i('<input type="text" id="log-i-txt" class="demo-text" style="width:100px;" 
     <td>
       Output warning log<br>
 <pre class="eg">
-log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.w(getVal('log-w-txt'));">DEMO</button>
+log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.w(getVal('log-w-txt'));">DEMO</button>
 </pre>
       <span class="name annotation">log.w.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
@@ -1628,7 +1628,7 @@ log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:100px;" 
     <td>
       Output error log<br>
 <pre class="eg">
-log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.e(getVal('log-e-txt'));">DEMO</button>
+log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.e(getVal('log-e-txt'));">DEMO</button>
 </pre>
       <span class="name annotation">log.e.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
@@ -1641,7 +1641,7 @@ log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:100px;" 
       Output verbose log<br>
       <span class="annotation warning">The messages will be filtered out by default. Press [VRB] to display.</span>
 <pre class="eg">
-log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.v(getVal('log-v-txt'));">DEMO</button>
+log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.v(getVal('log-v-txt'));">DEMO</button>
 </pre>
       <span class="name annotation">log.v.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
@@ -1713,7 +1713,7 @@ log.t('foo')
       Output result/response log<br>
       <pre class="eg"><span style="color:#0cf;">&gt;</span> message</pre>
 <pre class="eg">
-log.res('<input type="text" id="log-res-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res(getVal('log-res-txt'));">DEMO</button>
+log.res('<input type="text" id="log-res-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res(getVal('log-res-txt'));">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -1725,7 +1725,7 @@ log.res('<input type="text" id="log-res-txt" class="demo-text" style="width:100p
       Output error result/response log<br>
       <pre class="eg"><span style="color:#f45;">&gt;</span> message</pre>
 <pre class="eg">
-log.res.err('<input type="text" id="log-res-err-txt" class="demo-text" style="width:100px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res.err(getVal('log-res-err-txt'));">DEMO</button>
+log.res.err('<input type="text" id="log-res-err-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.res.err(getVal('log-res-err-txt'));">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -1988,7 +1988,7 @@ main()
     <td class="name">dbg.dumpLog</td>
     <td>
       arg1: format<br>
-      arg2: base64 enode<span class="annotation">(opt)</span><br>
+      arg2: base64 encode<span class="annotation">(opt)</span><br>
       arg3: format time<span class="annotation">(opt)</span>
     </td>
     <td>
@@ -2380,7 +2380,7 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
     <td class="name">dbg.bat.isRunning</td>
     <td></td>
     <td>
-      true = runnning / false = stopped <button class="demo-button2" onclick="log(dbg.bat.isRunning());">DEMO</button>
+      true = running / false = stopped <button class="demo-button2" onclick="log(dbg.bat.isRunning());">DEMO</button>
     </td>
   </tr>
 
@@ -2620,7 +2620,7 @@ dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello
     <td>
       Get random number<br>
 <pre class="eg">
-min: minimun number
+min: minimum number
 max: maximum number
 </pre>
     </td>
@@ -2635,7 +2635,7 @@ max: maximum number
     <td>
       Get random string<br>
 <pre class="eg">
-min: minimun length
+min: minimum length
 max: maximum length
 </pre>
     </td>
@@ -2714,7 +2714,7 @@ Adds the specified EventListener function to the list of event listeners for the
   function onError() {}</pre>
 <br>
       type: <b>fileloaded</b><br>
-Callback function which is called when file load has been completed<br>
+Callback function which is called when file load has been completed.<br>
 <pre class="eg">Function format:
   function onFileLoaded(file, content, isB64) {}
 
@@ -3370,7 +3370,7 @@ test fin</pre>dbg.test.getResultJSON();
     <td class="name">dbg.createResBox</td>
     <td>message</td>
     <td>
-      Returns a readonly textarea tag string with given message.<br>
+      Returns a read-only textarea tag string with given message.<br>
       This is intended to display some result or response.
 <pre>
 var html = dbg.createResBox('<input type="text" id="resbox-txt" class="demo-text" style="width:100px;" value="abc\n123\n456">'); <button class="demo-button2" onclick="log.p(dbg.createResBox(dbg.getElement('#resbox-txt').value));">DEMO</button> <button class="demo-button2" onclick="log(dbg.createResBox(dbg.getElement('#resbox-txt').value.replace(/\\n/g, '\n')));">DEMO</button>
@@ -3382,7 +3382,7 @@ var html = dbg.createResBox('<input type="text" id="resbox-txt" class="demo-text
     <td class="name">dbg.createResBoxErr</td>
     <td>message</td>
     <td>
-      Returns a readonly textarea tag string with given message. (error style)
+      Returns a read-only textarea tag string with given message. (error style)
 <pre>
 var html = dbg.createResBoxErr('<input type="text" id="resbox-err-txt" class="demo-text" style="width:100px;" value="abc\n123\n456">'); <button class="demo-button2" onclick="log.p(dbg.createResBoxErr(dbg.getElement('#resbox-err-txt').value));">DEMO</button> <button class="demo-button2" onclick="log(dbg.createResBoxErr(dbg.getElement('#resbox-err-txt').value.replace(/\\n/g, '\n')));">DEMO</button>
 </pre>
@@ -3604,7 +3604,7 @@ operation: -e encode<span class="annotation">(default option)</span>
            -d decode
 
 -i Iput string
--n Number of bit totation
+-n Number of bit rotation
     1 : 1 bit rotate left<span class="annotation">(default)</span>
    1L : 1 bit rotate left
    1R : 1 bit rotate right
@@ -3668,7 +3668,7 @@ function
   <tr>
     <td class="name">condwait</td>
     <td>
-      arg1: opeation
+      arg1: operation
       arg2: key
     </td>
     <td>
@@ -3931,7 +3931,7 @@ $ hex (30 + 2) 4
     </td>
     <td>
       Send an HTTP request by specified method.<br><br>
-      mthod:<br>
+      method:<br>
       The HTTP method to use, such as GET, POST, HEAD, PUT, DELETE, OPTIONS, etc.<br>
       <span class="annotation">GET is set as the default value in case of that the method is not specified.</span><br>
 <pre class="eg">
@@ -4461,7 +4461,7 @@ $ point init
 type: -d number
       -s string
 
-min: minimun number / length
+min: minimum number / length
 
 max: maximum number / length
 </pre>
@@ -5382,11 +5382,11 @@ $ U+6F22 U+5B57
   </tr>
   <tr>
     <td>□</td>
-    <td>Expand the winodw and adjust to center position</td>
+    <td>Expand the window and adjust to center position</td>
   </tr>
   <tr>
     <td>×</td>
-    <td>Close the winodw</td>
+    <td>Close the window</td>
   </tr>
 </table>
 <br>
@@ -5399,7 +5399,7 @@ You can define your own commands and panels like below.<br>
 <pre class="code" style="margin-bottom:2px">
 // Command definition
 <span class="emphasis">example.cmdHello = function(arg, tbl) {
-  log('Hello!');
+  log('Hello, world!!');
 };</span>
 
 // Command table definition
@@ -5412,7 +5412,7 @@ You can define your own commands and panels like below.<br>
 </pre>
 <span style="font-family:Consolas">
 $ hello<br>
--&gt; Hello!<br>
+-&gt; Hello, world!<br>
 </span>
 <br>
 
