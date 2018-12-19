@@ -3278,7 +3278,8 @@ test set desc "Description1"
 test set desc "Description2"
 
 test set id "Test01"
-test set comment "Comment1"
+test set comment "Comment1-1"
+test set comment "Comment1-2"
 test verify a == 1
 test verify -label "label1" b == 2
 
@@ -3286,8 +3287,10 @@ test set id "Test02"
 test set comment "Comment2"
 test verify -label "label2" c == "abc"
 
-test fin</pre>
-dbg.test.getResultJSON();
+test set id "Test03"
+test set result ERR -label "label3" -info "Something went wrong"
+
+test fin</pre>dbg.test.getResultJSON();
 <pre class="code textfmt" style="width:500px">
 {
  "name": "TestName",
@@ -3295,19 +3298,20 @@ dbg.test.getResultJSON();
   "Description1",
   "Description2"
  ],
- "startTime": 1545228305003,
- "endTime": 1545228305093,
- "status": "NG",
+ "startTime": 1545229050321,
+ "endTime": 1545229050434,
+ "status": "ERR",
  "count": {
   "ok": 2,
   "ng": 1,
-  "err": 0,
+  "err": 1,
   "nt": 0
  },
  "results": {
   "Test01": {
    "comment": [
-    "Comment1"
+    "Comment1-1",
+    "Comment1-2"
    ],
    "results": [
     {
@@ -3340,6 +3344,19 @@ dbg.test.getResultJSON();
      "exp": "abc",
      "got": "abc",
      "info": ""
+    }
+   ]
+  },
+  "Test03": {
+   "comment": [],
+   "results": [
+    {
+     "label": "label3",
+     "status": "ERR",
+     "method": null,
+     "exp": null,
+     "got": null,
+     "info": "Something went wrong"
     }
    ]
   }
