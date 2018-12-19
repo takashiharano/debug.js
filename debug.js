@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812191933';
+  this.v = '201812192100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -582,7 +582,7 @@ DebugJS.COLOR_ACTIVE = '#fff';
 DebugJS.SBPNL_COLOR_ACTIVE = '#6cf';
 DebugJS.SBPNL_COLOR_INACTIVE = '#ccc';
 DebugJS.COLOR_INACTIVE = '#999';
-DebugJS.MEASURE_BTN_COLOR = '#6cf';
+DebugJS.MEAS_BTN_COLOR = '#6cf';
 DebugJS.SYS_BTN_COLOR = '#3cf';
 DebugJS.HTML_BTN_COLOR = '#8f8';
 DebugJS.DOM_BTN_COLOR = '#f63';
@@ -1362,8 +1362,8 @@ DebugJS.prototype = {
       measBtn.style.height = (7 * opt.zoom) + 'px';
       measBtn.innerText = ' ';
       measBtn.onclick = ctx.toggleMeasure;
-      measBtn.onmouseover = new Function('DebugJS.ctx.measBtn.style.borderColor=\'' + DebugJS.MEASURE_BTN_COLOR + '\';');
-      measBtn.onmouseout = new Function('DebugJS.ctx.measBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
+      measBtn.onmouseover = new Function('DebugJS.ctx.measBtn.style.borderColor=\'' + DebugJS.MEAS_BTN_COLOR + '\';');
+      measBtn.onmouseout = new Function('DebugJS.ctx.measBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEAS_BTN_COLOR : DebugJS.COLOR_INACTIVE;');
       ctx.headPanel.appendChild(measBtn);
       ctx.measBtn = measBtn;
     }
@@ -1805,7 +1805,7 @@ DebugJS.prototype = {
   },
 
   updateMeasBtn: function(ctx) {
-    ctx.measBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEASURE_BTN_COLOR : DebugJS.COLOR_INACTIVE);
+    ctx.measBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEAS_BTN_COLOR : DebugJS.COLOR_INACTIVE);
   },
 
   updateSysInfoBtn: function(ctx) {
@@ -2990,9 +2990,9 @@ DebugJS.prototype = {
     var sp = ctx.getSelfSizePos();
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
-    var expandThresholdW = clientW * 0.6;
-    var expandThresholdH = clientH * 0.6;
-    if ((sp.w > expandThresholdW) || (sp.h > expandThresholdH)) {
+    var expThrW = clientW * 0.6;
+    var expThrH = clientH * 0.6;
+    if ((sp.w > expThrW) || (sp.h > expThrH)) {
       ctx.setDbgWinFull(ctx);
       return;
     }
@@ -3024,22 +3024,22 @@ DebugJS.prototype = {
     }
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
-    var expandThresholdW = clientW * 0.6;
-    var expandThresholdH = clientH * 0.6;
+    var expThrW = clientW * 0.6;
+    var expThrH = clientH * 0.6;
     var w = 0, h = 0, t = 0, l = 0;
 
-    if ((DebugJS.DBGWIN_EXPAND_W > clientW) || (sp.w > expandThresholdW)) {
+    if ((DebugJS.DBGWIN_EXPAND_W > clientW) || (sp.w > expThrW)) {
       w = clientW;
       ctx.sizeStatus |= DebugJS.SIZE_ST_FULL_W;
-      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sp.h > expandThresholdH)) {
+      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sp.h > expThrH)) {
         h = clientH;
       } else {
         t = DebugJS.DBGWIN_POS_NONE;
       }
     } else {
-      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sp.h > expandThresholdH)) {
+      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sp.h > expThrH)) {
         h = clientH;
-        if ((DebugJS.DBGWIN_EXPAND_W < clientW) && (sp.w < expandThresholdW)) {
+        if ((DebugJS.DBGWIN_EXPAND_W < clientW) && (sp.w < expThrW)) {
           l = DebugJS.DBGWIN_POS_NONE;
         }
       } else {
@@ -5975,7 +5975,7 @@ DebugJS.prototype = {
     imgPreview.style.maxWidth = maxW + 'px';
     imgPreview.style.maxHeight = maxH + 'px';
   },
-  getBinDumpHtml: function(buf, mode, showAddr, showSpace, showAscii) {
+  getBinDumpHtml: function(buf, mode, showAddr, showSp, showAscii) {
     if (buf == null) return '';
     var ctx = DebugJS.ctx;
     var lm = ctx.props.hexdumplimit | 0;
@@ -5990,26 +5990,26 @@ DebugJS.prototype = {
     var html = '<pre style="white-space:pre !important">';
     html += DebugJS.ui.createBtnHtml('[' + mode.toUpperCase() + ']', 'DebugJS.ctx.toggleBinMode()') + ' ';
     html += DebugJS.ui.createBtnHtml('[ADDR]', 'DebugJS.ctx.toggleShowAddr()', (showAddr ? '' : 'color:' + DebugJS.COLOR_INACTIVE)) + ' ';
-    html += DebugJS.ui.createBtnHtml('[SP]', 'DebugJS.ctx.toggleShowSpace()', (showSpace ? '' : 'color:' + DebugJS.COLOR_INACTIVE)) + ' ';
+    html += DebugJS.ui.createBtnHtml('[SP]', 'DebugJS.ctx.toggleShowSpace()', (showSp ? '' : 'color:' + DebugJS.COLOR_INACTIVE)) + ' ';
     html += DebugJS.ui.createBtnHtml('[ASCII]', 'DebugJS.ctx.toggleShowAscii()', (showAscii ? '' : 'color:' + DebugJS.COLOR_INACTIVE));
     html += '\n<span style="background:#0cf;color:#000">';
     if (showAddr) {
       html += 'Address    ';
     }
     if (mode == 'bin') {
-      if (showSpace) {
+      if (showSp) {
         html += '+0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F      ';
       } else {
         html += '+0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F      ';
       }
     } else if (mode == 'dec') {
-      if (showSpace) {
+      if (showSp) {
         html += ' +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F';
       } else {
         html += ' +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F';
       }
     } else {
-      if (showSpace) {
+      if (showSp) {
         html += '+0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F';
       } else {
         html += '+0+1+2+3+4+5+6+7+8+9+A+B+C+D+E+F';
@@ -6023,7 +6023,7 @@ DebugJS.prototype = {
       html += DebugJS.dumpAddr(0);
     }
     for (var i = 0; i < len; i++) {
-      html += ctx.getDump(mode, i, buf, len, showSpace, showAddr, showAscii);
+      html += ctx.getDump(mode, i, buf, len, showSp, showAddr, showAscii);
     }
     if (bLen > lm) {
       if (bLen - lm > (0x10 * lastRows)) {
@@ -6042,14 +6042,14 @@ DebugJS.prototype = {
           html += DebugJS.dumpAddr(start);
         }
         for (i = start; i < end; i++) {
-          html += ctx.getDump(mode, i, buf, end, showSpace, showAddr, showAscii);
+          html += ctx.getDump(mode, i, buf, end, showSp, showAddr, showAscii);
         }
       }
     }
     html += '</pre>';
     return html;
   },
-  getDump: function(mode, i, buf, len, showSpace, showAddr, showAscii) {
+  getDump: function(mode, i, buf, len, showSp, showAddr, showAscii) {
     var b;
     if (mode == 'bin') {
       b = DebugJS.dumpBin(i, buf);
@@ -6068,7 +6068,7 @@ DebugJS.prototype = {
           b += DebugJS.dumpAddr(i + 1);
         }
       }
-    } else if (showSpace) {
+    } else if (showSp) {
       if ((i + 1) % 8 == 0) {
         b += '  ';
       } else {
@@ -6632,7 +6632,7 @@ DebugJS.prototype = {
       echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS._log.s(echoStr);
     }
-    var cmds = DebugJS.splitCmdLineInTwo(cmdline);
+    var cmds = DebugJS.splitCmdLineIn2(cmdline);
     var cmd = cmds[0];
     var valName = DebugJS.getCmdValName(cmd, '\\$', true);
     if (valName != null) {
@@ -6645,7 +6645,7 @@ DebugJS.prototype = {
     }
     var ret;
     echo = echo || recho;
-    cmds = DebugJS.splitCmdLineInTwo(cmdline);
+    cmds = DebugJS.splitCmdLineIn2(cmdline);
     if (cmds[0] == 'code') {
       ret = ctx.execCode(cmds[1], echo);
     } else {
@@ -6659,7 +6659,7 @@ DebugJS.prototype = {
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
     cmdline = DebugJS.replaceCtrlChr(cmdline);
-    var cmds = DebugJS.splitCmdLineInTwo(cmdline);
+    var cmds = DebugJS.splitCmdLineIn2(cmdline);
     var cmd = cmds[0];
     var arg = cmds[1];
 
@@ -7529,7 +7529,7 @@ DebugJS.prototype = {
   },
 
   cmdHttp: function(arg, tbl) {
-    var a = DebugJS.splitCmdLineInTwo(arg);
+    var a = DebugJS.splitCmdLineIn2(arg);
     var method = a[0];
     var data = a[1];
     if (method == '') {
@@ -7602,7 +7602,7 @@ DebugJS.prototype = {
   _cmdJump: function(ctx, arg, lnk, type) {
     var ctrl = DebugJS.bat.ctrl;
     var fnArg;
-    var a = DebugJS.splitCmdLineInTwo(arg);
+    var a = DebugJS.splitCmdLineIn2(arg);
     var lbl = a[0];
     if (lbl.match(/^".+?"$/)) {
       try {
@@ -7747,7 +7747,7 @@ DebugJS.prototype = {
     return n;
   },
   _cmdLogDump: function(ctx, arg) {
-    arg = DebugJS.splitCmdLineInTwo(arg)[1];
+    arg = DebugJS.splitCmdLineIn2(arg)[1];
     var l;
     if (arg.trim() == '-b64') {
       l = DebugJS.dumpLog('json', true);
@@ -7786,7 +7786,7 @@ DebugJS.prototype = {
     }
   },
   _cmdLogLoad: function(ctx, arg) {
-    arg = DebugJS.splitCmdLineInTwo(arg)[1];
+    arg = DebugJS.splitCmdLineIn2(arg)[1];
     var data = DebugJS.getOptVal(arg, 'b64');
     if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage('log load [-b64] log-buffer-json');
@@ -9024,19 +9024,19 @@ DebugJS.prototype = {
   },
 
   doHttpRequest: function(method, arg) {
-    var a = DebugJS.splitCmdLineInTwo(arg);
+    var a = DebugJS.splitCmdLineIn2(arg);
     var url = a[0];
     var data = a[1];
     var user = '';
     var pass = '';
     if (url == '--user') {
-      var parts = DebugJS.splitCmdLineInTwo(data);
+      var parts = DebugJS.splitCmdLineIn2(data);
       var auth = parts[0];
       var auths = auth.split(':');
       if (auths.length > 1) {
         user = auths[0];
         pass = auths[1];
-        parts = DebugJS.splitCmdLineInTwo(parts[1]);
+        parts = DebugJS.splitCmdLineIn2(parts[1]);
         url = parts[0];
         data = parts[1];
       }
@@ -9122,7 +9122,7 @@ DebugJS.prototype = {
     if (p.onCreate) p.onCreate(p.panel);
   },
 
-  existCmd: function(cmd, tbl) {
+  existsCmd: function(cmd, tbl) {
     for (var i = 0; i < tbl.length; i++) {
       if (tbl[i].cmd == cmd) return true;
     }
@@ -9277,9 +9277,9 @@ DebugJS.splitCmdLine = function(arg, limit) {
   var args = [];
   var start = 0;
   var len = 0;
-  var searching = true;
+  var srch = true;
   var quoted = null;
-  var bracket = 0;
+  var paren = 0;
   var ch = '';
   var str = '';
   limit = (limit == undefined ? 0 : limit);
@@ -9288,10 +9288,10 @@ DebugJS.splitCmdLine = function(arg, limit) {
     ch = arg.charAt(i);
     switch (ch) {
       case ' ':
-        if (searching || quoted || (bracket > 0)) {
+        if (srch || quoted || (paren > 0)) {
           continue;
         } else {
-          searching = true;
+          srch = true;
           str = arg.substr(start, len);
           args.push(str);
           if (args.length + 1 == limit) {
@@ -9306,35 +9306,35 @@ DebugJS.splitCmdLine = function(arg, limit) {
         }
         break;
       case '(':
-        if (searching) {
+        if (srch) {
           start = i;
           len = 0;
-          searching = false;
+          srch = false;
         }
         if (!quoted) {
-          bracket++;
+          paren++;
         }
         break;
       case ')':
-        if (searching) {
+        if (srch) {
           start = i;
           len = 0;
-          searching = false;
-        } else if (bracket > 0) {
+          srch = false;
+        } else if (paren > 0) {
           if ((i > 0) && (arg.charAt(i - 1) == '\\')) {
             continue;
           }
-          bracket--;
+          paren--;
         }
         break;
       case '"':
       case "'":
-        if (bracket > 0) {
+        if (paren > 0) {
           continue;
-        } else if (searching) {
+        } else if (srch) {
           start = i;
           len = 0;
-          searching = false;
+          srch = false;
           quoted = ch;
         } else if (ch == quoted) {
           if ((i > 0) && (arg.charAt(i - 1) == '\\')) {
@@ -9344,15 +9344,15 @@ DebugJS.splitCmdLine = function(arg, limit) {
         }
         break;
       default:
-        if (searching) {
+        if (srch) {
           start = i;
           len = 0;
-          searching = false;
+          srch = false;
         }
     }
   }
   len++;
-  if (!searching) {
+  if (!srch) {
     str = arg.substr(start, len);
     args.push(str);
   }
@@ -9362,7 +9362,7 @@ DebugJS.splitCmdLine = function(arg, limit) {
   return args;
 };
 // " 1  2 3  4 " -> [0]="1" [1]=" 2 3  4 "
-DebugJS.splitCmdLineInTwo = function(s) {
+DebugJS.splitCmdLineIn2 = function(s) {
   var r = [];
   s = DebugJS.delLeadingSP(s);
   var two = DebugJS.splitCmdLine(s);
@@ -9379,7 +9379,7 @@ DebugJS.splitCmdLineInTwo = function(s) {
 DebugJS.getArgsFrom = function(s, n) {
   var r = s;
   for (var i = 0; i < n; i++) {
-    r = DebugJS.splitCmdLineInTwo(r)[1];
+    r = DebugJS.splitCmdLineIn2(r)[1];
   }
   return r;
 };
@@ -9440,17 +9440,17 @@ DebugJS.getQuotedStr = function(str) {
   var r = null;
   var start = 0;
   var len = 0;
-  var searching = true;
+  var srch = true;
   var quoted = null;
   var ch = '';
   for (var i = 0; i < str.length; i++) {
     len++;
     ch = str.charAt(i);
     if ((ch == '"') || (ch == "'")) {
-      if (searching) {
+      if (srch) {
         start = i;
         len = 0;
-        searching = false;
+        srch = false;
         quoted = ch;
       } else if (ch == quoted) {
         if ((i > 0) && (str.charAt(i - 1) == '\\')) {
@@ -12595,7 +12595,7 @@ DebugJS.bat.exec1 = function(l) {
   return DebugJS.ctx._execCmd(cmd, true);
 };
 DebugJS.bat.isPpTkn = function(cmd) {
-  var c = DebugJS.splitCmdLineInTwo(cmd)[0];
+  var c = DebugJS.splitCmdLineIn2(cmd)[0];
   if (c.match(/^\s*@/)) {
     c = c.substr(c.indexOf('@') + 1);
   }
@@ -12664,13 +12664,13 @@ DebugJS.bat.prepro = function(ctx, cmd) {
     cmd = cmd.substr(cmd.indexOf('@') + 1);
   }
   cmd = DebugJS.replaceCmdVals(cmd);
-  var cmds = DebugJS.splitCmdLineInTwo(cmd);
+  var cmds = DebugJS.splitCmdLineIn2(cmd);
   var c = cmds[0];
   for (var key in ctx.CMD_ALIAS) {
     if (c == key) {
       cmd = cmd.replace(new RegExp(c), ctx.CMD_ALIAS[key]);
       cmd = DebugJS.replaceCmdVals(cmd);
-      cmds = DebugJS.splitCmdLineInTwo(cmd);
+      cmds = DebugJS.splitCmdLineIn2(cmd);
       c = cmds[0];
       break;
     }
@@ -12833,7 +12833,7 @@ DebugJS.bat.nextExecLine = function(pc) {
   while (pc <= bat.ctrl.endPc) {
     var cmd = bat.cmds[pc];
     pc++;
-    var cmds = DebugJS.splitCmdLineInTwo(cmd);
+    var cmds = DebugJS.splitCmdLineIn2(cmd);
     var c = cmds[0];
     if ((c == '') || (c.charAt(0) == '#') || (c.substr(0, 2) == '//')) {
       continue;
@@ -12912,7 +12912,7 @@ DebugJS.bat.findEndOfBlock = function(type, pc) {
   var data = {l: 0, endTkn: DebugJS.BAT_TKN_BLOCK_END};
   while (l <= bat.ctrl.endPc) {
     var cmd = bat.cmds[l];
-    var c = DebugJS.splitCmdLineInTwo(cmd)[0];
+    var c = DebugJS.splitCmdLineIn2(cmd)[0];
     if (DebugJS.unifySP(cmd.trim()).match(DebugJS.RE_ELIF)) {
       if (ignrBlkLv == 0) {
         if (type == DebugJS.BAT_TKN_ELIF) {
@@ -12948,7 +12948,7 @@ DebugJS.bat.findEndOfFnc = function(pc) {
   var blkLv = 0;
   while (pc <= DebugJS.bat.ctrl.endPc) {
     var cmd = DebugJS.bat.cmds[pc];
-    var c = DebugJS.splitCmdLineInTwo(cmd)[0];
+    var c = DebugJS.splitCmdLineIn2(cmd)[0];
     var l = DebugJS.bat.nextExecLine(pc);
     if (l != pc) {
       pc = l;
@@ -15356,7 +15356,7 @@ DebugJS.x.addCmdTbl = function(table) {
   var ctx = DebugJS.ctx;
   for (var i = 0; i < table.length; i++) {
     var c = table[i];
-    if ((ctx.existCmd(c.cmd, ctx.INT_CMD_TBL)) || (ctx.existCmd(c.cmd, ctx.EXT_CMD_TBL))) {
+    if ((ctx.existsCmd(c.cmd, ctx.INT_CMD_TBL)) || (ctx.existsCmd(c.cmd, ctx.EXT_CMD_TBL))) {
       c.attr |= DebugJS.CMD_ATTR_DISABLED;
     }
     ctx.EXT_CMD_TBL.push(c);
