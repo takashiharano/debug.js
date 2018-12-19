@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812182118';
+  this.v = '201812191933';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -126,7 +126,7 @@ var DebugJS = DebugJS || function() {
   this.elmUpdateInterval = 0;
   this.elmUpdateTimerId = 0;
   this.elmInfoShowHideStatus = {text: false, allStyles: false, elBorder: false, htmlSrc: false};
-  this.targetElm = null;
+  this.targetEl = null;
   this.toolsBtn = null;
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
@@ -2856,7 +2856,7 @@ DebugJS.prototype = {
         ctx.mouseClick2 = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.ST_ELM_INSPECTING) {
           if (ctx.isOnDbgWin(posX, posY)) {
-            if ((DebugJS.el) && (DebugJS.el != ctx.targetElm)) {
+            if ((DebugJS.el) && (DebugJS.el != ctx.targetEl)) {
               ctx.showElementInfo(DebugJS.el);
               ctx.updateTargetElm(DebugJS.el);
             }
@@ -3796,7 +3796,7 @@ DebugJS.prototype = {
     ctx.elmInfoPanel.appendChild(ctx.elmInfoHeaderPanel);
 
     ctx.elmPrevBtn = ctx.createElmInfoHeadBtn('<<', ctx.showPrevElem);
-    ctx.setStyle(ctx.elmPrevBtn, 'color', DebugJS.COLOR_INACTIVE);
+    ctx.enablePrevElBtn(ctx, false);
 
     ctx.elmTitle = document.createElement('span');
     ctx.elmTitle.style.marginLeft = '4px';
@@ -3806,13 +3806,13 @@ DebugJS.prototype = {
     ctx.elmInfoHeaderPanel.appendChild(ctx.elmTitle);
 
     ctx.elmNextBtn = ctx.createElmInfoHeadBtn('>>', ctx.showNextElem);
-    ctx.setStyle(ctx.elmNextBtn, 'color', DebugJS.COLOR_INACTIVE);
+    ctx.enableNextElBtn(ctx, false);
 
     ctx.elmSelectBtn = ctx.createElmInfoHeadBtn('SELECT', ctx.toggleElmSelectMode);
     ctx.elmSelectBtn.style.marginLeft = '8px';
     ctx.elmSelectBtn.style.marginRight = '4px';
 
-    ctx.elmHighlightBtn = ctx.createElmInfoHeadBtn('HIGHLIGHT', ctx.toggleElmHighlightMode);
+    ctx.elmHighlightBtn = ctx.createElmInfoHeadBtn('HIGHLIGHT', ctx.toggleElmHlMode);
     ctx.elmHighlightBtn.style.marginLeft = '4px';
     ctx.elmHighlightBtn.style.marginRight = '4px';
 
@@ -3858,11 +3858,11 @@ DebugJS.prototype = {
     return DebugJS.ui.addBtn(DebugJS.ctx.elmInfoHeaderPanel, label, handler);
   },
   closeElmInfo: function(ctx) {
-    if (ctx.targetElm) {
-      if (typeof ctx.targetElm.className == 'string') {
-        DebugJS.removeClass(ctx.targetElm, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
+    if (ctx.targetEl) {
+      if (typeof ctx.targetEl.className == 'string') {
+        DebugJS.removeClass(ctx.targetEl, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
       }
-      ctx.targetElm = null;
+      ctx.targetEl = null;
     }
     if (ctx.elmInfoPanel) {
       if (DebugJS.ELM_INFO_FULL_OVERLAY) {
@@ -3884,7 +3884,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT)) || (ctx.isOnDbgWin(x, y))) return;
     var el = document.elementFromPoint(x, y);
-    if (el != ctx.targetElm) {
+    if (el != ctx.targetEl) {
       ctx.showElementInfo(el);
       ctx.updateTargetElm(el);
     }
@@ -4055,13 +4055,29 @@ DebugJS.prototype = {
   },
   showPrevElem: function() {
     var ctx = DebugJS.ctx;
-    if (!ctx.targetElm) return;
-    var el = ctx.targetElm.previousElementSibling;
+    if (!ctx.targetEl) return;
+    var el = ctx.getPrevElm(ctx, ctx.targetEl);
+    if (el) {
+      ctx.showElementInfo(el);
+      ctx.updateTargetElm(el);
+    }
+  },
+  showNextElem: function() {
+    var ctx = DebugJS.ctx;
+    if (!ctx.targetEl) return;
+    var el = ctx.getNextElm(ctx, ctx.targetEl);
+    if (el) {
+      ctx.showElementInfo(el);
+      ctx.updateTargetElm(el);
+    }
+  },
+  getPrevElm: function(ctx, targetElm) {
+    var el = targetElm.previousElementSibling;
     if ((el != null) && (el.id == ctx.id)) {
-      el = ctx.targetElm.previousElementSibling;
+      el = targetElm.previousElementSibling;
     }
     if (el == null) {
-      el = ctx.targetElm.parentNode;
+      el = targetElm.parentNode;
     } else {
       if (el.childElementCount > 0) {
         var lastChild = el.lastElementChild;
@@ -4071,46 +4087,37 @@ DebugJS.prototype = {
         el = lastChild;
       }
     }
-    if (el) {
-      if (!(el instanceof HTMLDocument)) {
-        ctx.showElementInfo(el);
-        ctx.updateTargetElm(el);
-      }
-    }
+    if (el instanceof HTMLDocument) el = null;
+    return el;
   },
-  showNextElem: function() {
-    var ctx = DebugJS.ctx;
-    if (!ctx.targetElm) return;
-    var el = ctx.targetElm.firstElementChild;
+  getNextElm: function(ctx, targetElm) {
+    var el = targetElm.firstElementChild;
     if ((el == null) || ((el != null) && (el.id == ctx.id))) {
-      el = ctx.targetElm.nextElementSibling;
+      el = targetElm.nextElementSibling;
       if (el == null) {
-        var parentNode = ctx.targetElm.parentNode;
-        if (parentNode) {
+        var parent = targetElm.parentNode;
+        if (parent) {
           do {
-            el = parentNode.nextElementSibling;
+            el = parent.nextElementSibling;
             if ((el != null) && (el.id != ctx.id)) {
               break;
             }
-            parentNode = parentNode.parentNode;
-          } while ((parentNode != null) && (parentNode.tagName != 'HTML'));
+            parent = parent.parentNode;
+          } while ((parent != null) && (parent.tagName != 'HTML'));
         }
       }
     }
-    if (el) {
-      ctx.showElementInfo(el);
-      ctx.updateTargetElm(el);
-    }
+    return el;
   },
   updateTargetElm: function(el) {
     var ctx = DebugJS.ctx;
     if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
-      ctx.highlightElement(ctx.targetElm, el);
+      ctx.highlightElement(ctx.targetEl, el);
     }
     if (el) {
-      ctx.targetElm = el;
-      ctx.setStyle(ctx.elmPrevBtn, 'color', ctx.opt.btnColor);
-      ctx.setStyle(ctx.elmNextBtn, 'color', ctx.opt.btnColor);
+      ctx.targetEl = el;
+      ctx.enablePrevElBtn(ctx, (ctx.getPrevElm(ctx, el) ? true : false));
+      ctx.enableNextElBtn(ctx, (ctx.getNextElm(ctx, el) ? true : false));
       ctx.setStyle(ctx.elmUpdateBtn, 'color', ctx.opt.btnColor);
       ctx.setStyle(ctx.elmCapBtn, 'color', ctx.opt.btnColor);
       ctx.setStyle(ctx.elmDelBtn, 'color', '#a88');
@@ -4124,9 +4131,15 @@ DebugJS.prototype = {
       DebugJS.addClass(setTarget, DebugJS.ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
   },
+  enablePrevElBtn: function(ctx, f) {
+    ctx.setStyle(ctx.elmPrevBtn, 'color', (f ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE));
+  },
+  enableNextElBtn: function(ctx, f) {
+    ctx.setStyle(ctx.elmNextBtn, 'color', (f ? ctx.opt.btnColor : DebugJS.COLOR_INACTIVE));
+  },
   updateElementInfo: function() {
     DebugJS.ctx.showAllElmNum();
-    DebugJS.ctx.showElementInfo(DebugJS.ctx.targetElm);
+    DebugJS.ctx.showElementInfo(DebugJS.ctx.targetEl);
   },
   showAllElmNum: function() {
     DebugJS.ctx.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
@@ -4161,14 +4174,14 @@ DebugJS.prototype = {
   updateElmSelectBtn: function() {
     DebugJS.ctx.setStyle(DebugJS.ctx.elmSelectBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
   },
-  toggleElmHighlightMode: function() {
+  toggleElmHlMode: function() {
     var ctx = DebugJS.ctx;
     if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
       ctx.elmInfoStatus &= ~DebugJS.ELMINFO_ST_HIGHLIGHT;
-      ctx.highlightElement(ctx.targetElm, null);
+      ctx.highlightElement(ctx.targetEl, null);
     } else {
       ctx.elmInfoStatus |= DebugJS.ELMINFO_ST_HIGHLIGHT;
-      ctx.highlightElement(null, ctx.targetElm);
+      ctx.highlightElement(null, ctx.targetEl);
     }
     ctx.updateElmHighlightBtn();
   },
@@ -4176,7 +4189,7 @@ DebugJS.prototype = {
     DebugJS.ctx.setStyle(DebugJS.ctx.elmHighlightBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACTIVE);
   },
   exportTargetElm: function() {
-    if (DebugJS.ctx.targetElm) DebugJS.ctx.captureElm(DebugJS.ctx.targetElm);
+    if (DebugJS.ctx.targetEl) DebugJS.ctx.captureElm(DebugJS.ctx.targetEl);
   },
   captureElm: function(elm) {
     DebugJS.el = elm;
@@ -4187,7 +4200,7 @@ DebugJS.prototype = {
     DebugJS._log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWORD_COLOR + '">' + (DebugJS.G_EL_AVAILABLE ? 'el' : ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el') + '</span>');
   },
   delTargetElm: function() {
-    var e = DebugJS.ctx.targetElm;
+    var e = DebugJS.ctx.targetEl;
     if (e) {
       var p = e.parentNode;
       if (p) {
