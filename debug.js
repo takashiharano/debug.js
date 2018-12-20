@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812202310';
+  this.v = '201812210100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5570,7 +5570,7 @@ DebugJS.prototype = {
   decB64: function(ctx, s) {
     if (!DebugJS.isBase64(s)) return 0;
     if (DebugJS.isB64Bat(s)) {
-      var b = DebugJS.decodeBase64(s);
+      var b = DebugJS.decodeB64(s);
       if (b) {
         ctx.openBat(ctx, b);
         return 1;
@@ -5835,7 +5835,7 @@ DebugJS.prototype = {
     var cType = DebugJS.getContentType(null, file, b64ctt.data);
     if (cType == 'text') {
       if (ctx.fileVwrSysCb) {
-        var decoded = DebugJS.decodeBase64(b64ctt.data);
+        var decoded = DebugJS.decodeB64(b64ctt.data);
         ctx.fileVwrSysCb(ctx, file, decoded);
       }
     }
@@ -5937,7 +5937,7 @@ DebugJS.prototype = {
     if (cType == 'image') {
       html += ctx.getImgPreview(ctx, scheme, data);
     } else {
-      var decoded = DebugJS.decodeBase64(data);
+      var decoded = DebugJS.decodeB64(data);
       html += ctx.getTextPreview(decoded);
     }
     ctx.updateFilePreview(html);
@@ -6781,7 +6781,7 @@ DebugJS.prototype = {
   cmdBase64: function(arg, tbl, echo) {
     var iIdx = 0;
     if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBase64, DebugJS.decodeBase64, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeB64, DebugJS.decodeB64, iIdx);
   },
 
   cmdBat: function(arg, tbl, echo) {
@@ -6864,7 +6864,7 @@ DebugJS.prototype = {
         break;
       case 'exec':
         if (a[1] != undefined) {
-          var b = DebugJS.decodeBase64(a[1], true);
+          var b = DebugJS.decodeB64(a[1], true);
           if (b != '') {
             var ag = DebugJS.getArgsFrom(arg, 2);
             try {
@@ -10377,7 +10377,7 @@ DebugJS.getHTML = function(b64) {
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
     if (cmdActive) ctx.cmdLine.focus();
   }
-  if (b64) html = DebugJS.encodeBase64(html);
+  if (b64) html = DebugJS.encodeB64(html);
   return html;
 };
 
@@ -10790,31 +10790,38 @@ DebugJS.UTF8.fmByte = function(a) {
   return s;
 };
 
-DebugJS.encodeBase64 = function(s) {
+DebugJS.encodeB64 = function(s) {
   if (!window.btoa) return '';
+  return DebugJS.encodeBase64(s);
+};
+DebugJS.decodeB64 = function(s, q) {
   var r = '';
+  if (!window.btoa) return r;
   try {
-    r = btoa(s);
+    r = DebugJS.decodeBase64(s);
   } catch (e) {
-    r = btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-      return String.fromCharCode('0x' + p1);
-    }));
+    if (!q) DebugJS._log.e('decodeB64(): ' + e);
   }
   return r;
 };
-DebugJS.decodeBase64 = function(s, q) {
-  if (!window.atob) return '';
+DebugJS.encodeBase64 = function(s) {
+  var r;
+  try {
+    r = btoa(s);
+  } catch (e) {
+    r = btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, function(match, p1) {return String.fromCharCode('0x' + p1);}));
+  }
+  return r;
+};
+DebugJS.decodeBase64 = function(s) {
   var r = '';
+  if (!window.atob) return r;
   try {
     r = decodeURIComponent(Array.prototype.map.call(atob(s), function(c) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
   } catch (e) {
-    try {
-      r = atob(s);
-    } catch (e) {
-      if (!q) DebugJS._log.e('decodeBase64(): ' + e);
-    }
+    r = atob(s);
   }
   return r;
 };
@@ -11852,7 +11859,7 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
     var time = (fmtTime ? DebugJS.getDateTimeStr(data.time) : data.time);
     var msg = data.msg;
     if (fmt == 'json') {
-      l = {type: type, time: time, msg: DebugJS.encodeBase64(msg)};
+      l = {type: type, time: time, msg: DebugJS.encodeB64(msg)};
       b.push(l);
     } else {
       var lv = 'LOG';
@@ -11883,7 +11890,7 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
     }
   }
   if (fmt == 'json') l = JSON.stringify(b);
-  if (b64) l = DebugJS.encodeBase64(l);
+  if (b64) l = DebugJS.encodeB64(l);
   return l;
 };
 DebugJS.sendLog = function(url, pName, param, extInfo, wBf, cb) {
@@ -11971,14 +11978,14 @@ DebugJS.createLogHeader = function() {
 };
 DebugJS.loadLog = function(json, b64) {
   var ctx = DebugJS.ctx;
-  if (b64) json = DebugJS.decodeBase64(json);
+  if (b64) json = DebugJS.decodeB64(json);
   var buf = JSON.parse(json);
   if (ctx.msgBuf.getSize() < buf.length) {
     ctx.msgBuf = new DebugJS.RingBuffer(buf.length);
   }
   for (var i = 0; i < buf.length; i++) {
     var bf = buf[i];
-    bf.msg = DebugJS.decodeBase64(bf.msg);
+    bf.msg = DebugJS.decodeB64(bf.msg);
     ctx.msgBuf.add(bf);
   }
 };
@@ -12060,7 +12067,7 @@ DebugJS.file.onLoaded = function(file, ctt) {
   var loader = DebugJS.file.ongoingLdr;
   if ((!loader) || (!loader.cb)) return;
   if ((loader.mode == 'b64') && (loader.decode)) {
-    ctt = DebugJS.decodeBase64(DebugJS.splitDataUrl(ctt).data);
+    ctt = DebugJS.decodeB64(DebugJS.splitDataUrl(ctt).data);
   }
   loader.cb(file, ctt);
 };
