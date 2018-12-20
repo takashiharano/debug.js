@@ -2453,7 +2453,29 @@ dbg.bat.isAvailable() <button class="demo-button2" onclick="log(dbg.bat.isAvaila
     <td class="name">dbg.isBat</td>
     <td>text</td>
     <td>
-      Returns if the text is bat script. (true / false)
+      Returns whether the text is BAT script or not. (true / false)
+<pre>
+var script = '
+<textarea id="is-bat-txt" class="demo-textarea2" style="height:50px;">
+#!BAT!
+echo "abc"
+</textarea>
+';
+var ret = dbg.isBat(script); <button class="demo-button2" onclick="log.res(dbg.isBat(getVal('is-bat-txt')));">DEMO</button>
+</pre>
+<span class="annotation">The function returns whether the string starts with "#!BAT!"</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.isB64Bat</td>
+    <td>string</td>
+    <td>
+      Returns whether the given string is Base64 encoded BAT script or not.<br>
+<pre>
+var ret = dbg.isB64Bat('<input type="text" id="is-b64bat-txt" class="demo-text" style="width:250px;" value="IyFCQVQhDQplY2hvICJhYmMiDQo=">'); <button class="demo-button2" onclick="log.res(dbg.isB64Bat(getVal('is-b64bat-txt')));">DEMO</button>
+</pre>
+<span class="annotation">The function returns whether the string starts with "IyFCQVQh"</span>
     </td>
   </tr>
 
@@ -3401,13 +3423,46 @@ dbg.adjustResBox(<input type="text" id="resbox-adj-txt" class="demo-text" style=
   </tr>
 
   <tr>
+    <td class="name">dbg.encodeBase64</td>
+    <td>string</td>
+    <td>
+      Encodes Base64 string.<br>
+<pre>
+var ret = dbg.encodeBase64('<input type="text" id="enc-b64-txt" class="demo-text" style="width:200px;" value="abc">'); <button class="demo-button2" onclick="log.res(dbg.encodeBase64(getVal('enc-b64-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.decodeBase64</td>
+    <td>string</td>
+    <td>
+      Decodes Base64 string.<br>
+<pre>
+var ret = dbg.decodeBase64('<input type="text" id="dec-b64-txt" class="demo-text" style="width:200px;" value="YWJj">'); <button class="demo-button2" onclick="log.res(dbg.decodeBase64(getVal('dec-b64-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.isBase64</td>
+    <td>string</td>
+    <td>
+      Returns whether the given string is Base64 or not.<br>
+<pre>
+var ret = dbg.isBase64('<input type="text" id="is-b64-txt" class="demo-text" style="width:200px;" value="YWJj">'); <button class="demo-button2" onclick="log.res(dbg.isBase64(getVal('is-b64-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.splitArgs</td>
     <td>argument-string</td>
     <td>
       Splits a given argument string into an array of strings by separating the string into substrings, using whitespace character " ".<br>
 <pre>
-var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" style="width:100px;" value="abc def 123">'); <button class="demo-button2" onclick="log.p(dbg.splitArgs(document.getElementById('args-txt').value), 0, 'args =');">DEMO</button>
-<span id="isvisible-ret"></span></pre>
+var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" style="width:100px;" value="abc def 123">'); <button class="demo-button2" onclick="log.p(dbg.splitArgs(getVal('args-txt')), 0, 'args =');">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -3417,8 +3472,8 @@ var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" sty
     <td>
       An extended version of splitArgs().<br>
 <pre>
-var args = dbg.splitCmdLine('<input type="text" id="args-ex-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitCmdLine(document.getElementById('args-ex-txt').value), 0, 'args =');">DEMO</button>
-<span id="isvisible-ret"></span></pre>
+var ret = dbg.splitCmdLine('<input type="text" id="splt-cmd-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitCmdLine(getVal('splt-cmd-txt')), 0, 'args =');">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -3429,7 +3484,7 @@ var args = dbg.splitCmdLine('<input type="text" id="args-ex-txt" class="demo-tex
       Returns number of arguments.<br>
 <pre>
 dbg.countArgs('<input type="text" id="cnt-args-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.res(dbg.countArgs(getVal('cnt-args-txt')));">DEMO</button>
-<span id="isvisible-ret"></span></pre>
+</pre>
     </td>
   </tr>
 
@@ -3443,7 +3498,7 @@ dbg.countArgs('<input type="text" id="cnt-args-txt" class="demo-text" style="wid
       Returns a value of an option.<br>
 <pre>
 var val = dbg.getArgVal('<input type="text" id="getargval-arg-txt" class="demo-text" style="width:180px;" value='-a abc -b "xyz 123"'>', <input type="text" id="getargval-idx-txt" class="demo-text" style="width:20px;" value='0'>); <button class="demo-button2" onclick="log.p(dbg.getArgVal(getVal('getargval-arg-txt'), getVal('getargval-idx-txt')), 0, 'val =');">DEMO</button>
-<span id="isvisible-ret"></span></pre>
+</pre>
     </td>
   </tr>
 
@@ -3457,7 +3512,7 @@ var val = dbg.getArgVal('<input type="text" id="getargval-arg-txt" class="demo-t
       Returns a value of an option.<br>
 <pre>
 var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-text" style="width:190px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>', '<input type="text" id="opt-val-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVal(getVal('opt-val-arg-txt'), getVal('opt-val-opt-txt')), 0, 'val =');">DEMO</button>
-<span id="isvisible-ret"></span></pre>
+</pre>
     </td>
   </tr>
 
@@ -3468,7 +3523,7 @@ var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-tex
       Returns values of options.<br>
 <pre>
 var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-text" style="width:200px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVals(getVal('opt-vals-arg-txt')), 0, 'val =');">DEMO</button>
-<span id="isvisible-ret"></span></pre>
+</pre>
     </td>
   </tr>
 
@@ -3479,7 +3534,7 @@ var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-
       Returns if the arguments has an option.<br>
 <pre>
 dbg.hasOpt('<input type="text" id="opt-has-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b'>', '<input type="text" id="opt-has-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.res(dbg.hasOpt(getVal('opt-has-arg-txt'), getVal('opt-has-opt-txt')));">DEMO</button>
-<span id="isvisible-ret"></span></pre>
+</pre>
     </td>
   </tr>
 
