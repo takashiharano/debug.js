@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812201830';
+  this.v = '201812201900';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -321,70 +321,70 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', usage: 'alias [name=[\'command\']]'},
-    {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', usage: 'base64 [-e|-d] str'},
-    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', usage: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
-    {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', usage: 'bin num digit'},
-    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64(Bit Shifted Base64) reversible encryption string', usage: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
+    {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
+    {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
+    {cmd: 'bat', fn: this.cmdBat, desc: 'Operate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
+    {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', help: 'bin num digit'},
+    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64(Bit Shifted Base64) reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
-    {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', usage: 'close [measure|sys|html|dom|js|tool|ext]'},
+    {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', usage: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
-    {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', usage: 'dbgwin show|hide|pos|size|opacity|status|lock'},
-    {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', usage: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
-    {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', usage: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
+    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
+    {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
+    {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
+    {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
-    {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', usage: 'elements [#id|.className|tagName]'},
-    {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', usage: 'event create|set|dispatch|clear type|prop value'},
+    {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
+    {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
-    {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'hex', fn: this.cmdHex, desc: 'Convert a number to hexadecimal', usage: 'hex num digit'},
-    {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', usage: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', usage: 'http [method] url [--user user:pass] [data]'},
-    {cmd: 'input', fn: this.cmdInput, desc: 'Input a value into an element', usage: 'input text #id "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
-    {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', usage: 'js exec'},
-    {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', usage: 'json [-l&lt;n&gt;] [-p] one-line-json'},
+    {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'hex', fn: this.cmdHex, desc: 'Convert a number to hexadecimal', help: 'hex num digit'},
+    {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] url [--user user:pass] [data]'},
+    {cmd: 'input', fn: this.cmdInput, desc: 'Input a value into an element', help: 'input text #id "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
+    {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
+    {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
     {cmd: 'jump', fn: this.cmdJump, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
-    {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', usage: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
-    {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', usage: 'keys object'},
+    {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
+    {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
-    {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', usage: 'led bit-pattern'},
-    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', usage: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
-    {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', usage: 'msg message'},
-    {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', usage: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
+    {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
+    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
+    {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
+    {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
-    {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', usage: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
-    {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', usage: 'p [-l&lt;n&gt;] [-json] object'},
-    {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', usage: 'pause [-key key [-timeout ms|1d2h3m4s500]|-s]'},
-    {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', usage: 'pin on|off'},
-    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', usage: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
-    {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', usage: 'prop property-name'},
-    {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', usage: 'props [-reset]'},
-    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', usage: 'random [-d|-s] [min] [max]'},
-    {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', usage: 'resume [-key key]'},
+    {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|cu|cd]|[b64|bin]'},
+    {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', help: 'p [-l&lt;n&gt;] [-json] object'},
+    {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key [-timeout ms|1d2h3m4s500]|-s]'},
+    {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
+    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
+    {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
+    {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
+    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-d|-s] [min] [max]'},
+    {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
-    {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', usage: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', usage: 'rot 5|13|47 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
-    {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', usage: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
-    {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', usage: 'select selectors get|set text|value val'},
-    {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', usage: 'set property-name value'},
-    {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', usage: 'setattr selector [idx] name value'},
-    {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', usage: 'sleep ms'},
-    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', usage: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', usage: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
-    {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', usage: 'time ms|-t1 ms|"datestr" -t2 ms|"datestr"'},
-    {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', usage: 'time start|split|stop|list [timer-name]'},
-    {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', usage: 'unalias [-a] name [name ...]'},
-    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode code point / Decodes unicode string', usage: 'unicode [-e|-d] str|codePoint(s)'},
-    {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', usage: 'uri [-e|-d] str'},
-    {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', usage: 'utf8 "str"'},
+    {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
+    {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', help: 'rot 5|13|47 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
+    {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', help: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
+    {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', help: 'select selectors get|set text|value val'},
+    {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', help: 'set property-name value'},
+    {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
+    {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
+    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
+    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
+    {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', help: 'time ms|-t1 ms|"datestr" -t2 ms|"datestr"'},
+    {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'time start|split|stop|list [timer-name]'},
+    {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
+    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode code point / Decodes unicode string', help: 'unicode [-e|-d] str|codePoint(s)'},
+    {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
+    {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', help: 'utf8 "str"'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
-    {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', usage: 'watchdog [start|stop] [time(ms)]'},
-    {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', usage: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
-    {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', usage: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
+    {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
+    {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'wait', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
@@ -6858,7 +6858,7 @@ DebugJS.prototype = {
           break;
         }
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
   _cmdBatSet: function(arg, echo) {
@@ -6954,7 +6954,7 @@ DebugJS.prototype = {
         return;
     }
     if (f == 0) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       ctx.closeFeature(ctx, f);
     }
@@ -6989,7 +6989,7 @@ DebugJS.prototype = {
         }
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -7024,7 +7024,7 @@ DebugJS.prototype = {
         ctx._cmdDbgWinLock(ctx, a);
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
   _cmdDbgWinPos: function(ctx, x, y) {
@@ -7103,7 +7103,7 @@ DebugJS.prototype = {
     }
     var d = DebugJS.date(val, iso);
     if (d == null) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       if (!DebugJS.hasOpt(arg, 'q')) DebugJS._log.res(d);
     }
@@ -7192,7 +7192,7 @@ DebugJS.prototype = {
     } else if (DebugJS.isTmStr(d)) {
       d = DebugJS.str2ms(d);
     } else if ((d == '') || (isNaN(d))) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var c = DebugJS.getArgsFrom(arg, 1);
@@ -7241,7 +7241,7 @@ DebugJS.prototype = {
   cmdElements: function(arg, tbl) {
     arg = arg.trim();
     if ((arg == '-h') || (arg == '--help')) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       return DebugJS.countElements(arg, true);
     }
@@ -7281,7 +7281,7 @@ DebugJS.prototype = {
         DebugJS.event.clear();
         return;
     }
-    DebugJS.printUsage(tbl.usage);
+    DebugJS.printUsage(tbl.help);
   },
 
   cmdExit: function(arg, tbl) {
@@ -7335,15 +7335,34 @@ DebugJS.prototype = {
 
   cmdHelp: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var s = 'Available Commands:\n<table>' + ctx._cmdHelpTbl(ctx, ctx.CMD_TBL);
+    var a = arg.trim();
+    var t1 = ctx.CMD_TBL;
+    var t2 = ctx.EXT_CMD_TBL;
+    if (ctx._cmdHelp(ctx, t1, a)) return;
+    if (ctx._cmdHelp(ctx, t2, a)) return;
+    var s = 'Available Commands:\n<table>' + ctx._cmdHelpTbl(ctx, t1);
     if (!ctx.opt.disableAllCommands) {
-      if (ctx.EXT_CMD_TBL.length > 0) {
+      if (t2.length > 0) {
         s += '<tr><td colspan="2">' + '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
       }
-      s += ctx._cmdHelpTbl(ctx, ctx.EXT_CMD_TBL);
+      s += ctx._cmdHelpTbl(ctx, t2);
     }
     s += '</table>';
     DebugJS._log.mlt(s);
+  },
+  _cmdHelp: function(ctx, tbl, c) {
+    for (var i = 0; i < tbl.length; i++) {
+      var t = tbl[i];
+      if ((t.cmd == c) && !(t.attr & DebugJS.CMD_ATTR_HIDDEN) && !(t.attr & DebugJS.CMD_ATTR_DISABLED)) {
+        if (t.help) {
+          DebugJS.printUsage(t.help);
+        } else {
+          DebugJS._log('No help message for this command');
+        }
+        return true;
+      }
+    }
+    return false;
   },
   _cmdHelpTbl: function(ctx, tbl) {
     var s = '';
@@ -7402,7 +7421,7 @@ DebugJS.prototype = {
   radixCmd: function(arg, tbl) {
     var args = DebugJS.splitArgs(arg);
     if (args[0] == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return null;
     }
     var argLen = args.length;
@@ -7447,7 +7466,7 @@ DebugJS.prototype = {
         if (d != null) {
           ctx.delHistory(ctx, d | 0);
         } else {
-          DebugJS.printUsage(tbl.usage);
+          DebugJS.printUsage(tbl.help);
         }
       }
     } catch (e) {
@@ -7533,7 +7552,7 @@ DebugJS.prototype = {
     var method = a[0];
     var data = a[1];
     if (method == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     } else if (method.match(/^\s*http/)) {
       method = 'GET';
@@ -7554,7 +7573,7 @@ DebugJS.prototype = {
       var end = DebugJS.getOptVal(arg, 'end');
       DebugJS.inputText(id, txt, speed, step, start, end);
     } else {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -7565,13 +7584,13 @@ DebugJS.prototype = {
         DebugJS.ctx.execJavaScript();
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
 
   cmdJson: function(arg, tbl) {
     if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       var json = DebugJS.delLeadingSP(arg);
       var lv = 0;
@@ -7589,7 +7608,7 @@ DebugJS.prototype = {
       if (json) {
         return DebugJS._cmdJson(json, jsnFlg, lv);
       } else {
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
       }
     }
   },
@@ -7648,7 +7667,7 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     var keyCode = a[0];
     if ((keyCode == '') || isNaN(keyCode)) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var s = (DebugJS.getOptVal(arg, 'shift') == null ? false : true);
@@ -7662,7 +7681,7 @@ DebugJS.prototype = {
   cmdKeys: function(arg, tbl) {
     arg = DebugJS.unifySP(arg);
     if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       var ags = arg.split(' ');
       for (var i = 0; i < ags.length; i++) {
@@ -7696,7 +7715,7 @@ DebugJS.prototype = {
       var v = DebugJS.ctx.led;
       var h = DebugJS.formatHex(DebugJS.toHex(v), true, true);
       DebugJS._log.res(v + '(' + h + ')');
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       DebugJS.ctx.setLed(arg);
     }
@@ -7733,7 +7752,7 @@ DebugJS.prototype = {
         fn = ctx._cmdLogLv;
     }
     if (fn) {return fn(ctx, arg, echo);}
-    DebugJS.printUsage(tbl.usage);
+    DebugJS.printUsage(tbl.help);
   },
   _cmdLogBufsize: function(ctx, arg) {
     var n = DebugJS.splitArgs(arg)[1] | 0;
@@ -7873,7 +7892,7 @@ DebugJS.prototype = {
       DebugJS.ctx.setMsg(eval(m));
     } catch (e) {
       DebugJS._log.e(e);
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -7896,7 +7915,7 @@ DebugJS.prototype = {
       var dt = DebugJS.getDateTime((new Date()).getTime() + (v | 0));
       t = {time: dt.time, t: 'T' + dt.hh + dt.mi + dt.ss};
     } else {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return '';
     }
     if (p) {
@@ -7917,7 +7936,7 @@ DebugJS.prototype = {
     var subfn = a[1];
     var opt = a[2];
     if ((fn == '') || (!DebugJS.ctx.launchFunc(DebugJS.ctx, fn, subfn, opt))) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -7937,7 +7956,7 @@ DebugJS.prototype = {
     var key = DebugJS.getOptVal(arg, 'key');
     var to = DebugJS.getOptVal(arg, 'timeout');
     if (!(DebugJS.ctx._cmdPause(op, key, to))) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     }
   },
   _cmdPause: function(op, key, tout) {
@@ -7971,7 +7990,7 @@ DebugJS.prototype = {
     var op = DebugJS.splitArgs(arg)[0];
     if ((op != 'on') && (op != 'off')) {
       var st = ((DebugJS.ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? false : true);
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return st;
     } else {
       DebugJS.pin(op == 'on');
@@ -8010,7 +8029,7 @@ DebugJS.prototype = {
       speed = DebugJS.getOptVal(arg, 'speed');
       step = DebugJS.getOptVal(arg, 'step');
       if (target == undefined) {
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
       } else if (target.charAt(0) == '#') {
         point.moveToSelector(target, 0, speed, step, alignX, alignY);
       } else if (target == 'label') {
@@ -8030,7 +8049,7 @@ DebugJS.prototype = {
         point.move(ctx.mousePos.x, ctx.mousePos.y, speed, step);
       } else {
         if (args[1] == '') {
-          DebugJS.printUsage(tbl.usage);
+          DebugJS.printUsage(tbl.help);
         } else if (isNaN(target)) {
           idx = args[2];
           if (target.charAt(0) == '(') {
@@ -8061,7 +8080,7 @@ DebugJS.prototype = {
       } else if (op == 'clear') {
         point.hint.clear();
       } else {
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
       }
     } else if (op == 'center') {
       p = DebugJS.getScreenCenter();
@@ -8071,7 +8090,7 @@ DebugJS.prototype = {
       w = args[2];
       h = args[3];
       if (src == undefined) {
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
         return;
       }
       if (src == 'default') src = '';
@@ -8138,7 +8157,7 @@ DebugJS.prototype = {
     } else {
       if (op == '') {
         DebugJS._log('x=' + point.x + ', y=' + point.y);
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
       } else if (isNaN(args[0])) {
         target = args[0];
         idx = args[1];
@@ -8171,7 +8190,7 @@ DebugJS.prototype = {
   cmdProp: function(arg, tbl) {
     arg = DebugJS.delLeadingSP(arg);
     if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       var v = DebugJS.ctx.props[arg];
       if (v != undefined) {
@@ -8191,7 +8210,7 @@ DebugJS.prototype = {
       DebugJS._log('debug properties have been reset.');
       return;
     } else if (a[0] != '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var s = 'Available properties:\n<table>';
@@ -8218,7 +8237,7 @@ DebugJS.prototype = {
         min = a[0];
         max = a[1];
       } else {
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
         return;
       }
     }
@@ -8257,7 +8276,7 @@ DebugJS.prototype = {
     } else if (k != null) {
       DebugJS.bat.resume(k);
     } else {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -8268,7 +8287,7 @@ DebugJS.prototype = {
   cmdRGB: function(arg, tbl) {
     arg = DebugJS.unifySP(arg.trim());
     if (arg == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       return DebugJS.convRGB(arg);
     }
@@ -8292,7 +8311,7 @@ DebugJS.prototype = {
         fnD = DebugJS.decodeROT47;
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
         return;
     }
     var iIdx = 0;
@@ -8314,7 +8333,7 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     var target = a[0];
     if (target == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else if (target == 'log') {
       var pos = a[1];
       ctx._cmdScrollToLog(ctx, tbl, pos);
@@ -8337,24 +8356,24 @@ DebugJS.prototype = {
       pos = ctx.logPanel.scrollHeight;
     }
     if ((pos === '') || isNaN(pos)) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else {
       ctx.logPanel.scrollTop = pos;
     }
   },
   _cmdScrollToWin: function(ctx, tbl, posX, posY, speed, step) {
     if ((posX == undefined) || (posY == undefined)) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var x = ctx._cmdScrollWinGetX(posX);
     if (x == undefined) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var y = ctx._cmdScrollWinGetY(posY);
     if (y == undefined) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     if ((speed == '0') || (step == '0')) {
@@ -8419,7 +8438,7 @@ DebugJS.prototype = {
         ((type == 'text') || (type == 'value'))) {
       return DebugJS.ctx._cmdSelect(sel, method, type, val);
     }
-    DebugJS.printUsage(tbl.usage);
+    DebugJS.printUsage(tbl.help);
   },
   _cmdSelect: function(sel, method, type, val) {
     try {
@@ -8439,7 +8458,7 @@ DebugJS.prototype = {
     var nm = a[0];
     var v = ((a[1] == undefined) ? '' : a[1]);
     if ((nm == '') || (v == '')) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     DebugJS.ctx._cmdSet(DebugJS.ctx, nm, v, echo);
@@ -8515,7 +8534,7 @@ DebugJS.prototype = {
       vl = a[3];
     }
     if ((sel == '') || (nm == undefined) || (vl == undefined)) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var el = DebugJS.getElement(sel, idx);
@@ -8529,7 +8548,7 @@ DebugJS.prototype = {
   cmdSleep: function(arg, tbl) {
     var ms = DebugJS.splitArgs(arg)[0];
     if ((ms == '') || isNaN(ms)) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     DebugJS.sleep(ms);
@@ -8610,7 +8629,7 @@ DebugJS.prototype = {
         DebugJS._log('Test completed.');
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
   _cmdTestSet: function(arg) {
@@ -8674,7 +8693,7 @@ DebugJS.prototype = {
 
   cmdTime: function(arg, tbl, echo) {
     if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var t1 = DebugJS.getOptVal(arg, 't1');
@@ -8689,7 +8708,7 @@ DebugJS.prototype = {
       if (echo) DebugJS._log.res(s);
       return s;
     } catch (e) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
   },
@@ -8713,7 +8732,7 @@ DebugJS.prototype = {
         DebugJS.timeList();
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -8734,7 +8753,7 @@ DebugJS.prototype = {
     } else if (sw == 2) {
       r = ctx.cmdStopwatch2(ctx, op);
     }
-    if (r == -1) DebugJS.printUsage(tbl.usage);
+    if (r == -1) DebugJS.printUsage(tbl.help);
     return r;
   },
   cmdStopwatch0: function(ctx, op) {
@@ -8810,7 +8829,7 @@ DebugJS.prototype = {
   cmdUnAlias: function(arg, tbl, echo) {
     var nm = DebugJS.splitArgs(arg);
     if (nm[0] == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     if (nm[0] == '-a') {
@@ -8847,11 +8866,11 @@ DebugJS.prototype = {
         if (echo) DebugJS.ctx._dumpByteSeq(s, bf.length);
         return bf;
       } else {
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
       }
     } catch (e) {
       DebugJS._log.e(e);
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     }
   },
   _dumpByteSeq: function(str, len) {
@@ -8926,7 +8945,7 @@ DebugJS.prototype = {
         } else {
           DebugJS._log('Not Running');
         }
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -8943,7 +8962,7 @@ DebugJS.prototype = {
         DebugJS.ctx.setWinSize(size);
         break;
       default:
-        DebugJS.printUsage(tbl.usage);
+        DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -8987,7 +9006,7 @@ DebugJS.prototype = {
   cmdZoom: function(arg, tbl) {
     var zm = arg.trim();
     if (zm == '') {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
     } else if (zm != DebugJS.ctx.opt.zoom) {
       DebugJS.zoom(zm);
     }
@@ -8998,7 +9017,7 @@ DebugJS.prototype = {
 
   execEncAndDec: function(arg, tbl, echo, esc, encFnc, decFnc, iIdx, a1, a2) {
     if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage(tbl.usage);
+      DebugJS.printUsage(tbl.help);
       return;
     }
     var fn = encFnc;
@@ -9959,7 +9978,7 @@ DebugJS._cmdP = function(_arg, _tbl) {
     }
   }
   if (!_obj) {
-    DebugJS.printUsage(_tbl.usage);
+    DebugJS.printUsage(_tbl.help);
     return;
   }
   var _cl = 'DebugJS.buf=DebugJS.objDump(' + _obj + ', _jsn, ' + _lvLmt + ', ' + _dmpLmt + ', ' + _vlLen + ');DebugJS._log.mlt(DebugJS.buf);';
