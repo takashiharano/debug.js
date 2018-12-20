@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812192100';
+  this.v = '201812201830';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6632,7 +6632,7 @@ DebugJS.prototype = {
       echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS._log.s(echoStr);
     }
-    var cmds = DebugJS.splitCmdLineIn2(cmdline);
+    var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
     var valName = DebugJS.getCmdValName(cmd, '\\$', true);
     if (valName != null) {
@@ -6645,7 +6645,7 @@ DebugJS.prototype = {
     }
     var ret;
     echo = echo || recho;
-    cmds = DebugJS.splitCmdLineIn2(cmdline);
+    cmds = DebugJS.splitCmdLineInTwo(cmdline);
     if (cmds[0] == 'code') {
       ret = ctx.execCode(cmds[1], echo);
     } else {
@@ -6659,7 +6659,7 @@ DebugJS.prototype = {
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
     cmdline = DebugJS.replaceCtrlChr(cmdline);
-    var cmds = DebugJS.splitCmdLineIn2(cmdline);
+    var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
     var arg = cmds[1];
 
@@ -7529,7 +7529,7 @@ DebugJS.prototype = {
   },
 
   cmdHttp: function(arg, tbl) {
-    var a = DebugJS.splitCmdLineIn2(arg);
+    var a = DebugJS.splitCmdLineInTwo(arg);
     var method = a[0];
     var data = a[1];
     if (method == '') {
@@ -7602,7 +7602,7 @@ DebugJS.prototype = {
   _cmdJump: function(ctx, arg, lnk, type) {
     var ctrl = DebugJS.bat.ctrl;
     var fnArg;
-    var a = DebugJS.splitCmdLineIn2(arg);
+    var a = DebugJS.splitCmdLineInTwo(arg);
     var lbl = a[0];
     if (lbl.match(/^".+?"$/)) {
       try {
@@ -7747,7 +7747,7 @@ DebugJS.prototype = {
     return n;
   },
   _cmdLogDump: function(ctx, arg) {
-    arg = DebugJS.splitCmdLineIn2(arg)[1];
+    arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var l;
     if (arg.trim() == '-b64') {
       l = DebugJS.dumpLog('json', true);
@@ -7786,7 +7786,7 @@ DebugJS.prototype = {
     }
   },
   _cmdLogLoad: function(ctx, arg) {
-    arg = DebugJS.splitCmdLineIn2(arg)[1];
+    arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var data = DebugJS.getOptVal(arg, 'b64');
     if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage('log load [-b64] log-buffer-json');
@@ -9024,19 +9024,19 @@ DebugJS.prototype = {
   },
 
   doHttpRequest: function(method, arg) {
-    var a = DebugJS.splitCmdLineIn2(arg);
+    var a = DebugJS.splitCmdLineInTwo(arg);
     var url = a[0];
     var data = a[1];
     var user = '';
     var pass = '';
     if (url == '--user') {
-      var parts = DebugJS.splitCmdLineIn2(data);
+      var parts = DebugJS.splitCmdLineInTwo(data);
       var auth = parts[0];
       var auths = auth.split(':');
       if (auths.length > 1) {
         user = auths[0];
         pass = auths[1];
-        parts = DebugJS.splitCmdLineIn2(parts[1]);
+        parts = DebugJS.splitCmdLineInTwo(parts[1]);
         url = parts[0];
         data = parts[1];
       }
@@ -9362,7 +9362,7 @@ DebugJS.splitCmdLine = function(arg, limit) {
   return args;
 };
 // " 1  2 3  4 " -> [0]="1" [1]=" 2 3  4 "
-DebugJS.splitCmdLineIn2 = function(s) {
+DebugJS.splitCmdLineInTwo = function(s) {
   var r = [];
   s = DebugJS.delLeadingSP(s);
   var two = DebugJS.splitCmdLine(s);
@@ -9379,7 +9379,7 @@ DebugJS.splitCmdLineIn2 = function(s) {
 DebugJS.getArgsFrom = function(s, n) {
   var r = s;
   for (var i = 0; i < n; i++) {
-    r = DebugJS.splitCmdLineIn2(r)[1];
+    r = DebugJS.splitCmdLineInTwo(r)[1];
   }
   return r;
 };
@@ -12595,7 +12595,7 @@ DebugJS.bat.exec1 = function(l) {
   return DebugJS.ctx._execCmd(cmd, true);
 };
 DebugJS.bat.isPpTkn = function(cmd) {
-  var c = DebugJS.splitCmdLineIn2(cmd)[0];
+  var c = DebugJS.splitCmdLineInTwo(cmd)[0];
   if (c.match(/^\s*@/)) {
     c = c.substr(c.indexOf('@') + 1);
   }
@@ -12664,13 +12664,13 @@ DebugJS.bat.prepro = function(ctx, cmd) {
     cmd = cmd.substr(cmd.indexOf('@') + 1);
   }
   cmd = DebugJS.replaceCmdVals(cmd);
-  var cmds = DebugJS.splitCmdLineIn2(cmd);
+  var cmds = DebugJS.splitCmdLineInTwo(cmd);
   var c = cmds[0];
   for (var key in ctx.CMD_ALIAS) {
     if (c == key) {
       cmd = cmd.replace(new RegExp(c), ctx.CMD_ALIAS[key]);
       cmd = DebugJS.replaceCmdVals(cmd);
-      cmds = DebugJS.splitCmdLineIn2(cmd);
+      cmds = DebugJS.splitCmdLineInTwo(cmd);
       c = cmds[0];
       break;
     }
@@ -12833,7 +12833,7 @@ DebugJS.bat.nextExecLine = function(pc) {
   while (pc <= bat.ctrl.endPc) {
     var cmd = bat.cmds[pc];
     pc++;
-    var cmds = DebugJS.splitCmdLineIn2(cmd);
+    var cmds = DebugJS.splitCmdLineInTwo(cmd);
     var c = cmds[0];
     if ((c == '') || (c.charAt(0) == '#') || (c.substr(0, 2) == '//')) {
       continue;
@@ -12912,7 +12912,7 @@ DebugJS.bat.findEndOfBlock = function(type, pc) {
   var data = {l: 0, endTkn: DebugJS.BAT_TKN_BLOCK_END};
   while (l <= bat.ctrl.endPc) {
     var cmd = bat.cmds[l];
-    var c = DebugJS.splitCmdLineIn2(cmd)[0];
+    var c = DebugJS.splitCmdLineInTwo(cmd)[0];
     if (DebugJS.unifySP(cmd.trim()).match(DebugJS.RE_ELIF)) {
       if (ignrBlkLv == 0) {
         if (type == DebugJS.BAT_TKN_ELIF) {
@@ -12948,7 +12948,7 @@ DebugJS.bat.findEndOfFnc = function(pc) {
   var blkLv = 0;
   while (pc <= DebugJS.bat.ctrl.endPc) {
     var cmd = DebugJS.bat.cmds[pc];
-    var c = DebugJS.splitCmdLineIn2(cmd)[0];
+    var c = DebugJS.splitCmdLineInTwo(cmd)[0];
     var l = DebugJS.bat.nextExecLine(pc);
     if (l != pc) {
       pc = l;
