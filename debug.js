@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812202100';
+  this.v = '201812202237';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -625,6 +625,8 @@ DebugJS.EXIT_SIG = 128;
 DebugJS.EXIT_CLEARED = -1;
 DebugJS.SIGINT = 2;
 DebugJS.SIGTERM = 15;
+DebugJS.BAT_HEAD = '#!BAT!';
+DebugJS.BAT_HEAD_B64 = 'IyFCQVQh';
 DebugJS.BAT_TKN_JS = '!__JS__!';
 DebugJS.BAT_TKN_TXT = '!__TEXT__!';
 DebugJS.BAT_TKN_IF = 'IF';
@@ -5530,9 +5532,13 @@ DebugJS.prototype = {
     try {
       var d = e.dataTransfer.getData('text');
       if (d) {
-        var u = DebugJS.delAllNL(d.trim());
-        if (DebugJS.isDataURL(u)) {
-          ctx.decodeDataURL(ctx, u);
+        var s = DebugJS.delAllNL(d.trim());
+        if (DebugJS.isDataURL(s)) {
+          ctx.decodeDataURL(ctx, s);
+        } else if (DebugJS.isBase64(s)) {
+          var tp = DebugJS.Base64.getMimeType(s);
+          var mime = (tp ? tp.type + '/' + tp.subtype : 'text/plain');
+          ctx.decodeDataURL(ctx, 'data:' + mime + ';base64,' + s);
         }
       } else {
         ctx.handleDroppedFile(ctx, e, ctx.fileVwrMode, null);
@@ -5558,16 +5564,40 @@ DebugJS.prototype = {
   },
   onTxtDrop: function(ctx, t) {
     if (DebugJS.isBat(t)) {
-      ctx.openFeature(ctx, DebugJS.ST_TOOLS);
-      ctx.onBatLoaded(ctx, null, t);
+      ctx.openBat(ctx, t);
     } else {
-      var u = DebugJS.delAllNL(t.trim());
-      if (DebugJS.isDataURL(u)) {
-        ctx.decodeDataURL(ctx, u);
+      var s = DebugJS.delAllNL(t.trim());
+      if (DebugJS.isDataURL(s)) {
+        ctx.decodeDataURL(ctx, s);
       } else {
+        if (ctx.decB64(ctx, s)) return;
         ctx._execCmd('json ' + t, true, false, true);
       }
     }
+  },
+  decB64: function(ctx, s) {
+    if (!DebugJS.isBase64(s)) return 0;
+    if (DebugJS.isB64Bat(s)) {
+      var b = DebugJS.decodeBase64(s);
+      if (b) {
+        ctx.openBat(ctx, b);
+        return 1;
+      } else {
+        return 0;
+      }
+    }
+    var tp = DebugJS.Base64.getMimeType(s);
+    var mime = (tp ? tp.type + '/' + tp.subtype : 'text/plain');
+    if (tp || (s.length > 102400)) {
+      ctx.decodeDataURL(ctx, 'data:' + mime + ';base64,' + s);
+      return 1;
+    }
+    ctx._execCmd('base64 -d ' + s, true, false, true);
+    return 1;
+  },
+  openBat: function(ctx, s) {
+    ctx.openFeature(ctx, DebugJS.ST_TOOLS);
+    ctx.onBatLoaded(ctx, null, s);
   },
   onFileLoadedAuto: function(ctx, file, content) {
     if (DebugJS.isBat(content)) {
@@ -10848,7 +10878,21 @@ DebugJS.Base64.decode = function(str) {
   }
   return arr;
 };
+DebugJS.Base64.getMimeType = function(s) {
+  var h = {image: {jpeg: '/9', png: 'iVBORw0KGgo', gif: 'R0lGO', bmp: 'Qk0'}};
+  for (var tp in h) {
+    for (stp in h[tp]) {
+      if (DebugJS.startsWith(s, h[tp][stp])) {
+        return {type: tp, subtype: stp};
+      }
+    }
+  }
+  return null;
+};
 
+DebugJS.isBase64 = function(s) {
+  return (s && s.match(/^[A-Za-z0-9/+]*=*$/) ? true : false);
+};
 DebugJS.encodeBSB64 = function(s, n, toR) {
   var a = DebugJS.UTF8.toByte(s);
   return DebugJS.BSB64.encode(a, n, toR);
@@ -13429,8 +13473,10 @@ DebugJS.bat.isAvailable = function() {
   return DebugJS.bat.cmds.length > 0;
 };
 DebugJS.isBat = function(s) {
-  var BAT_HEAD = '#!BAT!';
-  return DebugJS.startsWith(s, BAT_HEAD);
+  return DebugJS.startsWith(s, DebugJS.BAT_HEAD);
+};
+DebugJS.isB64Bat = function(s) {
+  return DebugJS.startsWith(s, DebugJS.BAT_HEAD_B64);
 };
 
 DebugJS.isDataURL = function(s) {
