@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812201900';
+  this.v = '201812202000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12419,8 +12419,8 @@ DebugJS.bat.parseLabelFncs = function() {
   bat.labels = {};
   bat.fncs = {};
   for (var i = 0; i < bat.cmds.length; i++) {
-    var c = bat.cmds[i];
-    if (DebugJS.delLeadingSP(c).substr(0, 2) == '/*') {
+    var c = DebugJS.delLeadingSP(bat.cmds[i]);
+    if (c.substr(0, 2) == '/*') {
       cmnt++;
       continue;
     }
@@ -12582,6 +12582,7 @@ DebugJS.bat.exec = function() {
     bat._exit(DebugJS.EXIT_CLEARED);
     return;
   }
+  c = DebugJS.delLeadingSP(c);
   ctrl.pc++;
   ctx.updateCurPc();
   switch (bat.prepro(ctx, c)) {
