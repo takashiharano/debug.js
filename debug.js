@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812210100';
+  this.v = '201812212227';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5591,13 +5591,14 @@ DebugJS.prototype = {
     ctx.openFeature(ctx, DebugJS.ST_TOOLS);
     ctx.onBatLoaded(ctx, null, s);
   },
-  onFileLoadedAuto: function(ctx, file, content) {
-    if (DebugJS.isBat(content)) {
-      ctx.onBatLoaded(ctx, file, content);
+  onFileLoadedAuto: function(ctx, file, cnt) {
+    if (DebugJS.wBOM(cnt)) cnt = cnt.substr(1);
+    if (DebugJS.isBat(cnt)) {
+      ctx.onBatLoaded(ctx, file, cnt);
     } else if (file.name.match(/\.js$/)) {
-      ctx.onJsLoaded(ctx, file, content);
+      ctx.onJsLoaded(ctx, file, cnt);
     } else if (file.name.match(/\.json$/)) {
-      DebugJS._cmdJson(content, true);
+      DebugJS._cmdJson(cnt, true);
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
     }
   },
@@ -5615,18 +5616,18 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx._onDropOnFeat(ctx, e, ctx.onBatLoaded);
   },
-  onBatLoaded: function(ctx, file, content) {
-    DebugJS.bat.set(content);
+  onBatLoaded: function(ctx, file, cnt) {
+    DebugJS.bat.set(cnt);
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
   onDropOnJS: function(e) {
     var ctx = DebugJS.ctx;
     ctx._onDropOnFeat(ctx, e, ctx.onJsLoaded);
   },
-  onJsLoaded: function(ctx, file, content) {
+  onJsLoaded: function(ctx, file, cnt) {
     ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
     ctx.openFeature(ctx, DebugJS.ST_JS);
-    ctx.jsEditor.value = ctx.jsBuf = content;
+    ctx.jsEditor.value = ctx.jsBuf = cnt;
   },
   loadFile: function(file, fmt) {
     var ctx = DebugJS.ctx;
@@ -5830,18 +5831,18 @@ DebugJS.prototype = {
         return;
       }
     }
-    var b64ctt = DebugJS.splitDataUrl(dturl);
-    ctx.fileVwrDataSrc = b64ctt;
-    var cType = DebugJS.getContentType(null, file, b64ctt.data);
+    var b64cnt = DebugJS.splitDataUrl(dturl);
+    ctx.fileVwrDataSrc = b64cnt;
+    var cType = DebugJS.getContentType(null, file, b64cnt.data);
     if (cType == 'text') {
       if (ctx.fileVwrSysCb) {
-        var decoded = DebugJS.decodeB64(b64ctt.data);
+        var decoded = DebugJS.decodeB64(b64cnt.data);
         ctx.fileVwrSysCb(ctx, file, decoded);
       }
     }
     DebugJS.file.onLoaded(file, dturl);
-    ctx.setDataUrl(ctx, b64ctt.scheme, b64ctt.data);
-    ctx.showB64Preview(ctx, file, b64ctt.scheme, b64ctt.data);
+    ctx.setDataUrl(ctx, b64cnt.scheme, b64cnt.data);
+    ctx.showB64Preview(ctx, file, b64cnt.scheme, b64cnt.data);
   },
   onFileLoadedBin: function(ctx, file, content) {
     var buf = new Uint8Array(content);
@@ -9553,6 +9554,9 @@ DebugJS.isTypographic = function(ch) {
 DebugJS.isNum = function(s) {
   return (s.match(/^\d+$/) ? true : false);
 };
+DebugJS.wBOM = function(s) {
+ return s.charCodeAt(0) == 65279;
+};
 
 DebugJS.getContentType = function(mime, file, dturlData) {
   var t = '';
@@ -11005,8 +11009,8 @@ DebugJS.buildDataUrl = function(scheme, data) {
 };
 DebugJS.splitDataUrl = function(url) {
   var a = url.split(',');
-  var b64ctt = {scheme: a[0], data: (a[1] == undefined ? '' : a[1])};
-  return b64ctt;
+  var b64cnt = {scheme: a[0], data: (a[1] == undefined ? '' : a[1])};
+  return b64cnt;
 };
 DebugJS.str2binArr = function(str, blkSize, pFix) {
   var arr = [];
@@ -12063,13 +12067,13 @@ DebugJS.isTargetEl = function(target, el) {
   } while (target != null);
   return false;
 };
-DebugJS.file.onLoaded = function(file, ctt) {
+DebugJS.file.onLoaded = function(file, cnt) {
   var loader = DebugJS.file.ongoingLdr;
   if ((!loader) || (!loader.cb)) return;
   if ((loader.mode == 'b64') && (loader.decode)) {
-    ctt = DebugJS.decodeB64(DebugJS.splitDataUrl(ctt).data);
+    cnt = DebugJS.decodeB64(DebugJS.splitDataUrl(cnt).data);
   }
-  loader.cb(file, ctt);
+  loader.cb(file, cnt);
 };
 DebugJS.file.finalize = function() {
   DebugJS.file.ongoingLdr = null;
