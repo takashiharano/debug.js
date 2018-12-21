@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812212227';
+  this.v = '201812212353';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4787,12 +4787,8 @@ DebugJS.prototype = {
     ctx.updatePropTimer();
   },
   toggleTimerMode: function() {
-    var nextMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
-    if (DebugJS.ctx.toolTimerMode == DebugJS.TOOL_TIMER_MODE_CLOCK) {
-      nextMode = DebugJS.TOOL_TIMER_MODE_SW_CU;
-    } else if (DebugJS.ctx.toolTimerMode == DebugJS.TOOL_TIMER_MODE_SW_CU) {
-      nextMode = DebugJS.TOOL_TIMER_MODE_SW_CD;
-    }
+    var a = [DebugJS.TOOL_TIMER_MODE_CLOCK, DebugJS.TOOL_TIMER_MODE_SW_CU, DebugJS.TOOL_TIMER_MODE_SW_CD];
+    var nextMode = DebugJS.nextArr(a, DebugJS.ctx.toolTimerMode);
     DebugJS.ctx.switchTimerMode(nextMode);
   },
   switchTimerMode: function(mode) {
@@ -5413,7 +5409,7 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
     ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
     ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
-    ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.onDropOnFileViewer);
+    ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.onDropOnFileVwr);
     ctx.fileVwrPanel.appendChild(ctx.filePreviewWrapper);
 
     ctx.filePreview = document.createElement('pre');
@@ -5460,7 +5456,7 @@ DebugJS.prototype = {
 
     ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 15.5em)', null, ctx.opt.fontColor, '', null);
 
-    var decodeBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, 'Decode', ctx.decodeFileViewData);
+    var decodeBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, 'Decode', ctx.decodeFileVwrData);
     decodeBtn.style.float = 'right';
     decodeBtn.style.marginRight = '4px';
 
@@ -5479,6 +5475,7 @@ DebugJS.prototype = {
     ctx.fileVwrDtTxtArea = document.createElement('textarea');
     ctx.fileVwrDtTxtArea.className = ctx.id + '-editor';
     ctx.setStyle(ctx.fileVwrDtTxtArea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
+    ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxt);
     ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrDtTxtArea);
   },
   closeFileLoader: function() {
@@ -5517,7 +5514,7 @@ DebugJS.prototype = {
     e.stopPropagation();
     e.preventDefault();
   },
-  onDropOnFileViewer: function(e) {
+  onDropOnFileVwr: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
     ctx.stopErrCb = true;
@@ -5532,6 +5529,20 @@ DebugJS.prototype = {
           var mime = (tp ? tp.type + '/' + tp.subtype : 'text/plain');
           ctx.decodeDataURL(ctx, 'data:' + mime + ';base64,' + s);
         }
+      } else {
+        ctx.handleDroppedFile(ctx, e, ctx.fileVwrMode, null);
+      }
+    } catch (e) {DebugJS._log.e(e);}
+    ctx.stopErrCb = false;
+  },
+  onDropOnFileVwrTxt: function(e) {
+    var ctx = DebugJS.ctx;
+    ctx.onDrop(e);
+    ctx.stopErrCb = true;
+    try {
+      var d = e.dataTransfer.getData('text');
+      if (d) {
+        ctx.fileVwrDtTxtArea.value = d;
       } else {
         ctx.handleDroppedFile(ctx, e, ctx.fileVwrMode, null);
       }
@@ -5765,14 +5776,15 @@ DebugJS.prototype = {
         ctx.updateFilePreview('');
     }
   },
-  decodeFileViewData: function() {
+  decodeFileVwrData: function() {
     var ctx = DebugJS.ctx;
     var mode = ctx.fileVwrDecMode;
     var scheme = ctx.fileVwrDtUrlScheme.value;
     var data = ctx.fileVwrDtTxtArea.value;
     ctx.clearFile();
-    data = DebugJS.delAllSP(data);
-    data = DebugJS.delAllNL(data);
+    if (mode != 'txt') {
+      data = DebugJS.delAllNL(DebugJS.delAllSP(data));
+    }
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     ctx.setDataUrl(ctx, scheme, data);
     switch (mode) {
@@ -5785,6 +5797,10 @@ DebugJS.prototype = {
         ctx.decodeHex(ctx, data);
         break;
       default:
+        if (mode == 'txt') {
+          data = DebugJS.encodeBase64(data);
+          ctx.fileVwrDtTxtArea.value = ctx.fileVwrDataSrc.data = data;
+        }
         ctx.fileVwrDataSrcType = 'b64';
         ctx.showB64Preview(ctx, null, scheme, data);
     }
@@ -5862,17 +5878,8 @@ DebugJS.prototype = {
   },
   toggleDecMode: function() {
     var ctx = DebugJS.ctx;
-    var mode = ctx.fileVwrDecMode;
-    switch (mode) {
-      case 'b64':
-        mode = 'hex';
-        break;
-      case 'hex':
-        mode = 'bin';
-        break;
-      default:
-        mode = 'b64';
-    }
+    var a = ['b64', 'hex', 'bin', 'txt'];
+    var mode = DebugJS.nextArr(a, ctx.fileVwrDecMode);
     ctx.setDecMode(ctx, mode);
   },
   setDecMode: function(ctx, mode) {
@@ -5881,17 +5888,9 @@ DebugJS.prototype = {
   },
   toggleBinMode: function() {
     var ctx = DebugJS.ctx;
+    var a = ['hex', 'bin', 'dec'];
     var opt = ctx.fileVwrBinViewOpt;
-    switch (opt.mode) {
-      case 'bin':
-        opt.mode = 'dec';
-        break;
-      case 'dec':
-        opt.mode = 'hex';
-        break;
-      default:
-        opt.mode = 'bin';
-    }
+    opt.mode = DebugJS.nextArr(a, opt.mode);
     ctx.showBinDump(ctx, ctx.fileVwrByteArray);
   },
   toggleShowAddr: function() {
@@ -6142,7 +6141,7 @@ DebugJS.prototype = {
     var d = DebugJS.splitDataUrl(s);
     ctx.setDataUrl(ctx, d.scheme, d.data);
     ctx.setDecMode(ctx, 'b64');
-    ctx.decodeFileViewData();
+    ctx.decodeFileVwrData();
   },
 
   openHtmlEditor: function() {
@@ -10519,13 +10518,21 @@ DebugJS.findArrVal = function(a, v, f) {
   }
   return r;
 };
-
 DebugJS.countArrVal = function(a, v, f) {
   var c = 0;
   for (var i = 0; i < a.length; i++) {
     if ((!f && (a[i] == v)) || (f && (a[i] === v))) c++;
   }
   return c;
+};
+DebugJS.nextArr = function(a, v) {
+  var r = a[0];
+  for (var i = 0; i < a.length; i++) {
+    if ((a[i] == v) && (i < (a.length - 1))) {
+      r = a[i + 1];break;
+    }
+  }
+  return r;
 };
 
 DebugJS.printUsage = function(m) {
