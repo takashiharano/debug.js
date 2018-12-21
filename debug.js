@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812212353';
+  this.v = '201812220144';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2563,30 +2563,17 @@ DebugJS.prototype = {
   },
 
   launchFunc: function(ctx, fn, subfn, opt) {
-    var f = 0;
-    switch (fn) {
-      case 'measure':
-        f = DebugJS.ST_MEASURE;
-        break;
-      case 'sys':
-        f = DebugJS.ST_SYS_INFO;
-        break;
-      case 'html':
-        f = DebugJS.ST_HTML_SRC;
-        break;
-      case 'dom':
-        f = DebugJS.ST_ELM_INSPECTING;
-        break;
-      case 'js':
-        f = DebugJS.ST_JS;
-        break;
-      case 'tool':
-        f = DebugJS.ST_TOOLS;
-        break;
-      case 'ext':
-        f = DebugJS.ST_EXT_PANEL;
-    }
-    return (ctx.openFeature(ctx, f, subfn, opt));
+    var a = {
+      measure: DebugJS.ST_MEASURE,
+      sys: DebugJS.ST_SYS_INFO,
+      html: DebugJS.ST_HTML_SRC,
+      dom: DebugJS.ST_ELM_INSPECTING,
+      js: DebugJS.ST_JS,
+      tool: DebugJS.ST_TOOLS,
+      ext: DebugJS.ST_EXT_PANEL
+    };
+    var f = (a[fn] === undefined ? 0 : a[fn]);
+    return ctx.openFeature(ctx, f, subfn, opt);
   },
 
   keyHandler: function(e) {
@@ -4534,9 +4521,6 @@ DebugJS.prototype = {
         case DebugJS.TOOL_TIMER_MODE_SW_CU:
           ctx.updateTimerStopWatchCu();
           break;
-        case DebugJS.TOOL_TIMER_MODE_SW_CU:
-          ctx.updateTimerStopWatchCu();
-          break;
         case DebugJS.TOOL_TIMER_MODE_SW_CD:
           ctx.updateTimerStopWatchCd();
       }
@@ -4743,20 +4727,8 @@ DebugJS.prototype = {
   },
   timerUpDwn: function(part, up) {
     var val = DebugJS.ctx.calcTimeupTimeInp();
-    var v = 0;
-    switch (part) {
-      case 'hh':
-        v = 3600000;
-        break;
-      case 'mi':
-        v = 60000;
-        break;
-      case 'ss':
-        v = 1000;
-        break;
-      case 'sss':
-        v = 1;
-    }
+    var ms = {'hh': 3600000, 'mi': 60000, 'ss': 1000, 'sss': 1};
+    var v = (ms[part] === undefined ? 0 : ms[part]);
     if (up) {
       val += v;
     } else {
@@ -6948,37 +6920,23 @@ DebugJS.prototype = {
   cmdClose: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var fn = DebugJS.splitArgs(arg)[0];
-    var f = 0;
-    switch (fn) {
-      case 'measure':
-        f = DebugJS.ST_MEASURE;
-        break;
-      case 'sys':
-        f = DebugJS.ST_SYS_INFO;
-        break;
-      case 'html':
-        f = DebugJS.ST_HTML_SRC;
-        break;
-      case 'dom':
-        f = DebugJS.ST_ELM_INSPECTING;
-        break;
-      case 'js':
-        f = DebugJS.ST_JS;
-        break;
-      case 'tool':
-        f = DebugJS.ST_TOOLS;
-        break;
-      case 'ext':
-        f = DebugJS.ST_EXT_PANEL;
-        break;
-      case 'all':
-        ctx.closeAllFeatures(ctx);
-        return;
+    if (fn == 'all') {
+      ctx.closeAllFeatures(ctx);
+      return;
     }
-    if (f == 0) {
+    var d = {
+      'measure': DebugJS.ST_MEASURE,
+      'sys': DebugJS.ST_SYS_INFO,
+      'html': DebugJS.ST_HTML_SRC,
+      'dom': DebugJS.ST_ELM_INSPECTING,
+      'js': DebugJS.ST_JS,
+      'tool': DebugJS.ST_TOOLS,
+      'ext': DebugJS.ST_EXT_PANEL
+    };
+    if (d[fn] === undefined) {
       DebugJS.printUsage(tbl.help);
     } else {
-      ctx.closeFeature(ctx, f);
+      ctx.closeFeature(ctx, d[fn]);
     }
   },
 
@@ -7601,12 +7559,10 @@ DebugJS.prototype = {
 
   cmdJs: function(arg, tbl) {
     var a = DebugJS.splitArgs(arg);
-    switch (a[0]) {
-      case 'exec':
-        DebugJS.ctx.execJavaScript();
-        break;
-      default:
-        DebugJS.printUsage(tbl.help);
+    if (a[0] == 'exec') {
+      DebugJS.ctx.execJavaScript();
+    } else {
+      DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -7753,33 +7709,17 @@ DebugJS.prototype = {
   cmdLog: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
-    var fn = null;
-    switch (a[0]) {
-      case 'bufsize':
-        fn = ctx._cmdLogBufsize;
-        break;
-      case 'dump':
-        fn = ctx._cmdLogDump;
-        break;
-      case 'filter':
-        fn = ctx._cmdLogFilter;
-        break;
-      case 'html':
-        fn = ctx._cmdLogHtml;
-        break;
-      case 'load':
-        fn = ctx._cmdLogLoad;
-        break;
-      case 'preserve':
-        fn = ctx._cmdLogPreserve;
-        break;
-      case 'suspend':
-        fn = ctx._cmdLogSuspend;
-        break;
-      case 'lv':
-        fn = ctx._cmdLogLv;
-    }
-    if (fn) {return fn(ctx, arg, echo);}
+    var fn = {
+      bufsize: ctx._cmdLogBufsize,
+      dump: ctx._cmdLogDump,
+      filter: ctx._cmdLogFilter,
+      html: ctx._cmdLogHtml,
+      load: ctx._cmdLogLoad,
+      preserve: ctx._cmdLogPreserve,
+      suspend: ctx._cmdLogSuspend,
+      lv: ctx._cmdLogLv
+    };
+    if (fn[a[0]]) {return fn[a[0]](ctx, arg, echo);}
     DebugJS.printUsage(tbl.help);
   },
   _cmdLogBufsize: function(ctx, arg) {
