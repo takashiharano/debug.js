@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812222107';
+  this.v = '201812222155';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2665,7 +2665,7 @@ DebugJS.prototype = {
             DebugJS.point.move.stop();
             DebugJS.point.drag.stop();
             DebugJS.scrollWinTo.stop();
-            DebugJS.inputText.stop();
+            DebugJS.setText.stop();
             DebugJS._log.s(ctx.cmdLine.value + '^C');
             ctx.cmdLine.value = '';
             DebugJS.callEvtListeners('ctrlc');
@@ -8132,7 +8132,7 @@ DebugJS.prototype = {
     var start = DebugJS.getOptVal(arg, 'start');
     var end = DebugJS.getOptVal(arg, 'end');
     try {
-      DebugJS.inputText(el, txt, speed, step, start, end);
+      DebugJS.setText(el, txt, speed, step, start, end);
     } catch (e) {
       DebugJS._log.e(e);
     }
@@ -8705,7 +8705,7 @@ DebugJS.prototype = {
     var step = DebugJS.getOptVal(arg, 'step');
     var start = DebugJS.getOptVal(arg, 'start');
     var end = DebugJS.getOptVal(arg, 'end');
-    DebugJS.inputText(slctr, txt, speed, step, start, end);
+    DebugJS.setText(slctr, txt, speed, step, start, end);
   },
 
   cmdTime: function(arg, tbl, echo) {
@@ -14399,7 +14399,7 @@ DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg) {
 DebugJS.scrollElTo = function(target, x, y) {
   x += '';
   y += '';
-  el = DebugJS.getElement(target);
+  var el = DebugJS.getElement(target);
   if (!el) {
     DebugJS._log.e('Element not found: ' + target);
     return;
@@ -14469,9 +14469,9 @@ DebugJS.calcDestPosAndStep = function(dest, step) {
   return d;
 };
 
-DebugJS.inputText = function(elm, txt, speed, step, start, end) {
+DebugJS.setText = function(elm, txt, speed, step, start, end) {
   if (txt == undefined) return;
-  var data = DebugJS.inputText.data;
+  var data = DebugJS.setText.data;
   if (data.tmid > 0) {
     clearTimeout(data.tmid);
     data.tmid = 0;
@@ -14485,7 +14485,7 @@ DebugJS.inputText = function(elm, txt, speed, step, start, end) {
   try {
     txt = eval(txt) + '';
   } catch (e) {
-    DebugJS._log.e('inputText(): ' + e);
+    DebugJS._log.e('setText(): ' + e);
   }
   txt = DebugJS.replaceCtrlChr(txt, true);
   data.txt = txt;
@@ -14495,17 +14495,19 @@ DebugJS.inputText = function(elm, txt, speed, step, start, end) {
   if ((step == undefined) || (step == null) || (step == '')) {
     step = DebugJS.ctx.props.textinputstep;
   }
+  start |= 0;
+  if (start > 0) start -= 1;
   data.speed = speed;
   data.step = step | 0;
-  data.i = start | 0;
+  data.i = start;
   data.end = end | 0;
   data.el = el;
   data.isInp = DebugJS.isTxtInp(el);
   DebugJS.bat.lock();
-  DebugJS._inputText();
+  DebugJS._setText();
 };
-DebugJS._inputText = function() {
-  var data = DebugJS.inputText.data;
+DebugJS._setText = function() {
+  var data = DebugJS.setText.data;
   var speed = data.speed;
   var step = data.step;
   if ((speed == 0) || (step == 0) || (data.end > 0) && (data.i >= data.end)) {
@@ -14524,17 +14526,17 @@ DebugJS._inputText = function() {
   }
   if (data.i < data.txt.length) {
     speed = DebugJS.getSpeed(speed) | 0;
-    data.tmid = setTimeout(DebugJS._inputText, speed);
+    data.tmid = setTimeout(DebugJS._setText, speed);
   } else {
-    DebugJS.inputText.stop();
+    DebugJS.setText.stop();
   }
 };
-DebugJS.inputText.stop = function() {
-  DebugJS.inputText.finalize();
+DebugJS.setText.stop = function() {
+  DebugJS.setText.finalize();
   DebugJS.bat.unlock();
 };
-DebugJS.inputText.finalize = function() {
-  var data = DebugJS.inputText.data;
+DebugJS.setText.finalize = function() {
+  var data = DebugJS.setText.data;
   if (data.tmid > 0) {
     clearTimeout(data.tmid);
     data.tmid = 0;
@@ -14546,7 +14548,7 @@ DebugJS.inputText.finalize = function() {
   data.end = 0;
   data.i = 0;
 };
-DebugJS.inputText.data = {el: null, isInp: false, txt: '', speed: 0, end: 0, i: 0, tmid: 0};
+DebugJS.setText.data = {el: null, isInp: false, txt: '', speed: 0, end: 0, i: 0, tmid: 0};
 
 DebugJS.getSpeed = function(v) {
   v += '';
