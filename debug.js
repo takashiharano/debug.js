@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812230112';
+  this.v = '201812230120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5576,7 +5576,7 @@ DebugJS.prototype = {
   },
   onFileLoadedAuto: function(ctx, file, cnt) {
     if (DebugJS.wBOM(cnt)) cnt = cnt.substr(1);
-    if (DebugJS.isBat(cnt)) {
+    if (DebugJS.isBat(cnt) || DebugJS.isB64Bat(cnt)) {
       ctx.onBatLoaded(ctx, file, cnt);
     } else if (file.name.match(/\.js$/)) {
       ctx.onJsLoaded(ctx, file, cnt);
