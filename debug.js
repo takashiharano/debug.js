@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812221155';
+  this.v = '201812222010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7953,177 +7953,228 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitCmdLine(arg);
     var point = DebugJS.point;
+    var ret;
     var op = args[0];
-    var x, y, idx, speed, step, ret, p, el, start, end;
-    var label, target, msg, src, w, h, txt, method, type, val, exp;
     var alignX = DebugJS.getOptVal(arg, 'alignX');
     var alignY = DebugJS.getOptVal(arg, 'alignY');
     if (op == 'init') {
       point.init();
-    } else if (op.charAt(0) == '#') {
-      DebugJS.pointBySelector(op, 0, alignX, alignY);
+    } else if (op == 'move') {
+      ctx._cmdPointMove(ctx, arg, tbl, args);
     } else if (op == 'label') {
-      label = args[1];
-      try {
-        label = eval(label);
-      } catch (e) {
-        DebugJS._log.e(e);
-        return;
-      }
-      idx = args[2] | 0;
-      DebugJS.pointByLabel(label, idx, alignX, alignY);
-    } else if (op == 'hide') {
-      point.hide();
+      ctx._cmdPointLabel(args, alignX, alignY);
+    } else if (op == 'scroll') {
+      ctx._cmdPointScroll(args);
+    } else if (op == 'selectoption') {
+      ret = ctx._cmdPointSelectOpt(ctx, args);
+    } else if (op == 'getprop') {
+      ret = point.getProp(args[1]);
+    } else if (op == 'setprop') {
+      point.setProp(args[1], DebugJS.getArgsFrom(arg, 2), echo);
+    } else if (op == 'text') {
+      ctx._cmdPointText(arg);
+    } else if (op == 'verify') {
+      ret = ctx._cmdPointVerify(arg);
+    } else if (op == 'event') {
+      ret = point.event(DebugJS.getArgsFrom(arg, 1));
+    } else if (op == 'cursor') {
+      ctx._cmdPointCursor(args, tbl);
     } else if (op == 'show') {
       point.show();
-    } else if (op == 'move') {
-      target = args[1];
-      speed = DebugJS.getOptVal(arg, 'speed');
-      step = DebugJS.getOptVal(arg, 'step');
-      if (target == undefined) {
-        DebugJS.printUsage(tbl.help);
-      } else if (target.charAt(0) == '#') {
-        point.moveToSelector(target, 0, speed, step, alignX, alignY);
-      } else if (target == 'label') {
-        label = args[2];
-        idx = args[3] | 0;
-        try {
-          label = eval(label);
-        } catch (e) {
-          DebugJS._log.e(e);
-          return;
-        }
-        point.moveToLabel(label, idx, speed, step, alignX, alignY);
-      } else if (target == 'center') {
-        p = DebugJS.getScreenCenter();
-        point.move(p.x, p.y, speed, step);
-      } else if (target == 'mouse') {
-        point.move(ctx.mousePos.x, ctx.mousePos.y, speed, step);
-      } else {
-        if (args[1] == '') {
-          DebugJS.printUsage(tbl.help);
-        } else if (isNaN(target)) {
-          idx = args[2];
-          if (target.charAt(0) == '(') {
-            target = target.substr(1, target.length - 2);
-          }
-          point.moveToSelector(target, idx, speed, step, alignX, alignY);
-        } else {
-          x = args[1];
-          y = args[2];
-          point.move(x, y, speed, step, alignX, alignY);
-        }
-      }
-    } else if (op == 'drag') {
-      idx = arg.indexOf(op);
-      point.drag(arg.substring(idx + 4));
-    } else if (op == 'event') {
-      idx = arg.indexOf(op);
-      ret = point.event(arg.substring(idx + 6));
+    } else if (op == 'hide') {
+      point.hide();
     } else if (op == 'hint') {
-      op = args[1];
-      if (op == 'msg') {
-        msg = DebugJS.getArgsFrom(arg, 2);
-        point.hint(msg);
-      } else if (op == 'hide') {
-        point.hint.hide();
-      } else if (op == 'show') {
-        point.hint.show();
-      } else if (op == 'clear') {
-        point.hint.clear();
-      } else {
-        DebugJS.printUsage(tbl.help);
-      }
-    } else if (op == 'center') {
-      p = DebugJS.getScreenCenter();
-      point(p.x, p.y);
-    } else if (op == 'cursor') {
-      src = args[1];
-      w = args[2];
-      h = args[3];
-      if (src == undefined) {
-        DebugJS.printUsage(tbl.help);
-        return;
-      }
-      if (src == 'default') src = '';
-      point.cursor(src, w, h);
+      ctx._cmdPointHint(point, arg, args[1], tbl);
+    } else if (op == 'drag') {
+      point.drag(DebugJS.getArgsFrom(arg, 1));
+    } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
+      var speed = DebugJS.getOptVal(arg, 'speed');
+      point.simpleEvent(op, speed);
     } else if ((op == 'blur') || (op == 'change') || (op == 'contextmenu') || (op == 'focus') || (op == 'mousedown') || (op == 'mouseup')) {
       point.simpleEvent(op, args[1]);
-    } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
-      speed = DebugJS.getOptVal(arg, 'speed');
-      point.simpleEvent(op, speed);
     } else if ((op == 'keydown') || (op == 'keypress') || (op == 'keyup')) {
       if (args[1] != undefined) {
         point.keyevt(args);
       } else {
         DebugJS.printUsage('point keydown|keypress|keyup -keyCode n -code c -key k [-s] [-c] [-a] [-m]');
       }
-    } else if (op == 'getprop') {
-      ret = point.getProp(args[1]);
-    } else if (op == 'setprop') {
-      point.setProp(args[1], DebugJS.getArgsFrom(arg, 2), echo);
-    } else if (op == 'verify') {
-      ret = ctx._cmdPointVerify(arg);
-    } else if (op == 'mouse') {
-      point(ctx.mousePos.x, ctx.mousePos.y);
-    } else if (op == 'text') {
-      el = point.getElementFromCurrentPos();
-      if ((!el) || (!DebugJS.isTxtInp(el))) {
-        DebugJS._log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
-        return;
-      }
-      txt = DebugJS.getArgVal(arg, 1);
-      speed = DebugJS.getOptVal(arg, 'speed');
-      step = DebugJS.getOptVal(arg, 'step');
-      start = DebugJS.getOptVal(arg, 'start');
-      end = DebugJS.getOptVal(arg, 'end');
-      try {
-        DebugJS.inputText(el, txt, speed, step, start, end);
-      } catch (e) {
-        DebugJS._log.e(e);
-      }
-    } else if (op == 'selectoption') {
-      el = point.getElementFromCurrentPos();
-      if ((el) && (el.nodeName == 'SELECT')) {
-        method = args[1];
-        type = args[2];
-        if (((method == 'get') || (method == 'set')) &&
-            ((type == 'text') || (type == 'value'))) {
-          val = args[3];
-          ret = ctx._cmdSelect(el, method, type, val);
-        } else {
-          DebugJS._log.e('Usage: point selectoption get|set text|value val');
-        }
-      } else {
-        DebugJS._log.e('Pointed area is not a select element (' + (el ? el.nodeName : 'null') + ')');
-      }
-    } else if (op == 'scroll') {
-      x = args[1];
-      y = args[2];
-      el = point.getElementFromCurrentPos();
-      if (el) {
-        DebugJS.scrollElTo(el, x, y);
-      } else {
-        DebugJS._log.e('Failed to get element');
-      }
     } else {
-      if (op == '') {
-        DebugJS._log('x=' + point.x + ', y=' + point.y);
-        DebugJS.printUsage(tbl.help);
-      } else if (isNaN(args[0])) {
-        target = args[0];
-        idx = args[1];
-        if (target.charAt(0) == '(') {
-          target = target.substr(1, target.length - 2);
-        }
-        DebugJS.pointBySelector(target, idx, alignX, alignY);
-      } else {
-        x = args[0];
-        y = args[1];
-        point(x, y);
-      }
+      ctx._cmdPointJmp(ctx, arg, tbl, args);
     }
     return ret;
+  },
+  _cmdPointJmp: function(ctx, arg, tbl, args) {
+    var point = DebugJS.point;
+    var x, y;
+    if (args[0] == '') {
+      DebugJS._log('x=' + point.x + ', y=' + point.y);
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var p = ctx._cmdPointCalcPos(ctx, args[0], args[1]);
+    if (p) {
+      point(p.x, p.y);
+    } else if (isNaN(args[0])) {
+      var target = args[0];
+      var idx = args[1];
+      if (target.charAt(0) == '(') {
+        target = target.substr(1, target.length - 2);
+      }
+      var alignX = DebugJS.getOptVal(arg, 'alignX');
+      var alignY = DebugJS.getOptVal(arg, 'alignY');
+      DebugJS.pointBySelector(target, idx, alignX, alignY);
+    } else {
+      x = args[0];
+      y = args[1];
+      point(x, y);
+    }
+  },
+  _cmdPointMove: function(ctx, arg, tbl, args) {
+    var point = DebugJS.point;
+    var target = args[1];
+    if (target == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var idx;
+    var speed = DebugJS.getOptVal(arg, 'speed');
+    var step = DebugJS.getOptVal(arg, 'step');
+    var alignX = DebugJS.getOptVal(arg, 'alignX');
+    var alignY = DebugJS.getOptVal(arg, 'alignY');
+    var p = ctx._cmdPointCalcPos(ctx, args[1], args[2]);
+    if (p) {
+      point.move(p.x, p.y, speed, step);
+    } else if (target == 'label') {
+      var label = args[2];
+      idx = args[3] | 0;
+      try {
+        label = eval(label);
+      } catch (e) {
+        DebugJS._log.e(e);
+        return;
+      }
+      point.moveToLabel(label, idx, speed, step, alignX, alignY);
+    } else if (isNaN(target)) {
+      idx = args[2];
+      if (target.charAt(0) == '(') {
+        target = target.substr(1, target.length - 2);
+      }
+      point.moveToSelector(target, idx, speed, step, alignX, alignY);
+    } else {
+      var x = args[1];
+      var y = args[2];
+      point.move(x, y, speed, step);
+    }
+  },
+  _cmdPointCalcPos: function(ctx, a1, a2) {
+    var x = a1;
+    var y = a2;
+    if (a1 == 'mouse') {
+      x = ctx.mousePos.x;
+      y = ctx.mousePos.y;
+    } else if (a1 == 'center') {
+      var p = DebugJS.getScreenCenter();
+      x = p.x;
+      if (a2 == undefined) y = p.y;
+    } else if (a1 == 'left') {
+      x = 0;
+      if (a2 == undefined) y = '+0';
+    } else if (a1 == 'right') {
+      x = document.documentElement.clientWidth;
+      if (a2 == undefined) y = '+0';
+    }
+    if (a2 == 'top') {
+      y = 0;
+    } else if (a2 == 'middle') {
+      y = DebugJS.getScreenCenter().y;
+    } else if (a2 == 'bottom') {
+      y = document.documentElement.clientHeight;
+    }
+    if ((x == a1) && (y == a2)) {
+      return null;
+    }
+    return {x: x, y: y};
+  },
+  _cmdPointHint: function(point, arg, op, tbl) {
+    if (op == 'msg') {
+      var msg = DebugJS.getArgsFrom(arg, 2);
+      point.hint(msg);
+    } else if (op == 'hide') {
+      point.hint.hide();
+    } else if (op == 'show') {
+      point.hint.show();
+    } else if (op == 'clear') {
+      point.hint.clear();
+    } else {
+      DebugJS.printUsage(tbl.help);
+    }
+  },
+  _cmdPointCursor: function(args, tbl) {
+    var src = args[1];
+    var w = args[2];
+    var h = args[3];
+    if (src == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    if (src == 'default') src = '';
+    DebugJS.point.cursor(src, w, h);
+  },
+  _cmdPointText: function(arg) {
+    var el = DebugJS.point.getElementFromCurrentPos();
+    if ((!el) || (!DebugJS.isTxtInp(el))) {
+      DebugJS._log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
+      return;
+    }
+    var txt = DebugJS.getArgVal(arg, 1);
+    var speed = DebugJS.getOptVal(arg, 'speed');
+    var step = DebugJS.getOptVal(arg, 'step');
+    var start = DebugJS.getOptVal(arg, 'start');
+    var end = DebugJS.getOptVal(arg, 'end');
+    try {
+      DebugJS.inputText(el, txt, speed, step, start, end);
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
+  },
+  _cmdPointSelectOpt: function(ctx, args) {
+    var ret;
+    var el = DebugJS.point.getElementFromCurrentPos();
+    if ((el) && (el.nodeName == 'SELECT')) {
+      var method = args[1];
+      var type = args[2];
+      if (((method == 'get') || (method == 'set')) &&
+          ((type == 'text') || (type == 'value'))) {
+        var val = args[3];
+        ret = ctx._cmdSelect(el, method, type, val);
+      } else {
+        DebugJS._log.e('Usage: point selectoption get|set text|value val');
+      }
+    } else {
+      DebugJS._log.e('Pointed area is not a select element (' + (el ? el.nodeName : 'null') + ')');
+    }
+    return ret;
+  },
+  _cmdPointLabel: function(args, alignX, alignY) {
+    var label = args[1];
+    try {
+      label = eval(label);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return;
+    }
+    var idx = args[2] | 0;
+    DebugJS.pointByLabel(label, idx, alignX, alignY);
+  },
+  _cmdPointScroll: function(args) {
+    var x = args[1];
+    var y = args[2];
+    var el = DebugJS.point.getElementFromCurrentPos();
+    if (el) {
+      DebugJS.scrollElTo(el, x, y);
+    } else {
+      DebugJS._log.e('Failed to get element');
+    }
   },
   _cmdPointVerify: function(arg) {
     var a = DebugJS.splitCmdLine(arg);
@@ -8138,7 +8189,6 @@ DebugJS.prototype = {
     }
     return DebugJS.point.verify(prop, method, exp, label);
   },
-
   cmdProp: function(arg, tbl) {
     arg = DebugJS.delLeadingSP(arg);
     if (arg == '') {
@@ -15114,7 +15164,11 @@ DebugJS.isFocusable = function(el) {
   return (a.indexOf(el.tagName) == -1 ? false : true);
 };
 DebugJS.isTxtInp = function(el) {
-  return (((el.tagName == 'INPUT') && (el.type == 'text')) || (el.tagName == 'TEXTAREA'));
+  if (el.tagName == 'TEXTAREA') return true;
+  if (el.tagName == 'INPUT') {
+    if ((el.type == 'text') || (el.type == 'password')) return true;
+  }
+  return false;
 };
 
 DebugJS.toggleElShowHide = function(el) {
