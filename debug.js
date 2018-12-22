@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812222010';
+  this.v = '201812222107';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12637,8 +12637,9 @@ DebugJS.bat.exec = function() {
   }
   c = DebugJS.delLeadingSP(c);
   ctrl.pc++;
+  var r = bat.prepro(ctx, c);
   ctx.updateCurPc();
-  switch (bat.prepro(ctx, c)) {
+  switch (r) {
     case 1:
       ctrl.tmpEchoOff = false;
       bat.next(0);
@@ -12894,7 +12895,6 @@ DebugJS.bat.prepro = function(ctx, cmd) {
   }
   if (ctrl.js) {
     ctrl.pc--;
-    ctx.updateCurPc();
     bat.execJs();
     return 1;
   }
@@ -13046,7 +13046,6 @@ DebugJS.bat.execJs = function() {
   while ((ctrl.pc >= ctrl.startPc) && (ctrl.pc <= ctrl.endPc)) {
     c = bat.cmds[ctrl.pc];
     ctrl.pc++;
-    DebugJS.ctx.updateCurPc();
     if (!DebugJS.strcmpWOsp(c, DebugJS.BAT_TKN_JS)) {
       if (!pure) {
         c = DebugJS.replaceCmdVals(c);
@@ -13071,7 +13070,6 @@ DebugJS.bat.text = function() {
   while ((ctrl.pc >= ctrl.startPc) && (ctrl.pc <= ctrl.endPc)) {
     c = bat.cmds[ctrl.pc];
     ctrl.pc++;
-    DebugJS.ctx.updateCurPc();
     if (!DebugJS.strcmpWOsp(c, DebugJS.BAT_TKN_TXT)) {
       txt += c + '\n';
     }
