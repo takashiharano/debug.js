@@ -4009,30 +4009,6 @@ http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
   </tr>
 
   <tr>
-    <td class="name">input</td>
-    <td>
-      arg1: text<br>
-      arg2: #id<br>
-      arg3: "data"<br>
-      arg4: options
-    </td>
-    <td>
-      Input a value into an element
-<pre class="eg">
-$ input text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span>
-$ input text #text1 "abc 123" -speed 100-200<span class="annotation">(opt)</span>
-$ input text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 1<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
-$ input text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 2<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
-$ input text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
-<span class="annotation">  speed: input speed in millis(default=30)
-  step : number of characters to input at a time (default=1)
-  start: sequence end position
-  end  : sequence end position</span>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">js</td>
     <td>operation</td>
     <td>
@@ -4771,6 +4747,30 @@ Description
 OK:0/1 NG:0 ERR:1 NT:0 (OK:1/6 NG:3 ERR:1 NT:1)
 -----
 [ERR]
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">text</td>
+    <td>
+      arg1: text<br>
+      arg2: selector<br>
+      arg3: "data"<br>
+      arg4: options
+    </td>
+    <td>
+      Set text value into an element.
+<pre class="eg">
+$ text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span>
+$ text #text1 "abc 123" -speed 100-200<span class="annotation">(opt)</span>
+$ text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 1<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
+$ text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 2<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
+$ text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
+<span class="annotation">  speed: input speed in millis(default=30)
+  step : number of characters to set at a time (default=1)
+  start: sequence start position
+  end  : sequence end position</span>
 </pre>
     </td>
   </tr>

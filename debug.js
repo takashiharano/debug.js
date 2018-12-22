@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812220144';
+  this.v = '201812221155';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -343,7 +343,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'hex', fn: this.cmdHex, desc: 'Convert a number to hexadecimal', help: 'hex num digit'},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] url [--user user:pass] [data]'},
-    {cmd: 'input', fn: this.cmdInput, desc: 'Input a value into an element', help: 'input text #id "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
     {cmd: 'jump', fn: this.cmdJump, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -374,6 +373,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
+    {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', help: 'time ms|-t1 ms|"datestr" -t2 ms|"datestr"'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'time start|split|stop|list [timer-name]'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
@@ -2355,7 +2355,7 @@ DebugJS.prototype = {
     ctx.stopMeasure(ctx);
     ctx.bodyEl.style.cursor = ctx.bodyCursor;
     ctx.status &= ~DebugJS.ST_MEASURE;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_MEASURE);
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_MEASURE);
     if (!q) DebugJS._log.s('Screen Measure OFF');
     ctx.updateMeasBtn(ctx);
   },
@@ -3437,7 +3437,7 @@ DebugJS.prototype = {
       ctx.sysInfoPanel = null;
     }
     ctx.status &= ~DebugJS.ST_SYS_INFO;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_SYS_INFO);
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_SYS_INFO);
     ctx.updateSysInfoBtn(ctx);
     ctx.setIntervalL(ctx);
   },
@@ -3858,7 +3858,7 @@ DebugJS.prototype = {
     }
     ctx.updateTargetElm(null);
     ctx.status &= ~DebugJS.ST_ELM_INSPECTING;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_ELM_INSPECTING);
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_ELM_INSPECTING);
     ctx.updateElmInfoBtn(ctx);
   },
   inspectElement: function(x, y) {
@@ -4290,7 +4290,7 @@ DebugJS.prototype = {
       ctx.htmlSrcPanel = null;
     }
     ctx.status &= ~DebugJS.ST_HTML_SRC;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_HTML_SRC);
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_HTML_SRC);
     ctx.updateHtmlSrcBtn(ctx);
   },
   showHtmlSrc: function() {
@@ -4405,7 +4405,7 @@ DebugJS.prototype = {
       ctx.jsPanel = null;
     }
     ctx.status &= ~DebugJS.ST_JS;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_JS);
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_JS);
     ctx.updateJsBtn(ctx);
   },
 
@@ -4456,7 +4456,7 @@ DebugJS.prototype = {
       ctx.switchToolsFunction(0);
     }
     ctx.status &= ~DebugJS.ST_TOOLS;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_TOOLS);
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_TOOLS);
     ctx.updateToolsBtn(ctx);
   },
   updateToolsBtns: function() {
@@ -6375,7 +6375,7 @@ DebugJS.prototype = {
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.ST_EXT_PANEL;
-    DebugJS.delArrayVal(ctx.featStack, DebugJS.ST_EXT_PANEL);
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_EXT_PANEL);
     ctx.updateExtBtn(ctx);
   },
 
@@ -7541,22 +7541,6 @@ DebugJS.prototype = {
     DebugJS.ctx.doHttpRequest(method, data);
   },
 
-  cmdInput: function(arg, tbl) {
-    var a = DebugJS.splitCmdLine(arg);
-    var type = a[0];
-    if (type == 'text') {
-      var id = a[1];
-      var txt = a[2];
-      var speed = DebugJS.getOptVal(arg, 'speed');
-      var step = DebugJS.getOptVal(arg, 'step');
-      var start = DebugJS.getOptVal(arg, 'start');
-      var end = DebugJS.getOptVal(arg, 'end');
-      DebugJS.inputText(id, txt, speed, step, start, end);
-    } else {
-      DebugJS.printUsage(tbl.help);
-    }
-  },
-
   cmdJs: function(arg, tbl) {
     var a = DebugJS.splitArgs(arg);
     if (a[0] == 'exec') {
@@ -8084,7 +8068,7 @@ DebugJS.prototype = {
       point(ctx.mousePos.x, ctx.mousePos.y);
     } else if (op == 'text') {
       el = point.getElementFromCurrentPos();
-      if ((!el) || ((el.nodeName != 'INPUT') && (el.nodeName != 'TEXTAREA'))) {
+      if ((!el) || (!DebugJS.isTxtInp(el))) {
         DebugJS._log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
         return;
       }
@@ -8657,6 +8641,21 @@ DebugJS.prototype = {
       return;
     }
     DebugJS.test.setResult(st, label, inf);
+  },
+
+  cmdText: function(arg, tbl) {
+    var a = DebugJS.splitCmdLine(arg);
+    var slctr = a[0];
+    var txt = a[1];
+    if (txt == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var speed = DebugJS.getOptVal(arg, 'speed');
+    var step = DebugJS.getOptVal(arg, 'step');
+    var start = DebugJS.getOptVal(arg, 'start');
+    var end = DebugJS.getOptVal(arg, 'end');
+    DebugJS.inputText(slctr, txt, speed, step, start, end);
   },
 
   cmdTime: function(arg, tbl, echo) {
@@ -10465,6 +10464,13 @@ DebugJS.countArrVal = function(a, v, f) {
   }
   return c;
 };
+DebugJS.delArrVal = function(arr, v) {
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] == v) {
+      arr.splice(i--, 1);
+    }
+  }
+};
 DebugJS.nextArr = function(a, v) {
   var r = a[0];
   for (var i = 0; i < a.length; i++) {
@@ -11774,14 +11780,6 @@ DebugJS.hasClass = function(el, n) {
 DebugJS.copyProp = function(src, dest) {
   for (var k in src) {
     dest[k] = src[k];
-  }
-};
-
-DebugJS.delArrayVal = function(arr, v) {
-  for (var i = 0; i < arr.length; i++) {
-    if (arr[i] == v) {
-      arr.splice(i--, 1);
-    }
   }
 };
 
@@ -14423,13 +14421,18 @@ DebugJS.calcDestPosAndStep = function(dest, step) {
   return d;
 };
 
-DebugJS.inputText = function(el, txt, speed, step, start, end) {
+DebugJS.inputText = function(elm, txt, speed, step, start, end) {
   if (txt == undefined) return;
   var data = DebugJS.inputText.data;
   if (data.tmid > 0) {
     clearTimeout(data.tmid);
     data.tmid = 0;
     DebugJS.bat.unlock();
+  }
+  var el = DebugJS.getElement(elm);
+  if (!el) {
+    DebugJS._log.e('Element not found: ' + elm);
+    return;
   }
   try {
     txt = eval(txt) + '';
@@ -14448,13 +14451,10 @@ DebugJS.inputText = function(el, txt, speed, step, start, end) {
   data.step = step | 0;
   data.i = start | 0;
   data.end = end | 0;
-  data.el = DebugJS.getElement(el);
-  if (data.el) {
-    DebugJS.bat.lock();
-    DebugJS._inputText();
-  } else {
-    DebugJS._log.e('Element not found: ' + el);
-  }
+  data.el = el;
+  data.isInp = DebugJS.isTxtInp(el);
+  DebugJS.bat.lock();
+  DebugJS._inputText();
 };
 DebugJS._inputText = function() {
   var data = DebugJS.inputText.data;
@@ -14467,9 +14467,13 @@ DebugJS._inputText = function() {
   }
   data.tmid = 0;
   var txt = data.txt.substr(0, data.i);
-  data.el.value = txt;
-  var e = DebugJS.event.create('input');
-  data.el.dispatchEvent(e);
+  if (data.isInp) {
+    data.el.value = txt;
+    var e = DebugJS.event.create('input');
+    data.el.dispatchEvent(e);
+  } else {
+    data.el.innerText = txt;
+  }
   if (data.i < data.txt.length) {
     speed = DebugJS.getSpeed(speed) | 0;
     data.tmid = setTimeout(DebugJS._inputText, speed);
@@ -14488,12 +14492,13 @@ DebugJS.inputText.finalize = function() {
     data.tmid = 0;
   }
   data.el = null;
+  data.isInp = false;
   data.txt = '';
   data.speed = 0;
   data.end = 0;
   data.i = 0;
 };
-DebugJS.inputText.data = {el: null, txt: '', speed: 0, end: 0, i: 0, tmid: 0};
+DebugJS.inputText.data = {el: null, isInp: false, txt: '', speed: 0, end: 0, i: 0, tmid: 0};
 
 DebugJS.getSpeed = function(v) {
   v += '';
@@ -15099,21 +15104,17 @@ DebugJS.findFocusableEl = function(e) {
       el = null;
       break;
     }
-    if (DebugJS.isFocusable(el.tagName)) break;
+    if (DebugJS.isFocusable(el)) break;
     el = el.parentNode;
   } while (el != null);
   return el;
 };
-DebugJS.isFocusable = function(n) {
-  switch (n) {
-    case 'A':
-    case 'BUTTON':
-    case 'INPUT':
-    case 'SELECT':
-    case 'TEXTAREA':
-      return true;
-  }
-  return false;
+DebugJS.isFocusable = function(el) {
+  var a = ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'];
+  return (a.indexOf(el.tagName) == -1 ? false : true);
+};
+DebugJS.isTxtInp = function(el) {
+  return (((el.tagName == 'INPUT') && (el.type == 'text')) || (el.tagName == 'TEXTAREA'));
 };
 
 DebugJS.toggleElShowHide = function(el) {
