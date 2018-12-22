@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812222155';
+  this.v = '201812230112';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12435,6 +12435,7 @@ DebugJS.bat.set = function(b) {
       bat.stopNext();
     }
   }
+  if (DebugJS.isB64Bat(b)) b = DebugJS.decodeB64(b);
   if (DebugJS.ctx.batTextEditor) {
     DebugJS.ctx.batTextEditor.value = b;
   }
