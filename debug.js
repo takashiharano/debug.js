@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812231500';
+  this.v = '201812231600';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9259,6 +9259,18 @@ DebugJS.RingBuffer.prototype = {
   },
   getSize: function() {
     return this.len;
+  }
+};
+
+DebugJS.TextBuf = function(s) {
+  this.b = (s == undefined ? '' : s + '\n');
+};
+DebugJS.TextBuf.prototype = {
+  add: function(s) {
+    this.b += s + '\n';
+  },
+  toString: function() {
+    return this.b;
   }
 };
 
