@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812231700';
+  this.v = '201812232038';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8340,11 +8340,7 @@ DebugJS.prototype = {
       var pos = a[1];
       ctx._cmdScrollToLog(ctx, tbl, pos);
     } else if (target == 'window') {
-      var posX = a[1];
-      var posY = a[2];
-      var speed = DebugJS.getOptVal(arg, 'speed');
-      var step = DebugJS.getOptVal(arg, 'step');
-      ctx._cmdScrollToWin(ctx, tbl, posX, posY, speed, step);
+      ctx._cmdScrollToWin(ctx, arg, tbl);
     } else {
       var x = a[1];
       var y = a[2];
@@ -8363,18 +8359,36 @@ DebugJS.prototype = {
       ctx.logPanel.scrollTop = pos;
     }
   },
-  _cmdScrollToWin: function(ctx, tbl, posX, posY, speed, step) {
-    if ((posX == undefined) || (posY == undefined)) {
+  _cmdScrollToWin: function(ctx, arg, tbl) {
+    var a = DebugJS.splitCmdLine(arg);
+    var posX = a[1];
+    var posY = a[2];
+    var speed = DebugJS.getOptVal(arg, 'speed');
+    var step = DebugJS.getOptVal(arg, 'step');
+    if (posX == undefined) {
       DebugJS.printUsage(tbl.help);
       return;
     }
-    var x = ctx._cmdScrollWinGetX(posX);
-    if (x == undefined) {
+    if (speed == undefined) speed = ctx.props.scrollspeed;
+    if (step == undefined) step = ctx.props.scrollstep;
+    if (isNaN(posX)) {
+      var ps = DebugJS.getElPosSize(posX, posY);
+      if (ps) {
+        DebugJS.scrollWinToTarget(ps, speed, step, null, null, true);
+        return;
+      }
+    }
+    if (posY == undefined) {
       DebugJS.printUsage(tbl.help);
       return;
     }
     var y = ctx._cmdScrollWinGetY(posY);
     if (y == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var x = ctx._cmdScrollWinGetX(posX);
+    if (x == undefined) {
       DebugJS.printUsage(tbl.help);
       return;
     }
@@ -14376,7 +14390,8 @@ DebugJS.scrollWinTo.fin = function() {
   DebugJS.scrollWinTo.initData();
   DebugJS.bat.unlock();
 };
-DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg) {
+
+DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg, top) {
   if (!ps) return false;
   var d = DebugJS.scrollWinTo.data;
   if (d.tmid > 0) {
@@ -14398,17 +14413,18 @@ DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg) {
   var absScreenBottomB = bodyH;
   var relTargetPosYinScreen = (ps.y + window.pageYOffset) - absScreenBottomT;
   var absTargetPosYinDoc = ps.y + window.pageYOffset;
+  var alignY = (top ? 0 : (clientH / 2));
   if (ps.y < 0) {
     if ((ps.y + window.pageYOffset) < (clientH / 2)) {
       d.dstY = window.pageYOffset * (-1);
     } else {
-      d.dstY = ps.y - (clientH / 2);
+      d.dstY = ps.y - alignY;
     }
   } else if ((ps.y + ps.h) > clientH) {
     if ((absTargetPosYinDoc >= absScreenBottomT) && (absTargetPosYinDoc <= absScreenBottomB)) {
       d.dstY = absScreenBottomB - DebugJS.ctx.scrollPosY;
     } else {
-      d.dstY = ps.y - (clientH / 2);
+      d.dstY = ps.y - alignY;
     }
   }
   if ((d.dstX != 0) || (d.dstY != 0)) {
