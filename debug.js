@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812230120';
+  this.v = '201812231500';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11582,10 +11582,19 @@ DebugJS.substr = function(txt, len) {
 };
 DebugJS.startsWith = function(s, p, o) {
   if (o) s = s.substr(o);
+  if ((s == '') && (p == '')) return true;
+  if (p == '') return false;
   return (s.substr(0, p.length) == p);
 };
-DebugJS.endsWith = function(s, t) {
-  return (s.charAt(s.length - 1) == t);
+DebugJS.endsWith = function(s, p) {
+  if ((s == '') && (p == '')) return true;
+  if (p == '') return false;
+  return (s.substr(s.length - p.length) == p);
+};
+DebugJS.needNL = function(s, n) {
+  var nl = '\n';
+  if (n > 1) nl = DebugJS.repeatCh(nl, n);
+  return ((s != '') && (!DebugJS.endsWith(s, nl)));
 };
 DebugJS.strcount = function(s, p) {
   var i = 0;
@@ -11892,8 +11901,8 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   if (b64) l = DebugJS.encodeB64(l);
   return l;
 };
-DebugJS.sendLog = function(url, pName, param, extInfo, wBf, cb) {
-  var b = DebugJS.createLogData(extInfo, wBf);
+DebugJS.sendLog = function(url, pName, param, extInfo, flg, cb) {
+  var b = DebugJS.createLogData(extInfo, flg);
   var data = DebugJS.http.buildParam(param);
   if (data != '') data += '&';
   if (DebugJS.isEmptyVal(pName)) pName = 'data';
@@ -11913,8 +11922,9 @@ DebugJS.sendLogCb = function(xhr) {
     DebugJS._log.e('Send Log ERR (' + st + ')');
   }
 };
-DebugJS.createLogData = function(extInfo, wBf) {
+DebugJS.createLogData = function(extInfo, flg) {
   var LINE = '------------------------------------------------------------------------\n';
+  if (flg == undefined) flg = 'head|log';
   var info = ['', '', '', ''];
   if (extInfo) {
     if (extInfo.info0) info[0] = extInfo.info0;
@@ -11922,29 +11932,34 @@ DebugJS.createLogData = function(extInfo, wBf) {
     if (extInfo.info2) info[2] = extInfo.info2;
     if (extInfo.info3) info[3] = extInfo.info3;
   }
-  var hd = DebugJS.createLogHeader();
-  var logTxt = DebugJS.dumpLog('text', false, true);
-  logTxt = DebugJS.html2text(logTxt);
-  logTxt = DebugJS.crlf2lf(logTxt);
   var b = '';
   if (info[0]) {
     b = DebugJS.strcatWnl(b, info[0]);
   }
-  b += LINE + hd + LINE;
+  if (DebugJS.hasKeyWd(flg, 'head', '|')) {
+    b += LINE + DebugJS.createLogHeader() + LINE;
+  }
   if (info[1]) {
     info[1] = DebugJS.crlf2lf(info[1]);
     b = DebugJS.strcatWnl(b, info[1]);
     b += LINE;
   }
-  b += '\n' + DebugJS.LOG_HEAD + '\n' + logTxt;
-  if (!DebugJS.endsWith(logTxt, '\n')) b += '\n';
+  if (DebugJS.hasKeyWd(flg, 'log', '|')) {
+    var logTxt = DebugJS.dumpLog('text', false, true);
+    logTxt = DebugJS.html2text(logTxt);
+    logTxt = DebugJS.crlf2lf(logTxt);
+    if (DebugJS.needNL(b, 2)) b += '\n';
+    b += DebugJS.LOG_HEAD + '\n' + logTxt;
+    if (DebugJS.needNL(logTxt, 1)) b += '\n';
+  }
   if (info[2]) {
     b += '\n';
     b = DebugJS.strcatWnl(b, info[2]);
   }
-  if (wBf) {
+  if (DebugJS.hasKeyWd(flg, 'b64buf', '|')) {
     var logBuf = DebugJS.dumpLog('json', true, false);
-    b += '\n' + DebugJS.LOG_BOUNDARY_BUF + '\n' + logBuf + '\n';
+    if (DebugJS.needNL(b, 2)) b += '\n';
+    b += DebugJS.LOG_BOUNDARY_BUF + '\n' + logBuf + '\n';
   }
   if (info[3]) {
     b += '\n';
