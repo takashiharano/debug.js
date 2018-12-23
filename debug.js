@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812231600';
+  this.v = '201812231700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -319,7 +319,7 @@ var DebugJS = DebugJS || function() {
   this.sizeStatus = 0;
   this.logFilter = DebugJS.LOG_FLTR_ALL;
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
-  this.msgBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
+  this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
@@ -737,9 +737,9 @@ DebugJS.prototype = {
         }
       }
     }
-    if (ctx.msgBuf.getSize() != ctx.opt.bufsize) {
+    if (ctx.logBuf.size() != ctx.opt.bufsize) {
       if (!(ctx.status & DebugJS.ST_LOG_PRESERVED) ||
-          ((ctx.status & DebugJS.ST_LOG_PRESERVED) && (ctx.msgBuf.getSize() < ctx.opt.bufsize))) {
+          ((ctx.status & DebugJS.ST_LOG_PRESERVED) && (ctx.logBuf.size() < ctx.opt.bufsize))) {
         ctx.initBuf(ctx, ctx.opt.bufsize);
       }
     }
@@ -1083,13 +1083,13 @@ DebugJS.prototype = {
     ctx.applyStyles(ctx, styles);
   },
   initBuf: function(ctx, newSize) {
-    var buf = DebugJS.ctx.msgBuf.getAll();
+    var buf = DebugJS.ctx.logBuf.getAll();
     var oldSize = buf.length;
     if (oldSize == newSize) return;
     var i = ((oldSize > newSize) ? (oldSize - newSize) : 0);
-    ctx.msgBuf = new DebugJS.RingBuffer(newSize);
+    ctx.logBuf = new DebugJS.RingBuffer(newSize);
     for (; i < oldSize; i++) {
-      ctx.msgBuf.add(buf[i]);
+      ctx.logBuf.add(buf[i]);
     }
   },
 
@@ -1897,8 +1897,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (!ctx.win) return;
     var opt = ctx.opt;
-    var buf = ctx.msgBuf.getAll();
-    var cnt = ctx.msgBuf.count();
+    var buf = ctx.logBuf.getAll();
+    var cnt = ctx.logBuf.count();
     var len = buf.length;
     var lineCnt = cnt - len;
     var filter = ctx.fltrText;
@@ -1994,7 +1994,7 @@ DebugJS.prototype = {
     DebugJS.ctx.focusCmdLine();
   },
   clearLog: function() {
-    DebugJS.ctx.msgBuf.clear();
+    DebugJS.ctx.logBuf.clear();
     DebugJS.ctx.printLogs();
   },
 
@@ -7711,7 +7711,7 @@ DebugJS.prototype = {
     if (n > 0) {
       ctx.initBuf(ctx, n);
     } else {
-      n = ctx.msgBuf.getSize();
+      n = ctx.logBuf.size();
       DebugJS._log.res(n);
       DebugJS.printUsage('log bufsize [size]');
     }
@@ -9254,18 +9254,18 @@ DebugJS.RingBuffer.prototype = {
   count: function() {
     return this.cnt;
   },
+  size: function() {
+    return this.len;
+  },
   lastIndex: function() {
     return ((this.cnt - 1) % this.len);
-  },
-  getSize: function() {
-    return this.len;
   }
 };
 
-DebugJS.TextBuf = function(s) {
+DebugJS.TextBuffer = function(s) {
   this.b = (s == undefined ? '' : s + '\n');
 };
-DebugJS.TextBuf.prototype = {
+DebugJS.TextBuffer.prototype = {
   add: function(s) {
     this.b += s + '\n';
   },
@@ -11864,13 +11864,13 @@ DebugJS.sleep = function(ms) {
 };
 
 DebugJS.getLogBufSize = function() {
-  return DebugJS.ctx.msgBuf.getSize();
+  return DebugJS.ctx.logBuf.size();
 };
 DebugJS.setLogBufSize = function(n) {
   if (n > 0) DebugJS.ctx.initBuf(DebugJS.ctx, n);
 };
 DebugJS.dumpLog = function(fmt, b64, fmtTime) {
-  var buf = DebugJS.ctx.msgBuf.getAll();
+  var buf = DebugJS.ctx.logBuf.getAll();
   var b = [];
   var l = '';
   for (var i = 0; i < buf.length; i++) {
@@ -11969,9 +11969,9 @@ DebugJS.createLogData = function(extInfo, flg) {
     b = DebugJS.strcatWnl(b, info[2]);
   }
   if (DebugJS.hasKeyWd(flg, 'b64buf', '|')) {
-    var logBuf = DebugJS.dumpLog('json', true, false);
+    var b64log = DebugJS.dumpLog('json', true, false);
     if (DebugJS.needNL(b, 2)) b += '\n';
-    b += DebugJS.LOG_BOUNDARY_BUF + '\n' + logBuf + '\n';
+    b += DebugJS.LOG_BOUNDARY_BUF + '\n' + b64log + '\n';
   }
   if (info[3]) {
     b += '\n';
@@ -12006,13 +12006,13 @@ DebugJS.loadLog = function(json, b64) {
   var ctx = DebugJS.ctx;
   if (b64) json = DebugJS.decodeB64(json);
   var buf = JSON.parse(json);
-  if (ctx.msgBuf.getSize() < buf.length) {
-    ctx.msgBuf = new DebugJS.RingBuffer(buf.length);
+  if (ctx.logBuf.size() < buf.length) {
+    ctx.logBuf = new DebugJS.RingBuffer(buf.length);
   }
   for (var i = 0; i < buf.length; i++) {
     var bf = buf[i];
     bf.msg = DebugJS.decodeB64(bf.msg);
-    ctx.msgBuf.add(bf);
+    ctx.logBuf.add(bf);
   }
 };
 DebugJS.preserveLog = function() {
@@ -12224,7 +12224,7 @@ DebugJS._log.out = function(m, type) {
   m = DebugJS.setStyleIfObjNA(m);
   if (typeof m != 'string') {m = m.toString();}
   var data = {type: type, time: (new Date()).getTime(), msg: m};
-  DebugJS.ctx.msgBuf.add(data);
+  DebugJS.ctx.logBuf.add(data);
   if (!(DebugJS.ctx.status & DebugJS.ST_INITIALIZED)) {
     if (!DebugJS._init()) return;
   }
