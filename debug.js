@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812240200';
+  this.v = '201812240220';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14389,7 +14389,9 @@ DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg, top) {
   var relTargetPosYinScreen = (ps.y + window.pageYOffset) - absScreenBottomT;
   var absTargetPosYinDoc = ps.y + window.pageYOffset;
   var alignY = (top ? 0 : (clientH / 2));
-  if (ps.y < 0) {
+  if (top) {
+    d.dstY = ps.y;
+  } else if (ps.y < 0) {
     if ((ps.y + window.pageYOffset) < (clientH / 2)) {
       d.dstY = window.pageYOffset * (-1);
     } else {
