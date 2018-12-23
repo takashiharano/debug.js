@@ -95,6 +95,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .info1{color:#48f;}
 .info2{color:#4b4;}
 .info3{color:#d80;}
+.nl{color:#8bc;}
 </style>
 <script>
 dbg.init({visible:true});
@@ -3583,6 +3584,107 @@ debug.js will not use aliases in case of those that are already defined.
 </div>
 <br>
 
+<div class="caption" id="classes">// Classes</div>
+<table class="desc-table">
+  <tr>
+    <th colspan="3" style="text-align:left;">RingBuffer</th>
+  </tr>
+  <tr>
+    <th>Name</th>
+    <th>Arguments</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><i>Constructor</i></td>
+    <td>buffer size</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>add</td>
+    <td>string</td>
+    <td>Add the string to the buffer</td>
+  </tr>
+  <tr>
+    <td>set</td>
+    <td>arg1: index<br>arg2: string</td>
+    <td>Set the string to the specified index in the buffer</td>
+  </tr>
+  <tr>
+    <td>get</td>
+    <td>index</td>
+    <td>Returns the string in the specified index of the buffer</td>
+  </tr>
+  <tr>
+    <td>getAll</td>
+    <td></td>
+    <td>Returns the all contents array in the buffer</td>
+  </tr>
+  <tr>
+    <td>clear</td>
+    <td></td>
+    <td>Clear the buffer</td>
+  </tr>
+  <tr>
+    <td>count</td>
+    <td></td>
+    <td>Returns the buffer count</td>
+  </tr>
+  <tr>
+    <td>size</td>
+    <td></td>
+    <td>Returns the buffer size</td>
+  </tr>
+  <tr>
+    <td colspan="3">
+<pre>
+var buf = new dbg.RingBuffer(3);
+buf.add('a');
+buf.add('b');
+buf.add('c');
+buf.add('d');
+buf.add('e');
+buf.getAll();
+-&gt; ['c', 'd', 'e']
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <th colspan="3" style="text-align:left;">TextBuffer</th>
+  </tr>
+  <tr>
+    <td><i>Constructor</i></td>
+    <td>string</td>
+    <td>Constructs a buffer with the given string.<br>In case of no argument, constructs with no characters in it.</td>
+  </tr>
+  <tr>
+    <td>add</td>
+    <td>string</td>
+    <td>Add a line to the buffer</td>
+  </tr>
+  <tr>
+    <td>toString</td>
+    <td></td>
+    <td>Returns the text buffer</td>
+  </tr>
+  <tr>
+    <td colspan="3">
+<pre>
+var buf = new dbg.TextBuffer();
+buf.add('a');
+buf.add('b');
+buf.add('c');
+buf.toString();
+-&gt;
+a<span class="nl">&#x2193;</span>
+b<span class="nl">&#x2193;</span>
+c<span class="nl">&#x2193;</span>
+</pre>
+    </td>
+  </tr>
+</table>
+<br>
+
 <div class="caption" id="commands">// Commands</div>
 <table class="desc-table">
   <tr>
@@ -5430,26 +5532,30 @@ $ U+6F22 U+5B57
     <td>Show system info</td>
   </tr>
   <tr>
-    <td>DOM</td>
-    <td>DOM Element Inspection</td>
+    <td>HTM</td>
+    <td>Live HTML source viewer</td>
   </tr>
   <tr>
-    <td>TOOL</td>
-    <td>
-      Tools<br>
-      - Timer<br>
-      - File Loader<br>
-      - Text Font Checker<br>
-      - HTML Previewer<br>
-      - Memo<br>
-    </td>
+    <td>DOM</td>
+    <td>DOM Element Inspector</td>
   </tr>
   <tr>
     <td>JS</td>
     <td>JavaScript Editor/Executor</td>
   </tr>
   <tr>
-    <td><!--🔃⟳-->0</td>
+    <td>TOOL</td>
+    <td>
+      Tools<br>
+      - Timer<br>
+      - Text Font Checker<br>
+      - HTML Previewer<br>
+      - File Viewer<br>
+      - BAT editor/controller<br>
+    </td>
+  </tr>
+  <tr>
+    <td>0</td>
     <td>Reset stopwatch</td>
   </tr>
   <tr>
