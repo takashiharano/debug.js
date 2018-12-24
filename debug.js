@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812241600';
+  this.v = '201812242300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4583,7 +4583,6 @@ DebugJS.prototype = {
     var panel = {
       basePanel: null, stopWatchLabel: null, btns: null, startStopBtn: null, splitBtn: null
     };
-
     var fontSize = ctx.computedFontSize;
     var btnFontSize = fontSize * 3;
     panel.basePanel = document.createElement('div');
@@ -7785,37 +7784,25 @@ DebugJS.prototype = {
     }
   },
   _cmdLogLv: function(ctx, arg) {
-    var a = DebugJS.getArgsFrom(arg, 1);
-    a = DebugJS.delAllSP(a);
+    var a = DebugJS.delAllSP(DebugJS.getArgsFrom(arg, 1));
     var lv = a.split('|');
     if (lv[0] == '') {
       DebugJS.printUsage('log lv LOG|VRB|DBG|INF|WRN|ERR|ALL|NONE');
       return;
     }
+    var FLT = {
+      LOG: DebugJS.LOG_FLTR_LOG,
+      VRB: DebugJS.LOG_FLTR_VRB,
+      DBG: DebugJS.LOG_FLTR_DBG,
+      INF: DebugJS.LOG_FLTR_INF,
+      WRN: DebugJS.LOG_FLTR_WRN,
+      ERR: DebugJS.LOG_FLTR_ERR,
+      ALL: DebugJS.LOG_FLTR_ALL
+    };
     ctx.logFilter = 0;
     for (var i = 0; i < lv.length; i++) {
-      switch (lv[i]) {
-        case 'LOG':
-          ctx.logFilter |= DebugJS.LOG_FLTR_LOG;
-          break;
-        case 'VRB':
-          ctx.logFilter |= DebugJS.LOG_FLTR_VRB;
-          break;
-        case 'DBG':
-          ctx.logFilter |= DebugJS.LOG_FLTR_DBG;
-          break;
-        case 'INF':
-          ctx.logFilter |= DebugJS.LOG_FLTR_INF;
-          break;
-        case 'WRN':
-          ctx.logFilter |= DebugJS.LOG_FLTR_WRN;
-          break;
-        case 'ERR':
-          ctx.logFilter |= DebugJS.LOG_FLTR_ERR;
-          break;
-        case 'ALL':
-          ctx.logFilter |= DebugJS.LOG_FLTR_ALL;
-      }
+      var f = FLT[lv[i]];
+      if (f != undefined) ctx.logFilter |= f;
     }
     ctx.updateLogFilterBtns();
     ctx.printLogs();
@@ -13101,7 +13088,7 @@ DebugJS.bat.execJs = function() {
         DebugJS._log.e(e);
       }
       ctrl.js = 0;
-      return;
+      break;
     }
   }
 };
@@ -13117,7 +13104,7 @@ DebugJS.bat.text = function() {
     }
     if (DebugJS.strcmpWOsp(c, DebugJS.BAT_TKN_TXT) || (ctrl.pc > ctrl.endPc)) {
       DebugJS.ctx.CMDVALS['%TEXT%'] = txt;
-      return;
+      break;
     }
   }
 };
@@ -15540,21 +15527,20 @@ DebugJS.x.removePanel = function(idx) {
       nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
     }
   }
-  if (ctx.status & DebugJS.ST_INITIALIZED) {
-    if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p.onInActive)) {
-      ctx.onExtPanelInActive(ctx, p);
+  if (!(ctx.status & DebugJS.ST_INITIALIZED)) return;
+  if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p.onInActive)) {
+    ctx.onExtPanelInActive(ctx, p);
+  }
+  ctx.redrawExtPanelBtn(ctx);
+  if (ctx.existsValidExtPanel(ctx)) {
+    if (nIdx != -1) {
+      ctx.switchExtPanel(nIdx);
     }
-    ctx.redrawExtPanelBtn(ctx);
-    if (ctx.existsValidExtPanel(ctx)) {
-      if (nIdx != -1) {
-        ctx.switchExtPanel(nIdx);
-      }
-    } else {
-      ctx.extActPnlIdx = -1;
-      ctx.extPanels = [];
-      ctx.closeExtPanel(ctx);
-      if (ctx.extBtn) ctx.extBtn.style.display = 'none';
-    }
+  } else {
+    ctx.extActPnlIdx = -1;
+    ctx.extPanels = [];
+    ctx.closeExtPanel(ctx);
+    if (ctx.extBtn) ctx.extBtn.style.display = 'none';
   }
 };
 DebugJS.x.setBtnLabel = function(l) {
