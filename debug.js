@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812241350';
+  this.v = '201812241520';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -410,8 +410,8 @@ var DebugJS = DebugJS || function() {
     pointmsgsize: /.*/,
     scrollspeed: /^[0-9]+$/,
     scrollstep: /^[0-9]+$/,
-    textinputspeed: /^[0-9\-]+$/,
-    textinputstep: /^[0-9\-]+$/,
+    textspeed: /^[0-9\-]+$/,
+    textstep: /^[0-9\-]+$/,
     testvallimit: /^[0-9\-]+$/,
     wait: /^[0-9]+$/,
     timer: /.*/,
@@ -435,8 +435,8 @@ var DebugJS = DebugJS || function() {
     pointmsgsize: '"12px"',
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     scrollstep: DebugJS.scrollWinTo.data.step,
-    textinputspeed: 30,
-    textinputstep: 1,
+    textspeed: 30,
+    textstep: 1,
     testvallimit: 4096,
     wait: 500,
     timer: '00:03:00.000',
@@ -8100,8 +8100,8 @@ DebugJS.prototype = {
     var step = DebugJS.getOptVal(arg, 'step');
     var start = DebugJS.getOptVal(arg, 'start');
     var end = DebugJS.getOptVal(arg, 'end');
-    if (speed == null) speed = ctx.props.textinputspeed;
-    if (step == null) step = ctx.props.textinputstep;
+    if (speed == null) speed = ctx.props.textspeed;
+    if (step == null) step = ctx.props.textstep;
     point.hint(a[2], speed, step, start, end);
   },
   _cmdPointCursor: function(args, tbl) {
@@ -14547,10 +14547,10 @@ DebugJS.setText = function(elm, txt, speed, step, start, end) {
   txt = DebugJS.decCtrlChr(txt);
   data.txt = txt;
   if ((speed == undefined) || (speed == null) || (speed == '')) {
-    speed = DebugJS.ctx.props.textinputspeed;
+    speed = DebugJS.ctx.props.textspeed;
   }
   if ((step == undefined) || (step == null) || (step == '')) {
-    step = DebugJS.ctx.props.textinputstep;
+    step = DebugJS.ctx.props.textstep;
   }
   start |= 0;
   if (start > 0) start -= 1;
