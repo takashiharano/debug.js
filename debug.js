@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812241520';
+  this.v = '201812241600';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7967,7 +7967,7 @@ DebugJS.prototype = {
     } else if (op == 'hide') {
       point.hide();
     } else if (op == 'hint') {
-      ctx._cmdPointHint(ctx, point, arg, args[1], tbl);
+      ctx._cmdPointHint(ctx, arg, point, args[1]);
     } else if (op == 'drag') {
       point.drag(DebugJS.getArgsFrom(arg, 1));
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
@@ -8078,10 +8078,14 @@ DebugJS.prototype = {
     }
     return {x: x, y: y};
   },
-  _cmdPointHint: function(ctx, point, arg, op, tbl) {
+  _cmdPointHint: function(ctx, arg, point, op) {
     var a = DebugJS.getArgsFrom(arg, 2);
     if (op == 'msg') {
-      point.hint(a, 0, 0);
+      if (!a) {
+        DebugJS.printUsage('point hint msg "str"');
+      } else {
+        point.hint(a, 0, 0);
+      }
     } else if (op == 'msgseq') {
       ctx._cmdPointHintMsgSeq(ctx, arg, point);
     } else if (op == 'hide') {
@@ -8091,18 +8095,23 @@ DebugJS.prototype = {
     } else if (op == 'clear') {
       point.hint.clear();
     } else {
-      DebugJS.printUsage('point hint msg "msg"|show|hide|clear');
+      DebugJS.printUsage('point hint msg|msgseq "str"|show|hide|clear');
     }
   },
   _cmdPointHintMsgSeq: function(ctx, arg, point) {
     var a = DebugJS.splitCmdLine(arg);
+    var m = a[2];
     var speed = DebugJS.getOptVal(arg, 'speed');
     var step = DebugJS.getOptVal(arg, 'step');
     var start = DebugJS.getOptVal(arg, 'start');
     var end = DebugJS.getOptVal(arg, 'end');
     if (speed == null) speed = ctx.props.textspeed;
     if (step == null) step = ctx.props.textstep;
-    point.hint(a[2], speed, step, start, end);
+    if (!m) {
+      DebugJS.printUsage('point hint msgseq "str"');
+    } else {
+      point.hint(m, speed, step, start, end);
+    }
   },
   _cmdPointCursor: function(args, tbl) {
     var src = args[1];
@@ -14160,7 +14169,6 @@ DebugJS.point._moveToSelector = function(data) {
   if (data.alignY == undefined) data.alignY = 0.5;
   DebugJS.point.moveToElement(ps, data.speed, data.step, data.alignX, data.alignY);
 };
-
 DebugJS.point.moveToLabel = function(label, idx, speed, step, alignX, alignY) {
   var data = {
     label: label,
@@ -14188,7 +14196,6 @@ DebugJS.point._moveToLabel = function(data) {
   if (data.alignY == undefined) data.alignY = 0.5;
   DebugJS.point.moveToElement(ps, data.speed, data.step, data.alignX, data.alignY);
 };
-
 DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
   if (ps) {
     var p = DebugJS.getAlignedPos(ps, alignX, alignY);
