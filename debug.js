@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812240220';
+  this.v = '201812241350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7967,7 +7967,7 @@ DebugJS.prototype = {
     } else if (op == 'hide') {
       point.hide();
     } else if (op == 'hint') {
-      ctx._cmdPointHint(point, arg, args[1], tbl);
+      ctx._cmdPointHint(ctx, point, arg, args[1], tbl);
     } else if (op == 'drag') {
       point.drag(DebugJS.getArgsFrom(arg, 1));
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
@@ -8078,10 +8078,12 @@ DebugJS.prototype = {
     }
     return {x: x, y: y};
   },
-  _cmdPointHint: function(point, arg, op, tbl) {
+  _cmdPointHint: function(ctx, point, arg, op, tbl) {
+    var a = DebugJS.getArgsFrom(arg, 2);
     if (op == 'msg') {
-      var msg = DebugJS.getArgsFrom(arg, 2);
-      point.hint(msg);
+      point.hint(a, 0, 0);
+    } else if (op == 'msgseq') {
+      ctx._cmdPointHintMsgSeq(ctx, arg, point);
     } else if (op == 'hide') {
       point.hint.hide();
     } else if (op == 'show') {
@@ -8089,8 +8091,18 @@ DebugJS.prototype = {
     } else if (op == 'clear') {
       point.hint.clear();
     } else {
-      DebugJS.printUsage(tbl.help);
+      DebugJS.printUsage('point hint msg "msg"|show|hide|clear');
     }
+  },
+  _cmdPointHintMsgSeq: function(ctx, arg, point) {
+    var a = DebugJS.splitCmdLine(arg);
+    var speed = DebugJS.getOptVal(arg, 'speed');
+    var step = DebugJS.getOptVal(arg, 'step');
+    var start = DebugJS.getOptVal(arg, 'start');
+    var end = DebugJS.getOptVal(arg, 'end');
+    if (speed == null) speed = ctx.props.textinputspeed;
+    if (step == null) step = ctx.props.textinputstep;
+    point.hint(a[2], speed, step, start, end);
   },
   _cmdPointCursor: function(args, tbl) {
     var src = args[1];
@@ -14186,30 +14198,22 @@ DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
   }
 };
 
-DebugJS.point.hint = function(msg) {
-  var BTN_PREFIX = '<span class="' + DebugJS.ctx.id + '-btn dbg-nomove" ';
-  var BTN_SUFFIX = '</span>';
-  var RESUME = BTN_PREFIX + 'onclick="DebugJS.ctx.batResume();">[RESUME]' + BTN_SUFFIX;
-  var STOP = BTN_PREFIX + 'onclick="DebugJS.bat.cancel();">[STOP]' + BTN_SUFFIX;
-  var CLOSE = BTN_PREFIX + 'onclick="DebugJS.point.hide();">[CLOSE]' + BTN_SUFFIX;
+DebugJS.point.hint = function(msg, speed, step, start, end) {
   var hint = DebugJS.point.hint;
   if (hint.area == null) {
     hint.createArea();
   }
   var area = hint.area;
-  var reg = /\\n/g;
   try {
-    msg = eval(msg) + '';
+    var m = eval(msg) + '';
   } catch (e) {
-    msg = e + '';
+    m = e + '';
   }
-  msg = msg.replace(reg, '\n');
-  msg = msg.replace(/!RESUME!/g, RESUME);
-  msg = msg.replace(/!STOP!/g, STOP);
-  if (msg.match(/!TEST_COUNT!/)) msg = msg.replace(/!TEST_COUNT!/g, DebugJS.test.getCountStr(DebugJS.test.getSumCount()));
-  if (msg.match(/!TEST_RESULT!/)) msg = msg.replace(/!TEST_RESULT!/g, DebugJS.test.result());
-  msg = msg.replace(/!CLOSE!/g, CLOSE);
-  hint.pre.innerHTML = msg;
+  if ((speed) && (step)) {
+    hint.msgseq(msg, m, speed, step, start, end);
+  } else {
+    DebugJS.point.hint.setMSg(DebugJS.point.hint.replaceMsg(m));
+  }
   hint.st.hasMsg = true;
   hint.show();
 };
@@ -14238,6 +14242,38 @@ DebugJS.point.hint.createArea = function() {
   hint.pre = pre;
   document.body.appendChild(el);
   hint.area = el;
+};
+DebugJS.point.hint.setMSg = function(m) {
+  var ctx = DebugJS.ctx;
+  var el = DebugJS.point.hint.pre;
+  ctx.setStyle(el, 'width', 'auto');
+  ctx.setStyle(el, 'height', 'auto');
+  el.innerHTML = m;
+};
+DebugJS.point.hint.msgseq = function(msg, m, speed, step, start, end) {
+  var hint = DebugJS.point.hint;
+  var el = hint.pre;
+  var s = window.getComputedStyle(el);
+  DebugJS.point.hint.setMSg(m);
+  DebugJS.ctx.setStyle(el, 'width', s.width);
+  DebugJS.ctx.setStyle(el, 'height', s.height);
+  el.innerHTML = '';
+  DebugJS.setText(el, msg, speed, step, start, end);
+};
+DebugJS.point.hint.replaceMsg = function(s) {
+  var BTN_PREFIX = '<span class="' + DebugJS.ctx.id + '-btn dbg-nomove" ';
+  var BTN_SUFFIX = '</span>';
+  var RESUME = BTN_PREFIX + 'onclick="DebugJS.ctx.batResume();">[RESUME]' + BTN_SUFFIX;
+  var STOP = BTN_PREFIX + 'onclick="DebugJS.bat.cancel();">[STOP]' + BTN_SUFFIX;
+  var CLOSE = BTN_PREFIX + 'onclick="DebugJS.point.hide();">[CLOSE]' + BTN_SUFFIX;
+  var reg = /\\n/g;
+  s = s.replace(reg, '\n');
+  s = s.replace(/!RESUME!/g, RESUME);
+  s = s.replace(/!STOP!/g, STOP);
+  if (s.match(/!TEST_COUNT!/)) s = s.replace(/!TEST_COUNT!/g, DebugJS.test.getCountStr(DebugJS.test.getSumCount()));
+  if (s.match(/!TEST_RESULT!/)) s = s.replace(/!TEST_RESULT!/g, DebugJS.test.result());
+  s = s.replace(/!CLOSE!/g, CLOSE);
+  return s;
 };
 DebugJS.point.hint.move = function() {
   var point = DebugJS.point;

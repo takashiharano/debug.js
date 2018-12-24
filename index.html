@@ -4092,6 +4092,10 @@ $ point event eventType -prop1 val1 -prop2 val2
 $ point hint msg "hello!"
 -&gt; Show a message at the pointer position
 
+$ point hint msgseq "hello!"
+$ point hint msgseq "hello!" -speed 500<span class="annotation">(opt)</span> -step 2<span class="annotation">(opt)</span> -start 3<span class="annotation">(opt)</span> -end 5<span class="annotation">(opt)</span>
+-&gt; Show a message at the pointer position with sequence animation.
+
 $ point hint hide
 -&gt; Hide a message
 
