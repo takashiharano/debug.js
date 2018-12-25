@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812250000';
+  this.v = '201812252200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -590,7 +590,7 @@ DebugJS.JS_BTN_COLOR = '#6df';
 DebugJS.TOOLS_BTN_COLOR = '#ff0';
 DebugJS.EXT_BTN_COLOR = '#f8f';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
-DebugJS.LOG_SUSPEND_BTN_COLOR = '#f00';
+DebugJS.LOG_SUSPEND_BTN_COLOR = '#f66';
 DebugJS.PIN_BTN_COLOR = '#fa0';
 DebugJS.FLT_BTN_COLOR = '#eee';
 DebugJS.COLOR_R = '#f66';
@@ -6827,9 +6827,7 @@ DebugJS.prototype = {
           if (b != '') {
             var ag = DebugJS.getArgsFrom(arg, 2);
             try {
-              ag = eval(ag);
-              if (ctx.status & DebugJS.ST_BAT_RUNNING) bat.stCtx();
-              bat(b, ag);
+              bat(b, eval(ag));
             } catch (e) {
               DebugJS._log.e('BAT ERROR: Illegal argument (' + e + ')');
             }
@@ -7742,7 +7740,7 @@ DebugJS.prototype = {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var data = DebugJS.getOptVal(arg, 'b64');
     if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage('log load [-b64] log-buffer-json');
+      DebugJS.printUsage('log load [-b64] log-buf-json');
     } else {
       try {
         if (data != null) {
@@ -12420,6 +12418,11 @@ DebugJS.isSysVal = function(n) {
 DebugJS.bat = function(b, a, sl, el) {
   if (!b) return;
   var bat = DebugJS.bat;
+  if (!(DebugJS.ctx.status & DebugJS.ST_INITIALIZED)) {
+    bat.q = {b: b, a: a, sl: sl, el: el};
+    return;
+  }
+  if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) bat.stCtx();
   bat.set(b);
   bat.setExecArg(a);
   bat.run.arg.s = sl;
@@ -12427,6 +12430,7 @@ DebugJS.bat = function(b, a, sl, el) {
   bat.setRunningSt(true);
   setTimeout(bat._run, 0);
 };
+DebugJS.bat.q = null;
 DebugJS.bat.cmds = [];
 DebugJS.bat.ctrl = {
   pc: 0,
@@ -13394,12 +13398,18 @@ DebugJS.bat.save = function() {
   localStorage.setItem('DebugJS-bat', b);
 };
 DebugJS.bat.load = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
+  var bat = DebugJS.bat;
+  if (!DebugJS.LS_AVAILABLE) {
+    if (bat.q) bat.lazyExec();
+    return;
+  }
   var b = localStorage.getItem('DebugJS-bat');
   localStorage.removeItem('DebugJS-bat');
-  if (b == null) return;
+  if (b == null) {
+    if (bat.q) bat.lazyExec();
+    return;
+  }
   var bt = JSON.parse(b);
-  var bat = DebugJS.bat;
   bat.ctrl = bt.ctrl;
   bat.cmds = bt.cmds;
   bat.ctx = bt.ctx;
@@ -13411,8 +13421,17 @@ DebugJS.bat.load = function() {
       DebugJS.ctx._cmdPause('key', bat.ctrl.pauseKey, 0);
     }
     bat.setRunningSt(true);
-    bat.exec();
+    if (bat.q) {
+      bat.lazyExec();
+    } else {
+      bat.exec();
+    }
   }
+};
+DebugJS.bat.lazyExec = function() {
+  var q = DebugJS.bat.q;
+  DebugJS.bat(q.b, q.a, q.sl, q.el);
+  DebugJS.bat.q = null;
 };
 DebugJS.bat.setRunningSt = function(f) {
   var ctx = DebugJS.ctx;
