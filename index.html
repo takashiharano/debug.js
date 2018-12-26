@@ -4051,7 +4051,7 @@ $ pause -s
     <td class="name">point</td>
     <td>coordinate / element / operation</td>
     <td>
-      Show the pointer to the specified coordinate
+      Manipulate the pseudo pointer.<br><br>
 <pre class="eg">
 $ point 100 200
 -&gt; Show the pointer at x=100px, y=200px
@@ -4472,7 +4472,7 @@ $ test init -name "TestName"
 $ test set desc "Description"
 
 $ test set id "Test01"
-$ test set id "Test%SEQ%"<span class="annotation">"%SEQ%" will be replaced auto sequential number.</span>
+$ test set id "Test-%SEQ%"<span class="annotation">"%SEQ%" will be replaced by auto sequential number. ("Test-%SEQ%" -&gt; "Test-1")</span>
 
 $ test set comment "Comment"
 
@@ -4484,6 +4484,8 @@ $ test set result OK -label "result1" -info "ok test"
 $ test set result NG -label "result2" -info "ng test"
 $ test set result ERR -label "result3" -info "err test"
 $ test set result NT -label "result4" -info "nt test"
+
+$ test set seq 10 <span class="annotation">Explicitly set number for "%SEQ%".</span>
 
 $ test fin
 $ test result
