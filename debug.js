@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812252200';
+  this.v = '201812270000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -372,7 +372,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|status|verify got-val method expected-val|fin'},
+    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', help: 'time ms|-t1 ms|"datestr" -t2 ms|"datestr"'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'time start|split|stop|list [timer-name]'},
@@ -8623,10 +8623,13 @@ DebugJS.prototype = {
       case 'result':
         DebugJS._log(test.result());
         break;
-      case 'status':
-        var st = test.getStatus();
+      case 'ttlresult':
+        var st = test.getTotalResult();
         DebugJS._log(test.getStyledStStr(st));
         return st;
+      case 'status':
+        DebugJS._log.p(test.getStatus(), 0, null, false);
+        break;
       case 'verify':
         return DebugJS.ctx._CmdTestVerify(arg);
       case 'fin':
@@ -8658,8 +8661,11 @@ DebugJS.prototype = {
       case 'result':
         DebugJS.ctx._cmdTestSetRslt(DebugJS.getArgsFrom(arg, 2));
         return;
+      case 'seq':
+        fn = test.setSeq;
+        break;
       default:
-        DebugJS.printUsage('test set name|desc|id|comment|result val');
+        DebugJS.printUsage('test set name|desc|id|comment|result|seq val');
         return;
     }
     try {
@@ -14782,9 +14788,10 @@ DebugJS.test.initData = function() {
   data.running = false;
   data.startTime = 0;
   data.endTime = 0;
+  data.seq = 0;
   data.executingTestId = '';
-  data.status = DebugJS.test.STATUS_NT;
   data.lastRslt = DebugJS.test.STATUS_NT;
+  data.ttlRslt = DebugJS.test.STATUS_NT;
   data.cnt = {ok: 0, ng: 0, err: 0, nt: 0};
   data.results = {};
 };
@@ -14792,7 +14799,7 @@ DebugJS.test.initData();
 DebugJS.test.init = function(name) {
   var test = DebugJS.test;
   test.initData();
-  DebugJS.ctx.CMDVALS['%TEST_STATUS%'] = test.STATUS_NT;
+  DebugJS.ctx.CMDVALS['%TEST_TOTAL_RESULT%'] = test.STATUS_NT;
   DebugJS.ctx.CMDVALS['%TEST_LAST_RESULT%'] = test.STATUS_NT;
   var data = test.data;
   data.name = ((name == undefined) ? '' : name);
@@ -14855,7 +14862,7 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
     case test.STATUS_NT:
       data.cnt.nt++;
   }
-  test.setStatus(st);
+  test.setRsltStatus(st);
   test.setLastResult(st);
   var id = data.executingTestId;
   test.prepare();
@@ -14880,23 +14887,20 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
   };
   data.results[id].results.push(rslt);
 };
-DebugJS.test.setStatus = function(st) {
+DebugJS.test.setRsltStatus = function(st) {
   var test = DebugJS.test;
   var data = test.data;
   switch (st) {
     case test.STATUS_NT:
       return;
     case test.STATUS_OK:
-      if (data.status != test.STATUS_NT) return;
+      if (data.ttlRslt != test.STATUS_NT) return;
       break;
     case test.STATUS_NG:
-      if (data.status == test.STATUS_ERR) return;
+      if (data.ttlRslt == test.STATUS_ERR) return;
   }
-  data.status = st;
-  DebugJS.ctx.CMDVALS['%TEST_STATUS%'] = st;
-};
-DebugJS.test.getStatus = function() {
-  return DebugJS.test.data.status;
+  data.ttlRslt = st;
+  DebugJS.ctx.CMDVALS['%TEST_TOTAL_RESULT%'] = st;
 };
 DebugJS.test.setLastResult = function(st) {
   DebugJS.test.data.lastRslt = st;
@@ -14905,15 +14909,25 @@ DebugJS.test.setLastResult = function(st) {
 DebugJS.test.getLastResult = function() {
   return DebugJS.test.data.lastRslt;
 };
+DebugJS.test.getTotalResult = function() {
+  return DebugJS.test.data.ttlRslt;
+};
 DebugJS.test.prepare = function() {
   DebugJS.test.setId(DebugJS.test.data.executingTestId);
 };
 DebugJS.test.setId = function(id) {
+  if (id.match(/%SEQ%/)) id = id.replace(/%SEQ%/, DebugJS.test.nextSeq());
   var data = DebugJS.test.data;
-  if (data.results[id] == undefined) {
+  if (!data.results[id]) {
     data.results[id] = {comment: [], results: []};
   }
   data.executingTestId = id;
+};
+DebugJS.test.setSeq = function(v) {
+  if (v != '') DebugJS.test.data.seq = v | 0;
+};
+DebugJS.test.nextSeq = function() {
+  return ++DebugJS.test.data.seq;
 };
 DebugJS.test.setCmnt = function(c) {
   DebugJS.test.prepare();
@@ -15013,7 +15027,7 @@ DebugJS.test.result = function() {
   var test = DebugJS.test;
   var data = test.data;
   var nm = data.name;
-  var tstSt = test.getStatus();
+  var tstSt = test.getTotalResult();
   var cnt = test.getSumCount();
   var s = 'Test Result:\n';
   if (nm != '') s += '[TEST NAME]\n' + nm + '\n\n';
@@ -15059,7 +15073,7 @@ DebugJS.test.getResult = function() {
     desc: data.desc,
     startTime: data.startTime,
     endTime: data.endTime,
-    status: data.status,
+    totalResult: data.ttlRslt,
     count: data.cnt,
     results: data.results
   };
@@ -15161,6 +15175,24 @@ DebugJS.test.countLongestLabel = function() {
     }
   }
   return l;
+};
+DebugJS.test.getStatus = function() {
+  var data = DebugJS.test.data;
+  var r = {
+    name: data.name,
+    running: data.running,
+    startTime: data.startTime,
+    endTime: data.endTime,
+    seq: data.seq,
+    executingTestId: data.executingTestId,
+    lastRslt: data.lastRslt,
+    ttlRslt: data.ttlRslt,
+    cnt: data.cnt
+  };
+  return r;
+};
+DebugJS.test.isRunning = function() {
+  return DebugJS.test.data.running;
 };
 
 DebugJS.getElement = function(selector, idx) {

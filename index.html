@@ -2818,12 +2818,38 @@ dbg.getFeatureStack(); <button class="demo-button2" onclick="log.p(dbg.getFeatur
   </tr>
 
   <tr>
-    <td class="name">dbg.test.getStatus</td>
+    <td class="name">dbg.test.init</td>
+    <td>Test Name</td>
+    <td>
+      Initialize the test with test name.<br>
+      All inner status will be initialized and "running" status will be set to "true".<br>
+      This is the same as <i>$test init</i> command.
+<pre>
+dbg.test.init('<input type="text" id="test-init-txt" class="demo-text" style="width:100px;" value="TestName">'); <button class="demo-button2" onclick="dbg.test.init(getVal('test-init-txt'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.fin</td>
     <td></td>
     <td>
-      Returns the total test result.<br>
+      Finalize the test.<br>
+      "running" status will be set to false.<br>
+      This is the same as <i>$test fin</i> command.
 <pre>
-dbg.test.getStatus(); <button class="demo-button2" onclick="log.p(dbg.test.getStatus());">DEMO</button>
+dbg.test.fin(); <button class="demo-button2" onclick="dbg.test.fin();">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.getResult</td>
+    <td></td>
+    <td>
+      Returns the test result object.<br>
+<pre>
+dbg.test.getResult(); <button class="demo-button2" onclick="log.p(dbg.test.getResult());">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -2840,12 +2866,12 @@ dbg.test.getLastResult(); <button class="demo-button2" onclick="log.p(dbg.test.g
   </tr>
 
   <tr>
-    <td class="name">dbg.test.getResult</td>
+    <td class="name">dbg.test.getTotalResult</td>
     <td></td>
     <td>
-      Returns the test result object.<br>
+      Returns the total test result.<br>
 <pre>
-dbg.test.getResult(); <button class="demo-button2" onclick="log.p(dbg.test.getResult());">DEMO</button>
+dbg.test.getTotalResult(); <button class="demo-button2" onclick="log.p(dbg.test.getTotalResult());">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -2891,7 +2917,7 @@ test fin</pre>dbg.test.getResultJSON();
  ],
  "startTime": 1545229050321,
  "endTime": 1545229050434,
- "status": "ERR",
+ "totalResult": "ERR",
  "count": {
   "ok": 2,
   "ng": 1,
@@ -2954,6 +2980,56 @@ test fin</pre>dbg.test.getResultJSON();
  }
 }
 </pre></pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.getStatus</td>
+    <td></td>
+    <td>
+      Returns the inner status.<br>
+<pre>
+dbg.test.getStatus(); <button class="demo-button2" onclick="log.p(dbg.test.getStatus());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.isRunning</td>
+    <td></td>
+    <td>
+      Returns whether test is running.<br>
+<pre>
+dbg.test.isRunning(); <button class="demo-button2" onclick="log.res(dbg.test.isRunning());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.nextSeq</td>
+    <td></td>
+    <td>
+      Returns sequential number for test ID.<br>
+<pre>
+dbg.test.nextSeq(); <button class="demo-button2" onclick="log.res(dbg.test.nextSeq());">DEMO</button>
+</pre><br>
+      This value is also available for <i>$test set id</i> command.<br>
+<pre>
+e.g.,) $ test set id "TEST-%SEQ%"
+       -&gt; "TEST-1" is set for ID.
+</pre><br>
+      The value will be reset at the beginning of test. ($test init)
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.setSeq</td>
+    <td></td>
+    <td>
+      Sets the sequential number for test ID explicitly.<br>
+<pre>
+dbg.test.setSeq(<input type="text" id="test-setseq-txt" class="demo-text" style="width:20px;" value="10">); <button class="demo-button2" onclick="dbg.test.setSeq(getVal('test-setseq-txt'));">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -4396,6 +4472,7 @@ $ test init -name "TestName"
 $ test set desc "Description"
 
 $ test set id "Test01"
+$ test set id "Test%SEQ%"<span class="annotation">"%SEQ%" will be replaced auto sequential number.</span>
 
 $ test set comment "Comment"
 
@@ -4891,9 +4968,9 @@ $ set batstop error|test
   </tr>
 
   <tr>
-    <td class="name">${%TEST_STATUS%}</td>
+    <td class="name">${%TEST_TOTAL_RESULT%}</td>
     <td>
-      Total test status
+      Total test result
     </td>
   </tr>
 
