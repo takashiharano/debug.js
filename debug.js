@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812272330';
+  this.v = '201812280000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14294,20 +14294,26 @@ DebugJS.point.hint.msgseq = function(msg, m, speed, step, start, end) {
   DebugJS.setText(el, msg, speed, step, start, end);
 };
 DebugJS.point.hint.replaceMsg = function(s) {
-  var BTN_PREFIX = '<span class="dbg-btn dbg-nomove" ';
-  var BTN_SUFFIX = '</span>';
-  var RESUME = BTN_PREFIX + 'onclick="DebugJS.ctx.batResume();">[RESUME]' + BTN_SUFFIX;
-  var STOP = BTN_PREFIX + 'onclick="DebugJS.bat.cancel();">[STOP]' + BTN_SUFFIX;
-  var CLOSE = BTN_PREFIX + 'onclick="DebugJS.point.hide();">[CLOSE]' + BTN_SUFFIX;
-  var reg = /\\n/g;
-  s = s.replace(reg, '\n');
-  s = s.replace(/!RESUME!/g, RESUME);
-  s = s.replace(/!STOP!/g, STOP);
+  s = s.replace(/\\n/g, '\n');
+  s = DebugJS.point.hint.rplcBtn(s);
   if (s.match(/!TEST_COUNT!/)) s = s.replace(/!TEST_COUNT!/g, DebugJS.test.getCountStr(DebugJS.test.getSumCount()));
   if (s.match(/!TEST_RESULT!/)) s = s.replace(/!TEST_RESULT!/g, DebugJS.test.result());
-  s = s.replace(/!CLOSE!/g, CLOSE);
   return s;
 };
+DebugJS.point.hint.rplcBtn = function(s) {
+  var PREFIX = '<span class="dbg-btn dbg-nomove" onclick="DebugJS.';
+  var SUFFIX = '</span>';
+  var d = {RESUME: 'ctx.batResume', STOP: 'bat.cancel', CLOSE: 'point.hide'};
+  for (var k in d) {
+    var re = new RegExp('!' + k + '!', 'g');
+    if (s.match(re)) {
+      var b = PREFIX + d[k] + '();">[' + k + ']' + SUFFIX;
+      s = s.replace(re, b);
+    }
+  }
+  return s;
+};
+
 DebugJS.point.hint.move = function() {
   var point = DebugJS.point;
   var area = point.hint.area;
@@ -15042,7 +15048,7 @@ DebugJS.test.result = function() {
   var test = DebugJS.test;
   var data = test.data;
   var nm = data.name;
-  var tstSt = test.getTotalResult();
+  var ttl = test.getTotalResult();
   var cnt = test.getSumCount();
   var s = 'Test Result:\n';
   if (nm != '') s += '[TEST NAME]\n' + nm + '\n\n';
@@ -15054,7 +15060,7 @@ DebugJS.test.result = function() {
   if (test.countTotal(cnt) > 0) s += '[RESULTS]\n---------\n';
   s += test.getDetailStr(data.results);
   s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n';
-  s += DebugJS.repeatCh('-', tstSt.length + 2) + '\n' + test.getStyledStStr(tstSt);
+  s += DebugJS.repeatCh('-', ttl.length + 2) + '\n' + test.getStyledStStr(ttl);
   return s;
 };
 DebugJS.test.getDetailStr = function(results) {
