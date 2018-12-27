@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812270000';
+  this.v = '201812272330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12942,6 +12942,25 @@ DebugJS.bat.nextExecLine = function(pc) {
   var bat = DebugJS.bat;
   var cmnt = 0;
   while (pc <= bat.ctrl.endPc) {
+    pc = DebugJS.bat.nextELOC(pc);
+    var cmd = bat.cmds[pc];
+    if (cmd == undefined) return pc;
+    pc++;
+    var cmds = DebugJS.splitCmdLineInTwo(cmd);
+    var c = cmds[0];
+    if ((c == DebugJS.BAT_TKN_FNC) && (bat.ctrl.stack.length == 0)) {
+      pc = bat.findEndOfFnc(pc) + 1;
+    } else {
+      pc--;
+      break;
+    }
+  }
+  return pc;
+};
+DebugJS.bat.nextELOC = function(pc) {
+  var bat = DebugJS.bat;
+  var cmnt = 0;
+  while (pc <= bat.ctrl.endPc) {
     var cmd = bat.cmds[pc];
     pc++;
     var cmds = DebugJS.splitCmdLineInTwo(cmd);
@@ -12962,12 +12981,8 @@ DebugJS.bat.nextExecLine = function(pc) {
       continue;
     }
     if (cmnt == 0) {
-      if ((c == DebugJS.BAT_TKN_FNC) && (bat.ctrl.stack.length == 0)) {
-        pc = bat.findEndOfFnc(pc) + 1;
-      } else {
-        pc--;
-        break;
-      }
+      pc--;
+      break;
     }
   }
   return pc;
@@ -13060,7 +13075,7 @@ DebugJS.bat.findEndOfFnc = function(pc) {
   while (pc <= DebugJS.bat.ctrl.endPc) {
     var cmd = DebugJS.bat.cmds[pc];
     var c = DebugJS.splitCmdLineInTwo(cmd)[0];
-    var l = DebugJS.bat.nextExecLine(pc);
+    var l = DebugJS.bat.nextELOC(pc);
     if (l != pc) {
       pc = l;
       continue;
