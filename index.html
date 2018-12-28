@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <title>debug.js</title>
 <meta name="description" content="debug.js is embedded JavaScript debugger for web development. It allows you to debug easily without the F12 Tools. The library has useful features such as logging, DOM element inspenction, screen measure, command-line, etc.">
 <meta name="viewport" content="width=900, initial-scale=1">
@@ -141,7 +142,7 @@ var options2 = {
   visible: true,
   lines: 23,
   showTimeStamp: false,
-  disableAllFeatures: true,
+  disableAllFeatures: true
   //useSystemInfo: true,
   //useCommandLine: true,
   //useTools: true,
@@ -928,7 +929,7 @@ demo.sendLogDemo0 = function() {
     bar: 'bbb'
   };
   var extInfo = {
-    info0: 'additional info 0-1\nadditional info 0-2',
+    info0: 'additional info 0-1\nadditional info 0-2'
   };
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
@@ -939,7 +940,7 @@ demo.sendLogDemo1 = function() {
     bar: 'bbb'
   };
   var extInfo = {
-    info1: 'additional info 1-1\nadditional info 1-2',
+    info1: 'additional info 1-1\nadditional info 1-2'
   };
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
@@ -950,7 +951,7 @@ demo.sendLogDemo2 = function() {
     bar: 'bbb'
   };
   var extInfo = {
-    info2: 'additional info 2-1\nadditional info 2-2',
+    info2: 'additional info 2-1\nadditional info 2-2'
   };
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
@@ -961,7 +962,7 @@ demo.sendLogDemo3 = function() {
     bar: 'bbb'
   };
   var extInfo = {
-    info3: 'additional info 3-1\nadditional info 3-2',
+    info3: 'additional info 3-1\nadditional info 3-2'
   };
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };

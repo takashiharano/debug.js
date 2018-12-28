@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812280000';
+  this.v = '201812282100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -867,7 +867,7 @@ DebugJS.prototype = {
       'overflow': 'visible !important'
     };
     styles['.dbg-btn'] = {
-      'color': opt.btnColor + ' !important',
+      'color': opt.btnColor + ' !important'
     };
     styles['.dbg-btn:hover'] = {
       'text-shadow': '0 0 3px',
@@ -1061,7 +1061,7 @@ DebugJS.prototype = {
       'display': 'inline-block !important',
       'min-width': 'calc(100% - 18px) !important',
       'height': '1.5em !important',
-      'margin-top': '4px !important',
+      'margin-top': '4px !important'
     };
     styles['.dbg-resbox'] = {
       'padding': '5px !important',
@@ -1074,7 +1074,7 @@ DebugJS.prototype = {
     };
     styles['.dbg-resbox.ok'] = {
       'border': '1px solid #2c6cb8 !important',
-      'background': 'linear-gradient(rgba(8,8,16,0.6),rgba(0,0,68,0.6)) !important',
+      'background': 'linear-gradient(rgba(8,8,16,0.6),rgba(0,0,68,0.6)) !important'
     };
     styles['.dbg-resbox.err'] = {
       'border': '1px solid #c00 !important',
@@ -6854,7 +6854,7 @@ DebugJS.prototype = {
     switch (key) {
       case 'b':
       case 'break':
-        DebugJS.bat.ctrl.break = v;
+        DebugJS.bat.ctrl.breakP = v;
         break;
       case 'delay':
         break;
@@ -12443,7 +12443,7 @@ DebugJS.bat.ctrl = {
   lr: 0,
   startPc: 0,
   endPc: 0,
-  break: 0,
+  breakP: 0,
   delay: 0,
   echo: true,
   tmpEchoOff: false,
@@ -12662,7 +12662,7 @@ DebugJS.bat.exec = function() {
     ctx.status &= ~DebugJS.ST_BAT_BREAK;
     bat.setPc(--ctrl.pc);
   } else {
-    if (ctrl.pc + 1 == ctrl.break) {
+    if (ctrl.pc + 1 == ctrl.breakP) {
       ctx.status |= DebugJS.ST_BAT_BREAK;
       bat.setPc(++ctrl.pc, true);
       bat.pause();
