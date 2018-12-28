@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812282125';
+  this.v = '201812290050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -367,7 +367,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', help: 'rot 5|13|47 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
     {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', help: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
-    {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', help: 'select selectors get|set text|value val'},
+    {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', help: 'select selectors get|set text|texts|value|values val'},
     {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', help: 'set property-name value'},
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
@@ -8133,11 +8133,11 @@ DebugJS.prototype = {
       var method = args[1];
       var type = args[2];
       if (((method == 'get') || (method == 'set')) &&
-          ((type == 'text') || (type == 'value'))) {
+          ((type == 'text') || (type == 'texts') || (type == 'value') || (type == 'values'))) {
         var val = args[3];
         ret = ctx._cmdSelect(el, method, type, val);
       } else {
-        DebugJS._log.e('Usage: point selectoption get|set text|value val');
+        DebugJS._log.e('Usage: point selectoption get|set text|texts|value|values val');
       }
     } else {
       DebugJS._log.e('Pointed area is not a select element (' + (el ? el.nodeName : 'null') + ')');
@@ -8440,7 +8440,7 @@ DebugJS.prototype = {
     var val = a[3];
     if ((sel != '') &&
         (((method == 'set') && (a.length >= 4)) || ((method == 'get') && (a.length >= 3))) &&
-        ((type == 'text') || (type == 'value'))) {
+        ((type == 'text') || (type == 'texts') || (type == 'value') || (type == 'values'))) {
       return DebugJS.ctx._cmdSelect(sel, method, type, val);
     }
     DebugJS.printUsage(tbl.help);
@@ -8450,7 +8450,11 @@ DebugJS.prototype = {
       var val = eval(val) + '';
       var r = DebugJS.selectOption(sel, method, type, val);
       if (method == 'get') {
-        DebugJS._log.res(r);
+        if ((type == 'values') || (type == 'texts')) {
+          DebugJS._log.p(r);
+        } else {
+          DebugJS._log.res(r);
+        }
       }
       return r;
     } catch (e) {
@@ -14656,36 +14660,45 @@ DebugJS.getSpeed = function(v) {
   return DebugJS.getRndNum(min, max);
 };
 
-DebugJS.selectOption = function(el, method, type, val) {
-  var select = null;
-  select = DebugJS.getElement(el);
-  if (!select) {
-    DebugJS._log.e('Element not found: ' + el);
+DebugJS.selectOption = function(elm, method, type, val) {
+  var i;
+  var el = DebugJS.getElement(elm);
+  if (!el) {
+    DebugJS._log.e('Element not found: ' + elm);
     return;
   }
-  if (select.tagName != 'SELECT') {
-    DebugJS._log.e('Element is not select (' + select + ')');
+  if (el.tagName != 'SELECT') {
+    DebugJS._log.e('Element is not select (' + el + ')');
     return;
   }
   if (method == 'set') {
-    var prevVal = select.value;
-    for (var i = 0; i < select.options.length; i++) {
-      if (((type == 'text') && (select.options[i].innerText == val)) ||
-          ((type == 'value') && (select.options[i].value == val))) {
-        select.options[i].selected = true;
+    if ((type != 'value') && (type != 'text')) return;
+    var prevVal = el.value;
+    for (i = 0; i < el.options.length; i++) {
+      if (((type == 'text') && (el.options[i].innerText == val)) ||
+          ((type == 'value') && (el.options[i].value == val))) {
+        el.options[i].selected = true;
         if (prevVal != val) {
-          DebugJS.dispatchChangeEvt(select);
+          DebugJS.dispatchChangeEvt(el);
         }
         return;
       }
     }
   } else {
-    var prop = 'innerText';
+    var r;
+    var idx = el.selectedIndex;
     if (type == 'value') {
-      prop = 'value';
+      r = el.options[idx].value;
+    } else if (type == 'text') {
+      r = el.options[idx].innerText;
+    } else if ((type == 'values') || (type == 'texts')) {
+      var prop = (type == 'values' ? 'value' : 'innerText');
+      r = [];
+      for (i = 0; i < el.options.length; i++) {
+        r.push(el.options[i][prop]);
+      }
     }
-    var idx = select.selectedIndex;
-    return select.options[idx][prop];
+    return r;
   }
   DebugJS._log.e('No such option: ' + val);
 };

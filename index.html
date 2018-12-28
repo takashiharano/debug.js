@@ -4143,6 +4143,11 @@ $ point selectoption get text
 $ point selectoption get value
 -&gt; "1"
 
+$ point selectoption get texts
+-&gt; ["Option1", "Option2", "Option3"]
+$ point selectoption get values
+-&gt; ["1", "2", "3"]
+
 $ point scroll x y
 -&gt; Scroll the current position
 x: [+|-]val | left | center | right | current
@@ -4237,7 +4242,7 @@ $ point init
     <td class="name">prop</td>
     <td>property-name</td>
     <td>
-      Displays a property value.
+      Displays a property value of the debugger.
     </td>
   </tr>
 
@@ -4245,7 +4250,7 @@ $ point init
     <td class="name">props</td>
     <td></td>
     <td>
-      Displays property list.
+      Displays debugger property list.
     </td>
   </tr>
 
@@ -4371,7 +4376,7 @@ position: top|px|bottom
       arg2: "value"<br>
     </td>
     <td>
-      Select an option of select element<br><br>
+      Select an option of select element / get value or option label text<br><br>
 e.g.,)<br>
 <pre class="eg">
 $ select #id set value "1"
@@ -4379,6 +4384,9 @@ $ select select:nth-child(1) set text "abc"
 
 $ select #id get text
 $ select #id get value
+
+$ select #id get texts
+$ select #id get values
 </pre>
     </td>
   </tr>
@@ -4390,7 +4398,7 @@ $ select #id get value
       arg2: value
     </td>
     <td>
-      Set a property value.<br>
+      Set a property value of the debugger.<br>
       <span class="annotation">See also "props" command.</span>
     </td>
   </tr>
