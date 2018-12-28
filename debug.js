@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812282110';
+  this.v = '201812282125';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15333,6 +15333,9 @@ DebugJS.getHost = function() {
 };
 DebugJS.getPort = function() {
   return location.port;
+};
+DebugJS.getParentPath = function() {
+  return location.href.replace(/(.*\/).*/, '$1');
 };
 
 DebugJS.ui = {};
