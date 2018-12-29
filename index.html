@@ -1049,11 +1049,10 @@ function scrollToSelector(selector, step) {
 <div id="body1">
 <div id="header-line"></div>
 <div id="header-menu-w"><div id="header-menu">
-<a href="#" onclick="scrollToSelector('#usage', 50);return false;">// Usage</a>
 <a href="#" onclick="scrollToSelector('#methods', 100);return false;">// Methods</a>
 <a href="#" onclick="scrollToSelector('#classes', 500);return false;">// Classes</a>
 <a href="#" onclick="scrollToSelector('#commands', 600);return false;">// Commands</a>
-<a href="#" onclick="scrollToSelector('#features', 700);return false;">// Features</a>
+<a href="#" onclick="scrollToSelector('#bat-execution', 700);return false;">// BAT Execution</a>
 <a href="#" onclick="scrollToSelector('#options', 800);return false;">// Options</a>
 <a href="#" onclick="scrollToSelector('#extension', 900);return false;">// Extension</a>
 <a href="#" onclick="scrollToSelector('#lazyload', 1000);return false;">// Lazy Load</a>
@@ -4710,7 +4709,94 @@ $ zoom 1
 </table>
 <br>
 
-<div class="caption" id="batch-commands">// Batch dedicated commands</div>
+<div class="caption" id="bat-execution">// BAT Script Execution</div>
+BAT script is an original script in debug.js.<br>
+It consists of a series of commands to be executed by the command-line interpreter.<br><br>
+
+<b>How to execute</b><br>
+From upper menu of the debugger window,
+<pre>
+TOOL =&gt; &lt;BAT&gt; =&gt; Write a BAT script =&gt; [ RUN ]
+</pre>
+<a href="bat.txt" target="_blank">Sample Script</a> (for Auto-testing of this page)<br>
+You can load a script by drag a script file (plain text file) and drop to log window.<br>
+<br>
+
+<b>Batch File Format</b>
+<pre class="code" style="margin-bottom:2px">
+<span class="emphasis">#!BAT!</span> <i>File Header</i><span class="emphasis">
+
+#comment
+
+//comment
+
+/*
+multi-line-comment
+*/
+
+!__TEXT__!</span>
+plain text
+plain text
+plain text
+<span class="emphasis">!__TEXT__!</span>
+<span class="annotation">This is also comment section.
+The difference from other comment section is the content will be set to the variable ${%TEXT%}.</span>
+<span class="emphasis">
+${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
+
+%{val} <span class="annotation">inline expansion of the value</span>
+
+IF (${val} == 1) (</span>
+  command
+<span class="emphasis">) ELSE IF (${val} == 2) (</span>
+  command
+<span class="emphasis">) ELSE (</span>
+  command
+<span class="emphasis">)
+
+</span>${i} = 0
+<span class="emphasis">LOOP (${i} &lt; 3) (</span>
+  command
+  ${i}++
+<span class="emphasis">)
+
+LOOP (</span>
+  command
+  IF (xxx) (<span class="emphasis">
+    BREAK</span>
+  )
+  IF (xxx) (<span class="emphasis">
+    CONTINUE</span>
+  )
+<span class="emphasis">)
+
+!__JS__!</span> <span class="annotation">Inline JavaScript Section</span>
+JavaScript Code;
+JavaScript Code;
+JavaScript Code;
+<span class="emphasis">!__JS__! <span class="annotation">This section will be executed at once.</span>
+
+!__JS__! pure</span> <span class="annotation">JavaScript section w/o variable substitution (${val})</span>
+JavaScript Code;
+JavaScript Code;
+JavaScript Code;
+<span class="emphasis">!__JS__!
+
+:label</span>
+goto label
+
+<span class="emphasis">call func1 ${val}<span class="annotation">(opt)</span>
+${val} = ${%RET%}
+
+FUNCTION func1
+  ${val} = ${%ARG%}</span>
+  command
+  <span class="emphasis">return ${val}<span class="annotation">(opt)</span>
+</span>
+</pre>
+<br>
+
+<b id="bat-commands">Batch dedicated commands</b>
 <table class="desc-table">
   <tr>
     <th>Name</th>
@@ -4800,7 +4886,6 @@ return value
     </td>
   </tr>
 
-
   <tr>
     <td class="name">wait</td>
     <td>millis<br>or target time</td>
@@ -4816,118 +4901,6 @@ wait 1d2h3m4s500
 </pre>
     </td>
   </tr>
-</table>
-<br>
-
-<b>Batch File Format</b>
-<pre class="code" style="margin-bottom:2px">
-<span class="emphasis">#!BAT!</span> <i>File Header</i><span class="emphasis">
-
-#comment
-
-//comment
-
-/*
-multi-line-comment
-*/
-
-!__TEXT__!</span>
-plain text
-plain text
-plain text
-<span class="emphasis">!__TEXT__!</span>
-<span class="annotation">This is also comment section.
-The difference from other comment section is the content will be set to the variable ${%TEXT%}.</span>
-<span class="emphasis">
-${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
-
-%{val} <span class="annotation">inline expansion of the value</span>
-
-IF (${val} == 1) (</span>
-  command
-<span class="emphasis">) ELSE IF (${val} == 2) (</span>
-  command
-<span class="emphasis">) ELSE (</span>
-  command
-<span class="emphasis">)
-
-</span>${i} = 0
-<span class="emphasis">LOOP (${i} &lt; 3) (</span>
-  command
-  ${i}++
-<span class="emphasis">)
-
-LOOP (</span>
-  command
-  IF (xxx) (<span class="emphasis">
-    BREAK</span>
-  )
-  IF (xxx) (<span class="emphasis">
-    CONTINUE</span>
-  )
-<span class="emphasis">)
-
-!__JS__!</span> <span class="annotation">Inline JavaScript Section</span>
-JavaScript Code;
-JavaScript Code;
-JavaScript Code;
-<span class="emphasis">!__JS__! <span class="annotation">This section will be executed at once.</span>
-
-!__JS__! pure</span> <span class="annotation">JavaScript section w/o variable substitution (${val})</span>
-JavaScript Code;
-JavaScript Code;
-JavaScript Code;
-<span class="emphasis">!__JS__!
-
-:label</span>
-goto label
-
-<span class="emphasis">call func1 ${val}<span class="annotation">(opt)</span>
-${val} = ${%RET%}
-
-FUNCTION func1
-  ${val} = ${%ARG%}</span>
-  command
-  <span class="emphasis">return ${val}<span class="annotation">(opt)</span>
-</span>
-</pre>
-
-<a href="bat.txt" target="_blank">Sample Batch Script</a><br><br>
-<b>Load and Execute</b><br>
-TOOL =&gt; &lt;BAT&gt; =&gt; Drop a BAT file / Copy & Paste or Edit BAT code =&gt; [ RUN ]<br>
-<br>
-
-<b>BAT related system properties</b><br>
-<table class="desc-table">
-  <tr>
-    <th>Property</th>
-    <th>Description</th>
-  </tr>
-
-  <tr>
-    <td class="name">batcont</td>
-    <td>
-      Continue flag.<br>The batch script will be continued after page unload/load.
-<pre class="eg">
-$ set batcont on
-$ set batcont off
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">batstop</td>
-    <td>
-      Error stop trigger.<br>The batch script will be stopped when an error occurred (when log.e() was called) or test verify command result was failed.<br>
-<pre class="eg">
-$ set batstop none
-$ set batstop error
-$ set batstop test
-$ set batstop error|test
-</pre>
-    </td>
-  </tr>
-
 </table>
 <br>
 
@@ -5005,6 +4978,39 @@ $ set batstop error|test
     <td class="name">${%TEXT%}</td>
     <td>
       Text content written in !__TEXT__! section
+    </td>
+  </tr>
+</table>
+<br>
+
+<b>BAT related system properties</b><br>
+<table class="desc-table">
+  <tr>
+    <th>Property</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">batcont</td>
+    <td>
+      Continue flag.<br>The batch script will be continued after page unload/load.
+<pre class="eg">
+$ set batcont on
+$ set batcont off
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">batstop</td>
+    <td>
+      Error stop trigger.<br>The batch script will be stopped when an error occurred (when log.e() was called) or test verify command result was failed.<br>
+<pre class="eg">
+$ set batstop none
+$ set batstop error
+$ set batstop test
+$ set batstop error|test
+</pre>
     </td>
   </tr>
 </table>
