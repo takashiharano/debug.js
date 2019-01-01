@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201812291437';
+  this.v = '201901020000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -511,7 +511,7 @@ DebugJS.UI_ST_RESIZING_S = 1 << 9;
 DebugJS.UI_ST_RESIZING_W = 1 << 10;
 DebugJS.UI_ST_RESIZING_ALL = DebugJS.UI_ST_RESIZING | DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E | DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W;
 DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 11;
-DebugJS.UI_ST_NEED_TO_SCROLL = 1 << 12;
+DebugJS.UI_ST_LOG_SCROLL = 1 << 12;
 DebugJS.UI_ST_PROTECTED = 1 << 13;
 DebugJS.TOOL_ST_SW_CU_RUNNING = 1;
 DebugJS.TOOL_ST_SW_CU_END = 1 << 1;
@@ -720,6 +720,7 @@ DebugJS.prototype = {
       var preserveStatus = DebugJS.ST_LOG_PRESERVED | DebugJS.ST_STOPWATCH_RUNNING | DebugJS.ST_WD | DebugJS.ST_BAT_RUNNING | DebugJS.ST_BAT_PAUSE | DebugJS.ST_BAT_PAUSE_CMD | DebugJS.ST_BAT_PAUSE_CMD_KEY;
       ctx.status &= preserveStatus;
       ctx.uiStatus = 0;
+      ctx.startLogScrolling();
     }
     if ((ctx.opt == null) || ((opt != null) && (!keepStatus)) || (opt === undefined)) {
       ctx.setupDefaultOptions();
@@ -1278,6 +1279,7 @@ DebugJS.prototype = {
     ctx.logPanel.style.height = 'calc(100%' + ctx.logPanelHeightAdjust + ')';
     ctx.logPanel.style.padding = '0';
     ctx.logPanel.style.overflow = 'auto';
+    ctx.logPanel.addEventListener('scroll', ctx.onLogScroll, true);
     ctx.enableDnDFileLoad(ctx.logPanel, ctx.onDropOnLogPanel);
     ctx.mainPanel.appendChild(ctx.logPanel);
 
@@ -1983,8 +1985,25 @@ DebugJS.prototype = {
     }
     ctx.logPanel.innerHTML = '<pre style="padding:0 3px !important">' + logs + '</pre>';
   },
+  onLogScroll: function(e) {
+    var ctx = DebugJS.ctx;
+    var rect = ctx.logPanel.getBoundingClientRect();
+    var h = rect.height;
+    var d = ctx.logPanel.scrollHeight - ctx.logPanel.scrollTop;
+    if ((d - 1 <= h) && (h <= d + 1)) {
+      ctx.startLogScrolling();
+    } else {
+      ctx.stopLogScrolling();
+    }
+  },
   scrollLogBtm: function(ctx) {
     ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
+  },
+  startLogScrolling: function() {
+    DebugJS.ctx.uiStatus |= DebugJS.UI_ST_LOG_SCROLL;
+  },
+  stopLogScrolling: function() {
+    DebugJS.ctx.uiStatus &= ~DebugJS.UI_ST_LOG_SCROLL;
   },
   onClr: function() {
     DebugJS.ctx.clearLog();
@@ -2022,6 +2041,7 @@ DebugJS.prototype = {
     }
     ctx.updateLogFilterBtns();
     ctx.printLogs();
+    if (fltr == DebugJS.LOG_FLTR_ALL) ctx.scrollLogBtm(ctx);
   },
 
   updateLogFilterBtns: function() {
@@ -2589,6 +2609,7 @@ DebugJS.prototype = {
 
       case 13: // Enter
         if (document.activeElement == ctx.cmdLine) {
+          ctx.startLogScrolling();
           ctx.stopErrCb = true;
           ctx.execCmd(ctx);
           ctx.stopErrCb = false;
@@ -2653,6 +2674,7 @@ DebugJS.prototype = {
             if (ctx.status & DebugJS.ST_BAT_RUNNING) {
               DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGINT);
             }
+            ctx.startLogScrolling();
             ctx._cmdDelayCancel(ctx);
             DebugJS.point.move.stop();
             DebugJS.point.drag.stop();
@@ -3209,9 +3231,8 @@ DebugJS.prototype = {
     } else {
       ctx.adjustWinMax(ctx);
     }
-    if (ctx.uiStatus & DebugJS.UI_ST_NEED_TO_SCROLL) {
+    if (ctx.uiStatus & DebugJS.UI_ST_LOG_SCROLL) {
       ctx.scrollLogBtm(ctx);
-      ctx.uiStatus &= ~DebugJS.UI_ST_NEED_TO_SCROLL;
     }
     ctx.resizeMainHeight();
   },
@@ -12235,8 +12256,7 @@ DebugJS._log.out = function(m, type) {
     if (!DebugJS._init()) return;
   }
   ctx.printLogs();
-  if (!(ctx.status & DebugJS.ST_LOG_SUSPENDING)) ctx.scrollLogBtm(ctx);
-  if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) ctx.uiStatus |= DebugJS.UI_ST_NEED_TO_SCROLL;
+  if (ctx.uiStatus & DebugJS.UI_ST_LOG_SCROLL) ctx.scrollLogBtm(ctx);
 };
 
 DebugJS.stack = function(ldx, q) {
