@@ -2854,44 +2854,12 @@ dbg.test.fin(); <button class="demo-button2" onclick="dbg.test.fin();">DEMO</but
 
   <tr>
     <td class="name">dbg.test.getResult</td>
-    <td></td>
+    <td>to JSON flag</td>
     <td>
-      Returns the test result object.<br>
+      Returns the test result object.<br><br>
 <pre>
 dbg.test.getResult(); <button class="demo-button2" onclick="log.p(dbg.test.getResult());">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.test.getLastResult</td>
-    <td></td>
-    <td>
-      Returns the last test result.<br>
-<pre>
-dbg.test.getLastResult(); <button class="demo-button2" onclick="log.p(dbg.test.getLastResult());">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.test.getTotalResult</td>
-    <td></td>
-    <td>
-      Returns the total test result.<br>
-<pre>
-dbg.test.getTotalResult(); <button class="demo-button2" onclick="log.p(dbg.test.getTotalResult());">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.test.getResultJSON</td>
-    <td></td>
-    <td>
-      Returns the test result JSON.<br>
-<pre>
-dbg.test.getResultJSON(); <button class="demo-button2" onclick="log(dbg.test.getResultJSON());">DEMO</button>
+dbg.test.getResult(true); <button class="demo-button2" onclick="log(dbg.test.getResult(true));">DEMO</button>
 
 <b>JSON FORMAT EXAMPLE:</b>
 <pre class="eg-s">
@@ -2989,6 +2957,28 @@ test fin</pre>dbg.test.getResultJSON();
  }
 }
 </pre></pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.getLastResult</td>
+    <td></td>
+    <td>
+      Returns the last test result.<br>
+<pre>
+dbg.test.getLastResult(); <button class="demo-button2" onclick="log.p(dbg.test.getLastResult());">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.test.getTotalResult</td>
+    <td></td>
+    <td>
+      Returns the total test result.<br>
+<pre>
+dbg.test.getTotalResult(); <button class="demo-button2" onclick="log.p(dbg.test.getTotalResult());">DEMO</button>
+</pre>
     </td>
   </tr>
 

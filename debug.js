@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901021747';
+  this.v = '201901022040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15123,7 +15123,7 @@ DebugJS.test.getDetailStr = function(results) {
   }
   return details;
 };
-DebugJS.test.getResult = function() {
+DebugJS.test.getResult = function(j) {
   var data = DebugJS.test.data;
   var r = {
     name: data.name,
@@ -15134,10 +15134,8 @@ DebugJS.test.getResult = function() {
     count: data.cnt,
     results: data.results
   };
+  if (j) return DebugJS.toJSON(r);
   return r;
-};
-DebugJS.test.getResultJSON = function(j) {
-  return DebugJS.toJSON(DebugJS.test.getResult());
 };
 DebugJS.test.verify = function(got, method, exp, reqEval, label) {
   var test = DebugJS.test;
