@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901020000';
+  this.v = '201901021400';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -26,8 +26,8 @@ var DebugJS = DebugJS || function() {
     width: 533,
     zoom: 1,
     position: 'se',
-    adjPosX: 20,
-    adjPosY: 20,
+    adjustX: 20,
+    adjustY: 20,
     fontSize: 12,
     fontFamily: 'Consolas, monospace',
     fontColor: '#fff',
@@ -1668,50 +1668,47 @@ DebugJS.prototype = {
   setWinPos: function(pos, dbgWinW, dbgWinH) {
     var ctx = DebugJS.ctx;
     var opt = ctx.opt;
-    var top, left;
+    var top = opt.adjustY;
+    var left = opt.adjustX;
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
     if (clientW > window.outerWidth) clientW = window.outerWidth;
     if (clientH > window.outerHeight) clientH = window.outerHeight;
     switch (pos) {
       case 'se':
-        top = (clientH - dbgWinH - opt.adjPosY) + 'px';
-        left = (clientW - dbgWinW - opt.adjPosX) + 'px';
+        top = clientH - dbgWinH - opt.adjustY;
+        left = clientW - dbgWinW - opt.adjustX;
         break;
       case 'ne':
-        top = opt.adjPosY + 'px';
-        left = (clientW - dbgWinW - opt.adjPosX) + 'px';
+        top = opt.adjustY;
+        left = clientW - dbgWinW - opt.adjustX;
         break;
       case 'c':
-        top = ((clientH / 2) - (dbgWinH / 2)) + 'px';
-        left = ((clientW / 2) - (dbgWinW / 2)) + 'px';
+        top = (clientH / 2) - (dbgWinH / 2);
+        left = (clientW / 2) - (dbgWinW / 2);
         break;
       case 'sw':
-        top = (clientH - dbgWinH - opt.adjPosY) + 'px';
-        left = opt.adjPosX + 'px';
+        top = clientH - dbgWinH - opt.adjustY;
+        left = opt.adjustX;
         break;
       case 'n':
-        top = opt.adjPosY + 'px';
-        left = ((clientW / 2) - (dbgWinW / 2)) + 'px';
+        top = opt.adjustY;
+        left = (clientW / 2) - (dbgWinW / 2);
         break;
       case 'e':
-        top = ((clientH / 2) - (dbgWinH / 2)) + 'px';
-        left = (clientW - dbgWinW - opt.adjPosX) + 'px';
+        top = (clientH / 2) - (dbgWinH / 2);
+        left = clientW - dbgWinW - opt.adjustX;
         break;
       case 's':
-        top = (clientH - dbgWinH - opt.adjPosY) + 'px';
-        left = ((clientW / 2) - (dbgWinW / 2)) + 'px';
+        top = clientH - dbgWinH - opt.adjustY;
+        left = (clientW / 2) - (dbgWinW / 2);
         break;
       case 'w':
-        top = ((clientH / 2) - (dbgWinH / 2)) + 'px';
-        left = opt.adjPosX + 'px';
-        break;
-      default:
-        top = opt.adjPosY + 'px';
-        left = opt.adjPosX + 'px';
+        top = (clientH / 2) - (dbgWinH / 2);
+        left = opt.adjustX;
     }
-    ctx.win.style.top = top;
-    ctx.win.style.left = left;
+    ctx.win.style.top = top + 'px';
+    ctx.win.style.left = left + 'px';
   },
 
   updateClockLabel: function() {
@@ -6515,10 +6512,10 @@ DebugJS.prototype = {
       ctx.adjustDbgWinPos(ctx);
     } else {
       if (sp.y2 > clientH) {
-        if (clientH < (height + ctx.opt.adjPosY)) {
+        if (clientH < (height + ctx.opt.adjustY)) {
           ctx.win.style.top = 0;
         } else {
-          var top = clientH - height - ctx.opt.adjPosY;
+          var top = clientH - height - ctx.opt.adjustY;
           ctx.win.style.top = top + 'px';
         }
       }
