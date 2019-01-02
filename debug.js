@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901021400';
+  this.v = '201901021747';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8360,7 +8360,7 @@ DebugJS.prototype = {
     }
   },
   _cmdScrollToWin: function(ctx, arg, tbl) {
-    var a = DebugJS.splitCmdLine(arg);
+    var a = DebugJS.getOptVal(arg, '');
     var posX = a[1];
     var posY = a[2];
     var speed = DebugJS.getOptVal(arg, 'speed');
@@ -8372,8 +8372,18 @@ DebugJS.prototype = {
     if (speed == undefined) speed = ctx.props.scrollspeed;
     if (step == undefined) step = ctx.props.scrollstep;
     if (isNaN(posX)) {
-      var ps = DebugJS.getElPosSize(posX, posY);
+      var slct = a[1];
+      var idx = a[2];
+      var ps = DebugJS.getElPosSize(slct, idx);
       if (ps) {
+        var adjX = DebugJS.getOptVal(arg, 'adjX');
+        var adjY = DebugJS.getOptVal(arg, 'adjY');
+        try {
+          if (adjX) ps.x += eval(adjX);
+          if (adjY) ps.y += eval(adjY);
+        } catch (e) {
+          DebugJS.log.e('scollto window: ' + e);
+        }
         DebugJS.scrollWinToTarget(ps, speed, step, null, null, true);
         return;
       }
