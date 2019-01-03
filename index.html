@@ -3114,9 +3114,20 @@ var args = dbg.splitArgs('<input type="text" id="args-txt" class="demo-text" sty
     <td class="name">dbg.splitCmdLine</td>
     <td>argument-string</td>
     <td>
-      An extended version of splitArgs().<br>
+      An extended version of splitArgs(). (grouped by "", '', ())<br>
 <pre>
-var ret = dbg.splitCmdLine('<input type="text" id="splt-cmd-txt" class="demo-text" style="width:200px;" value='abc "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitCmdLine(getVal('splt-cmd-txt')), 0, 'args =');">DEMO</button>
+var ret = dbg.splitCmdLine('<input type="text" id="splt-cmd-txt" class="demo-text" style="width:230px;" value='abc def -g "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitCmdLine(getVal('splt-cmd-txt')), 0, 'args =');">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.splitCmdLineInTwo</td>
+    <td>argument-string</td>
+    <td>
+      Splits a command line in two.<br>
+<pre>
+var ret = dbg.splitCmdLineInTwo('<input type="text" id="splt-cmd2-txt" class="demo-text" style="width:230px;" value='abc def -g "123 456" (xyz 987)'>'); <button class="demo-button2" onclick="log.p(dbg.splitCmdLineInTwo(getVal('splt-cmd2-txt')), 0, 'args =');">DEMO</button>
 </pre>
     </td>
   </tr>
