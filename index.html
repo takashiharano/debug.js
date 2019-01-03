@@ -68,6 +68,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .demo-table td {font-family:Consolas, monospace; font-size:11px; color:#0000a0; width:210px; vertical-align:bottom;}
 .demo-table-green td {color:#060;}
 .desc-small {color:#666;font-size:12px;}
+.cat {background:#eee;font-weight:bold;}
 .eg {font-family:Consolas, monospace; line-height:1em;}
 .eg-s {font-size:10px;}
 .json {font-family:Consolas, monospace; font-size:12px; margin:16px 5px;}
@@ -1132,7 +1133,7 @@ var obj = {
     <th>Argument</th>
     <th>Description</th>
   </tr>
-
+  <tr><td colspan="3" class="cat">Logging</td></tr>
   <tr>
     <td class="name">log<br><span class="alias">( dbg.log )</span></td>
     <td>message</td>
@@ -1574,6 +1575,18 @@ format time:
   </tr>
 
   <tr>
+    <td class="name">dbg.loadLog</td>
+    <td>json</td>
+    <td>
+      Load logs into the debug window
+<pre class="eg">
+JSON Format
+[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(Base64)</span>"},...]
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.getLogBufSize</td>
     <td></td>
     <td>
@@ -1583,7 +1596,6 @@ dbg.getLogBufSize(); <button class="demo-button2" onclick="log.res(dbg.getLogBuf
 </pre>
     </td>
   </tr>
-
 
   <tr>
     <td class="name">dbg.setLogBufSize</td>
@@ -1596,6 +1608,7 @@ dbg.setLogBufSize('<input type="text" id="setlogbufsize-text" value="10" class="
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">Time Test</td></tr>
   <tr>
     <td class="name">dbg.time.start<br><span class="alias">( dbg.time.s )</span></td>
     <td>
@@ -1695,6 +1708,7 @@ dbg.time.check('timer1')
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">Command Execution</td></tr>
   <tr>
     <td class="name">dbg.cmd</td>
     <td>
@@ -1805,6 +1819,7 @@ dbg.setCmdVal('<input type="text" id="setcmdval-name-text" class="demo-text" sty
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">BAT Execution</td></tr>
   <tr>
     <td class="name">dbg.bat</td>
     <td>
@@ -2086,6 +2101,7 @@ dbg.point.hint.clear(); <button class="demo-button2" onclick="dbg.point.hint.cle
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">Pseudo LED Controll</td></tr>
   <tr>
     <td class="name">dbg.led</td>
     <td>value</td>
@@ -2161,22 +2177,11 @@ dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width
     <td></td>
     <td>
       Returns the current indicator value<br>
-<pre>dbg.led.val();<button class="demo-button2" onclick="log(dbg.led.val());">DEMO</button></pre>
+<pre>dbg.led.val();<button class="demo-button2" onclick="log.res(dbg.led.val());">DEMO</button></pre>
     </td>
   </tr>
 
-  <tr>
-    <td class="name">dbg.loadLog</td>
-    <td>json</td>
-    <td>
-      Load logs into the debug window
-<pre class="eg">
-JSON Format
-[{"type":1,"time":"12:34:56.789","msg":"SGVsbG8sIFdvcmxkIQ==<span class="annotation">(Base64)</span>"},...]
-</pre>
-    </td>
-  </tr>
-
+  <tr><td colspan="3" class="cat">Message Area</td></tr>
   <tr>
     <td class="name">dbg.msg</td>
     <td>message</td>
@@ -2196,145 +2201,7 @@ dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello
     </td>
   </tr>
 
-  <tr>
-    <td class="name">dbg.random</td>
-    <td>
-      arg1: min<span class="annotation">(opt)</span><br>
-      arg2: max<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Get random number<br>
-<pre class="eg">
-min: minimum number
-max: maximum number
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.randomStr</td>
-    <td>
-      arg1: min<span class="annotation">(opt)</span><br>
-      arg2: max<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Get random string<br>
-<pre class="eg">
-min: minimum length
-max: maximum length
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.escTags</td>
-    <td>string</td>
-    <td>
-      Perform HTML sanitization.<br>
-<pre class="eg">
-&lt; -&gt; &amp;lt;
-&gt; -&gt; &amp;gt;
-&amp; -&gt; &amp;amp;
-&quot; -&gt; &amp;quot;
-&#39; -&gt; &amp;#39;
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.escape</td>
-    <td>string</td>
-    <td>
-      Escape the specified character(s).<br><br>
-<pre class="eg">
-dbg.escape('abc"123"xyz', '"');
--&gt; 'abc\"123\"xyz'
-
-dbg.escape('abc"123"xy\\z', ['\\\\', '"']);
--&gt; 'abc\"123\"xy\\\z'
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.html2text</td>
-    <td>html</td>
-    <td>
-      Convert HTML to plain text.
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.addEvtListener</td>
-    <td>
-      arg1: type<br>
-      arg2: listener
-    </td>
-    <td>
-Adds the specified EventListener function to the list of event listeners for the specified event type.<br>
-<br>
-      type: <b>batstart</b><br>
-      Callback function which is called before starting batch execution.<br>
-<pre class="eg">Function format:
-  function onBatStart() {}</pre>
-<br>
-      type: <b>batstop</b><br>
-      Callback function which is called after stopped batch execution.<br>
-<pre class="eg">Function format:
-  function onBatStop(exitstatus) {}</pre>
-<br>
-      type: <b>ctrlc</b><br>
-      Callback function which is called when Ctrl+C is pressed on the command line.<br>
-<pre class="eg">Function format:
-  function onCtrlC() {}</pre>
-<br>
-      type: <b>drop</b><br>
-      Callback function which is called when a file or text is dropped on the log window.<br>
-<pre class="eg">Function format:
-  function onDrop(event) {}</pre>
-<br>
-      type: <b>error</b><br>
-      Callback function which is called when an error log is printed.<br>
-<pre class="eg">Function format:
-  function onError() {}</pre>
-<br>
-      type: <b>fileloaded</b><br>
-Callback function which is called when file load has been completed.<br>
-<pre class="eg">Function format:
-  function onFileLoaded(file, content, isB64) {}
-
-  file   : meta info (MIME Type, Size, Modified date)
-  content: File content
-  isB64  : true = Base64 encoded / false = Binary ArrayBuffer
-</pre>
-<br>
-      type: <b>unlock</b><br>
-      Callback function which is called when the debug window is unlocked.<br>
-<pre class="eg">Function format:
-  function onUnlock() {}</pre>
-<br>
-      type: <b>watchdog</b><br>
-      Callback function which is called when the watchdog timer has been timed out.<br>
-<pre class="eg">Function format:
-  function onWatchdogTimeout(elapsed) {}</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.addFileLoader</td>
-    <td>
-      arg1: target element<br>
-      arg2: callback function<br>
-      arg3: mode('b64' or 'bin')<br>
-      arg4: decode</td>
-    <td>
-      Add File Loader Handler<br><br>
-      Handler format:<br>
-      function(file, content)<br><br>
-      In case that mode is 'bin', arg4 decode is ignored.
-    </td>
-  </tr>
-
+  <tr><td colspan="3" class="cat">Stopwatch</td></tr>
   <tr>
     <td class="name">dbg.stopwatch</td>
     <td></td>
@@ -2395,259 +2262,7 @@ dbg.stopwatch.end('<input type="text" id="sw-end-msg-text" class="demo-text" sty
     </td>
   </tr>
 
-  <tr>
-    <td class="name">dbg.getBrowserType</td>
-    <td></td>
-    <td>
-      Get browser type info<br><br>
-      e.g.,)
-<pre class="eg">
-{
-  name: 'Firefox',
-  version: '50.0'
-}
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.countElements</td>
-    <td>element selector</td>
-    <td>
-      Count number of elements.
-<pre class="eg">
-dbg.countElements('*');<button class="demo-button2" onclick="log(dbg.countElements('*'));">DEMO</button>
-dbg.countElements('*', true); <button class="demo-button2" onclick="log(dbg.countElements('*', true));">DEMO</button>
--&gt; Count all elements
-
-dbg.countElements('#id');
--&gt; Count the id's element
-   dbg.countElements('#title');<button class="demo-button2" onclick="log(dbg.countElements('#title'));">DEMO</button>
-
-dbg.countElements('.className');
--&gt; Count elements which has the className.
-
-dbg.countElements('tagName');
--&gt; Count elements which correspond to the tagName.
-   dbg.countElements('div');<button class="demo-button2" onclick="log(dbg.countElements('div'));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getHTML</td>
-    <td>
-      base64 flag<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Dump the serialized HTML string of the whole document<br>
-      base64 flag: false = plain text / true = Base64 encoded string
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getElement</td>
-    <td>
-      arg1: #id / .className / tagName<br>
-      arg2: index<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Get an DOM element object of the specified selector<br><br>
-      e.g.,)
-<pre class="eg">
-dbg.getElement('#id');
-dbg.getElement('.className', 0);
-dbg.getElement('tagName', 1);
-</pre><br>
-Returns an DOM element or null if an element with the specified selector is not in the document.
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getElPosSize</td>
-    <td>
-      DOM element object / #id / .className / tagName
-    </td>
-    <td>
-      Get the position and size of the specified DOM element<br><br>
-      e.g.,)
-<pre class="eg">
-{
- x: 504,
- y: 77,
- w: 269,
- h: 94
-}
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getProtocol</td>
-    <td></td>
-    <td>
-      Returns the protocol scheme of the URL, including the final ':'.
-      <button class="demo-button2" onclick="log(dbg.getProtocol());">DEMO</button>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getHost</td>
-    <td></td>
-    <td>
-      Returns the domain of the URL.
-      <button class="demo-button2" onclick="log(dbg.getHost());">DEMO</button>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getPort</td>
-    <td></td>
-    <td>
-      Returns the port number of the URL.
-      <button class="demo-button2" onclick="log(dbg.getPort());">DEMO</button>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getParentPath</td>
-    <td></td>
-    <td>
-      Returns parent path of the URL.
-      <button class="demo-button2" onclick="log(dbg.getParentPath());">DEMO</button>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getKeys</td>
-    <td>object</td>
-    <td>
-      Returns property key name array of the object<br>
-<pre class="eg">
-var obj = {
-  key1: 'A',
-  key2: 'B',
-  key3: 'C',
-};
-
-dbg.getKeys(obj);
--&gt; ['key1', 'key2', 'key3']
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.fromJSON</td>
-    <td>
-      text<br>
-      reviver<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Parses a JSON string, constructing the JavaScript value or object described by the string
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.toJSON</td>
-    <td>
-      value<br>
-      replacer<span class="annotation">(opt)</span><br>
-      space<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Converts a JavaScript value to a JSON string
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.obj2json</td>
-    <td>object</td>
-    <td>
-      Returns JSON string of given object in a Friendly Readable Format.<br>
-<pre>
-var obj = <input type="text" id="dump-json-text" class="demo-text" style="width:400px;" value="{a:'b', c:'123'}">;
-dbg.obj2json(obj); <button class="demo-button2" onclick="eval('obj=' + getVal('dump-json-text'));log('\n' + dbg.obj2json(obj));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.formatJSON</td>
-    <td>string</td>
-    <td>
-      Returns JSON string of given 1-line JSON in a Friendly Readable Format.<br>
-<pre>
-var str = '<input type="text" id="format-json-text" class="demo-text" style="width:400px;" value='{"key1":"abc", "key2":"123"}'>';
-dbg.formatJSON(str); <button class="demo-button2" onclick="log('\n' + dbg.formatJSON(getVal('format-json-text')));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.arr2set</td>
-    <td>
-      arg1: array<br>
-      arg2: strict mode<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Convert array to set.<br><br>
-<pre class="eg">
-var array = [<textarea id="arr2set-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
-
-dbg.arr2set(array); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr));">DEMO</button>
-dbg.arr2set(array, <input type="text" id="arr2set-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr, (getVal('arr2set-flg-text') == 'true' ? true : false)));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.countArrVal</td>
-    <td>
-      arg1: array<br>
-      arg2: value<br>
-      arg3: strict mode<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Count the value of array.<br><br>
-<pre class="eg">
-var array = [<textarea id="cntval-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
-
-dbg.countArrVal(array, <input type="text" id="cntval-val-text1" class="demo-text" style="width:100px;" value="1">); <button class="demo-button2" onclick="eval('arr=[' + getVal('cntval-arr-text') + ']');log.res(dbg.countArrVal(arr, eval(getVal('cntval-val-text1'))));">DEMO</button>
-dbg.countArrVal(array, <input type="text" id="cntval-val-text2" class="demo-text" style="width:100px;" value="'1'">, <input type="text" id="cntval-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('cntval-arr-text') + ']');log.res(dbg.countArrVal(arr, eval(getVal('cntval-val-text2')), (getVal('cntval-flg-text') == 'true' ? true : false)));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.findArrVal</td>
-    <td>
-      arg1: array<br>
-      arg2: value<br>
-      arg3: strict mode<span class="annotation">(opt)</span>
-    </td>
-    <td>
-       Find the position of an element or whether an element exists in an array.<br>
-       The function returns -1 if the element was not found.<br><br>
-<pre class="eg">
-var array = [<textarea id="findval-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
-
-dbg.findArrVal(array, <input type="text" id="findval-val-text1" class="demo-text" style="width:100px;" value="1">); <button class="demo-button2" onclick="eval('arr=[' + getVal('findval-arr-text') + ']');log.res(dbg.findArrVal(arr, eval(getVal('findval-val-text1'))));">DEMO</button>
-dbg.findArrVal(array, <input type="text" id="findval-val-text2" class="demo-text" style="width:100px;" value="'2'">, <input type="text" id="findval-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('findval-arr-text') + ']');log.res(dbg.findArrVal(arr, eval(getVal('findval-val-text2')), (getVal('findval-flg-text') == 'true' ? true : false)));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.http</td>
-    <td>
-      arg1: request<br>
-      arg2: callback<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Send an HTTP request. See demo section for details.
-    </td>
-  </tr>
-
+  <tr><td colspan="3" class="cat">Watchdog</td></tr>
   <tr>
     <td class="name">dbg.wd.start</td>
     <td>
@@ -2670,19 +2285,7 @@ dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="w
     </td>
   </tr>
 
-  <tr>
-    <td class="name">dbg.sleep</td>
-    <td>
-      ms
-    </td>
-    <td>
-      Causes the currently executing thread to sleep<br>
-<pre>
-sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2" onclick="sleepDemo();">Sleep</button>
-</pre>
-    </td>
-  </tr>
-
+  <tr><td colspan="3" class="cat">Debug Window Control</td></tr>
   <tr>
     <td class="name">dbg.show</td>
     <td>
@@ -2826,6 +2429,7 @@ dbg.getFeatureStack(); <button class="demo-button2" onclick="log.p(dbg.getFeatur
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">Testing</td></tr>
   <tr>
     <td class="name">dbg.test.init</td>
     <td>Test Name</td>
@@ -3032,6 +2636,446 @@ dbg.test.setSeq(<input type="text" id="test-setseq-txt" class="demo-text" style=
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">Util</td></tr>
+  <tr>
+    <td class="name">dbg.encodeBase64</td>
+    <td>string</td>
+    <td>
+      Encodes Base64 string.<br>
+<pre>
+var ret = dbg.encodeBase64('<input type="text" id="enc-b64-txt" class="demo-text" style="width:200px;" value="abc">'); <button class="demo-button2" onclick="log.res(dbg.encodeBase64(getVal('enc-b64-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.decodeBase64</td>
+    <td>string</td>
+    <td>
+      Decodes Base64 string.<br>
+<pre>
+var ret = dbg.decodeBase64('<input type="text" id="dec-b64-txt" class="demo-text" style="width:200px;" value="YWJj">'); <button class="demo-button2" onclick="log.res(dbg.decodeBase64(getVal('dec-b64-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.isBase64</td>
+    <td>string</td>
+    <td>
+      Returns whether the given string is Base64 or not.<br>
+<pre>
+var ret = dbg.isBase64('<input type="text" id="is-b64-txt" class="demo-text" style="width:200px;" value="YWJj">'); <button class="demo-button2" onclick="log.res(dbg.isBase64(getVal('is-b64-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.random</td>
+    <td>
+      arg1: min<span class="annotation">(opt)</span><br>
+      arg2: max<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Get random number<br>
+<pre class="eg">
+min: minimum number
+max: maximum number
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.randomStr</td>
+    <td>
+      arg1: min<span class="annotation">(opt)</span><br>
+      arg2: max<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Get random string<br>
+<pre class="eg">
+min: minimum length
+max: maximum length
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.escTags</td>
+    <td>string</td>
+    <td>
+      Perform HTML sanitization.<br>
+<pre class="eg">
+&lt; -&gt; &amp;lt;
+&gt; -&gt; &amp;gt;
+&amp; -&gt; &amp;amp;
+&quot; -&gt; &amp;quot;
+&#39; -&gt; &amp;#39;
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.escape</td>
+    <td>string</td>
+    <td>
+      Escape the specified character(s).<br><br>
+<pre class="eg">
+dbg.escape('abc"123"xyz', '"');
+-&gt; 'abc\"123\"xyz'
+
+dbg.escape('abc"123"xy\\z', ['\\\\', '"']);
+-&gt; 'abc\"123\"xy\\\z'
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.html2text</td>
+    <td>html</td>
+    <td>
+      Convert HTML to plain text.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getBrowserType</td>
+    <td></td>
+    <td>
+      Get browser type info<br><br>
+      e.g.,)
+<pre class="eg">
+{
+  name: 'Firefox',
+  version: '50.0'
+}
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.countElements</td>
+    <td>element selector</td>
+    <td>
+      Count number of elements.
+<pre class="eg">
+dbg.countElements('*');<button class="demo-button2" onclick="log(dbg.countElements('*'));">DEMO</button>
+dbg.countElements('*', true); <button class="demo-button2" onclick="log(dbg.countElements('*', true));">DEMO</button>
+-&gt; Count all elements
+
+dbg.countElements('#id');
+-&gt; Count the id's element
+   dbg.countElements('#title');<button class="demo-button2" onclick="log(dbg.countElements('#title'));">DEMO</button>
+
+dbg.countElements('.className');
+-&gt; Count elements which has the className.
+
+dbg.countElements('tagName');
+-&gt; Count elements which correspond to the tagName.
+   dbg.countElements('div');<button class="demo-button2" onclick="log(dbg.countElements('div'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getHTML</td>
+    <td>
+      base64 flag<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Dump the serialized HTML string of the whole document<br>
+      base64 flag: false = plain text / true = Base64 encoded string
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getElement</td>
+    <td>
+      arg1: #id / .className / tagName<br>
+      arg2: index<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Get an DOM element object of the specified selector<br><br>
+      e.g.,)
+<pre class="eg">
+dbg.getElement('#id');
+dbg.getElement('.className', 0);
+dbg.getElement('tagName', 1);
+</pre><br>
+Returns an DOM element or null if an element with the specified selector is not in the document.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getElPosSize</td>
+    <td>
+      DOM element object / #id / .className / tagName
+    </td>
+    <td>
+      Get the position and size of the specified DOM element<br><br>
+      e.g.,)
+<pre class="eg">
+{
+ x: 504,
+ y: 77,
+ w: 269,
+ h: 94
+}
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.http</td>
+    <td>
+      arg1: request<br>
+      arg2: callback<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Send an HTTP request.<br>
+      See <a href="#" onclick="scrollToSelector('#http-demo', 1000);return false;">demo section</a> for details.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getProtocol</td>
+    <td></td>
+    <td>
+      Returns the protocol scheme of the URL, including the final ':'.
+      <button class="demo-button2" onclick="log(dbg.getProtocol());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getHost</td>
+    <td></td>
+    <td>
+      Returns the domain of the URL.
+      <button class="demo-button2" onclick="log(dbg.getHost());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getPort</td>
+    <td></td>
+    <td>
+      Returns the port number of the URL.
+      <button class="demo-button2" onclick="log(dbg.getPort());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getParentPath</td>
+    <td></td>
+    <td>
+      Returns parent path of the URL.
+      <button class="demo-button2" onclick="log(dbg.getParentPath());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.fromJSON</td>
+    <td>
+      text<br>
+      reviver<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Parses a JSON string, constructing the JavaScript value or object described by the string
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.toJSON</td>
+    <td>
+      value<br>
+      replacer<span class="annotation">(opt)</span><br>
+      space<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Converts a JavaScript value to a JSON string
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.obj2json</td>
+    <td>object</td>
+    <td>
+      Returns JSON string of given object in a Friendly Readable Format.<br>
+<pre>
+var obj = <input type="text" id="dump-json-text" class="demo-text" style="width:400px;" value="{a:'b', c:'123'}">;
+dbg.obj2json(obj); <button class="demo-button2" onclick="eval('obj=' + getVal('dump-json-text'));log('\n' + dbg.obj2json(obj));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.formatJSON</td>
+    <td>string</td>
+    <td>
+      Returns JSON string of given 1-line JSON in a Friendly Readable Format.<br>
+<pre>
+var str = '<input type="text" id="format-json-text" class="demo-text" style="width:400px;" value='{"key1":"abc", "key2":"123"}'>';
+dbg.formatJSON(str); <button class="demo-button2" onclick="log('\n' + dbg.formatJSON(getVal('format-json-text')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.arr2set</td>
+    <td>
+      arg1: array<br>
+      arg2: strict mode<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Convert array to set.<br><br>
+<pre class="eg">
+var array = [<textarea id="arr2set-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
+
+dbg.arr2set(array); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr));">DEMO</button>
+dbg.arr2set(array, <input type="text" id="arr2set-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr, (getVal('arr2set-flg-text') == 'true' ? true : false)));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.countArrVal</td>
+    <td>
+      arg1: array<br>
+      arg2: value<br>
+      arg3: strict mode<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Count the value of array.<br><br>
+<pre class="eg">
+var array = [<textarea id="cntval-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
+
+dbg.countArrVal(array, <input type="text" id="cntval-val-text1" class="demo-text" style="width:100px;" value="1">); <button class="demo-button2" onclick="eval('arr=[' + getVal('cntval-arr-text') + ']');log.res(dbg.countArrVal(arr, eval(getVal('cntval-val-text1'))));">DEMO</button>
+dbg.countArrVal(array, <input type="text" id="cntval-val-text2" class="demo-text" style="width:100px;" value="'1'">, <input type="text" id="cntval-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('cntval-arr-text') + ']');log.res(dbg.countArrVal(arr, eval(getVal('cntval-val-text2')), (getVal('cntval-flg-text') == 'true' ? true : false)));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.findArrVal</td>
+    <td>
+      arg1: array<br>
+      arg2: value<br>
+      arg3: strict mode<span class="annotation">(opt)</span>
+    </td>
+    <td>
+       Find the position of an element or whether an element exists in an array.<br>
+       The function returns -1 if the element was not found.<br><br>
+<pre class="eg">
+var array = [<textarea id="findval-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
+
+dbg.findArrVal(array, <input type="text" id="findval-val-text1" class="demo-text" style="width:100px;" value="1">); <button class="demo-button2" onclick="eval('arr=[' + getVal('findval-arr-text') + ']');log.res(dbg.findArrVal(arr, eval(getVal('findval-val-text1'))));">DEMO</button>
+dbg.findArrVal(array, <input type="text" id="findval-val-text2" class="demo-text" style="width:100px;" value="'2'">, <input type="text" id="findval-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('findval-arr-text') + ']');log.res(dbg.findArrVal(arr, eval(getVal('findval-val-text2')), (getVal('findval-flg-text') == 'true' ? true : false)));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getKeys</td>
+    <td>object</td>
+    <td>
+      Returns property key name array of the object<br>
+<pre class="eg">
+var obj = {
+  key1: 'A',
+  key2: 'B',
+  key3: 'C',
+};
+
+dbg.getKeys(obj);
+-&gt; ['key1', 'key2', 'key3']
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.sleep</td>
+    <td>
+      ms
+    </td>
+    <td>
+      Causes the currently executing thread to sleep<br>
+<pre>
+sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2" onclick="sleepDemo();">Sleep</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.addEvtListener</td>
+    <td>
+      arg1: type<br>
+      arg2: listener
+    </td>
+    <td>
+Adds the specified EventListener function to the list of event listeners for the specified event type.<br>
+<br>
+      type: <b>batstart</b><br>
+      Callback function which is called before starting batch execution.<br>
+<pre class="eg">Function format:
+  function onBatStart() {}</pre>
+<br>
+      type: <b>batstop</b><br>
+      Callback function which is called after stopped batch execution.<br>
+<pre class="eg">Function format:
+  function onBatStop(exitstatus) {}</pre>
+<br>
+      type: <b>ctrlc</b><br>
+      Callback function which is called when Ctrl+C is pressed on the command line.<br>
+<pre class="eg">Function format:
+  function onCtrlC() {}</pre>
+<br>
+      type: <b>drop</b><br>
+      Callback function which is called when a file or text is dropped on the log window.<br>
+<pre class="eg">Function format:
+  function onDrop(event) {}</pre>
+<br>
+      type: <b>error</b><br>
+      Callback function which is called when an error log is printed.<br>
+<pre class="eg">Function format:
+  function onError() {}</pre>
+<br>
+      type: <b>fileloaded</b><br>
+Callback function which is called when file load has been completed.<br>
+<pre class="eg">Function format:
+  function onFileLoaded(file, content, isB64) {}
+
+  file   : meta info (MIME Type, Size, Modified date)
+  content: File content
+  isB64  : true = Base64 encoded / false = Binary ArrayBuffer
+</pre>
+<br>
+      type: <b>unlock</b><br>
+      Callback function which is called when the debug window is unlocked.<br>
+<pre class="eg">Function format:
+  function onUnlock() {}</pre>
+<br>
+      type: <b>watchdog</b><br>
+      Callback function which is called when the watchdog timer has been timed out.<br>
+<pre class="eg">Function format:
+  function onWatchdogTimeout(elapsed) {}</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.addFileLoader</td>
+    <td>
+      arg1: target element<br>
+      arg2: callback function<br>
+      arg3: mode('b64' or 'bin')<br>
+      arg4: decode</td>
+    <td>
+      Add File Loader Handler<br><br>
+      Handler format:<br>
+      function(file, content)<br><br>
+      In case that mode is 'bin', arg4 decode is ignored.
+    </td>
+  </tr>
+
   <tr>
     <td class="name">dbg.createResBox</td>
     <td>message</td>
@@ -3066,39 +3110,7 @@ dbg.adjustResBox(<input type="text" id="resbox-adj-txt" class="demo-text" style=
     </td>
   </tr>
 
-  <tr>
-    <td class="name">dbg.encodeBase64</td>
-    <td>string</td>
-    <td>
-      Encodes Base64 string.<br>
-<pre>
-var ret = dbg.encodeBase64('<input type="text" id="enc-b64-txt" class="demo-text" style="width:200px;" value="abc">'); <button class="demo-button2" onclick="log.res(dbg.encodeBase64(getVal('enc-b64-txt')));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.decodeBase64</td>
-    <td>string</td>
-    <td>
-      Decodes Base64 string.<br>
-<pre>
-var ret = dbg.decodeBase64('<input type="text" id="dec-b64-txt" class="demo-text" style="width:200px;" value="YWJj">'); <button class="demo-button2" onclick="log.res(dbg.decodeBase64(getVal('dec-b64-txt')));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.isBase64</td>
-    <td>string</td>
-    <td>
-      Returns whether the given string is Base64 or not.<br>
-<pre>
-var ret = dbg.isBase64('<input type="text" id="is-b64-txt" class="demo-text" style="width:200px;" value="YWJj">'); <button class="demo-button2" onclick="log.res(dbg.isBase64(getVal('is-b64-txt')));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
+  <tr><td colspan="3" class="cat">Command Line Argument Operation</td></tr>
   <tr>
     <td class="name">dbg.splitArgs</td>
     <td>argument-string</td>
@@ -3193,6 +3205,7 @@ dbg.hasOpt('<input type="text" id="opt-has-arg-txt" class="demo-text" style="wid
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">Initialization</td></tr>
   <tr>
     <td class="name">dbg.init</td>
     <td>options</td>
@@ -5998,7 +6011,7 @@ console.timeEnd('timer3');<br>
 <br>
 
 <!-- ********************************************************************** -->
-<div class="caption2">HTTP Request</div>
+<div class="caption2" id="http-demo">HTTP Request</div>
 <pre id="json1" class="code">
 <span class="emphasis">var request = {
   url: '<input type="text" id="http-url-text" value="https://debugjs.net/test/" class="inline-text-input" style="width:600px;">',
