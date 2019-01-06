@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901070000';
+  this.v = '201901070025';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8389,8 +8389,11 @@ DebugJS.prototype = {
       }
     }
     if (posY == undefined) {
-      DebugJS.printUsage(tbl.help);
-      return;
+      posY = DebugJS.splitCmdLine(arg)[2];
+      if (posY == undefined) {
+        DebugJS.printUsage(tbl.help);
+        return;
+      }
     }
     var y = ctx._cmdScrollWinGetY(posY);
     if (y == undefined) {
