@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901022040';
+  this.v = '201901061455';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4865,14 +4865,14 @@ DebugJS.prototype = {
       ctx.resetTimerStopWatchCu();
     }
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_CU_RUNNING;
-    DebugJS.timeRestart(DebugJS.TIMER_NAME_SW_CU);
+    DebugJS.time.restart(DebugJS.TIMER_NAME_SW_CU);
     ctx.updateTimerStopWatchCu();
     ctx.updateTimerSwBtnsCu();
   },
   stopTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     ctx.updateTimerStopWatchCu();
-    DebugJS.timePause(DebugJS.TIMER_NAME_SW_CU);
+    DebugJS.time.pause(DebugJS.TIMER_NAME_SW_CU);
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CU_RUNNING;
     ctx.drawStopWatchCu();
     ctx.updateTimerSwBtnsCu();
@@ -4886,12 +4886,12 @@ DebugJS.prototype = {
     ctx.updateTimerSwBtnsCu();
   },
   splitTimerStopWatchCu: function() {
-    DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU);
+    DebugJS.time._split(DebugJS.TIMER_NAME_SW_CU);
   },
   resetTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CU_END;
-    DebugJS.timeReset(DebugJS.TIMER_NAME_SW_CU);
+    DebugJS.time.reset(DebugJS.TIMER_NAME_SW_CU);
     ctx.drawStopWatchCu();
     ctx.updateTimerSwBtnsCu();
   },
@@ -4909,7 +4909,7 @@ DebugJS.prototype = {
   },
   drawStopWatchCu: function() {
     var ctx = DebugJS.ctx;
-    var tm = DebugJS.ms2struct(DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU), true);
+    var tm = DebugJS.ms2struct(DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_CU), true);
     ctx.timerStopWatchCuLabel.innerHTML = ctx.createTimeStrCu(tm);
   },
   updateTimerSwBtnsCu: function() {
@@ -8771,16 +8771,16 @@ DebugJS.prototype = {
     if (tmrNm == undefined) tmrNm = DebugJS.DFLT_TIMER_NAME;
     switch (op) {
       case 'start':
-        DebugJS.timeStart(tmrNm);
+        DebugJS.time.start(tmrNm);
         break;
       case 'split':
-        DebugJS.timeSplit(tmrNm, false);
+        DebugJS.time._split(tmrNm, false);
         break;
       case 'stop':
-        DebugJS.timeEnd(tmrNm);
+        DebugJS.time.end(tmrNm);
         break;
       case 'list':
-        DebugJS.timeList();
+        DebugJS.time.list();
         break;
       default:
         DebugJS.printUsage(tbl.help);
@@ -11197,159 +11197,6 @@ DebugJS.calcTime = function(res, days, byTheDay, isSub) {
   var r = (t.sign ? '-' : '') + hh + ':' + ('0' + t.mi).slice(-2) + ':' + ('0' + t.ss).slice(-2) + '.' + ('00' + t.sss).slice(-3) + ex;
   return r;
 };
-
-DebugJS.timeStart = function(tmrNm, msg) {
-  var _tmrNm = tmrNm;
-  if ((tmrNm === undefined) || (tmrNm === null)) {
-    _tmrNm = DebugJS.DFLT_TIMER_NAME;
-  }
-  DebugJS.ctx.timers[_tmrNm] = {};
-  DebugJS.ctx.timers[_tmrNm].start = (new Date()).getTime();
-  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
-    return;
-  }
-  var s;
-  if (msg === undefined) {
-    s = _tmrNm + ': timer started';
-  } else {
-    s = msg.replace(/%n/g, _tmrNm).replace(/%t/g, '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.TIME_RST_STR + '</span>');
-  }
-  DebugJS._log(s);
-};
-DebugJS.timeGetCount = function(tmrNm) {
-  if (!DebugJS.ctx.timers[tmrNm]) {
-    return 0;
-  } else {
-    return DebugJS.ctx.timers[tmrNm].count;
-  }
-};
-DebugJS.timePause = function(tmrNm) {
-  var now = (new Date()).getTime();
-  var ctx = DebugJS.ctx;
-  if (!ctx.timers[tmrNm]) return;
-  ctx.timers[tmrNm].pause = now;
-  ctx.timers[tmrNm].count = now - ctx.timers[tmrNm].start;
-};
-DebugJS.timeRestart = function(tmrNm) {
-  var now = (new Date()).getTime();
-  var ctx = DebugJS.ctx;
-  if (ctx.timers[tmrNm]) {
-    var paused = now - ctx.timers[tmrNm].pause;
-    ctx.timers[tmrNm].start = now - ctx.timers[tmrNm].count;
-    ctx.timers[tmrNm].pause = 0;
-    ctx.timers[tmrNm].split += paused;
-  } else {
-    ctx.timers[tmrNm] = {
-      start: now,
-      pause: 0,
-      split: 0,
-      count: 0
-    };
-  }
-};
-DebugJS.timeSplit = function(tmrNm, isEnd, msg) {
-  var now = (new Date()).getTime();
-  var ctx = DebugJS.ctx;
-  var _tmrNm = tmrNm;
-
-  if ((tmrNm === undefined) || (tmrNm === null)) {
-    _tmrNm = DebugJS.DFLT_TIMER_NAME;
-  }
-
-  if (!ctx.timers[_tmrNm]) {
-    DebugJS._log.w(_tmrNm + ': timer undefined');
-    return null;
-  }
-
-  var prevSplit = ctx.timers[_tmrNm].split;
-  var t = DebugJS.getElapsedTimeStr(ctx.timers[_tmrNm].start, now);
-  var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
-
-  if (isEnd) {
-    delete ctx.timers[_tmrNm];
-  } else {
-    ctx.timers[_tmrNm].split = now;
-  }
-
-  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
-    return t;
-  }
-
-  var dtLap = '';
-  if (prevSplit) {
-    var tLap = DebugJS.getElapsedTimeStr(prevSplit, now);
-    dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
-  } else {
-    if (!isEnd) {
-      dtLap = dt;
-    }
-  }
-
-  var s;
-  if (msg === undefined) {
-    s = _tmrNm + ': ' + dt;
-    if (dtLap != '') {
-      s += '(' + DebugJS.CHR_DELTA + dtLap + ')';
-    }
-  } else {
-    s = msg.replace(/%n/g, _tmrNm).replace(/%lt/g, dtLap).replace(/%t/g, dt);
-  }
-
-  DebugJS._log(s);
-  return t;
-};
-DebugJS.timeReset = function(tmrNm) {
-  var now = (new Date()).getTime();
-  var ctx = DebugJS.ctx;
-  ctx.timers[tmrNm] = ctx.timers[tmrNm] || {};
-  ctx.timers[tmrNm].start = now;
-  ctx.timers[tmrNm].split = now;
-  ctx.timers[tmrNm].pause = now;
-  ctx.timers[tmrNm].count = 0;
-};
-DebugJS.timeEnd = function(tmrNm, msg) {
-  return DebugJS.timeSplit(tmrNm, true, msg);
-};
-DebugJS.timeLog = function(msg, tmrNm) {
-  var now = (new Date()).getTime();
-  var ctx = DebugJS.ctx;
-  if (!tmrNm) tmrNm = DebugJS.DFLT_TIMER_NAME;
-  var t;
-  var tLap;
-  if (ctx.timers[tmrNm]) {
-    t = DebugJS.getElapsedTimeStr(ctx.timers[tmrNm].start, now);
-    tLap = DebugJS.getElapsedTimeStr(ctx.timers[tmrNm].split, now);
-    ctx.timers[tmrNm].split = now;
-  } else {
-    ctx.timers[tmrNm] = {};
-    ctx.timers[tmrNm].start = now;
-    ctx.timers[tmrNm].split = now;
-    t = DebugJS.TIME_RST_STR;
-    tLap = t;
-  }
-  var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
-  var dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
-  var s = dt + ' ' + msg.replace(/%n/g, tmrNm).replace(/%lt/g, dtLap).replace(/%t/g, dt);
-  DebugJS._log(s);
-};
-DebugJS.timeCheck = function(tmrNm, now) {
-  if (tmrNm === undefined) tmrNm = DebugJS.DFLT_TIMER_NAME;
-  if (!DebugJS.ctx.timers[tmrNm]) return null;
-  var t = DebugJS.getElapsedTimeStr(DebugJS.ctx.timers[tmrNm].start, now);
-  return t;
-};
-DebugJS.timeList = function() {
-  var now = new Date();
-  var l = '<span style="color:#ccc">no timers</span>';
-  if (Object.keys(DebugJS.ctx.timers).length > 0) {
-    l = '<table>';
-    for (var k in DebugJS.ctx.timers) {
-      l += '<tr><td>' + k + '</td><td><span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.timeCheck(k, now) + '</font></td></tr>';
-    }
-    l += '</table>';
-  }
-  DebugJS._log.mlt(l);
-};
 DebugJS.getElapsedTimeStr = function(t1, t2) {
   var delta = t2 - t1;
   return DebugJS.getTimerStr(delta);
@@ -12342,22 +12189,165 @@ DebugJS.fileline = function(idx, abs) {
 
 DebugJS.time = {};
 DebugJS.time.start = function(tmrNm, msg) {
-  DebugJS.timeStart(tmrNm, msg);
+  var _tmrNm = tmrNm;
+  if ((tmrNm === undefined) || (tmrNm === null)) {
+    _tmrNm = DebugJS.DFLT_TIMER_NAME;
+  }
+  DebugJS.ctx.timers[_tmrNm] = {};
+  DebugJS.ctx.timers[_tmrNm].start = (new Date()).getTime();
+  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
+    return;
+  }
+  var s;
+  if (msg === undefined) {
+    s = _tmrNm + ': timer started';
+  } else {
+    s = msg.replace(/%n/g, _tmrNm).replace(/%t/g, '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.TIME_RST_STR + '</span>');
+  }
+  DebugJS._log(s);
+};
+DebugJS.time.restart = function(tmrNm) {
+  var now = (new Date()).getTime();
+  var ctx = DebugJS.ctx;
+  if (ctx.timers[tmrNm]) {
+    var paused = now - ctx.timers[tmrNm].pause;
+    ctx.timers[tmrNm].start = now - ctx.timers[tmrNm].count;
+    ctx.timers[tmrNm].pause = 0;
+    ctx.timers[tmrNm].split += paused;
+  } else {
+    ctx.timers[tmrNm] = {
+      start: now,
+      pause: 0,
+      split: 0,
+      count: 0
+    };
+  }
 };
 DebugJS.time.split = function(tmrNm, msg) {
-  var t = DebugJS.timeSplit(tmrNm, false, msg);
+  var t = DebugJS.time._split(tmrNm, false, msg);
   if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
     return t;
   }
 };
+DebugJS.time._split = function(tmrNm, isEnd, msg) {
+  var now = (new Date()).getTime();
+  var ctx = DebugJS.ctx;
+  var _tmrNm = tmrNm;
+
+  if ((tmrNm === undefined) || (tmrNm === null)) {
+    _tmrNm = DebugJS.DFLT_TIMER_NAME;
+  }
+
+  if (!ctx.timers[_tmrNm]) {
+    DebugJS._log.w(_tmrNm + ': timer undefined');
+    return null;
+  }
+
+  var prevSplit = ctx.timers[_tmrNm].split;
+  var t = DebugJS.getElapsedTimeStr(ctx.timers[_tmrNm].start, now);
+  var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
+
+  if (isEnd) {
+    delete ctx.timers[_tmrNm];
+  } else {
+    ctx.timers[_tmrNm].split = now;
+  }
+
+  if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
+    return t;
+  }
+
+  var dtLap = '';
+  if (prevSplit) {
+    var tLap = DebugJS.getElapsedTimeStr(prevSplit, now);
+    dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
+  } else {
+    if (!isEnd) {
+      dtLap = dt;
+    }
+  }
+
+  var s;
+  if (msg === undefined) {
+    s = _tmrNm + ': ' + dt;
+    if (dtLap != '') {
+      s += '(' + DebugJS.CHR_DELTA + dtLap + ')';
+    }
+  } else {
+    s = msg.replace(/%n/g, _tmrNm).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+  }
+
+  DebugJS._log(s);
+  return t;
+};
+DebugJS.time.pause = function(tmrNm) {
+  var now = (new Date()).getTime();
+  var ctx = DebugJS.ctx;
+  if (!ctx.timers[tmrNm]) return;
+  ctx.timers[tmrNm].pause = now;
+  ctx.timers[tmrNm].count = now - ctx.timers[tmrNm].start;
+};
 DebugJS.time.end = function(tmrNm, msg) {
-  var t = DebugJS.timeEnd(tmrNm, msg);
+  var t = DebugJS.time._split(tmrNm, true, msg);
   if ((msg === null) || ((tmrNm === null) && (msg === undefined))) {
     return t;
   }
 };
 DebugJS.time.check = function(tmrNm) {
-  return DebugJS.timeCheck(tmrNm, new Date());
+  var now = new Date();
+  if (tmrNm === undefined) tmrNm = DebugJS.DFLT_TIMER_NAME;
+  if (!DebugJS.ctx.timers[tmrNm]) return null;
+  var t = DebugJS.getElapsedTimeStr(DebugJS.ctx.timers[tmrNm].start, now);
+  return t;
+};
+DebugJS.time.list = function() {
+  var l = '<span style="color:#ccc">no timers</span>';
+  if (Object.keys(DebugJS.ctx.timers).length > 0) {
+    l = '<table>';
+    for (var k in DebugJS.ctx.timers) {
+      l += '<tr><td>' + k + '</td><td><span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.time.check(k) + '</font></td></tr>';
+    }
+    l += '</table>';
+  }
+  DebugJS._log.mlt(l);
+};
+DebugJS.time.reset = function(tmrNm) {
+  var now = (new Date()).getTime();
+  var ctx = DebugJS.ctx;
+  ctx.timers[tmrNm] = ctx.timers[tmrNm] || {};
+  ctx.timers[tmrNm].start = now;
+  ctx.timers[tmrNm].split = now;
+  ctx.timers[tmrNm].pause = now;
+  ctx.timers[tmrNm].count = 0;
+};
+DebugJS.time.getCount = function(tmrNm) {
+  if (!DebugJS.ctx.timers[tmrNm]) {
+    return 0;
+  } else {
+    return DebugJS.ctx.timers[tmrNm].count;
+  }
+};
+DebugJS.time.log = function(msg, tmrNm) {
+  var now = (new Date()).getTime();
+  var ctx = DebugJS.ctx;
+  if (!tmrNm) tmrNm = DebugJS.DFLT_TIMER_NAME;
+  var t;
+  var tLap;
+  if (ctx.timers[tmrNm]) {
+    t = DebugJS.getElapsedTimeStr(ctx.timers[tmrNm].start, now);
+    tLap = DebugJS.getElapsedTimeStr(ctx.timers[tmrNm].split, now);
+    ctx.timers[tmrNm].split = now;
+  } else {
+    ctx.timers[tmrNm] = {};
+    ctx.timers[tmrNm].start = now;
+    ctx.timers[tmrNm].split = now;
+    t = DebugJS.TIME_RST_STR;
+    tLap = t;
+  }
+  var dt = '<span style="color:' + ctx.opt.timerColor + '">' + t + '</span>';
+  var dtLap = '<span style="color:' + ctx.opt.timerColor + '">' + tLap + '</span>';
+  var s = dt + ' ' + msg.replace(/%n/g, tmrNm).replace(/%lt/g, dtLap).replace(/%t/g, dt);
+  DebugJS._log(s);
 };
 
 DebugJS.stopwatch = function() {
@@ -12383,12 +12373,12 @@ DebugJS.stopwatch.end = function(m) {
     DebugJS.ctx.endTimerStopWatchCu();
     DebugJS.stopwatch.log(m);
   }
-  return DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU);
+  return DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_CU);
 };
 DebugJS.stopwatch.split = function(m) {
   if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
     m = DebugJS.TIMER_NAME_SW_CU + ': %t(' + DebugJS.CHR_DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
-    DebugJS.timeSplit(DebugJS.TIMER_NAME_SW_CU, false, m);
+    DebugJS.time._split(DebugJS.TIMER_NAME_SW_CU, false, m);
   }
 };
 DebugJS.stopwatch.reset = function() {
@@ -12397,7 +12387,7 @@ DebugJS.stopwatch.reset = function() {
   }
 };
 DebugJS.stopwatch.log = function(msg) {
-  var t = DebugJS.getTimerStr(DebugJS.timeGetCount(DebugJS.TIMER_NAME_SW_CU));
+  var t = DebugJS.getTimerStr(DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_CU));
   var m = DebugJS.TIMER_NAME_SW_CU + ': <span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>';
   if (msg != undefined) m += ' ' + msg;
   DebugJS._log(m);
@@ -15475,7 +15465,7 @@ DebugJS.log.v = function(m) {
 };
 DebugJS.log.t = function(m, n) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
-  DebugJS.timeLog(m, n);
+  DebugJS.time.log(m, n);
 };
 DebugJS.log.p = function(o, l, m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;
