@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901061455';
+  this.v = '201901070000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -230,9 +230,6 @@ var DebugJS = DebugJS || function() {
   this.batNestLv = null;
   this.swBtnPanel = null;
   this.swLabel = null;
-  this.swStartTime = 0;
-  this.swElapsedTime = 0;
-  this.swElapsedTimeDisp = DebugJS.TIME_RST_STR;
   this.clearBtn = null;
   this.wdBtn = null;
   this.suspendLogBtn = null;
@@ -602,6 +599,7 @@ DebugJS.WDAYS_COLOR = ['f74', 'fff', 'fff', 'fff', 'fff', 'fff', '8fd'];
 DebugJS.UPDATE_INTERVAL_H = 21;
 DebugJS.UPDATE_INTERVAL_L = 500;
 DebugJS.DFLT_TIMER_NAME = 'timer0';
+DebugJS.TIMER_NAME_SW_0 = 'sw0';
 DebugJS.TIMER_NAME_SW_CU = 'sw1';
 DebugJS.TIMER_NAME_SW_CD = 'sw2';
 DebugJS.LED_BIT = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
@@ -1840,22 +1838,6 @@ DebugJS.prototype = {
     ctx.swBtnPanel.innerHTML = btns;
   },
 
-  updateSwLabel: function() {
-    var ctx = DebugJS.ctx;
-    ctx.updateStopWatch();
-    ctx.swElapsedTimeDisp = DebugJS.getTimerStr(ctx.swElapsedTime);
-    if (ctx.swLabel) {
-      if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
-        ctx.swLabel.innerHTML = '<span style="color:' + ctx.opt.timerColor + ' !important">' + ctx.swElapsedTimeDisp + '</span>';
-      } else {
-        ctx.swLabel.innerHTML = ctx.swElapsedTimeDisp;
-      }
-    }
-    if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
-      setTimeout(ctx.updateSwLabel, DebugJS.UPDATE_INTERVAL_H);
-    }
-  },
-
   updatePreserveLogBtn: function(ctx) {
     ctx.updateBtnActive(ctx.preserveLogBtn, DebugJS.ST_LOG_PRESERVED, DebugJS.LOG_PRESERVE_BTN_COLOR);
   },
@@ -2410,7 +2392,7 @@ DebugJS.prototype = {
   startStopWatch: function() {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.ST_STOPWATCH_RUNNING;
-    ctx.swStartTime = (new Date()).getTime() - ctx.swElapsedTime;
+    DebugJS.time.restart(DebugJS.TIMER_NAME_SW_0);
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
   },
@@ -2421,19 +2403,35 @@ DebugJS.prototype = {
       ctx.status &= ~DebugJS.ST_STOPWATCH_LAPTIME;
       ctx.resetStopWatch();
     }
+    DebugJS.time.pause(DebugJS.TIMER_NAME_SW_0);
     ctx.updateSwBtnPanel(ctx);
   },
   resetStopWatch: function() {
     var ctx = DebugJS.ctx;
-    ctx.swStartTime = (new Date()).getTime();
-    ctx.swElapsedTime = 0;
+    DebugJS.time.reset(DebugJS.TIMER_NAME_SW_0);
     ctx.updateSwLabel();
   },
-  updateStopWatch: function() {
+  splitStopWatch: function() {
+    if (DebugJS.ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
+      DebugJS.time._split(DebugJS.TIMER_NAME_SW_0);
+    }
+  },
+  updateSwLabel: function() {
     var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.ST_STOPWATCH_RUNNING)) return;
-    var swCurrentTime = (new Date()).getTime();
-    ctx.swElapsedTime = swCurrentTime - ctx.swStartTime;
+    if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
+      DebugJS.time.updateCount(DebugJS.TIMER_NAME_SW_0);
+    }
+    var swLabel = DebugJS.getTimerStr(DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_0));
+    if (ctx.swLabel) {
+      if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
+        ctx.swLabel.innerHTML = '<span style="color:' + ctx.opt.timerColor + ' !important">' + swLabel + '</span>';
+      } else {
+        ctx.swLabel.innerHTML = swLabel;
+      }
+    }
+    if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
+      setTimeout(ctx.updateSwLabel, DebugJS.UPDATE_INTERVAL_H);
+    }
   },
 
   collapseLogPanel: function(ctx) {
@@ -2834,7 +2832,7 @@ DebugJS.prototype = {
           ctx.startMeasure(ctx, posX, posY);
         }
         if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
-          DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + ctx.swElapsedTimeDisp + '</span>');
+          DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTimerStr(DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_0)) + '</span>');
           ctx.resetStopWatch();
         }
         if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
@@ -4886,7 +4884,9 @@ DebugJS.prototype = {
     ctx.updateTimerSwBtnsCu();
   },
   splitTimerStopWatchCu: function() {
-    DebugJS.time._split(DebugJS.TIMER_NAME_SW_CU);
+    if (DebugJS.ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING) {
+      DebugJS.time._split(DebugJS.TIMER_NAME_SW_CU);
+    }
   },
   resetTimerStopWatchCu: function() {
     var ctx = DebugJS.ctx;
@@ -4902,7 +4902,7 @@ DebugJS.prototype = {
         ((!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING)) &&
         (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END)))) return;
     if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_END)) {
-      ctx.timers[DebugJS.TIMER_NAME_SW_CU].count = (new Date()).getTime() - ctx.timers[DebugJS.TIMER_NAME_SW_CU].start;
+      DebugJS.time.updateCount(DebugJS.TIMER_NAME_SW_CU);
     }
     ctx.drawStopWatchCu();
     setTimeout(ctx.updateTimerStopWatchCu, DebugJS.UPDATE_INTERVAL_H);
@@ -8808,6 +8808,7 @@ DebugJS.prototype = {
     return r;
   },
   cmdStopwatch0: function(ctx, op) {
+    var elapsed = DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_0);
     switch (op) {
       case 'start':
         ctx.startStopWatch();
@@ -8818,13 +8819,16 @@ DebugJS.prototype = {
       case 'reset':
         ctx.resetStopWatch();
         break;
+      case 'split':
+        ctx.splitStopWatch();
+        break;
       case 'val':
-        DebugJS._log('sw0: ' + ctx.swElapsedTimeDisp);
+        DebugJS._log('sw0: ' + DebugJS.getTimerStr(elapsed));
         break;
       default:
         return -1;
     }
-    return ctx.swElapsedTime;
+    return elapsed;
   },
   cmdStopwatch1: function(ctx, op) {
     if (!ctx.isAvailableTools(ctx)) return false;
@@ -11913,8 +11917,8 @@ DebugJS.saveStatus = function() {
   var ctx = DebugJS.ctx;
   var data = {
     status: ctx.status,
-    swElapsedTime: ctx.swElapsedTime,
     props: ctx.props,
+    timers: ctx.timers,
     alias: ctx.CMD_ALIAS
   };
   var st = JSON.stringify(data);
@@ -12326,6 +12330,9 @@ DebugJS.time.getCount = function(tmrNm) {
   } else {
     return DebugJS.ctx.timers[tmrNm].count;
   }
+};
+DebugJS.time.updateCount = function(tmrNm) {
+  DebugJS.ctx.timers[tmrNm].count = (new Date()).getTime() - DebugJS.ctx.timers[tmrNm].start;
 };
 DebugJS.time.log = function(msg, tmrNm) {
   var now = (new Date()).getTime();
@@ -15564,7 +15571,7 @@ DebugJS.restoreStatus = function(ctx) {
   if (data.status & DebugJS.ST_BAT_CONT) {
     ctx.status |= DebugJS.ST_BAT_CONT;
   }
-  ctx.swElapsedTime = data.swElapsedTime;
+  ctx.timers = data.timers;
   if (data.status & DebugJS.ST_STOPWATCH_RUNNING) {
     ctx.startStopWatch();
   } else {
