@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901080030';
+  this.v = '201901080100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7581,7 +7581,7 @@ DebugJS.prototype = {
       if (opt != null) jsnFlg = false;
       opt = json.match(/-l(\d+)/);
       if (opt) lv = opt[1];
-      json = json.match(/({.*)/);
+      json = json.match(/(\{.*)/);
       if (json) {
         json = json[1];
       }
@@ -9631,7 +9631,7 @@ DebugJS.getContentType = function(mime, file, dturlData) {
   var ext = ['bat', 'csv', 'ini', 'java', 'js', 'json', 'log', 'md'];
   var re = '';
   for (var i = 0; i < ext.length; i++) {
-    if (i > 0) {re += '|';} re += '\.' + ext[i] + '$';
+    if (i > 0) {re += '|';} re += '.' + ext[i] + '$';
   }
   var xmlHead = 'PD94bWw';
   if (mime) {
@@ -9809,13 +9809,13 @@ DebugJS.isBasicDateFormat = function(s, p) {
 };
 DebugJS.isDateTimeFormat = function(s, p) {
   if (s == null) return false;
-  var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2} {1,}\\d{1,2}:\\d{2}:?\\d{0,2}\.?\\d{0,3}';
+  var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2} {1,}\\d{1,2}:\\d{2}:?\\d{0,2}.?\\d{0,3}';
   if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isDateTimeFormatIso = function(s, p) {
   if (typeof s != 'string') return false;
-  var r = '^\\d{8}T\\d{0,6}\.?\\d{0,3}';
+  var r = '^\\d{8}T\\d{0,6}.?\\d{0,3}';
   if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
@@ -10103,7 +10103,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, limit, valLenLimit) {
     DebugJS._log.w('The object is too large. (>=' + ret.cnt + ')');
   }
   ret.dump = ret.dump.replace(/: {2,}\{/g, ': {');
-  ret.dump = ret.dump.replace(/\[\n {2,}\]/g, '\[\]');
+  ret.dump = ret.dump.replace(/\[\n {2,}\]/g, '[]');
   return ret.dump;
 };
 DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
@@ -10340,7 +10340,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
       } else {
         str = DebugJS.hlCtrlChr(str);
       }
-      arg.dump += (toJson ? '"' + str.replace(/\"/g, '\\"') + '"' : DebugJS.quoteStr(str));
+      arg.dump += (toJson ? '"' + str.replace(/"/g, '\\"') + '"' : DebugJS.quoteStr(str));
       arg.cnt++;
     } else {
       arg.dump += obj; arg.cnt++;
@@ -10510,11 +10510,11 @@ DebugJS.hlJsonErr = function(json) {
   res = res.replace(/\r\n/g, '<span class="dbg-txt-hl">\\r\\n</span>');
   res = res.replace(/([^\\])\r/g, '$1<span class="dbg-txt-hl">\\r</span>');
   res = res.replace(/([^\\])\n/g, '$1<span class="dbg-txt-hl">\\n</span>');
-  if (!res.match(/^{/)) {
+  if (!res.match(/^\{/)) {
     res = '<span class="dbg-txt-hl"> </span>' + res;
   }
-  res = res.replace(/}([^}]+)$/, '}<span class="dbg-txt-hl">$1</span>');
-  if (!res.match(/}$/)) {
+  res = res.replace(/\}([^}]+)$/, '}<span class="dbg-txt-hl">$1</span>');
+  if (!res.match(/\}$/)) {
     res = res + '<span class="dbg-txt-hl"> </span>';
   }
   return res;
@@ -10976,7 +10976,7 @@ DebugJS.Base64.getMimeType = function(s) {
 };
 
 DebugJS.isBase64 = function(s) {
-  return (s && s.match(/^[A-Za-z0-9/+]*=*$/) ? true : false);
+  return (s && s.match(/^[A-Za-z0-9\/+]*=*$/) ? true : false);
 };
 DebugJS.encodeBSB64 = function(s, n, toR) {
   var a = DebugJS.UTF8.toByte(s);
