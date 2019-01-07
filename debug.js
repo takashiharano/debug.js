@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901070025';
+  this.v = '201901071900';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8366,8 +8366,11 @@ DebugJS.prototype = {
     var speed = DebugJS.getOptVal(arg, 'speed');
     var step = DebugJS.getOptVal(arg, 'step');
     if (posX == undefined) {
-      DebugJS.printUsage(tbl.help);
-      return;
+      posX = DebugJS.splitCmdLine(arg)[1];
+      if (posX == undefined) {
+        DebugJS.printUsage(tbl.help);
+        return;
+      }
     }
     if (speed == undefined) speed = ctx.props.scrollspeed;
     if (step == undefined) step = ctx.props.scrollstep;
