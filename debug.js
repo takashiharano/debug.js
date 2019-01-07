@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901071900';
+  this.v = '201901072018';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -314,6 +314,7 @@ var DebugJS = DebugJS || function() {
   this.toolStatus = 0;
   this.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
   this.sizeStatus = 0;
+  this.ptDnTm = 0;
   this.logFilter = DebugJS.LOG_FLTR_ALL;
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
@@ -500,16 +501,17 @@ DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
 DebugJS.UI_ST_DRAGGABLE = 1 << 3;
 DebugJS.UI_ST_DRAGGING = 1 << 4;
-DebugJS.UI_ST_RESIZABLE = 1 << 5;
-DebugJS.UI_ST_RESIZING = 1 << 6;
-DebugJS.UI_ST_RESIZING_N = 1 << 7;
-DebugJS.UI_ST_RESIZING_E = 1 << 8;
-DebugJS.UI_ST_RESIZING_S = 1 << 9;
-DebugJS.UI_ST_RESIZING_W = 1 << 10;
+DebugJS.UI_ST_DRAGGED = 1 << 5;
+DebugJS.UI_ST_RESIZABLE = 1 << 6;
+DebugJS.UI_ST_RESIZING = 1 << 7;
+DebugJS.UI_ST_RESIZING_N = 1 << 8;
+DebugJS.UI_ST_RESIZING_E = 1 << 9;
+DebugJS.UI_ST_RESIZING_S = 1 << 10;
+DebugJS.UI_ST_RESIZING_W = 1 << 11;
 DebugJS.UI_ST_RESIZING_ALL = DebugJS.UI_ST_RESIZING | DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E | DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W;
-DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 11;
-DebugJS.UI_ST_LOG_SCROLL = 1 << 12;
-DebugJS.UI_ST_PROTECTED = 1 << 13;
+DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 12;
+DebugJS.UI_ST_LOG_SCROLL = 1 << 13;
+DebugJS.UI_ST_PROTECTED = 1 << 14;
 DebugJS.TOOL_ST_SW_CU_RUNNING = 1;
 DebugJS.TOOL_ST_SW_CU_END = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RUNNING = 1 << 2;
@@ -2138,6 +2140,7 @@ DebugJS.prototype = {
   },
   _startMove: function(ctx, target, x, y) {
     ctx.uiStatus |= DebugJS.UI_ST_DRAGGING;
+    ctx.ptDnTm = (new Date()).getTime();
     ctx.winBody.style.cursor = 'move';
     ctx.disableTextSelect(ctx);
     ctx.prevOffsetTop = y - ctx.win.offsetTop;
@@ -2185,6 +2188,7 @@ DebugJS.prototype = {
 
   moveDbgWin: function(ctx, x, y) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
+    ctx.uiStatus |= DebugJS.UI_ST_DRAGGED;
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
     ctx.win.style.top = y - ctx.prevOffsetTop + 'px';
     ctx.win.style.left = x - ctx.prevOffsetLeft + 'px';
@@ -2860,7 +2864,6 @@ DebugJS.prototype = {
       ctx.updateMouseClickLabel();
     }
   },
-
   onTouchStart: function(e) {
     var x = e.changedTouches[0].pageX;
     var y = e.changedTouches[0].pageY;
@@ -2922,7 +2925,10 @@ DebugJS.prototype = {
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
       ctx.endMove(ctx);
       if ((el != ctx.extActivePanel) && (!DebugJS.isDescendant(el, ctx.extActivePanel))) {
-        ctx.focusCmdLine();
+        if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGED) || (((new Date()).getTime() - ctx.ptDnTm) < 300)) {
+          ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGED;
+          ctx.focusCmdLine();
+        }
       }
     }
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) {
@@ -5549,6 +5555,7 @@ DebugJS.prototype = {
       } else {
         if (ctx.decB64(ctx, s)) return;
         ctx._execCmd('json ' + t, true, false, true);
+        ctx.scrollLogBtm(ctx);
       }
     }
   },
@@ -5570,6 +5577,7 @@ DebugJS.prototype = {
       return 1;
     }
     ctx._execCmd('base64 -d ' + s, true, false, true);
+    ctx.scrollLogBtm(ctx);
     return 1;
   },
   openBat: function(ctx, s) {
@@ -8814,7 +8822,7 @@ DebugJS.prototype = {
     return r;
   },
   cmdStopwatch0: function(ctx, op) {
-    var elapsed = DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_0);
+    var elps = DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_0);
     switch (op) {
       case 'start':
         ctx.startStopWatch();
@@ -8829,12 +8837,12 @@ DebugJS.prototype = {
         ctx.splitStopWatch();
         break;
       case 'val':
-        DebugJS._log('sw0: ' + DebugJS.getTimerStr(elapsed));
+        DebugJS._log('sw0: ' + DebugJS.getTimerStr(elps));
         break;
       default:
         return -1;
     }
-    return elapsed;
+    return elps;
   },
   cmdStopwatch1: function(ctx, op) {
     if (!ctx.isAvailableTools(ctx)) return false;
@@ -15431,11 +15439,11 @@ DebugJS.wd.pet = function() {
   if (!(ctx.status & DebugJS.ST_WD)) return;
   var wd = DebugJS.wd;
   var now = (new Date()).getTime();
-  var elapsed = now - wd.wdPetTime;
-  if (elapsed > ctx.props.wdt) {
+  var elps = now - wd.wdPetTime;
+  if (elps > ctx.props.wdt) {
     wd.cnt++;
-    DebugJS._log.w('Watchdog bark! (' + elapsed + 'ms)');
-    DebugJS.callEvtListeners('watchdog', elapsed);
+    DebugJS._log.w('Watchdog bark! (' + elps + 'ms)');
+    DebugJS.callEvtListeners('watchdog', elps);
   }
   wd.wdPetTime = now;
   wd.wdTmId = setTimeout(wd.pet, wd.INTERVAL);
@@ -15517,6 +15525,9 @@ DebugJS.log.preserve = function(f) {
     return ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? true : false);
   }
   if (DebugJS.LS_AVAILABLE) ctx.setLogPreserve(ctx, f);
+};
+DebugJS.log.toBottom = function() {
+  DebugJS.ctx.scrollLogBtm(DebugJS.ctx);
 };
 DebugJS.log.root = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPENDING) return;

@@ -1044,6 +1044,9 @@ setTimeout(addScript, 100);
 function scrollToSelector(selector, step) {
   dbg.cmd('scrollto window ' + selector + ' -step ' + step);
 }
+
+function test1() {
+}
 </script>
 </head>
 <body>
@@ -1342,6 +1345,14 @@ log.preserve()<span class="annotation">get status</span> <button class="demo-but
 log.preserve(true)<span class="annotation">on</span> <button class="demo-button2" onclick="log.preserve(true);">DEMO</button>
 log.preserve(false)<span class="annotation">off</span> <button class="demo-button2" onclick="log.preserve(false);">DEMO</button>
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">log.toBottom<br><span class="alias">( dbg.log.toBottom )</span></td>
+    <td></td>
+    <td>
+      Scroll log area to bottom <button class="demo-button2" onclick="log.toBottom();">DEMO</button>
     </td>
   </tr>
 
@@ -6112,7 +6123,7 @@ function callback(xhr) {
       <div style="margin-bottom:5px;">
         <input type="submit" id="sbmt-btn" class="button-100" value="Submit" onsubmit="return false;">
         <input type="button" class="button-100" value="BUTTON">
-        <button type="button" class="button-100">button</button>
+        <button type="button" class="button-100" onclick="test1();">button</button>
       </div>
     </form>
   </div>
