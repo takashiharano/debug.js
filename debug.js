@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901082111';
+  this.v = '201901090000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -259,7 +259,7 @@ var DebugJS = DebugJS || function() {
   this.ledPanel = null;
   this.led = 0;
   this.msgLabel = null;
-  this.msgString = '';
+  this.msgStr = '';
   this.mainPanel = null;
   this.overlayBasePanel = null;
   this.overlayPanels = [];
@@ -1538,11 +1538,8 @@ DebugJS.prototype = {
     if (fontSize) ctx.setStyle(btn, 'font-size', fontSize);
     ctx.setStyle(btn, 'color', DebugJS.COLOR_INACT);
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.' + activeColor + ');');
-    if (reverse) {
-      btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? DebugJS.COLOR_INACT : DebugJS.' + activeColor + ');');
-    } else {
-      btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? DebugJS.' + activeColor + ' : DebugJS.COLOR_INACT);');
-    }
+    var fnSfx = (reverse ? 'DebugJS.COLOR_INACT : DebugJS.' + activeColor + ');' : 'DebugJS.' + activeColor + ' : DebugJS.COLOR_INACT);');
+    btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? ' + fnSfx);
     if (title) btn.title = title;
     return btn;
   },
@@ -1796,7 +1793,7 @@ DebugJS.prototype = {
 
   updateMsgLabel: function() {
     var ctx = DebugJS.ctx;
-    var s = ctx.msgString;
+    var s = ctx.msgStr;
     if (ctx.msgLabel) {
       ctx.msgLabel.innerHTML = '<pre>' + s + '</pre>';
       var o = (s == '' ? 0 : 1);
@@ -4471,9 +4468,8 @@ DebugJS.prototype = {
     ctx.batBtn = ctx.createToolsHeaderBtn('BAT', 'TOOLS_FNC_BAT', 'batBtn');
   },
   createToolsHeaderBtn: function(label, state, btnObj) {
-    var ctx = DebugJS.ctx;
     var fn = new Function('DebugJS.ctx.switchToolsFunction(DebugJS.' + state + ');');
-    var btn = DebugJS.ui.addBtn(ctx.toolsHeaderPanel, '<' + label + '>', fn);
+    var btn = DebugJS.ui.addBtn(DebugJS.ctx.toolsHeaderPanel, '<' + label + '>', fn);
     btn.style.marginRight = '4px';
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.SBPNL_COLOR_ACTIVE);');
     btn.onmouseout = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.toolsActiveFnc & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);');
@@ -6598,7 +6594,7 @@ DebugJS.prototype = {
   },
 
   setMsg: function(m) {
-    DebugJS.ctx.msgString = m;
+    DebugJS.ctx.msgStr = m;
     DebugJS.ctx.updateMsgLabel();
   },
 
@@ -9919,10 +9915,10 @@ DebugJS.getTimeDurationStr = function(t1, t2) {
     s += t.ss + 's';
     if (t.sss) s += ' ' + t.sss + 'ms';
   } else {
-    if (!t.sss) {
-      s = '0';
-    } else {
+    if (t.sss) {
       s = '0.' + ('00' + t.sss).slice(-3).replace(/0+$/, '');
+    } else {
+      s = '0';
     }
     s += 's';
   }
@@ -11085,11 +11081,11 @@ DebugJS.decodeUnicode = function(arg) {
   var a = arg.split(' ');
   for (var i = 0; i < a.length; i++) {
     if (a[i] == '') continue;
-    var codePoint = a[i].replace(/^U\+/i, '');
-    if (codePoint == '20') {
+    var cdpt = a[i].replace(/^U\+/i, '');
+    if (cdpt == '20') {
       str += ' ';
     } else {
-      str += '&#x' + codePoint;
+      str += '&#x' + cdpt;
     }
   }
   return str;
@@ -11097,9 +11093,9 @@ DebugJS.decodeUnicode = function(arg) {
 DebugJS.getUnicodePoints = function(str) {
   var code = '';
   for (var i = 0; i < str.length; i++) {
-    var point = str.charCodeAt(i);
+    var pt = str.charCodeAt(i);
     if (i > 0) code += ' ';
-    code += 'U+' + DebugJS.toHex(point, true, '', 4);
+    code += 'U+' + DebugJS.toHex(pt, true, '', 4);
   }
   return code;
 };
@@ -11737,9 +11733,9 @@ DebugJS.hasClass = function(el, n) {
   return false;
 };
 
-DebugJS.copyProp = function(src, dest) {
+DebugJS.copyProp = function(src, dst) {
   for (var k in src) {
-    dest[k] = src[k];
+    dst[k] = src[k];
   }
 };
 
@@ -12433,10 +12429,10 @@ DebugJS.stopwatch.log = function(n, msg) {
 
 DebugJS.addEvtListener = function(type, listener) {
   var list = DebugJS.ctx.evtListener[type];
-  if (!list) {
-    DebugJS._log.e('No such event: ' + type);
-  } else {
+  if (list) {
     list.push(listener);
+  } else {
+    DebugJS._log.e('No such event: ' + type);
   }
 };
 DebugJS.callEvtListeners = function(type, a1, a2, a3) {
@@ -14297,7 +14293,7 @@ DebugJS.point.hint = function(msg, speed, step, start, end) {
   } catch (e) {
     m = e + '';
   }
-  if ((speed) && (step)) {
+  if (speed && step) {
     hint.msgseq(msg, m, speed, step, start, end);
   } else {
     DebugJS.point.hint.setMsg(DebugJS.point.hint.replaceMsg(m));
@@ -15723,11 +15719,11 @@ DebugJS.onError = function(e) {
   var ctx = DebugJS.ctx;
   var msg;
   ctx.errStatus |= DebugJS.ERR_ST_SCRIPT;
-  if ((e.error) && (e.error.stack)) {
+  if (e.error && e.error.stack) {
     msg = e.error.stack;
   } else {
     if ((e.message == undefined) && (e.filename == undefined)) {
-      if ((e.target) && (e.target.outerHTML)) {
+      if (e.target && e.target.outerHTML) {
         ctx.errStatus |= DebugJS.ERR_ST_LOAD;
         ctx.errStatus &= ~DebugJS.ERR_ST_SCRIPT;
         msg = 'LOAD_ERROR: ' + (e.target.outerHTML).replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -15795,6 +15791,7 @@ DebugJS.balse = function() {
   DebugJS.stopwatch.end = x;
   DebugJS.stopwatch.split = x;
   DebugJS.stopwatch.reset = x;
+  DebugJS.stopwatch.val = x;
   DebugJS.time.start = x;
   DebugJS.time.split = x;
   DebugJS.time.end = x;
