@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901080100';
+  this.v = '201901081900';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12419,7 +12419,6 @@ DebugJS.stopwatch.end = function(n, m) {
   if (n == 1) {
     if (DebugJS.stopwatch()) {
       DebugJS.ctx.endTimerStopwatchCu();
-      DebugJS.stopwatch.log(m);
     }
   } else {
     n = 0;
