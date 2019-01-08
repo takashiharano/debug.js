@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901081900';
+  this.v = '201901081930';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -314,7 +314,7 @@ var DebugJS = DebugJS || function() {
   this.toolStatus = 0;
   this.toolTimerMode = DebugJS.TOOL_TIMER_MODE_CLOCK;
   this.sizeStatus = 0;
-  this.ptDnTm = 0;
+  this.ptOpTm = 0;
   this.logFilter = DebugJS.LOG_FLTR_ALL;
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
@@ -502,17 +502,16 @@ DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
 DebugJS.UI_ST_DRAGGABLE = 1 << 3;
 DebugJS.UI_ST_DRAGGING = 1 << 4;
-DebugJS.UI_ST_DRAGGED = 1 << 5;
-DebugJS.UI_ST_RESIZABLE = 1 << 6;
-DebugJS.UI_ST_RESIZING = 1 << 7;
-DebugJS.UI_ST_RESIZING_N = 1 << 8;
-DebugJS.UI_ST_RESIZING_E = 1 << 9;
-DebugJS.UI_ST_RESIZING_S = 1 << 10;
-DebugJS.UI_ST_RESIZING_W = 1 << 11;
+DebugJS.UI_ST_RESIZABLE = 1 << 5;
+DebugJS.UI_ST_RESIZING = 1 << 6;
+DebugJS.UI_ST_RESIZING_N = 1 << 7;
+DebugJS.UI_ST_RESIZING_E = 1 << 8;
+DebugJS.UI_ST_RESIZING_S = 1 << 9;
+DebugJS.UI_ST_RESIZING_W = 1 << 10;
 DebugJS.UI_ST_RESIZING_ALL = DebugJS.UI_ST_RESIZING | DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E | DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W;
-DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 12;
-DebugJS.UI_ST_LOG_SCROLL = 1 << 13;
-DebugJS.UI_ST_PROTECTED = 1 << 14;
+DebugJS.UI_ST_POS_AUTO_ADJUST = 1 << 11;
+DebugJS.UI_ST_LOG_SCROLL = 1 << 12;
+DebugJS.UI_ST_PROTECTED = 1 << 13;
 DebugJS.TOOL_ST_SW_CU_RUNNING = 1;
 DebugJS.TOOL_ST_SW_CU_END = 1 << 1;
 DebugJS.TOOL_ST_SW_CD_RUNNING = 1 << 2;
@@ -1878,6 +1877,10 @@ DebugJS.prototype = {
 
   printLogs: function() {
     var ctx = DebugJS.ctx;
+    ctx._printLogs(ctx);
+    if (ctx.uiStatus & DebugJS.UI_ST_LOG_SCROLL) ctx.scrollLogBtm(ctx);
+  },
+  _printLogs: function(ctx) {
     if (!ctx.win) return;
     var opt = ctx.opt;
     var buf = ctx.logBuf.getAll();
@@ -2141,7 +2144,7 @@ DebugJS.prototype = {
   },
   _startMove: function(ctx, target, x, y) {
     ctx.uiStatus |= DebugJS.UI_ST_DRAGGING;
-    ctx.ptDnTm = (new Date()).getTime();
+    ctx.ptOpTm = (new Date()).getTime();
     ctx.winBody.style.cursor = 'move';
     ctx.disableTextSelect(ctx);
     ctx.prevOffsetTop = y - ctx.win.offsetTop;
@@ -2189,7 +2192,7 @@ DebugJS.prototype = {
 
   moveDbgWin: function(ctx, x, y) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
-    ctx.uiStatus |= DebugJS.UI_ST_DRAGGED;
+    ctx.ptOpTm = (new Date()).getTime();
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
     ctx.win.style.top = y - ctx.prevOffsetTop + 'px';
     ctx.win.style.left = x - ctx.prevOffsetLeft + 'px';
@@ -2939,8 +2942,7 @@ DebugJS.prototype = {
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
       ctx.endMove(ctx);
       if ((el != ctx.extActivePanel) && (!DebugJS.isDescendant(el, ctx.extActivePanel))) {
-        if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGED) || (((new Date()).getTime() - ctx.ptDnTm) < 300)) {
-          ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGED;
+        if (((new Date()).getTime() - ctx.ptOpTm) < 300) {
           ctx.focusCmdLine();
         }
       }
@@ -12144,7 +12146,6 @@ DebugJS._log.out = function(m, type) {
     if (!DebugJS._init()) return;
   }
   ctx.printLogs();
-  if (ctx.uiStatus & DebugJS.UI_ST_LOG_SCROLL) ctx.scrollLogBtm(ctx);
 };
 
 DebugJS.stack = function(ldx, q) {
@@ -14322,7 +14323,7 @@ DebugJS.point.hint = function(msg, speed, step, start, end) {
   if ((speed) && (step)) {
     hint.msgseq(msg, m, speed, step, start, end);
   } else {
-    DebugJS.point.hint.setMSg(DebugJS.point.hint.replaceMsg(m));
+    DebugJS.point.hint.setMsg(DebugJS.point.hint.replaceMsg(m));
   }
   hint.st.hasMsg = true;
   hint.show();
@@ -14353,7 +14354,7 @@ DebugJS.point.hint.createArea = function() {
   document.body.appendChild(el);
   hint.area = el;
 };
-DebugJS.point.hint.setMSg = function(m) {
+DebugJS.point.hint.setMsg = function(m) {
   var ctx = DebugJS.ctx;
   var el = DebugJS.point.hint.pre;
   ctx.setStyle(el, 'width', 'auto');
@@ -14364,7 +14365,7 @@ DebugJS.point.hint.msgseq = function(msg, m, speed, step, start, end) {
   var hint = DebugJS.point.hint;
   var el = hint.pre;
   var s = window.getComputedStyle(el);
-  DebugJS.point.hint.setMSg(m);
+  DebugJS.point.hint.setMsg(m);
   DebugJS.ctx.setStyle(el, 'width', s.width);
   DebugJS.ctx.setStyle(el, 'height', s.height);
   el.innerHTML = '';
