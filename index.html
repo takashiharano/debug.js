@@ -2287,6 +2287,18 @@ dbg.stopwatch.reset(<input type="text" id="sw-reset-n-text" class="demo-text" st
     </td>
   </tr>
 
+  <tr>
+    <td class="name">dbg.stopwatch.val</td>
+    <td>id (0|1)</td>
+    <td>
+      Returns current stopwatch value. (millis)
+<pre>
+dbg.stopwatch.val(); <button class="demo-button2" onclick="log.res(dbg.stopwatch.val());">DEMO</button> (sw1)
+dbg.stopwatch.val(<input type="text" id="sw-val-n-text" class="demo-text" style="width:10px;" value="0">); <button class="demo-button2" onclick="log.res(dbg.stopwatch.val(getVal('sw-val-n-text')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
   <tr><td colspan="3" class="cat">Watchdog</td></tr>
   <tr>
     <td class="name">dbg.wd.start</td>

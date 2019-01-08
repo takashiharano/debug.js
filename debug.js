@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901082010';
+  this.v = '201901082111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8820,39 +8820,39 @@ DebugJS.prototype = {
   cmdStopwatch: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
-    var sw = 0;
+    var n = 0;
     var op = a[0];
     if (a[0].substr(0, 2) == 'sw') {
-      sw = a[0].charAt(2) | 0;
+      n = a[0].charAt(2) | 0;
       op = a[1];
     }
     var r = -1;
-    if ((sw == 0) || (sw == 1)) {
-      r = ctx._cmdStopwatch(ctx, op, sw);
-    } else if (sw == 2) {
+    if ((n == 0) || (n == 1)) {
+      r = ctx._cmdStopwatch(op, n);
+    } else if (n == 2) {
       r = ctx._cmdStopwatch2(ctx, op);
     }
     if (r == -1) DebugJS.printUsage(tbl.help);
     return r;
   },
-  _cmdStopwatch: function(ctx, op, n) {
-    var nm = DebugJS.stopwatch.tmNm[n];
-    var elps = DebugJS.time.getCount(nm);
+  _cmdStopwatch: function(op, n) {
+    var stopwatch = DebugJS.stopwatch;
+    var elps = stopwatch.val(n);
     switch (op) {
       case 'start':
-        DebugJS.stopwatch.start(n);
+        stopwatch.start(n);
         break;
       case 'stop':
-        DebugJS.stopwatch.stop(n);
+        stopwatch.stop(n);
         break;
       case 'reset':
-        DebugJS.stopwatch.reset(n);
+        stopwatch.reset(n);
         break;
       case 'split':
-        DebugJS.stopwatch.split(n);
+        stopwatch.split(n);
         break;
       case 'end':
-        DebugJS.stopwatch.end(n);
+        stopwatch.end(n);
         break;
       case 'val':
         DebugJS._log('sw' + n + ': ' + DebugJS.getTimerStr(elps));
@@ -12399,8 +12399,7 @@ DebugJS.stopwatch.end = function(n, m) {
     }
   }
   if (m) DebugJS.stopwatch.log(n, m);
-  var nm = DebugJS.stopwatch.tmNm[n];
-  return DebugJS.time.getCount(nm);
+  return DebugJS.stopwatch.val(n);
 };
 DebugJS.stopwatch.split = function(n, m) {
   if (n != 0) n = 1;
@@ -12418,6 +12417,11 @@ DebugJS.stopwatch.reset = function(n) {
       DebugJS.ctx.resetTimerStopwatchCu();
     }
   }
+};
+DebugJS.stopwatch.val = function(n) {
+  if (n != 0) n = 1;
+  var nm = DebugJS.stopwatch.tmNm[n];
+  return DebugJS.time.getCount(nm);
 };
 DebugJS.stopwatch.log = function(n, msg) {
   var nm = DebugJS.stopwatch.tmNm[n];
