@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901081935';
+  this.v = '201901082010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8827,69 +8827,42 @@ DebugJS.prototype = {
       op = a[1];
     }
     var r = -1;
-    if (sw == 0) {
-      r = ctx.cmdStopwatch0(ctx, op);
-    } else if (sw == 1) {
-      r = ctx.cmdStopwatch1(ctx, op);
+    if ((sw == 0) || (sw == 1)) {
+      r = ctx._cmdStopwatch(ctx, op, sw);
     } else if (sw == 2) {
-      r = ctx.cmdStopwatch2(ctx, op);
+      r = ctx._cmdStopwatch2(ctx, op);
     }
     if (r == -1) DebugJS.printUsage(tbl.help);
     return r;
   },
-  cmdStopwatch0: function(ctx, op) {
-    var elps = DebugJS.time.getCount(DebugJS.TIMER_NAME_SW_0);
+  _cmdStopwatch: function(ctx, op, n) {
+    var nm = DebugJS.stopwatch.tmNm[n];
+    var elps = DebugJS.time.getCount(nm);
     switch (op) {
       case 'start':
-        ctx.startStopwatch();
+        DebugJS.stopwatch.start(n);
         break;
       case 'stop':
-        ctx.stopStopwatch();
+        DebugJS.stopwatch.stop(n);
         break;
       case 'reset':
-        ctx.resetStopwatch();
+        DebugJS.stopwatch.reset(n);
         break;
       case 'split':
-        ctx.splitStopwatch();
+        DebugJS.stopwatch.split(n);
+        break;
       case 'end':
-        ctx.endStopwatch();
+        DebugJS.stopwatch.end(n);
         break;
       case 'val':
-        DebugJS._log('sw0: ' + DebugJS.getTimerStr(elps));
+        DebugJS._log('sw' + n + ': ' + DebugJS.getTimerStr(elps));
         break;
       default:
         return -1;
     }
     return elps;
   },
-  cmdStopwatch1: function(ctx, op) {
-    if (!ctx.isAvailableTools(ctx)) return false;
-    switch (op) {
-      case 'start':
-        ctx.startTimerStopwatchCu();
-        break;
-      case 'stop':
-        ctx.stopTimerStopwatchCu();
-        break;
-      case 'reset':
-        ctx.resetTimerStopwatchCu();
-        break;
-      case 'split':
-        ctx.splitTimerStopwatchCu();
-        break;
-      case 'end':
-        ctx.endTimerStopwatchCu();
-        break;
-      case 'val':
-        var v = DebugJS.time.check(DebugJS.TIMER_NAME_SW_CU);
-        DebugJS._log(DebugJS.TIMER_NAME_SW_CU + ': ' + (v == null ? DebugJS.TIME_RST_STR : v));
-        break;
-      default:
-        return -1;
-    }
-    return 0;
-  },
-  cmdStopwatch2: function(ctx, op) {
+  _cmdStopwatch2: function(ctx, op) {
     if (!ctx.isAvailableTools(ctx)) return false;
     switch (op) {
       case 'start':
@@ -12397,40 +12370,40 @@ DebugJS.stopwatch = function() {
 };
 DebugJS.stopwatch.tmNm = [DebugJS.TIMER_NAME_SW_0, DebugJS.TIMER_NAME_SW_CU];
 DebugJS.stopwatch.start = function(n, m) {
-  if (n == 1) {
+  if (n == 0) {
+    DebugJS.ctx.startStopwatch();
+  } else {
+    n = 1;
     if (DebugJS.stopwatch()) {
       DebugJS.ctx.startTimerStopwatchCu();
     }
-  } else {
-    n = 0;
-    DebugJS.ctx.startStopwatch();
   }
   if (m) DebugJS.stopwatch.log(n, m);
 };
 DebugJS.stopwatch.stop = function(n) {
-  if (n == 1) {
+  if (n == 0) {
+    DebugJS.ctx.stopStopwatch();
+  } else {
     if (DebugJS.stopwatch()) {
       DebugJS.ctx.stopTimerStopwatchCu();
     }
-  } else {
-    DebugJS.ctx.stopStopwatch();
   }
 };
 DebugJS.stopwatch.end = function(n, m) {
-  if (n == 1) {
+  if (n == 0) {
+    DebugJS.ctx.endStopwatch();
+  } else {
+    n = 1;
     if (DebugJS.stopwatch()) {
       DebugJS.ctx.endTimerStopwatchCu();
     }
-  } else {
-    n = 0;
-    DebugJS.ctx.endStopwatch();
   }
   if (m) DebugJS.stopwatch.log(n, m);
   var nm = DebugJS.stopwatch.tmNm[n];
   return DebugJS.time.getCount(nm);
 };
 DebugJS.stopwatch.split = function(n, m) {
-  if (n != 1) n = 0;
+  if (n != 0) n = 1;
   var nm = DebugJS.stopwatch.tmNm[n];
   if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
     m = nm + ': %t(' + DebugJS.CHR_DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
@@ -12438,12 +12411,12 @@ DebugJS.stopwatch.split = function(n, m) {
   }
 };
 DebugJS.stopwatch.reset = function(n) {
-  if (n == 1) {
+  if (n == 0) {
+    DebugJS.ctx.resetStopwatch();
+  } else {
     if (DebugJS.stopwatch()) {
       DebugJS.ctx.resetTimerStopwatchCu();
     }
-  } else {
-    DebugJS.ctx.resetStopwatch();
   }
 };
 DebugJS.stopwatch.log = function(n, msg) {

@@ -2214,12 +2214,12 @@ dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello
     </td>
   </tr>
 
-  <tr><td colspan="3" class="cat">Stopwatch <span class="cat-desc">id: 0=Small one in the upper right / 1=Big one in the TOOL panel</span></td></tr>
+  <tr><td colspan="3" class="cat">Stopwatch</td></tr>
   <tr>
     <td class="name">dbg.stopwatch</td>
     <td></td>
     <td>
-      Launch stopwatch function <button class="demo-button2" onclick="dbg.stopwatch();">DEMO</button>
+      Launch stopwatch function (sw1) <button class="demo-button2" onclick="dbg.stopwatch();">DEMO</button>
     </td>
   </tr>
 
@@ -2227,8 +2227,10 @@ dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello
     <td class="name">dbg.stopwatch.start</td>
     <td>arg1: id (0|1)<br>arg2: message</td>
     <td>
-      Start stopwatch<br><br>
+      Start stopwatch<br>
+      id: 0=Small one in the upper right / 1=Big one in the TOOL panel<br><br>
 <pre>
+dbg.stopwatch.start(); <button class="demo-button2" onclick="dbg.stopwatch.start();">DEMO</button> (sw1)
 dbg.stopwatch.start(<input type="text" id="sw-start-n-text" class="demo-text" style="width:10px;" value="0">); <button class="demo-button2" onclick="dbg.stopwatch.start(getVal('sw-start-n-text'));">DEMO</button> (w/o message)
 dbg.stopwatch.start(<input type="text" id="sw-start-n2-text" class="demo-text" style="width:10px;" value="0">, '<input type="text" id="sw-start-msg-text" class="demo-text" style="width:100px;" value="start message">'); <button class="demo-button2" onclick="dbg.stopwatch.start(getVal('sw-start-n2-text'), getVal('sw-start-msg-text'));">DEMO</button> (w/ message)
 </pre>
@@ -2241,6 +2243,7 @@ dbg.stopwatch.start(<input type="text" id="sw-start-n2-text" class="demo-text" s
     <td>
       Split/LAP stopwatch<br><br>
 <pre>
+dbg.stopwatch.split(); <button class="demo-button2" onclick="dbg.stopwatch.split();">DEMO</button> (sw1)
 dbg.stopwatch.split(<input type="text" id="sw-split-n-text" class="demo-text" style="width:10px;" value="0">); <button class="demo-button2" onclick="dbg.stopwatch.split(getVal('sw-split-n-text'));">DEMO</button> (w/o message)
 dbg.stopwatch.split(<input type="text" id="sw-split-n2-text" class="demo-text" style="width:10px;" value="0">, '<input type="text" id="sw-split-msg-text" class="demo-text" style="width:100px;" value="split message">'); <button class="demo-button2" onclick="dbg.stopwatch.split(getVal('sw-split-n2-text'), getVal('sw-split-msg-text'));">DEMO</button> (w/ message)
 </pre>
@@ -2253,6 +2256,7 @@ dbg.stopwatch.split(<input type="text" id="sw-split-n2-text" class="demo-text" s
     <td>
       Stop stopwatch (pause)
 <pre>
+dbg.stopwatch.stop(); <button class="demo-button2" onclick="dbg.stopwatch.stop();">DEMO</button> (sw1)
 dbg.stopwatch.stop(<input type="text" id="sw-stop-n-text" class="demo-text" style="width:10px;" value="0">); <button class="demo-button2" onclick="dbg.stopwatch.stop(getVal('sw-stop-n-text'));">DEMO</button>
 </pre>
     </td>
@@ -2264,6 +2268,7 @@ dbg.stopwatch.stop(<input type="text" id="sw-stop-n-text" class="demo-text" styl
     <td>
       Stop stopwatch (completely end measuring)<br><br>
 <pre>
+dbg.stopwatch.end(); <button class="demo-button2" onclick="dbg.stopwatch.end();">DEMO</button> (sw1)
 dbg.stopwatch.end(<input type="text" id="sw-end-n-text" class="demo-text" style="width:10px;" value="0">); <button class="demo-button2" onclick="dbg.stopwatch.end(getVal('sw-end-n-text'));">DEMO</button> (w/o message)
 dbg.stopwatch.end(<input type="text" id="sw-end-n2-text" class="demo-text" style="width:10px;" value="0">, '<input type="text" id="sw-end-msg-text" class="demo-text" style="width:100px;" value="end message">'); <button class="demo-button2" onclick="dbg.stopwatch.end(getVal('sw-end-n2-text'), getVal('sw-end-msg-text'));">DEMO</button> (w/ message)
 </pre>
@@ -2276,6 +2281,7 @@ dbg.stopwatch.end(<input type="text" id="sw-end-n2-text" class="demo-text" style
     <td>
       Reset stopwatch
 <pre>
+dbg.stopwatch.reset(); <button class="demo-button2" onclick="dbg.stopwatch.reset();">DEMO</button> (sw1)
 dbg.stopwatch.reset(<input type="text" id="sw-reset-n-text" class="demo-text" style="width:10px;" value="0">); <button class="demo-button2" onclick="dbg.stopwatch.reset(getVal('sw-reset-n-text'));">DEMO</button>
 </pre>
     </td>
