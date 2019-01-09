@@ -4845,13 +4845,14 @@ JavaScript Code;
 :label</span>
 goto label
 
-<span class="emphasis">call func1 ${val}<span class="annotation">(opt)</span>
+<span class="emphasis">call func1 ${val}<span class="annotation">(argument is optional)</span>
 ${val} = ${%RET%}
 
 FUNCTION func1
   ${val} = ${%ARG%}</span>
   command
-  <span class="emphasis">return ${val}<span class="annotation">(opt)</span>
+  <span class="emphasis">${ret} = </span>command
+  <span class="emphasis">return ${ret}<span class="annotation">(return value is optional)</span>
 </span>
 </pre>
 <br>
