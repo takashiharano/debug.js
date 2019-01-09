@@ -1077,7 +1077,7 @@ function test1() {
 debug.js is embedded JavaScript debugger for web development.<br>
 It allows you to debug easily without the F12 Tools.<br><br>
 The library has useful features such as Logger, DOM element inspector, Screen measure, <br>
-File Viewer, Command-line, Original script interpreter for automated testing, etc.<br>
+File Viewer, Command-line interpreter, Original script executor for automated testing, etc.<br>
 <br>
 <div class="caption" id="usage">// Usage</div><br>
 
@@ -4768,11 +4768,13 @@ $ zoom 1
 <br>
 
 <div class="caption" id="bat-execution">// BAT Script Execution</div>
-BAT script is an original script in debug.js.<br>
-It consists of a series of commands to be executed by the command-line interpreter.<br><br>
+BAT script is an original script language in debug.js.<br>
+It consists of a series of commands to be executed by the command-line interpreter.<br>
+You can write any commands of the library and JavaScript statements.<br>
+<br>
 
 <b>How to execute</b><br>
-From upper menu of the debugger window,
+From the menu on the upper of the debugger window,
 <pre>
 TOOL =&gt; &lt;BAT&gt; =&gt; Write a BAT script =&gt; [ RUN ]
 </pre>
@@ -6105,12 +6107,8 @@ function callback(xhr) {
 
 <!-- ********************************************************************** -->
 <div class="caption" id="auto-test-demo">// AUTOMATED TESTING DEMO</div>
-With a pseudo mouse pointer, the library can perform automated web page manipulation!<br><br>
-From upper menu of the debugger window,
-<pre>
-TOOL =&gt; &lt;BAT&gt; =&gt; Copy & Paste the following script =&gt; <span style="color:#0c0;">[ RUN ]</span>
-</pre><br>
-Sample Script<br>
+With a pseudo mouse pointer, the library can perform automated web page manipulation!<br>
+<span style="font-size:12px;font-family:Consolas;font-weight:bold;">&lt;Sample Script&gt;</span><br>
 <textarea class="code emphasis" style="height:100px;font-size:10px;margin-top:0;margin-bottom:8px;" readonly>
 #!BAT!
 point init
@@ -6177,8 +6175,13 @@ point hint msg "<span style=\"font-size:32px;\">TEST COMPLETED!</span>\nTest Res
 pause -timeout 5s
 
 point init
-</textarea>
-
+</textarea><br>
+From the menu on the upper of the debugger window,
+<pre>
+TOOL =&gt; &lt;BAT&gt; =&gt; Copy & Paste the above script =&gt; <span style="color:#0c0;">[ RUN ]</span>
+</pre>
+See also: <a href="#" onclick="scrollToSelector('#bat-execution', 700);return false;">// BAT Execution</a> section.
+<br>
 <div style="height:520px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
