@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901090000';
+  this.v = '201901100000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1851,9 +1851,9 @@ DebugJS.prototype = {
     }
   },
 
-  updateBtnActive: function(btn, status, activeColor) {
+  updateBtnActive: function(btn, st, activeColor) {
     if (btn) {
-      DebugJS.ctx.setStyle(btn, 'color', (DebugJS.ctx.status & status) ? activeColor : DebugJS.COLOR_INACT);
+      DebugJS.ctx.setStyle(btn, 'color', (DebugJS.ctx.status & st) ? activeColor : DebugJS.COLOR_INACT);
     }
   },
 
@@ -2328,10 +2328,11 @@ DebugJS.prototype = {
     }
   },
   setLogPreserve: function(ctx, f) {
+    var b = DebugJS.ST_LOG_PRESERVED;
     if (f) {
-      ctx.status |= DebugJS.ST_LOG_PRESERVED;
+      ctx.status |= b;
     } else {
-      ctx.status &= ~DebugJS.ST_LOG_PRESERVED;
+      ctx.status &= ~b;
     }
     ctx.updatePreserveLogBtn(ctx);
   },
@@ -4171,10 +4172,11 @@ DebugJS.prototype = {
   },
   toggleElmSelectMode: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) {
-      ctx.elmInfoStatus &= ~DebugJS.ELMINFO_ST_SELECT;
+    var b = DebugJS.ELMINFO_ST_SELECT;
+    if (ctx.elmInfoStatus & b) {
+      ctx.elmInfoStatus &= ~b;
     } else {
-      ctx.elmInfoStatus |= DebugJS.ELMINFO_ST_SELECT;
+      ctx.elmInfoStatus |= b;
     }
     ctx.updateElmSelectBtn();
   },
@@ -4183,11 +4185,12 @@ DebugJS.prototype = {
   },
   toggleElmHlMode: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
-      ctx.elmInfoStatus &= ~DebugJS.ELMINFO_ST_HIGHLIGHT;
+    var b = DebugJS.ELMINFO_ST_HIGHLIGHT;
+    if (ctx.elmInfoStatus & b) {
+      ctx.elmInfoStatus &= ~b;
       ctx.highlightElement(ctx.targetEl, null);
     } else {
-      ctx.elmInfoStatus |= DebugJS.ELMINFO_ST_HIGHLIGHT;
+      ctx.elmInfoStatus |= b;
       ctx.highlightElement(null, ctx.targetEl);
     }
     ctx.updateElmHighlightBtn();
@@ -5227,11 +5230,12 @@ DebugJS.prototype = {
   },
   toggleElmEditable: function(btn) {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_ELM_EDIT) {
-      ctx.status &= ~DebugJS.ST_ELM_EDIT;
+    var b = DebugJS.ST_ELM_EDIT;
+    if (ctx.status & b) {
+      ctx.status &= ~b;
       ctx.updateEditable(ctx, ctx.txtChkTxt);
     } else {
-      ctx.status |= DebugJS.ST_ELM_EDIT;
+      ctx.status |= b;
       if (DebugJS.el) {
         ctx.updateEditable(ctx, DebugJS.el);
       }
@@ -6575,11 +6579,11 @@ DebugJS.prototype = {
 
   turnLed: function(pos, active) {
     var ctx = DebugJS.ctx;
-    var bit = DebugJS.LED_BIT[pos];
+    var b = DebugJS.LED_BIT[pos];
     if (active) {
-      ctx.led |= bit;
+      ctx.led |= b;
     } else {
-      ctx.led &= ~bit;
+      ctx.led &= ~b;
     }
     ctx.updateLedPanel();
   },
@@ -8541,11 +8545,12 @@ DebugJS.prototype = {
     if (echo) DebugJS._log.res(props[nm]);
   },
   setPropBatContCb: function(ctx, v) {
+    var b = DebugJS.ST_BAT_CONT;
     if (DebugJS.bat.isRunning()) {
       if (v == 'on') {
-        ctx.status |= DebugJS.ST_BAT_CONT;
+        ctx.status |= b;
       } else {
-        ctx.status &= ~DebugJS.ST_BAT_CONT;
+        ctx.status &= ~b;
       }
     }
   },
@@ -11993,12 +11998,7 @@ DebugJS.addFileLoader = function(el, cb, mode, decode) {
   }
   el.addEventListener('dragover', DebugJS.file.onDragOver, false);
   el.addEventListener('drop', DebugJS.file.onDrop, false);
-  var loader = {
-    el: el,
-    mode: mode,
-    decode: decode,
-    cb: cb
-  };
+  var loader = {el: el, mode: mode, decode: decode, cb: cb};
   DebugJS.file.loaders.push(loader);
 };
 
@@ -12219,12 +12219,7 @@ DebugJS.time.restart = function(tmrNm) {
     ctx.timers[tmrNm].pause = 0;
     ctx.timers[tmrNm].split += paused;
   } else {
-    ctx.timers[tmrNm] = {
-      start: now,
-      pause: 0,
-      split: 0,
-      count: 0
-    };
+    ctx.timers[tmrNm] = {start: now, pause: 0, split: 0, count: 0};
   }
 };
 DebugJS.time.split = function(tmrNm, msg) {
