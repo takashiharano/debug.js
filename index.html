@@ -2498,8 +2498,8 @@ dbg.test.fin(); <button class="demo-button2" onclick="dbg.test.fin();">DEMO</but
     <td>
       Returns the test result object.<br><br>
 <pre>
-dbg.test.getResult(); <button class="demo-button2" onclick="log.p(dbg.test.getResult());">DEMO</button>
-dbg.test.getResult(true); <button class="demo-button2" onclick="log(dbg.test.getResult(true));">DEMO</button>
+dbg.test.getResult();<span class="annotation">Object</span> <button class="demo-button2" onclick="log.p(dbg.test.getResult());">DEMO</button>
+dbg.test.getResult(true);<span class="annotation">JSON</span> <button class="demo-button2" onclick="log(dbg.test.getResult(true));">DEMO</button>
 
 <b>JSON FORMAT EXAMPLE:</b>
 <pre class="eg-s">
@@ -4260,6 +4260,13 @@ $ point cursor text
 
 $ point cursor none
 -&gt; No cursor is renderd
+
+$ point getelement
+-&gt; Get an Element object at the current pointed position
+  e.g.,)
+  $ ${el} = point getelement
+  $ ${el}.innerHTML = "abc"
+  $ ${el}.style.color = "#f00"
 
 $ point getprop <i>propertyName</i>
 -&gt; Get property value of the element at the current pointed position

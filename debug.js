@@ -356,7 +356,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', help: 'p [-l&lt;n&gt;] [-json] object'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key [-timeout ms|1d2h3m4s500]|-s]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
-    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
+    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-d|-s] [min] [max]'},
@@ -7970,6 +7970,8 @@ DebugJS.prototype = {
       ctx._cmdPointScroll(args);
     } else if (op == 'selectoption') {
       ret = ctx._cmdPointSelectOpt(ctx, args);
+    } else if (op == 'getelement') {
+      ret = point.getElementFromCurrentPos();
     } else if (op == 'getprop') {
       ret = point.getProp(args[1]);
     } else if (op == 'setprop') {
