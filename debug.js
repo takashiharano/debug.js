@@ -11541,12 +11541,12 @@ DebugJS.plural = function(s, n) {
   return (n >= 2 ? (s + 's') : s);
 };
 DebugJS.toHalfWidth = function(s) {
-  var h = s.replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\').replace(/　/g, ' ').replace(/〜/g, '~');
+  var h = s.replace(/　/g, ' ').replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\').replace(/〜/g, '~');
   h = h.replace(/[！-～]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) - 65248);});
   return h;
 };
 DebugJS.toFullWidth = function(s) {
-  var f = s.replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '‘').replace(/\\/g, '￥').replace(/ /g, '　');
+  var f = s.replace(/ /g, '　').replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '‘').replace(/\\/g, '￥');
   f = f.replace(/[!-~]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) + 65248);});
   return f;
 };
