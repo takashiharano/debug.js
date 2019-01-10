@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901102330';
+  this.v = '201901110000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -698,7 +698,7 @@ DebugJS.FEATURES = [
   'useLogFilter',
   'useCommandLine'
 ];
-DebugJS.f_ = function() {};
+DebugJS.fn = function() {};
 DebugJS.prototype = {
   init: function(opt, rstrOpt) {
     if (!DebugJS.ENABLE) return false;
@@ -746,8 +746,8 @@ DebugJS.prototype = {
     }
     if (ctx.opt.mode == 'noui') {
       ctx.rmvEventHandlers(ctx);
-      ctx.init = DebugJS.f_;
-      DebugJS.init = DebugJS.f_;
+      ctx.init = DebugJS.fn;
+      DebugJS.init = DebugJS.fn;
       ctx.status |= DebugJS.ST_INITIALIZED;
       return false;
     }
@@ -2151,12 +2151,18 @@ DebugJS.prototype = {
     }
   },
 
-  disableTextSelect: function(ctx) {
-    ctx.savedFunc = document.onselectstart;
-    document.onselectstart = function() {return false;};
+  moveDbgWin: function(ctx, x, y) {
+    if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
+    ctx.ptOpTm = (new Date()).getTime();
+    ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
+    ctx.win.style.top = y - ctx.prevOffsetTop + 'px';
+    ctx.win.style.left = x - ctx.prevOffsetLeft + 'px';
   },
-  enableTextSelect: function(ctx) {
-    document.onselectstart = ctx.savedFunc;
+
+  endMove: function(ctx) {
+    ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
+    ctx.enableTextSelect(ctx);
+    ctx.winBody.style.cursor = 'default';
   },
 
   isMovable: function(ctx, el, x, y) {
@@ -2185,20 +2191,6 @@ DebugJS.prototype = {
       }
     }
     return true;
-  },
-
-  moveDbgWin: function(ctx, x, y) {
-    if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
-    ctx.ptOpTm = (new Date()).getTime();
-    ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJUST;
-    ctx.win.style.top = y - ctx.prevOffsetTop + 'px';
-    ctx.win.style.left = x - ctx.prevOffsetLeft + 'px';
-  },
-
-  endMove: function(ctx) {
-    ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
-    ctx.enableTextSelect(ctx);
-    ctx.winBody.style.cursor = 'default';
   },
 
   startResize: function(ctx, e) {
@@ -2298,6 +2290,14 @@ DebugJS.prototype = {
     var cmdPanelH = (ctx.cmdPanel) ? ctx.cmdPanel.offsetHeight : 0;
     var mainPanelHeight = ctx.win.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WIN_ADJUST;
     ctx.mainPanel.style.height = mainPanelHeight + 'px';
+  },
+
+  disableTextSelect: function(ctx) {
+    ctx.savedFunc = document.onselectstart;
+    document.onselectstart = function() {return false;};
+  },
+  enableTextSelect: function(ctx) {
+    document.onselectstart = ctx.savedFunc;
   },
 
   toggleLogSuspend: function() {
@@ -7577,10 +7577,10 @@ DebugJS.prototype = {
     }
     var json = DebugJS.delLeadingSP(arg);
     var lv = 0;
-    var jsnFlg = true;
+    var jFlg = true;
     if (json.charAt(0) == '-') {
       var opt = json.match(/-p\s/);
-      if (opt != null) jsnFlg = false;
+      if (opt != null) jFlg = false;
       opt = json.match(/-l(\d+)/);
       if (opt) lv = opt[1];
       json = json.match(/(\{.*)/);
@@ -7589,7 +7589,7 @@ DebugJS.prototype = {
       }
     }
     if (json) {
-      return DebugJS._cmdJson(json, jsnFlg, lv);
+      return DebugJS._cmdJson(json, jFlg, lv);
     } else {
       DebugJS.printUsage(tbl.help);
     }
@@ -15572,7 +15572,7 @@ DebugJS.rootFncs = function() {
   var fn = ['v', 'd', 'i', 'w', 'e'];
   for (var i = 0; i < fn.length; i++) {
     var lv = fn[i];
-    DebugJS.log[lv].root = (DebugJS.ENABLE ? DebugJS.log.root.fn.bind(undefined, lv) : DebugJS.f_);
+    DebugJS.log[lv].root = (DebugJS.ENABLE ? DebugJS.log.root.fn.bind(undefined, lv) : DebugJS.fn);
   }
 };
 
@@ -15743,7 +15743,7 @@ DebugJS.onError = function(e) {
   DebugJS.log.e(msg);
 };
 DebugJS.balse = function() {
-  var x = DebugJS.f_;
+  var x = DebugJS.fn;
   DebugJS.boot = x;
   DebugJS.start = x;
   DebugJS.log = x;
