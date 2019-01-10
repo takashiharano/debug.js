@@ -101,7 +101,8 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .info1{color:#48f;}
 .info2{color:#4b4;}
 .info3{color:#d80;}
-.nl{color:#8bc;}
+.nl{color:#8ac;}
+.nl2 {font-size:10px; color:#8ac; margin-left:1px;}
 </style>
 <script>
 dbg.init({visible:true});
@@ -3333,7 +3334,7 @@ buf.getAll();
   <tr>
     <td>add</td>
     <td>string</td>
-    <td>Add a line to the buffer</td>
+    <td>Add a line to the buffer with LF</td>
   </tr>
   <tr>
     <td>toString</td>
@@ -3349,9 +3350,9 @@ buf.add('b');
 buf.add('c');
 buf.toString();
 -&gt;
-a<span class="nl">&#x2193;</span>
-b<span class="nl">&#x2193;</span>
-c<span class="nl">&#x2193;</span>
+a<span class="nl">&#x2193;</span><span class="nl2">LF</span>
+b<span class="nl">&#x2193;</span><span class="nl2">LF</span>
+c<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 </pre>
     </td>
   </tr>
