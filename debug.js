@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901101950';
+  this.v = '201901102330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -202,7 +202,7 @@ var DebugJS = DebugJS || function() {
   this.fileVwrFile = null;
   this.fileVwrDataSrc = null;
   this.fileVwrByteArray = null;
-  this.fileVwrBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true},
+  this.fileVwrBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true};
   this.fileVwrSysCb = null;
   this.fileReader = null;
   this.jsBtn = null;
@@ -11280,7 +11280,7 @@ DebugJS.getRndStr = function(min, max) {
     var retry = true;
     while (retry) {
       ch = DebugJS.getRandomChr();
-      if ((!(ch.match(/[!-/:-@[-`{-~]/))) && (!(((i == 0) || (i == (len - 1))) && (ch == ' ')))) {
+      if ((!(ch.match(/[!-\/:-@\[-`{-~]/))) && (!(((i == 0) || (i == (len - 1))) && (ch == ' ')))) {
         retry = false;
       }
     }
@@ -11537,11 +11537,18 @@ DebugJS.repeatCh = function(c, n) {
 DebugJS.crlf2lf = function(s) {
   return s.replace(/\r\n/g, '\n');
 };
-DebugJS.isStr = function(s) {
-  return (s + '').match(/\s*\"|'/);
-};
 DebugJS.plural = function(s, n) {
   return (n >= 2 ? (s + 's') : s);
+};
+DebugJS.toHalfWidth = function(s) {
+  var h = s.replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\').replace(/　/g, ' ').replace(/〜/g, '~');
+  h = h.replace(/[！-～]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) - 65248);});
+  return h;
+};
+DebugJS.toFullWidth = function(s) {
+  var f = s.replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '‘').replace(/\\/g, '￥').replace(/ /g, '　');
+  f = f.replace(/[!-~]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) + 65248);});
+  return f;
 };
 
 DebugJS.trimDownText = function(txt, maxLen, style) {
