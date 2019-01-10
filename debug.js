@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901101919';
+  this.v = '201901101950';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14286,6 +14286,7 @@ DebugJS.point.hint = function(msg, speed, step, start, end) {
     hint.createArea();
   }
   var area = hint.area;
+  document.body.appendChild(area);
   try {
     var m = eval(msg) + '';
   } catch (e) {
@@ -14335,8 +14336,8 @@ DebugJS.point.hint.setMsg = function(m) {
 DebugJS.point.hint.msgseq = function(msg, m, speed, step, start, end) {
   var hint = DebugJS.point.hint;
   var el = hint.pre;
-  var s = window.getComputedStyle(el);
   DebugJS.point.hint.setMsg(m);
+  var s = window.getComputedStyle(el);
   DebugJS.ctx.setStyle(el, 'width', s.width);
   DebugJS.ctx.setStyle(el, 'height', s.height);
   el.innerHTML = '';
