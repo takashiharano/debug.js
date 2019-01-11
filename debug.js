@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901110000';
+  this.v = '201901112251';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11155,16 +11155,24 @@ DebugJS.str2ms = function(t) {
   }
   i = t.indexOf('s');
   if (i > 0) {
-    s = t.substr(0, i) | 0;
-    t = t.substr(i + 1);
+    s = t.substr(0, i);
+    ms = t.substr(i + 1);
+    i = s.indexOf('.');
+    if (i > 0) {
+      s = s.substr(0, i);
+      ms = t.substr(i + 1, t.length - 3);
+      ms = ms + DebugJS.repeatCh('0', 3 - ms.length);
+    }
+    s = s | 0;
   }
-  if (!isNaN(t)) ms = t | 0;
+  if ((ms == 0) && (!isNaN(t))) ms = t;
+  ms = ms | 0;
   return d * 86400000 + h * 3600000 + m * 60000 + s * 1000 + ms;
 };
 DebugJS.isTmStr = function(s) {
   s = (s + '').trim();
-  if (!s.match(/^\d/) || s.match(/[^\ddhms]/)) return false;
-  var m = s.match(/\d*d?\d*h?\d*m?\d*s?/);
+  if (!s.match(/^\d/) || s.match(/[^\d.dhms]/)) return false;
+  var m = s.match(/\d*d?\d*h?\d*m?\d*\.?\d?s?/);
   return (isNaN(s) && m && (m != ''));
 };
 

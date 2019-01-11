@@ -3666,6 +3666,7 @@ $ delay 20180520T170030 echo "abc"
 $ delay T170030 echo "abc"
 $ delay T0000|T1200 echo "abc"
 $ delay 1d2h3m4s500 echo "abc"
+$ delay 1.5s echo "abc"
 
 $ delay -c
 Cancel delay execution
@@ -4790,6 +4791,175 @@ $ zoom 1
 </table>
 <br>
 
+<div class="caption" id="calculation">// Calculation / Conversion</div>
+The debugger can perform the following calculation/conversion on the command-line.
+<table class="desc-table">
+  <tr>
+    <th>Calculation</th>
+    <th>Input</th>
+    <th>Description</th>
+  </tr>
+
+  <tr>
+    <td class="name">Radix conversion</td>
+    <td>
+     decimal number<br>
+     hexadecimal number<br>
+     binary number
+    </td>
+    <td>
+     Convert DEC / HEX / BIN to other radix base number.
+<pre class="eg">
+$ 128
+-&gt;
+DEC 128
+HEX 0x80
+BIN 1000 0000 (8 bits)
+
+$ 0x20
+-&gt;
+HEX 0x20
+DEC 32
+BIN 10 0000 (6 bits)
+
+$ 0b11110000
+-&gt;
+BIN 1111 0000 (8 bits)
+DEC 240
+HEX 0xF0
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">Time calculation</td>
+    <td>
+     HH:MI:SS.sss + HH:MI:SS.sss [+]<br><br>
+     HH:MI:SS.sss - HH:MI:SS.sss [-]
+    </td>
+    <td>
+     Perform a time calculation.
+<pre class="eg">
+$ 00:05:30.700 + 00:01:20.123
+-&gt; 00:06:50.823
+
+$ 00:05:30.700 - 00:05:20.400
+-&gt; 00:00:10.300
+
+$ 10:00 + 16:00
+-&gt; 02:00:00.000 (+1 Day)
+
+$ 10:00 + 16:00 +
+-&gt; 26:00:00.000
+
+$ 10:00 - 16:00
+-&gt; 18:00:00.000 (-1 Day)
+
+$ 10:00 - 16:00 -
+-&gt; -06:00:00.000
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">Date calculation</td>
+    <td>
+     YYYY/MM/DD +|- days
+    </td>
+    <td>
+     Perform a date calculation.<br><br>
+<pre class="eg">
+$ 2018/01/01 + 2
+$ 2018-01-01 + 2
+$ 20180101 + 2
+-&gt; 2018/01/03
+
+$ 2018/01/01 - 2
+$ 2018-01-01 - 2
+$ 20180101 - 2
+-&gt; 2017/12/30
+
+$ today + 2
+$ today - 2
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">Date diff</td>
+    <td>
+     YYYY/MM/DD YYYY/MM/DD
+    </td>
+    <td>
+<pre class="eg">
+$ 2018/01/01 2018/01/03
+$ 2018-01-01 2018-01-03
+$ 20180101 20180103
+-&gt; 2
+
+$ 2018/01/01 2017/12/30
+-&gt; -2
+
+$ today 2018/04/10
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">Date-Time</td>
+    <td>
+     date-time
+    </td>
+    <td>
+<pre class="eg">
+$ 2018/06/20 12:34:56.123
+$ 2018-06-20 12:34:56.123
+$ 20180620T123456.123
+-&gt; 2018-06-20 WED 12:34:56.123 +0900 (1529465696123)
+<span class="annotation">This is an alias of date command.</span>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">String to millis</td>
+    <td>
+     time string
+    </td>
+    <td>
+<pre class="eg">
+$ 1d2h3m4s500
+-&gt; 93784500
+
+$ 1m30s
+-&gt; 90000
+
+$ 1.5s
+-&gt; 1500
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">Unicode</td>
+    <td>
+     U+nnnn ...
+    </td>
+    <td>
+     Displays the character(s) of the code point which specified by the argument.
+<pre class="eg">
+$ U+0041
+-&gt; A
+
+$ U+6F22 U+5B57
+-&gt; 漢字
+</pre>
+<span class="annotation">This is an alias of unicode command.</span>
+    </td>
+  </tr>
+</table>
+<br>
+
 <div class="caption" id="bat-execution">// BAT Script Execution</div>
 BAT script is an original script language in debug.js.<br>
 It consists of a series of commands to be executed by the command-line interpreter.<br>
@@ -4982,6 +5152,7 @@ wait 20180614T123045
 wait T1230
 wait T0000|T1200
 wait 1d2h3m4s500
+wait 1.5s
 </pre>
     </td>
   </tr>
@@ -5095,156 +5266,6 @@ $ set batstop error
 $ set batstop test
 $ set batstop error|test
 </pre>
-    </td>
-  </tr>
-</table>
-<br>
-
-<div class="caption" id="calculation">// Calculation / Conversion</div>
-The debugger can perform the following calculation/conversion on the command-line.
-<table class="desc-table">
-  <tr>
-    <th>Calculation</th>
-    <th>Input</th>
-    <th>Description</th>
-  </tr>
-
-  <tr>
-    <td class="name">Radix conversion</td>
-    <td>
-     decimal number<br>
-     hexadecimal number<br>
-     binary number
-    </td>
-    <td>
-     Convert DEC / HEX / BIN to other radix base number.
-<pre class="eg">
-$ 128
--&gt;
-DEC 128
-HEX 0x80
-BIN 1000 0000 (8 bits)
-
-$ 0x20
--&gt;
-HEX 0x20
-DEC 32
-BIN 10 0000 (6 bits)
-
-$ 0b11110000
--&gt;
-BIN 1111 0000 (8 bits)
-DEC 240
-HEX 0xF0
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">Time calculation</td>
-    <td>
-     HH:MI:SS.sss + HH:MI:SS.sss [+]<br><br>
-     HH:MI:SS.sss - HH:MI:SS.sss [-]
-    </td>
-    <td>
-     Perform a time calculation.
-<pre class="eg">
-$ 00:05:30.700 + 00:01:20.123
--&gt; 00:06:50.823
-
-$ 00:05:30.700 - 00:05:20.400
--&gt; 00:00:10.300
-
-$ 10:00 + 16:00
--&gt; 02:00:00.000 (+1 Day)
-
-$ 10:00 + 16:00 +
--&gt; 26:00:00.000
-
-$ 10:00 - 16:00
--&gt; 18:00:00.000 (-1 Day)
-
-$ 10:00 - 16:00 -
--&gt; -06:00:00.000
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">Date calculation</td>
-    <td>
-     YYYY/MM/DD +|- days
-    </td>
-    <td>
-     Perform a date calculation.<br><br>
-<pre class="eg">
-$ 2018/01/01 + 2
-$ 2018-01-01 + 2
-$ 20180101 + 2
--&gt; 2018/01/03
-
-$ 2018/01/01 - 2
-$ 2018-01-01 - 2
-$ 20180101 - 2
--&gt; 2017/12/30
-
-$ today + 2
-$ today - 2
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">Date diff</td>
-    <td>
-     YYYY/MM/DD YYYY/MM/DD
-    </td>
-    <td>
-<pre class="eg">
-$ 2018/01/01 2018/01/03
-$ 2018-01-01 2018-01-03
-$ 20180101 20180103
--&gt; 2
-
-$ 2018/01/01 2017/12/30
--&gt; -2
-
-$ today 2018/04/10
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">Date-Time</td>
-    <td>
-     date-time
-    </td>
-    <td>
-<pre class="eg">
-$ 2018/06/20 12:34:56.123
-$ 2018-06-20 12:34:56.123
-$ 20180620T123456.123
--&gt; 2018-06-20 WED 12:34:56.123 +0900 (1529465696123)
-<span class="annotation">This is an alias of date command.</span>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">Unicode</td>
-    <td>
-     U+nnnn ...
-    </td>
-    <td>
-     Displays the character(s) of the code point which specified by the argument.
-<pre class="eg">
-$ U+0041
--&gt; A
-
-$ U+6F22 U+5B57
--&gt; 漢字
-</pre>
-<span class="annotation">This is an alias of unicode command.</span>
     </td>
   </tr>
 </table>
