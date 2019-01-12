@@ -1046,6 +1046,23 @@ function scrollToSelector(selector, step) {
   dbg.cmd('scrollto window ' + selector + ' -step ' + step);
 }
 
+function cmdListener1(str) {
+  log('cmd1: ' + str);
+  if (str == 'a') {
+    return false;
+  }
+}
+function cmdListener2(str) {
+  log('cmd2: ' + str);
+  if (str == 'b') {
+    return false;
+  }
+}
+function addCmdListener() {
+  dbg.addCmdListener(cmdListener1);
+  dbg.addCmdListener(cmdListener2);
+}
+
 function test1() {
 
 }
@@ -3060,6 +3077,26 @@ dbg.getKeys(obj);
       Causes the currently executing thread to sleep<br>
 <pre>
 sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2" onclick="sleepDemo();">Sleep</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.addCmdListener</td>
+    <td>
+      listener
+    </td>
+    <td>
+Adds a listener function for the command input.<br>
+<br>
+<pre>
+function cmdListener(str) {
+  if (some condition) {
+    // The default action should not be taken as it normally would be.
+    return false;
+  }
+}
+dbg.addCmdListener(cmdListener);
 </pre>
     </td>
   </tr>

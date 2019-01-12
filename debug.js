@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901112251';
+  this.v = '201901121440';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -291,6 +291,7 @@ var DebugJS = DebugJS || function() {
   this.cmdTmp = '';
   this.cmdEchoFlg = true;
   this.cmdDelayData = {tmid: 0, cmd: null};
+  this.cmdListeners = [];
   this.timers = {};
   this.initWidth = 0;
   this.initHeight = 0;
@@ -6648,6 +6649,7 @@ DebugJS.prototype = {
       echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS._log.s(echoStr);
     }
+    if (!DebugJS.callListeners(ctx.cmdListeners, str)) return;
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
     var valName = DebugJS.getCmdValName(cmd, '\\$', true);
@@ -9653,9 +9655,7 @@ DebugJS.delTrailingSP = function(s) {
   return s.replace(/\s+$/, '');
 };
 DebugJS.delAllNL = function(s) {
-  s = s.replace(/\r/g, '');
-  s = s.replace(/\n/g, '');
-  return s;
+  return s.replace(/\r/g, '').replace(/\n/g, '');
 };
 DebugJS.quoteStr = function(s) {
   return '<span style="color:#0ff">"</span>' + s + '<span style="color:#0ff">"</span>';
@@ -10313,8 +10313,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
       }
       str = str.replace(/\\/g, '\\\\');
       if (toJson) {
-        str = str.replace(/\n/g, '\\n');
-        str = str.replace(/\r/g, '\\r');
+        str = str.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
       } else {
         str = DebugJS.hlCtrlChr(str);
       }
@@ -11352,10 +11351,7 @@ DebugJS.onHttpRequestDone = function(xhr) {
 
 DebugJS.encodeURIString = function(data) {
   var s = encodeURIComponent(data);
-  s = s.replace(/%20/g, '+');
-  s = s.replace(/%3D/gi, '=');
-  s = s.replace(/%26/g, '&');
-  return s;
+  return s.replace(/%20/g, '+').replace(/%3D/gi, '=').replace(/%26/g, '&');
 };
 
 DebugJS.getWinZoomRatio = function() {
@@ -11688,10 +11684,7 @@ DebugJS.escTags = function(s) {
 };
 DebugJS.escSpclChr = function(s) {
   s += '';
-  s = s.replace(/&/g, '&amp;');
-  s = s.replace(/</g, '&lt;');
-  s = s.replace(/>/g, '&gt;');
-  return s;
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 DebugJS.escCtrlChr = function(s) {
   s = s.replace(/\t/g, '\\t');
@@ -12439,20 +12432,26 @@ DebugJS.stopwatch.log = function(n, msg) {
   DebugJS._log(m);
 };
 
-DebugJS.addEvtListener = function(type, listener) {
+DebugJS.addCmdListener = function(fn) {
+  DebugJS.ctx.cmdListeners.push(fn);
+};
+DebugJS.addEvtListener = function(type, fn) {
   var list = DebugJS.ctx.evtListener[type];
   if (list) {
-    list.push(listener);
+    list.push(fn);
   } else {
     DebugJS._log.e('No such event: ' + type);
   }
 };
 DebugJS.callEvtListeners = function(type, a1, a2, a3) {
-  var list = DebugJS.ctx.evtListener[type];
-  for (var i = 0; i < list.length; i++) {
-    var cb = list[i];
-    if (cb) {
-      if (cb(a1, a2, a3) === false) return false;
+  var fns = DebugJS.ctx.evtListener[type];
+  return DebugJS.callListeners(fns, a1, a2, a3);
+};
+DebugJS.callListeners = function(fns, a1, a2, a3) {
+  for (var i = fns.length - 1; i >= 0; i--) {
+    var fn = fns[i];
+    if (fn) {
+      if (fn(a1, a2, a3) === false) return false;
     }
   }
   return true;
@@ -15770,6 +15769,7 @@ DebugJS.balse = function() {
   DebugJS.log.suspend = x;
   DebugJS.log.resume = x;
   DebugJS.log.root = x;
+  DebugJS.addCmdListener = x;
   DebugJS.addEvtListener = x;
   DebugJS.addFileLoader = x;
   DebugJS.adjustResBox = x;
