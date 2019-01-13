@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901131700';
+  this.v = '201901132040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11704,6 +11704,20 @@ DebugJS.hlCtrlChr = function(s, sp) {
   s = s.replace(/\n/g, st + '\\n' + et);
   s = s.replace(/\f/g, st + '\\f' + et);
   return s;
+};
+
+DebugJS.getType = function(o) {
+  var t = typeof o;
+  if (t != 'object') return t;
+  if (o === undefined) return 'undefined';
+  if (o === null) return 'null';
+  if (o instanceof Array) return 'Array';
+  if (o instanceof Set) return 'Set';
+  t = Object.prototype.toString.call(o);
+  if ((t != '[object Object]') && DebugJS.startsWith(t, '[object ')) {
+    return t.substr(8, t.length - 9);
+  }
+  return 'object';
 };
 
 DebugJS.html2text = function(html) {

@@ -2826,6 +2826,28 @@ dbg.toFullWidth('<input type="text" id="tofull-txt" class="demo-text" style="wid
   </tr>
 
   <tr>
+    <td class="name">dbg.getType</td>
+    <td>object</td>
+    <td>
+      Returns object type.<br>
+<br>
+<pre class="eg">
+"abc"      -&gt; "string"
+123        -&gt; "number"
+true       -&gt; "boolean"
+false      -&gt; "boolean"
+null       -&gt; "null"
+undefined  -&gt; "undefined"
+function() -&gt; "function"
+[object *] -&gt; "*"
+other      -&gt; "object"
+
+dbg.getType(<input type="text" id="gettype-txt" class="demo-text" style="width:100px;" value="&quot;abc&quot;">); <button class="demo-button2" onclick="log.res(dbg.getType(eval(getVal('gettype-txt'))));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.html2text</td>
     <td>html</td>
     <td>
