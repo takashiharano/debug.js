@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901130930';
+  this.v = '201901131700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12211,6 +12211,7 @@ DebugJS.time.start = function(tmrNm, msg) {
   }
   DebugJS._log(s);
 };
+DebugJS.time.s = DebugJS.time.start;
 DebugJS.time.restart = function(tmrNm) {
   var now = (new Date()).getTime();
   var ctx = DebugJS.ctx;
@@ -12293,6 +12294,7 @@ DebugJS.time.end = function(tmrNm, msg) {
     return t;
   }
 };
+DebugJS.time.e = DebugJS.time.end;
 DebugJS.time.check = function(tmrNm) {
   var now = new Date();
   if (tmrNm === undefined) tmrNm = DebugJS.DFLT_TIMER_NAME;
@@ -15747,76 +15749,19 @@ DebugJS.onError = function(e) {
   DebugJS.log.e(msg);
 };
 DebugJS.balse = function() {
-  var x = DebugJS.fn;
-  DebugJS.boot = x;
-  DebugJS.start = x;
-  DebugJS.log = x;
-  DebugJS.log.e = x;
-  DebugJS.log.w = x;
-  DebugJS.log.i = x;
-  DebugJS.log.d = x;
-  DebugJS.log.v = x;
-  DebugJS.log.t = x;
-  DebugJS.log.p = x;
-  DebugJS.log.json = x;
-  DebugJS.log.mlt = x;
-  DebugJS.log.clear = x;
-  DebugJS.log.res = x;
-  DebugJS.log.res.err = x;
-  DebugJS.log.suspend = x;
-  DebugJS.log.resume = x;
-  DebugJS.log.root = x;
-  DebugJS.addCmdListener = x;
-  DebugJS.addEvtListener = x;
-  DebugJS.addFileLoader = x;
-  DebugJS.adjustResBox = x;
-  DebugJS.cmd = x;
-  DebugJS.bat = x;
-  DebugJS.bat.set = x;
-  DebugJS.bat.run = x;
-  DebugJS.bat.pause = x;
-  DebugJS.bat.resume = x;
-  DebugJS.bat.stop = x;
-  DebugJS.bat.list = x;
-  DebugJS.bat.status = x;
-  DebugJS.bat.isRunning = x;
-  DebugJS.bat.setCond = x;
-  DebugJS.countElements = x;
-  DebugJS.getHTML = x;
-  DebugJS.init = x;
-  DebugJS.dumpLog = x;
-  DebugJS.sendLog = x;
-  DebugJS.show = x;
-  DebugJS.hide = x;
-  DebugJS.http = x;
-  DebugJS.led = x;
-  DebugJS.led.on = x;
-  DebugJS.led.off = x;
-  DebugJS.msg = x;
-  DebugJS.msg.clear = x;
-  DebugJS.opacity = x;
-  DebugJS.stack = x;
-  DebugJS.stopwatch = x;
-  DebugJS.stopwatch.start = x;
-  DebugJS.stopwatch.stop = x;
-  DebugJS.stopwatch.end = x;
-  DebugJS.stopwatch.split = x;
-  DebugJS.stopwatch.reset = x;
-  DebugJS.stopwatch.val = x;
-  DebugJS.time.start = x;
-  DebugJS.time.split = x;
-  DebugJS.time.end = x;
-  DebugJS.time.check = x;
-  DebugJS.ver = x;
-  DebugJS.wd.start = x;
-  DebugJS.wd.stop = x;
-  DebugJS.x.addCmdTbl = x;
-  DebugJS.x.addPanel = x;
-  DebugJS.x.getPanel = x;
-  DebugJS.x.getActivePanel = x;
-  DebugJS.x.removePanel = x;
-  DebugJS.x.setBtnLabel = x;
-  DebugJS._createResBox = x;
+  DebugJS = DebugJS._balse(DebugJS);
+};
+DebugJS._balse = function(o) {
+  var p = [];
+  for (var k in o) {
+    p.push(k);
+  }
+  var x = (typeof o == 'function' ? function() {} : o);
+  for (var i = 0; i < p.length; i++) {
+    var m = o[p[i]];
+    x[p[i]] = (typeof m == 'function' ? DebugJS._balse(m) : m);
+  }
+  return x;
 };
 DebugJS.boot = function() {
   DebugJS.rootFncs();
@@ -15836,16 +15781,18 @@ DebugJS.boot = function() {
   window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
   window.addEventListener('load', DebugJS.onLoad, true);
   window.addEventListener('error', DebugJS.onError, true);
-  DebugJS.bak = {
-    console: {
-      log: console.log,
-      info: console.info,
-      warn: console.warn,
-      error: console.error,
-      time: console.time,
-      timeEnd: console.timeEnd
-    }
-  };
+  if (window.console) {
+    DebugJS.bak = {
+      console: {
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+        time: console.time,
+        timeEnd: console.timeEnd
+      }
+    };
+  }
   DebugJS.restoreStatus(DebugJS.ctx);
 };
 DebugJS.start = function(o) {DebugJS.init(o);DebugJS.show();};
@@ -15855,7 +15802,5 @@ if (DebugJS.ENABLE) {
 } else {
   DebugJS.balse();
 }
-DebugJS.time.s = DebugJS.time.start;
-DebugJS.time.e = DebugJS.time.end;
 var dbg = (dbg === undefined ? DebugJS : dbg);
 var log = (log === undefined ? DebugJS.log : log);
