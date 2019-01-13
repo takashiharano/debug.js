@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901132320';
+  this.v = '201901140033';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11171,7 +11171,7 @@ DebugJS.str2ms = function(t) {
     i = s.indexOf('.');
     if (i > 0) {
       s = s.substr(0, i);
-      ms = t.substr(i + 1, t.length - 3);
+      ms = t.substr(i + 1, t.length - i - 2);
       ms = ms + DebugJS.repeatCh('0', 3 - ms.length);
     }
     s = s | 0;
