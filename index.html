@@ -408,10 +408,10 @@ function doSleep() {
   log('sleep end');
 }
 
-var buf = (window.ArrayBuffer ? new ArrayBuffer(32) : null);
+var arraybuf = (window.ArrayBuffer ? new ArrayBuffer(32) : null);
 
 var a = {
-  key1: '1234567890abcdefghijklmnopqrstuvwxyz',
+  key1: 'abcdefghijklmnopqrstuvwxyz1234567890',
   key2: '123',
   key3: 123,
   key4: 0,
@@ -438,10 +438,11 @@ var a = {
      }
    ],
    key11: (new Date()),
-   key12: buf,
-   key13: foo,
-   key14: new Set([1, 2, 3]),
-   key15: {}
+   key12: arraybuf,
+   key13: /abc\d/g,
+   key14: foo,
+   key15: new Set([1, 2, 3]),
+   key16: {}
 };
 
 var aa = {
@@ -472,9 +473,11 @@ var aa = {
      }
    ],
    'key<a>11': (new Date()),
-   'key<a>12': buf,
-   'key<a>13': foo,
-   'key<a>14': {}
+   'key<a>12': arraybuf,
+   'key<a>13': /abc\d/g,
+   'key<a>14': foo,
+   'key<a>15': new Set([1, 2, 3]),
+   'key<a>16': {}
 };
 
 var b = ['1', '2', '3'];
@@ -484,7 +487,7 @@ var e = false;
 var f = undefined;
 var g = null;
 var h = {
-  abc: [foo, bar, (window.console ? console.log : null), buf, (new Date()), b, foo]
+  abc: [foo, bar, (window.console ? console.log : null), arraybuf, (new Date()), b, foo]
 }
 
 var z = {};

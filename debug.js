@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901132040';
+  this.v = '201901132320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10110,7 +10110,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
         if (obj instanceof Set) {
           arg.dump += '<span style="color:#6cf">[Set][' + len + ']</span>';
         } else {
-          arg.dump += '<span style="color:#e4b">[Array][' + len + ']</span>';
+          arg.dump += '<span style="color:#d69">[Array][' + len + ']</span>';
         }
       }
       if ((levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
@@ -10159,9 +10159,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
       }
     } else if (obj instanceof Object) {
       arg.cnt++;
-      if ((typeof obj !== 'function') &&
-          (Object.prototype.toString.call(obj) !== '[object Date]') &&
-          ((window.ArrayBuffer) && !(obj instanceof ArrayBuffer))) {
+      if (DebugJS.isObj(obj)) {
         if (toJson) {
           arg.dump += indent;
         } else {
@@ -10192,7 +10190,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
                 arg.dump += ' {\n';
               }
             }
-          } else if (Object.prototype.toString.call(obj[key]) === '[object Date]') {
+          } else if (Object.prototype.toString.call(obj[key]) == '[object Date]') {
             arg.dump += indent;
             if (toJson) {arg.dump += '"';}
             arg.dump += (toJson ? key : DebugJS.escTags(key));
@@ -10208,16 +10206,11 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             sibling++;
             continue;
           } else if ((window.ArrayBuffer) && (obj[key] instanceof ArrayBuffer)) {
-            arg.dump += indent;
-            if (toJson) {arg.dump += '"';}
-            arg.dump += (toJson ? key : DebugJS.escTags(key));
-            if (toJson) {arg.dump += '"';}
-            arg.dump += ': ';
-            if (toJson) {
-              arg.dump += '{}';
-            } else {
-              arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')';
-            }
+            arg = DebugJS._objDmp1(arg, key, toJson, indent, '<span style="color:#d69">[ArrayBuffer]</span> (byteLength = ' + obj[key].byteLength + ')');
+            sibling++;
+            continue;
+          } else if (Object.prototype.toString.call(obj[key]) == '[object RegExp]') {
+            arg = DebugJS._objDmp1(arg, key, toJson, indent, '<span style="color:#4ee">[RegExp]</span> ' + obj[key].toString());
             sibling++;
             continue;
           } else {
@@ -10253,7 +10246,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             if (obj.toString().match(/\[native code\]/)) {
               arg.dump += ' [native]';
             }
-          } else if (Object.prototype.toString.call(obj) === '[object Date]') {
+          } else if (Object.prototype.toString.call(obj) == '[object Date]') {
             var dt = DebugJS.getDateTime(obj);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss + ' (' + obj.getTime() + ')';
             if (toJson) {
@@ -10262,11 +10255,9 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
               arg.dump += '<span style="color:#f80">[Date]</span> ' + date;
             }
           } else if ((window.ArrayBuffer) && (obj instanceof ArrayBuffer)) {
-            if (toJson) {
-              arg.dump += '{}';
-            } else {
-              arg.dump += '<span style="color:#d4c">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')';
-            }
+            arg = DebugJS._objDmp0(arg, toJson, '<span style="color:#d69">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')');
+          } else if (Object.prototype.toString.call(obj) == '[object RegExp]') {
+            arg = DebugJS._objDmp0(arg, toJson, '<span style="color:#4ee">[RegExp]</span> ' + obj.toString());
           } else {
             empty = true;
             arg.dump = arg.dump.replace(/\n$/, '');
@@ -10275,9 +10266,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
           arg.cnt++;
         }
         indent = indent.replace(DebugJS.INDENT_SP, '');
-        if ((typeof obj !== 'function') &&
-            (Object.prototype.toString.call(obj) !== '[object Date]') &&
-            ((window.ArrayBuffer) && !(obj instanceof ArrayBuffer) && (!empty))) {
+        if (DebugJS.isObj(obj) && (!empty)) {
           arg.dump += '\n' + indent + '}';
         }
       }
@@ -10323,6 +10312,33 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
     }
   } catch (e) {
     arg.dump += '<span style="color:#f66">parse error: ' + e + '</span>'; arg.cnt++;
+  }
+  return arg;
+};
+DebugJS.isObj = function(o) {
+  var t = Object.prototype.toString.call(o);
+  return ((typeof o != 'function') &&
+  (t != '[object Date]') && (t != '[object RegExp]') &&
+  ((window.ArrayBuffer) && !(o instanceof ArrayBuffer)));
+};
+DebugJS._objDmp0 = function(arg, toJson, v) {
+  if (toJson) {
+    arg.dump += '{}';
+  } else {
+    arg.dump += v;
+  }
+  return arg;
+};
+DebugJS._objDmp1 = function(arg, key, toJson, indent, v) {
+  arg.dump += indent;
+  if (toJson) {arg.dump += '"';}
+  arg.dump += (toJson ? key : DebugJS.escTags(key));
+  if (toJson) {arg.dump += '"';}
+  arg.dump += ': ';
+  if (toJson) {
+    arg.dump += '{}';
+  } else {
+    arg.dump += v;
   }
   return arg;
 };
