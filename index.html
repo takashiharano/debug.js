@@ -3250,6 +3250,62 @@ dbg.adjustResBox(<input type="text" id="resbox-adj-txt" class="demo-text" style=
     </td>
   </tr>
 
+  <tr><td colspan="3" class="cat">Cookie</td></tr>
+  <tr>
+    <td class="name">dbg.cookie.getAll</td>
+    <td></td>
+    <td>
+      Returns a map object consists of key and value.<br>
+<pre>
+var cookies = dbg.cookie.getAll(); <button class="demo-button2" onclick="log.p(dbg.cookie.getAll(), 0, 'cookies =');">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.cookie.get</td>
+    <td>key</td>
+    <td>
+      Returns a value of the specified key.<br>
+<pre>
+var val = dbg.cookie.get('<input type="text" id="getcookie-txt" class="demo-text" style="width:100px;" value="">'); <button class="demo-button2" onclick="log.res(dbg.cookie.get(getVal('getcookie-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.cookie.set</td>
+    <td>arg1: key<br>arg2: value</td>
+    <td>
+      Set a value for the specified key.<br>
+<pre>
+dbg.cookie.set('<input type="text" id="setcookie-key-txt" class="demo-text" style="width:100px;" value="">', '<input type="text" id="setcookie-val-txt" class="demo-text" style="width:200px;" value="">'); <button class="demo-button2" onclick="dbg.cookie.set(getVal('setcookie-key-txt'), getVal('setcookie-val-txt'));log.res('OK');">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.cookie.delete</td>
+    <td>key</td>
+    <td>
+      Delete the specified key.<br>
+<pre>
+dbg.cookie.delete('<input type="text" id="delcookie-txt" class="demo-text" style="width:100px;" value="">'); <button class="demo-button2" onclick="dbg.cookie.delete(getVal('delcookie-txt'));log.res('OK');">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.cookie.deleteAll</td>
+    <td></td>
+    <td>
+      Delete all cookies.<br>
+<pre>
+dbg.cookie.deleteAll(); <button class="demo-button2" onclick="dbg.cookie.deleteAll();log.res('OK');">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
   <tr><td colspan="3" class="cat">Command Line Argument Operation</td></tr>
   <tr>
     <td class="name">dbg.splitArgs</td>

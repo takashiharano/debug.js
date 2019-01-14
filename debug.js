@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901140033';
+  this.v = '201901141500';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1007,6 +1007,12 @@ DebugJS.prototype = {
       'overflow': 'auto !important',
       'resize': 'none !important'
     };
+    styles['.dbg-cookkey'] = {
+      'width': '10em !important'
+    };
+    styles['.dbg-cookval'] = {
+      'width': 'calc(100% - 15em) !important'
+    };
     styles['.dbg-strg'] = {
       'display': 'inline-block !important',
       'width': 'calc(100% - 1em) !important',
@@ -1726,8 +1732,8 @@ DebugJS.prototype = {
       var h = window.outerHeight;
       ctx.winSizeLabel.innerText = 'WIN:w=' + w + ',h=' + h;
       if (ctx.status & DebugJS.ST_SYS_INFO) {
-        document.getElementById(ctx.id + '-sys-win-w').innerText = w;
-        document.getElementById(ctx.id + '-sys-win-h').innerText = h;
+        DebugJS.writeHTML(ctx.id + '-sys-win-w', w);
+        DebugJS.writeHTML(ctx.id + '-sys-win-h', h);
       }
     } catch (e) {}
   },
@@ -1738,8 +1744,8 @@ DebugJS.prototype = {
     var h = document.documentElement.clientHeight;
     ctx.clientSizeLabel.innerText = 'CLI:w=' + w + ',h=' + h;
     if (ctx.status & DebugJS.ST_SYS_INFO) {
-      document.getElementById(ctx.id + '-sys-cli-w').innerText = w;
-      document.getElementById(ctx.id + '-sys-cli-h').innerText = h;
+      DebugJS.writeHTML(ctx.id + '-sys-cli-w', w);
+      DebugJS.writeHTML(ctx.id + '-sys-cli-h', h);
     }
   },
 
@@ -1749,8 +1755,8 @@ DebugJS.prototype = {
     var h = this.bodyEl.clientHeight;
     ctx.bodySizeLabel.innerText = 'BODY:w=' + w + ',h=' + h;
     if (ctx.status & DebugJS.ST_SYS_INFO) {
-      document.getElementById(ctx.id + '-sys-body-w').innerText = w;
-      document.getElementById(ctx.id + '-sys-body-h').innerText = h;
+      DebugJS.writeHTML(ctx.id + '-sys-body-w', w);
+      DebugJS.writeHTML(ctx.id + '-sys-body-h', h);
     }
     ctx.pixelRatioLabel.innerText = DebugJS.getWinZoomRatio();
   },
@@ -2833,12 +2839,12 @@ DebugJS.prototype = {
   },
 
   updateSysInfoScrollPosLabel: function(ctx) {
-    document.getElementById(ctx.id + '-sys-scroll-x').innerHTML = DebugJS.setStyleIfObjNA(window.scrollX);
-    document.getElementById(ctx.id + '-sys-scroll-y').innerHTML = DebugJS.setStyleIfObjNA(window.scrollY);
-    document.getElementById(ctx.id + '-sys-pgoffset-x').innerText = window.pageXOffset;
-    document.getElementById(ctx.id + '-sys-pgoffset-y').innerText = window.pageYOffset;
-    document.getElementById(ctx.id + '-sys-cli-scroll-x').innerText = document.documentElement.scrollLeft;
-    document.getElementById(ctx.id + '-sys-cli-scroll-y').innerText = document.documentElement.scrollTop;
+    DebugJS.writeHTML(ctx.id + '-sys-scroll-x', DebugJS.setStyleIfObjNA(window.scrollX));
+    DebugJS.writeHTML(ctx.id + '-sys-scroll-y', DebugJS.setStyleIfObjNA(window.scrollY));
+    DebugJS.writeHTML(ctx.id + '-sys-pgoffset-x', window.pageXOffset);
+    DebugJS.writeHTML(ctx.id + '-sys-pgoffset-y', window.pageYOffset);
+    DebugJS.writeHTML(ctx.id + '-sys-cli-scroll-x', document.documentElement.scrollLeft);
+    DebugJS.writeHTML(ctx.id + '-sys-cli-scroll-y', document.documentElement.scrollTop);
   },
 
   onMouseDown: function(e) {
@@ -3633,8 +3639,10 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onselectstart', docOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', docOncontextmenu);
     html += DebugJS.addPropSep(ctx);
-    html += DebugJS.addSysInfoProp('baseURI  ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp('cookie', ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('baseURI      ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('cookie', '<span id="' + ctx.id + '-sys-cookie"></span>');
+    html += '<span id="' + ctx.id + '-sys-cookies"></span>\n';
+    html += ' <input id="' + ctx.id + '-cookkey" class="dbg-txtbox dbg-cookkey">=<input id="' + ctx.id + '-cookval" class="dbg-txtbox dbg-cookval"> <span class="dbg-btn" onclick="DebugJS.ctx.setCookie();">Set</span>';
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('localStorage');
     if (DebugJS.LS_AVAILABLE) {
@@ -3654,12 +3662,42 @@ DebugJS.prototype = {
     html += DebugJS.addPropSep(ctx);
     html += '\n</pre>';
     ctx.sysInfoPanelBody.innerHTML = html;
+    ctx.updateCookieInfo();
     if (DebugJS.LS_AVAILABLE) {
       ctx.updateStrageInfo(0);
     }
     if (DebugJS.SS_AVAILABLE) {
       ctx.updateStrageInfo(1);
     }
+  },
+  updateCookieInfo: function() {
+    var ctx = DebugJS.ctx;
+    var ks = DebugJS.cookie.getKeys();
+    var html = '';
+    if (DebugJS.LS_AVAILABLE) {
+      for (var i = 0; i < ks.length; i++) {
+        var k = ks[i];
+        if (i > 0) html += '\n';
+        html += '  ' + '<span class="dbg-btn dbg-btn-wh" onclick="DebugJS.ctx.setCookieEdit(\'' + k + '\');">' + (k == '' ? ' ' : k) + '</span>' +
+        ' <span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.delCookie(\'' + k + '\');">x</span>';
+      }
+    }
+    DebugJS.writeHTML(ctx.id + '-sys-cookie', ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID));
+    DebugJS.writeHTML(ctx.id + '-sys-cookies', html);
+  },
+  setCookieEdit: function(k) {
+    DebugJS.setVal(DebugJS.ctx.id + '-cookkey', k);
+    DebugJS.setVal(DebugJS.ctx.id + '-cookval', DebugJS.cookie.get(k));
+  },
+  setCookie: function() {
+    var k = DebugJS.getVal(DebugJS.ctx.id + '-cookkey');
+    var v = DebugJS.getVal(DebugJS.ctx.id + '-cookval');
+    DebugJS.cookie.set(k, v);
+    DebugJS.ctx.updateCookieInfo();
+  },
+  delCookie: function(k) {
+    DebugJS.cookie.delete(k);
+    DebugJS.ctx.updateCookieInfo();
   },
   clearLocalStrage: function() {
     localStorage.clear();
@@ -3703,19 +3741,19 @@ DebugJS.prototype = {
         ' <span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');" title="' + rmvCode + '">x</span>';
       }
     }
-    document.getElementById(ctx.id + '-sys-' + id).innerHTML = html;
+    DebugJS.writeHTML(ctx.id + '-sys-' + id, html);
   },
   createStorageEditor: function(ctx, type) {
     return '<textarea id="' + ctx.id + '-strg' + type + '" class="dbg-editor dbg-strg"></textarea>\n' +
     ' <span class="dbg-btn" onclick="DebugJS.ctx.setStrg(' + type + ');">setItem</span>(\'<input id="' + ctx.id + '-strgkey' + type + '" class="dbg-txtbox dbg-strgkey">\', v);';
   },
   setStrgEdit: function(type, v, k) {
-    document.getElementById(DebugJS.ctx.id + '-strg' + type).value = v;
-    document.getElementById(DebugJS.ctx.id + '-strgkey' + type).value = k;
+    DebugJS.setVal(DebugJS.ctx.id + '-strg' + type, v);
+    DebugJS.setVal(DebugJS.ctx.id + '-strgkey' + type, k);
   },
   setStrg: function(type) {
-    var v = document.getElementById(DebugJS.ctx.id + '-strg' + type).value;
-    var k = document.getElementById(DebugJS.ctx.id + '-strgkey' + type).value;
+    var v = DebugJS.getVal(DebugJS.ctx.id + '-strg' + type);
+    var k = DebugJS.getVal(DebugJS.ctx.id + '-strgkey' + type);
     var strg = localStorage;
     if (type == 1) strg = sessionStorage;
     strg.setItem(k, v);
@@ -10358,6 +10396,19 @@ DebugJS.getKeysStr = function(o) {
   return keys;
 };
 
+DebugJS.getVal = function(id) {
+  var el = document.getElementById(id);
+  if (el) return el.value;
+  return null;
+};
+DebugJS.setVal = function(id, v) {
+  var el = document.getElementById(id);
+  if (el) el.value = v;
+};
+DebugJS.writeHTML = function(id, s) {
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = s;
+};
 DebugJS.countElements = function(selector, showDetail) {
   if (!selector) selector = '*';
   var cnt = {};
@@ -11968,6 +12019,46 @@ DebugJS.loadStatus = function() {
   localStorage.removeItem('DebugJS-st');
   var data = JSON.parse(st);
   return data;
+};
+
+DebugJS.cookie = {};
+DebugJS.cookie.getAll = function() {
+  var a = document.cookie.replace(/\s/g, '').split(';');
+  var c = {};
+  for (var i = 0; i < a.length; i++) {
+    var nv = a[i].split('=');
+    if (nv[1] == undefined) {
+      if (nv[0] != '') {
+        c[''] = nv[0];
+      }
+    } else {
+      c[nv[0]] = nv[1];
+    }
+  }
+  return c;
+};
+DebugJS.cookie.get = function(k) {
+  return DebugJS.cookie.getAll()[k];
+};
+DebugJS.cookie.getKeys = function() {
+  var c = DebugJS.cookie.getAll();
+  var a = [];
+  for (var k in c) {
+    a.push(k);
+  }
+  return a;
+};
+DebugJS.cookie.set = function(k, v) {
+  document.cookie = k + '=' + v;
+};
+DebugJS.cookie.delete = function(k) {
+  document.cookie = k + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+};
+DebugJS.cookie.deleteAll = function() {
+  var k = DebugJS.cookie.getKeys();
+  for (var i = 0; i < k.length; i++) {
+    DebugJS.cookie.delete(k[i]);
+  }
 };
 
 DebugJS.file = {};
