@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901141500';
+  this.v = '201901142100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -330,6 +330,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
+    {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookie', help: 'cookie keys|get|set|delete [key|-a] [val]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss]'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
@@ -1007,10 +1008,10 @@ DebugJS.prototype = {
       'overflow': 'auto !important',
       'resize': 'none !important'
     };
-    styles['.dbg-cookkey'] = {
+    styles['.dbg-cookiekey'] = {
       'width': '10em !important'
     };
-    styles['.dbg-cookval'] = {
+    styles['.dbg-cookieval'] = {
       'width': 'calc(100% - 15em) !important'
     };
     styles['.dbg-strg'] = {
@@ -3642,7 +3643,7 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('baseURI      ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('cookie', '<span id="' + ctx.id + '-sys-cookie"></span>');
     html += '<span id="' + ctx.id + '-sys-cookies"></span>\n';
-    html += ' <input id="' + ctx.id + '-cookkey" class="dbg-txtbox dbg-cookkey">=<input id="' + ctx.id + '-cookval" class="dbg-txtbox dbg-cookval"> <span class="dbg-btn" onclick="DebugJS.ctx.setCookie();">Set</span>';
+    html += ' <input id="' + ctx.id + '-cookiekey" class="dbg-txtbox dbg-cookiekey">=<input id="' + ctx.id + '-cookieval" class="dbg-txtbox dbg-cookieval"> <span class="dbg-btn" onclick="DebugJS.ctx.setCookie();">Set</span>';
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('localStorage');
     if (DebugJS.LS_AVAILABLE) {
@@ -3686,12 +3687,12 @@ DebugJS.prototype = {
     DebugJS.writeHTML(ctx.id + '-sys-cookies', html);
   },
   setCookieEdit: function(k) {
-    DebugJS.setVal(DebugJS.ctx.id + '-cookkey', k);
-    DebugJS.setVal(DebugJS.ctx.id + '-cookval', DebugJS.cookie.get(k));
+    DebugJS.setVal(DebugJS.ctx.id + '-cookiekey', k);
+    DebugJS.setVal(DebugJS.ctx.id + '-cookieval', DebugJS.cookie.get(k));
   },
   setCookie: function() {
-    var k = DebugJS.getVal(DebugJS.ctx.id + '-cookkey');
-    var v = DebugJS.getVal(DebugJS.ctx.id + '-cookval');
+    var k = DebugJS.getVal(DebugJS.ctx.id + '-cookiekey');
+    var v = DebugJS.getVal(DebugJS.ctx.id + '-cookieval');
     DebugJS.cookie.set(k, v);
     DebugJS.ctx.updateCookieInfo();
   },
@@ -3703,16 +3704,16 @@ DebugJS.prototype = {
     localStorage.clear();
     DebugJS.ctx.updateStrageInfo(0);
   },
-  removeLocalStrage: function(key) {
-    localStorage.removeItem(key);
+  removeLocalStrage: function(k) {
+    localStorage.removeItem(k);
     DebugJS.ctx.updateStrageInfo(0);
   },
   clearSessionStrage: function() {
     sessionStorage.clear();
     DebugJS.ctx.updateStrageInfo(1);
   },
-  removeSessionStrage: function(key) {
-    sessionStorage.removeItem(key);
+  removeSessionStrage: function(k) {
+    sessionStorage.removeItem(k);
     DebugJS.ctx.updateStrageInfo(1);
   },
   updateStrageInfo: function(type) {
@@ -7031,6 +7032,52 @@ DebugJS.prototype = {
       default:
         DebugJS.printUsage(tbl.help);
     }
+  },
+
+  cmdCookie: function(arg, tbl, echo) {
+    var cookie = DebugJS.cookie;
+    var a = DebugJS.splitCmdLine(arg);
+    var op = a[0];
+    try {
+      var k = eval(a[1]);
+      var v = eval(a[2]);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return;
+    }
+    var r;
+    switch (op) {
+      case 'keys':
+        r = cookie.getKeys();
+        if (echo) DebugJS._log.p(r);
+        return r;
+      case 'get':
+        if (DebugJS.hasOpt(arg, 'a')) {
+          r = cookie.getAll();
+          if (echo) DebugJS._log.res(document.cookie);
+        } else {
+          r = cookie.get(k);
+          if (r == undefined) {
+            DebugJS._log('No such key');
+          } else {
+            if (echo) DebugJS._log.res(r);
+          }
+        }
+        return r;
+      case 'set':
+        cookie.set(k, v);
+        if (echo) DebugJS._log.res(k + '=' + v);
+        return;
+      case 'delete':
+        if (DebugJS.hasOpt(arg, 'a')) {
+          DebugJS.cookie.deleteAll();
+        } else {
+          cookie.delete(k);
+        }
+        if (echo) DebugJS._log.res('Deleted');
+        return;
+    }
+    DebugJS.printUsage(tbl.help);
   },
 
   cmdDbgWin: function(arg, tbl) {

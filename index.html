@@ -3689,7 +3689,7 @@ function
   <tr>
     <td class="name">condwait</td>
     <td>
-      arg1: operation
+      arg1: operation<br>
       arg2: key
     </td>
     <td>
@@ -3701,6 +3701,37 @@ dbg.bat.setCond(&lt;key&gt;);
 
 $ condwait init
 -&gt; Clear the waiting condition forcibly.
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">cookie</td>
+    <td>
+      arg1: operation<br>
+      arg2: key<br>
+      arg3: value
+    </td>
+    <td>
+      Manipulate cookie.
+<pre class="eg">
+$ cookie keys
+-&gt; Get all keys in the cookie
+
+$ cookie get "&lt;key&gt;"
+-&gt; Get a value
+
+$ cookie get -a
+-&gt; Get all keys and values
+
+$ cookie set "&lt;key&gt;" "&lt;value&gt;"
+-&gt; Set a value for the key
+
+$ cookie delete "&lt;key&gt;"
+-&gt; Delete the key
+
+$ cookie delete -a
+-&gt; Delete all keys from the cookie
 </pre>
     </td>
   </tr>
