@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901142100';
+  this.v = '201901150000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3640,9 +3640,9 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onselectstart', docOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', docOncontextmenu);
     html += DebugJS.addPropSep(ctx);
-    html += DebugJS.addSysInfoProp('baseURI      ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp('cookie', '<span id="' + ctx.id + '-sys-cookie"></span>');
-    html += '<span id="' + ctx.id + '-sys-cookies"></span>\n';
+    html += DebugJS.addSysInfoProp('baseURI', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('cookie ', '<span id="' + ctx.id + '-sys-cookie"></span>');
+    html += '<span id="' + ctx.id + '-sys-cookies"></span>';
     html += ' <input id="' + ctx.id + '-cookiekey" class="dbg-txtbox dbg-cookiekey">=<input id="' + ctx.id + '-cookieval" class="dbg-txtbox dbg-cookieval"> <span class="dbg-btn" onclick="DebugJS.ctx.setCookie();">Set</span>';
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('localStorage');
@@ -3678,9 +3678,8 @@ DebugJS.prototype = {
     if (DebugJS.LS_AVAILABLE) {
       for (var i = 0; i < ks.length; i++) {
         var k = ks[i];
-        if (i > 0) html += '\n';
         html += '  ' + '<span class="dbg-btn dbg-btn-wh" onclick="DebugJS.ctx.setCookieEdit(\'' + k + '\');">' + (k == '' ? ' ' : k) + '</span>' +
-        ' <span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.delCookie(\'' + k + '\');">x</span>';
+        ' <span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.delCookie(\'' + k + '\');">x</span>\n';
       }
     }
     DebugJS.writeHTML(ctx.id + '-sys-cookie', ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID));
@@ -10157,7 +10156,7 @@ DebugJS.objDump = function(obj, toJson, levelLimit, limit, valLenLimit) {
   if (limit == undefined) limit = DebugJS.ctx.props.dumplimit;
   if (valLenLimit == undefined) valLenLimit = 0;
   var arg = {lv: 0, cnt: 0, dump: ''};
-  if (typeof obj === 'function') {
+  if (typeof obj == 'function') {
     arg.dump += (toJson ? 'function' : '<span style="color:#4c4">function</span>') + '()\n';
   }
   var ret = DebugJS._objDump(obj, arg, toJson, levelLimit, limit, valLenLimit);
@@ -10174,7 +10173,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
   try {
     if ((levelLimit > 0) && (arg.lv > levelLimit)) return arg;
     if ((limit > 0) && (arg.cnt > limit)) {
-      if ((typeof obj !== 'function') || (Object.keys(obj).length > 0)) {
+      if ((typeof obj != 'function') || (Object.keys(obj).length > 0)) {
         arg.dump += SNIP; arg.cnt++;
       }
       return arg;
@@ -10263,7 +10262,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             }
             arg.dump += '\n';
           }
-          if (typeof obj[key] === 'function') {
+          if (typeof obj[key] == 'function') {
             arg.dump += indent + (toJson ? 'function' : '<span style="color:#4c4">function</span>');
             if (obj[key].toString().match(/\[native code\]/)) {
               arg.dump += ' [native]';
@@ -10310,12 +10309,12 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             hasChildren = true;
             break;
           }
-          if ((typeof obj[key] !== 'function') || (hasChildren)) {
+          if ((typeof obj[key] != 'function') || (hasChildren)) {
             arg.lv++;
             arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, limit, valLenLimit);
             arg.lv--;
           }
-          if (typeof obj[key] === 'function') {
+          if (typeof obj[key] == 'function') {
             if ((levelLimit == 0) || ((levelLimit >= 1) && ((arg.lv + 1) < levelLimit))) {
               if (Object.keys(obj[key]).length > 0) {
                 arg.dump += '\n' + indent + '}';
@@ -10326,7 +10325,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
         }
         var empty = false;
         if (sibling == 0) {
-          if (typeof obj === 'function') {
+          if (typeof obj == 'function') {
             arg.dump += '<span style="color:#4c4">function</span>()';
             if (obj.toString().match(/\[native code\]/)) {
               arg.dump += ' [native]';
@@ -11780,32 +11779,16 @@ DebugJS._escape = function(s, c) {
   return s.replace(new RegExp(c, 'g'), '\\' + c);
 };
 DebugJS.escTags = function(s) {
-  s = s.replace(/&/g, '&amp;');
-  s = s.replace(/</g, '&lt;');
-  s = s.replace(/>/g, '&gt;');
-  s = s.replace(/"/g, '&quot;');
-  s = s.replace(/'/g, '&#39;');
-  return s;
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 DebugJS.escSpclChr = function(s) {
-  s += '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return (s + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 DebugJS.escCtrlChr = function(s) {
-  s = s.replace(/\t/g, '\\t');
-  s = s.replace(/\v/g, '\\v');
-  s = s.replace(/\r/g, '\\r');
-  s = s.replace(/\n/g, '\\n');
-  s = s.replace(/\f/g, '\\f');
-  return s;
+  return s.replace(/\t/g, '\\t').replace(/\v/g, '\\v').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace(/\f/g, '\\f');
 };
 DebugJS.decCtrlChr = function(s) {
-  s = s.replace(/\\t/g, '\t');
-  s = s.replace(/\\v/g, '\v');
-  s = s.replace(/\\r/g, '\r');
-  s = s.replace(/\\n/g, '\n');
-  s = s.replace(/\\f/g, '\f');
-  return s;
+  return s.replace(/\\t/g, '\t').replace(/\\v/g, '\v').replace(/\\r/g, '\r').replace(/\\n/g, '\n').replace(/\\f/g, '\f');
 };
 DebugJS.hlCtrlChr = function(s, sp) {
   var st = '<span class="dbg-txt-hl">';
@@ -15032,16 +15015,17 @@ DebugJS.keyPress.end = function() {
   DebugJS.bat.unlock();
 };
 
-DebugJS.test = {};
-DebugJS.test.STATUS_OK = 'OK';
-DebugJS.test.STATUS_NG = 'NG';
-DebugJS.test.STATUS_ERR = 'ERR';
-DebugJS.test.STATUS_NT = 'NT';
-DebugJS.test.COLOR_OK = '#0f0';
-DebugJS.test.COLOR_NG = '#f66';
-DebugJS.test.COLOR_ERR = '#fa0';
-DebugJS.test.STATUS_NT_COLOR = '#fff';
-DebugJS.test.data = {};
+DebugJS.test = {
+  STATUS_OK: 'OK',
+  STATUS_NG: 'NG',
+  STATUS_ERR: 'ERR',
+  STATUS_NT: 'NT',
+  COLOR_OK: '#0f0',
+  COLOR_NG: '#f66',
+  COLOR_ERR: '#fa0',
+  STATUS_NT_COLOR: '#fff',
+  data: {}
+};
 DebugJS.test.initData = function() {
   var data = DebugJS.test.data;
   data.name = '';
@@ -15916,10 +15900,7 @@ DebugJS.onError = function(e) {
   }
   DebugJS.log.e(msg);
 };
-DebugJS.balse = function() {
-  DebugJS = DebugJS._balse(DebugJS);
-};
-DebugJS._balse = function(o) {
+DebugJS.balse = function(o) {
   var p = [];
   for (var k in o) {
     p.push(k);
@@ -15927,7 +15908,7 @@ DebugJS._balse = function(o) {
   var x = (typeof o == 'function' ? function() {} : o);
   for (var i = 0; i < p.length; i++) {
     var m = o[p[i]];
-    x[p[i]] = (typeof m == 'function' ? DebugJS._balse(m) : m);
+    x[p[i]] = (typeof m == 'function' ? DebugJS.balse(m) : m);
   }
   return x;
 };
@@ -15968,7 +15949,7 @@ DebugJS.ENABLE = true;
 if (DebugJS.ENABLE) {
   DebugJS.boot();
 } else {
-  DebugJS.balse();
+  DebugJS = DebugJS.balse(DebugJS);
 }
 var dbg = (dbg === undefined ? DebugJS : dbg);
 var log = (log === undefined ? DebugJS.log : log);
