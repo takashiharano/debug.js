@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901152220';
+  this.v = '201901152323';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2215,7 +2215,7 @@ DebugJS.prototype = {
   resizeDbgWin: function(ctx, x, y) {
     var currentX = x;
     var currentY = y;
-    var moveX, moveY, t, l, w, h;
+    var mvX, mvY, t, l, w, h;
     var clientW = document.documentElement.clientWidth;
     var clientH = document.documentElement.clientHeight;
 
@@ -2232,12 +2232,12 @@ DebugJS.prototype = {
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_N) {
-      moveY = ctx.clickedPosY - currentY;
-      h = ctx.orgSizePos.h + moveY;
+      mvY = ctx.clickedPosY - currentY;
+      h = ctx.orgSizePos.h + mvY;
       if (h < ctx.computedMinH) {
         h = ctx.computedMinH;
       } else {
-        t = ctx.orgSizePos.t - moveY;
+        t = ctx.orgSizePos.t - mvY;
         ctx.win.style.top = t + 'px';
       }
       ctx.win.style.height = h + 'px';
@@ -2247,27 +2247,27 @@ DebugJS.prototype = {
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_W) {
-      moveX = ctx.clickedPosX - currentX;
-      w = ctx.orgSizePos.w + moveX;
+      mvX = ctx.clickedPosX - currentX;
+      w = ctx.orgSizePos.w + mvX;
       if (w < ctx.computedMinW) {
         w = ctx.computedMinW;
       } else {
-        l = ctx.orgSizePos.l - moveX;
+        l = ctx.orgSizePos.l - mvX;
         ctx.win.style.left = l + 'px';
       }
       ctx.win.style.width = w + 'px';
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_E) {
-      moveX = currentX - ctx.clickedPosX;
-      w = ctx.orgSizePos.w + moveX;
+      mvX = currentX - ctx.clickedPosX;
+      w = ctx.orgSizePos.w + mvX;
       if (w < ctx.computedMinW) w = ctx.computedMinW;
       ctx.win.style.width = w + 'px';
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_S) {
-      moveY = currentY - ctx.clickedPosY;
-      h = ctx.orgSizePos.h + moveY;
+      mvY = currentY - ctx.clickedPosY;
+      h = ctx.orgSizePos.h + mvY;
       if (ctx.initHeight < ctx.computedMinH) {
         if (h < ctx.initHeight) {
           h = ctx.initHeight;
@@ -2587,13 +2587,14 @@ DebugJS.prototype = {
   },
 
   closeAllFeatures: function(ctx, q) {
-    if (ctx.status & DebugJS.ST_MEASURE) ctx.closeScreenMeasure(ctx, q);
-    if (ctx.status & DebugJS.ST_SYS_INFO) ctx.closeSystemInfo(ctx);
-    if (ctx.status & DebugJS.ST_HTML_SRC) ctx.closeHtmlSrc(ctx);
-    if (ctx.status & DebugJS.ST_ELM_INSPECTING) ctx.closeElmInfo(ctx);
-    if (ctx.status & DebugJS.ST_JS) ctx.closeJsEditor();
-    if (ctx.status & DebugJS.ST_TOOLS) ctx.closeTools(ctx);
-    if (ctx.status & DebugJS.ST_EXT_PANEL) ctx.closeExtPanel(ctx);
+    var st = ctx.status;
+    if (st & DebugJS.ST_MEASURE) ctx.closeScreenMeasure(ctx, q);
+    if (st & DebugJS.ST_SYS_INFO) ctx.closeSystemInfo(ctx);
+    if (st & DebugJS.ST_HTML_SRC) ctx.closeHtmlSrc(ctx);
+    if (st & DebugJS.ST_ELM_INSPECTING) ctx.closeElmInfo(ctx);
+    if (st & DebugJS.ST_JS) ctx.closeJsEditor();
+    if (st & DebugJS.ST_TOOLS) ctx.closeTools(ctx);
+    if (st & DebugJS.ST_EXT_PANEL) ctx.closeExtPanel(ctx);
   },
 
   launchFnc: function(ctx, fn, subfn, opt) {
@@ -7161,12 +7162,9 @@ DebugJS.prototype = {
   },
   _cmdDbgWinStatus: function(ctx) {
     var sp = ctx.getSelfSizePos();
-    var s = 'width : ' + sp.w + '\n' +
-    'height: ' + sp.h + '\n' +
-    'posX1 : ' + sp.x1 + '\n' +
-    'posY1 : ' + sp.y1 + '\n' +
-    'posX2 : ' + sp.x2 + '\n' +
-    'posY2 : ' + sp.y2 + '\n';
+    var s = 'width : ' + sp.w + '\nheight: ' + sp.h + '\n' +
+    'posX1 : ' + sp.x1 + '\nposY1 : ' + sp.y1 + '\n' +
+    'posX2 : ' + sp.x2 + '\nposY2 : ' + sp.y2 + '\n';
     DebugJS._log.mlt(s);
   },
   _cmdDbgWinLock: function(ctx, a) {
@@ -15928,6 +15926,9 @@ DebugJS.boot = function() {
   DebugJS.rootFncs();
   DebugJS.ctx = DebugJS.ctx || new DebugJS();
   DebugJS.el = null;
+  window.addEventListener('error', DebugJS.onError, true);
+  window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
+  window.addEventListener('load', DebugJS.onLoad, true);
   if (window.el === undefined) DebugJS.G_EL_AVAILABLE = true;
   try {
     if (typeof window.localStorage != 'undefined') {
@@ -15939,9 +15940,6 @@ DebugJS.boot = function() {
       DebugJS.SS_AVAILABLE = true;
     }
   } catch (e) {}
-  window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
-  window.addEventListener('load', DebugJS.onLoad, true);
-  window.addEventListener('error', DebugJS.onError, true);
   if (window.console) {
     DebugJS.bak = {
       console: {
