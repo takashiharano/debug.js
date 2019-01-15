@@ -2962,7 +2962,7 @@ Returns an DOM element or null if an element with the specified selector is not 
     <td></td>
     <td>
       Returns the protocol scheme of the URL, including the final ':'.
-      <button class="demo-button2" onclick="log(dbg.getProtocol());">DEMO</button>
+      <button class="demo-button2" onclick="log.res(dbg.getProtocol());">DEMO</button>
     </td>
   </tr>
 
@@ -2971,7 +2971,7 @@ Returns an DOM element or null if an element with the specified selector is not 
     <td></td>
     <td>
       Returns the domain of the URL.
-      <button class="demo-button2" onclick="log(dbg.getHost());">DEMO</button>
+      <button class="demo-button2" onclick="log.res(dbg.getHost());">DEMO</button>
     </td>
   </tr>
 
@@ -2980,7 +2980,7 @@ Returns an DOM element or null if an element with the specified selector is not 
     <td></td>
     <td>
       Returns the port number of the URL.
-      <button class="demo-button2" onclick="log(dbg.getPort());">DEMO</button>
+      <button class="demo-button2" onclick="log.res(dbg.getPort());">DEMO</button>
     </td>
   </tr>
 
@@ -2989,7 +2989,25 @@ Returns an DOM element or null if an element with the specified selector is not 
     <td></td>
     <td>
       Returns parent path of the URL.
-      <button class="demo-button2" onclick="log(dbg.getParentPath());">DEMO</button>
+      <button class="demo-button2" onclick="log.res(dbg.getParentPath());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getQuery</td>
+    <td></td>
+    <td>
+      Returns the query string of the URL.
+      <button class="demo-button2" onclick="log.res(dbg.getQuery());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getUrlHash</td>
+    <td></td>
+    <td>
+      Returns the hash string of the URL.
+      <button class="demo-button2" onclick="log.res(dbg.getUrlHash());">DEMO</button>
     </td>
   </tr>
 

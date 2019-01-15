@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901150000';
+  this.v = '201901152220';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3585,6 +3585,8 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp(' host    ', ctx.createFoldingText(window.location.host, 'host', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp(' port    ', window.location.port);
     html += DebugJS.addSysInfoProp(' pathname', ctx.createFoldingText(window.location.pathname, 'pathname', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' search  ', ctx.createFoldingText(window.location.search, 'search', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' hash    ', ctx.createFoldingText(window.location.hash, 'hash', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('devicePixelRatio', window.devicePixelRatio, 'sys-win-h');
     html += DebugJS.addSysInfoProp('outerWidth   ', window.outerWidth, 'sys-win-w');
     html += DebugJS.addSysInfoProp('outerHeight  ', window.outerHeight, 'sys-win-h');
@@ -15558,6 +15560,16 @@ DebugJS.getPort = function() {
 };
 DebugJS.getParentPath = function() {
   return location.href.replace(/(.*\/).*/, '$1');
+};
+DebugJS.getQuery = function() {
+  var s = window.location.search;
+  if (s) s = s.substr(1);
+  return s;
+};
+DebugJS.getUrlHash = function() {
+  var s = window.location.hash;
+  if (s) s = s.substr(1);
+  return s;
 };
 
 DebugJS.ui = {};
