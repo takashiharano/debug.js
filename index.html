@@ -655,6 +655,15 @@ function batSetDemo() {
   dbg.bat.set(cmds);
 }
 
+function batTest() {
+  var buf = new dbg.TextBuffer();
+  buf.add('echo off');
+  buf.add('echo "foo"');
+  buf.add('echo "bar"');
+  buf.add('echo "baz"');
+  dbg.bat(buf);
+}
+
 function httpDemo() {
   var url = document.getElementById('http-url-text').value;
   var method = document.getElementById('http-method-text').value;
