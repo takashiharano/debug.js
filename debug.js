@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901161837';
+  this.v = '201901161900';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13845,6 +13845,8 @@ DebugJS.point.init = function() {
   point.cursor();
   point.hint.clear();
   point.hide();
+  var k = 'pointmsgsize';
+  DebugJS.ctx._cmdSet(DebugJS.ctx, k, DebugJS.ctx.PROPS_DFLT_VALS[k], false);
 };
 DebugJS.point.show = function() {
   var point = DebugJS.point;
