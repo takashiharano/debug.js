@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901161900';
+  this.v = '201901162015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13658,6 +13658,7 @@ DebugJS.bat.load = function() {
     if (bat.q) {
       bat.lazyExec();
     } else {
+      DebugJS._log.v('ld bat');
       bat.exec();
     }
   }
@@ -15774,6 +15775,7 @@ DebugJS.restoreStatus = function(ctx) {
     ctx.status |= DebugJS.ST_LOG_PRESERVED;
     DebugJS.restoreLog();
   }
+  DebugJS._log.v('load: st ' + data.status)
   if (data.status & DebugJS.ST_BAT_CONT) {
     ctx.status |= DebugJS.ST_BAT_CONT;
   }
@@ -15882,11 +15884,13 @@ DebugJS.onUnload = function() {
     DebugJS.test.save();
   }
   if ((ctx.status & DebugJS.ST_BAT_RUNNING) && (ctx.props.batcont == 'on')) {
+    DebugJS._log.v('sv bat');
     DebugJS.bat.save();
   }
   if ((ctx.status & DebugJS.ST_LOG_PRESERVED) || (ctx.status & DebugJS.ST_BAT_CONT)) {
     DebugJS.saveStatus();
   }
+  DebugJS._log.v('unload')
   if (ctx.status & DebugJS.ST_LOG_PRESERVED) {
     DebugJS.preserveLog();
   }
