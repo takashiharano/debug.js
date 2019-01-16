@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901152323';
+  this.v = '201901161837';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1980,7 +1980,7 @@ DebugJS.prototype = {
     var rect = ctx.logPanel.getBoundingClientRect();
     var h = rect.height;
     var d = ctx.logPanel.scrollHeight - ctx.logPanel.scrollTop;
-    if ((d - 1 <= h) && (h <= d + 1)) {
+    if ((d - 17 <= h) && (h <= d + 17)) {
       ctx.startLogScrolling();
     } else {
       ctx.stopLogScrolling();
