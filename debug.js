@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901162015';
+  this.v = '201901170000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13632,17 +13632,15 @@ DebugJS.bat.save = function() {
   localStorage.setItem('DebugJS-bat', b);
 };
 DebugJS.bat.load = function() {
+  if (!DebugJS.LS_AVAILABLE) return;
   var bat = DebugJS.bat;
-  if (!DebugJS.LS_AVAILABLE) {
-    if (bat.q) bat.lazyExec();
-    return;
-  }
+  DebugJS._log.v('ld bat');
   var b = localStorage.getItem('DebugJS-bat');
-  localStorage.removeItem('DebugJS-bat');
   if (b == null) {
-    if (bat.q) bat.lazyExec();
+    DebugJS._log.v('no bat');
     return;
   }
+  localStorage.removeItem('DebugJS-bat');
   var bt = JSON.parse(b);
   bat.ctrl = bt.ctrl;
   bat.cmds = bt.cmds;
@@ -13650,17 +13648,14 @@ DebugJS.bat.load = function() {
   DebugJS.ctx.CMDVALS = bt.vals;
   bat.setExecArg(bat.ctrl.execArg);
   bat.parseLabelFncs();
-  if (DebugJS.ctx.props.batcont == 'on') {
-    if (bat.ctrl.pauseKey != null) {
-      DebugJS.ctx._cmdPause('key', bat.ctrl.pauseKey, 0);
-    }
-    bat.setRunningSt(true);
-    if (bat.q) {
-      bat.lazyExec();
-    } else {
-      DebugJS._log.v('ld bat');
-      bat.exec();
-    }
+  if (bat.ctrl.pauseKey != null) {
+    DebugJS.ctx._cmdPause('key', bat.ctrl.pauseKey, 0);
+  }
+  bat.setRunningSt(true);
+  if (bat.q) {
+    bat.lazyExec();
+  } else {
+    bat.exec();
   }
 };
 DebugJS.bat.lazyExec = function() {
@@ -15775,7 +15770,7 @@ DebugJS.restoreStatus = function(ctx) {
     ctx.status |= DebugJS.ST_LOG_PRESERVED;
     DebugJS.restoreLog();
   }
-  DebugJS._log.v('load: st ' + data.status)
+  DebugJS._log.v('load st ' + data.status);
   if (data.status & DebugJS.ST_BAT_CONT) {
     ctx.status |= DebugJS.ST_BAT_CONT;
   }
@@ -15876,7 +15871,11 @@ DebugJS.onReady = function() {
 DebugJS.onLoad = function() {
   window.addEventListener('unload', DebugJS.onUnload, true);
   DebugJS.test.load();
-  DebugJS.bat.load();
+  if (DebugJS.ctx.props.batcont == 'on') {
+    DebugJS.bat.load();
+  } else if (DebugJS.bat.q) {
+    DebugJS.bat.lazyExec();
+  }
 };
 DebugJS.onUnload = function() {
   var ctx = DebugJS.ctx;
@@ -15890,7 +15889,7 @@ DebugJS.onUnload = function() {
   if ((ctx.status & DebugJS.ST_LOG_PRESERVED) || (ctx.status & DebugJS.ST_BAT_CONT)) {
     DebugJS.saveStatus();
   }
-  DebugJS._log.v('unload')
+  DebugJS._log.v('unload');
   if (ctx.status & DebugJS.ST_LOG_PRESERVED) {
     DebugJS.preserveLog();
   }
