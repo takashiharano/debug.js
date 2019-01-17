@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901171830';
+  this.v = '201901171930';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -478,27 +478,27 @@ DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DFLT_UNIT = 32;
 DebugJS.INIT_CAUSE_ZOOM = 1;
 DebugJS.ST_INITIALIZED = 1;
-DebugJS.ST_MEASURE = 1 << 2;
-DebugJS.ST_MEASURING = 1 << 3;
-DebugJS.ST_SYS_INFO = 1 << 4;
-DebugJS.ST_ELM_INSPECTING = 1 << 5;
-DebugJS.ST_ELM_EDIT = 1 << 6;
-DebugJS.ST_TOOLS = 1 << 7;
-DebugJS.ST_JS = 1 << 8;
-DebugJS.ST_HTML_SRC = 1 << 9;
-DebugJS.ST_LOG_SUSPENDING = 1 << 10;
-DebugJS.ST_LOG_PRESERVED = 1 << 11;
-DebugJS.ST_STOPWATCH_RUNNING = 1 << 12;
-DebugJS.ST_STOPWATCH_LAPTIME = 1 << 13;
-DebugJS.ST_STOPWATCH_END = 1 << 14;
-DebugJS.ST_WD = 1 << 15;
+DebugJS.ST_LOG_PRESERVED = 1 << 1;
+DebugJS.ST_BAT_RUNNING = 1 << 2;
+DebugJS.ST_BAT_CONT = 1 << 3;
+DebugJS.ST_BAT_PAUSE = 1 << 4;
+DebugJS.ST_BAT_PAUSE_CMD = 1 << 5;
+DebugJS.ST_BAT_PAUSE_CMD_KEY = 1 << 6;
+DebugJS.ST_BAT_BP = 1 << 7;
+DebugJS.ST_MEASURE = 1 << 8;
+DebugJS.ST_MEASURING = 1 << 9;
+DebugJS.ST_SYS_INFO = 1 << 10;
+DebugJS.ST_HTML_SRC = 1 << 11;
+DebugJS.ST_ELM_INFO = 1 << 12;
+DebugJS.ST_ELM_EDIT = 1 << 13;
+DebugJS.ST_JS = 1 << 14;
+DebugJS.ST_TOOLS = 1 << 15;
 DebugJS.ST_EXT_PANEL = 1 << 16;
-DebugJS.ST_BAT_RUNNING = 1 << 17;
-DebugJS.ST_BAT_PAUSE = 1 << 18;
-DebugJS.ST_BAT_PAUSE_CMD = 1 << 19;
-DebugJS.ST_BAT_PAUSE_CMD_KEY = 1 << 20;
-DebugJS.ST_BAT_CONT = 1 << 21;
-DebugJS.ST_BAT_BREAK = 1 << 22;
+DebugJS.ST_STOPWATCH_RUNNING = 1 << 17;
+DebugJS.ST_STOPWATCH_LAPTIME = 1 << 18;
+DebugJS.ST_STOPWATCH_END = 1 << 19;
+DebugJS.ST_LOG_SUSPENDING = 1 << 20;
+DebugJS.ST_WD = 1 << 21;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -719,7 +719,7 @@ DebugJS.prototype = {
       }
     }
     if (!keepStatus) {
-      var preserveStatus = DebugJS.ST_LOG_PRESERVED | DebugJS.ST_STOPWATCH_RUNNING | DebugJS.ST_WD | DebugJS.ST_BAT_RUNNING | DebugJS.ST_BAT_PAUSE | DebugJS.ST_BAT_PAUSE_CMD | DebugJS.ST_BAT_PAUSE_CMD_KEY;
+      var preserveStatus = DebugJS.ST_LOG_PRESERVED | DebugJS.ST_STOPWATCH_RUNNING | DebugJS.ST_WD | DebugJS.ST_BAT_RUNNING | DebugJS.ST_BAT_CONT | DebugJS.ST_BAT_PAUSE | DebugJS.ST_BAT_PAUSE_CMD | DebugJS.ST_BAT_PAUSE_CMD_KEY;
       ctx.status &= preserveStatus;
       ctx.uiStatus = 0;
       ctx.startLogScrolling();
@@ -1354,7 +1354,7 @@ DebugJS.prototype = {
       ctx.jsBtn = ctx.createHeaderBtn('jsBtn', 'JS', 2, null, ctx.toggleJs, 'status', 'ST_JS', 'JS_BTN_COLOR', false);
     }
     if (opt.useElementInfo) {
-      ctx.elmInfoBtn = ctx.createHeaderBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'ST_ELM_INSPECTING', 'DOM_BTN_COLOR', false);
+      ctx.elmInfoBtn = ctx.createHeaderBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'ST_ELM_INFO', 'DOM_BTN_COLOR', false);
     }
     if (opt.useHtmlSrc) {
       ctx.htmlSrcBtn = ctx.createHeaderBtn('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'ST_HTML_SRC', 'HTML_BTN_COLOR', false);
@@ -1818,7 +1818,7 @@ DebugJS.prototype = {
   },
 
   updateElmInfoBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.elmInfoBtn, DebugJS.ST_ELM_INSPECTING, DebugJS.DOM_BTN_COLOR);
+    ctx.updateBtnActive(ctx.elmInfoBtn, DebugJS.ST_ELM_INFO, DebugJS.DOM_BTN_COLOR);
   },
 
   updateHtmlSrcBtn: function(ctx) {
@@ -2481,7 +2481,7 @@ DebugJS.prototype = {
       case DebugJS.ST_HTML_SRC:
         ctx.openHtmlSrc(ctx);
         return true;
-      case DebugJS.ST_ELM_INSPECTING:
+      case DebugJS.ST_ELM_INFO:
         ctx.openElmInfo(ctx);
         return true;
       case DebugJS.ST_JS:
@@ -2555,7 +2555,7 @@ DebugJS.prototype = {
       case DebugJS.ST_HTML_SRC:
         ctx.closeHtmlSrc(ctx);
         break;
-      case DebugJS.ST_ELM_INSPECTING:
+      case DebugJS.ST_ELM_INFO:
         ctx.closeElmInfo(ctx);
         break;
       case DebugJS.ST_JS:
@@ -2591,7 +2591,7 @@ DebugJS.prototype = {
     if (st & DebugJS.ST_MEASURE) ctx.closeScreenMeasure(ctx, q);
     if (st & DebugJS.ST_SYS_INFO) ctx.closeSystemInfo(ctx);
     if (st & DebugJS.ST_HTML_SRC) ctx.closeHtmlSrc(ctx);
-    if (st & DebugJS.ST_ELM_INSPECTING) ctx.closeElmInfo(ctx);
+    if (st & DebugJS.ST_ELM_INFO) ctx.closeElmInfo(ctx);
     if (st & DebugJS.ST_JS) ctx.closeJsEditor();
     if (st & DebugJS.ST_TOOLS) ctx.closeTools(ctx);
     if (st & DebugJS.ST_EXT_PANEL) ctx.closeExtPanel(ctx);
@@ -2602,7 +2602,7 @@ DebugJS.prototype = {
       measure: DebugJS.ST_MEASURE,
       sys: DebugJS.ST_SYS_INFO,
       html: DebugJS.ST_HTML_SRC,
-      dom: DebugJS.ST_ELM_INSPECTING,
+      dom: DebugJS.ST_ELM_INFO,
       js: DebugJS.ST_JS,
       tool: DebugJS.ST_TOOLS,
       ext: DebugJS.ST_EXT_PANEL
@@ -2872,7 +2872,7 @@ DebugJS.prototype = {
         break;
       case 2:
         ctx.mouseClick2 = DebugJS.COLOR_ACTIVE;
-        if (ctx.status & DebugJS.ST_ELM_INSPECTING) {
+        if (ctx.status & DebugJS.ST_ELM_INFO) {
           if (ctx.isOnDbgWin(posX, posY)) {
             if ((DebugJS.el) && (DebugJS.el != ctx.targetEl)) {
               ctx.showElementInfo(DebugJS.el);
@@ -2916,7 +2916,7 @@ DebugJS.prototype = {
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.moveDbgWin(ctx, x, y);
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.resizeDbgWin(ctx, x, y);
     if (ctx.status & DebugJS.ST_MEASURING) ctx.doMeasure(ctx, x, y);
-    if (ctx.status & DebugJS.ST_ELM_INSPECTING) ctx.inspectElement(x, y);
+    if (ctx.status & DebugJS.ST_ELM_INFO) ctx.inspectElement(x, y);
     if (DebugJS.point.d) DebugJS.point.move(x, y, 0, 0);
     ctx.resizeMainHeight();
   },
@@ -3287,7 +3287,7 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.ST_MEASURE) {
       ctx.closeScreenMeasure(ctx);
     }
-    if (ctx.status & DebugJS.ST_ELM_INSPECTING) {
+    if (ctx.status & DebugJS.ST_ELM_INFO) {
       ctx.closeElmInfo(ctx);
     }
     ctx.hideDbgWin(ctx);
@@ -3817,15 +3817,15 @@ DebugJS.prototype = {
 
   toggleElmInfo: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_ELM_INSPECTING) {
+    if (ctx.status & DebugJS.ST_ELM_INFO) {
       ctx.closeElmInfo(ctx);
     } else {
       ctx.openElmInfo(ctx);
     }
   },
   openElmInfo: function(ctx) {
-    ctx.status |= DebugJS.ST_ELM_INSPECTING;
-    ctx.featStack.push(DebugJS.ST_ELM_INSPECTING);
+    ctx.status |= DebugJS.ST_ELM_INFO;
+    ctx.featStack.push(DebugJS.ST_ELM_INFO);
     if (!ctx.elmInfoPanel) ctx.createElmInfoPanel(ctx);
     ctx.updateElmInfoBtn(ctx);
     ctx.updateElmSelectBtn();
@@ -3926,8 +3926,8 @@ DebugJS.prototype = {
       ctx.elmNumPanel = null;
     }
     ctx.updateTargetElm(null);
-    ctx.status &= ~DebugJS.ST_ELM_INSPECTING;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_ELM_INSPECTING);
+    ctx.status &= ~DebugJS.ST_ELM_INFO;
+    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_ELM_INFO);
     ctx.updateElmInfoBtn(ctx);
   },
   inspectElement: function(x, y) {
@@ -4206,7 +4206,7 @@ DebugJS.prototype = {
   },
   updateElmInfoInterval: function() {
     var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.ST_ELM_INSPECTING)) return;
+    if (!(ctx.status & DebugJS.ST_ELM_INFO)) return;
     ctx.updateElementInfo();
     if (ctx.elmUpdateInterval > 0) {
       ctx.elmUpdateTimerId = setTimeout(ctx.updateElmInfoInterval, ctx.elmUpdateInterval);
@@ -6991,7 +6991,7 @@ DebugJS.prototype = {
       'measure': DebugJS.ST_MEASURE,
       'sys': DebugJS.ST_SYS_INFO,
       'html': DebugJS.ST_HTML_SRC,
-      'dom': DebugJS.ST_ELM_INSPECTING,
+      'dom': DebugJS.ST_ELM_INFO,
       'js': DebugJS.ST_JS,
       'tool': DebugJS.ST_TOOLS,
       'ext': DebugJS.ST_EXT_PANEL
@@ -12871,12 +12871,12 @@ DebugJS.bat.exec = function() {
     ctrl.tmid = setTimeout(bat.exec, 50);
     return;
   }
-  if (ctx.status & DebugJS.ST_BAT_BREAK) {
-    ctx.status &= ~DebugJS.ST_BAT_BREAK;
+  if (ctx.status & DebugJS.ST_BAT_BP) {
+    ctx.status &= ~DebugJS.ST_BAT_BP;
     bat.setPc(--ctrl.pc);
   } else {
     if (ctrl.pc + 1 == ctrl.breakP) {
-      ctx.status |= DebugJS.ST_BAT_BREAK;
+      ctx.status |= DebugJS.ST_BAT_BP;
       bat.setPc(++ctrl.pc, true);
       bat.pause();
       ctx.showDbgWin();
@@ -13518,7 +13518,7 @@ DebugJS.bat._stop = function(st) {
   bat.stopNext();
   bat.ctx = [];
   ctx.updateBatNestLv();
-  ctx.status &= ~DebugJS.ST_BAT_BREAK;
+  ctx.status &= ~DebugJS.ST_BAT_BP;
   ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD_KEY;
   ctx.updateBatResumeBtn();
   bat.setRunningSt(false);
@@ -15870,7 +15870,7 @@ DebugJS.onLoad = function() {
   window.addEventListener('beforeunload', DebugJS.onB4Unload, true);
   window.addEventListener('unload', DebugJS.onUnload, true);
   DebugJS.test.load();
-  if (DebugJS.ctx.props.batcont == 'on') {
+  if (DebugJS.ctx.status & DebugJS.ST_BAT_CONT) {
     DebugJS.bat.load();
   } else if (DebugJS.bat.q) {
     DebugJS.bat.lazyExec();
@@ -15887,7 +15887,7 @@ DebugJS.unload = function(f) {
   if (DebugJS.test.data.running) {
     DebugJS.test.save();
   }
-  if ((ctx.status & DebugJS.ST_BAT_RUNNING) && (ctx.props.batcont == 'on')) {
+  if (ctx.status & DebugJS.ST_BAT_CONT) {
     DebugJS.bat.save();
   }
   if ((ctx.status & DebugJS.ST_LOG_PRESERVED) || (ctx.status & DebugJS.ST_BAT_CONT)) {
