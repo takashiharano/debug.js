@@ -656,12 +656,12 @@ function batSetDemo() {
 }
 
 function batTest() {
-  var buf = new dbg.TextBuffer();
-  buf.add('echo off');
-  buf.add('echo "foo"');
-  buf.add('echo "bar"');
-  buf.add('echo "baz"');
-  dbg.bat(buf);
+  var script = new dbg.Script();
+  script.add('echo off');
+  script.add('echo "foo"');
+  script.add('echo "bar"');
+  script.add('echo "baz"');
+  dbg.bat(script);
 }
 //batTest();
 
@@ -767,8 +767,8 @@ function onReady() {
   //log('ready');
   addFileLoadHandler();
   dbg.addEvtListener('ctrlc', onCtrlC);
-  dbg.addEvtListener('batstart', onBatStart);
-  dbg.addEvtListener('batstop', onBatStop);
+  //dbg.addEvtListener('batstart', onBatStart);
+  //dbg.addEvtListener('batstop', onBatStop);
   //dbg.addEvtListener('drop', onDrop);
   //dbg.addEvtListener('error', onErrorEvt);
   //dbg.addEvtListener('unlock', onUnlock);
@@ -1897,19 +1897,17 @@ dbg.setCmdVal('<input type="text" id="setcmdval-name-text" class="demo-text" sty
 <pre class="eg">
 var commands = '
 <textarea id="bat-demo-text" class="demo-textarea2">
-@echo off
 point move #p1
 point hint msg "Hi!"
-wait 1000
+wait 1s
 point hint clear
 :label1
 point move #p2
-point move #bat-demo-text -alignX 0.9 -alignY 0.1
-:label2
 point move #p4
+:label2
 point move #p3
 point hint msg "Bye!"
-wait 1000
+wait 1s
 point init
 </textarea>
 ';
@@ -1919,11 +1917,20 @@ dbg.bat(commands); <button class="demo-button2" onclick="batDemo();">DEMO</butto
 var arg = '<input type="text" id="bat-arg-text" class="demo-text" style="width:150px;" value="abc 123">';
 
 dbg.bat(commands, arg); <button class="demo-button2" onclick="batArgDemo();">DEMO</button>
-dbg.bat(commands, arg, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="5">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="13">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
+dbg.bat(commands, arg, <input type="text" id="bat-sl-text" class="demo-text" style="width:20px;" value="6">, <input type="text" id="bat-el-text" class="demo-text" style="width:20px;" value="9">); <button class="demo-button2" onclick="batDemo2();">DEMO</button>
 dbg.bat(commands, arg, '<input type="text" id="bat-sl2-text" class="demo-text" style="width:60px;" value=":label1">', '<input type="text" id="bat-el2-text" class="demo-text" style="width:60px;" value=":label2">'); <button class="demo-button2" onclick="batDemo3();">DEMO</button>
-
 </pre>
 <div id="p3" class="elm">&lt;div&gt;#p3&lt;/div&gt;</div><div id="p4" class="elm" style="float:right">&lt;div&gt;#p4&lt;/div&gt;</div>
+<br><br>
+You can also call like this.<br>
+<pre class="eg">
+var script = new dbg.Script();
+script.add('echo off');
+script.add('echo "foo"');
+script.add('echo "bar"');
+script.add('echo "baz"');
+dbg.bat(script); <button class="demo-button2" onclick="batTest();">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -3541,6 +3548,15 @@ a<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 b<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 c<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <th colspan="3" style="text-align:left;">Script</th>
+  </tr>
+  <tr>
+    <td colspan="3">
+An alias of TextBuffer.
     </td>
   </tr>
 </table>

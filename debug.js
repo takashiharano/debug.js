@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901172155';
+  this.v = '201901180000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9407,6 +9407,7 @@ DebugJS.TextBuffer.prototype = {
     return this.b;
   }
 };
+DebugJS.Script = DebugJS.TextBuffer;
 
 DebugJS.getCmdValName = function(v, pfix, head) {
   var m = pfix + '\\{(.+?)\\}';
