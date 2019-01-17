@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901172100';
+  this.v = '201901172130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -485,19 +485,19 @@ DebugJS.ST_BAT_PAUSE = 1 << 4;
 DebugJS.ST_BAT_PAUSE_CMD = 1 << 5;
 DebugJS.ST_BAT_PAUSE_CMD_KEY = 1 << 6;
 DebugJS.ST_BAT_BP = 1 << 7;
-DebugJS.ST_MEASURE = 1 << 8;
-DebugJS.ST_MEASURING = 1 << 9;
-DebugJS.ST_SYS_INFO = 1 << 10;
-DebugJS.ST_HTML_SRC = 1 << 11;
-DebugJS.ST_ELM_INFO = 1 << 12;
-DebugJS.ST_ELM_EDIT = 1 << 13;
-DebugJS.ST_JS = 1 << 14;
-DebugJS.ST_TOOLS = 1 << 15;
-DebugJS.ST_EXT_PANEL = 1 << 16;
-DebugJS.ST_STOPWATCH_RUNNING = 1 << 17;
-DebugJS.ST_STOPWATCH_LAPTIME = 1 << 18;
-DebugJS.ST_STOPWATCH_END = 1 << 19;
-DebugJS.ST_LOG_SUSPENDING = 1 << 20;
+DebugJS.ST_STOPWATCH_RUNNING = 1 << 8;
+DebugJS.ST_STOPWATCH_LAPTIME = 1 << 9;
+DebugJS.ST_STOPWATCH_END = 1 << 10;
+DebugJS.ST_LOG_SUSPENDING = 1 << 11;
+DebugJS.ST_MEASURE = 1 << 12;
+DebugJS.ST_MEASURING = 1 << 13;
+DebugJS.ST_SYS_INFO = 1 << 14;
+DebugJS.ST_HTML_SRC = 1 << 15;
+DebugJS.ST_ELM_INFO = 1 << 16;
+DebugJS.ST_ELM_EDIT = 1 << 17;
+DebugJS.ST_JS = 1 << 18;
+DebugJS.ST_TOOLS = 1 << 19;
+DebugJS.ST_EXT_PANEL = 1 << 20;
 DebugJS.ST_WD = 1 << 21;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
@@ -12020,12 +12020,10 @@ DebugJS.loadLog = function(json, b64) {
   }
 };
 DebugJS.preserveLog = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
   var v = DebugJS.dumpLog('json');
   localStorage.setItem('DebugJS-log', v);
 };
 DebugJS.restoreLog = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
   var s = localStorage.getItem('DebugJS-log');
   if (!s) return;
   localStorage.removeItem('DebugJS-log');
@@ -12033,7 +12031,6 @@ DebugJS.restoreLog = function() {
 };
 
 DebugJS.saveStatus = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
   var ctx = DebugJS.ctx;
   var data = {
     status: ctx.status,
@@ -12045,12 +12042,10 @@ DebugJS.saveStatus = function() {
   localStorage.setItem('DebugJS-st', st);
 };
 DebugJS.loadStatus = function() {
-  if (!DebugJS.LS_AVAILABLE) return 0;
   var st = localStorage.getItem('DebugJS-st');
-  if (st == null) return null;
+  if (st == null) return st;
   localStorage.removeItem('DebugJS-st');
-  var data = JSON.parse(st);
-  return data;
+  return JSON.parse(st);
 };
 
 DebugJS.cookie = {};
@@ -13623,7 +13618,6 @@ DebugJS.bat.ldCtx = function() {
   return true;
 };
 DebugJS.bat.save = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
   var bt = {
     ctrl: DebugJS.bat.ctrl,
     cmds: DebugJS.bat.cmds,
@@ -13634,7 +13628,6 @@ DebugJS.bat.save = function() {
   localStorage.setItem('DebugJS-bat', b);
 };
 DebugJS.bat.load = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
   var bat = DebugJS.bat;
   var b = localStorage.getItem('DebugJS-bat');
   if (b == null) {
@@ -15058,12 +15051,10 @@ DebugJS.test.setDesc = function(s) {
   DebugJS._log(s);
 };
 DebugJS.test.save = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
   var d = JSON.stringify(DebugJS.test.data);
   localStorage.setItem('DebugJS-test', d);
 };
 DebugJS.test.load = function() {
-  if (!DebugJS.LS_AVAILABLE) return;
   var d = localStorage.getItem('DebugJS-test');
   localStorage.removeItem('DebugJS-test');
   if (d == null) return;
@@ -15871,9 +15862,9 @@ DebugJS.onReady = function() {
 DebugJS.onLoad = function() {
   window.addEventListener('beforeunload', DebugJS.onB4Unload, true);
   window.addEventListener('unload', DebugJS.onUnload, true);
-  DebugJS.test.load();
+  if (DebugJS.LS_AVAILABLE) DebugJS.test.load();
   if (DebugJS.ctx.status & DebugJS.ST_BAT_CONT) {
-    DebugJS.bat.load();
+    if (DebugJS.LS_AVAILABLE) DebugJS.bat.load();
   } else if (DebugJS.bat.q) {
     DebugJS.bat.lazyExec();
   }
@@ -15887,17 +15878,19 @@ DebugJS.onUnload = function() {
 };
 DebugJS.unload = function(f) {
   var ctx = DebugJS.ctx;
-  if (DebugJS.test.data.running) {
-    DebugJS.test.save();
-  }
-  if (ctx.status & DebugJS.ST_BAT_CONT) {
-    DebugJS.bat.save();
-  }
-  if ((ctx.status & DebugJS.ST_LOG_PRESERVED) || (ctx.status & DebugJS.ST_BAT_CONT)) {
-    DebugJS.saveStatus();
+  if (DebugJS.LS_AVAILABLE) {
+    if (DebugJS.test.data.running) {
+      DebugJS.test.save();
+    }
+    if (ctx.status & DebugJS.ST_BAT_CONT) {
+      DebugJS.bat.save();
+    }
+    if ((ctx.status & DebugJS.ST_LOG_PRESERVED) || (ctx.status & DebugJS.ST_BAT_CONT)) {
+      DebugJS.saveStatus();
+    }
   }
   if (f) DebugJS._log.v('unload');
-  if (ctx.status & DebugJS.ST_LOG_PRESERVED) {
+  if ((DebugJS.LS_AVAILABLE) && (ctx.status & DebugJS.ST_LOG_PRESERVED)) {
     DebugJS.preserveLog();
   }
 };
@@ -15964,7 +15957,9 @@ DebugJS.boot = function() {
       }
     };
   }
-  DebugJS.restoreStatus(DebugJS.ctx);
+  if (DebugJS.LS_AVAILABLE) {
+    DebugJS.restoreStatus(DebugJS.ctx);
+  }
 };
 DebugJS.start = function(o) {DebugJS.init(o);DebugJS.show();};
 DebugJS.ENABLE = true;
