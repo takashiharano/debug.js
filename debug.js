@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901170000';
+  this.v = '201901171830';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13634,10 +13634,8 @@ DebugJS.bat.save = function() {
 DebugJS.bat.load = function() {
   if (!DebugJS.LS_AVAILABLE) return;
   var bat = DebugJS.bat;
-  DebugJS._log.v('ld bat');
   var b = localStorage.getItem('DebugJS-bat');
   if (b == null) {
-    DebugJS._log.v('no bat');
     return;
   }
   localStorage.removeItem('DebugJS-bat');
@@ -15869,6 +15867,7 @@ DebugJS.onReady = function() {
   DebugJS._init();
 };
 DebugJS.onLoad = function() {
+  window.addEventListener('beforeunload', DebugJS.onB4Unload, true);
   window.addEventListener('unload', DebugJS.onUnload, true);
   DebugJS.test.load();
   if (DebugJS.ctx.props.batcont == 'on') {
@@ -15877,19 +15876,24 @@ DebugJS.onLoad = function() {
     DebugJS.bat.lazyExec();
   }
 };
+DebugJS.onB4Unload = function() {
+  DebugJS.unload(0);
+};
 DebugJS.onUnload = function() {
+  DebugJS.unload(1);
+};
+DebugJS.unload = function(f) {
   var ctx = DebugJS.ctx;
   if (DebugJS.test.data.running) {
     DebugJS.test.save();
   }
   if ((ctx.status & DebugJS.ST_BAT_RUNNING) && (ctx.props.batcont == 'on')) {
-    DebugJS._log.v('sv bat');
     DebugJS.bat.save();
   }
   if ((ctx.status & DebugJS.ST_LOG_PRESERVED) || (ctx.status & DebugJS.ST_BAT_CONT)) {
     DebugJS.saveStatus();
   }
-  DebugJS._log.v('unload');
+  DebugJS._log.v((f ? 'unload' : 'beforeunload'));
   if (ctx.status & DebugJS.ST_LOG_PRESERVED) {
     DebugJS.preserveLog();
   }
