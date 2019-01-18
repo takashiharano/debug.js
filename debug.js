@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901180000';
+  this.v = '201901182030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15870,14 +15870,8 @@ DebugJS.onLoad = function() {
     DebugJS.bat.lazyExec();
   }
 };
-DebugJS.onB4Unload = function() {
-  DebugJS._log.v('beforeunload');
-  DebugJS.unload(0);
-};
+DebugJS.onB4Unload = function() {};
 DebugJS.onUnload = function() {
-  DebugJS.unload(1);
-};
-DebugJS.unload = function(f) {
   var ctx = DebugJS.ctx;
   if (DebugJS.LS_AVAILABLE) {
     if (DebugJS.test.data.running) {
@@ -15890,7 +15884,7 @@ DebugJS.unload = function(f) {
       DebugJS.saveStatus();
     }
   }
-  if (f) DebugJS._log.v('unload');
+  DebugJS._log.v('unload');
   if ((DebugJS.LS_AVAILABLE) && (ctx.status & DebugJS.ST_LOG_PRESERVED)) {
     DebugJS.preserveLog();
   }
