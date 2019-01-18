@@ -656,12 +656,12 @@ function batSetDemo() {
 }
 
 function batTest() {
-  var script = new dbg.Script();
-  script.add('echo off');
-  script.add('echo "foo"');
-  script.add('echo "bar"');
-  script.add('echo "baz"');
-  dbg.bat(script);
+  var buf = new dbg.TextBuffer();
+  buf.add('echo off');
+  buf.add('echo "foo"');
+  buf.add('echo "bar"');
+  buf.add('echo "baz"');
+  dbg.bat(buf);
 }
 //batTest();
 
@@ -1924,7 +1924,7 @@ dbg.bat(commands, arg, '<input type="text" id="bat-sl2-text" class="demo-text" s
 <br><br>
 You can also call like this.<br>
 <pre class="eg">
-var script = new dbg.Script();
+var script = new dbg.TextBuffer();
 script.add('echo off');
 script.add('echo "foo"');
 script.add('echo "bar"');
@@ -3548,15 +3548,6 @@ a<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 b<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 c<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 </pre>
-    </td>
-  </tr>
-
-  <tr>
-    <th colspan="3" style="text-align:left;">Script</th>
-  </tr>
-  <tr>
-    <td colspan="3">
-An alias of TextBuffer.
     </td>
   </tr>
 </table>
