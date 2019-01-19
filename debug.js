@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901192200';
+  this.v = '201901200045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2917,7 +2917,7 @@ DebugJS.prototype = {
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING) ctx.resizeDbgWin(ctx, x, y);
     if (ctx.status & DebugJS.ST_MEASURING) ctx.doMeasure(ctx, x, y);
     if (ctx.status & DebugJS.ST_ELM_INFO) ctx.inspectElement(x, y);
-    if (DebugJS.point.d) DebugJS.point.move(x, y, 0, 0);
+    if (DebugJS.point.ptr.drg) DebugJS.point.move(x, y, 0, 0);
     ctx.resizeMainHeight();
   },
 
@@ -2958,7 +2958,7 @@ DebugJS.prototype = {
       ctx.endResize(ctx);
       ctx.focusCmdLine();
     }
-    if (DebugJS.point.d) DebugJS.point.endDragging();
+    if (DebugJS.point.ptr.drg) DebugJS.point.endDragging();
   },
 
   onDbgWinDblClick: function(e) {
@@ -5570,7 +5570,7 @@ DebugJS.prototype = {
           ctx.decodeDataURL(ctx, s);
         } else if (DebugJS.isBase64(s)) {
           var tp = DebugJS.Base64.getMimeType(s);
-          var mime = (tp.type =='' ? 'text/plain' : tp.type + '/' + tp.subtype);
+          var mime = (tp.type == '' ? 'text/plain' : tp.type + '/' + tp.subtype);
           ctx.decodeDataURL(ctx, 'data:' + mime + ';base64,' + s);
         }
       } else {
@@ -5635,7 +5635,7 @@ DebugJS.prototype = {
       }
     }
     var tp = DebugJS.Base64.getMimeType(s);
-    var mime = (tp.type == '' ? 'text/plain': tp.type + '/' + tp.subtype);
+    var mime = (tp.type == '' ? 'text/plain' : tp.type + '/' + tp.subtype);
     if (tp || (s.length > 102400)) {
       ctx.decodeDataURL(ctx, 'data:' + mime + ';base64,' + s);
       return 1;
@@ -8101,16 +8101,16 @@ DebugJS.prototype = {
     return ret;
   },
   _cmdPointJmp: function(ctx, arg, tbl, args) {
-    var point = DebugJS.point;
+    var ptr = DebugJS.point.ptr;
     var x, y;
     if (args[0] == '') {
-      DebugJS._log('x=' + point.x + ', y=' + point.y);
+      DebugJS._log('x=' + ptr.x + ', y=' + ptr.y + ' w=' + ptr.w + ', y=' + ptr.h);
       DebugJS.printUsage(tbl.help);
       return;
     }
     var p = ctx._cmdPointCalcPos(ctx, args[0], args[1]);
     if (p) {
-      point(p.x, p.y);
+      DebugJS.point(p.x, p.y);
     } else if (isNaN(args[0])) {
       var target = args[0];
       var idx = args[1];
@@ -8123,7 +8123,7 @@ DebugJS.prototype = {
     } else {
       x = args[0];
       y = args[1];
-      point(x, y);
+      DebugJS.point(x, y);
     }
   },
   _cmdPointMove: function(ctx, arg, tbl, args) {
@@ -13790,30 +13790,30 @@ DebugJS.msg.clear = function() {
 DebugJS.point = function(x, y) {
   x += ''; y += '';
   var point = DebugJS.point;
-  if (point.ptr == null) point.createPtr();
+  var ptr = point.ptr;
+  if (!ptr.el) point.createPtr();
   if (x.charAt(0) == '+') {
-    point.x += (x.substr(1) | 0);
+    ptr.x += (x.substr(1) | 0);
   } else if (x.charAt(0) == '-') {
-    point.x -= (x.substr(1) | 0);
+    ptr.x -= (x.substr(1) | 0);
   } else {
-    point.x = x | 0;
+    ptr.x = x | 0;
   }
   if (y.charAt(0) == '+') {
-    point.y += (y.substr(1) | 0);
+    ptr.y += (y.substr(1) | 0);
   } else if (y.charAt(0) == '-') {
-    point.y -= (y.substr(1) | 0);
+    ptr.y -= (y.substr(1) | 0);
   } else {
-    point.y = y | 0;
+    ptr.y = y | 0;
   }
-  var ptr = point.ptr;
-  ptr.style.top = point.y + 'px';
-  ptr.style.left = point.x + 'px';
-  document.body.appendChild(ptr);
+  ptr.el.style.top = ptr.y + 'px';
+  ptr.el.style.left = ptr.x + 'px';
+  document.body.appendChild(ptr.el);
   point.hint.move();
   if (DebugJS.ctx.props.mousemovesim == 'true') {
     var e = DebugJS.event.create('mousemove');
-    e.clientX = point.x;
-    e.clientY = point.y;
+    e.clientX = ptr.x;
+    e.clientY = ptr.y;
     var el = point.getElementFromCurrentPos();
     if (el) {
       el.dispatchEvent(e);
@@ -13822,31 +13822,26 @@ DebugJS.point = function(x, y) {
     }
   }
 };
-DebugJS.point.ptr = null;
-DebugJS.point.ptrW = 12;
-DebugJS.point.ptrH = 19;
-DebugJS.point.x = 0;
-DebugJS.point.y = 0;
-DebugJS.point.d = false;
+DebugJS.point.ptr = {el: null, w: 12, h: 13, x: 0, y: 0, drg: false};
 DebugJS.point.CURSOR_DFLT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAATCAMAAACTKxybAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAD9QTFRFCwsY9PT3S0xX1tbYKCg04eHjLCw4wsLJMzM/zs7S+Pn7Q0ROs7S86OjqLi468PDzYWJsGBgkQkNN////////FEPnZwAAABV0Uk5T//////////////////////////8AK9l96gAAAF5JREFUeNpMzlcOwDAIA1Cyulcw9z9rQ0aLv3iSZUFZ/lBmC7DFL8WniqGGro6mgY0NcLMBTjZA4gpXBjQKRwf2vuZIJqSpotziZ3gFkxYiwlXQvvIByweJzyryCjAA+AIPnHnE+0kAAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_PTR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAYCAMAAADAi10DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJZQTFRF////EhQmHyIzPkBPT1Be+fn68fHywcHHFxorWltovr/E4+PmUlNgLS8//Pz8GRwuqquyFBcpSUtZeHqEa2x35ubo6enrQENRw8TKnJ6lTE5bc3R/9/f3paatRkhWKyw8NThHhoiRtra8lJWdFBYo1dbZKi092NjbFxkrMDJCMjVE0NDUx8jM9PT1ZWZyoqOqOz1M////QATI2QAAADJ0Uk5T/////////////////////////////////////////////////////////////////wANUJjvAAAAoUlEQVR42ozQ1xKDIBAF0GuwYO+a3nvn/38uChGFvOTODrNzXpZdMB7TZTIQ4mxdjfaRRTUyAOM/ehY/lCyKmqjU1NwPCVFo1LyPcqVRq5IosNaoBGzA4xRQTjIGAs/OU5WmY8C5KsSOFVCpxDJrALDO7cTZkPyQf+I1oEQsFJ96Wn53JHYnk+4S7HLjEG1SSSzO7wdnV/f3apO9TdF8BBgAC6AoMWCQ0+8AAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_TXT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAMAAADtX5XCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRFAAAA////pdmf3QAAAAJ0Uk5T/wDltzBKAAAAGElEQVR42mJgYGBgZAARjIx0xVB7AQIMABYAAFfcyzDzAAAAAElFTkSuQmCC';
 DebugJS.point.createPtr = function() {
-  var point = DebugJS.point;
-  point.x = 0;
-  point.y = 0;
+  var ptr = DebugJS.point.ptr;
+  ptr.x = 0;
+  ptr.y = 0;
   var el = document.createElement('img');
   var st = el.style;
   st.position = 'fixed';
-  st.width = point.ptrW + 'px';
-  st.height = point.ptrH + 'px';
-  st.top = point.y;
-  st.left = point.x;
+  st.width = ptr.w + 'px';
+  st.height = ptr.h + 'px';
+  st.top = ptr.y;
+  st.left = ptr.x;
   st.zIndex = 0x7ffffffe;
-  el.src = point.CURSOR_DFLT;
-  el.onmousedown = point.startDragging;
+  el.src = DebugJS.point.CURSOR_DFLT;
+  el.onmousedown = DebugJS.point.startDragging;
   document.body.appendChild(el);
-  point.ptr = el;
+  ptr.el = el;
 };
 DebugJS.point.init = function() {
   var point = DebugJS.point;
@@ -13860,27 +13855,26 @@ DebugJS.point.init = function() {
 DebugJS.point.show = function() {
   var point = DebugJS.point;
   var ptr = point.ptr;
-  if (ptr == null) {
+  if (!ptr.el) {
     point.createPtr();
   } else {
-    document.body.appendChild(ptr);
+    document.body.appendChild(ptr.el);
   }
   if (point.hint.st.visible) {
     point.hint.show();
   }
 };
 DebugJS.point.hide = function() {
-  var ptr = DebugJS.point.ptr;
-  if ((ptr != null) && (ptr.parentNode)) {
-    document.body.removeChild(ptr);
+  var el = DebugJS.point.ptr.el;
+  if (el && el.parentNode) {
+    document.body.removeChild(el);
   }
   DebugJS.point.hint.hide(true);
 };
 DebugJS.point.cursor = function(src, w, h) {
   var point = DebugJS.point;
-  if (point.ptr == null) {
-    point.createPtr();
-  }
+  var ptr = point.ptr;
+  if (!ptr.el) point.createPtr();
   if (!src) {
     src = point.CURSOR_DFLT;
   } else if (src == 'pointer') {
@@ -13902,18 +13896,22 @@ DebugJS.point.cursor = function(src, w, h) {
   } else {
     h += 'px';
   }
-  point.ptr.src = src;
-  point.ptr.style.width = w;
-  point.ptr.style.height = h;
+  ptr.el.src = src;
+  ptr.el.style.width = w;
+  ptr.el.style.height = h;
+  var s = window.getComputedStyle(ptr.el);
+  ptr.w = s.width.replace('px', '') | 0;
+  ptr.h = s.height.replace('px', '') | 0;
 };
 DebugJS.point.event = function(args) {
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) return;
+  var ptr = DebugJS.point.ptr;
   var type = DebugJS.getArgVal(args, 0);
   var opts = DebugJS.getOptVals(args);
   var e = DebugJS.event.create(type);
-  e.clientX = DebugJS.point.x;
-  e.clientY = DebugJS.point.y;
+  e.clientX = ptr.x;
+  e.clientY = ptr.y;
   for (var k in opts) {
     try {
       e[k] = eval(opts[k]);
@@ -14059,10 +14057,11 @@ DebugJS.point.contextmenu = function(el) {
   el.dispatchEvent(e);
 };
 DebugJS.point.mouseevt = function(el, ev, b) {
+  var ptr = DebugJS.point.ptr;
   var e = DebugJS.event.create(ev);
   e.button = b | 0;
-  e.clientX = DebugJS.point.x;
-  e.clientY = DebugJS.point.y;
+  e.clientX = ptr.x;
+  e.clientY = ptr.y;
   el.dispatchEvent(e);
 };
 DebugJS.point.keyevt = function(args) {
@@ -14098,27 +14097,26 @@ DebugJS.point.setKeyFlag = function(e, a) {
 };
 DebugJS.point.getElementFromCurrentPos = function() {
   var ctx = DebugJS.ctx;
-  var point = DebugJS.point;
-  var ptr = point.ptr;
+  var ptr = DebugJS.point.ptr;
   var hide = false;
   var cmdActive = DebugJS.cmd.hasFocus();
-  if ((ptr == null) || (!ptr.parentNode)) {
+  if (!ptr.el || !ptr.el.parentNode) {
     return null;
   }
-  var hint = point.hint.area;
+  var hint = DebugJS.point.hint.area;
   var hintFlg = false;
   if (hint && (hint.parentNode)) {
     hintFlg = true;
     ctx.bodyEl.removeChild(hint);
   }
-  ctx.bodyEl.removeChild(ptr);
+  ctx.bodyEl.removeChild(ptr.el);
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-    if (ctx.isOnDbgWin(point.x, point.y)) {
+    if (ctx.isOnDbgWin(ptr.x, ptr.y)) {
       hide = true;
       ctx.bodyEl.removeChild(ctx.win);
     }
   }
-  var el = document.elementFromPoint(point.x, point.y);
+  var el = document.elementFromPoint(ptr.x, ptr.y);
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
     if (hide) {
       ctx.bodyEl.appendChild(ctx.win);
@@ -14126,7 +14124,7 @@ DebugJS.point.getElementFromCurrentPos = function() {
       if (cmdActive) ctx.focusCmdLine();
     }
   }
-  ctx.bodyEl.appendChild(ptr);
+  ctx.bodyEl.appendChild(ptr.el);
   if (hintFlg) {
     ctx.bodyEl.appendChild(hint);
   }
@@ -14161,6 +14159,7 @@ DebugJS.point.setProp = function(prop, val, echo) {
   if (echo) DebugJS._log.res(v);
 };
 DebugJS.point.verify = function(prop, method, exp, label) {
+  var ptr = DebugJS.point.ptr;
   var test = DebugJS.test;
   var st = test.STATUS_ERR;
   var info;
@@ -14174,7 +14173,7 @@ DebugJS.point.verify = function(prop, method, exp, label) {
   }
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) {
-    info = errPfix + 'No element (x=' + DebugJS.point.x + ', y=' + DebugJS.point.y + ')';
+    info = errPfix + 'No element (x=' + ptr.x + ', y=' + DebugJS.ptr.y + ')';
     DebugJS._log.e(info);
     test.addResult(st, label, exp, undefined, method, info);
     test.onVrfyAftr(st);
@@ -14190,18 +14189,19 @@ DebugJS.point.verify = function(prop, method, exp, label) {
 DebugJS.point.move = function(x, y, speed, step) {
   x += ''; y += '';
   var point = DebugJS.point;
+  var ptr = point.ptr;
   var dst = point.move.dstPos;
   if (x.charAt(0) == '+') {
-    dst.x = point.x + (x.substr(1) | 0);
+    dst.x = ptr.x + (x.substr(1) | 0);
   } else if (x.charAt(0) == '-') {
-    dst.x = point.x - (x.substr(1) | 0);
+    dst.x = ptr.x - (x.substr(1) | 0);
   } else {
     dst.x = x | 0;
   }
   if (y.charAt(0) == '+') {
-    dst.y = point.y + (y.substr(1) | 0);
+    dst.y = ptr.y + (y.substr(1) | 0);
   } else if (y.charAt(0) == '-') {
-    dst.y = point.y - (y.substr(1) | 0);
+    dst.y = ptr.y - (y.substr(1) | 0);
   } else {
     dst.y = y | 0;
   }
@@ -14219,12 +14219,12 @@ DebugJS.point.move = function(x, y, speed, step) {
   }
   step |= 0;
   point.move.speed = speed;
-  if (dst.x >= point.x) {
+  if (dst.x >= ptr.x) {
     point.move.mvX = step;
   } else {
     point.move.mvX = step * (-1);
   }
-  if (dst.y >= point.y) {
+  if (dst.y >= ptr.y) {
     point.move.mvY = step;
   } else {
     point.move.mvY = step * (-1);
@@ -14244,6 +14244,7 @@ DebugJS.point.move.tmid = 0;
 DebugJS.point.move.cb = null;
 DebugJS.point._move = function() {
   var point = DebugJS.point;
+  var ptr = point.ptr;
   var move = point.move;
   move.tmid = 0;
   if ((move.mvX == 0) && (move.mvY == 0)) {
@@ -14253,8 +14254,8 @@ DebugJS.point._move = function() {
   var dst = move.dstPos;
   var mvX = move.mvX;
   var mvY = move.mvY;
-  var x = point.x + mvX;
-  var y = point.y + mvY;
+  var x = ptr.x + mvX;
+  var y = ptr.y + mvY;
 
   if (mvX < 0) {
     if (x < dst.x) {
@@ -14295,12 +14296,14 @@ DebugJS.point.move.stop = function() {
   }
 };
 DebugJS.point.startDragging = function() {
-  DebugJS.point.d = true;
-  DebugJS.point.ptr.style.cursor = 'move';
+  var ptr = DebugJS.point.ptr;
+  ptr.drg = true;
+  ptr.el.style.cursor = 'move';
 };
 DebugJS.point.endDragging = function() {
-  DebugJS.point.d = false;
-  DebugJS.point.ptr.style.cursor = 'auto';
+  var ptr = DebugJS.point.ptr;
+  ptr.drg = false;
+  ptr.el.style.cursor = 'auto';
 };
 DebugJS.point.drag = function(arg) {
   var data = DebugJS.point.drag.data;
@@ -14541,25 +14544,26 @@ DebugJS.point.hint.rplcBtn = function(s) {
 
 DebugJS.point.hint.move = function() {
   var point = DebugJS.point;
+  var ptr = point.ptr;
   var area = point.hint.area;
   if (!area) return;
   var clientW = document.documentElement.clientWidth;
   var clientH = document.documentElement.clientHeight;
   var ps = DebugJS.getElPosSize(area);
-  var y = (point.y - ps.h - 2);
+  var y = (ptr.y - ps.h - 2);
   if (y < 0) {
-    if (ps.h > point.y) {
-      y = point.y + point.ptrH;
+    if (ps.h > ptr.y) {
+      y = ptr.y + ptr.h;
     } else {
       y = 0;
     }
   }
-  var x = point.x;
+  var x = ptr.x;
   if (x < 0) {
     x = 0;
   }
-  if ((y + ps.h) > point.y) {
-    x = point.x + point.ptrW;
+  if ((y + ps.h) > ptr.y) {
+    x = ptr.x + ptr.w;
   }
   if ((x + ps.w) > clientW) {
     if (ps.w < clientW) {
