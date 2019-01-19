@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901200045';
+  this.v = '201901200130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8104,7 +8104,7 @@ DebugJS.prototype = {
     var ptr = DebugJS.point.ptr;
     var x, y;
     if (args[0] == '') {
-      DebugJS._log('x=' + ptr.x + ', y=' + ptr.y + ' w=' + ptr.w + ', y=' + ptr.h);
+      DebugJS._log('x=' + ptr.x + ', y=' + ptr.y + ' w=' + ptr.w + ', h=' + ptr.h);
       DebugJS.printUsage(tbl.help);
       return;
     }
@@ -8660,7 +8660,8 @@ DebugJS.prototype = {
       return ctx.props.pointmsgsize;
     }
     ctx.props.pointmsgsize = s;
-    var el = DebugJS.point.hint.pre;
+    var area = DebugJS.point.hint.area;
+    var el = area.pre;
     if (el) ctx.setStyle(el, 'font-size', s);
   },
   setPropTimerCb: function(ctx, v) {
@@ -13822,7 +13823,7 @@ DebugJS.point = function(x, y) {
     }
   }
 };
-DebugJS.point.ptr = {el: null, w: 12, h: 13, x: 0, y: 0, drg: false};
+DebugJS.point.ptr = {el: null, w: 12, h: 19, x: 0, y: 0, drg: false};
 DebugJS.point.CURSOR_DFLT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAATCAMAAACTKxybAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAD9QTFRFCwsY9PT3S0xX1tbYKCg04eHjLCw4wsLJMzM/zs7S+Pn7Q0ROs7S86OjqLi468PDzYWJsGBgkQkNN////////FEPnZwAAABV0Uk5T//////////////////////////8AK9l96gAAAF5JREFUeNpMzlcOwDAIA1Cyulcw9z9rQ0aLv3iSZUFZ/lBmC7DFL8WniqGGro6mgY0NcLMBTjZA4gpXBjQKRwf2vuZIJqSpotziZ3gFkxYiwlXQvvIByweJzyryCjAA+AIPnHnE+0kAAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_PTR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAYCAMAAADAi10DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJZQTFRF////EhQmHyIzPkBPT1Be+fn68fHywcHHFxorWltovr/E4+PmUlNgLS8//Pz8GRwuqquyFBcpSUtZeHqEa2x35ubo6enrQENRw8TKnJ6lTE5bc3R/9/f3paatRkhWKyw8NThHhoiRtra8lJWdFBYo1dbZKi092NjbFxkrMDJCMjVE0NDUx8jM9PT1ZWZyoqOqOz1M////QATI2QAAADJ0Uk5T/////////////////////////////////////////////////////////////////wANUJjvAAAAoUlEQVR42ozQ1xKDIBAF0GuwYO+a3nvn/38uChGFvOTODrNzXpZdMB7TZTIQ4mxdjfaRRTUyAOM/ehY/lCyKmqjU1NwPCVFo1LyPcqVRq5IosNaoBGzA4xRQTjIGAs/OU5WmY8C5KsSOFVCpxDJrALDO7cTZkPyQf+I1oEQsFJ96Wn53JHYnk+4S7HLjEG1SSSzO7wdnV/f3apO9TdF8BBgAC6AoMWCQ0+8AAAAASUVORK5CYII=';
 DebugJS.point.CURSOR_TXT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAQCAMAAADtX5XCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRFAAAA////pdmf3QAAAAJ0Uk5T/wDltzBKAAAAGElEQVR42mJgYGBgZAARjIx0xVB7AQIMABYAAFfcyzDzAAAAAElFTkSuQmCC';
@@ -13860,7 +13861,7 @@ DebugJS.point.show = function() {
   } else {
     document.body.appendChild(ptr.el);
   }
-  if (point.hint.st.visible) {
+  if (point.hint.area.visible) {
     point.hint.show();
   }
 };
@@ -14103,7 +14104,7 @@ DebugJS.point.getElementFromCurrentPos = function() {
   if (!ptr.el || !ptr.el.parentNode) {
     return null;
   }
-  var hint = DebugJS.point.hint.area;
+  var hint = DebugJS.point.hint.area.el;
   var hintFlg = false;
   if (hint && (hint.parentNode)) {
     hintFlg = true;
@@ -14460,11 +14461,11 @@ DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
 
 DebugJS.point.hint = function(msg, speed, step, start, end) {
   var hint = DebugJS.point.hint;
-  if (hint.area == null) {
+  var area = hint.area;
+  if (!area.el) {
     hint.createArea();
   }
-  var area = hint.area;
-  document.body.appendChild(area);
+  document.body.appendChild(area.el);
   try {
     var m = eval(msg) + '';
   } catch (e) {
@@ -14475,15 +14476,13 @@ DebugJS.point.hint = function(msg, speed, step, start, end) {
   } else {
     DebugJS.point.hint.setMsg(DebugJS.point.hint.replaceMsg(m));
   }
-  hint.st.hasMsg = true;
+  area.hasMsg = true;
   hint.show();
 };
-DebugJS.point.hint.area = null;
-DebugJS.point.hint.pre = null;
-DebugJS.point.hint.st = {visible: false, hasMsg: false};
+DebugJS.point.hint.area = {el: null, pre: null, visible: false, hasMsg: false};
 DebugJS.point.hint.createArea = function() {
   var ctx = DebugJS.ctx;
-  var hint = DebugJS.point.hint;
+  var area = DebugJS.point.hint.area;
   var el = document.createElement('div');
   el.className = 'dbg-hint';
   var sz = ctx.props.pointmsgsize;
@@ -14500,20 +14499,21 @@ DebugJS.point.hint.createArea = function() {
   ctx.setStyle(pre, 'font-size', sz);
   ctx.setStyle(pre, 'font-family', ctx.opt.fontFamily);
   el.appendChild(pre);
-  hint.pre = pre;
+  area.pre = pre;
   document.body.appendChild(el);
-  hint.area = el;
+  area.el = el;
 };
 DebugJS.point.hint.setMsg = function(m) {
   var ctx = DebugJS.ctx;
-  var el = DebugJS.point.hint.pre;
+  var area = DebugJS.point.hint.area;
+  var el = area.pre;
   ctx.setStyle(el, 'width', 'auto');
   ctx.setStyle(el, 'height', 'auto');
   el.innerHTML = m;
 };
 DebugJS.point.hint.msgseq = function(msg, m, speed, step, start, end) {
-  var hint = DebugJS.point.hint;
-  var el = hint.pre;
+  var area = DebugJS.point.hint.area;
+  var el = area.pre;
   DebugJS.point.hint.setMsg(m);
   var s = window.getComputedStyle(el);
   DebugJS.ctx.setStyle(el, 'width', s.width);
@@ -14543,13 +14543,13 @@ DebugJS.point.hint.rplcBtn = function(s) {
 };
 
 DebugJS.point.hint.move = function() {
-  var point = DebugJS.point;
-  var ptr = point.ptr;
-  var area = point.hint.area;
-  if (!area) return;
+  var ptr = DebugJS.point.ptr;
+  var area = DebugJS.point.hint.area;
+  var el = area.el;
+  if (!el) return;
   var clientW = document.documentElement.clientWidth;
   var clientH = document.documentElement.clientHeight;
-  var ps = DebugJS.getElPosSize(area);
+  var ps = DebugJS.getElPosSize(el);
   var y = (ptr.y - ps.h - 2);
   if (y < 0) {
     if (ps.h > ptr.y) {
@@ -14579,35 +14579,34 @@ DebugJS.point.hint.move = function() {
       y = 0;
     }
   }
-  area.style.top = y + 'px';
-  area.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.left = x + 'px';
 };
 DebugJS.point.hint.show = function() {
-  var point = DebugJS.point;
-  var hint = point.hint;
-  if (!hint.st.hasMsg) return;
+  var hint = DebugJS.point.hint;
   var area = hint.area;
-  if (!area) {
+  if (!area.hasMsg) return;
+  var area = hint.area;
+  if (!area.el) {
     hint.createArea();
   } else {
-    document.body.appendChild(area);
+    document.body.appendChild(area.el);
   }
-  hint.st.visible = true;
+  area.visible = true;
   hint.move();
 };
 DebugJS.point.hint.hide = function(hold) {
   var area = DebugJS.point.hint.area;
-  if (area && area.parentNode) document.body.removeChild(area);
-  if (!hold) DebugJS.point.hint.st.visible = false;
+  if (area.el && area.el.parentNode) document.body.removeChild(area.el);
+  if (!hold) area.visible = false;
 };
 DebugJS.point.hint.clear = function() {
-  var point = DebugJS.point;
-  var area = point.hint.area;
-  if (area) {
-    point.hint.pre.innerHTML = '';
-    point.hint.hide();
+  var area = DebugJS.point.hint.area;
+  if (area.el) {
+    area.pre.innerHTML = '';
+    DebugJS.point.hint.hide();
   }
-  point.hint.st.hasMsg = false;
+  area.hasMsg = false;
 };
 
 DebugJS.scrollWinTo = function(x, y, speed, step) {
