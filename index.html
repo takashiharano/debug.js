@@ -2730,6 +2730,124 @@ dbg.test.setSeq(<input type="text" id="test-setseq-txt" class="demo-text" style=
   </tr>
 
   <tr><td colspan="3" class="cat">Util</td></tr>
+
+  <tr>
+    <td class="name">dbg.getType</td>
+    <td>object</td>
+    <td>
+      Returns object type.<br>
+<br>
+<pre class="eg">
+"abc"      -&gt; "string"
+123        -&gt; "number"
+true       -&gt; "boolean"
+false      -&gt; "boolean"
+null       -&gt; "null"
+undefined  -&gt; "undefined"
+function() -&gt; "function"
+[object *] -&gt; "*"
+other      -&gt; "object"
+
+dbg.getType(<input type="text" id="gettype-txt" class="demo-text" style="width:100px;" value="&quot;abc&quot;">); <button class="demo-button2" onclick="log.res(dbg.getType(eval(getVal('gettype-txt'))));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getBrowserType</td>
+    <td></td>
+    <td>
+      Get browser type info<br><br>
+      e.g.,)
+<pre class="eg">
+{
+  name: 'Firefox',
+  version: '50.0'
+}
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.countElements</td>
+    <td>element selector</td>
+    <td>
+      Count number of elements.
+<pre class="eg">
+dbg.countElements('*');<button class="demo-button2" onclick="log(dbg.countElements('*'));">DEMO</button>
+dbg.countElements('*', true); <button class="demo-button2" onclick="log(dbg.countElements('*', true));">DEMO</button>
+-&gt; Count all elements
+
+dbg.countElements('#id');
+-&gt; Count the id's element
+   dbg.countElements('#title');<button class="demo-button2" onclick="log(dbg.countElements('#title'));">DEMO</button>
+
+dbg.countElements('.className');
+-&gt; Count elements which has the className.
+
+dbg.countElements('tagName');
+-&gt; Count elements which correspond to the tagName.
+   dbg.countElements('div');<button class="demo-button2" onclick="log(dbg.countElements('div'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getElement</td>
+    <td>
+      arg1: #id / .className / tagName<br>
+      arg2: index<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Get an DOM element object of the specified selector<br><br>
+      e.g.,)
+<pre class="eg">
+dbg.getElement('#id');
+dbg.getElement('.className', 0);
+dbg.getElement('tagName', 1);
+</pre><br>
+Returns an DOM element or null if an element with the specified selector is not in the document.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getElPosSize</td>
+    <td>
+      DOM element object / #id / .className / tagName
+    </td>
+    <td>
+      Get the position and size of the specified DOM element<br><br>
+      e.g.,)
+<pre class="eg">
+{
+ x: 504,
+ y: 77,
+ w: 269,
+ h: 94
+}
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.getHTML</td>
+    <td>
+      base64 flag<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Dump the serialized HTML string of the whole document<br>
+      base64 flag: false = plain text / true = Base64 encoded string
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.html2text</td>
+    <td>html</td>
+    <td>
+      Convert HTML to plain text.
+    </td>
+  </tr>
+
   <tr>
     <td class="name">dbg.encodeBase64</td>
     <td>string</td>
@@ -2794,7 +2912,7 @@ max: maximum length
   </tr>
 
   <tr>
-    <td class="name">dbg.escTags</td>
+    <td class="name">dbg.escHtml</td>
     <td>string</td>
     <td>
       Perform HTML sanitization.<br>
@@ -2842,135 +2960,6 @@ dbg.toHalfWidth('<input type="text" id="tohalf-txt" class="demo-text" style="wid
 <pre class="eg">
 dbg.toFullWidth('<input type="text" id="tofull-txt" class="demo-text" style="width:350px;" value=" !&quot;#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~">'); <button class="demo-button2" onclick="log.p(dbg.toFullWidth(getVal('tofull-txt')));">DEMO</button>
 </pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getType</td>
-    <td>object</td>
-    <td>
-      Returns object type.<br>
-<br>
-<pre class="eg">
-"abc"      -&gt; "string"
-123        -&gt; "number"
-true       -&gt; "boolean"
-false      -&gt; "boolean"
-null       -&gt; "null"
-undefined  -&gt; "undefined"
-function() -&gt; "function"
-[object *] -&gt; "*"
-other      -&gt; "object"
-
-dbg.getType(<input type="text" id="gettype-txt" class="demo-text" style="width:100px;" value="&quot;abc&quot;">); <button class="demo-button2" onclick="log.res(dbg.getType(eval(getVal('gettype-txt'))));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.html2text</td>
-    <td>html</td>
-    <td>
-      Convert HTML to plain text.
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getBrowserType</td>
-    <td></td>
-    <td>
-      Get browser type info<br><br>
-      e.g.,)
-<pre class="eg">
-{
-  name: 'Firefox',
-  version: '50.0'
-}
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.countElements</td>
-    <td>element selector</td>
-    <td>
-      Count number of elements.
-<pre class="eg">
-dbg.countElements('*');<button class="demo-button2" onclick="log(dbg.countElements('*'));">DEMO</button>
-dbg.countElements('*', true); <button class="demo-button2" onclick="log(dbg.countElements('*', true));">DEMO</button>
--&gt; Count all elements
-
-dbg.countElements('#id');
--&gt; Count the id's element
-   dbg.countElements('#title');<button class="demo-button2" onclick="log(dbg.countElements('#title'));">DEMO</button>
-
-dbg.countElements('.className');
--&gt; Count elements which has the className.
-
-dbg.countElements('tagName');
--&gt; Count elements which correspond to the tagName.
-   dbg.countElements('div');<button class="demo-button2" onclick="log(dbg.countElements('div'));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getHTML</td>
-    <td>
-      base64 flag<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Dump the serialized HTML string of the whole document<br>
-      base64 flag: false = plain text / true = Base64 encoded string
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getElement</td>
-    <td>
-      arg1: #id / .className / tagName<br>
-      arg2: index<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Get an DOM element object of the specified selector<br><br>
-      e.g.,)
-<pre class="eg">
-dbg.getElement('#id');
-dbg.getElement('.className', 0);
-dbg.getElement('tagName', 1);
-</pre><br>
-Returns an DOM element or null if an element with the specified selector is not in the document.
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getElPosSize</td>
-    <td>
-      DOM element object / #id / .className / tagName
-    </td>
-    <td>
-      Get the position and size of the specified DOM element<br><br>
-      e.g.,)
-<pre class="eg">
-{
- x: 504,
- y: 77,
- w: 269,
- h: 94
-}
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.http</td>
-    <td>
-      arg1: request<br>
-      arg2: callback<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Send an HTTP request.<br>
-      See <a href="#" onclick="scrollToSelector('#http-demo', 1000);return false;">demo section</a> for details.
     </td>
   </tr>
 
@@ -3144,6 +3133,48 @@ var obj = {
 dbg.getKeys(obj);
 -&gt; ['key1', 'key2', 'key3']
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.http</td>
+    <td>
+      arg1: request<br>
+      arg2: callback<span class="annotation">(opt)</span>
+    </td>
+    <td>
+      Send an HTTP request.<br>
+<pre class="code" style="width:540px;">
+<span class="emphasis">var request = {
+  url: '<input type="text" id="http-url-text" value="https://debugjs.net/test/" class="inline-text-input" style="width:410px;">',
+  method: '<input type="text" id="http-method-text" value="GET" class="inline-text-input" style="width:60px;">',
+  data: '<input type="text" id="http-data-text" value="" class="inline-text-input" style="width:410px;">',
+  async: <input type="text" id="http-async-text" value="true" class="inline-text-input" style="width:60px;">,
+  cache: <input type="text" id="http-cache-text" value="false" class="inline-text-input" style="width:60px;">,
+  user: '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
+  pass: '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
+  contentType: '<input type="text" id="http-contenttype-text" value="" class="inline-text-input" style="width:200px;">',
+  userAgent: '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:380px;">'
+};
+
+dbg.http(request, callback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
+
+function callback(xhr) {
+  var statusMsg = xhr.status + ' ' + xhr.statusText;
+  if (xhr.status == 0) {
+    log.e('cannot load: ' + statusMsg);
+  } else {
+    log(statusMsg);
+  }
+  var head = xhr.getAllResponseHeaders();
+  var body = xhr.responseText.replace(/&lt;/g, '&amp;lt;');
+  body = body.replace(/&gt;/g, '&amp;gt;');
+  if (head || body) {
+    log(head + '\n'+ body);
+  }
+}
+</pre>
+
     </td>
   </tr>
 
@@ -6308,42 +6339,6 @@ console.timeEnd('timer3');<br>
 </tr>
 </table>
 <br>
-
-<!-- ********************************************************************** -->
-<div class="caption2" id="http-demo">HTTP Request</div>
-<pre class="code">
-<span class="emphasis">var request = {
-  url: '<input type="text" id="http-url-text" value="https://debugjs.net/test/" class="inline-text-input" style="width:600px;">',
-  method: '<input type="text" id="http-method-text" value="GET" class="inline-text-input" style="width:60px;">',
-  data: '<input type="text" id="http-data-text" value="" class="inline-text-input" style="width:600px;">',
-  async: <input type="text" id="http-async-text" value="true" class="inline-text-input" style="width:60px;">,
-  cache: <input type="text" id="http-cache-text" value="false" class="inline-text-input" style="width:60px;">,
-  user: '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
-  pass: '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
-  contentType: '<input type="text" id="http-contenttype-text" value="" class="inline-text-input" style="width:200px;">',
-  userAgent: '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:550px;">'
-};
-
-dbg.http(request, callback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
-
-function callback(xhr) {
-  var statusMsg = xhr.status + ' ' + xhr.statusText;
-  if (xhr.status == 0) {
-    log.e('cannot load: ' + statusMsg);
-  } else {
-    log(statusMsg);
-  }
-  var head = xhr.getAllResponseHeaders();
-  var body = xhr.responseText.replace(/&lt;/g, '&amp;lt;');
-  body = body.replace(/&gt;/g, '&amp;gt;');
-  if (head || body) {
-    log(head + '\n'+ body);
-  }
-}
-</pre>
-
-<br>
-
 
 <!-- ********************************************************************** -->
 <div class="caption2">One-line JSON Sample for "json" command</div>

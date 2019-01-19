@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901191500';
+  this.v = '201901192200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1901,7 +1901,7 @@ DebugJS.prototype = {
     for (var i = 0; i < len; i++) {
       lineCnt++;
       var data = buf[i];
-      var msg = (ctx.fltrTxtHtml ? data.msg : DebugJS.escTags(data.msg));
+      var msg = (ctx.fltrTxtHtml ? data.msg : DebugJS.escHtml(data.msg));
       var style = '';
       switch (data.type) {
         case DebugJS.LOG_TYPE_DBG:
@@ -3962,10 +3962,10 @@ DebugJS.prototype = {
     var text = '';
     if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
       if (el.tagName == 'META') {
-        text = DebugJS.escTags(el.outerHTML);
+        text = DebugJS.escHtml(el.outerHTML);
       } else {
         if (el.innerText != undefined) {
-          text = DebugJS.escTags(el.innerText);
+          text = DebugJS.escHtml(el.innerText);
         }
       }
     }
@@ -4006,7 +4006,7 @@ DebugJS.prototype = {
       }
     }
     allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
-    var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escTags(el.name);
+    var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escHtml(el.name);
     var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclChr(el.value);
 
     var html = '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
@@ -6010,7 +6010,7 @@ DebugJS.prototype = {
   },
   getTextPreview: function(decoded) {
     if (decoded.length == 0) return '';
-    var txt = DebugJS.escTags(decoded);
+    var txt = DebugJS.escHtml(decoded);
     txt = txt.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
     txt = txt.replace(/([^>])\n/g, '$1' + DebugJS.CHR_LF_S + '\n');
     txt = txt.replace(/\r/g, DebugJS.CHR_CR_S + '\n');
@@ -6692,7 +6692,7 @@ DebugJS.prototype = {
     }
     if (echo) {
       var echoStr = str;
-      echoStr = DebugJS.escTags(echoStr);
+      echoStr = DebugJS.escHtml(echoStr);
       echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       DebugJS._log.s(echoStr);
     }
@@ -7577,7 +7577,7 @@ DebugJS.prototype = {
     var s = '<table>';
     for (var i = 0; i < bf.length; i++) {
       var cmd = bf[i];
-      cmd = DebugJS.escTags(cmd);
+      cmd = DebugJS.escHtml(cmd);
       cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
       s += '<tr><td class="dbg-cmdtd" style="text-align:right">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
@@ -9196,7 +9196,7 @@ DebugJS.prototype = {
         i = eval(i);
       }
       var ret = fn(i, a1, a2);
-      var r = (esc ? DebugJS.escTags(ret) : ret);
+      var r = (esc ? DebugJS.escHtml(ret) : ret);
       if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(r));
       return ret;
     } catch (e) {
@@ -9768,7 +9768,7 @@ DebugJS.quoteStrIfNeeded = function(s) {
   return s;
 };
 DebugJS.escEncString = function(s) {
-  s = DebugJS.escTags(s);
+  s = DebugJS.escHtml(s);
   s = DebugJS.quoteStr(s);
   return s;
 };
@@ -9776,7 +9776,7 @@ DebugJS.escEncString = function(s) {
 DebugJS.styleVal = function(v) {
   var s = v;
   if (typeof s == 'string') {
-    s = DebugJS.quoteStr(DebugJS.escTags(s));
+    s = DebugJS.quoteStr(DebugJS.escHtml(s));
   } else {
     s = DebugJS.setStyleIfObjNA(s);
   }
@@ -10283,7 +10283,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             if (obj[key].toString().match(/\[native code\]/)) {
               arg.dump += ' [native]';
             }
-            arg.dump += ' ' + DebugJS.escTags(key) + '()';
+            arg.dump += ' ' + DebugJS.escHtml(key) + '()';
             arg.cnt++;
             if ((levelLimit == 0) || ((levelLimit >= 1) && ((arg.lv + 1) < levelLimit))) {
               if (Object.keys(obj[key]).length > 0) {
@@ -10293,7 +10293,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
           } else if (Object.prototype.toString.call(obj[key]) == '[object Date]') {
             arg.dump += indent;
             if (toJson) {arg.dump += '"';}
-            arg.dump += (toJson ? key : DebugJS.escTags(key));
+            arg.dump += (toJson ? key : DebugJS.escHtml(key));
             if (toJson) {arg.dump += '"';}
             var dt = DebugJS.getDateTime(obj[key]);
             var date = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss + '.' + dt.sss + ' (' + obj[key].getTime() + ')';
@@ -10316,7 +10316,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
           } else {
             arg.dump += indent;
             if (toJson) {arg.dump += '"';}
-            arg.dump += (toJson ? key : DebugJS.escTags(key));
+            arg.dump += (toJson ? key : DebugJS.escHtml(key));
             if (toJson) {arg.dump += '"';}
             arg.dump += ': ';
           }
@@ -10394,10 +10394,10 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
         if (toJson) {
           str += '...';
         } else {
-          str = DebugJS.escTags(str) + SNIP;
+          str = DebugJS.escHtml(str) + SNIP;
         }
       } else {
-        str = (toJson ? obj : DebugJS.escTags(obj));
+        str = (toJson ? obj : DebugJS.escHtml(obj));
       }
       str = str.replace(/\\/g, '\\\\');
       if (toJson) {
@@ -10432,7 +10432,7 @@ DebugJS._objDmp0 = function(arg, toJson, v) {
 DebugJS._objDmp1 = function(arg, key, toJson, indent, v) {
   arg.dump += indent;
   if (toJson) {arg.dump += '"';}
-  arg.dump += (toJson ? key : DebugJS.escTags(key));
+  arg.dump += (toJson ? key : DebugJS.escHtml(key));
   if (toJson) {arg.dump += '"';}
   arg.dump += ': ';
   if (toJson) {
@@ -10570,7 +10570,7 @@ DebugJS._cmdJson = function(s, f, lv) {
   var p = DebugJS.ctx.props;
   try {
     var j = DebugJS.fmtJSON(s, f, lv, p.dumplimit, p.dumpvallen);
-    if (f) j = DebugJS.escTags(j);
+    if (f) j = DebugJS.escHtml(j);
     DebugJS._log.mlt(j);
     return j;
   } catch (e) {
@@ -11690,7 +11690,7 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
     switch (omitpart) {
       case DebugJS.OMIT_FIRST:
         str = DebugJS.substr(str, (maxLen * (-1)));
-        str = snip + DebugJS.escTags(str);
+        str = snip + DebugJS.escHtml(str);
         break;
       case DebugJS.OMIT_MID:
         var firstLen = maxLen / 2;
@@ -11701,11 +11701,11 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
         }
         var firstText = DebugJS.substr(str, firstLen);
         var latterText = DebugJS.substr(str, (latterLen * (-1)));
-        str = DebugJS.escTags(firstText) + snip + DebugJS.escTags(latterText);
+        str = DebugJS.escHtml(firstText) + snip + DebugJS.escHtml(latterText);
         break;
       default:
         str = DebugJS.substr(str, maxLen);
-        str = DebugJS.escTags(str) + snip;
+        str = DebugJS.escHtml(str) + snip;
     }
   }
   return str;
@@ -11794,7 +11794,7 @@ DebugJS.escape = function(s, c) {
 DebugJS._escape = function(s, c) {
   return s.replace(new RegExp(c, 'g'), '\\' + c);
 };
-DebugJS.escTags = function(s) {
+DebugJS.escHtml = function(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 DebugJS.escSpclChr = function(s) {
@@ -12256,7 +12256,7 @@ DebugJS._log.s = function(m) {
 };
 DebugJS._log.p = function(o, l, m, j) {
   var s = (m ? m : '') + '\n' + DebugJS.objDump(o, j, l, DebugJS.ctx.props.dumplimit, DebugJS.ctx.props.dumpvallen);
-  if (j) s = DebugJS.escTags(s);
+  if (j) s = DebugJS.escHtml(s);
   DebugJS._log.out(s, DebugJS.LOG_TYPE_LOG);
 };
 DebugJS._log.res = function(m) {
@@ -12298,7 +12298,7 @@ DebugJS.stack = function(ldx, q) {
     if (cnt > 0) {rslt += '\n';}
     rslt += DebugJS.delLeadingSP(s).replace(/^at /, '');cnt++;
   }
-  if (!q) DebugJS._log('Stack:\n' + DebugJS.escTags(rslt));
+  if (!q) DebugJS._log('Stack:\n' + DebugJS.escHtml(rslt));
   return rslt;
 };
 DebugJS.stktop = function(idx) {
