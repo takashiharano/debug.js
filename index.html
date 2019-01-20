@@ -4552,8 +4552,14 @@ $ point verify <i>propertyName</i> <i>operand</i> <i>value</i>
   $ point verify value &gt;= "123"
   $ point verify value regexp \d.*\sabc
 
+$point ch 1
+-&gt; Switch the pointer channel. (Default ch is 0)
+
 $ point init
 -&gt; Hide pointer, clear message, point x=0, y=0.
+
+$ point init -a
+-&gt; Initialize all pointer channel.
 </pre>
     </td>
   </tr>
