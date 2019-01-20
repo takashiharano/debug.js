@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901201635';
+  this.v = '201901201720';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8319,10 +8319,10 @@ DebugJS.prototype = {
     }
     try {
       ch = eval(ch) | 0;
+      point.ch = ch;
     } catch (e) {
       DebugJS._log.e(e);
     }
-    point.ch = ch;
     return point.ch;
   },
 
@@ -14536,11 +14536,12 @@ DebugJS.point.hint = function(msg, speed, step, start, end) {
 DebugJS.point.hint.areas = [];
 DebugJS.point.hint.getArea = function() {
   var point = DebugJS.point;
+  var area = point.hint.areas;
   var ch = point.ch;
-  if (!point.hint.areas[ch]) {
-    point.hint.areas[ch] = {el: null, pre: null, visible: false, hasMsg: false};
+  if (!areas[ch]) {
+    areas[ch] = {el: null, pre: null, visible: false, hasMsg: false};
   }
-  return point.hint.areas[ch];
+  return areas[ch];
 };
 DebugJS.point.hint.createArea = function() {
   var ctx = DebugJS.ctx;
