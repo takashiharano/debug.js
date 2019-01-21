@@ -3638,7 +3638,7 @@ $ base64 -d YWJjZGVmZw==
   <tr>
     <td class="name">bat</td>
     <td>
-      arg1: run|pause|stop|list|status|pc|clear|exec<br>
+      arg1: run|pause|stop|list|status|pc|clear|exec|set<br>
       arg2: start line<span class="annotation">(opt)</span><br>
       arg3: end line<span class="annotation">(opt)</span>
     </td>
@@ -3654,19 +3654,30 @@ $ bat clear
 $ bat exec b64-encoded-bat
 
 $ bat run 1
--&gt; execute only line 1
+-&gt; Execute only line 1
 
 $ bat run -s 3 -e 5
--&gt; execute from line 3 through line 5
+-&gt; Execute from line 3 through line 5
 
 $ bat run -s 3
--&gt; execute from line 3 through the end
+-&gt; Execute from line 3 through the end
 
 $ bat pc
 -&gt; Displays current program counter
 
 $ bat labels [pattern<span class="annotation">(RegExp)</span>]
 -&gt; Displays label list
+
+$ bat set b 1
+$ bat set break 1
+-&gt; Sets a break point to the specified line.
+
+$ bat set delay 1000
+$ bat set delay 1d2h3m4s500
+-&gt; Sets execution delay.
+
+$ bat set pc 1
+-&gt; Sets the program counter to the specified line.
 </pre>
     </td>
   </tr>

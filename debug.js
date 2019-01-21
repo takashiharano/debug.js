@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901220055';
+  this.v = '201901220111';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -356,7 +356,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|sw1|sw2]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', help: 'p [-l&lt;n&gt;] [-json] object'},
-    {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key [-timeout ms|1d2h3m4s500]|-u]'},
+    {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key [-timeout ms|1d2h3m4s500]]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
@@ -6928,21 +6928,17 @@ DebugJS.prototype = {
   },
   _cmdBatSet: function(arg, echo) {
     var a = DebugJS.splitCmdLine(arg);
-    var key = a[0];
+    var k = a[0];
     var v = a[1];
     if (!v) {DebugJS.printUsage('bat set break|delay val'); return;}
-    try {
-      v = eval(v);
-    } catch (e) {
-      DebugJS._log.e(e);
-      return;
-    }
-    switch (key) {
+    switch (k) {
       case 'b':
       case 'break':
         DebugJS.bat.ctrl.breakP = v;
         break;
       case 'delay':
+        if (DebugJS.isTmStr(v)) v = DebugJS.str2ms(v);
+        DebugJS.bat.ctrl[k] = v;
         break;
       case 'pc':
         DebugJS.bat.setPc(v);
@@ -6951,7 +6947,6 @@ DebugJS.prototype = {
         DebugJS.printUsage('bat set b|break|delay|pc val');
         return;
     }
-    DebugJS.bat.ctrl[key] = v;
     if (echo) DebugJS._log.res(v);
   },
 
