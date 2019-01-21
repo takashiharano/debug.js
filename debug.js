@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901210000';
+  this.v = '201901212350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -85,7 +85,7 @@ var DebugJS = DebugJS || function() {
   this.DFLT_ELM_ID = '_debug_';
   this.id = null;
   this.bodyEl = null;
-  this.bodyCursor = '';
+  this.cursor = '';
   this.styleEl = null;
   this.win = null;
   this.winBody = null;
@@ -301,8 +301,8 @@ var DebugJS = DebugJS || function() {
   this.winExpandCnt = 0;
   this.clickedPosX = 0;
   this.clickedPosY = 0;
-  this.prevOffsetTop = 0;
-  this.prevOffsetLeft = 0;
+  this.ptOfstY = 0;
+  this.ptOfstX = 0;
   this.savedFunc = null;
   this.computedFontSize = this.DEFAULT_OPTIONS.fontSize;
   this.computedWidth = this.DEFAULT_OPTIONS.width;
@@ -1113,7 +1113,7 @@ DebugJS.prototype = {
       if (!(ctx.uiStatus & DebugJS.UI_ST_RESIZABLE)) return;
       ctx.startResize(ctx, e);
       ctx.uiStatus |= state;
-      ctx.bodyCursor = ctx.bodyEl.style.cursor;
+      ctx.cursor = ctx.bodyEl.style.cursor;
       ctx.bodyEl.style.cursor = cursor;
     };
     return el;
@@ -1127,7 +1127,7 @@ DebugJS.prototype = {
       if (!(ctx.uiStatus & DebugJS.UI_ST_RESIZABLE)) return;
       ctx.startResize(ctx, e);
       ctx.uiStatus |= state;
-      ctx.bodyCursor = ctx.bodyEl.style.cursor;
+      ctx.cursor = ctx.bodyEl.style.cursor;
       ctx.bodyEl.style.cursor = cursor;
     };
     return el;
@@ -2152,8 +2152,8 @@ DebugJS.prototype = {
     ctx.ptOpTm = (new Date()).getTime();
     ctx.winBody.style.cursor = 'move';
     ctx.disableTextSelect(ctx);
-    ctx.prevOffsetTop = y - ctx.win.offsetTop;
-    ctx.prevOffsetLeft = x - ctx.win.offsetLeft;
+    ctx.ptOfstY = y - ctx.win.offsetTop;
+    ctx.ptOfstX = x - ctx.win.offsetLeft;
     if (!document.all) {
       window.getSelection().removeAllRanges();
     }
@@ -2163,8 +2163,8 @@ DebugJS.prototype = {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
     ctx.ptOpTm = (new Date()).getTime();
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJ;
-    ctx.win.style.top = y - ctx.prevOffsetTop + 'px';
-    ctx.win.style.left = x - ctx.prevOffsetLeft + 'px';
+    ctx.win.style.top = y - ctx.ptOfstY + 'px';
+    ctx.win.style.left = x - ctx.ptOfstX + 'px';
   },
 
   endMove: function(ctx) {
@@ -2287,7 +2287,7 @@ DebugJS.prototype = {
 
   endResize: function(ctx) {
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZING_ALL;
-    ctx.bodyEl.style.cursor = ctx.bodyCursor;
+    ctx.bodyEl.style.cursor = ctx.cursor;
     ctx.enableTextSelect(ctx);
   },
 
@@ -2357,13 +2357,13 @@ DebugJS.prototype = {
     if (!q) DebugJS._log.s('Screen Measure ON');
     ctx.status |= DebugJS.ST_MEASURE;
     ctx.featStack.push(DebugJS.ST_MEASURE);
-    ctx.bodyCursor = ctx.bodyEl.style.cursor;
+    ctx.cursor = ctx.bodyEl.style.cursor;
     ctx.bodyEl.style.cursor = 'default';
     ctx.updateMeasBtn(ctx);
   },
   closeScreenMeasure: function(ctx, q) {
     ctx.stopMeasure(ctx);
-    ctx.bodyEl.style.cursor = ctx.bodyCursor;
+    ctx.bodyEl.style.cursor = ctx.cursor;
     ctx.status &= ~DebugJS.ST_MEASURE;
     DebugJS.delArrVal(ctx.featStack, DebugJS.ST_MEASURE);
     if (!q) DebugJS._log.s('Screen Measure OFF');
@@ -3993,7 +3993,7 @@ DebugJS.prototype = {
     var allStyles = '';
     var MIN_KEY_LEN = 20;
     for (var k in computedStyle) {
-      if (!(k.match(/^\d.*/))) {
+      if (!k.match(/^\d.*/)) {
         if (typeof computedStyle[k] != 'function') {
           var indent = '';
           if (k.length < MIN_KEY_LEN) {
@@ -4007,7 +4007,7 @@ DebugJS.prototype = {
     }
     allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
     var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escHtml(el.name);
-    var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclChr(el.value);
+    var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclCh(el.value);
 
     var html = '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
     DebugJS.addPropSep(ctx) +
@@ -5699,17 +5699,18 @@ DebugJS.prototype = {
     }
     ctx.fileLoadProg.style.width = '0%';
     ctx.fileLoadProg.textContent = '0%';
-    ctx.fileReader = new FileReader();
-    ctx.fileReader.onloadstart = ctx.onFileLoadStart;
-    ctx.fileReader.onprogress = ctx.onFileLoadProg;
-    ctx.fileReader.onload = ctx.onFileLoaded;
-    ctx.fileReader.onabort = ctx.onAbortLoadFile;
-    ctx.fileReader.onerror = ctx.onFileLoadError;
-    ctx.fileReader.file = file;
+    var fr = new FileReader();
+    fr.onloadstart = ctx.onFileLoadStart;
+    fr.onprogress = ctx.onFileLoadProg;
+    fr.onload = ctx.onFileLoaded;
+    fr.onabort = ctx.onAbortLoadFile;
+    fr.onerror = ctx.onFileLoadError;
+    fr.file = file;
+    ctx.fileReader = fr;
     if (fmt == 'bin') {
-      ctx.fileReader.readAsArrayBuffer(file);
+      fr.readAsArrayBuffer(file);
     } else {
-      ctx.fileReader.readAsDataURL(file);
+      fr.readAsDataURL(file);
     }
   },
   cancelLoadFile: function() {
@@ -6724,7 +6725,7 @@ DebugJS.prototype = {
     return ret;
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
-    cmdline = DebugJS.escCtrlChr(cmdline);
+    cmdline = DebugJS.escCtrlCh(cmdline);
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
     var arg = cmds[1];
@@ -8003,7 +8004,7 @@ DebugJS.prototype = {
     }
     var key = DebugJS.getOptVal(arg, 'key');
     var to = DebugJS.getOptVal(arg, 'timeout');
-    if (!(DebugJS.ctx._cmdPause(op, key, to))) {
+    if (!DebugJS.ctx._cmdPause(op, key, to)) {
       DebugJS.printUsage(tbl.help);
     }
   },
@@ -9068,7 +9069,7 @@ DebugJS.prototype = {
         s += DebugJS.toBin(v);
         if (j == 0) {
           s += '  ' + DebugJS.getUnicodePoints(ch);
-          s += ' ' + DebugJS.hlCtrlChr(ch, true);
+          s += ' ' + DebugJS.hlCtrlCh(ch, true);
         }
         s += '\n';
         cnt++;
@@ -10421,7 +10422,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
       if (toJson) {
         str = str.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
       } else {
-        str = DebugJS.hlCtrlChr(str);
+        str = DebugJS.hlCtrlCh(str);
       }
       arg.dump += (toJson ? '"' + str.replace(/"/g, '\\"') + '"' : DebugJS.quoteStr(str));
       arg.cnt++;
@@ -11420,7 +11421,7 @@ DebugJS.getRndNum = function(min, max) {
   return rnd;
 };
 
-DebugJS.getRandomChr = function() {
+DebugJS.getRandomCh = function() {
   return String.fromCharCode(DebugJS.getRndNum(0x20, 0x7e));
 };
 
@@ -11435,7 +11436,7 @@ DebugJS.getRndStr = function(min, max) {
   for (var i = 0; i < len; i++) {
     var retry = true;
     while (retry) {
-      ch = DebugJS.getRandomChr();
+      ch = DebugJS.getRandomCh();
       if ((!(ch.match(/[!-\/:-@\[-`{-~]/))) && (!(((i == 0) || (i == (len - 1))) && (ch == ' ')))) {
         retry = false;
       }
@@ -11821,16 +11822,16 @@ DebugJS._escape = function(s, c) {
 DebugJS.escHtml = function(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
-DebugJS.escSpclChr = function(s) {
+DebugJS.escSpclCh = function(s) {
   return (s + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
-DebugJS.escCtrlChr = function(s) {
+DebugJS.escCtrlCh = function(s) {
   return s.replace(/\t/g, '\\t').replace(/\v/g, '\\v').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace(/\f/g, '\\f');
 };
-DebugJS.decCtrlChr = function(s) {
+DebugJS.decCtrlCh = function(s) {
   return s.replace(/\\t/g, '\t').replace(/\\v/g, '\v').replace(/\\r/g, '\r').replace(/\\n/g, '\n').replace(/\\f/g, '\f');
 };
-DebugJS.hlCtrlChr = function(s, sp) {
+DebugJS.hlCtrlCh = function(s, sp) {
   var st = '<span class="dbg-txt-hl">';
   var et = '</span>';
   if (sp) s = s.replace(/ /g, st + ' ' + et);
@@ -14870,7 +14871,7 @@ DebugJS.setText = function(elm, txt, speed, step, start, end) {
   } catch (e) {
     DebugJS._log.e('setText(): ' + e);
   }
-  txt = DebugJS.decCtrlChr(txt);
+  txt = DebugJS.decCtrlCh(txt);
   data.txt = txt;
   if ((speed == undefined) || (speed == null) || (speed == '')) {
     speed = DebugJS.ctx.props.textspeed;
@@ -15297,14 +15298,14 @@ DebugJS.test.getStyledInfoStr = function(result) {
     echoExp = '<span style="color:#0ff">/</span>' + echoExp + '<span style="color:#0ff">/</span>';
   } else if (typeof echoExp == 'string') {
     echoExp = DebugJS.styleVal(echoExp);
-    echoExp = DebugJS.hlCtrlChr(echoExp);
+    echoExp = DebugJS.hlCtrlCh(echoExp);
   } else {
     echoExp = DebugJS.styleVal(echoExp);
   }
   var echoGot = result.got;
   if (typeof echoGot == 'string') {
     echoGot = DebugJS.styleVal(echoGot);
-    echoGot = DebugJS.hlCtrlChr(echoGot);
+    echoGot = DebugJS.hlCtrlCh(echoGot);
   } else {
     echoGot = DebugJS.styleVal(echoGot);
   }
