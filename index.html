@@ -1990,14 +1990,6 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
   </tr>
 
   <tr>
-    <td class="name">dbg.bat.list</td>
-    <td></td>
-    <td>
-      Get list of the program of loaded batch script and point the current execution line <button class="demo-button2" onclick="log.p(dbg.bat.list());">DEMO</button>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">dbg.bat.clear</td>
     <td></td>
     <td>
@@ -2028,6 +2020,17 @@ dbg.bat.set(commands); <button class="demo-button2" onclick="batSetDemo();">DEMO
     <td></td>
     <td>
       true = running / false = stopped <button class="demo-button2" onclick="log(dbg.bat.isRunning());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.bat.isAvailable</td>
+    <td></td>
+    <td>
+      Returns if BAT script is available.
+<pre class="eg">
+dbg.bat.isAvailable() <button class="demo-button2" onclick="log(dbg.bat.isAvailable());">DEMO</button>
+</pre>
     </td>
   </tr>
 
@@ -2086,13 +2089,21 @@ dbg.bat.getSymbols('<input type="text" id="getsyms-type-txt" class="demo-text" s
   </tr>
 
   <tr>
-    <td class="name">dbg.bat.isAvailable</td>
+    <td class="name">dbg.bat.nestLv</td>
     <td></td>
     <td>
-      Returns if BAT script is available.
+      Returns current execution nest level.
 <pre class="eg">
-dbg.bat.isAvailable() <button class="demo-button2" onclick="log(dbg.bat.isAvailable());">DEMO</button>
+dbg.bat.nestLv() <button class="demo-button2" onclick="log.res(dbg.bat.nestLv());">DEMO</button>
 </pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.bat.list</td>
+    <td></td>
+    <td>
+      Get list of the program of loaded batch script and point the current execution line <button class="demo-button2" onclick="log.p(dbg.bat.list());">DEMO</button>
     </td>
   </tr>
 
@@ -4335,17 +4346,15 @@ $ p -a object
     <td>
      -key <i>key</i><span class="annotation">(opt)</span><br>
      -timeout <i>ms</i><span class="annotation">(opt)</span><br>
-     -s<span class="annotation">(opt)</span>
     </td>
     <td>
      Suspends processing of batch file.<br>
-     Execute "resume" command to resume.<br>
+     Click, press any key, or execute "resume" command to resume.<br>
      -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.<br>
-     -timeout option: Set time-out value in milliseconds.<span class="annotation">(opt)</span>
-     -s option: Simple pause, Click or press any key to continue.<br>
+     -timeout option: Set time-out value in milliseconds.<span class="annotation">(opt)</span><br>
 <pre class="eg">
 $ pause
-<span class="annotation">$ resume</span>
+<span class="annotation">click / key press</span>
 
 $ pause -key aaa [-timeout ms|1d2h3m4s500]
 <span class="annotation">$ resume</span>
@@ -4356,8 +4365,8 @@ $ pause -key aaa|bbb [-timeout ms|1d2h3m4s500]
 <span class="annotation">$ resume -key aaa</span>
 <span class="annotation">$ resume -key bbb</span>
 
-$ pause -s
-<span class="annotation">key press / click</span>
+$pause -key [-timeout ms|1d2h3m4s500]
+<span class="annotation">$ resume / $ resume -key</span>
 </pre>
     </td>
   </tr>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901220000';
+  this.v = '201901220055';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7995,13 +7995,7 @@ DebugJS.prototype = {
 
   cmdPause: function(arg, tbl) {
     var op = '';
-    var opts = ['u', 'key'];
-    for (var i = 0; i < opts.length; i++) {
-      if (DebugJS.getOptVal(arg, opts[i]) != null) {
-        op = opts[i];
-        break;
-      }
-    }
+    if (DebugJS.hasOpt(arg, 'key')) op = 'key';
     var key = DebugJS.getOptVal(arg, 'key');
     var to = DebugJS.getOptVal(arg, 'timeout');
     if (!DebugJS.ctx._cmdPause(op, key, to)) {
@@ -8013,13 +8007,11 @@ DebugJS.prototype = {
     if (DebugJS.isTmStr(tout)) tout = DebugJS.str2ms(tout);
     tout |= 0;
     ctx.CMDVALS['%RESUMED_KEY%'] = null;
-    if (op == 'u') {
+    if (op == '') {
       ctx.status |= DebugJS.ST_BAT_PAUSE_CMD;
       DebugJS._log('Click or press any key to continue...');
     } else {
-      if (op == '') {
-        DebugJS._log('Type "resume" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
-      } else if (op == 'key') {
+      if (op == 'key') {
         if (key == undefined) key = '';
         DebugJS.bat.ctrl.pauseKey = key;
         DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
