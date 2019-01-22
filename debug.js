@@ -3509,7 +3509,7 @@ DebugJS.prototype = {
     }
     if (!charset) charset = '';
 
-    var INDENT = '          ';
+    var INDENT = '         ';
     var links = document.getElementsByTagName('link');
     var loadedStyles = '<span class="dbg-na">not loaded</span>';
     for (i = 0; i < links.length; i++) {
