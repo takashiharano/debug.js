@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901230000';
+  this.v = '201901232150';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16007,14 +16007,9 @@ DebugJS.onError = function(e) {
   DebugJS.log.e(msg);
 };
 DebugJS.balse = function(o) {
-  var p = [];
-  for (var k in o) {
-    p.push(k);
-  }
   var x = (typeof o == 'function' ? function() {} : o);
-  for (var i = 0; i < p.length; i++) {
-    var m = o[p[i]];
-    x[p[i]] = (typeof m == 'function' ? DebugJS.balse(m) : m);
+  for (var k in o) {
+    x[k] = (typeof o[k] == 'function' ? DebugJS.balse(o[k]) : o[k]);
   }
   return x;
 };
