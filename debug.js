@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901232150';
+  this.v = '201901250000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1187,11 +1187,11 @@ DebugJS.prototype = {
     if (ctx.opt.target == null) {
       ctx.uiStatus |= DebugJS.UI_ST_DYNAMIC;
       ctx.uiStatus |= DebugJS.UI_ST_DRAGGABLE;
-      if ((ctx.opt.lockCode != null) && (!rstrOpt)) {
+      if ((ctx.opt.lockCode != null) && !rstrOpt) {
         ctx.uiStatus |= DebugJS.UI_ST_PROTECTED;
       }
     }
-    if ((ctx.opt.visible) || (ctx.opt.target != null)) {
+    if (ctx.opt.visible || (ctx.opt.target != null)) {
       ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     } else if (ctx.errStatus) {
       if (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
@@ -1314,12 +1314,12 @@ DebugJS.prototype = {
       ctx.closeBtn.onmouseout = new Function('DebugJS.ctx.setStyle(this, \'color\', \'#888\');');
     }
 
-    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && (opt.useWinCtrlButton)) {
+    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && opt.useWinCtrlButton) {
       ctx.winCtrlBtnPanel = document.createElement('span');
       ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
 
-    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (opt.usePinButton)) {
+    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.usePinButton) {
       ctx.pinBtn = ctx.createHeaderBtn('pinBtn', 'P', 3, fontSize, ctx.toggleDraggable, 'uiStatus', 'UI_ST_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
 
@@ -1401,7 +1401,7 @@ DebugJS.prototype = {
       ctx.mouseClickLabel = ctx.createSysInfoLabel();
     }
 
-    if ((opt.useWindowSizeInfo) || (opt.useMouseStatusInfo)) {
+    if (opt.useWindowSizeInfo || opt.useMouseStatusInfo) {
       ctx.infoPanel.appendChild(document.createElement('br'));
     }
 
@@ -1516,12 +1516,12 @@ DebugJS.prototype = {
       ctx.updateSwBtnPanel(ctx);
       ctx.updateSwLabel();
     }
-    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (opt.usePinButton)) {
+    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.usePinButton) {
       ctx.updatePinBtn(ctx);
     }
     if (ctx.preserveLogBtn) ctx.updatePreserveLogBtn(ctx);
     if (opt.useSuspendLogButton) ctx.updateSuspendLogBtn(ctx);
-    if ((ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && (opt.useWinCtrlButton)) {
+    if ((ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && opt.useWinCtrlButton) {
       ctx.updateWinCtrlBtnPanel();
     }
     if (opt.useMouseStatusInfo) {
@@ -1948,7 +1948,7 @@ DebugJS.prototype = {
         } catch (e) {}
       }
       var lineNum = '';
-      if ((opt.showLineNums) && (data.type != DebugJS.LOG_TYPE_MLT)) {
+      if (opt.showLineNums && (data.type != DebugJS.LOG_TYPE_MLT)) {
         var diff = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
         var pdng = '';
         for (var j = 0; j < diff; j++) {
@@ -2693,7 +2693,7 @@ DebugJS.prototype = {
 
       case 67: // C
         if (e.ctrlKey && DebugJS.cmd.hasFocus()) {
-          if (((ctx.cmdLine.selectionEnd - ctx.cmdLine.selectionStart) == 0)) {
+          if ((ctx.cmdLine.selectionEnd - ctx.cmdLine.selectionStart) == 0) {
             if (ctx.status & DebugJS.ST_BAT_RUNNING) {
               DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGINT);
             }
@@ -2711,7 +2711,7 @@ DebugJS.prototype = {
         break;
 
       case 112: // F1
-        if ((e.ctrlKey) && (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC)) {
+        if (e.ctrlKey && (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC)) {
           ctx.win.style.top = 0;
           ctx.win.style.left = 0;
           ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
@@ -2779,7 +2779,7 @@ DebugJS.prototype = {
   procOnProtectedP: function(ctx, e) {
     if (ctx.unlockCode == null) return;
     var ch = DebugJS.key2ch(e.key);
-    if ((DebugJS.isTypographic(ch))) {
+    if (DebugJS.isTypographic(ch)) {
       ctx.unlockCode += ch;
     }
   },
@@ -2874,7 +2874,7 @@ DebugJS.prototype = {
         ctx.mouseClick2 = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.ST_ELM_INFO) {
           if (ctx.isOnDbgWin(posX, posY)) {
-            if ((DebugJS.el) && (DebugJS.el != ctx.targetEl)) {
+            if (DebugJS.el && (DebugJS.el != ctx.targetEl)) {
               ctx.showElementInfo(DebugJS.el);
               ctx.updateTargetElm(DebugJS.el);
             }
@@ -2967,7 +2967,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var x = e.clientX;
     var y = e.clientY;
-    if ((!ctx.isMovable(ctx, e.target, x, y)) || (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE))) {
+    if (!ctx.isMovable(ctx, e.target, x, y) || !(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) {
       return;
     }
     if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
@@ -3265,7 +3265,7 @@ DebugJS.prototype = {
 
   showDbgWinOnError: function(ctx) {
     if ((ctx.status & DebugJS.ST_INITIALIZED) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
-      if (((ctx.errStatus) &&
+      if ((ctx.errStatus &&
            (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
            ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
            ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG)))) ||
@@ -3277,7 +3277,7 @@ DebugJS.prototype = {
   },
 
   hideDbgWin: function(ctx) {
-    if ((!ctx.opt.togglableShowHide) || (!ctx.win)) return;
+    if (!ctx.opt.togglableShowHide || !ctx.win) return;
     ctx.errStatus = DebugJS.ERR_ST_NONE;
     ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
     ctx.uiStatus &= ~DebugJS.UI_ST_VISIBLE;
@@ -3931,7 +3931,7 @@ DebugJS.prototype = {
   },
   inspectElement: function(x, y) {
     var ctx = DebugJS.ctx;
-    if ((!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT)) || (ctx.isOnDbgWin(x, y))) return;
+    if (!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) || ctx.isOnDbgWin(x, y)) return;
     var el = document.elementFromPoint(x, y);
     if (el != ctx.targetEl) {
       ctx.showElementInfo(el);
@@ -4122,12 +4122,10 @@ DebugJS.prototype = {
   },
   getPrevElm: function(ctx, targetElm) {
     var el = targetElm.previousElementSibling;
-    if ((el != null) && (el.id == ctx.id)) {
+    if (el && (el.id == ctx.id)) {
       el = targetElm.previousElementSibling;
     }
-    if (el == null) {
-      el = targetElm.parentNode;
-    } else {
+    if (el) {
       if (el.childElementCount > 0) {
         var lastChild = el.lastElementChild;
         while (lastChild.childElementCount > 0) {
@@ -4135,6 +4133,8 @@ DebugJS.prototype = {
         }
         el = lastChild;
       }
+    } else {
+      el = targetElm.parentNode;
     }
     if (el instanceof HTMLDocument) el = null;
     return el;
@@ -4148,7 +4148,7 @@ DebugJS.prototype = {
         if (parent) {
           do {
             el = parent.nextElementSibling;
-            if ((el != null) && (el.id != ctx.id)) {
+            if (el && (el.id != ctx.id)) {
               break;
             }
             parent = parent.parentNode;
@@ -4173,10 +4173,10 @@ DebugJS.prototype = {
     }
   },
   highlightElement: function(removeTarget, setTarget) {
-    if ((removeTarget) && (typeof removeTarget.className == 'string')) {
+    if (removeTarget && (typeof removeTarget.className == 'string')) {
       DebugJS.removeClass(removeTarget, DebugJS.ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
-    if ((setTarget) && (typeof setTarget.className == 'string')) {
+    if (setTarget && (typeof setTarget.className == 'string')) {
       DebugJS.addClass(setTarget, DebugJS.ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
   },
@@ -6426,7 +6426,7 @@ DebugJS.prototype = {
       ctx.switchExtPanel(activePanel);
     } else {
       var p = ctx.extPanels[activePanel];
-      if ((p) && (p.onActive)) ctx.onExtPanelActive(ctx, p);
+      if (p && p.onActive) ctx.onExtPanelActive(ctx, p);
     }
     ctx.updateExtBtns(ctx);
     ctx.updateExtBtn(ctx);
@@ -6447,7 +6447,7 @@ DebugJS.prototype = {
   closeExtPanel: function(ctx) {
     if ((ctx.extPanel) && (ctx.extPanel.parentNode)) {
       var p = ctx.extPanels[ctx.extActPnlIdx];
-      if ((p) && (p.onInActive)) ctx.onExtPanelInActive(ctx, p);
+      if (p && p.onInActive) ctx.onExtPanelInActive(ctx, p);
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.ST_EXT_PANEL;
@@ -6825,7 +6825,7 @@ DebugJS.prototype = {
 
   cmdBase64: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
+    if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeB64, DebugJS.decodeB64, iIdx);
   },
 
@@ -6959,7 +6959,7 @@ DebugJS.prototype = {
 
   cmdBSB64: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
+    if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     var toR = false;
     var n = DebugJS.getOptVal(arg, 'n');
     if (n == null) {
@@ -6999,10 +6999,10 @@ DebugJS.prototype = {
       'tool': DebugJS.ST_TOOLS,
       'ext': DebugJS.ST_EXT_PANEL
     };
-    if (d[fn] === undefined) {
-      DebugJS.printUsage(tbl.help);
-    } else {
+    if (d[fn]) {
       ctx.closeFeature(ctx, d[fn]);
+    } else {
+      DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -7213,7 +7213,7 @@ DebugJS.prototype = {
   cmdDateCalc: function(arg, echo) {
     var ret = null;
     arg = arg.trim();
-    if ((!DebugJS.isBasicDateFormat(arg, true)) && (!DebugJS.isDateFormat(arg, true)) && (!DebugJS.startsWith(arg, 'today'))) {
+    if (!DebugJS.isBasicDateFormat(arg, true) && !DebugJS.isDateFormat(arg, true) && !DebugJS.startsWith(arg, 'today')) {
       return ret;
     }
     arg = DebugJS.delAllSP(arg);
@@ -7251,7 +7251,7 @@ DebugJS.prototype = {
     if (a.length < 2) return ret;
     var d1 = DebugJS.ctx._cmdFmtDate(a[0]);
     var d2 = DebugJS.ctx._cmdFmtDate(a[1]);
-    if ((!DebugJS.isDateFormat(d1)) || (!DebugJS.isDateFormat(d2))) return ret;
+    if (!DebugJS.isDateFormat(d1) || !DebugJS.isDateFormat(d2)) return ret;
     d1 = d1.replace(/-/g, '/');
     d2 = d2.replace(/-/g, '/');
     ret = DebugJS.diffDate(d1, d2);
@@ -7259,7 +7259,7 @@ DebugJS.prototype = {
     return ret;
   },
   _cmdFmtDate: function(d) {
-    if ((d.length == 8) && (!isNaN(d))) {
+    if ((d.length == 8) && !isNaN(d)) {
       d = DebugJS.num2date(d);
     } else if (d == 'today') {
       d = DebugJS.today('/');
@@ -7280,7 +7280,7 @@ DebugJS.prototype = {
       d = DebugJS.calcTargetTime(d);
     } else if (DebugJS.isTmStr(d)) {
       d = DebugJS.str2ms(d);
-    } else if ((d == '') || (isNaN(d))) {
+    } else if ((d == '') || isNaN(d)) {
       DebugJS.printUsage(tbl.help);
       return;
     }
@@ -7867,10 +7867,10 @@ DebugJS.prototype = {
       DebugJS.printUsage('log load [-b64] log-buf-json');
     } else {
       try {
-        if (data != null) {
-          DebugJS.loadLog(data, true);
-        } else {
+        if (data == null) {
           DebugJS.loadLog(arg);
+        } else {
+          DebugJS.loadLog(data, true);
         }
         ctx.printLogs();
       } catch (e) {
@@ -8233,7 +8233,7 @@ DebugJS.prototype = {
   },
   _cmdPointText: function(arg) {
     var el = DebugJS.point.getElementFromCurrentPos();
-    if ((!el) || (!DebugJS.isTxtInp(el))) {
+    if (!el || !DebugJS.isTxtInp(el)) {
       DebugJS._log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
       return;
     }
@@ -8251,7 +8251,7 @@ DebugJS.prototype = {
   _cmdPointSelectOpt: function(ctx, args) {
     var ret;
     var el = DebugJS.point.getElementFromCurrentPos();
-    if ((el) && (el.nodeName == 'SELECT')) {
+    if (el && (el.nodeName == 'SELECT')) {
       var method = args[1];
       var type = args[2];
       if (((method == 'get') || (method == 'set')) &&
@@ -8443,7 +8443,7 @@ DebugJS.prototype = {
         return;
     }
     var iIdx = 0;
-    if ((DebugJS.hasOpt(a, 'd')) || (DebugJS.hasOpt(a, 'e'))) {
+    if (DebugJS.hasOpt(a, 'd') || DebugJS.hasOpt(a, 'e')) {
       iIdx++;
     }
     var n = DebugJS.getOptVal(a, 'n');
@@ -9019,13 +9019,13 @@ DebugJS.prototype = {
 
   cmdUnicode: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
+    if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, false, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
   },
 
   cmdUri: function(arg, tbl, echo) {
     var iIdx = 0;
-    if ((DebugJS.hasOpt(arg, 'd')) || (DebugJS.hasOpt(arg, 'e'))) iIdx++;
+    if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeUri, DebugJS.decodeUri, iIdx);
   },
 
@@ -9355,7 +9355,7 @@ DebugJS.getColorBlock = function(color) {
 
 DebugJS.getElmHexColor = function(color) {
   var hex = '';
-  if ((color) && (color != 'transparent')) {
+  if (color && (color != 'transparent')) {
     var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
     var color16 = DebugJS.convRGB10to16(color10);
     hex = '#' + color16.r + color16.g + color16.b;
@@ -9770,7 +9770,7 @@ DebugJS.quoteStr = function(s) {
 };
 DebugJS.quoteStrIfNeeded = function(s) {
   s += '';
-  if ((s.match(/^\s|^&#x3000/)) || (s.match(/\s$|&#x3000$/))) {
+  if (s.match(/^\s|^&#x3000/) || s.match(/\s$|&#x3000$/)) {
     s = DebugJS.quoteStr(s);
   }
   return s;
@@ -10273,7 +10273,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
         } else {
           arg.dump += '<span style="color:#49f">[Object]</span> ';
         }
-        if ((toJson) || (levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
+        if (toJson || (levelLimit == 0) || ((levelLimit >= 1) && (arg.lv < levelLimit))) {
           arg.dump += '{\n';
         }
       }
@@ -10333,7 +10333,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             hasChildren = true;
             break;
           }
-          if ((typeof obj[key] != 'function') || (hasChildren)) {
+          if ((typeof obj[key] != 'function') || hasChildren) {
             arg.lv++;
             arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, limit, valLenLimit);
             arg.lv--;
@@ -10362,7 +10362,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             } else {
               arg.dump += '<span style="color:#f80">[Date]</span> ' + date;
             }
-          } else if ((window.ArrayBuffer) && (obj instanceof ArrayBuffer)) {
+          } else if (window.ArrayBuffer && (obj instanceof ArrayBuffer)) {
             arg = DebugJS._objDmp0(arg, toJson, '<span style="color:#d69">[ArrayBuffer]</span> (byteLength = ' + obj.byteLength + ')');
           } else if (Object.prototype.toString.call(obj) == '[object RegExp]') {
             arg = DebugJS._objDmp0(arg, toJson, '<span style="color:#4ee">[RegExp]</span> ' + obj.toString());
@@ -10374,7 +10374,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
           arg.cnt++;
         }
         indent = indent.replace(DebugJS.INDENT_SP, '');
-        if (DebugJS.isObj(obj) && (!empty)) {
+        if (DebugJS.isObj(obj) && !empty) {
           arg.dump += '\n' + indent + '}';
         }
       }
@@ -12158,8 +12158,8 @@ DebugJS.isTargetEl = function(target, el) {
 };
 DebugJS.file.onLoaded = function(file, cnt) {
   var loader = DebugJS.file.ongoingLdr;
-  if ((!loader) || (!loader.cb)) return;
-  if ((loader.mode == 'b64') && (loader.decode)) {
+  if (!loader || !loader.cb) return;
+  if ((loader.mode == 'b64') && loader.decode) {
     cnt = DebugJS.decodeB64(DebugJS.splitDataUrl(cnt).data);
   }
   loader.cb(file, cnt);
@@ -12355,7 +12355,7 @@ DebugJS._filename = function(s, idx, abs) {
   }
   if ((n == '<anonymous>') || (n == 'Unknown script code')) {
     n = '&lt;anonymous&gt;';
-  } else if ((n == 'code (eval code') || (n.match(/> eval$/)) || (n.match(/<anonymous>$/))) {
+  } else if ((n == 'code (eval code') || n.match(/> eval$/) || n.match(/<anonymous>$/)) {
     n = '*eval*';
   }
   return n;
@@ -12757,7 +12757,7 @@ DebugJS.bat.parseLabelFncs = function() {
       continue;
     }
     if (cmnt > 0) continue;
-    if ((c.charAt(0) == DebugJS.BAT_TKN_LABEL) && c.length >= 2) {
+    if ((c.charAt(0) == DebugJS.BAT_TKN_LABEL) && (c.length >= 2)) {
       var label = c.substr(1);
       bat.labels[label] = i;
     } else if (DebugJS.startsWith(c, DebugJS.BAT_TKN_FNC)) {
@@ -13027,7 +13027,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
   var a = DebugJS.splitArgs(cmds[1]);
   var b;
   var pc = bat.nextExecLine(ctrl.pc - 1);
-  if (pc != ctrl.pc - 1) {
+  if (pc != (ctrl.pc - 1)) {
     bat.setPc(pc);
     return 1;
   }
@@ -13774,7 +13774,7 @@ DebugJS.bat.getSymbols = function(t, p) {
   }
   var o = (t == 'function' ? DebugJS.bat.fncs : DebugJS.bat.labels);
   for (var k in o) {
-    if ((!re) || ((re) && (k.match(re)))) {
+    if (!re || (re && k.match(re))) {
       a.push(k);
     }
   }
@@ -15483,7 +15483,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
   return status;
 };
 DebugJS.test.onVrfyAftr = function(st) {
-  if ((DebugJS.bat.isRunning()) && (DebugJS.bat.hasBatStopCond('test'))) {
+  if (DebugJS.bat.isRunning() && DebugJS.bat.hasBatStopCond('test')) {
     if (st != DebugJS.test.STATUS_OK) {
       DebugJS.bat.ctrl.stopReq = true;
     }
@@ -15884,7 +15884,7 @@ DebugJS.x.addCmdTbl = function(table) {
   var ctx = DebugJS.ctx;
   for (var i = 0; i < table.length; i++) {
     var c = table[i];
-    if ((ctx.existsCmd(c.cmd, ctx.INT_CMD_TBL)) || (ctx.existsCmd(c.cmd, ctx.EXT_CMD_TBL))) {
+    if (ctx.existsCmd(c.cmd, ctx.INT_CMD_TBL) || ctx.existsCmd(c.cmd, ctx.EXT_CMD_TBL)) {
       c.attr |= DebugJS.CMD_ATTR_DISABLED;
     }
     ctx.EXT_CMD_TBL.push(c);
@@ -15981,7 +15981,7 @@ DebugJS.onUnload = function() {
     }
   }
   DebugJS._log.v('unload');
-  if ((DebugJS.LS_AVAILABLE) && (ctx.status & DebugJS.ST_LOG_PRESERVED)) {
+  if (DebugJS.LS_AVAILABLE && (ctx.status & DebugJS.ST_LOG_PRESERVED)) {
     DebugJS.preserveLog();
   }
 };
