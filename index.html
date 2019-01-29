@@ -2100,10 +2100,18 @@ dbg.bat.nestLv() <button class="demo-button2" onclick="log.res(dbg.bat.nestLv())
   </tr>
 
   <tr>
-    <td class="name">dbg.bat.list</td>
+    <td class="name">dbg.bat.getPc</td>
     <td></td>
     <td>
-      Get list of the program of loaded batch script and point the current execution line <button class="demo-button2" onclick="log.p(dbg.bat.list());">DEMO</button>
+      Returns the current program counter (execution line). <button class="demo-button2" onclick="log.res(dbg.bat.getPc());">DEMO</button>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.bat.getList</td>
+    <td></td>
+    <td>
+      Get the program list of loaded batch script. <button class="demo-button2" onclick="log.p(dbg.bat.getList());">DEMO</button>
     </td>
   </tr>
 

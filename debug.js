@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901282000';
+  this.v = '201901300000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -673,10 +673,10 @@ DebugJS.JS_SNIPPET = [
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
-'<img src="data:image/jpeg;base64,">',
 '<button onclick=""></button>',
 '<video src="" controls autoplay>',
-'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta http-equiv="X-UA-Compatible" content="IE=Edge">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\nhello\n</body>\n</html>\n'
+'',
+'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta http-equiv="X-UA-Compatible" content="IE=Edge">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
   'togglableShowHide',
@@ -13425,6 +13425,9 @@ DebugJS.bat.unlock = function() {
 DebugJS.bat.isLocked = function() {
   return (DebugJS.bat.ctrl.lock != 0);
 };
+DebugJS.bat.getList = function() {
+  return DebugJS.bat.cmds;
+};
 DebugJS.bat.list = function(s, e) {
   var l = '';
   var pc = DebugJS.bat.ctrl.pc;
@@ -13587,6 +13590,9 @@ DebugJS.bat.exit = function() {
 };
 DebugJS.bat.hasBatStopCond = function(key) {
   return DebugJS.hasKeyWd(DebugJS.ctx.props.batstop, key, '|');
+};
+DebugJS.bat.getPc = function() {
+  return DebugJS.bat.ctrl.pc;
 };
 DebugJS.bat.setPc = function(v, b) {
   DebugJS.bat.ctrl.pc = v;
