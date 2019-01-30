@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901300000';
+  this.v = '201901302100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1735,6 +1735,8 @@ DebugJS.prototype = {
       if (ctx.status & DebugJS.ST_SYS_INFO) {
         DebugJS.writeHTML(ctx.id + '-sys-win-w', w);
         DebugJS.writeHTML(ctx.id + '-sys-win-h', h);
+        DebugJS.writeHTML(ctx.id + '-sys-scn-x', window.screenX);
+        DebugJS.writeHTML(ctx.id + '-sys-scn-y', window.screenY);
       }
     } catch (e) {}
   },
@@ -3594,10 +3596,12 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('devicePixelRatio', window.devicePixelRatio, 'sys-win-h');
     html += DebugJS.addSysInfoProp('outerWidth   ', window.outerWidth, 'sys-win-w');
     html += DebugJS.addSysInfoProp('outerHeight  ', window.outerHeight, 'sys-win-h');
-    html += DebugJS.addSysInfoProp('scrollX      ', DebugJS.setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
+    html += DebugJS.addSysInfoProp('screenX      ', window.screenX, 'sys-scn-x');
+    html += DebugJS.addSysInfoProp('screenY      ', window.screenY, 'sys-scn-y');
     html += DebugJS.addSysInfoProp('pageXOffset  ', window.pageXOffset, 'sys-pgoffset-x');
-    html += DebugJS.addSysInfoProp('scrollY      ', DebugJS.setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
     html += DebugJS.addSysInfoProp('pageYOffset  ', window.pageYOffset, 'sys-pgoffset-y');
+    html += DebugJS.addSysInfoProp('scrollX      ', DebugJS.setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
+    html += DebugJS.addSysInfoProp('scrollY      ', DebugJS.setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
     html += DebugJS.addSysInfoProp('onload       ', winOnload);
     html += DebugJS.addSysInfoProp('onunload     ', winOnunload);
     html += DebugJS.addSysInfoProp('onclick      ', winOnclick);
