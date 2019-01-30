@@ -103,6 +103,10 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .info3{color:#d80;}
 .nl{color:#8ac;}
 .nl2 {font-size:10px; color:#8ac; margin-left:1px;}
+#event1 {display:inline-block; width:415px; height:150px; background:#f0f0f0;}
+.box {position: relative; display:inline-block; width:50px; height:50px; color:#fff; cursor:move; z-index:10}
+#box1 {top:50px; left:0px; background:#64b5f6;}
+#box2 {top:50px; left:100px; background:#f48fb1;}
 </style>
 <script>
 dbg.init({visible:true});
@@ -777,6 +781,7 @@ function onReady() {
 function onLoad() {
   //log('load');
   evttest.regieterEventHandler();
+  dragtest.init();
 }
 
 function onUnload() {
@@ -877,6 +882,21 @@ evttest.onWheel = function(e) {
   log('evt> wheel ' + e.deltaX + ' ' + e.deltaY);
 };
 
+evttest.onTouchStart = function(e) {
+  e = e.changedTouches[0];
+  log('evt> touchstart ' + e.clientX + ' ' + e.clientY);
+};
+
+evttest.onTouchMove = function(e) {
+  e = e.changedTouches[0];
+  log('evt> touchmove ' + e.clientX + ' ' + e.clientY);
+};
+
+evttest.onTouchEnd = function(e) {
+  e = e.changedTouches[0];
+  log('evt> touchend ' + e.clientX + ' ' + e.clientY);
+};
+
 evttest.regieterEventHandler = function() {
   evttest.regieterEventHandlers(document.getElementById('event1'));
 };
@@ -892,6 +912,9 @@ evttest.regieterEventHandlers = function(el) {
   el.addEventListener('keyup', evttest.onKeyUp, true);
   el.addEventListener('contextmenu', evttest.onContextMenu, true);
   el.addEventListener('wheel', evttest.onWheel, {passive: true});
+  el.addEventListener('touchstart', evttest.onTouchStart, {passive: true});
+  el.addEventListener('touchmove', evttest.onTouchMove, {passive: true});
+  el.addEventListener('touchend', evttest.onTouchEnd, {passive: true});
 };
 
 var demo = {};
@@ -1074,6 +1097,59 @@ function cmdListener2(str) {
 function addCmdListener() {
   dbg.addCmdListener(cmdListener1);
   dbg.addCmdListener(cmdListener2);
+}
+
+var dragtest = {};
+dragtest.data = {el: null, x: 0, y: 0};
+dragtest.init = function() {
+  var box1 = dbg.getElement('#box1');
+  var box2 = dbg.getElement('#box2');
+  box1.addEventListener("mousedown", dragtest.onDown, {passive: true});
+  box1.addEventListener("touchstart", dragtest.onDown, {passive: true});
+  box2.addEventListener("mousedown", dragtest.onDown, {passive: true});
+  box2.addEventListener("touchstart", dragtest.onDown, {passive: true});
+
+  window.addEventListener('mousemove', dragtest.onMove, false);
+  window.addEventListener('touchmove', dragtest.onMove, false);
+  window.addEventListener("mouseup", dragtest.onUp, false);
+  window.addEventListener("touchend", dragtest.onUp, false);
+};
+
+dragtest.onDown = function(e) {
+  var el = e.target;
+  dragtest.data.el = el;
+  dragtest.data.x = e.clientX;
+  dragtest.data.y = e.clientY;
+};
+
+dragtest.onMove = function(e) {
+  if (!dragtest.data.el) {
+    return;
+  }
+  var el = dragtest.data.el;
+  e.preventDefault();
+  if (e.type != 'mousemove') {
+    e = e.changedTouches[0];
+  }
+
+  var computedStyle = window.getComputedStyle(el);
+  var y = computedStyle.top.replace('px', '') | 0;
+  var x = computedStyle.left.replace('px', '') | 0;
+
+  var dx = e.clientX - dragtest.data.x;
+  var dy = e.clientY - dragtest.data.y;
+
+  dragtest.data.x = e.clientX;
+  dragtest.data.y = e.clientY;
+
+  el.style.top = (y + dy) + 'px';
+  el.style.left = (x + dx) + 'px';
+};
+
+dragtest.onUp = function(e) {
+  dragtest.data.el = null;
+  dragtest.data.x = 0;
+  dragtest.data.y = 0;
 }
 
 function test1() {
@@ -6494,7 +6570,7 @@ TOOL =&gt; &lt;BAT&gt; =&gt; Copy & Paste the above script =&gt; <span style="co
 </pre>
 See also: <a href="#" onclick="scrollToSelector('#bat-execution', 700);return false;">// BAT Execution</a> section.
 <br>
-<div style="height:520px;margin-top:10px;font-size:12px;">
+<div style="height:600px;margin-top:10px;font-size:12px;">
   <div style="float:left;margin-right:20px;">
     <form name="f1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;"></div>
@@ -6545,6 +6621,20 @@ See also: <a href="#" onclick="scrollToSelector('#bat-execution', 700);return fa
         <button type="button" class="button-100" onclick="test1();">button</button>
       </div>
     </form>
+
+    <input id="evt1" 
+    onclick="log.i('> click');" 
+    ondblclick="log.i('> dblclick');" 
+    onmousedown="log.i('> mousedown');" 
+    onmouseup="log.i('> mouseup');" 
+    onkeydown="log.i('> keydown');"
+    onkeypress="log.i('> keypress');"
+    onkeyup="log.i('> keyup');"
+    onfocus="log.i('> focus');"
+    onblur="log.i('> blur');"
+    oninput="log.i('> input');"
+    onchange="log.i('> change');"
+    oncontextmenu="log.i('> contextmenu');return false;">
   </div>
   <textarea id="textarea1" style="width:400px; height:150px;"></textarea>
 
@@ -6583,24 +6673,13 @@ See also: <a href="#" onclick="scrollToSelector('#bat-execution', 700);return fa
       <span class="class1">.class1</span>
       <span class="class1 class2">.class1 .class2</span>
       <span class="class1">.class1</span>
-   </div>
+    </div>
+  </div>
+  <div id="event1">#event1 (event test)
+    <div id="box1" class="box">#box1</div>
+    <div id="box2" class="box">#box2</div>
   </div>
 </div>
-<div id="event1" style="display:inline-block; width:415px; height:50px; background:#dff;">event test</div>
-<br>
-<input id="evt1" 
-onclick="log.i('> click');" 
-ondblclick="log.i('> dblclick');" 
-onmousedown="log.i('> mousedown');" 
-onmouseup="log.i('> mouseup');" 
-onkeydown="log.i('> keydown');"
-onkeypress="log.i('> keypress');"
-onkeyup="log.i('> keyup');"
-onfocus="log.i('> focus');"
-onblur="log.i('> blur');"
-oninput="log.i('> input');"
-onchange="log.i('> change');"
-oncontextmenu="log.i('> contextmenu');return false;">
 
 <div style="margin-top:10px;">
   <a href="//debugjs.net/" rel="nofollow">Link1</a>&nbsp;
