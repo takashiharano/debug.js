@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901302100';
+  this.v = '201901310000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -845,6 +845,9 @@ DebugJS.prototype = {
       'color': opt.fontColor,
       'font-size': fontSize + ' !important',
       'font-family': opt.fontFamily + ' !important'
+    };
+    styles['#' + ctx.id + ' input, textarea'] = {
+      'letter-spacing': ltsp + ' !important'
     };
     styles['#' + ctx.id + ' td'] = {
       'width': 'auto !important',
@@ -2123,8 +2126,8 @@ DebugJS.prototype = {
   },
 
   setupMove: function(ctx) {
-    ctx.winBody.onmousedown = ctx.startMoveM;
-    ctx.winBody.ontouchstart = ctx.startMoveT;
+    ctx.winBody.addEventListener('mousedown', ctx.startMoveM, {passive: true});
+    ctx.winBody.addEventListener('touchstart', ctx.startMoveT, true);
   },
 
   startMoveM: function(e) {
@@ -2140,8 +2143,8 @@ DebugJS.prototype = {
   },
   startMoveT: function(e) {
     var ctx = DebugJS.ctx;
-    var x = e.changedTouches[0].pageX;
-    var y = e.changedTouches[0].pageY;
+    var x = e.changedTouches[0].clientX;
+    var y = e.changedTouches[0].clientY;
     var target = e.target;
     if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, target, x, y)) {
       return;
@@ -2891,8 +2894,8 @@ DebugJS.prototype = {
     }
   },
   onTouchStart: function(e) {
-    var x = e.changedTouches[0].pageX;
-    var y = e.changedTouches[0].pageY;
+    var x = e.changedTouches[0].clientX;
+    var y = e.changedTouches[0].clientY;
     if (DebugJS.ctx.status & DebugJS.ST_MEASURE) {
       DebugJS.ctx.startMeasure(DebugJS.ctx, x, y);
       e.preventDefault();
@@ -2900,16 +2903,15 @@ DebugJS.prototype = {
   },
 
   onMouseMove: function(e) {
-    var x = e.clientX;
-    var y = e.clientY;
-    DebugJS.ctx._onPointerMove(DebugJS.ctx, x, y);
+    DebugJS.ctx._onPointerMove(DebugJS.ctx, e);
   },
   onTouchMove: function(e) {
-    var x = e.changedTouches[0].pageX;
-    var y = e.changedTouches[0].pageY;
-    DebugJS.ctx._onPointerMove(DebugJS.ctx, x, y);
+    e.preventDefault();
+    DebugJS.ctx._onPointerMove(DebugJS.ctx, e.changedTouches[0]);
   },
-  _onPointerMove: function(ctx, x, y) {
+  _onPointerMove: function(ctx, e) {
+    var x = e.clientX;
+    var y = e.clientY;
     if (ctx.opt.useMouseStatusInfo) {
       ctx.mousePos.x = x;
       ctx.mousePos.y = y;
@@ -13864,13 +13866,13 @@ DebugJS.point = function(x, y) {
   document.body.appendChild(ptr.el);
   point.hint.move();
   if (DebugJS.ctx.props.mousemovesim == 'true') {
-    var e = DebugJS.event.create('mousemove');
-    e.clientX = ptr.x;
-    e.clientY = ptr.y;
+    var e = point.createMouseEvt('mousemove', 0);
     var el = point.getElementFromCurrentPos();
     if (el) {
+      e.target = el;
       el.dispatchEvent(e);
     } else {
+      e.target = window;
       window.dispatchEvent(e);
     }
   }
@@ -13996,9 +13998,7 @@ DebugJS.point.event = function(args) {
   var ptr = DebugJS.point.getPtr();
   var type = DebugJS.getArgVal(args, 0);
   var opts = DebugJS.getOptVals(args);
-  var e = DebugJS.event.create(type);
-  e.clientX = ptr.x;
-  e.clientY = ptr.y;
+  var e = DebugJS.point.createMouseEvt(type, el);
   for (var k in opts) {
     try {
       e[k] = eval(opts[k]);
@@ -14039,7 +14039,7 @@ DebugJS.point.simpleEvent = function(type, opt) {
       break;
     case 'mousedown':
     case 'mouseup':
-      point.mouseevt(el, type, opt);
+      point.mouseevt(type, opt, el);
   }
 };
 DebugJS.point.click = function(button, target, speed, cb) {
@@ -14052,7 +14052,7 @@ DebugJS.point.click = function(button, target, speed, cb) {
   DebugJS.bat.lock();
   click.target[button] = target;
   click.cb = cb;
-  DebugJS.point.mouseevt(target, 'mousedown', button);
+  DebugJS.point.mouseevt('mousedown', button, target);
   var el = DebugJS.findFocusableEl(target);
   if (el != null) el.focus();
   if (speed == undefined) speed = 100;
@@ -14088,7 +14088,7 @@ DebugJS.point.dblclick.onDone = function() {
   if (data.cnt < 2) {
     data.tmid = setTimeout(DebugJS.point._dblclick, data.speed);
   } else {
-    DebugJS.point.mouseevt(data.target, 'dblclick', 0);
+    DebugJS.point.mouseevt('dblclick', 0, data.target);
     data.cnt = 0;
     DebugJS.bat.unlock();
   }
@@ -14103,7 +14103,7 @@ DebugJS.point.clickUp = function(n) {
   var click = DebugJS.point.click;
   var target = click.target[n];
   click.tmid[n] = 0;
-  DebugJS.point.mouseevt(target, 'mouseup', n);
+  DebugJS.point.mouseevt('mouseup', n, target);
   switch (n) {
     case 0:
       if (!click.invalid) {
@@ -14143,13 +14143,24 @@ DebugJS.point.contextmenu = function(el) {
   var e = DebugJS.event.create('contextmenu');
   el.dispatchEvent(e);
 };
-DebugJS.point.mouseevt = function(el, ev, b) {
+DebugJS.point.mouseevt = function(ev, b, el) {
+  var ptr = DebugJS.point.getPtr();
+  el.dispatchEvent(DebugJS.point.createMouseEvt(ev, b, el));
+};
+DebugJS.point.createMouseEvt = function(ev, b, el) {
   var ptr = DebugJS.point.getPtr();
   var e = DebugJS.event.create(ev);
+  var x = ptr.x;
+  var y = ptr.y;
+  e.target = el;
   e.button = b | 0;
-  e.clientX = ptr.x;
-  e.clientY = ptr.y;
-  el.dispatchEvent(e);
+  e.clientX = x;
+  e.clientY = y;
+  e.pageX = x + window.pageXOffset;
+  e.pageY = y + window.pageYOffset;
+  e.screenX = x + window.screenX;
+  e.screenY = y + window.screenY;
+  return e;
 };
 DebugJS.point.keyevt = function(args) {
   var el = DebugJS.point.getElementFromCurrentPos();
@@ -14406,16 +14417,19 @@ DebugJS.point.drag = function(arg) {
 DebugJS.point.drag.data = {
   step: 0,
   arg: null,
+  el: null,
   mousemovesim: undefined
 };
 DebugJS.point.drag.proc = function() {
   var point = DebugJS.point;
   var drag = point.drag;
   var data = drag.data;
-  drag.data.step++;
+  data.step++;
+  var el = point.getElementFromCurrentPos();
   switch (data.step) {
     case 1:
-      point.simpleEvent('mousedown', 0);
+      data.el = el;
+      if (el) point.mouseevt('mousedown', 0, el);
       setTimeout(drag.proc, 10);
       break;
     case 2:
@@ -14423,7 +14437,10 @@ DebugJS.point.drag.proc = function() {
       DebugJS.ctx.cmdPoint('move ' + data.arg);
       break;
     case 3:
-      point.simpleEvent('mouseup', 0);
+      if (el) {
+        point.mouseevt('mouseup', 0, el);
+        if (data.el == el) point.mouseevt('click', 0, el);
+      }
       drag.stop();
   }
 };
@@ -14435,8 +14452,9 @@ DebugJS.point.drag.cancel = function() {
 };
 DebugJS.point.drag.stop = function() {
   var data = DebugJS.point.drag.data;
-  data.arg = null;
   data.step = 0;
+  data.arg = null;
+  data.el = null;
   if (data.mousemovesim != undefined) {
     DebugJS.ctx.props.mousemovesim = data.mousemovesim;
   }
