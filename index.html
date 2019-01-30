@@ -6533,6 +6533,26 @@ wait 200
 point text "abcdefg\n1234567890"
 wait 500
 
+# Dragging --------------------
+point move #box1
+wait 500
+point drag +230 +35
+wait 500
+
+point move #box2
+wait 500
+point drag -250 -30
+wait 500
+
+point move #box1
+point drag -230 -35
+wait 500
+
+point move #box2
+wait 500
+point drag +250 +30
+wait 500
+
 # Test ------------------------
 test init -name "Test1"
 
