@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901310000';
+  this.v = '201901310145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -315,6 +315,7 @@ var DebugJS = DebugJS || function() {
   this.toolStatus = 0;
   this.toolTimerMode = DebugJS.TOOL_TMR_MODE_CLOCK;
   this.sizeStatus = 0;
+  this.ptDnTm = 0;
   this.ptOpTm = 0;
   this.logFilter = DebugJS.LOG_FLTR_ALL;
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
@@ -668,7 +669,7 @@ DebugJS.JS_SNIPPET = [
 'dbg.time.s();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.e();\n\'done\';',
 '',
 '',
-' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~',
+'',
 '// Logging performance check\nvar n = 1000;\nvar i = 0;\ndbg.time.s(\'total\');\ntest();\nfunction test() {\n  dbg.time.s();\n  dbg.time.e();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.e(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}'
 ];
 DebugJS.HTML_SNIPPET = [
@@ -2126,33 +2127,40 @@ DebugJS.prototype = {
   },
 
   setupMove: function(ctx) {
-    ctx.winBody.addEventListener('mousedown', ctx.startMoveM, {passive: true});
-    ctx.winBody.addEventListener('touchstart', ctx.startMoveT, true);
+    ctx.winBody.addEventListener('mousedown', ctx.onDbgWinMouseDown, {passive: true});
+    ctx.winBody.addEventListener('touchstart', ctx.onDbgWinTouchStart, true);
   },
 
-  startMoveM: function(e) {
+  onDbgWinMouseDown: function(e) {
     var ctx = DebugJS.ctx;
     var x = e.clientX;
     var y = e.clientY;
-    var target = e.target;
+    var el = e.target;
     if (e.button != 0) return;
-    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, target, x, y)) {
+    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, el, x, y)) {
       return;
     }
-    ctx._startMove(ctx, target, x, y);
+    ctx.startMove(ctx, x, y);
   },
-  startMoveT: function(e) {
+  onDbgWinTouchStart: function(e) {
     var ctx = DebugJS.ctx;
-    var x = e.changedTouches[0].clientX;
-    var y = e.changedTouches[0].clientY;
-    var target = e.target;
-    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, target, x, y)) {
+    e0 = e.changedTouches[0];
+    var x = e0.clientX;
+    var y = e0.clientY;
+    var el = e.target;
+    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, el, x, y)) {
       return;
     }
-    ctx._startMove(ctx, target, x, y);
+    var t = ctx.ptDnTm;
+    ctx.ptDnTm = (new Date()).getTime();
+    if ((ctx.ptDnTm - t) < 300) {
+      ctx.onDbgWinDblClick(e);
+    } else {
+      ctx.startMove(ctx, x, y);
+    }
     e.preventDefault();
   },
-  _startMove: function(ctx, target, x, y) {
+  startMove: function(ctx, x, y) {
     ctx.uiStatus |= DebugJS.UI_ST_DRAGGING;
     ctx.ptOpTm = (new Date()).getTime();
     ctx.winBody.style.cursor = 'move';
