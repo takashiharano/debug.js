@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201901310145';
+  this.v = '201902010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5633,10 +5633,35 @@ DebugJS.prototype = {
         ctx.decodeDataURL(ctx, s);
       } else {
         if (ctx.decB64(ctx, s)) return;
-        ctx._execCmd('json ' + t, true, false, true);
-        ctx.scrollLogBtm(ctx);
+        ctx.fmtJson(ctx, t);
       }
     }
+  },
+  fmtJson: function(ctx, t) {
+    var a = DebugJS.crlf2lf(t).split('\n');
+    var s = '';
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].match(/[^{]*({.*}).*/)) {
+        if (s) s += '\n\n';
+        s += '<span style="color:#0ff">------------------------------------------------------------</span>\n';
+        s += ctx._fmtJson(ctx, a[i]);
+      }
+    }
+    if (s) {
+      DebugJS._log('');
+      DebugJS._log.mlt(s);
+      ctx.scrollLogBtm(ctx);
+    }
+  },
+  _fmtJson: function(ctx, t) {
+    var j = t.replace(/[^{]*({.*}).*/, '$1');
+    var s;
+    try {
+      s = DebugJS.formatJSON(j);
+    } catch (e) {
+      s = DebugJS.trimEchoStr(j) + '\n<span style="color:' + ctx.opt.logColorE + '">' + e + '</span>';
+    }
+    return s;
   },
   decB64: function(ctx, s) {
     if (!DebugJS.isBase64(s)) return 0;
@@ -6709,7 +6734,7 @@ DebugJS.prototype = {
     if (echo) {
       var echoStr = str;
       echoStr = DebugJS.escHtml(echoStr);
-      echoStr = DebugJS.trimDownText(echoStr, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
+      echoStr = DebugJS.trimEchoStr(echoStr);
       DebugJS._log.s(echoStr);
     }
     if (!DebugJS.callListeners(ctx.cmdListeners, str)) return;
@@ -7589,7 +7614,7 @@ DebugJS.prototype = {
     for (var i = 0; i < bf.length; i++) {
       var cmd = bf[i];
       cmd = DebugJS.escHtml(cmd);
-      cmd = DebugJS.trimDownText(cmd, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
+      cmd = DebugJS.trimEchoStr(cmd);
       s += '<tr><td class="dbg-cmdtd" style="text-align:right">' + (i + 1) + '</td><td>' + cmd + '</td></tr>';
     }
     s += '</table>';
@@ -11720,7 +11745,7 @@ DebugJS.trimDownText = function(txt, maxLen, style) {
   var snip = '...';
   if (style) snip = '<span style="' + style + '">' + snip + '</span>';
   var s = txt;
-  if (txt.length > maxLen) s = DebugJS.substr(s, maxLen) + snip;
+  if (txt.length > maxLen) s = DebugJS.substr(s, maxLen - 3) + snip;
   return s;
 };
 DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
@@ -11730,12 +11755,12 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
   if (txt.length > maxLen) {
     switch (omitpart) {
       case DebugJS.OMIT_FIRST:
-        str = DebugJS.substr(str, (maxLen * (-1)));
+        str = DebugJS.substr(str, ((maxLen - 3) * (-1)));
         str = snip + DebugJS.escHtml(str);
         break;
       case DebugJS.OMIT_MID:
-        var firstLen = maxLen / 2;
-        var latterLen = firstLen;
+        var firstLen = (maxLen / 2) - 2;
+        var latterLen = firstLen + 1;
         if ((maxLen % 2) != 0) {
           firstLen = (firstLen | 0);
           latterLen = firstLen + 1;
@@ -11745,7 +11770,7 @@ DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
         str = DebugJS.escHtml(firstText) + snip + DebugJS.escHtml(latterText);
         break;
       default:
-        str = DebugJS.substr(str, maxLen);
+        str = DebugJS.substr(str, maxLen - 3);
         str = DebugJS.escHtml(str) + snip;
     }
   }
@@ -12652,6 +12677,10 @@ DebugJS.callListeners = function(fns, a1, a2, a3) {
     }
   }
   return true;
+};
+
+DebugJS.trimEchoStr = function(s) {
+  return DebugJS.trimDownText(s, DebugJS.CMD_ECHO_MAX_LEN, 'color:#aaa');
 };
 
 DebugJS.cmd = function(c, echo, sv) {
