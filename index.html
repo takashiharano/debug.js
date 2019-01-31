@@ -1120,6 +1120,11 @@ dragtest.onDown = function(e) {
   dragtest.data.el = el;
   dragtest.data.x = e.clientX;
   dragtest.data.y = e.clientY;
+  var list = document.getElementsByClassName('box');
+  for (var i = 0; i < list.length; i++) {
+    list[i].style.zIndex = 10;
+  }
+  el.style.zIndex = 11;
 };
 
 dragtest.onMove = function(e) {
