@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902010000';
+  this.v = '201902030000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2378,7 +2378,7 @@ DebugJS.prototype = {
     ctx.stopMeasure(ctx);
     ctx.bodyEl.style.cursor = ctx.cursor;
     ctx.status &= ~DebugJS.ST_MEASURE;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_MEASURE);
+    DebugJS.arr.del(ctx.featStack, DebugJS.ST_MEASURE);
     if (!q) DebugJS._log.s('Screen Measure OFF');
     ctx.updateMeasBtn(ctx);
   },
@@ -3488,7 +3488,7 @@ DebugJS.prototype = {
       ctx.sysInfoPanel = null;
     }
     ctx.status &= ~DebugJS.ST_SYS_INFO;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_SYS_INFO);
+    DebugJS.arr.del(ctx.featStack, DebugJS.ST_SYS_INFO);
     ctx.updateSysInfoBtn(ctx);
     ctx.setIntervalL(ctx);
   },
@@ -3940,7 +3940,7 @@ DebugJS.prototype = {
     }
     ctx.updateTargetElm(null);
     ctx.status &= ~DebugJS.ST_ELM_INFO;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_ELM_INFO);
+    DebugJS.arr.del(ctx.featStack, DebugJS.ST_ELM_INFO);
     ctx.updateElmInfoBtn(ctx);
   },
   inspectElement: function(x, y) {
@@ -4374,7 +4374,7 @@ DebugJS.prototype = {
       ctx.htmlSrcPanel = null;
     }
     ctx.status &= ~DebugJS.ST_HTML_SRC;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_HTML_SRC);
+    DebugJS.arr.del(ctx.featStack, DebugJS.ST_HTML_SRC);
     ctx.updateHtmlSrcBtn(ctx);
   },
   showHtmlSrc: function() {
@@ -4489,7 +4489,7 @@ DebugJS.prototype = {
       ctx.jsPanel = null;
     }
     ctx.status &= ~DebugJS.ST_JS;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_JS);
+    DebugJS.arr.del(ctx.featStack, DebugJS.ST_JS);
     ctx.updateJsBtn(ctx);
   },
 
@@ -4539,7 +4539,7 @@ DebugJS.prototype = {
       ctx.switchToolsFunction(0);
     }
     ctx.status &= ~DebugJS.ST_TOOLS;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_TOOLS);
+    DebugJS.arr.del(ctx.featStack, DebugJS.ST_TOOLS);
     ctx.updateToolsBtn(ctx);
   },
   updateToolsBtns: function() {
@@ -4840,7 +4840,7 @@ DebugJS.prototype = {
   },
   toggleTimerMode: function() {
     var a = [DebugJS.TOOL_TMR_MODE_CLOCK, DebugJS.TOOL_TMR_MODE_SW_CU, DebugJS.TOOL_TMR_MODE_SW_CD];
-    var nextMode = DebugJS.nextArr(a, DebugJS.ctx.toolTimerMode);
+    var nextMode = DebugJS.arr.next(a, DebugJS.ctx.toolTimerMode);
     DebugJS.ctx.switchTimerMode(nextMode);
   },
   switchTimerMode: function(mode) {
@@ -5966,7 +5966,7 @@ DebugJS.prototype = {
   toggleDecMode: function() {
     var ctx = DebugJS.ctx;
     var a = ['b64', 'hex', 'bin', 'txt'];
-    var mode = DebugJS.nextArr(a, ctx.fileVwrDecMode);
+    var mode = DebugJS.arr.next(a, ctx.fileVwrDecMode);
     ctx.setDecMode(ctx, mode);
   },
   setDecMode: function(ctx, mode) {
@@ -5977,7 +5977,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var a = ['hex', 'bin', 'dec'];
     var opt = ctx.fileVwrBinViewOpt;
-    opt.mode = DebugJS.nextArr(a, opt.mode);
+    opt.mode = DebugJS.arr.next(a, opt.mode);
     ctx.showBinDump(ctx, ctx.fileVwrByteArray);
   },
   toggleShowAddr: function() {
@@ -6490,7 +6490,7 @@ DebugJS.prototype = {
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.ST_EXT_PANEL;
-    DebugJS.delArrVal(ctx.featStack, DebugJS.ST_EXT_PANEL);
+    DebugJS.arr.del(ctx.featStack, DebugJS.ST_EXT_PANEL);
     ctx.updateExtBtn(ctx);
   },
 
@@ -10730,18 +10730,8 @@ DebugJS.checkRadix = function(v) {
   return 0;
 };
 
-DebugJS.arr2set = function(a, f) {
-  var s = [];
-  for (var i = 0; i < a.length; i++) {
-    var v = a[i];
-    if (DebugJS.findArrVal(s, v, f) < 0) {
-      s.push(v);
-    }
-  }
-  return s;
-};
-
-DebugJS.findArrVal = function(a, v, f) {
+DebugJS.arr = {};
+DebugJS.arr.pos = function(a, v, f) {
   var r = -1;
   for (var i = 0; i < a.length; i++) {
     if ((!f && (a[i] == v)) || (f && (a[i] === v))) {
@@ -10751,21 +10741,24 @@ DebugJS.findArrVal = function(a, v, f) {
   }
   return r;
 };
-DebugJS.countArrVal = function(a, v, f) {
+DebugJS.arr.count = function(a, v, f) {
   var c = 0;
   for (var i = 0; i < a.length; i++) {
     if ((!f && (a[i] == v)) || (f && (a[i] === v))) c++;
   }
   return c;
 };
-DebugJS.delArrVal = function(arr, v) {
+DebugJS.arr.has = function(a, v, f) {
+  return (DebugJS.arr.pos(a, v, f) >= 0);
+};
+DebugJS.arr.del = function(arr, v) {
   for (var i = 0; i < arr.length; i++) {
     if (arr[i] == v) {
       arr.splice(i--, 1);
     }
   }
 };
-DebugJS.nextArr = function(a, v) {
+DebugJS.arr.next = function(a, v) {
   var r = a[0];
   for (var i = 0; i < a.length; i++) {
     if ((a[i] == v) && (i < (a.length - 1))) {
@@ -10773,6 +10766,16 @@ DebugJS.nextArr = function(a, v) {
     }
   }
   return r;
+};
+DebugJS.arr.toSet = function(a, f) {
+  var s = [];
+  for (var i = 0; i < a.length; i++) {
+    var v = a[i];
+    if (DebugJS.arr.pos(s, v, f) < 0) {
+      s.push(v);
+    }
+  }
+  return s;
 };
 
 DebugJS.printUsage = function(m) {
