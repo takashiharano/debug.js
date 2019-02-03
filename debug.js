@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902032100';
+  this.v = '201902032140';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6724,14 +6724,15 @@ DebugJS.prototype = {
   },
   _execCmd: function(str, echo, recho, sv) {
     var ctx = DebugJS.ctx;
-    if (sv) ctx.saveHistory(ctx, str);
+    var plain = (ctx.cmdLine.type == 'text');
+    if (sv && plain) ctx.saveHistory(ctx, str);
     var setValName = null;
     var cmdline = str;
     if (str.match(/^\s*@/)) {
       echo = false;
       cmdline = str.substr(str.indexOf('@') + 1);
     }
-    if (echo) {
+    if (echo && plain) {
       var echoStr = str;
       echoStr = DebugJS.escHtml(echoStr);
       echoStr = DebugJS.trimEchoStr(echoStr);
