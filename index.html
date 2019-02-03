@@ -1928,6 +1928,17 @@ dbg.cmd.hasFocus(); <button class="demo-button2" onclick="setTimeout('log.res(db
   </tr>
 
   <tr>
+    <td class="name">dbg.cmd.setType</td>
+    <td>type (text|password)</td>
+    <td>
+      Set input type of the command line.<br>
+<pre class="eg">
+dbg.cmd.setType('<input type="text" id="cmd-settype-text" class="demo-text" style="width:80px;" value="password">'); <button class="demo-button2" onclick="dbg.cmd.setType(getVal('cmd-settype-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.cmd.getElement</td>
     <td></td>
     <td>
