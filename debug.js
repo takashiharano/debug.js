@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902041900';
+  this.v = '201902050000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -500,6 +500,7 @@ DebugJS.ST_JS = 1 << 18;
 DebugJS.ST_TOOLS = 1 << 19;
 DebugJS.ST_EXT_PANEL = 1 << 20;
 DebugJS.ST_WD = 1 << 21;
+DebugJS.ST_NO_HIST = 1 << 22;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -6725,7 +6726,7 @@ DebugJS.prototype = {
   _execCmd: function(str, echo, recho, sv) {
     var ctx = DebugJS.ctx;
     var plain = (ctx.cmdLine.type == 'text');
-    if (sv && plain) ctx.saveHistory(ctx, str);
+    if (sv && plain && !(ctx.status & DebugJS.ST_NO_HIST)) ctx.saveHistory(ctx, str);
     var setValName = null;
     var cmdline = str;
     if (str.match(/^\s*@/)) {
@@ -12705,6 +12706,14 @@ DebugJS.cmd.hasFocus = function() {
 DebugJS.cmd.setMode = function(m) {
   if (m != 'password') m = 'text';
   DebugJS.ctx.cmdLine.type = m;
+};
+DebugJS.cmd.saveHistory = function(f) {
+  var b = DebugJS.ST_NO_HIST;
+  if (f) {
+    DebugJS.ctx.status &= ~b;
+  } else {
+    DebugJS.ctx.status |= b;
+  }
 };
 DebugJS.cmd.getElement = function() {
   return DebugJS.ctx.cmdLine;
