@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902032140';
+  this.v = '201902041900';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12702,9 +12702,9 @@ DebugJS.cmd.focus = function() {
 DebugJS.cmd.hasFocus = function() {
   return document.activeElement == DebugJS.ctx.cmdLine;
 };
-DebugJS.cmd.setType = function(t) {
-  if (t != 'password') t = 'text';
-  DebugJS.ctx.cmdLine.type = t;
+DebugJS.cmd.setMode = function(m) {
+  if (m != 'password') m = 'text';
+  DebugJS.ctx.cmdLine.type = m;
 };
 DebugJS.cmd.getElement = function() {
   return DebugJS.ctx.cmdLine;
