@@ -4232,7 +4232,8 @@ $ hex (30 + 2) 4
       arg3: data to send<span class="annotation">(opt)</span>
     </td>
     <td>
-      Send an HTTP request by specified method.<br><br>
+      Send an HTTP request by specified method.<br>
+      This command perform the operation synchronously and XMLHttpRequest object will be returned.<br><br>
       method:<br>
       The HTTP method to use, such as GET, POST, HEAD, PUT, DELETE, OPTIONS, etc.<br>
       <span class="annotation">GET is set as the default value in case of that the method is not specified.</span><br>

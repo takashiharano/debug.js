@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902050000';
+  this.v = '201902072215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6795,8 +6795,7 @@ DebugJS.prototype = {
     }
 
     if (cmdline.match(/^\s*http/)) {
-      DebugJS.ctx.doHttpRequest('GET', cmdline);
-      return;
+      return DebugJS.ctx.doHttpRequest('GET', cmdline, echo);
     }
 
     var ret = ctx.cmdRadixConv(cmdline, echo);
@@ -7677,7 +7676,7 @@ DebugJS.prototype = {
     if (DebugJS.LS_AVAILABLE) localStorage.removeItem('DebugJS-history');
   },
 
-  cmdHttp: function(arg, tbl) {
+  cmdHttp: function(arg, tbl, echo) {
     var a = DebugJS.splitCmdLineInTwo(arg);
     var method = a[0];
     var data = a[1];
@@ -7688,7 +7687,7 @@ DebugJS.prototype = {
       method = 'GET';
       data = arg;
     }
-    DebugJS.ctx.doHttpRequest(method, data);
+    return DebugJS.ctx.doHttpRequest(method, data, echo);
   },
 
   cmdJs: function(arg, tbl) {
@@ -9254,7 +9253,7 @@ DebugJS.prototype = {
     }
   },
 
-  doHttpRequest: function(method, arg) {
+  doHttpRequest: function(method, arg, echo) {
     var a = DebugJS.splitCmdLineInTwo(arg);
     var url = a[0];
     var data = a[1];
@@ -9279,19 +9278,21 @@ DebugJS.prototype = {
     if (user || pass) {
       req += '\nuser: ' + user + ':' + (pass ? '*' : '');
     }
-    DebugJS._log(req);
+    if (echo) DebugJS._log(req);
     var request = {
       url: url,
       method: method,
       data: data,
-      async: true,
+      async: false,
       cache: false,
       user: user,
       pass: pass
       //userAgent: 'Mozilla/5.0'
     };
+    var r;
+    DebugJS.http.echo = echo;
     try {
-      DebugJS.http(request, DebugJS.onHttpRequestDone);
+      r = DebugJS.http(request, DebugJS.onHttpReqDone);
     } catch (e) {
       DebugJS._log.e(e);
       var baseURI = document.baseURI;
@@ -9300,6 +9301,7 @@ DebugJS.prototype = {
         DebugJS._log.w('Cross-Origin Request\nsource : ' + baseURI + '\nrequest: ' + url);
       }
     }
+    return r;
   },
 
   initExtension: function(ctx) {
@@ -11500,8 +11502,10 @@ DebugJS.http = function(rq, cb) {
   if (!rq.pass) rq.pass = '';
   rq.method = rq.method.toUpperCase();
   var xhr = new XMLHttpRequest();
+  var r;
   xhr.onreadystatechange = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
+      r = xhr;
       if (cb) cb(xhr);
     }
   };
@@ -11518,6 +11522,7 @@ DebugJS.http = function(rq, cb) {
     xhr.setRequestHeader('User-Agent', rq.userAgent);
   }
   xhr.send(rq.data);
+  return r;
 };
 DebugJS.http.buildParam = function(p) {
   var s = '';
@@ -11529,19 +11534,21 @@ DebugJS.http.buildParam = function(p) {
   }
   return s;
 };
-DebugJS.onHttpRequestDone = function(xhr) {
+DebugJS.http.echo = true;
+DebugJS.onHttpReqDone = function(xhr) {
+  var echo = DebugJS.http.echo;
   var stmsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
-    DebugJS._log.e('Cannot load: ' + stmsg);
+    if (echo) DebugJS._log.e('Cannot load: ' + stmsg);
   } else {
-    DebugJS._log(stmsg);
+    if (echo) DebugJS._log(stmsg);
   }
   var head = xhr.getAllResponseHeaders();
   var txt = xhr.responseText.replace(/</g, '&lt;');
   txt = txt.replace(/>/g, '&gt;');
   if (head || txt) {
     var r = '<span style="color:#5ff">' + head + '</span>' + txt;
-    DebugJS._log.mlt(r);
+    if (echo) DebugJS._log.mlt(r);
   }
 };
 
