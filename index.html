@@ -4051,8 +4051,14 @@ operation: <b>lock</b>
       Convert millis &lt;--&gt; Date-Time<br>
       -iso option: output in ISO 8601 format<br><br>
 <pre class="eg">
-$ date 1500000000000
--&gt; 2017-07-14 FRI 11:40:00.000 +0900
+$ date 1549683296789
+-&gt; 2019-02-09 SAT 12:34:56.789 +0900
+
+$ date 1549683296.789
+-&gt; 2019-02-09 SAT 12:34:56.789 +0900
+
+$ date 1549683296.
+-&gt; 2019-02-09 SAT 12:34:56.000 +0900
 
 $  date 2000/01/01 00:00:00
 -&gt; 2000-01-01 SAT 00:00:00.000 +0900 (946652400000)
@@ -5069,18 +5075,30 @@ $ text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
   </tr>
 
   <tr>
-    <td class="name">time</td>
+    <td class="name">timediff</td>
     <td>
       ms|time-string
     </td>
     <td>
       Time duration calculator.<br><br>
 <pre class="eg">
-$ time 86400000
--&gt; 1d 0h 0m 0s
+$ timediff 1 3
+-&gt; 0.002s
 
-$ time -t1 "2018-09-05 10:00:00.000" -t2 "2018-09-05 12:34:56.789"
--&gt; 2h 34m 56s 789ms
+$ timediff 3 1
+-&gt; -0.002s
+
+$ timediff 1000 3000
+-&gt; 2s
+
+$ timediff 3.0 1.0
+-&gt; -2s
+
+$ timediff "2019-02-09 12:00:00.000" "2019-02-10 13:02:03.456"
+-&gt; 1d 1h 2m 3s 456ms
+
+$ timediff "2019-02-10 13:02:03.456" "2019-02-09 12:00:00.000"
+-&gt; -1d 1h 2m 3s 456ms
 </pre>
     </td>
   </tr>
@@ -5092,6 +5110,29 @@ $ time -t1 "2018-09-05 10:00:00.000" -t2 "2018-09-05 12:34:56.789"
       arg2: timer name<span class="annotation">(opt)</span>
     </td>
     <td>Manipulate the timer.</td>
+  </tr>
+
+  <tr>
+    <td class="name">timestr</td>
+    <td>
+      ms|time-string
+    </td>
+    <td>
+      String &lt;--&gt; millis<br><br>
+<pre class="eg">
+$ timestr 1d2h3m4s500
+-&gt; 93784500
+
+$ timestr 1d 2h 3m 4s 500
+-&gt; 93784500
+
+$ timestr 93784500
+-&gt; 1d 2h 3m 4s 500ms
+
+$ timestr 93784.500
+-&gt; 1d 2h 3m 4s 500ms
+</pre>
+    </td>
   </tr>
 
   <tr>
@@ -5343,25 +5384,6 @@ $ 2018-06-20 12:34:56.123
 $ 20180620T123456.123
 -&gt; 2018-06-20 WED 12:34:56.123 +0900 (1529465696123)
 <span class="annotation">This is an alias of date command.</span>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">String to millis</td>
-    <td>
-     time string
-    </td>
-    <td>
-<pre class="eg">
-$ 1d2h3m4s500
--&gt; 93784500
-
-$ 1m30s
--&gt; 90000
-
-$ 1.5s
--&gt; 1500
 </pre>
     </td>
   </tr>

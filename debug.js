@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902072215';
+  this.v = '201902092235';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -375,8 +375,9 @@ var DebugJS = DebugJS || function() {
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
-    {cmd: 'time', fn: this.cmdTime, desc: 'Time duration calculator', help: 'time ms|-t1 ms|"datestr" -t2 ms|"datestr"'},
+    {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: 'time ms|"datestr" ms|"datestr"'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'time start|split|stop|list [timer-name]'},
+    {cmd: 'timestr', fn: this.cmdTimeStr, desc: 'String <--> millis', help: 'timestr ms|sec.ms'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode code point / Decodes unicode string', help: 'unicode [-e|-d] str|codePoint(s)'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
@@ -6813,10 +6814,8 @@ DebugJS.prototype = {
     ret = ctx.cmdDateConv(cmdline, echo);
     if (ret != null) return ret;
 
-    if (DebugJS.isTmStr(cmdline)) {
-      ret = DebugJS.str2ms(cmdline);
-      if (echo) DebugJS._log.res(ret);
-      return ret;
+    if (DebugJS.isUnixTm(cmdline)) {
+      return ctx.cmdDate(cmdline, null, echo);
     }
 
     if (cmdline.match(/^\s*U\+/i)) {
@@ -8916,19 +8915,25 @@ DebugJS.prototype = {
     DebugJS.setText(slctr, txt, speed, step, start, end);
   },
 
-  cmdTime: function(arg, tbl, echo) {
-    if (DebugJS.countArgs(arg) == 0) {
+  cmdTimeDiff: function(arg, tbl, echo) {
+    var a = DebugJS.splitCmdLine(arg);
+    var t1 = a[0];
+    var t2 = a[1];
+    if ((t1 == '') || (t2 == undefined)) {
       DebugJS.printUsage(tbl.help);
       return;
     }
-    var t1 = DebugJS.getOptVal(arg, 't1');
-    var t2 = DebugJS.getOptVal(arg, 't2');
-    if (((t1 == null) || (t1 == '')) && (t2 == null)) {
-      t1 = arg;
-    }
     try {
-      t1 = eval(t1);
-      t2 = eval(t2);
+      if (DebugJS.isUnixTm(t1)) {
+        t1 = DebugJS.parseInt(DebugJS.float2ms(t1));
+      } else {
+        t1 = eval(t1);
+      }
+      if (DebugJS.isUnixTm(t2)) {
+        t2 = DebugJS.parseInt(DebugJS.float2ms(t2));
+      } else {
+        t2 = eval(t2);
+      }
       var s = DebugJS.getTimeDurationStr(t1, t2);
       if (echo) DebugJS._log.res(s);
       return s;
@@ -8959,6 +8964,26 @@ DebugJS.prototype = {
       default:
         DebugJS.printUsage(tbl.help);
     }
+  },
+
+  cmdTimeStr: function(arg, tbl, echo) {
+    if (DebugJS.countArgs(arg) == 0) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var t = arg;
+    var s;
+    if (DebugJS.isTmStr(t)) {
+      s = DebugJS.str2ms(t);
+    } else {
+      if (DebugJS.isUnixTm(t)) {
+        t = DebugJS.float2ms(t);
+      }
+      t = DebugJS.parseInt(t);
+      s = DebugJS.getTimeDurationStr(t);
+    }
+    if (echo) DebugJS._log.res(s);
+    return s;
   },
 
   cmdStopwatch: function(arg, tbl) {
@@ -9908,6 +9933,9 @@ DebugJS.date = function(val, iso) {
       }
     }
   } else {
+    if (DebugJS.isUnixTm(val)) {
+      val = DebugJS.float2ms(val);
+    }
     val = DebugJS.parseInt(val);
     dt = DebugJS.getDateTime(val);
     if (iso) {
@@ -9917,6 +9945,10 @@ DebugJS.date = function(val, iso) {
     }
   }
   return s;
+};
+DebugJS.float2ms = function(t) {
+  var v = t.split('.');
+  return v[0] + (v[1] + '000').substr(0, 3);
 };
 DebugJS.diffDate = function(d1, d2) {
   var dt1 = DebugJS.getDateTime(d1);
@@ -10063,8 +10095,8 @@ DebugJS.getTimeDurationStr = function(t1, t2) {
     if (isNaN(t2)) t2 = DebugJS.getDateTimeEx(t2).time;
     ms = t2 - t1;
   }
-  var s = '';
   var t = DebugJS.ms2struct(ms);
+  var s = (t.sign ? '-' : '');
   if (t.d) s += t.d + 'd ';
   if (t.d || t.hr) s += t.hr + 'h ';
   if (t.d || t.hr || t.mi) s += t.mi + 'm ';
@@ -10073,9 +10105,9 @@ DebugJS.getTimeDurationStr = function(t1, t2) {
     if (t.sss) s += ' ' + t.sss + 'ms';
   } else {
     if (t.sss) {
-      s = '0.' + ('00' + t.sss).slice(-3).replace(/0+$/, '');
+      s += '0.' + ('00' + t.sss).slice(-3).replace(/0+$/, '');
     } else {
-      s = '0';
+      s += '0';
     }
     s += 's';
   }
@@ -11367,10 +11399,13 @@ DebugJS.str2ms = function(t) {
   return d * 86400000 + h * 3600000 + m * 60000 + s * 1000 + ms;
 };
 DebugJS.isTmStr = function(s) {
-  s = (s + '').trim();
+  s = DebugJS.delAllSP(s + '');
   if (!s.match(/^\d/) || s.match(/[^\d.dhms]/)) return false;
   var m = s.match(/\d*d?\d*h?\d*m?\d*\.?\d?s?/);
   return (isNaN(s) && m && (m != ''));
+};
+DebugJS.isUnixTm = function(s) {
+  return (s.match(/^\d*\.\d*$/));
 };
 
 DebugJS.subTime = function(tL, tR, byTheDay) {
