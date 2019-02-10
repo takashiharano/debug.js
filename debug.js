@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902101315';
+  this.v = '201902102244';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5698,7 +5698,7 @@ DebugJS.prototype = {
       ctx.onJsLoaded(ctx, file, cnt);
     } else if (file.name.match(/\.json$/)) {
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
-      ctx.fmtJson(ctx, cnt);
+      ctx.fmtJson(ctx, DebugJS.delAllNL(cnt));
     }
   },
   _onDropOnFeat: function(ctx, e, fn) {
