@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902102332';
+  this.v = '201902112121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,7 +324,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
-    {cmd: 'bin', fn: this.cmdBin, desc: 'Convert a number to binary', help: 'bin num digit'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64(Bit Shifted Base64) reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
@@ -341,7 +340,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'hex', fn: this.cmdHex, desc: 'Convert a number to hexadecimal', help: 'hex num digit'},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] url [--user user:pass] [data]'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
@@ -6990,13 +6988,6 @@ DebugJS.prototype = {
     if (echo) DebugJS._log.res(v);
   },
 
-  cmdBin: function(arg, tbl) {
-    var data = DebugJS.ctx.radixCmd(arg, tbl);
-    if (data == null) return;
-    var r = DebugJS.convertBin(data);
-    if (r) DebugJS._log(r);
-  },
-
   cmdBSB64: function(arg, tbl, echo) {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
@@ -7507,44 +7498,6 @@ DebugJS.prototype = {
       }
     }
     return s;
-  },
-
-  cmdHex: function(arg, tbl) {
-    var data = DebugJS.ctx.radixCmd(arg, tbl);
-    if (data == null) return;
-    try {
-      var v2 = '';
-      var v16 = '';
-      var val = eval(data.exp);
-      if (val < 0) {
-        for (var i = (DebugJS.DFLT_UNIT - 1); i >= 0; i--) {
-          v2 += (val & 1 << i) ? '1' : '0';
-        }
-        v16 = parseInt(v2, 2).toString(16);
-      } else {
-        v16 = parseInt(val).toString(16);
-      }
-      var hex = DebugJS.formatHex(v16, true, false);
-      var ret = hex;
-      if (data.digit > 0) {
-        if (hex.length > data.digit) {
-          ret = hex.slice(data.digit * -1);
-          var omit = hex.substr(0, hex.length - data.digit);
-          ret = '<span style="color:#888">' + omit + '</span>' + ret;
-        } else if (hex.length < data.digit) {
-          var padding = data.digit - hex.length;
-          var zero = '';
-          for (i = 0; i < padding; i++) {
-            zero += ((val < 0) ? 'F' : '0');
-          }
-          ret = zero + hex;
-        }
-      }
-      ret = '0x' + ret;
-      DebugJS._log(ret);
-    } catch (e) {
-      DebugJS._log.e('Invalid value');
-    }
   },
 
   radixCmd: function(arg, tbl) {

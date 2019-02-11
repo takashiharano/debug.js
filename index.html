@@ -3844,27 +3844,6 @@ $ bat set pc 1
   </tr>
 
   <tr>
-    <td class="name">bin</td>
-    <td>
-      arg1: num or expression<br>
-      arg2: digit<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Convert a number to binary.
-<pre class="eg">
-$ bin 128
--&gt; <span style="color:#ccc">0000 0000 0000 0000 0000 0000</span> 1000 0000 (8 bits)
-
-$ bin 128 8
--&gt; 1000 0000 (8 bits)
-
-$ bin (1 + 2) 8
--&gt; <span style="color:#ccc">0000 00</span>11 (2 bits)
-</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">bsb64</td>
     <td></td>
     <td>
@@ -4188,33 +4167,6 @@ $ event dispatch window
     <td class="name">exit</td>
     <td></td>
     <td>Close the debug window and clear all status.</td>
-  </tr>
-
-  <tr>
-    <td class="name">help</td>
-    <td></td>
-    <td>Displays available command list.</td>
-  </tr>
-
-  <tr>
-    <td class="name">hex</td>
-    <td>
-      arg1: num or expression<br>
-      arg2: digit<span class="annotation">(opt)</span>
-    </td>
-    <td>
-      Convert a number to hexadecimal.
-<pre class="eg">
-$ hex 15
--&gt; 0xF
-
-$ hex 15 4
--&gt; 0x000F
-
-$ hex (30 + 2) 4
--&gt; 0x0020
-</pre>
-    </td>
   </tr>
 
   <tr>
