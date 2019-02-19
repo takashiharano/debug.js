@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902112121';
+  this.v = '201902200000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1328,7 +1328,7 @@ DebugJS.prototype = {
     }
 
     if (opt.useSuspendLogButton) {
-      ctx.suspendLogBtn = ctx.createHeaderBtn('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'ST_LOG_SUSPENDING', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
+      ctx.suspendLogBtn = ctx.createHeaderBtn('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'ST_LOG_SUSPEND', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
     }
 
     if (DebugJS.LS_AVAILABLE) {
