@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902200000';
+  this.v = '201902220000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5657,7 +5657,7 @@ DebugJS.prototype = {
     var j = t.replace(/[^{]*({.*}).*/, '$1');
     var s;
     try {
-      s = DebugJS.formatJSON(j);
+      s = DebugJS.escHtml(DebugJS.formatJSON(j));
     } catch (e) {
       s = DebugJS.trimEchoStr(j) + '\n<span style="color:' + ctx.opt.logColorE + '">' + e + '</span>';
     }
