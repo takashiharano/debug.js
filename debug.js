@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902220000';
+  this.v = '201902222100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12067,7 +12067,8 @@ DebugJS.createLogData = function(extInfo, flg) {
 DebugJS.createLogHeader = function() {
   var dt = DebugJS.getDateTime();
   var brw = DebugJS.getBrowserType();
-  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + ' (' + dt.time + ')\n';
+  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  s += 'Timestamp    : ' + dt.time + '\n';
   s += 'Browser      : ' + brw.name + (brw.version == '' ? '' : ' ' + brw.version) + '\n';
   s += 'User Agent   : ' + navigator.userAgent + '\n';
   s += 'Screen Size  : w=' + screen.width + ' h=' + screen.height + '\n';
