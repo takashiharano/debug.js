@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902272100';
+  this.v = '201902280050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10673,16 +10673,16 @@ DebugJS.obj2json = function(o) {
   return DebugJS.objDump(o, true, 0, 0, 0);
 };
 
-DebugJS.loadObj = function(k) {
+DebugJS.loadobj = function(k) {
   if (DebugJS.LS_AVAILABLE) {
     return JSON.parse(localStorage.getItem(k));
   }
   return null;
 };
-DebugJS.saveObj = function(k, o) {
+DebugJS.saveobj = function(k, o) {
   if (DebugJS.LS_AVAILABLE) localStorage.setItem(k, JSON.stringify(o));
 };
-DebugJS.clearObj = function(k) {
+DebugJS.clearobj = function(k) {
   if (DebugJS.LS_AVAILABLE) localStorage.removeItem(k);
 };
 
