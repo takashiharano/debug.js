@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902222120';
+  this.v = '201902272100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12422,6 +12422,18 @@ DebugJS.fileline = function(idx, abs) {
   var f = DebugJS._filename(s, idx, abs);
   var l = DebugJS._line(s, idx);
   return f + ':' + l;
+};
+
+DebugJS.inject = function(fn, cd) {
+  var f = eval(fn + '+\'\'');
+  var p = f.indexOf('{') + 1;
+  if (p > 0) {
+    var fnc = f.substr(0, p) + cd + f.substr(p);
+    eval(fn + '=' + fnc);
+  }
+};
+DebugJS.stk = function(fn) {
+  DebugJS.inject(fn, 'DebugJS.stack();');
 };
 
 DebugJS.time = {};
