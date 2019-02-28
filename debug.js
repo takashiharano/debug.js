@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201902280050';
+  this.v = '201903010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3496,7 +3496,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var INDENT = '                  ';
     var offset = (new Date()).getTimezoneOffset();
-    var screenSize = 'width = ' + screen.width + ' x height = ' + screen.height;
+    var screenSize = 'width=' + screen.width + ' x height=' + screen.height;
+    var screenInfo = screenSize + ' (colorDepth=' + screen.colorDepth + ')';
     var languages = DebugJS.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
     var jq = '<span class="dbg-na">not loaded</span>';
@@ -3575,7 +3576,7 @@ DebugJS.prototype = {
 
     var html = '<pre>';
     html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.getTimeOffsetStr(offset, true) + ')\n';
-    html += DebugJS.addSysInfo('screen.     ', screenSize);
+    html += DebugJS.addSysInfo('screen.     ', screenInfo);
     html += DebugJS.addSysInfo('Browser     ', DebugJS.browserColoring(browser.name) + ' ' + browser.version);
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('navigator');
@@ -3658,8 +3659,9 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onkeyup      ', docOnkeyup);
     html += DebugJS.addSysInfoProp('onselectstart', docOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', docOncontextmenu);
-    html += DebugJS.addSysInfoProp('baseURI', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp('cookie ', '<span id="' + ctx.id + '-sys-cookie"></span>');
+    html += DebugJS.addSysInfoProp('baseURI ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('referrer', ctx.createFoldingText(document.referrer, 'docRef', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('cookie  ', '<span id="' + ctx.id + '-sys-cookie"></span>');
     html += '<span id="' + ctx.id + '-sys-cookies"></span>';
     html += ' <input id="' + ctx.id + '-cookiekey" class="dbg-txtbox dbg-cookiekey">=<input id="' + ctx.id + '-cookieval" class="dbg-txtbox dbg-cookieval"> <span class="dbg-btn" onclick="DebugJS.ctx.setCookie();">Set</span>';
     html += DebugJS.addPropSep(ctx);
