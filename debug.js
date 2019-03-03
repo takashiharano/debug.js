@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903012323';
+  this.v = '201903040000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -370,7 +370,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', help: 'set property-name value'},
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
-    {cmd: 'stackmode', fn: this.cmdStackMode, desc: 'Inject print stack code into a given function', help: 'stackmode funcname'},
+    {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
@@ -8945,7 +8945,7 @@ DebugJS.prototype = {
     return s;
   },
 
-  cmdStackMode: function(arg, tbl) {
+  cmdStack: function(arg, tbl) {
     var f = arg.trim();
     if (f) {
       DebugJS.stk(f);
@@ -12437,11 +12437,15 @@ DebugJS.fileline = function(idx, abs) {
 };
 
 DebugJS.inject = function(fn, cd) {
-  var f = eval(fn + '+\'\'');
-  var p = f.indexOf('{') + 1;
-  if (p > 0) {
-    var fnc = f.substr(0, p) + cd + f.substr(p);
-    eval(fn + '=' + fnc);
+  try {
+    var f = eval(fn + '+\'\'');
+    var p = f.indexOf('{') + 1;
+    if (p > 0) {
+      var fnc = f.substr(0, p) + cd + f.substr(p);
+      eval(fn + '=' + fnc);
+    }
+  } catch (e) {
+    DebugJS._log.e(e);
   }
 };
 DebugJS.stk = function(fn) {
