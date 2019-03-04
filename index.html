@@ -3358,21 +3358,6 @@ function callback(xhr) {
   </tr>
 
   <tr>
-    <td class="name">dbg.inject</td>
-    <td>
-      arg1: function name<br>
-      arg2: code
-    </td>
-    <td>
-      Inject a given code into a given function.<br>
-      This function is intended to use from command line.<br>
-      Both argument should be given as a string.<br><br>
-<pre class="eg">
-$ dbg.inject('funcname', 'log(\'function was called\')');</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">dbg.sleep</td>
     <td>
       ms
@@ -4216,23 +4201,37 @@ $ event dispatch window
       This command perform the operation synchronously and XMLHttpRequest object will be returned.<br><br>
       method:<br>
       The HTTP method to use, such as GET, POST, HEAD, PUT, DELETE, OPTIONS, etc.<br>
-      <span class="annotation">GET is set as the default value in case of that the method is not specified.</span><br>
+      <span class="annotation">GET is set as the default value in case of that the method is not specified.</span><br><br>
 <pre class="eg">
 e.g.,)
 
 GET <span class="annotation">The results of the following commands will be the same.</span>
-http get https://debugjs.net/test/?abc=123&amp;xyz=987
-http https://debugjs.net/test/?abc=123&amp;xyz=987
-https://debugjs.net/test/?abc=123&amp;xyz=987
+ http get https://debugjs.net/test/?abc=123&amp;xyz=987
+ http https://debugjs.net/test/?abc=123&amp;xyz=987
+ https://debugjs.net/test/?abc=123&amp;xyz=987
 
 POST
-http post https://debugjs.net/test/ abc=123&amp;xyz=987
+ http post https://debugjs.net/test/ abc=123&amp;xyz=987
 
 HEAD
-http head https://debugjs.net/test/
+ http head https://debugjs.net/test/
 
 w/ User Auth
-http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
+ http [METHOD] --user [USER]:[PASS] [URL] [DATA]</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">inject</td>
+    <td>
+      arg1: function name<br>
+      arg2: code
+    </td>
+    <td>
+      Inject a given code into a given function.<br>
+      The given code will be inserted into the beginning of the function.<br><br>
+<pre class="eg">
+$ inject func1 "log('func1 was called');"</pre>
     </td>
   </tr>
 

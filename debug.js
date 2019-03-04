@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903042100';
+  this.v = '201903050000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -342,6 +342,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] url [--user user:pass] [data]'},
+    {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
     {cmd: 'jump', fn: this.cmdJump, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -7656,6 +7657,22 @@ DebugJS.prototype = {
       data = arg;
     }
     return DebugJS.ctx.doHttpRequest(method, data, echo);
+  },
+
+  cmdInject: function(arg, tbl) {
+    var a = DebugJS.splitCmdLine(arg);
+    var f = a[0].trim();
+    var c = a[1];
+    if (f && c) {
+      try {
+        c = eval(c);
+        DebugJS.inject(f, c);
+      } catch (e) {
+        DebugJS._log.e(e);
+      }
+    } else {
+      DebugJS.printUsage(tbl.help);
+    }
   },
 
   cmdJs: function(arg, tbl) {
