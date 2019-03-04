@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903040000';
+  this.v = '201903042100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3496,6 +3496,8 @@ DebugJS.prototype = {
   showSystemInfo: function(e) {
     var ctx = DebugJS.ctx;
     var INDENT = '                  ';
+    var setStyleIfObjNA = DebugJS.setStyleIfObjNA;
+    var foldingTxt = ctx.createFoldingText;
     var offset = (new Date()).getTimezoneOffset();
     var screenSize = 'width=' + screen.width + ' x height=' + screen.height;
     var screenInfo = screenSize + ' (colorDepth=' + screen.colorDepth + ')';
@@ -3529,9 +3531,9 @@ DebugJS.prototype = {
     for (i = 0; i < links.length; i++) {
       if (links[i].rel == 'stylesheet') {
         if (i == 0) {
-          loadedStyles = ctx.createFoldingText(links[i].href, 'linkHref' + i, DebugJS.OMIT_MID);
+          loadedStyles = foldingTxt(links[i].href, 'linkHref' + i, DebugJS.OMIT_MID);
         } else {
-          loadedStyles += '\n' + INDENT + ctx.createFoldingText(links[i].href, 'linkHref' + i, DebugJS.OMIT_MID);
+          loadedStyles += '\n' + INDENT + foldingTxt(links[i].href, 'linkHref' + i, DebugJS.OMIT_MID);
         }
       }
     }
@@ -3541,39 +3543,39 @@ DebugJS.prototype = {
     for (i = 0; i < scripts.length; i++) {
       if (scripts[i].src) {
         if (i == 0) {
-          loadedScripts = ctx.createFoldingText(scripts[i].src, 'scriptSrc' + i, DebugJS.OMIT_MID);
+          loadedScripts = foldingTxt(scripts[i].src, 'scriptSrc' + i, DebugJS.OMIT_MID);
         } else {
-          loadedScripts += '\n' + INDENT + ctx.createFoldingText(scripts[i].src, 'scriptSrc' + i, DebugJS.OMIT_MID);
+          loadedScripts += '\n' + INDENT + foldingTxt(scripts[i].src, 'scriptSrc' + i, DebugJS.OMIT_MID);
         }
       }
     }
 
-    var navUserAgent = ctx.createFoldingText(navigator.userAgent, 'navUserAgent', DebugJS.OMIT_LAST);
-    var navAppVersion = ctx.createFoldingText(navigator.appVersion, 'navAppVersion', DebugJS.OMIT_LAST);
-    var winOnload = ctx.createFoldingText(window.onload, 'winOnload', DebugJS.OMIT_LAST);
-    var winOnunload = ctx.createFoldingText(window.onunload, 'winOnunload', DebugJS.OMIT_LAST);
-    var winOnclick = ctx.createFoldingText(window.onclick, 'winOnclick', DebugJS.OMIT_LAST);
-    var winOnmousedown = ctx.createFoldingText(window.onmousedown, 'winOnmousedown', DebugJS.OMIT_LAST);
-    var winOnmousemove = ctx.createFoldingText(window.onmousemove, 'winOnmousemove', DebugJS.OMIT_LAST);
-    var winOnmouseup = ctx.createFoldingText(window.onmousedown, 'winOnmouseup', DebugJS.OMIT_LAST);
-    var winOnkeydown = ctx.createFoldingText(window.onkeydown, 'winOnkeydown', DebugJS.OMIT_LAST);
-    var winOnkeypress = ctx.createFoldingText(window.onkeypress, 'winOnkeypress', DebugJS.OMIT_LAST);
-    var winOnkeyup = ctx.createFoldingText(window.onkeyup, 'winOnkeyup', DebugJS.OMIT_LAST);
-    var winOncontextmenu = ctx.createFoldingText(window.oncontextmenu, 'winOncontextmenu', DebugJS.OMIT_LAST);
-    var winOnresize = ctx.createFoldingText(window.oncontextmenu, 'winOnresize', DebugJS.OMIT_LAST);
-    var winOnscroll = ctx.createFoldingText(window.oncontextmenu, 'winOnscroll', DebugJS.OMIT_LAST);
-    var winOnselect = ctx.createFoldingText(window.oncontextmenu, 'winOnselect', DebugJS.OMIT_LAST);
-    var winOnselectstart = ctx.createFoldingText(window.oncontextmenu, 'winOnselectstart', DebugJS.OMIT_LAST);
-    var winOnerror = ctx.createFoldingText(window.onerror, 'winOnerror', DebugJS.OMIT_LAST);
-    var docOnclick = ctx.createFoldingText(document.onclick, 'documentOnclick', DebugJS.OMIT_LAST);
-    var docOnmousedown = ctx.createFoldingText(document.onmousedown, 'documentOnmousedown', DebugJS.OMIT_LAST);
-    var docOnmousemove = ctx.createFoldingText(document.onmousemove, 'documentOnmousemove', DebugJS.OMIT_LAST);
-    var docOnmouseup = ctx.createFoldingText(document.onmousedown, 'documentOnmouseup', DebugJS.OMIT_LAST);
-    var docOnkeydown = ctx.createFoldingText(document.onkeydown, 'documentOnkeydown', DebugJS.OMIT_LAST);
-    var docOnkeypress = ctx.createFoldingText(document.onkeypress, 'documentOnkeypress', DebugJS.OMIT_LAST);
-    var docOnkeyup = ctx.createFoldingText(document.onkeyup, 'documentOnkeyup', DebugJS.OMIT_LAST);
-    var docOnselectstart = ctx.createFoldingText(document.onselectstart, 'documentOnselectstart', DebugJS.OMIT_LAST);
-    var docOncontextmenu = ctx.createFoldingText(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
+    var navUserAgent = foldingTxt(navigator.userAgent, 'navUserAgent', DebugJS.OMIT_LAST);
+    var navAppVersion = foldingTxt(navigator.appVersion, 'navAppVersion', DebugJS.OMIT_LAST);
+    var winOnload = foldingTxt(window.onload, 'winOnload', DebugJS.OMIT_LAST);
+    var winOnunload = foldingTxt(window.onunload, 'winOnunload', DebugJS.OMIT_LAST);
+    var winOnclick = foldingTxt(window.onclick, 'winOnclick', DebugJS.OMIT_LAST);
+    var winOnmousedown = foldingTxt(window.onmousedown, 'winOnmousedown', DebugJS.OMIT_LAST);
+    var winOnmousemove = foldingTxt(window.onmousemove, 'winOnmousemove', DebugJS.OMIT_LAST);
+    var winOnmouseup = foldingTxt(window.onmousedown, 'winOnmouseup', DebugJS.OMIT_LAST);
+    var winOnkeydown = foldingTxt(window.onkeydown, 'winOnkeydown', DebugJS.OMIT_LAST);
+    var winOnkeypress = foldingTxt(window.onkeypress, 'winOnkeypress', DebugJS.OMIT_LAST);
+    var winOnkeyup = foldingTxt(window.onkeyup, 'winOnkeyup', DebugJS.OMIT_LAST);
+    var winOncontextmenu = foldingTxt(window.oncontextmenu, 'winOncontextmenu', DebugJS.OMIT_LAST);
+    var winOnresize = foldingTxt(window.oncontextmenu, 'winOnresize', DebugJS.OMIT_LAST);
+    var winOnscroll = foldingTxt(window.oncontextmenu, 'winOnscroll', DebugJS.OMIT_LAST);
+    var winOnselect = foldingTxt(window.oncontextmenu, 'winOnselect', DebugJS.OMIT_LAST);
+    var winOnselectstart = foldingTxt(window.oncontextmenu, 'winOnselectstart', DebugJS.OMIT_LAST);
+    var winOnerror = foldingTxt(window.onerror, 'winOnerror', DebugJS.OMIT_LAST);
+    var docOnclick = foldingTxt(document.onclick, 'documentOnclick', DebugJS.OMIT_LAST);
+    var docOnmousedown = foldingTxt(document.onmousedown, 'documentOnmousedown', DebugJS.OMIT_LAST);
+    var docOnmousemove = foldingTxt(document.onmousemove, 'documentOnmousemove', DebugJS.OMIT_LAST);
+    var docOnmouseup = foldingTxt(document.onmousedown, 'documentOnmouseup', DebugJS.OMIT_LAST);
+    var docOnkeydown = foldingTxt(document.onkeydown, 'documentOnkeydown', DebugJS.OMIT_LAST);
+    var docOnkeypress = foldingTxt(document.onkeypress, 'documentOnkeypress', DebugJS.OMIT_LAST);
+    var docOnkeyup = foldingTxt(document.onkeyup, 'documentOnkeyup', DebugJS.OMIT_LAST);
+    var docOnselectstart = foldingTxt(document.onselectstart, 'documentOnselectstart', DebugJS.OMIT_LAST);
+    var docOncontextmenu = foldingTxt(document.oncontextmenu, 'documentOncontextmenu', DebugJS.OMIT_LAST);
 
     var html = '<pre>';
     html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.getTimeOffsetStr(offset, true) + ')\n';
@@ -3582,9 +3584,9 @@ DebugJS.prototype = {
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('navigator');
     html += DebugJS.addSysInfoProp('userAgent  ', navUserAgent);
-    html += DebugJS.addSysInfoProp('language       ', DebugJS.setStyleIfObjNA(navigator.language));
-    html += DebugJS.addSysInfoProp('browserLanguage', DebugJS.setStyleIfObjNA(navigator.browserLanguage));
-    html += DebugJS.addSysInfoProp('userLanguage   ', DebugJS.setStyleIfObjNA(navigator.userLanguage));
+    html += DebugJS.addSysInfoProp('language       ', setStyleIfObjNA(navigator.language));
+    html += DebugJS.addSysInfoProp('browserLanguage', setStyleIfObjNA(navigator.browserLanguage));
+    html += DebugJS.addSysInfoProp('userLanguage   ', setStyleIfObjNA(navigator.userLanguage));
     html += DebugJS.addSysInfoProp('languages      ', languages);
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfo('charset', charset);
@@ -3597,14 +3599,14 @@ DebugJS.prototype = {
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('window');
     html += DebugJS.addSysInfoPropH(' location');
-    html += DebugJS.addSysInfoProp(' href    ', ctx.createFoldingText(window.location, 'docLocation', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp(' origin  ', ctx.createFoldingText(window.location.origin, 'origin', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' href    ', foldingTxt(window.location, 'docLocation', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' origin  ', foldingTxt(window.location.origin, 'origin', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp(' protocol', window.location.protocol);
-    html += DebugJS.addSysInfoProp(' host    ', ctx.createFoldingText(window.location.host, 'host', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' host    ', foldingTxt(window.location.host, 'host', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp(' port    ', window.location.port);
-    html += DebugJS.addSysInfoProp(' pathname', ctx.createFoldingText(window.location.pathname, 'pathname', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp(' search  ', ctx.createFoldingText(window.location.search, 'search', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp(' hash    ', ctx.createFoldingText(window.location.hash, 'hash', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' pathname', foldingTxt(window.location.pathname, 'pathname', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' search  ', foldingTxt(window.location.search, 'search', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp(' hash    ', foldingTxt(window.location.hash, 'hash', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('devicePixelRatio', window.devicePixelRatio, 'sys-win-h');
     html += DebugJS.addSysInfoProp('outerWidth   ', window.outerWidth, 'sys-win-w');
     html += DebugJS.addSysInfoProp('outerHeight  ', window.outerHeight, 'sys-win-h');
@@ -3612,8 +3614,8 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('screenY      ', window.screenY, 'sys-scn-y');
     html += DebugJS.addSysInfoProp('pageXOffset  ', window.pageXOffset, 'sys-pgoffset-x');
     html += DebugJS.addSysInfoProp('pageYOffset  ', window.pageYOffset, 'sys-pgoffset-y');
-    html += DebugJS.addSysInfoProp('scrollX      ', DebugJS.setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
-    html += DebugJS.addSysInfoProp('scrollY      ', DebugJS.setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
+    html += DebugJS.addSysInfoProp('scrollX      ', setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
+    html += DebugJS.addSysInfoProp('scrollY      ', setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
     html += DebugJS.addSysInfoProp('onload       ', winOnload);
     html += DebugJS.addSysInfoProp('onunload     ', winOnunload);
     html += DebugJS.addSysInfoProp('onclick      ', winOnclick);
@@ -3631,15 +3633,15 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onerror      ', winOnerror);
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('navigator');
-    html += DebugJS.addSysInfoProp('appCodeName  ', DebugJS.setStyleIfObjNA(navigator.appCodeName));
-    html += DebugJS.addSysInfoProp('appName      ', DebugJS.setStyleIfObjNA(navigator.appName));
+    html += DebugJS.addSysInfoProp('appCodeName  ', setStyleIfObjNA(navigator.appCodeName));
+    html += DebugJS.addSysInfoProp('appName      ', setStyleIfObjNA(navigator.appName));
     html += DebugJS.addSysInfoProp('appVersion   ', navAppVersion);
-    html += DebugJS.addSysInfoProp('buildID      ', DebugJS.setStyleIfObjNA(navigator.buildID));
-    html += DebugJS.addSysInfoProp('product      ', DebugJS.setStyleIfObjNA(navigator.product));
-    html += DebugJS.addSysInfoProp('productSub   ', DebugJS.setStyleIfObjNA(navigator.productSub));
-    html += DebugJS.addSysInfoProp('vendor       ', DebugJS.setStyleIfObjNA(navigator.vendor));
-    html += DebugJS.addSysInfoProp('platform     ', DebugJS.setStyleIfObjNA(navigator.platform));
-    html += DebugJS.addSysInfoProp('oscpu        ', DebugJS.setStyleIfObjNA(navigator.oscpu));
+    html += DebugJS.addSysInfoProp('buildID      ', setStyleIfObjNA(navigator.buildID));
+    html += DebugJS.addSysInfoProp('product      ', setStyleIfObjNA(navigator.product));
+    html += DebugJS.addSysInfoProp('productSub   ', setStyleIfObjNA(navigator.productSub));
+    html += DebugJS.addSysInfoProp('vendor       ', setStyleIfObjNA(navigator.vendor));
+    html += DebugJS.addSysInfoProp('platform     ', setStyleIfObjNA(navigator.platform));
+    html += DebugJS.addSysInfoProp('oscpu        ', setStyleIfObjNA(navigator.oscpu));
     html += DebugJS.addSysInfoProp('cookieEnabled', navigator.cookieEnabled);
     html += DebugJS.addPropSep(ctx);
     html += DebugJS.addSysInfoPropH('document');
@@ -3660,8 +3662,8 @@ DebugJS.prototype = {
     html += DebugJS.addSysInfoProp('onkeyup      ', docOnkeyup);
     html += DebugJS.addSysInfoProp('onselectstart', docOnselectstart);
     html += DebugJS.addSysInfoProp('oncontextmenu', docOncontextmenu);
-    html += DebugJS.addSysInfoProp('baseURI ', ctx.createFoldingText(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
-    html += DebugJS.addSysInfoProp('referrer', ctx.createFoldingText(document.referrer, 'docRef', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('baseURI ', foldingTxt(document.baseURI, 'docBaseURL', DebugJS.OMIT_MID));
+    html += DebugJS.addSysInfoProp('referrer', foldingTxt(document.referrer, 'docRef', DebugJS.OMIT_MID));
     html += DebugJS.addSysInfoProp('cookie  ', '<span id="' + ctx.id + '-sys-cookie"></span>');
     html += '<span id="' + ctx.id + '-sys-cookies"></span>';
     html += ' <input id="' + ctx.id + '-cookiekey" class="dbg-txtbox dbg-cookiekey">=<input id="' + ctx.id + '-cookieval" class="dbg-txtbox dbg-cookieval"> <span class="dbg-btn" onclick="DebugJS.ctx.setCookie();">Set</span>';
@@ -3969,6 +3971,9 @@ DebugJS.prototype = {
     var OMIT_STYLE = 'color:#888';
     var OMIT_STYLE2 = 'color:#666';
     DebugJS.dom = el;
+    var setStyleIfObjNA = DebugJS.setStyleIfObjNA;
+    var evtHndl = ctx.getEvtHandlerStr;
+    var foldingTxt = ctx.createFoldingText;
     var computedStyle = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
     var rectT = Math.round(rect.top);
@@ -3986,11 +3991,11 @@ DebugJS.prototype = {
         }
       }
     }
-    var txt = ctx.createFoldingText(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.text);
+    var txt = foldingTxt(text, 'text', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.text);
     var className = el.className + '';
     className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
-    var href = (el.href ? ctx.createFoldingText(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.href));
-    var src = (el.src ? ctx.createFoldingText(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : DebugJS.setStyleIfObjNA(el.src));
+    var href = (el.href ? foldingTxt(el.href, 'elHref', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : setStyleIfObjNA(el.href));
+    var src = (el.src ? foldingTxt(el.src, 'elSrc', DebugJS.OMIT_MID, MAX_LEN, OMIT_STYLE) : setStyleIfObjNA(el.src));
     var backgroundColor = computedStyle.backgroundColor;
     var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
     var color = computedStyle.color;
@@ -4022,9 +4027,11 @@ DebugJS.prototype = {
         }
       }
     }
-    allStylesFolding = ctx.createFoldingText(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
-    var name = (el.name == undefined) ? DebugJS.setStyleIfObjNA(el.name) : DebugJS.escHtml(el.name);
-    var val = (el.value == undefined) ? DebugJS.setStyleIfObjNA(el.value) : DebugJS.escSpclCh(el.value);
+    allStylesFolding = foldingTxt(allStyles, 'allStyles', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
+    var name = (el.name == undefined) ? setStyleIfObjNA(el.name) : DebugJS.escHtml(el.name);
+    var val = (el.value == undefined) ? setStyleIfObjNA(el.value) : DebugJS.escSpclCh(el.value);
+    var alt = (el.alt == undefined) ? setStyleIfObjNA(el.alt) : DebugJS.escSpclCh(el.alt);
+    var title = (el.title == undefined) ? setStyleIfObjNA(el.title) : DebugJS.escSpclCh(el.title);
 
     var html = '<span style="color:#8f0;display:inline-block;height:14px">#text</span> ' + txt + '\n' +
     DebugJS.addPropSep(ctx) +
@@ -4033,7 +4040,7 @@ DebugJS.prototype = {
     DebugJS.addPropSep(ctx) +
     'object    : ' + Object.prototype.toString.call(el) + '\n' +
     'tagName   : ' + el.tagName + '\n' +
-    'type      : ' + DebugJS.setStyleIfObjNA(el.type) + '\n' +
+    'type      : ' + setStyleIfObjNA(el.type) + '\n' +
     DebugJS.addPropSep(ctx) +
     'display   : ' + computedStyle.display + '\n' +
     'position  : ' + computedStyle.position + '\n' +
@@ -4041,7 +4048,7 @@ DebugJS.prototype = {
     'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
     'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
     'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
-    'border    : ' + borderT + ' ' + ctx.createFoldingText(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.elBorder) + '\n' +
+    'border    : ' + borderT + ' ' + foldingTxt(borderRBL, 'elBorder', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.elBorder) + '\n' +
     'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
     'lineHeight: ' + computedStyle.lineHeight + '\n' +
     DebugJS.addPropSep(ctx) +
@@ -4055,7 +4062,7 @@ DebugJS.prototype = {
     'opacity   : ' + computedStyle.opacity + '\n' +
     DebugJS.addPropSep(ctx) +
     'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
-    'bg-image  : ' + ctx.createFoldingText(computedStyle.backgroundImage, 'bgimg', DebugJS.OMIT_LAST, -1, OMIT_STYLE) + '\n' +
+    'bg-image  : ' + foldingTxt(computedStyle.backgroundImage, 'bgimg', DebugJS.OMIT_LAST, -1, OMIT_STYLE) + '\n' +
     'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
     'font      : -size  : ' + computedStyle.fontSize + '\n' +
     '            -family: ' + computedStyle.fontFamily + '\n' +
@@ -4064,45 +4071,48 @@ DebugJS.prototype = {
     DebugJS.addPropSep(ctx) +
     'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
     DebugJS.addPropSep(ctx) +
-    'action    : ' + DebugJS.setStyleIfObjNA(el.action) + '\n' +
-    'method    : ' + DebugJS.setStyleIfObjNA(el.method) + '\n' +
+    'action    : ' + setStyleIfObjNA(el.action) + '\n' +
+    'method    : ' + setStyleIfObjNA(el.method) + '\n' +
     'name      : ' + name + '\n' +
-    'value     : ' + ctx.createFoldingText(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
-    'disabled  : ' + DebugJS.setStyleIfObjNA(el.disabled, true) + '\n' +
+    'value     : ' + foldingTxt(val, 'elValue', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
+    'disabled  : ' + setStyleIfObjNA(el.disabled, true) + '\n' +
     'hidden    : ' + el.hidden + '\n' +
     'tabIndex  : ' + el.tabIndex + '\n' +
     'accessKey : ' + el.accessKey + '\n' +
-    'maxLength : ' + DebugJS.setStyleIfObjNA(el.maxLength) + '\n' +
-    'checked   : ' + DebugJS.setStyleIfObjNA(el.checked, true) + '\n' +
-    'htmlFor   : ' + DebugJS.setStyleIfObjNA(el.htmlFor) + '\n' +
-    'selectedIndex: ' + DebugJS.setStyleIfObjNA(el.selectedIndex) + '\n' +
+    'maxLength : ' + setStyleIfObjNA(el.maxLength) + '\n' +
+    'checked   : ' + setStyleIfObjNA(el.checked, true) + '\n' +
+    'htmlFor   : ' + setStyleIfObjNA(el.htmlFor) + '\n' +
+    'selectedIndex: ' + setStyleIfObjNA(el.selectedIndex) + '\n' +
     'contentEditable: ' + el.contentEditable + '\n' +
+    'alt       : ' + foldingTxt(alt, 'elAlt', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
+    'title     : ' + foldingTxt(title, 'elTitle', DebugJS.OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
+
     DebugJS.addPropSep(ctx) +
     'href      : ' + href + '\n' +
     'src       : ' + src + '\n' +
     DebugJS.addPropSep(ctx) +
-    'onclick      : ' + ctx.getEvtHandlerStr(el.onclick, 'elOnclick') + '\n' +
-    'ondblclick   : ' + ctx.getEvtHandlerStr(el.ondblclick, 'elOnDblClick') + '\n' +
-    'onmousedown  : ' + ctx.getEvtHandlerStr(el.onmousedown, 'elOnMouseDown') + '\n' +
-    'onmouseup    : ' + ctx.getEvtHandlerStr(el.onmouseup, 'elOnMouseUp') + '\n' +
-    'onmouseover  : ' + ctx.getEvtHandlerStr(el.onmouseover, 'elOnMouseOver') + '\n' +
-    'onmouseout   : ' + ctx.getEvtHandlerStr(el.onmouseout, 'elOnMouseOut') + '\n' +
-    'onmousemove  : ' + ctx.getEvtHandlerStr(el.onmousemove, 'elOnMouseMove') + '\n' +
-    'oncontextmenu: ' + ctx.getEvtHandlerStr(el.oncontextmenu, 'elOnContextmenu') + '\n' +
+    'onclick      : ' + evtHndl(el.onclick, 'elOnclick') + '\n' +
+    'ondblclick   : ' + evtHndl(el.ondblclick, 'elOnDblClick') + '\n' +
+    'onmousedown  : ' + evtHndl(el.onmousedown, 'elOnMouseDown') + '\n' +
+    'onmouseup    : ' + evtHndl(el.onmouseup, 'elOnMouseUp') + '\n' +
+    'onmouseover  : ' + evtHndl(el.onmouseover, 'elOnMouseOver') + '\n' +
+    'onmouseout   : ' + evtHndl(el.onmouseout, 'elOnMouseOut') + '\n' +
+    'onmousemove  : ' + evtHndl(el.onmousemove, 'elOnMouseMove') + '\n' +
+    'oncontextmenu: ' + evtHndl(el.oncontextmenu, 'elOnContextmenu') + '\n' +
     DebugJS.addPropSep(ctx) +
-    'onkeydown    : ' + ctx.getEvtHandlerStr(el.onkeydown, 'elOnKeyDown') + '\n' +
-    'onkeypress   : ' + ctx.getEvtHandlerStr(el.onkeypress, 'elOnKeyPress') + '\n' +
-    'onkeyup      : ' + ctx.getEvtHandlerStr(el.onkeyup, 'elOnKeyUp') + '\n' +
+    'onkeydown    : ' + evtHndl(el.onkeydown, 'elOnKeyDown') + '\n' +
+    'onkeypress   : ' + evtHndl(el.onkeypress, 'elOnKeyPress') + '\n' +
+    'onkeyup      : ' + evtHndl(el.onkeyup, 'elOnKeyUp') + '\n' +
     DebugJS.addPropSep(ctx) +
-    'onfocus      : ' + ctx.getEvtHandlerStr(el.onfocus, 'elOnFocus') + '\n' +
-    'onblur       : ' + ctx.getEvtHandlerStr(el.onblur, 'elOnBlur') + '\n' +
-    'onchange     : ' + ctx.getEvtHandlerStr(el.onchange, 'elOnChange') + '\n' +
-    'oninput      : ' + ctx.getEvtHandlerStr(el.oninput, 'elOnInput') + '\n' +
-    'onselect     : ' + ctx.getEvtHandlerStr(el.onselect, 'elOnSelect') + '\n' +
-    'onselectstart: ' + ctx.getEvtHandlerStr(el.onselectstart, 'elOnSelectStart') + '\n' +
-    'onsubmit     : ' + ctx.getEvtHandlerStr(el.onsubmit, 'elOnSubmit') + '\n' +
+    'onfocus      : ' + evtHndl(el.onfocus, 'elOnFocus') + '\n' +
+    'onblur       : ' + evtHndl(el.onblur, 'elOnBlur') + '\n' +
+    'onchange     : ' + evtHndl(el.onchange, 'elOnChange') + '\n' +
+    'oninput      : ' + evtHndl(el.oninput, 'elOnInput') + '\n' +
+    'onselect     : ' + evtHndl(el.onselect, 'elOnSelect') + '\n' +
+    'onselectstart: ' + evtHndl(el.onselectstart, 'elOnSelectStart') + '\n' +
+    'onsubmit     : ' + evtHndl(el.onsubmit, 'elOnSubmit') + '\n' +
     DebugJS.addPropSep(ctx) +
-    'onscroll     : ' + ctx.getEvtHandlerStr(el.onscroll, 'elOnScroll') + '\n' +
+    'onscroll     : ' + evtHndl(el.onscroll, 'elOnScroll') + '\n' +
     DebugJS.addPropSep(ctx) +
     'dataset (data-*):\n';
     if (el.dataset) {
@@ -4114,8 +4124,8 @@ DebugJS.prototype = {
     } else {
       html += '<span style="color:#aaa">' + el.dataset + '</span>';
     }
-    var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : DebugJS.setStyleIfObjNA(el.outerHTML));
-    htmlSrc = ctx.createFoldingText(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.htmlSrc);
+    var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : setStyleIfObjNA(el.outerHTML));
+    htmlSrc = foldingTxt(htmlSrc, 'htmlSrc', DebugJS.OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.htmlSrc);
     html += DebugJS.addPropSep(ctx) + 'outerHTML: ' + htmlSrc;
     return html;
   },
@@ -4178,7 +4188,7 @@ DebugJS.prototype = {
   updateTargetElm: function(el) {
     var ctx = DebugJS.ctx;
     if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
-      ctx.highlightElement(ctx.targetEl, el);
+      ctx.hlElm(ctx.targetEl, el);
     }
     if (el) {
       ctx.targetEl = el;
@@ -4189,7 +4199,7 @@ DebugJS.prototype = {
       ctx.setStyle(ctx.elmDelBtn, 'color', '#a88');
     }
   },
-  highlightElement: function(removeTarget, setTarget) {
+  hlElm: function(removeTarget, setTarget) {
     if (removeTarget && (typeof removeTarget.className == 'string')) {
       DebugJS.removeClass(removeTarget, DebugJS.ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
@@ -4246,10 +4256,10 @@ DebugJS.prototype = {
     var b = DebugJS.ELMINFO_ST_HIGHLIGHT;
     if (ctx.elmInfoStatus & b) {
       ctx.elmInfoStatus &= ~b;
-      ctx.highlightElement(ctx.targetEl, null);
+      ctx.hlElm(ctx.targetEl, null);
     } else {
       ctx.elmInfoStatus |= b;
-      ctx.highlightElement(null, ctx.targetEl);
+      ctx.hlElm(null, ctx.targetEl);
     }
     ctx.updateElmHighlightBtn();
   },
