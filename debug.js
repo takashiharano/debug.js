@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903050000';
+  this.v = '201903052300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15790,10 +15790,22 @@ DebugJS.getPort = function() {
 DebugJS.getParentPath = function() {
   return location.href.replace(/(.*\/).*/, '$1');
 };
-DebugJS.getQuery = function() {
-  var s = window.location.search;
-  if (s) s = s.substr(1);
-  return s;
+DebugJS.getQuery = function(k) {
+  var s = window.location.search.substr(1);
+  if (!k) return s;
+  var q = s.split('&');
+  var a = [];
+  for (var i = 0; i < q.length; i++) {
+    var p = q[i].split('=');
+    if (p[0] == k) a.push(p[1]);
+  }
+  var v = null;
+  if (a.length == 1) {
+    v = a[0];
+  } else if (a.length > 1) {
+    v = a;
+  }
+  return v;
 };
 DebugJS.getUrlHash = function() {
   var s = window.location.hash;
