@@ -3135,9 +3135,9 @@ dbg.toFullWidth('<input type="text" id="tofull-txt" class="demo-text" style="wid
     <td>
       Returns the query string of the URL.<br>
 <pre class="eg">
-?a=1&b=2 : dbg.getQuery() -&gt; "a=1&b=2"
-?a=1&b=2 : dbg.getQuery('a') -&gt; "1"
-?a=1&a=2&b=3 : dbg.getQuery('a') -&gt; ["1", "2"]
+?a=1&amp;b=2 : dbg.getQuery() -&gt; "a=1&amp;b=2"
+?a=1&amp;b=2 : dbg.getQuery('a') -&gt; "1"
+?a=1&amp;a=2&amp;b=3 : dbg.getQuery('a') -&gt; ["1", "2"]
 
 var value = dbg.getQuery(); <button class="demo-button2" onclick="log.res(dbg.getQuery());">DEMO</button>
 var value = dbg.getQuery('<input type="text" id="get-q-text" class="demo-text" style="width:50px;">');<button class="demo-button2" onclick="log.p(dbg.getQuery(getVal('get-q-text')));">DEMO</button>
