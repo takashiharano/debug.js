@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903070000';
+  this.v = '201903132212';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6721,7 +6721,9 @@ DebugJS.prototype = {
     var cl = ctx.cmdLine.value;
     ctx.cmdLine.value = '';
     if (cl == '') {
-      DebugJS._log('');
+      if (DebugJS.callListeners(ctx.cmdListeners, cl)) {
+        DebugJS._log('');
+      }
       return;
     }
     if (cl.substr(0, 2) == '!!') {
@@ -6814,8 +6816,14 @@ DebugJS.prototype = {
     if (ctx.opt.disableAllCommands) return;
 
     for (i = 0; i < ctx.EXT_CMD_TBL.length; i++) {
-      if (cmd == ctx.EXT_CMD_TBL[i].cmd) {
-        return ctx.EXT_CMD_TBL[i].fn(arg, ctx.EXT_CMD_TBL[i], echo);
+      var extcmd = ctx.EXT_CMD_TBL[i];
+      if (cmd == extcmd.cmd) {
+        if (extcmd.fn) {
+          return extcmd.fn(arg, extcmd, echo);
+        } else {
+          DebugJS._log.e('Function not found: ' + extcmd.cmd);
+          return;
+        }
       }
     }
 
