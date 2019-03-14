@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903142234';
+  this.v = '201903150000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3571,7 +3571,11 @@ DebugJS.prototype = {
     var winOnscroll = foldingTxt(window.oncontextmenu, 'winOnscroll', OMIT_LAST);
     var winOnselect = foldingTxt(window.oncontextmenu, 'winOnselect', OMIT_LAST);
     var winOnselectstart = foldingTxt(window.oncontextmenu, 'winOnselectstart', OMIT_LAST);
-    var winOnerror = foldingTxt(window.onerror, 'winOnerror', OMIT_LAST);
+    try {
+      var winOnerror = foldingTxt(window.onerror, 'winOnerror', OMIT_LAST);
+    } catch (e) {
+      winOnerror = e;
+    }
     var docOnclick = foldingTxt(document.onclick, 'documentOnclick', OMIT_LAST);
     var docOnmousedown = foldingTxt(document.onmousedown, 'documentOnmousedown', OMIT_LAST);
     var docOnmousemove = foldingTxt(document.onmousemove, 'documentOnmousemove', OMIT_LAST);
