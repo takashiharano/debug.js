@@ -3040,12 +3040,17 @@ max: maximum number
 min  : minimum length
 max  : maximum length
 type : Char type
-       "Aa1!"
+       "Aa1!" <span class="annotation">default:"Aa1"</span>
        A: Aplhabet (Upper case)
        a: Aplhabet (Lower case)
        1: Number
        !: Symbol
 table: User defined char table (list of char)
+
+dbg.getRndStr(8);
+dbg.getRndStr(1, 8);
+dbg.getRndStr(1, 8, 'Aa1!');
+dbg.getRndStr(1, 8, 'Aa', [' ', '?']);
 </pre>
     </td>
   </tr>
