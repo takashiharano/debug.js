@@ -11512,6 +11512,7 @@ DebugJS.RND_STR_DFLT_MAX_LEN = 10;
 DebugJS.RND_STR_MAX_LEN = 1024;
 DebugJS.getRndStr = function(min, max, tp, atbl) {
   if (min > DebugJS.RND_STR_MAX_LEN) min = DebugJS.RND_STR_MAX_LEN;
+  if (max == undefined) max = min;
   if (max > DebugJS.RND_STR_MAX_LEN) max = DebugJS.RND_STR_MAX_LEN;
   var len = DebugJS.getRndNum(min, max);
   var alphUc = 1, alphLc = 1, num = 1, sp = 1, sym = 0;
