@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903150000';
+  this.v = '201903162155';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11540,11 +11540,9 @@ DebugJS.http = function(rq, cb) {
   if (!rq.pass) rq.pass = '';
   rq.method = rq.method.toUpperCase();
   var xhr = new XMLHttpRequest();
-  var r;
   xhr.onreadystatechange = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
-      r = xhr;
-      if (cb) cb(xhr);
+      if (cb) cb(xhr, rq);
     }
   };
   xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
@@ -11560,7 +11558,7 @@ DebugJS.http = function(rq, cb) {
     xhr.setRequestHeader('User-Agent', rq.userAgent);
   }
   xhr.send(rq.data);
-  return r;
+  return xhr;
 };
 DebugJS.http.buildParam = function(p) {
   var s = '';

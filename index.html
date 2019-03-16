@@ -3345,7 +3345,7 @@ dbg.getKeys(obj);
 
 dbg.http(request, callback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
 
-function callback(xhr) {
+function callback(xhr, req) { // req = request
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
     log.e('cannot load: ' + statusMsg);
