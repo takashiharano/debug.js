@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903162155';
+  this.v = '201903170000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11457,23 +11457,12 @@ DebugJS.getElapsedTimeStr = function(t1, t2) {
   return DebugJS.getTimerStr(delta);
 };
 
+DebugJS.random = function(min, max) {
+  return DebugJS.getRandom(DebugJS.RND_TYPE_NUM, min, max);
+};
+
 DebugJS.getRandom = function(type, min, max) {
-  if (min !== undefined) {
-    min |= 0;
-    if (max) {
-      max |= 0;
-    } else {
-      if (type == DebugJS.RND_TYPE_NUM) {
-        max = min;
-        min = 0;
-      } else if (type == DebugJS.RND_TYPE_STR) {
-        max = min;
-      }
-    }
-    if (min > max) {
-      var wk = min; min = max; max = wk;
-    }
-  } else {
+  if (min === undefined) {
     if (type == DebugJS.RND_TYPE_NUM) {
       min = 0;
       max = 0x7fffffff;
@@ -11481,21 +11470,32 @@ DebugJS.getRandom = function(type, min, max) {
       min = 1;
       max = DebugJS.RND_STR_DFLT_MAX_LEN;
     }
+  } else {
+    min = parseInt(min);
+    if (max === undefined) {
+      max = min;
+      if (type == DebugJS.RND_TYPE_NUM) {
+        min = 0;
+      }
+    } else {
+      max = parseInt(max);
+    }
+    if (min > max) {
+      var wk = min; min = max; max = wk;
+    }
   }
-  var rnd;
-  switch (type) {
-    case DebugJS.RND_TYPE_NUM:
-      rnd = DebugJS.getRndNum(min, max);
-      break;
-    case DebugJS.RND_TYPE_STR:
-      rnd = DebugJS.getRndStr(min, max);
+  var fn;
+  if (type == DebugJS.RND_TYPE_STR) {
+    fn = DebugJS.getRndStr;
+  } else {
+    fn = DebugJS.getRndNum;
   }
-  return rnd;
+  return fn(min, max);
 };
 
 DebugJS.getRndNum = function(min, max) {
-  min |= 0;
-  max |= 0;
+  min = parseInt(min);
+  max = parseInt(max);
   var minDigit = (min + '').length;
   var maxDigit = (max + '').length;
   var digit = ((Math.random() * (maxDigit - minDigit + 1)) | 0) + minDigit;
@@ -11503,31 +11503,56 @@ DebugJS.getRndNum = function(min, max) {
   var rndMax = Math.pow(10, digit) - 1;
   if (min < rndMin) min = rndMin;
   if (max > rndMax) max = rndMax;
-  var rnd = ((Math.random() * (max - min + 1)) | 0) + min;
+  var rnd = parseInt(Math.random() * (max - min + 1)) + min;
   return rnd;
 };
 
-DebugJS.getRandomCh = function() {
-  return String.fromCharCode(DebugJS.getRndNum(0x20, 0x7e));
-};
-
+DebugJS.SYM = [' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~'];
 DebugJS.RND_STR_DFLT_MAX_LEN = 10;
 DebugJS.RND_STR_MAX_LEN = 1024;
-DebugJS.getRndStr = function(min, max) {
+DebugJS.getRndStr = function(min, max, tp, atbl) {
   if (min > DebugJS.RND_STR_MAX_LEN) min = DebugJS.RND_STR_MAX_LEN;
   if (max > DebugJS.RND_STR_MAX_LEN) max = DebugJS.RND_STR_MAX_LEN;
   var len = DebugJS.getRndNum(min, max);
-  var ch;
-  var s = '';
-  for (var i = 0; i < len; i++) {
-    var retry = true;
-    while (retry) {
-      ch = DebugJS.getRandomCh();
-      if ((!(ch.match(/[!-\/:-@\[-`{-~]/))) && (!(((i == 0) || (i == (len - 1))) && (ch == ' ')))) {
-        retry = false;
-      }
+  var alphUc = 1, alphLc = 1, num = 1, sp = 1, sym = 0;
+  if (tp != undefined) {
+    alphUc = (tp.match(/A/) ? 1 : 0);
+    alphLc = (tp.match(/a/) ? 1 : 0);
+    num = (tp.match(/1/) ? 1 : 0);
+    sp = (tp.match(/ /) ? 1 : 0);
+    sym = (tp.match(/!/) ? 1 : 0);
+  }
+  var tbl = [];
+  if (alphUc) {
+    for (var i = 0x41; i <= 0x5A; i++) {
+      tbl.push(String.fromCharCode(i));
     }
-    s += ch;
+  }
+  if (alphLc) {
+    for (var i = 0x61; i <= 0x7A; i++) {
+      tbl.push(String.fromCharCode(i));
+    }
+  }
+  if (num) {
+    for (var i = 0x30; i <= 0x39; i++) {
+      tbl.push(String.fromCharCode(i));
+    }
+  }
+  if (sym) {
+    for (i = 0; i < DebugJS.SYM.length; i++) {
+      tbl.push(DebugJS.SYM[i]);
+    }
+  }
+  if (atbl) {
+    for (i = 0; i < atbl.length; i++) {
+      tbl.push(atbl[i]);
+    }
+  }
+  var s = '';
+  if (tbl.length > 0) {
+    for (i = 0; i < len; i++) {
+      s += tbl[Math.floor(Math.random() * tbl.length)];
+    }
   }
   return s;
 };
@@ -15752,13 +15777,6 @@ DebugJS.isTxtInp = function(el) {
 DebugJS.toggleElShowHide = function(el) {
   var v = (el.style.display == 'none' ? '' : 'none');
   el.style.display = v;
-};
-
-DebugJS.random = function(min, max) {
-  return DebugJS.getRandom(DebugJS.RND_TYPE_NUM, min, max);
-};
-DebugJS.randomStr = function(min, max) {
-  return DebugJS.getRandom(DebugJS.RND_TYPE_STR, min, max);
 };
 
 DebugJS.createResBox = function(m) {

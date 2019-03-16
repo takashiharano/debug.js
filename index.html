@@ -328,7 +328,7 @@ randomDemoFlag = false;
 function randomDemo() {
   if (!randomDemoFlag) return;
   var next = dbg.random(0, 1000);
-  var str = dbg.randomStr(1, 55);
+  var str = dbg.getRndStr(1, 55, 'Aa1', [' ']);
   var type = dbg.random(10);
   switch (type) {
     case 1:
@@ -3027,16 +3027,25 @@ max: maximum number
   </tr>
 
   <tr>
-    <td class="name">dbg.randomStr</td>
+    <td class="name">dbg.getRndStr</td>
     <td>
-      arg1: min<span class="annotation">(opt)</span><br>
-      arg2: max<span class="annotation">(opt)</span>
+      arg1: min<br>
+      arg2: max<br>
+      arg3: type<span class="annotation">(opt)</span>
+      arg4: table<span class="annotation">(opt)</span>
     </td>
     <td>
       Get random string<br>
 <pre class="eg">
-min: minimum length
-max: maximum length
+min  : minimum length
+max  : maximum length
+type : Char type
+       "Aa1!"
+       A: Aplhabet (Upper case)
+       a: Aplhabet (Lower case)
+       1: Number
+       !: Symbol
+table: User defined char table (list of char)
 </pre>
     </td>
   </tr>
