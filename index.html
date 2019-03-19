@@ -4095,6 +4095,7 @@ $ delay 1000 echo "abc"
 $ delay 20180520T170030 echo "abc"
 $ delay T170030 echo "abc"
 $ delay T0000|T1200 echo "abc"
+$ delay T**30 echo "abc"
 $ delay 1d2h3m4s500 echo "abc"
 $ delay 1.5s echo "abc"
 
@@ -4423,16 +4424,25 @@ $ log lv NONE
     <td>
       Returns next time from given args.<br><br>
 <pre class="eg">
+<span class="annotation">now = 2019-03-20 00:00:00.000</span>
 $ nexttime T0000|T0930|T1345
--&gt; 2018-06-20 WED 00:00:00.000
+-&gt; 2019-03-20 WED 00:00:00.000
    Returns "T0000"
 
+$ nexttime T**30
+-&gt; 2019-03-20 WED 00:30:00.000
+   Returns "T0030"
+
+$ nexttime T******
+-&gt; 2019-03-20 WED 00:00:01.000
+   Returns "T000001"
+
 $ nexttime 1d2h3m4s
--&gt; 2018-06-21 WED 02:03:04.000
+-&gt; 2019-03-21 WED 02:03:04.000
    Returns "T020304"
 
 $ nexttime 60000
--&gt; 2018-06-20 WED 00:01:00.000
+-&gt; 2019-03-20 WED 00:01:00.000
    Returns "T000100"
 
 $ nexttime -q T0000|T0930|T1345
@@ -5607,6 +5617,7 @@ wait 1000
 wait 20180614T123045
 wait T1230
 wait T0000|T1200
+wait T**30
 wait 1d2h3m4s500
 wait 1.5s
 </pre>

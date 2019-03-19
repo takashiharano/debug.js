@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903170000';
+  this.v = '201903200000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7984,7 +7984,7 @@ DebugJS.prototype = {
       v = arg.substr(idx);
     }
     v = v.trim();
-    if ((v.match(/^T\d{4,6}/))) {
+    if ((v.match(/^T.{4,6}/))) {
       t = DebugJS.calcNextTime(v);
     } else if (ms = DebugJS.parseToMillis(v)) {
       var dt = DebugJS.getDateTime((new Date()).getTime() + ms);
@@ -9983,7 +9983,7 @@ DebugJS.isDateTimeFormatIso = function(s, p) {
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isTimeFormat = function(s) {
-  return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T\d{4,6}$/)));
+  return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T[\d*]{4,6}$/)));
 };
 DebugJS.num2date = function(s) {
   var d = null;
@@ -10122,6 +10122,9 @@ DebugJS.calcTargetTime = function(tgt) {
   var dt = tgt.split('T');
   var date = dt[0];
   var t = dt[1];
+  if (t.match(/\*/)) {
+    return DebugJS.calcNextTime2(now, tgt).time - now.time;
+  }
   var hh = t.substr(0, 2);
   var mi = t.substr(2, 2);
   var ss = t.substr(4, 2);
@@ -10153,6 +10156,7 @@ DebugJS.calcNextTime = function(times) {
   var yyyy = now.yyyy;
   var mm = now.mm;
   var dd = now.dd;
+  if (ts[0].match(/\*/)) return DebugJS.calcNextTime2(now, ts[0]);
   for (var i = 0; i < ts.length; i++) {
     var t = ts[i];
     t = t.replace(/T/, '');
@@ -10171,6 +10175,67 @@ DebugJS.calcNextTime = function(times) {
   ret.t = ts[0];
   ret.time += 86400000;
   return ret;
+};
+DebugJS.calcNextTime2 = function(now, t) {
+  var h = t.substr(1, 2), m = t.substr(3, 2), s = t.substr(5, 2);
+  var hh = ((h == '**') ? now.hh : h);
+  var mi = m;
+  if (m == '**') {
+    mi = ((hh == now.hh) ? now.mi : 0);
+  }
+  var ss = s;
+  if (s == '') {
+    ss = 0;
+  } else if (s == '**') {
+    ss = (((hh == now.hh) && (mi == now.mi)) ? now.ss : 0);
+  }
+  hh |= 0;mi |= 0;ss |= 0;
+  var d = DebugJS.getTime(now.yyyy, now.mm, now.dd, hh, mi, ss);
+  var cf = 1;
+  if (d < now.time) {
+    if (s == '**') {
+      ss++;
+      if (ss < 60) {
+        cf = 0;
+      } else {
+        ss = 0;
+        cf = 1;
+      }
+    }
+    if ((m == '**') && (cf)) {
+      mi++;
+      if (mi < 60) {
+        cf = 0;
+      } else {
+        mi = 0;
+        cf = 1;
+      }
+    }
+    if ((h == '**') && (cf)) {
+      hh++;
+      if (hh < 24) {
+        cf = 0;
+      } else {
+        hh = 0;
+        cf = 1;
+      }
+    }
+    d = DebugJS.getTime(now.yyyy, now.mm, (now.dd | 0) + cf, hh, mi, ss);
+    if (d < now.time) {
+      if (s == '**') ss = 0;
+      if (m == '**') mi = 0;
+      if (h == '**') hh = 0;
+      d = DebugJS.getTime(now.yyyy, now.mm, (now.dd | 0) + 1, hh, mi, ss);
+    }
+  }
+  var ret = {
+    t: 'T' + ('0' + hh).slice(-2) + ('0' + mi).slice(-2) + (s == '' ? '' : ('0' + ss).slice(-2)),
+    time: d
+  };
+  return ret;
+};
+DebugJS.getTime = function(y, m, d, h, mi, s) {
+  return (new Date(y, m - 1, d, h, mi, s)).getTime();
 };
 DebugJS.parseToMillis = function(v) {
   var d = 0, h = 0, m = 0, s = 0;
@@ -13309,7 +13374,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
         w = ctx.props.wait;
       } else if (DebugJS.isTmStr(w)) {
         w = DebugJS.str2ms(w);
-      } else if (!((DebugJS.isTimeFormat(w)) || (w.match(/\|/)))) {
+      } else if (!(DebugJS.isTimeFormat(w) || w.match(/\|/))) {
         try {
           w = eval(w);
         } catch (e) {
