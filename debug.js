@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903200000';
+  this.v = '201903210000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10222,10 +10222,23 @@ DebugJS.calcNextTime2 = function(now, t) {
     }
     d = DebugJS.getTime(now.yyyy, now.mm, (now.dd | 0) + cf, hh, mi, ss);
     if (d < now.time) {
+      cf = 1;
       if (s == '**') ss = 0;
       if (m == '**') mi = 0;
-      if (h == '**') hh = 0;
-      d = DebugJS.getTime(now.yyyy, now.mm, (now.dd | 0) + 1, hh, mi, ss);
+      if (h == '**') {
+        if (s == '**') {
+          hh++;
+          if (hh < 24) {
+            cf = 0;
+          } else {
+            hh = 0;
+            cf = 1;
+          }
+        } else {
+          hh = 0;
+        }
+      }
+      d = DebugJS.getTime(now.yyyy, now.mm, (now.dd | 0) + cf, hh, mi, ss);
     }
   }
   var ret = {
