@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903210000';
+  this.v = '201903231700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -125,7 +125,7 @@ var DebugJS = DebugJS || function() {
   this.elmInfoStatus = DebugJS.ELMINFO_ST_SELECT | DebugJS.ELMINFO_ST_HIGHLIGHT;
   this.elmUpdateInterval = 0;
   this.elmUpdateTimerId = 0;
-  this.elmInfoShowHideStatus = {text: false, allStyles: false, elBorder: false, htmlSrc: false};
+  this.elmInfoShowHideStatus = {text: false, allStyles: false, elBorder: false, elSrc: false, htmlSrc: false};
   this.targetEl = null;
   this.toolsBtn = null;
   this.toolsPanel = null;
@@ -4007,7 +4007,7 @@ DebugJS.prototype = {
     var className = el.className + '';
     className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
     var href = (el.href ? foldingTxt(el.href, 'elHref', OMIT_MID, MAX_LEN, OMIT_STYLE) : setStyleIfObjNA(el.href));
-    var src = (el.src ? foldingTxt(el.src, 'elSrc', OMIT_MID, MAX_LEN, OMIT_STYLE) : setStyleIfObjNA(el.src));
+    var src = (el.src ? foldingTxt(el.src, 'elSrc', OMIT_MID, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.elSrc) : setStyleIfObjNA(el.src));
     var backgroundColor = computedStyle.backgroundColor;
     var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
     var color = computedStyle.color;
