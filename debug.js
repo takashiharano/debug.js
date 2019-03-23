@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903231700';
+  this.v = '201903231710';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -125,7 +125,7 @@ var DebugJS = DebugJS || function() {
   this.elmInfoStatus = DebugJS.ELMINFO_ST_SELECT | DebugJS.ELMINFO_ST_HIGHLIGHT;
   this.elmUpdateInterval = 0;
   this.elmUpdateTimerId = 0;
-  this.elmInfoShowHideStatus = {text: false, allStyles: false, elBorder: false, elSrc: false, htmlSrc: false};
+  this.elmInfofoldingSt = {text: false, allStyles: false, elBorder: false, elValue: false, elSrc: false, htmlSrc: false};
   this.targetEl = null;
   this.toolsBtn = null;
   this.toolsPanel = null;
@@ -3801,15 +3801,15 @@ DebugJS.prototype = {
       btn.innerHTML = DebugJS.CLOSEBTN;
       partialBody.style.display = 'none';
       body.style.display = 'block';
-      if (ctx.elmInfoShowHideStatus[name] != undefined) {
-        ctx.elmInfoShowHideStatus[name] = true;
+      if (ctx.elmInfofoldingSt[name] != undefined) {
+        ctx.elmInfofoldingSt[name] = true;
       }
     } else {
       btn.innerHTML = DebugJS.EXPANDBTN;
       partialBody.style.display = 'inline';
       body.style.display = 'none';
-      if (ctx.elmInfoShowHideStatus[name] != undefined) {
-        ctx.elmInfoShowHideStatus[name] = false;
+      if (ctx.elmInfofoldingSt[name] != undefined) {
+        ctx.elmInfofoldingSt[name] = false;
       }
     }
   },
@@ -3986,6 +3986,7 @@ DebugJS.prototype = {
     var setStyleIfObjNA = DebugJS.setStyleIfObjNA;
     var evtHndl = ctx.getEvtHandlerStr;
     var foldingTxt = ctx.createFoldingText;
+    var foldingSt = ctx.elmInfofoldingSt;
     var computedStyle = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
     var rectT = Math.round(rect.top);
@@ -4003,11 +4004,11 @@ DebugJS.prototype = {
         }
       }
     }
-    var txt = foldingTxt(text, 'text', OMIT_LAST, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.text);
+    var txt = foldingTxt(text, 'text', OMIT_LAST, MAX_LEN, OMIT_STYLE, foldingSt.text);
     var className = el.className + '';
     className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
     var href = (el.href ? foldingTxt(el.href, 'elHref', OMIT_MID, MAX_LEN, OMIT_STYLE) : setStyleIfObjNA(el.href));
-    var src = (el.src ? foldingTxt(el.src, 'elSrc', OMIT_MID, MAX_LEN, OMIT_STYLE, ctx.elmInfoShowHideStatus.elSrc) : setStyleIfObjNA(el.src));
+    var src = (el.src ? foldingTxt(el.src, 'elSrc', OMIT_MID, MAX_LEN, OMIT_STYLE, foldingSt.elSrc) : setStyleIfObjNA(el.src));
     var backgroundColor = computedStyle.backgroundColor;
     var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
     var color = computedStyle.color;
@@ -4039,7 +4040,7 @@ DebugJS.prototype = {
         }
       }
     }
-    allStylesFolding = foldingTxt(allStyles, 'allStyles', OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.allStyles);
+    allStylesFolding = foldingTxt(allStyles, 'allStyles', OMIT_LAST, 0, OMIT_STYLE, foldingSt.allStyles);
     var name = (el.name == undefined) ? setStyleIfObjNA(el.name) : DebugJS.escHtml(el.name);
     var val = (el.value == undefined) ? setStyleIfObjNA(el.value) : DebugJS.escSpclCh(el.value);
     var alt = (el.alt == undefined) ? setStyleIfObjNA(el.alt) : DebugJS.escSpclCh(el.alt);
@@ -4060,7 +4061,7 @@ DebugJS.prototype = {
     'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
     'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
     'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
-    'border    : ' + borderT + ' ' + foldingTxt(borderRBL, 'elBorder', OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.elBorder) + '\n' +
+    'border    : ' + borderT + ' ' + foldingTxt(borderRBL, 'elBorder', OMIT_LAST, 0, OMIT_STYLE, foldingSt.elBorder) + '\n' +
     'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
     'lineHeight: ' + computedStyle.lineHeight + '\n' +
     addPropSep() +
@@ -4086,7 +4087,7 @@ DebugJS.prototype = {
     'action    : ' + setStyleIfObjNA(el.action) + '\n' +
     'method    : ' + setStyleIfObjNA(el.method) + '\n' +
     'name      : ' + name + '\n' +
-    'value     : ' + foldingTxt(val, 'elValue', OMIT_LAST, MAX_LEN, OMIT_STYLE) + '\n' +
+    'value     : ' + foldingTxt(val, 'elValue', OMIT_LAST, MAX_LEN, OMIT_STYLE, foldingSt.elValue) + '\n' +
     'disabled  : ' + setStyleIfObjNA(el.disabled, true) + '\n' +
     'hidden    : ' + el.hidden + '\n' +
     'tabIndex  : ' + el.tabIndex + '\n' +
@@ -4137,7 +4138,7 @@ DebugJS.prototype = {
       html += '<span style="color:#aaa">' + el.dataset + '</span>';
     }
     var htmlSrc = (el.outerHTML ? el.outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;') : setStyleIfObjNA(el.outerHTML));
-    htmlSrc = foldingTxt(htmlSrc, 'htmlSrc', OMIT_LAST, 0, OMIT_STYLE, ctx.elmInfoShowHideStatus.htmlSrc);
+    htmlSrc = foldingTxt(htmlSrc, 'htmlSrc', OMIT_LAST, 0, OMIT_STYLE, foldingSt.htmlSrc);
     html += addPropSep() + 'outerHTML: ' + htmlSrc;
     return html;
   },
