@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903231710';
+  this.v = '201903262009';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8035,7 +8035,13 @@ DebugJS.prototype = {
   _cmdPause: function(op, key, tout) {
     var ctx = DebugJS.ctx;
     var bat = DebugJS.bat;
-    if (DebugJS.isTmStr(tout)) tout = DebugJS.str2ms(tout);
+    if (tout) {
+      if (DebugJS.isTmStr(tout)) {
+        tout = DebugJS.str2ms(tout);
+      } else if (DebugJS.isTimeFormat(tout)) {
+        tout = DebugJS.calcNextTime(tout).time - (new Date()).getTime();
+      }
+    }
     tout |= 0;
     ctx.CMDVALS['%RESUMED_KEY%'] = null;
     if (op == '') {
@@ -9984,7 +9990,7 @@ DebugJS.isDateTimeFormatIso = function(s, p) {
   return (s.match(new RegExp(r)) ? true : false);
 };
 DebugJS.isTimeFormat = function(s) {
-  return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T[\d*]{4,6}$/)));
+  return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T[\d*]{4,6}$/))) ? true : false;
 };
 DebugJS.num2date = function(s) {
   var d = null;
