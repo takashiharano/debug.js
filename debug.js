@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903262009';
+  this.v = '201903270000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,7 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
-    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64(Bit Shifted Base64) reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
+    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
@@ -1242,6 +1242,7 @@ DebugJS.prototype = {
 
   createPanels: function(ctx) {
     var opt = ctx.opt;
+    var setStyle = ctx.setStyle;
     var fontSize = ctx.computedFontSize + 'px';
 
     ctx.winBody = document.createElement('div');
@@ -1302,8 +1303,8 @@ DebugJS.prototype = {
     if (opt.useClock) {
       ctx.clockLabel = document.createElement('span');
       ctx.clockLabel.style.marginLeft = '2px';
-      ctx.setStyle(ctx.clockLabel, 'color', opt.clockColor);
-      ctx.setStyle(ctx.clockLabel, 'font-size', fontSize);
+      setStyle(ctx.clockLabel, 'color', opt.clockColor);
+      setStyle(ctx.clockLabel, 'font-size', fontSize);
       ctx.headPanel.appendChild(ctx.clockLabel);
       ctx.setIntervalL(ctx);
     }
@@ -1314,8 +1315,8 @@ DebugJS.prototype = {
       ctx.closeBtn.style.position = 'relative';
       ctx.closeBtn.style.top = '-1px';
       ctx.closeBtn.style.marginRight = '2px';
-      ctx.setStyle(ctx.closeBtn, 'color', '#888');
-      ctx.setStyle(ctx.closeBtn, 'font-size', (18 * opt.zoom) + 'px');
+      setStyle(ctx.closeBtn, 'color', '#888');
+      setStyle(ctx.closeBtn, 'font-size', (18 * opt.zoom) + 'px');
       ctx.closeBtn.onmouseover = new Function('DebugJS.ctx.setStyle(this, \'color\', \'#d88\');');
       ctx.closeBtn.onmouseout = new Function('DebugJS.ctx.setStyle(this, \'color\', \'#888\');');
     }
@@ -1341,7 +1342,7 @@ DebugJS.prototype = {
       ctx.swLabel = document.createElement('span');
       ctx.swLabel.style.float = 'right';
       ctx.swLabel.style.marginLeft = '3px';
-      ctx.setStyle(ctx.swLabel, 'color', opt.fontColor);
+      setStyle(ctx.swLabel, 'color', opt.fontColor);
       ctx.headPanel.appendChild(ctx.swLabel);
 
       ctx.swBtnPanel = document.createElement('span');
@@ -1426,7 +1427,7 @@ DebugJS.prototype = {
       msgLabel.style.border = '0';
       msgLabel.style.padding = '0 1px';
       msgLabel.style.background = opt.msgDisplayBackground;
-      ctx.setStyle(msgLabel, 'color', opt.fontColor);
+      setStyle(msgLabel, 'color', opt.fontColor);
       msgLabel.style.whiteSpace = 'pre-wrap';
       msgLabel.style.wordBreak = 'break-all';
       msgLabel.style.overflow = 'hidden';
@@ -1440,18 +1441,18 @@ DebugJS.prototype = {
       ctx.winBody.appendChild(ctx.cmdPanel);
       ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + ' !important">$</span>';
       var cmdLine = document.createElement('input');
-      ctx.setStyle(cmdLine, 'min-height', fontSize);
-      ctx.setStyle(cmdLine, 'width', 'calc(100% - ' + fontSize + ')');
-      ctx.setStyle(cmdLine, 'margin', '0 0 0 2px');
-      ctx.setStyle(cmdLine, 'border', '0');
-      ctx.setStyle(cmdLine, 'border-bottom', 'solid 1px #888');
-      ctx.setStyle(cmdLine, 'border-radius', '0');
-      ctx.setStyle(cmdLine, 'outline', 'none');
-      ctx.setStyle(cmdLine, 'box-shadow', 'none');
-      ctx.setStyle(cmdLine, 'padding', '1px');
-      ctx.setStyle(cmdLine, 'background', 'transparent');
-      ctx.setStyle(cmdLine, 'color', opt.fontColor);
-      ctx.setStyle(cmdLine, 'font-size', fontSize);
+      setStyle(cmdLine, 'min-height', fontSize);
+      setStyle(cmdLine, 'width', 'calc(100% - ' + fontSize + ')');
+      setStyle(cmdLine, 'margin', '0 0 0 2px');
+      setStyle(cmdLine, 'border', '0');
+      setStyle(cmdLine, 'border-bottom', 'solid 1px #888');
+      setStyle(cmdLine, 'border-radius', '0');
+      setStyle(cmdLine, 'outline', 'none');
+      setStyle(cmdLine, 'box-shadow', 'none');
+      setStyle(cmdLine, 'padding', '1px');
+      setStyle(cmdLine, 'background', 'transparent');
+      setStyle(cmdLine, 'color', opt.fontColor);
+      setStyle(cmdLine, 'font-size', fontSize);
       ctx.cmdPanel.appendChild(cmdLine);
       ctx.cmdLine = cmdLine;
       ctx.initHistory(ctx);
@@ -3696,12 +3697,8 @@ DebugJS.prototype = {
     html += '\n</pre>';
     ctx.sysInfoPanelBody.innerHTML = html;
     ctx.updateCookieInfo();
-    if (DebugJS.LS_AVAILABLE) {
-      ctx.updateStrageInfo(0);
-    }
-    if (DebugJS.SS_AVAILABLE) {
-      ctx.updateStrageInfo(1);
-    }
+    if (DebugJS.LS_AVAILABLE) ctx.updateStrageInfo(0);
+    if (DebugJS.SS_AVAILABLE) ctx.updateStrageInfo(1);
   },
   updateCookieInfo: function() {
     var ctx = DebugJS.ctx;
@@ -3761,8 +3758,7 @@ DebugJS.prototype = {
       rmvFn = 'removeSessionStrage';
       id = 'ss';
     }
-    var html = ' <span style="color:' + DebugJS.ITEM_NM_COLOR + '">length</span> = ' + strg.length + '\n' +
-    ' <span style="color:' + DebugJS.ITEM_NM_COLOR + '">key</span>';
+    var html = ' <span style="color:' + DebugJS.ITEM_NM_COLOR + '">length</span> = ' + strg.length + '\n' + ' <span style="color:' + DebugJS.ITEM_NM_COLOR + '">key</span>';
     if (DebugJS.LS_AVAILABLE) {
       for (var i = 0; i < strg.length; i++) {
         var key = strg.key(i);
@@ -3987,7 +3983,7 @@ DebugJS.prototype = {
     var evtHndl = ctx.getEvtHandlerStr;
     var foldingTxt = ctx.createFoldingText;
     var foldingSt = ctx.elmInfofoldingSt;
-    var computedStyle = window.getComputedStyle(el);
+    var cStyle = window.getComputedStyle(el);
     var rect = el.getBoundingClientRect();
     var rectT = Math.round(rect.top);
     var rectL = Math.round(rect.left);
@@ -4009,34 +4005,34 @@ DebugJS.prototype = {
     className = className.replace(ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX, '<span style="' + OMIT_STYLE2 + '">' + ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX + '</span>');
     var href = (el.href ? foldingTxt(el.href, 'elHref', OMIT_MID, MAX_LEN, OMIT_STYLE) : setStyleIfObjNA(el.href));
     var src = (el.src ? foldingTxt(el.src, 'elSrc', OMIT_MID, MAX_LEN, OMIT_STYLE, foldingSt.elSrc) : setStyleIfObjNA(el.src));
-    var backgroundColor = computedStyle.backgroundColor;
+    var backgroundColor = cStyle.backgroundColor;
     var bgColor16 = DebugJS.getElmHexColor(backgroundColor);
-    var color = computedStyle.color;
+    var color = cStyle.color;
     var color16 = DebugJS.getElmHexColor(color);
-    var borderColorT = computedStyle.borderTopColor;
+    var borderColorT = cStyle.borderTopColor;
     var borderColorT16 = DebugJS.getElmHexColor(borderColorT);
-    var borderColorR = computedStyle.borderRightColor;
+    var borderColorR = cStyle.borderRightColor;
     var borderColorR16 = DebugJS.getElmHexColor(borderColorR);
-    var borderColorB = computedStyle.borderBottomColor;
+    var borderColorB = cStyle.borderBottomColor;
     var borderColorB16 = DebugJS.getElmHexColor(borderColorB);
-    var borderColorL = computedStyle.borderLeftColor;
+    var borderColorL = cStyle.borderLeftColor;
     var borderColorL16 = DebugJS.getElmHexColor(borderColorL);
-    var borderT = 'top   : ' + computedStyle.borderTopWidth + ' ' + computedStyle.borderTopStyle + ' ' + borderColorT + ' ' + borderColorT16 + ' ' + DebugJS.getColorBlock(borderColorT);
-    var borderRBL = '            right : ' + computedStyle.borderRightWidth + ' ' + computedStyle.borderRightStyle + ' ' + borderColorR + ' ' + borderColorR16 + ' ' + DebugJS.getColorBlock(borderColorR) + '\n' +
-    '            bottom: ' + computedStyle.borderBottomWidth + ' ' + computedStyle.borderBottomStyle + ' ' + borderColorR + ' ' + borderColorB16 + ' ' + DebugJS.getColorBlock(borderColorB) + '\n' +
-    '            left  : ' + computedStyle.borderLeftWidth + ' ' + computedStyle.borderLeftStyle + ' ' + borderColorL + ' ' + borderColorL16 + ' ' + DebugJS.getColorBlock(borderColorL);
+    var borderT = 'top   : ' + cStyle.borderTopWidth + ' ' + cStyle.borderTopStyle + ' ' + borderColorT + ' ' + borderColorT16 + ' ' + DebugJS.getColorBlock(borderColorT);
+    var borderRBL = '            right : ' + cStyle.borderRightWidth + ' ' + cStyle.borderRightStyle + ' ' + borderColorR + ' ' + borderColorR16 + ' ' + DebugJS.getColorBlock(borderColorR) + '\n' +
+    '            bottom: ' + cStyle.borderBottomWidth + ' ' + cStyle.borderBottomStyle + ' ' + borderColorR + ' ' + borderColorB16 + ' ' + DebugJS.getColorBlock(borderColorB) + '\n' +
+    '            left  : ' + cStyle.borderLeftWidth + ' ' + cStyle.borderLeftStyle + ' ' + borderColorL + ' ' + borderColorL16 + ' ' + DebugJS.getColorBlock(borderColorL);
     var allStyles = '';
     var MIN_KEY_LEN = 20;
-    for (var k in computedStyle) {
+    for (var k in cStyle) {
       if (!k.match(/^\d.*/)) {
-        if (typeof computedStyle[k] != 'function') {
+        if (typeof cStyle[k] != 'function') {
           var indent = '';
           if (k.length < MIN_KEY_LEN) {
             for (var i = 0; i < (MIN_KEY_LEN - k.length); i++) {
               indent += ' ';
             }
           }
-          allStyles += ' ' + k + indent + ': ' + computedStyle[k] + '\n';
+          allStyles += ' ' + k + indent + ': ' + cStyle[k] + '\n';
         }
       }
     }
@@ -4055,32 +4051,32 @@ DebugJS.prototype = {
     'tagName   : ' + el.tagName + '\n' +
     'type      : ' + setStyleIfObjNA(el.type) + '\n' +
     addPropSep() +
-    'display   : ' + computedStyle.display + '\n' +
-    'position  : ' + computedStyle.position + '\n' +
-    'z-index   : ' + computedStyle.zIndex + '\n' +
-    'float     : ' + computedStyle.cssFloat + ' / clear: ' + computedStyle.clear + '\n' +
+    'display   : ' + cStyle.display + '\n' +
+    'position  : ' + cStyle.position + '\n' +
+    'z-index   : ' + cStyle.zIndex + '\n' +
+    'float     : ' + cStyle.cssFloat + ' / clear: ' + cStyle.clear + '\n' +
     'size      : W:' + ((rectR - rectL) + 1) + ' x H:' + ((rectB - rectT) + 1) + ' px\n' +
-    'margin    : ' + computedStyle.marginTop + ' ' + computedStyle.marginRight + ' ' + computedStyle.marginBottom + ' ' + computedStyle.marginLeft + '\n' +
+    'margin    : ' + cStyle.marginTop + ' ' + cStyle.marginRight + ' ' + cStyle.marginBottom + ' ' + cStyle.marginLeft + '\n' +
     'border    : ' + borderT + ' ' + foldingTxt(borderRBL, 'elBorder', OMIT_LAST, 0, OMIT_STYLE, foldingSt.elBorder) + '\n' +
-    'padding   : ' + computedStyle.paddingTop + ' ' + computedStyle.paddingRight + ' ' + computedStyle.paddingBottom + ' ' + computedStyle.paddingLeft + '\n' +
-    'lineHeight: ' + computedStyle.lineHeight + '\n' +
+    'padding   : ' + cStyle.paddingTop + ' ' + cStyle.paddingRight + ' ' + cStyle.paddingBottom + ' ' + cStyle.paddingLeft + '\n' +
+    'lineHeight: ' + cStyle.lineHeight + '\n' +
     addPropSep() +
     'location  : <span style="color:#aaa">winOffset + pageOffset = pos (computedStyle)</span>\n' +
-    '            top   : ' + rectT + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + computedStyle.top + ')\n' +
-    '            left  : ' + rectL + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + computedStyle.left + ')\n' +
-    '            right : ' + rectR + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.right + window.pageXOffset) + ' px (' + computedStyle.right + ')\n' +
-    '            bottom: ' + rectB + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.bottom + window.pageYOffset) + ' px (' + computedStyle.bottom + ')\n' +
+    '            top   : ' + rectT + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.top + window.pageYOffset) + ' px (' + cStyle.top + ')\n' +
+    '            left  : ' + rectL + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.left + window.pageXOffset) + ' px (' + cStyle.left + ')\n' +
+    '            right : ' + rectR + ' + ' + window.pageXOffset + ' = ' + Math.round(rect.right + window.pageXOffset) + ' px (' + cStyle.right + ')\n' +
+    '            bottom: ' + rectB + ' + ' + window.pageYOffset + ' = ' + Math.round(rect.bottom + window.pageYOffset) + ' px (' + cStyle.bottom + ')\n' +
     'scroll    : top = ' + el.scrollTop + ' / left = ' + el.scrollLeft + '\n' +
-    'overflow  : ' + computedStyle.overflow + '\n' +
-    'opacity   : ' + computedStyle.opacity + '\n' +
+    'overflow  : ' + cStyle.overflow + '\n' +
+    'opacity   : ' + cStyle.opacity + '\n' +
     addPropSep() +
     'bg-color  : ' + backgroundColor + ' ' + bgColor16 + ' ' + DebugJS.getColorBlock(backgroundColor) + '\n' +
-    'bg-image  : ' + foldingTxt(computedStyle.backgroundImage, 'bgimg', OMIT_LAST, -1, OMIT_STYLE) + '\n' +
+    'bg-image  : ' + foldingTxt(cStyle.backgroundImage, 'bgimg', OMIT_LAST, -1, OMIT_STYLE) + '\n' +
     'color     : ' + color + ' ' + color16 + ' ' + DebugJS.getColorBlock(color) + '\n' +
-    'font      : -size  : ' + computedStyle.fontSize + '\n' +
-    '            -family: ' + computedStyle.fontFamily + '\n' +
-    '            -weight: ' + computedStyle.fontWeight + '\n' +
-    '            -style : ' + computedStyle.fontStyle + '\n' +
+    'font      : -size  : ' + cStyle.fontSize + '\n' +
+    '            -family: ' + cStyle.fontFamily + '\n' +
+    '            -weight: ' + cStyle.fontWeight + '\n' +
+    '            -style : ' + cStyle.fontStyle + '\n' +
     addPropSep() +
     'All Styles: window.getComputedStyle(element) ' + allStylesFolding + '\n' +
     addPropSep() +
@@ -5432,19 +5428,20 @@ DebugJS.prototype = {
   },
   createFileVwrPanel: function(ctx) {
     var opt = ctx.opt;
+    var setStyle = ctx.setStyle;
     var fontSize = ctx.computedFontSize + 'px';
     ctx.fileVwrPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
     var fileInput = document.createElement('input');
     fileInput.type = 'file';
-    ctx.setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 19) + 'px)');
-    ctx.setStyle(fileInput, 'min-height', (20 * opt.zoom) + 'px');
-    ctx.setStyle(fileInput, 'margin', '0 0 4px 0');
-    ctx.setStyle(fileInput, 'padding', '1px');
-    ctx.setStyle(fileInput, 'border', '0');
-    ctx.setStyle(fileInput, 'border-radius', '0');
-    ctx.setStyle(fileInput, 'outline', 'none');
-    ctx.setStyle(fileInput, 'font-size', fontSize);
+    setStyle(fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 19) + 'px)');
+    setStyle(fileInput, 'min-height', (20 * opt.zoom) + 'px');
+    setStyle(fileInput, 'margin', '0 0 4px 0');
+    setStyle(fileInput, 'padding', '1px');
+    setStyle(fileInput, 'border', '0');
+    setStyle(fileInput, 'border-radius', '0');
+    setStyle(fileInput, 'outline', 'none');
+    setStyle(fileInput, 'font-size', fontSize);
     fileInput.addEventListener('change', ctx.onFileSelected, false);
     ctx.fileVwrPanel.appendChild(fileInput);
     ctx.fileInput = fileInput;
@@ -5483,21 +5480,21 @@ DebugJS.prototype = {
     ctx.fileClrBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
 
     ctx.filePreviewWrapper = document.createElement('div');
-    ctx.setStyle(ctx.filePreviewWrapper, 'width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)');
-    ctx.setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
-    ctx.setStyle(ctx.filePreviewWrapper, 'margin-bottom', '4px');
-    ctx.setStyle(ctx.filePreviewWrapper, 'padding', '2px');
-    ctx.setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
-    ctx.setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
-    ctx.setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
+    setStyle(ctx.filePreviewWrapper, 'width', 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)');
+    setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
+    setStyle(ctx.filePreviewWrapper, 'margin-bottom', '4px');
+    setStyle(ctx.filePreviewWrapper, 'padding', '2px');
+    setStyle(ctx.filePreviewWrapper, 'border', '1px dotted #ccc');
+    setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
+    setStyle(ctx.filePreviewWrapper, 'overflow', 'auto');
     ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.onDropOnFileVwr);
     ctx.fileVwrPanel.appendChild(ctx.filePreviewWrapper);
 
     ctx.filePreview = document.createElement('pre');
-    ctx.setStyle(ctx.filePreview, 'min-height', 'calc(50% + 10px)');
-    ctx.setStyle(ctx.filePreview, 'background', 'transparent');
-    ctx.setStyle(ctx.filePreview, 'color', opt.fontColor);
-    ctx.setStyle(ctx.filePreview, 'font-size', fontSize);
+    setStyle(ctx.filePreview, 'min-height', 'calc(50% + 10px)');
+    setStyle(ctx.filePreview, 'background', 'transparent');
+    setStyle(ctx.filePreview, 'color', opt.fontColor);
+    setStyle(ctx.filePreview, 'font-size', fontSize);
     ctx.filePreviewWrapper.appendChild(ctx.filePreview);
 
     ctx.fileVwrFooter = document.createElement('div');
@@ -5521,7 +5518,7 @@ DebugJS.prototype = {
     ctx.fileLoadProg.style.padding = '1px';
     ctx.fileLoadProg.style.border = 'none';
     ctx.fileLoadProg.style.background = '#00f';
-    ctx.setStyle(ctx.fileLoadProg, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
+    setStyle(ctx.fileLoadProg, 'font-size', (ctx.computedFontSize * 0.8) + 'px');
     ctx.fileLoadProg.style.fontFamily = opt.fontFamily + 'px';
     ctx.fileLoadProg.innerText = '0%';
     ctx.fileLoadProgBar.appendChild(ctx.fileLoadProg);
@@ -5532,7 +5529,7 @@ DebugJS.prototype = {
     ctx.fileLoadCancelBtn.style.float = 'right';
 
     ctx.fileVwrDtUrlWrp = document.createElement('div');
-    ctx.setStyle(ctx.fileVwrDtUrlWrp, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
+    setStyle(ctx.fileVwrDtUrlWrp, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
     ctx.filePreviewWrapper.appendChild(ctx.fileVwrDtUrlWrp);
 
     ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 15.5em)', null, ctx.opt.fontColor, '', null);
@@ -5555,7 +5552,7 @@ DebugJS.prototype = {
 
     ctx.fileVwrDtTxtArea = document.createElement('textarea');
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
-    ctx.setStyle(ctx.fileVwrDtTxtArea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
+    setStyle(ctx.fileVwrDtTxtArea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
     ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxt);
     ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrDtTxtArea);
   },
