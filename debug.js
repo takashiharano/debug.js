@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201904032245';
+  this.v = '201904032310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -324,7 +324,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
-    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt[L|R]]'},
+    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
@@ -7015,21 +7015,13 @@ DebugJS.prototype = {
   cmdBSB64: function(arg, tbl, echo) {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
-    var toR = false;
     var n = DebugJS.getOptVal(arg, 'n');
     if (n == null) {
        n = 1;
     } else {
       iIdx += 2;
-      if (n.length > 1) {
-        var d = n.charAt(n.length - 1);
-        if (isNaN(d)) {
-          if (d == 'R') toR = true;
-          n = n.substr(0, n.length - 1);
-        }
-      }
     }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0, toR);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0);
   },
 
   cmdCall: function(arg, tbl) {
@@ -9258,7 +9250,7 @@ DebugJS.prototype = {
 
   cmdNop: function(arg, tbl) {},
 
-  execEncAndDec: function(arg, tbl, echo, esc, encFnc, decFnc, iIdx, a1, a2) {
+  execEncAndDec: function(arg, tbl, echo, esc, encFnc, decFnc, iIdx, a1) {
     if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage(tbl.help);
       return;
@@ -9276,7 +9268,7 @@ DebugJS.prototype = {
       } else {
         i = eval(i);
       }
-      var ret = fn(i, a1, a2);
+      var ret = fn(i, a1);
       var r = (esc ? DebugJS.escHtml(ret) : ret);
       if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(r));
       return ret;
@@ -11270,22 +11262,22 @@ DebugJS.Base64.getMimeType = function(s) {
 DebugJS.isBase64 = function(s) {
   return (s && s.match(/^[A-Za-z0-9\/+]*=*$/) ? true : false);
 };
-DebugJS.encodeBSB64 = function(s, n, toR) {
+DebugJS.encodeBSB64 = function(s, n) {
   var a = DebugJS.UTF8.toByte(s);
-  return DebugJS.BSB64.encode(a, n, toR);
+  return DebugJS.BSB64.encode(a, n);
 };
-DebugJS.decodeBSB64 = function(s, n, toR) {
+DebugJS.decodeBSB64 = function(s, n) {
   if (s.match(/\$\d+$/)) {
     var v = s.split('$');
     s = v[0];
     n = v[1];
   }
-  var a = DebugJS.BSB64.decode(s, n, (toR ? false : true));
+  var a = DebugJS.BSB64.decode(s, n);
   return DebugJS.UTF8.fmByte(a);
 };
 DebugJS.BSB64 = {};
-DebugJS.BSB64.encode = function(a, n, toR) {
-  var fn = (toR ? DebugJS.bit8.rotateR : DebugJS.bit8.rotateL);
+DebugJS.BSB64.encode = function(a, n) {
+  var fn = DebugJS.bit8.rotateL;
   if (n % 8 == 0) fn = DebugJS.bit8.invert;
   var b = [];
   for (var i = 0; i < a.length; i++) {
@@ -11293,8 +11285,8 @@ DebugJS.BSB64.encode = function(a, n, toR) {
   }
   return DebugJS.Base64.encode(b);
 };
-DebugJS.BSB64.decode = function(s, n, toR) {
-  var fn = (toR ? DebugJS.bit8.rotateR : DebugJS.bit8.rotateL);
+DebugJS.BSB64.decode = function(s, n) {
+  var fn = DebugJS.bit8.rotateR;
   if (n % 8 == 0) fn = DebugJS.bit8.invert;
   var b = DebugJS.Base64.decode(s);
   var a = [];

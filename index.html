@@ -3882,10 +3882,8 @@ operation: -e encode<span class="annotation">(default option)</span>
 
 -i Iput string
 -n Number of bit rotation
-    1 : 1 bit rotate left<span class="annotation">(default)</span>
-   1L : 1 bit rotate left
-   1R : 1 bit rotate right
-    0 : bit inversion
+    1-7 : n bit rotate left <span class="annotation">(default=1)</span>
+      0 : bit inversion
 
 $ bsb64 -e -i "abc" -n 1
 -&gt; wsTG
@@ -3897,6 +3895,7 @@ Simple usage:
 $ bsb64 abc
 $ bsb64 -e abc
 $ bsb64 -d wsTG
+$ bsb64 -d wsTG$N <span class="annotation">(equal to bsb64 -d -i "wsTG" -n N)</span>
 </pre>
     </td>
   </tr>
