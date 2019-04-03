@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201903270000';
+  this.v = '201904032245';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11275,6 +11275,11 @@ DebugJS.encodeBSB64 = function(s, n, toR) {
   return DebugJS.BSB64.encode(a, n, toR);
 };
 DebugJS.decodeBSB64 = function(s, n, toR) {
+  if (s.match(/\$\d+$/)) {
+    var v = s.split('$');
+    s = v[0];
+    n = v[1];
+  }
   var a = DebugJS.BSB64.decode(s, n, (toR ? false : true));
   return DebugJS.UTF8.fmByte(a);
 };
