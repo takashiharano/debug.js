@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201904032310';
+  this.v = '201904230000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16305,7 +16305,10 @@ DebugJS.boot = function() {
     DebugJS.restoreStatus(DebugJS.ctx);
   }
 };
-DebugJS.start = function(o) {DebugJS.init(o);DebugJS.show();};
+DebugJS.start = function(o) {
+  if (!o) o = {visible: true};
+  DebugJS.init(o);
+};
 DebugJS.ENABLE = true;
 if (DebugJS.ENABLE) {
   DebugJS.boot();
