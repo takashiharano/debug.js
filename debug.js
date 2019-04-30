@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201904230000';
+  this.v = '201904290230';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -92,6 +92,7 @@ var DebugJS = DebugJS || function() {
   this.headPanel = null;
   this.infoPanel = null;
   this.clockLabel = null;
+  this.clockTmId = 0;
   this.clockUpdIntHCnt = 0;
   this.clockUpdInt = DebugJS.UPDATE_INTERVAL_L;
   this.measBtn = null;
@@ -830,6 +831,9 @@ DebugJS.prototype = {
       ctx.reopenFeatures(ctx);
       ctx.restoreDbgWinSize(ctx, rstrOpt.sizeStatus);
     }
+    if ((ctx.uiStatus & DebugJS.UI_ST_VISIBLE) && (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK)) {
+      ctx.startUdtClock(ctx);
+    }
   },
   initStyles: function(ctx) {
     var opt = ctx.opt;
@@ -1511,7 +1515,6 @@ DebugJS.prototype = {
     var opt = ctx.opt;
     if (ctx.isAllFeaturesDisabled(ctx)) return;
     if (opt.useLogFilter) ctx.updateLogFilterBtns();
-    if (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK) ctx.updateClockLabel();
     if (opt.useScreenMeasure) ctx.updateMeasBtn(ctx);
     if (opt.useSystemInfo) ctx.updateSysInfoBtn(ctx);
     if (opt.useElementInfo) ctx.updateElmInfoBtn(ctx);
@@ -1727,8 +1730,16 @@ DebugJS.prototype = {
     var dt = DebugJS.getDateTime();
     var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
     ctx.clockLabel.innerText = t;
-    if (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK) {
-      setTimeout(ctx.updateClockLabel, ctx.clockUpdInt);
+    ctx.clockTmId = setTimeout(ctx.updateClockLabel, ctx.clockUpdInt);
+  },
+  startUdtClock: function(ctx) {
+    ctx.stopUdtClock(ctx);
+    ctx.updateClockLabel();
+  },
+  stopUdtClock: function(ctx) {
+    if (ctx.clockTmId > 0) {
+      clearTimeout(ctx.clockTmId);
+      ctx.clockTmId = 0;
     }
   },
 
@@ -1995,7 +2006,7 @@ DebugJS.prototype = {
     }
   },
   scrollLogBtm: function(ctx) {
-    ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
+    if (ctx.logPanel) ctx.logPanel.scrollTop = ctx.logPanel.scrollHeight;
   },
   startLogScrolling: function() {
     DebugJS.ctx.uiStatus |= DebugJS.UI_ST_LOG_SCROLL;
@@ -3274,6 +3285,9 @@ DebugJS.prototype = {
       ctx.scrollLogBtm(ctx);
     }
     ctx.resizeMainHeight();
+    if (ctx.uiStatus & DebugJS.UI_ST_SHOW_CLOCK) {
+      ctx.startUdtClock(ctx);
+    }
   },
 
   showDbgWinOnError: function(ctx) {
@@ -3291,6 +3305,7 @@ DebugJS.prototype = {
 
   hideDbgWin: function(ctx) {
     if (!ctx.opt.togglableShowHide || !ctx.win) return;
+    ctx.stopUdtClock(ctx);
     ctx.errStatus = DebugJS.ERR_ST_NONE;
     ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
     ctx.uiStatus &= ~DebugJS.UI_ST_VISIBLE;
