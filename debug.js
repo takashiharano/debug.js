@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201905071915';
+  this.v = '201905150000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1684,41 +1684,41 @@ DebugJS.prototype = {
     var opt = DebugJS.ctx.opt;
     var top = opt.adjustY;
     var left = opt.adjustX;
-    var clientW = document.documentElement.clientWidth;
-    var clientH = document.documentElement.clientHeight;
-    if (clientW > window.outerWidth) clientW = window.outerWidth;
-    if (clientH > window.outerHeight) clientH = window.outerHeight;
+    var clW = document.documentElement.clientWidth;
+    var clH = document.documentElement.clientHeight;
+    if (clW > window.outerWidth) clW = window.outerWidth;
+    if (clH > window.outerHeight) clH = window.outerHeight;
     switch (pos) {
       case 'se':
-        top = clientH - dbgWinH - opt.adjustY;
-        left = clientW - dbgWinW - opt.adjustX;
+        top = clH - dbgWinH - opt.adjustY;
+        left = clW - dbgWinW - opt.adjustX;
         break;
       case 'ne':
         top = opt.adjustY;
-        left = clientW - dbgWinW - opt.adjustX;
+        left = clW - dbgWinW - opt.adjustX;
         break;
       case 'c':
-        top = (clientH / 2) - (dbgWinH / 2);
-        left = (clientW / 2) - (dbgWinW / 2);
+        top = (clH / 2) - (dbgWinH / 2);
+        left = (clW / 2) - (dbgWinW / 2);
         break;
       case 'sw':
-        top = clientH - dbgWinH - opt.adjustY;
+        top = clH - dbgWinH - opt.adjustY;
         left = opt.adjustX;
         break;
       case 'n':
         top = opt.adjustY;
-        left = (clientW / 2) - (dbgWinW / 2);
+        left = (clW / 2) - (dbgWinW / 2);
         break;
       case 'e':
-        top = (clientH / 2) - (dbgWinH / 2);
-        left = clientW - dbgWinW - opt.adjustX;
+        top = (clH / 2) - (dbgWinH / 2);
+        left = clW - dbgWinW - opt.adjustX;
         break;
       case 's':
-        top = clientH - dbgWinH - opt.adjustY;
-        left = (clientW / 2) - (dbgWinW / 2);
+        top = clH - dbgWinH - opt.adjustY;
+        left = (clW / 2) - (dbgWinW / 2);
         break;
       case 'w':
-        top = (clientH / 2) - (dbgWinH / 2);
+        top = (clH / 2) - (dbgWinH / 2);
         left = opt.adjustX;
     }
     DebugJS.ctx.win.style.top = top + 'px';
@@ -2241,17 +2241,17 @@ DebugJS.prototype = {
     var currentX = x;
     var currentY = y;
     var mvX, mvY, t, l, w, h;
-    var clientW = document.documentElement.clientWidth;
-    var clientH = document.documentElement.clientHeight;
+    var clW = document.documentElement.clientWidth;
+    var clH = document.documentElement.clientHeight;
 
-    if (currentX > clientW) {
-      currentX = clientW;
+    if (currentX > clW) {
+      currentX = clW;
     } else if (currentX < 0) {
       currentX = 0;
     }
 
-    if (currentY > clientH) {
-      currentY = clientH;
+    if (currentY > clH) {
+      currentY = clH;
     } else if (currentY < 0) {
       currentY = 0;
     }
@@ -3032,10 +3032,10 @@ DebugJS.prototype = {
 
   _expandDbgWin: function(ctx) {
     var sp = ctx.getSelfSizePos();
-    var clientW = document.documentElement.clientWidth;
-    var clientH = document.documentElement.clientHeight;
-    var expThrW = clientW * 0.6;
-    var expThrH = clientH * 0.6;
+    var clW = document.documentElement.clientWidth;
+    var clH = document.documentElement.clientHeight;
+    var expThrW = clW * 0.6;
+    var expThrH = clH * 0.6;
     if ((sp.w > expThrW) || (sp.h > expThrH)) {
       ctx.setDbgWinFull(ctx);
       return;
@@ -3044,15 +3044,15 @@ DebugJS.prototype = {
     var t = sp.y1 + 3;
     var w = DebugJS.DBGWIN_EXPAND_W;
     var h = DebugJS.DBGWIN_EXPAND_H;
-    if (sp.x1 > (clientW - sp.x2)) {
+    if (sp.x1 > (clW - sp.x2)) {
       l = (sp.x1 - (DebugJS.DBGWIN_EXPAND_W - sp.w)) + 1;
     }
-    if (sp.y1 > (clientH - sp.y2)) {
+    if (sp.y1 > (clH - sp.y2)) {
       t = (sp.y1 - (DebugJS.DBGWIN_EXPAND_H - sp.h)) + 1;
     }
     if (l < 0) l = 0;
-    if (clientH < DebugJS.DBGWIN_EXPAND_H) {
-      t = clientH - DebugJS.DBGWIN_EXPAND_H;
+    if (clH < DebugJS.DBGWIN_EXPAND_H) {
+      t = clH - DebugJS.DBGWIN_EXPAND_H;
     }
     ctx.saveSizeAndPos(ctx);
     ctx.setDbgWinPos(t, l);
@@ -3066,24 +3066,24 @@ DebugJS.prototype = {
       ctx.setDbgWinFull(ctx);
       return;
     }
-    var clientW = document.documentElement.clientWidth;
-    var clientH = document.documentElement.clientHeight;
-    var expThrW = clientW * 0.6;
-    var expThrH = clientH * 0.6;
+    var clW = document.documentElement.clientWidth;
+    var clH = document.documentElement.clientHeight;
+    var expThrW = clW * 0.6;
+    var expThrH = clH * 0.6;
     var w = 0, h = 0, t = 0, l = 0;
 
-    if ((DebugJS.DBGWIN_EXPAND_W > clientW) || (sp.w > expThrW)) {
-      w = clientW;
+    if ((DebugJS.DBGWIN_EXPAND_W > clW) || (sp.w > expThrW)) {
+      w = clW;
       ctx.sizeStatus |= DebugJS.SIZE_ST_FULL_W;
-      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sp.h > expThrH)) {
-        h = clientH;
+      if ((DebugJS.DBGWIN_EXPAND_H > clH) || (sp.h > expThrH)) {
+        h = clH;
       } else {
         t = DebugJS.DBGWIN_POS_NONE;
       }
     } else {
-      if ((DebugJS.DBGWIN_EXPAND_H > clientH) || (sp.h > expThrH)) {
-        h = clientH;
-        if ((DebugJS.DBGWIN_EXPAND_W < clientW) && (sp.w < expThrW)) {
+      if ((DebugJS.DBGWIN_EXPAND_H > clH) || (sp.h > expThrH)) {
+        h = clH;
+        if ((DebugJS.DBGWIN_EXPAND_W < clW) && (sp.w < expThrW)) {
           l = DebugJS.DBGWIN_POS_NONE;
         }
       } else {
@@ -3095,22 +3095,22 @@ DebugJS.prototype = {
     ctx.setDbgWinPos(t, l);
     ctx.setDbgWinSize(w, h);
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJ;
-    if ((w == clientW) && (h == clientH)) {
+    if ((w == clW) && (h == clH)) {
       ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
-    } else if (w == clientW) {
+    } else if (w == clW) {
       ctx.sizeStatus = DebugJS.SIZE_ST_FULL_W;
-    } else if (h == clientH) {
+    } else if (h == clH) {
       ctx.sizeStatus = DebugJS.SIZE_ST_FULL_H;
     }
   },
 
   _expandDbgWinCenter: function(ctx) {
-    var clientW = document.documentElement.clientWidth;
-    var clientH = document.documentElement.clientHeight;
+    var clW = document.documentElement.clientWidth;
+    var clH = document.documentElement.clientHeight;
     var w = DebugJS.DBGWIN_EXPAND_C_W;
     var h = DebugJS.DBGWIN_EXPAND_C_H;
-    var l = clientW / 2 - w / 2;
-    var t = clientH / 2 - h / 2;
+    var l = clW / 2 - w / 2;
+    var t = clH / 2 - h / 2;
     ctx.setDbgWinPos(t, l);
     ctx.setDbgWinSize(w, h);
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJ;
@@ -3192,27 +3192,27 @@ DebugJS.prototype = {
       var orgX2 = l + w;
       if (((Math.abs(sp.x1 - l) > thold) && (Math.abs(sp.x2 - orgX2) > thold)) ||
           ((Math.abs(sp.y1 - t) > thold) && (Math.abs(sp.y2 - orgY2) > thold))) {
-        var clientW = document.documentElement.clientWidth;
-        var clientH = document.documentElement.clientHeight;
+        var clW = document.documentElement.clientWidth;
+        var clH = document.documentElement.clientHeight;
         var mL = (sp.x1 < 0 ? 0 : sp.x1);
         var mT = (sp.y1 < 0 ? 0 : sp.y1);
-        var mR = clientW - sp.x2;
-        var mB = clientH - sp.y2;
+        var mR = clW - sp.x2;
+        var mB = clH - sp.y2;
         if (mR < 0) mR = 0;
         if (mB < 0) mB = 0;
         t = sp.y1 + 3;
         l = sp.x1 + 3;
         if (mT > mB) {
           t = sp.y2 - h;
-          if ((t > clientH) || (t + h > clientH)) {
-            t = clientH - h;
+          if ((t > clH) || (t + h > clH)) {
+            t = clH - h;
           }
           t -= 6;
         }
         if (mL > mR) {
           l = sp.x2 - w;
-          if ((l > clientW) || (l + w > clientW)) {
-            l = clientW - w;
+          if ((l > clW) || (l + w > clW)) {
+            l = clW - w;
           }
           l -= 6;
         }
@@ -3356,7 +3356,7 @@ DebugJS.prototype = {
   doMeasure: function(ctx, posX, posY) {
     var deltaX = posX - ctx.clickedPosX;
     var deltaY = posY - ctx.clickedPosY;
-    var clientW = document.documentElement.clientWidth;
+    var clW = document.documentElement.clientWidth;
     if (deltaX < 0) {
       ctx.measBox.style.left = posX + 'px';
       deltaX *= -1;
@@ -3390,8 +3390,8 @@ DebugJS.prototype = {
         sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
       }
     }
-    if (((ctx.clickedPosX + sizeLabelW) > clientW) && ((posX + sizeLabelW) > clientW)) {
-      sizeLabelX = (sizeLabelW - (clientW - ctx.clickedPosX)) * (-1);
+    if (((ctx.clickedPosX + sizeLabelW) > clW) && ((posX + sizeLabelW) > clW)) {
+      sizeLabelX = (sizeLabelW - (clW - ctx.clickedPosX)) * (-1);
     }
     if (posX < ctx.clickedPosX) originX = 'right';
     if (posY < ctx.clickedPosY) originY = 'bottom';
@@ -6645,23 +6645,23 @@ DebugJS.prototype = {
   expandHight: function(ctx, height) {
     if (!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC)) return;
     ctx.saveExpandModeOrgSizeAndPos(ctx);
-    var clientH = document.documentElement.clientHeight;
+    var clH = document.documentElement.clientHeight;
     var sp = ctx.getSelfSizePos();
     if (sp.h >= height) {
       return;
-    } else if (clientH <= height) {
-      height = clientH;
+    } else if (clH <= height) {
+      height = clH;
     }
     ctx.setSelfSizeH(ctx, height);
     sp = ctx.getSelfSizePos();
     if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) {
       ctx.adjustDbgWinPos(ctx);
     } else {
-      if (sp.y2 > clientH) {
-        if (clientH < (height + ctx.opt.adjustY)) {
+      if (sp.y2 > clH) {
+        if (clH < (height + ctx.opt.adjustY)) {
           ctx.win.style.top = 0;
         } else {
-          var top = clientH - height - ctx.opt.adjustY;
+          var top = clH - height - ctx.opt.adjustY;
           ctx.win.style.top = top + 'px';
         }
       }
@@ -14893,8 +14893,8 @@ DebugJS.point.hint.move = function() {
   var area = DebugJS.point.hint.getArea();
   var el = area.el;
   if (!el) return;
-  var clientW = document.documentElement.clientWidth;
-  var clientH = document.documentElement.clientHeight;
+  var clW = document.documentElement.clientWidth;
+  var clH = document.documentElement.clientHeight;
   var ps = DebugJS.getElPosSize(el);
   var y = (ptr.y - ps.h - 2);
   if (y < 0) {
@@ -14911,16 +14911,16 @@ DebugJS.point.hint.move = function() {
   if ((y + ps.h) > ptr.y) {
     x = ptr.x + ptr.w;
   }
-  if ((x + ps.w) > clientW) {
-    if (ps.w < clientW) {
-      x = clientW - ps.w;
+  if ((x + ps.w) > clW) {
+    if (ps.w < clW) {
+      x = clW - ps.w;
     } else {
       x = 0;
     }
   }
-  if ((y + ps.h) > clientH) {
-    if (ps.h < clientH) {
-      y = clientH - ps.h;
+  if ((y + ps.h) > clH) {
+    if (ps.h < clH) {
+      y = clH - ps.h;
     } else {
       y = 0;
     }
@@ -15030,22 +15030,22 @@ DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg, top) {
   if ((ps.x < 0) || ((ps.x + ps.w) > document.documentElement.clientWidth)) {
     d.dstX = ps.x;
   }
-  var clientH = document.documentElement.clientHeight;
+  var clH = document.documentElement.clientHeight;
   var bodyH = document.body.clientHeight;
-  var absScrnBtmT = bodyH - clientH;
+  var absScrnBtmT = bodyH - clH;
   var absScrnBtmB = bodyH;
   var relTargetPosYinScreen = (ps.y + window.pageYOffset) - absScrnBtmT;
   var absTargetPosYinDoc = ps.y + window.pageYOffset;
-  var alignY = (top ? 0 : (clientH / 2));
+  var alignY = (top ? 0 : (clH / 2));
   if (top) {
     d.dstY = ps.y;
   } else if (ps.y < 0) {
-    if ((ps.y + window.pageYOffset) < (clientH / 2)) {
+    if ((ps.y + window.pageYOffset) < (clH / 2)) {
       d.dstY = window.pageYOffset * (-1);
     } else {
       d.dstY = ps.y - alignY;
     }
-  } else if ((ps.y + ps.h) > clientH) {
+  } else if ((ps.y + ps.h) > clH) {
     if ((absTargetPosYinDoc >= absScrnBtmT) && (absTargetPosYinDoc <= absScrnBtmB)) {
       d.dstY = absScrnBtmB - DebugJS.ctx.scrollPosY;
     } else {
