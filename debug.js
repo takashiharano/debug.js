@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906222136';
+  this.v = '201906230050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8414,9 +8414,15 @@ DebugJS.prototype = {
         return;
       }
     }
-    var rnd = DebugJS.getRandom(type, min, max);
-    DebugJS._log(rnd);
-    return rnd;
+    var r;
+    if ((type == DebugJS.RND_TYPE_NUM) && min && min.match(/\d+d$/)) {
+      var d = min.replace(/d/, '') | 0;
+      r = DebugJS.getRndNums(d);
+    } else {
+      r = DebugJS.getRandom(type, min, max);
+    }
+    DebugJS._log(r);
+    return r;
   },
 
   cmdRadixConv: function(v, echo) {
@@ -11554,7 +11560,6 @@ DebugJS.getElapsedTimeStr = function(t1, t2) {
 DebugJS.random = function(min, max) {
   return DebugJS.getRandom(DebugJS.RND_TYPE_NUM, min, max);
 };
-
 DebugJS.getRandom = function(type, min, max) {
   if (min === undefined) {
     if (type == DebugJS.RND_TYPE_NUM) {
@@ -11586,7 +11591,6 @@ DebugJS.getRandom = function(type, min, max) {
   }
   return fn(min, max);
 };
-
 DebugJS.getRndNum = function(min, max) {
   min = parseInt(min);
   max = parseInt(max);
@@ -11599,6 +11603,13 @@ DebugJS.getRndNum = function(min, max) {
   if (max > rndMax) max = rndMax;
   var rnd = parseInt(Math.random() * (max - min + 1)) + min;
   return rnd;
+};
+DebugJS.getRndNums = function(d) {
+  var n = '';
+  for (var i = 0; i < d; i++) {
+    n += DebugJS.getRndNum(0, 9);
+  }
+  return n;
 };
 
 DebugJS.SYM = [' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~'];

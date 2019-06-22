@@ -4784,8 +4784,28 @@ type: -d number
       -s string
 
 min: minimum number / length
-
 max: maximum number / length
+
+$ random
+-&gt; 0-2147483647
+
+$ random 4
+-&gt; 0-4
+
+$ random 1 4
+-&gt; 1-4
+
+$ random 4d
+-&gt; "0000"-"9999"
+
+$ random -s
+-&gt; Random string with 1-10 characters
+
+$ random -s 4
+-&gt; Random string with four characters
+
+$ random -s 1 4
+-&gt; Random string with 1-4 characters
 </pre>
     </td>
   </tr>
