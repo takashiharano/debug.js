@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906230050';
+  this.v = '201906240024';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11664,11 +11664,17 @@ DebugJS.getRndStr = function(min, max, tp, atbl) {
 };
 
 DebugJS.http = function(rq, cb) {
+  var data = null;
   if (!rq.method) rq.method = 'GET';
-  if ((rq.data == undefined) || (rq.data == '')) data = null;
   if (rq.async == undefined) rq.async = true;
   if (!rq.user) rq.user = '';
   if (!rq.pass) rq.pass = '';
+  if ((rq.data != undefined) && (rq.data != '')) {
+    data = rq.data;
+    if (data instanceof Object) {
+      data = DebugJS.http.buildParam(data);
+    }
+  }
   rq.method = rq.method.toUpperCase();
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
@@ -11688,7 +11694,7 @@ DebugJS.http = function(rq, cb) {
   if (rq.userAgent) {
     xhr.setRequestHeader('User-Agent', rq.userAgent);
   }
-  xhr.send(rq.data);
+  xhr.send(data);
   return xhr;
 };
 DebugJS.http.buildParam = function(p) {
