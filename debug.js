@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906240024';
+  this.v = '201906252141';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -318,6 +318,7 @@ var DebugJS = DebugJS || function() {
   this.sizeStatus = 0;
   this.ptDnTm = 0;
   this.ptOpTm = 0;
+  this.logDt = 0;
   this.logFilter = DebugJS.LOG_FLTR_ALL;
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
@@ -351,7 +352,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
-    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|dump|filter|html|load|preserve|suspend|lv'},
+    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|date|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -1985,7 +1986,13 @@ DebugJS.prototype = {
         }
         msg = '<span style=color:' + color + '>&gt;</span> ' + msg;
       }
-      var m = (((opt.showTimeStamp) && (data.type != DebugJS.LOG_TYPE_MLT)) ? (DebugJS.getTimeStr(data.time) + ' ' + msg) : msg);
+      var m = msg;
+      if (data.type != DebugJS.LOG_TYPE_MLT) {
+        if (opt.showTimeStamp) {
+          var tmfn = (ctx.logDt ? DebugJS.getDateTimeStr : DebugJS.getTimeStr);
+          m = tmfn(data.time) + ' ' + msg;
+        }
+      }
       if (style) {
         logs += lineNum + '<span style="' + style + '">' + m + '</span>\n';
       } else {
@@ -7842,6 +7849,7 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     var fn = {
       bufsize: ctx._cmdLogBufsize,
+      date: ctx._cmdLogDate,
       dump: ctx._cmdLogDump,
       filter: ctx._cmdLogFilter,
       html: ctx._cmdLogHtml,
@@ -7863,6 +7871,18 @@ DebugJS.prototype = {
       DebugJS.printUsage('log bufsize [size]');
     }
     return n;
+  },
+  _cmdLogDate: function(ctx, arg) {
+    var op = DebugJS.splitArgs(arg)[1];
+    if (op == 'on') {
+      ctx.logDt = 1;
+    } else if (op == 'off') {
+      ctx.logDt = 0;
+    } else {
+      DebugJS.printUsage('log date on|off');
+    }
+    ctx.printLogs();
+    return ctx.logDt;
   },
   _cmdLogDump: function(ctx, arg) {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
@@ -7894,10 +7914,9 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       ctx.setFilterTxtHtml(ctx, false);
     } else {
-      var st = ctx.fltrTxtHtml;
       DebugJS.printUsage('log html on|off');
-      return st;
     }
+    return ctx.fltrTxtHtml;
   },
   _cmdLogLoad: function(ctx, arg) {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
@@ -7924,13 +7943,12 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       ctx.setLogPreserve(ctx, false);
     } else {
-      var st = ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? true : false);
       if (echo) {
         DebugJS._log.res(st);
         DebugJS.printUsage('log preserve on|off');
       }
-      return st;
     }
+    return ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? true : false);
   },
   _cmdLogSuspend: function(ctx, arg) {
     var op = DebugJS.splitArgs(arg)[1];
@@ -7939,10 +7957,9 @@ DebugJS.prototype = {
     } else if (op == 'off') {
       DebugJS.ctx.resumeLog();
     } else {
-      var st = ((ctx.status & DebugJS.ST_LOG_SUSPEND) ? true : false);
       DebugJS.printUsage('log suspend on|off');
-      return st;
     }
+    return ((ctx.status & DebugJS.ST_LOG_SUSPEND) ? true : false);
   },
   _cmdLogLv: function(ctx, arg) {
     var a = DebugJS.delAllSP(DebugJS.getArgsFrom(arg, 1));
@@ -8072,12 +8089,11 @@ DebugJS.prototype = {
   cmdPin: function(arg, tbl) {
     var op = DebugJS.splitArgs(arg)[0];
     if ((op != 'on') && (op != 'off')) {
-      var st = ((DebugJS.ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? false : true);
       DebugJS.printUsage(tbl.help);
-      return st;
     } else {
       DebugJS.pin(op == 'on');
     }
+    return ((DebugJS.ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? false : true);
   },
 
   cmdPoint: function(arg, tbl, echo) {
@@ -8807,6 +8823,7 @@ DebugJS.prototype = {
     var args = DebugJS.splitCmdLine(arg, 4);
     var op = args[0];
     var test = DebugJS.test;
+    var st;
     switch (op) {
       case 'init':
         var nm = DebugJS.getOptVal(arg, 'name');
@@ -8827,14 +8844,14 @@ DebugJS.prototype = {
         DebugJS._log(test.getCountStr(c));
         break;
       case 'last':
-        var st = test.getLastResult();
+        st = test.getLastResult();
         DebugJS._log(test.getStyledStStr(st));
         return st;
       case 'result':
         DebugJS._log(test.result());
         break;
       case 'ttlresult':
-        var st = test.getTotalResult();
+        st = test.getTotalResult();
         DebugJS._log(test.getStyledStStr(st));
         return st;
       case 'status':

@@ -4352,6 +4352,14 @@ $ log bufsize 1000
 $ log bufsize
 -&gt; Show the current size
 
+<b>date:</b>
+Show date
+$ log date on
+-&gt; 1: 2019-06-25 21:45:00.000 Hello, world!
+
+$ log date off
+-&gt; 1: 21:45:00.000 Hello, world!
+
 <b>dump:</b>
 Export the log buffer in JSON format
 $ log dump
