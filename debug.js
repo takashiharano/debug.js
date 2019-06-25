@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906252141';
+  this.v = '201906252300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -272,6 +272,7 @@ var DebugJS = DebugJS || function() {
   this.fltrBtnInf = null;
   this.fltrBtnWrn = null;
   this.fltrBtnErr = null;
+  this.dtBtn = null;
   this.fltrInputLabel = null;
   this.fltrInput = null;
   this.fltrText = '';
@@ -1571,6 +1572,7 @@ DebugJS.prototype = {
   },
 
   createLogFilter: function(ctx) {
+    if (ctx.opt.showTimeStamp) ctx.dtBtn = ctx.createLogFltBtn2(ctx, '(DATE)', 'dtBtn', ctx.logDt, 'logDt', ctx.toggleLogDt);
     ctx.fltrBtnAll = ctx.createLogFltBtn('ALL', 'fltrBtnAll', 'btnColor');
     ctx.fltrBtnStd = ctx.createLogFltBtn('LOG', 'fltrBtnStd', 'fontColor');
     ctx.fltrBtnErr = ctx.createLogFltBtn('ERR', 'fltrBtnErr', 'logColorE');
@@ -1585,7 +1587,7 @@ DebugJS.prototype = {
     ctx.fltrInputLabel.innerText = 'Search:';
     ctx.logHeaderPanel.appendChild(ctx.fltrInputLabel);
 
-    var fltrW = 'calc(100% - 32.3em)';
+    var fltrW = 'calc(100% - 36em)';
     ctx.fltrInput = DebugJS.ui.addTextInput(ctx.logHeaderPanel, fltrW, null, ctx.opt.sysInfoColor, ctx.fltrText, DebugJS.ctx.onchangeLogFilter);
     ctx.setStyle(ctx.fltrInput, 'position', 'relative');
     ctx.setStyle(ctx.fltrInput, 'top', '-2px');
@@ -1874,15 +1876,11 @@ DebugJS.prototype = {
   },
 
   updatePinBtn: function(ctx) {
-    if (ctx.pinBtn) {
-      ctx.setStyle(ctx.pinBtn, 'color', (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? DebugJS.COLOR_INACT : DebugJS.PIN_BTN_COLOR);
-    }
+    if (ctx.pinBtn) ctx.setStyle(ctx.pinBtn, 'color', (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? DebugJS.COLOR_INACT : DebugJS.PIN_BTN_COLOR);
   },
 
   updateBtnActive: function(btn, st, activeColor) {
-    if (btn) {
-      DebugJS.ctx.setStyle(btn, 'color', (DebugJS.ctx.status & st) ? activeColor : DebugJS.COLOR_INACT);
-    }
+    if (btn) DebugJS.ctx.setStyle(btn, 'color', (DebugJS.ctx.status & st) ? activeColor : DebugJS.COLOR_INACT);
   },
 
   updateWinCtrlBtnPanel: function() {
@@ -1914,9 +1912,7 @@ DebugJS.prototype = {
     var lineCnt = cnt - len;
     var filter = ctx.fltrText;
     var fltCase = ctx.fltrCase;
-    if (!fltCase) {
-      filter = filter.toLowerCase();
-    }
+    if (!fltCase) filter = filter.toLowerCase();
     var logs = '';
     for (var i = 0; i < len; i++) {
       lineCnt++;
@@ -2028,6 +2024,15 @@ DebugJS.prototype = {
   clearLog: function() {
     DebugJS.ctx.logBuf.clear();
     DebugJS.ctx.printLogs();
+  },
+
+  toggleLogDt: function() {
+    DebugJS.ctx.setLogDt(DebugJS.ctx, DebugJS.ctx.logDt ? 0 : 1);
+  },
+  setLogDt: function(ctx, f) {
+    ctx.logDt = f;
+    ctx.updateBtnActive(ctx.dtBtn, ctx.logDt, DebugJS.COLOR_ACTIVE);
+    ctx.printLogs();
   },
 
   toggleLogFilter: function(fltr) {
@@ -7875,9 +7880,9 @@ DebugJS.prototype = {
   _cmdLogDate: function(ctx, arg) {
     var op = DebugJS.splitArgs(arg)[1];
     if (op == 'on') {
-      ctx.logDt = 1;
+      ctx.setLogDt(ctx, 1);
     } else if (op == 'off') {
-      ctx.logDt = 0;
+      ctx.setLogDt(ctx, 0);
     } else {
       DebugJS.printUsage('log date on|off');
     }
