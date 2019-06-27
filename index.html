@@ -4640,7 +4640,7 @@ $ point keyup -keyCode 65 -code -code KeyA -key a -s<span class="annotation">shi
 -&gt; Dispatch the keydown event to the current position
 
 $ point text "abc123" -speed 10<span class="annotation">(opt)</span> -step 2<span class="annotation">(opt)</span> -start 1<span class="annotation">(opt)</span> -end 6<span class="annotation">(opt)</span>
-<span class="annotation">  speed: input speed in millis(default=30)
+<span class="annotation">  speed: input speed in millis(default=30 / 50-500=50ms to 500ms in random)
   step : number of characters to input at a time (default=1)
   start: animation sequence end position
   end  : animation sequence end position</span>
@@ -5111,7 +5111,7 @@ $ text #text1 "abc 123" -speed 100-200<span class="annotation">(opt)</span>
 $ text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 1<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
 $ text #text1 "abc 123" -speed 100<span class="annotation">(opt)</span> -start 2<span class="annotation">(opt)</span> -end 3<span class="annotation">(opt)</span>
 $ text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
-<span class="annotation">  speed: input speed in millis(default=30)
+<span class="annotation">  speed: input speed in millis(default=30 / 50-500=50ms to 500ms in random)
   step : number of characters to set at a time (default=1)
   start: animation sequence start position
   end  : animation sequence end position</span>
