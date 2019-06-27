@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906252300';
+  this.v = '201906272100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11616,15 +11616,7 @@ DebugJS.getRandom = function(type, min, max) {
 DebugJS.getRndNum = function(min, max) {
   min = parseInt(min);
   max = parseInt(max);
-  var minDigit = (min + '').length;
-  var maxDigit = (max + '').length;
-  var digit = ((Math.random() * (maxDigit - minDigit + 1)) | 0) + minDigit;
-  var rndMin = (digit == 1) ? 0 : Math.pow(10, (digit - 1));
-  var rndMax = Math.pow(10, digit) - 1;
-  if (min < rndMin) min = rndMin;
-  if (max > rndMax) max = rndMax;
-  var rnd = parseInt(Math.random() * (max - min + 1)) + min;
-  return rnd;
+  return parseInt(Math.random() * (max - min + 1)) + min;
 };
 DebugJS.getRndNums = function(d) {
   var n = '';
