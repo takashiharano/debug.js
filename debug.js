@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906282315';
+  this.v = '201906290022';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -344,7 +344,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [--user user:pass] url [data]'},
+    {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
@@ -9326,7 +9326,7 @@ DebugJS.prototype = {
     var data = a[1];
     var user = '';
     var pass = '';
-    if (url == '--user') {
+    if (url == '-u') {
       var parts = DebugJS.splitCmdLineInTwo(data);
       var auth = parts[0];
       var auths = auth.split(':');
@@ -11203,7 +11203,7 @@ DebugJS.encodeB64 = function(s) {
 };
 DebugJS.decodeB64 = function(s, q) {
   var r = '';
-  if (!window.btoa) return r;
+  if (!window.atob) return r;
   try {
     r = DebugJS.decodeBase64(s);
   } catch (e) {
@@ -11681,8 +11681,6 @@ DebugJS.http = function(rq, cb) {
   var data = null;
   if (!rq.method) rq.method = 'GET';
   if (rq.async == undefined) rq.async = true;
-  if (!rq.user) rq.user = '';
-  if (!rq.pass) rq.pass = '';
   if ((rq.data != undefined) && (rq.data != '')) {
     data = rq.data;
     if (data instanceof Object) {
@@ -11696,7 +11694,7 @@ DebugJS.http = function(rq, cb) {
       if (cb) cb(xhr, rq);
     }
   };
-  xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
+  xhr.open(rq.method, rq.url, rq.async);
   if (rq.contentType) {
     xhr.setRequestHeader('Content-Type', rq.contentType);
   } else {
@@ -11707,6 +11705,10 @@ DebugJS.http = function(rq, cb) {
   }
   if (rq.userAgent) {
     xhr.setRequestHeader('User-Agent', rq.userAgent);
+  }
+  if (rq.user && rq.pass) {
+    var c = DebugJS.encodeB64(rq.user + ':' + rq.pass);
+    xhr.setRequestHeader('Authorization', 'Basic ' + c);
   }
   xhr.send(data);
   return xhr;
