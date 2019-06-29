@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906290022';
+  this.v = '201906292310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11694,7 +11694,7 @@ DebugJS.http = function(rq, cb) {
       if (cb) cb(xhr, rq);
     }
   };
-  xhr.open(rq.method, rq.url, rq.async);
+  xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
   if (rq.contentType) {
     xhr.setRequestHeader('Content-Type', rq.contentType);
   } else {
