@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201906292310';
+  this.v = '201907010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9326,6 +9326,7 @@ DebugJS.prototype = {
     var data = a[1];
     var user = '';
     var pass = '';
+    var headers = {};
     if (url == '-u') {
       var parts = DebugJS.splitCmdLineInTwo(data);
       var auth = parts[0];
@@ -9336,6 +9337,8 @@ DebugJS.prototype = {
         parts = DebugJS.splitCmdLineInTwo(parts[1]);
         url = parts[0];
         data = parts[1];
+        var c = DebugJS.encodeB64(user + ':' + pass);
+        headers['Authorization'] = 'Basic ' + c;
       }
     }
     data = DebugJS.encodeURIString(data);
@@ -9353,8 +9356,9 @@ DebugJS.prototype = {
       async: false,
       cache: false,
       user: user,
-      pass: pass
-      //userAgent: 'Mozilla/5.0'
+      pass: pass,
+      headers: headers,
+      withCredentials: true
     };
     var r;
     DebugJS.http.echo = echo;
@@ -11703,12 +11707,11 @@ DebugJS.http = function(rq, cb) {
   if (!rq.cache) {
     xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
   }
-  if (rq.userAgent) {
-    xhr.setRequestHeader('User-Agent', rq.userAgent);
+  for (var key in rq.headers) {
+    xhr.setRequestHeader(key, rq.headers[key]);
   }
-  if (rq.user && rq.pass) {
-    var c = DebugJS.encodeB64(rq.user + ':' + rq.pass);
-    xhr.setRequestHeader('Authorization', 'Basic ' + c);
+  if (rq.withCredentials) {
+    xhr.withCredentials = true;
   }
   xhr.send(data);
   return xhr;

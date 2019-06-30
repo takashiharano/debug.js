@@ -684,10 +684,11 @@ function httpDemo() {
   var user = document.getElementById('http-user-text').value;
   var pass = document.getElementById('http-pass-text').value;
   var contentType = document.getElementById('http-contenttype-text').value;
-  var userAgent = document.getElementById('http-ua-text').value;
+  var withCredentials = document.getElementById('http-withcredentials-text').value;
 
   async = ((async == 'true') ? true : false);
   cache = ((cache == 'true') ? true : false);
+  withCredentials = ((withCredentials == 'true') ? true : false);
 
   var request = {
     url: url,
@@ -698,7 +699,7 @@ function httpDemo() {
     user: user,
     pass: pass,
     contentType: contentType,
-    userAgent: userAgent
+    withCredentials: withCredentials
   };
 
   dbg.http(request, httpCallback);
@@ -3354,7 +3355,12 @@ dbg.getKeys(obj);
   user: '<input type="text" id="http-user-text" value="" class="inline-text-input" style="width:200px;">',
   pass: '<input type="text" id="http-pass-text" value="" class="inline-text-input" style="width:200px;">',
   contentType: '<input type="text" id="http-contenttype-text" value="" class="inline-text-input" style="width:200px;">',
-  userAgent: '<input type="text" id="http-ua-text" value="" class="inline-text-input" style="width:380px;">'
+  withCredentials: <input type="text" id="http-withcredentials-text" value="false" class="inline-text-input" style="width:60px;">,
+  headers: {
+    key1: value1,
+    key2: value2,
+    ...
+  }
 };
 
 dbg.http(request, callback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
