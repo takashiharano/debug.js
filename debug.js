@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201907120000';
+  this.v = '201907120035';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7488,7 +7488,6 @@ DebugJS.prototype = {
 
   cmdGoto: function(arg, tbl) {
     if (DebugJS.bat.isCmdExecutable()) {
-      var lbl = DebugJS.splitArgs(arg)[0];
       DebugJS.ctx._cmdJump(DebugJS.ctx, arg, false, 'label');
     }
   },
@@ -9113,12 +9112,12 @@ DebugJS.prototype = {
       DebugJS.ctx.CMD_ALIAS = {};
       return;
     }
-    var tbl = DebugJS.ctx.CMD_ALIAS;
+    var map = DebugJS.ctx.CMD_ALIAS;
     for (var i = 0; i < nm.length; i++) {
-      if (tbl[nm[i]] == undefined) {
+      if (map[nm[i]] == undefined) {
         DebugJS._log(nm[i] + ': not found');
       } else {
-        delete tbl[nm[i]];
+        delete map[nm[i]];
       }
     }
   },
