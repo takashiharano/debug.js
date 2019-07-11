@@ -1,0 +1,20 @@
+{
+  "extends": ["eslint:recommended"],
+  "plugins": [],
+  "parserOptions": {},
+  "env": {
+    "browser": true
+  },
+  "globals": {
+    "Set": false,
+    "Uint8Array": false,
+    "ArrayBuffer": false,
+    "jQuery": false
+  },
+  "rules": {
+    "no-empty": "off",
+    "no-cond-assign": "off",
+    "no-constant-condition": "off",
+    "no-fallthrough": "off"
+  }
+}
