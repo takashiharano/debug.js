@@ -3790,6 +3790,7 @@ c<span class="nl">&#x2193;</span><span class="nl2">LF</span>
 </table>
 <br>
 
+<a name="commands"></a>
 <div class="caption" id="commands">// Commands</div>
 <table class="desc-table">
   <tr>
@@ -5309,6 +5310,7 @@ $ zoom 1
 </table>
 <br>
 
+<a name="calculation"></a>
 <div class="caption" id="calculation">// Calculation / Conversion</div>
 The debugger can perform the following calculation/conversion on the command-line.
 <table class="desc-table">
@@ -5459,6 +5461,7 @@ $ U+6F22 U+5B57
 </table>
 <br>
 
+<a name="bat"></a>
 <div class="caption" id="bat-execution">// BAT Script Execution</div>
 BAT script is an original script language in debug.js.<br>
 It consists of a series of commands to be executed by the command-line interpreter.<br>
@@ -5771,6 +5774,7 @@ $ set batstop error|test
 </table>
 <br>
 
+<a name="features"></a>
 <div class="caption" id="features">// Features</div>
 <table class="desc-table">
   <tr>
@@ -5847,6 +5851,7 @@ $ set batstop error|test
 </table>
 <br>
 
+<a name="options"></a>
 <div class="caption" id="options">// Options</div>
 If you want to change the debugger settings, explicitly call for initialization function in advance.
 <pre class="code">
@@ -6328,6 +6333,7 @@ Unlock: [ESC] -> [Ctrl] -> lockCode -> [Ctrl]
 </table>
 <br>
 
+<a name="extension"></a>
 <div class="caption" id="extension">// Extension</div>
 You can define your own commands and panels like below.<br>
 <br>
@@ -6407,12 +6413,14 @@ Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/e
 and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-panel.js" target="_blank" rel="noopener">extension-sample/debug-x-panel.js</a> for details.
 <br><br>
 
+<a name="lazyload"></a>
 <div class="caption" id="lazyload">// Lazy Load</div>
 Execute the following code from F12 console.<br>
 <div class="note">Note that it depends on <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP" target="_blank" rel="noopener">Content-Security-Policy</a> header.</div>
 <textarea class="code emphasis" style="height:12px;font-size:10px;resize:none;margin-bottom:20px;" readonly>s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</textarea>
 <br>
 
+<a name="browser"></a>
 <div class="caption">// Browser Support</div>
 <table class="desc-table">
   <tr>
@@ -6443,6 +6451,7 @@ Execute the following code from F12 console.<br>
 
 <div id="debug" style="margin:20px 0 10px 0;"></div>
 
+<a name="demo"></a>
 <div class="caption" id="demo">// DEMO</div>
 
 <!-- ********************************************************************** -->
@@ -6615,6 +6624,7 @@ console.timeEnd('timer3');<br>
 <br>
 
 <!-- ********************************************************************** -->
+<a name="autotest"></a>
 <div class="caption" id="auto-test-demo">// AUTOMATED TESTING DEMO</div>
 With a pseudo mouse pointer, the library can perform automated web page manipulation!<br>
 <span style="font-size:12px;font-family:Consolas;font-weight:bold;">&lt;Sample Script&gt;</span><br>
