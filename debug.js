@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201907120035';
+  this.v = '201907212121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11540,10 +11540,8 @@ DebugJS.subTime = function(tL, tR, byTheDay) {
   if ((res < 0) && (byTheDay)) {
     res *= (-1);
     days = ((res / A_DAY) | 0);
-    if (tL == 0) {
-      days = days + ((res % A_DAY != 0) ? 1 : 0);
-    } else {
-      days = days + ((res < A_DAY) ? 1 : 1);
+    days = days + ((res % A_DAY != 0) ? 1 : 0);
+    if (tL != 0) {
       if ((res % A_DAY == 0) && (res != A_DAY)) {
         days += 1;
       }
