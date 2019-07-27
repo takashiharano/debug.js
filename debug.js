@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201907212121';
+  this.v = '201907271555';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -364,7 +364,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
-    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-d|-s] [min] [max]'},
+    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-d|-s] [min[d]] [max]'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
@@ -8413,7 +8413,7 @@ DebugJS.prototype = {
     DebugJS._log.mlt(s);
   },
 
-  cmdRandom: function(arg, tbl) {
+  cmdRandom: function(arg, tbl, echo) {
     var a = DebugJS.splitArgs(arg);
     var type = a[0] || DebugJS.RND_TYPE_NUM;
     var min, max;
@@ -8434,13 +8434,13 @@ DebugJS.prototype = {
       }
     }
     var r;
-    if ((type == DebugJS.RND_TYPE_NUM) && min && min.match(/\d+d$/)) {
+    if ((type == DebugJS.RND_TYPE_NUM) && min && min.match(/^\d+d$/)) {
       var d = min.replace(/d/, '') | 0;
       r = DebugJS.getRndNums(d);
     } else {
       r = DebugJS.getRandom(type, min, max);
     }
-    DebugJS._log(r);
+    if (echo) DebugJS._log.res(r);
     return r;
   },
 
