@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201907271555';
+  this.v = '201907272045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5689,10 +5689,11 @@ DebugJS.prototype = {
     var a = DebugJS.crlf2lf(t).split('\n');
     var s = '';
     for (var i = 0; i < a.length; i++) {
-      if (a[i].match(/[^{]*({.*}).*/)) {
+      var pos = DebugJS.getJsonPos(a[i]);
+      if (pos.open != -1) {
         if (s) s += '\n\n';
         s += '<span style="color:#0ff">------------------------------------------------------------</span>\n';
-        s += ctx._fmtJson(ctx, a[i]);
+        s += ctx._fmtJson(ctx, a[i], pos);
       }
     }
     if (s) {
@@ -5701,8 +5702,9 @@ DebugJS.prototype = {
       ctx.scrollLogBtm(ctx);
     }
   },
-  _fmtJson: function(ctx, t) {
-    var j = t.replace(/[^{]*({.*}).*/, '$1');
+  _fmtJson: function(ctx, t, pos) {
+    if (pos.open == -1) return '';
+    var j = t.substr(pos.open, pos.close - (pos.open - 1));
     var s;
     try {
       s = DebugJS.escHtml(DebugJS.formatJSON(j));
@@ -9779,6 +9781,30 @@ DebugJS.getQuotedStr = function(str) {
     }
   }
   return r;
+};
+
+DebugJS.getJsonPos = function(s) {
+  var pos = {
+    open: -1,
+    close: -1
+  };
+  var closeCh = '';
+  for (var i = 0; i < s.length; i++) {
+    if (pos.open == -1) {
+      if (s[i] == '{') {
+        pos.open = i;
+        closeCh = '}';
+      } else if (s[i] == '[') {
+        pos.open = i;
+        closeCh = ']';
+      }
+    } else {
+      if (s[i] == closeCh) {
+        pos.close = i;
+      }
+    }
+  }
+  return pos;
 };
 
 DebugJS.encodeEsc = function(s) {
