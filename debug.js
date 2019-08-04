@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201907272045';
+  this.v = '201908042005';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16314,7 +16314,11 @@ DebugJS.onError = function(e) {
   var msg;
   DebugJS.ctx.errStatus |= DebugJS.ERR_ST_SCRIPT;
   if (e.error && e.error.stack) {
-    msg = e.error.stack;
+    var stk = e.error.stack;
+    msg = stk;
+    if (!stk.match(/\n/)) {
+      msg += '\n' + e.filename + '(' + e.lineno + ':' + e.colno + ')';
+    }
   } else {
     if ((e.message == undefined) && (e.filename == undefined)) {
       if (e.target && e.target.outerHTML) {
