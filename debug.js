@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908042005';
+  this.v = '201908182010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16,10 +16,11 @@ var DebugJS = DebugJS || function() {
       alt: undefined,
       meta: undefined
     },
-    popupOnError: {
+    autoPopup: {
       scriptError: true,
       loadError: true,
-      errorLog: true
+      error: true,
+      fatal: true
     },
     lines: 18,
     bufsize: 300,
@@ -36,6 +37,7 @@ var DebugJS = DebugJS || function() {
     logColorI: '#9ef',
     logColorW: '#eee000',
     logColorE: '#f88',
+    logColorF: '#f80',
     logColorS: '#fff',
     clockColor: '#8f0',
     timerColor: '#9ef',
@@ -272,6 +274,7 @@ var DebugJS = DebugJS || function() {
   this.fltrBtnInf = null;
   this.fltrBtnWrn = null;
   this.fltrBtnErr = null;
+  this.fltrBtnFtl = null;
   this.dtBtn = null;
   this.fltrInputLabel = null;
   this.fltrInput = null;
@@ -286,7 +289,7 @@ var DebugJS = DebugJS || function() {
   this.logPanelHeightAdjust = '';
   this.cmdPanel = null;
   this.cmdLine = null;
-  this.stopErrCb = false;
+  this.preventErrCb = false;
   this.cmdHistoryBuf = null;
   this.CMD_HISTORY_MAX = this.DEFAULT_OPTIONS.cmdHistoryMax;
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
@@ -536,23 +539,26 @@ DebugJS.LOG_FLTR_DBG = 0x4;
 DebugJS.LOG_FLTR_INF = 0x8;
 DebugJS.LOG_FLTR_WRN = 0x10;
 DebugJS.LOG_FLTR_ERR = 0x20;
-DebugJS.LOG_FLTR_ALL = DebugJS.LOG_FLTR_LOG | DebugJS.LOG_FLTR_DBG | DebugJS.LOG_FLTR_INF | DebugJS.LOG_FLTR_WRN | DebugJS.LOG_FLTR_ERR;
+DebugJS.LOG_FLTR_FTL = 0x40;
+DebugJS.LOG_FLTR_ALL = DebugJS.LOG_FLTR_LOG | DebugJS.LOG_FLTR_DBG | DebugJS.LOG_FLTR_INF | DebugJS.LOG_FLTR_WRN | DebugJS.LOG_FLTR_ERR | DebugJS.LOG_FLTR_FTL;
 DebugJS.LOG_TYPE_LOG = 0x1;
 DebugJS.LOG_TYPE_VRB = 0x2;
 DebugJS.LOG_TYPE_DBG = 0x4;
 DebugJS.LOG_TYPE_INF = 0x8;
 DebugJS.LOG_TYPE_WRN = 0x10;
 DebugJS.LOG_TYPE_ERR = 0x20;
-DebugJS.LOG_TYPE_SYS = 0x40;
-DebugJS.LOG_TYPE_MLT = 0x80;
-DebugJS.LOG_TYPE_RES = 0x100;
-DebugJS.LOG_TYPE_ERES = 0x200;
+DebugJS.LOG_TYPE_FTL = 0x40;
+DebugJS.LOG_TYPE_SYS = 0x80;
+DebugJS.LOG_TYPE_MLT = 0x100;
+DebugJS.LOG_TYPE_RES = 0x200;
+DebugJS.LOG_TYPE_ERES = 0x400;
 DebugJS.ELMINFO_ST_SELECT = 0x1;
 DebugJS.ELMINFO_ST_HIGHLIGHT = 0x2;
 DebugJS.ERR_ST_NONE = 0;
 DebugJS.ERR_ST_SCRIPT = 0x1;
 DebugJS.ERR_ST_LOAD = 0x2;
 DebugJS.ERR_ST_LOG = 0x4;
+DebugJS.ERR_ST_LOG_F = 0x8;
 DebugJS.TOOLS_FNC_TIMER = 0x1;
 DebugJS.TOOLS_FNC_TEXT = 0x2;
 DebugJS.TOOLS_FNC_HTML = 0x4;
@@ -1206,9 +1212,11 @@ DebugJS.prototype = {
     if (ctx.opt.visible || (ctx.opt.target != null)) {
       ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     } else if (ctx.errStatus) {
-      if (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
-          ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
-          ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG))) {
+      var ap = ctx.opt.autoPopup;
+      if (((ap.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
+          ((ap.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
+          ((ap.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG)) ||
+          ((ap.fatal) && (ctx.errStatus & DebugJS.ERR_ST_LOG_F))) {
         ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
         ctx.errStatus = DebugJS.ERR_ST_NONE;
       }
@@ -1573,13 +1581,14 @@ DebugJS.prototype = {
 
   createLogFilter: function(ctx) {
     if (ctx.opt.showTimeStamp) ctx.dtBtn = ctx.createLogFltBtn2(ctx, '(DATE)', 'dtBtn', ctx.logDt, 'logDt', ctx.toggleLogDt);
-    ctx.fltrBtnAll = ctx.createLogFltBtn('ALL', 'fltrBtnAll', 'btnColor');
-    ctx.fltrBtnStd = ctx.createLogFltBtn('LOG', 'fltrBtnStd', 'fontColor');
-    ctx.fltrBtnErr = ctx.createLogFltBtn('ERR', 'fltrBtnErr', 'logColorE');
-    ctx.fltrBtnWrn = ctx.createLogFltBtn('WRN', 'fltrBtnWrn', 'logColorW');
-    ctx.fltrBtnInf = ctx.createLogFltBtn('INF', 'fltrBtnInf', 'logColorI');
-    ctx.fltrBtnDbg = ctx.createLogFltBtn('DBG', 'fltrBtnDbg', 'logColorD');
-    ctx.fltrBtnVrb = ctx.createLogFltBtn('VRB', 'fltrBtnVrb', 'logColorV');
+    ctx.fltrBtnAll = ctx.createLogFltBtn('ALL', 'ALL', 'fltrBtnAll', 'btnColor');
+    ctx.fltrBtnStd = ctx.createLogFltBtn('L', 'LOG', 'fltrBtnStd', 'fontColor');
+    ctx.fltrBtnVrb = ctx.createLogFltBtn('V', 'VRB', 'fltrBtnVrb', 'logColorV');
+    ctx.fltrBtnDbg = ctx.createLogFltBtn('D', 'DBG', 'fltrBtnDbg', 'logColorD');
+    ctx.fltrBtnInf = ctx.createLogFltBtn('I', 'INF', 'fltrBtnInf', 'logColorI');
+    ctx.fltrBtnWrn = ctx.createLogFltBtn('W', 'WRN', 'fltrBtnWrn', 'logColorW');
+    ctx.fltrBtnErr = ctx.createLogFltBtn('E', 'ERR', 'fltrBtnErr', 'logColorE');
+    ctx.fltrBtnFtl = ctx.createLogFltBtn('F', 'FTL', 'fltrBtnFtl', 'logColorF');
 
     ctx.fltrInputLabel = document.createElement('span');
     ctx.fltrInputLabel.style.marginLeft = '4px';
@@ -1587,7 +1596,7 @@ DebugJS.prototype = {
     ctx.fltrInputLabel.innerText = 'Search:';
     ctx.logHeaderPanel.appendChild(ctx.fltrInputLabel);
 
-    var fltrW = 'calc(100% - 36em)';
+    var fltrW = 'calc(100% - 31em)';
     ctx.fltrInput = DebugJS.ui.addTextInput(ctx.logHeaderPanel, fltrW, null, ctx.opt.sysInfoColor, ctx.fltrText, DebugJS.ctx.onchangeLogFilter);
     ctx.setStyle(ctx.fltrInput, 'position', 'relative');
     ctx.setStyle(ctx.fltrInput, 'top', '-2px');
@@ -1598,11 +1607,10 @@ DebugJS.prototype = {
     ctx.fltrTxtHtmlBtn = ctx.createLogFltBtn2(ctx, '</>', 'fltrTxtHtmlBtn', ctx.fltrTxtHtml, 'fltrTxtHtml', ctx.toggleFilterTxtHtml);
   },
 
-  createLogFltBtn: function(type, btnObj, color) {
+  createLogFltBtn: function(lbl, type, btnObj, color) {
     var ctx = DebugJS.ctx;
-    var lbl = '[' + type + ']';
     var fn = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FLTR_' + type + ');');
-    var btn = DebugJS.ui.addBtn(ctx.logHeaderPanel, lbl, fn);
+    var btn = DebugJS.ui.addBtn(ctx.logHeaderPanel, '[' + lbl + ']', fn);
     btn.style.marginLeft = '2px';
     btn.onmouseover = new Function('DebugJS.ctx.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
     btn.onmouseout = ctx.updateLogFilterBtns;
@@ -1932,6 +1940,10 @@ DebugJS.prototype = {
           if (!(ctx.logFilter & DebugJS.LOG_FLTR_ERR)) continue;
           style = 'color:' + opt.logColorE;
           break;
+        case DebugJS.LOG_TYPE_FTL:
+          if (!(ctx.logFilter & DebugJS.LOG_FLTR_FTL)) continue;
+          style = 'color:' + opt.logColorF;
+          break;
         case DebugJS.LOG_TYPE_WRN:
           if (!(ctx.logFilter & DebugJS.LOG_TYPE_WRN)) continue;
           style = 'color:' + opt.logColorW;
@@ -2071,6 +2083,7 @@ DebugJS.prototype = {
     var fltr = ctx.logFilter;
     ctx.setStyle(ctx.fltrBtnAll, 'color', ((fltr & ~DebugJS.LOG_FLTR_VRB) == DebugJS.LOG_FLTR_ALL) ? opt.btnColor : DebugJS.COLOR_INACT);
     ctx.setStyle(ctx.fltrBtnStd, 'color', (fltr & DebugJS.LOG_FLTR_LOG) ? opt.fontColor : DebugJS.COLOR_INACT);
+    ctx.setStyle(ctx.fltrBtnFtl, 'color', (fltr & DebugJS.LOG_FLTR_FTL) ? opt.logColorF : DebugJS.COLOR_INACT);
     ctx.setStyle(ctx.fltrBtnErr, 'color', (fltr & DebugJS.LOG_FLTR_ERR) ? opt.logColorE : DebugJS.COLOR_INACT);
     ctx.setStyle(ctx.fltrBtnWrn, 'color', (fltr & DebugJS.LOG_FLTR_WRN) ? opt.logColorW : DebugJS.COLOR_INACT);
     ctx.setStyle(ctx.fltrBtnInf, 'color', (fltr & DebugJS.LOG_FLTR_INF) ? opt.logColorI : DebugJS.COLOR_INACT);
@@ -2670,9 +2683,9 @@ DebugJS.prototype = {
       case 13: // Enter
         if (DebugJS.cmd.hasFocus()) {
           ctx.startLogScrolling();
-          ctx.stopErrCb = true;
+          ctx.preventErrCb = true;
           ctx.execCmd(ctx);
-          ctx.stopErrCb = false;
+          ctx.preventErrCb = false;
           e.preventDefault();
         }
         break;
@@ -3304,10 +3317,12 @@ DebugJS.prototype = {
 
   showDbgWinOnError: function(ctx) {
     if ((ctx.status & DebugJS.ST_INITIALIZED) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
+      var ap = ctx.opt.autoPopup;
       if ((ctx.errStatus &&
-           (((ctx.opt.popupOnError.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
-           ((ctx.opt.popupOnError.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
-           ((ctx.opt.popupOnError.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG)))) ||
+           (((ap.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
+           ((ap.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
+           ((ap.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG)) ||
+           ((ap.fatal) && (ctx.errStatus & DebugJS.ERR_ST_LOG_F)))) ||
           ((ctx.status & DebugJS.ST_BAT_RUNNING) && (DebugJS.bat.hasBatStopCond('error')) && (DebugJS.bat.ctrl.stopReq))) {
         ctx.showDbgWin();
         ctx.errStatus = DebugJS.ERR_ST_NONE;
@@ -5622,7 +5637,7 @@ DebugJS.prototype = {
   onDropOnFileVwr: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
-    ctx.stopErrCb = true;
+    ctx.preventErrCb = true;
     try {
       var d = e.dataTransfer.getData('text');
       if (d) {
@@ -5638,12 +5653,12 @@ DebugJS.prototype = {
         ctx.handleDroppedFile(ctx, e, ctx.fileVwrMode, null);
       }
     } catch (e) {DebugJS._log.e(e);}
-    ctx.stopErrCb = false;
+    ctx.preventErrCb = false;
   },
   onDropOnFileVwrTxt: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
-    ctx.stopErrCb = true;
+    ctx.preventErrCb = true;
     try {
       var d = e.dataTransfer.getData('text');
       if (d) {
@@ -5652,12 +5667,12 @@ DebugJS.prototype = {
         ctx.handleDroppedFile(ctx, e, ctx.fileVwrMode, null);
       }
     } catch (e) {DebugJS._log.e(e);}
-    ctx.stopErrCb = false;
+    ctx.preventErrCb = false;
   },
   onDropOnLogPanel: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
-    ctx.stopErrCb = true;
+    ctx.preventErrCb = true;
     try {
       if (!DebugJS.callEvtListeners('drop', e)) return;
       var d = e.dataTransfer.getData('text');
@@ -5668,7 +5683,7 @@ DebugJS.prototype = {
         ctx.handleDroppedFile(ctx, e, 'b64', ctx.onFileLoadedAuto);
       }
     } catch (e) {DebugJS._log.e(e);}
-    ctx.stopErrCb = false;
+    ctx.preventErrCb = false;
   },
   onTxtDrop: function(ctx, t) {
     if (DebugJS.isBat(t)) {
@@ -7970,7 +7985,7 @@ DebugJS.prototype = {
     var a = DebugJS.delAllSP(DebugJS.getArgsFrom(arg, 1));
     var lv = a.split('|');
     if (lv[0] == '') {
-      DebugJS.printUsage('log lv LOG|VRB|DBG|INF|WRN|ERR|ALL|NONE');
+      DebugJS.printUsage('log lv LOG|VRB|DBG|INF|WRN|ERR|FTL|ALL|NONE');
       return;
     }
     var FLT = {
@@ -7980,6 +7995,7 @@ DebugJS.prototype = {
       INF: DebugJS.LOG_FLTR_INF,
       WRN: DebugJS.LOG_FLTR_WRN,
       ERR: DebugJS.LOG_FLTR_ERR,
+      FTL: DebugJS.LOG_FLTR_FTL,
       ALL: DebugJS.LOG_FLTR_ALL
     };
     ctx.logFilter = 0;
@@ -12191,20 +12207,23 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
     } else {
       var lv = 'LOG';
       switch (type) {
-        case DebugJS.LOG_TYPE_ERR:
-          lv = 'ERR';
-          break;
-        case DebugJS.LOG_TYPE_WRN:
-          lv = 'WRN';
-          break;
-        case DebugJS.LOG_TYPE_INF:
-          lv = 'INF';
+        case DebugJS.LOG_TYPE_VRB:
+          lv = 'VRB';
           break;
         case DebugJS.LOG_TYPE_DBG:
           lv = 'DBG';
           break;
-        case DebugJS.LOG_TYPE_VRB:
-          lv = 'VRB';
+        case DebugJS.LOG_TYPE_INF:
+          lv = 'INF';
+          break;
+        case DebugJS.LOG_TYPE_WRN:
+          lv = 'WRN';
+          break;
+        case DebugJS.LOG_TYPE_ERR:
+          lv = 'ERR';
+          break;
+        case DebugJS.LOG_TYPE_FTL:
+          lv = 'FTL';
           break;
         case DebugJS.LOG_TYPE_SYS:
           lv = 'SYS';
@@ -12519,27 +12538,33 @@ DebugJS._log = function(m) {
     DebugJS._log.out(m, DebugJS.LOG_TYPE_LOG);
   }
 };
-DebugJS._log.e = function(m) {
-  if (DebugJS.bat.hasBatStopCond('error')) {
-    DebugJS.bat.ctrl.stopReq = true;
-  }
-  DebugJS._log.out(m, DebugJS.LOG_TYPE_ERR);
-  DebugJS.ctx.showDbgWinOnError(DebugJS.ctx);
-  if (!DebugJS.ctx.stopErrCb) {
-    DebugJS.callEvtListeners('error');
-  }
-};
-DebugJS._log.w = function(m) {
-  DebugJS._log.out(m, DebugJS.LOG_TYPE_WRN);
-};
-DebugJS._log.i = function(m) {
-  DebugJS._log.out(m, DebugJS.LOG_TYPE_INF);
+DebugJS._log.v = function(m) {
+  DebugJS._log.out(m, DebugJS.LOG_TYPE_VRB);
 };
 DebugJS._log.d = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_DBG);
 };
-DebugJS._log.v = function(m) {
-  DebugJS._log.out(m, DebugJS.LOG_TYPE_VRB);
+DebugJS._log.i = function(m) {
+  DebugJS._log.out(m, DebugJS.LOG_TYPE_INF);
+};
+DebugJS._log.w = function(m) {
+  DebugJS._log.out(m, DebugJS.LOG_TYPE_WRN);
+};
+DebugJS._log.e = function(m) {
+  DebugJS._log._e(m, DebugJS.LOG_TYPE_ERR);
+};
+DebugJS._log.f = function(m) {
+  DebugJS._log._e(m, DebugJS.LOG_TYPE_FTL);
+};
+DebugJS._log._e = function(m, t) {
+  if (DebugJS.bat.hasBatStopCond('error')) {
+    DebugJS.bat.ctrl.stopReq = true;
+  }
+  DebugJS._log.out(m, t);
+  DebugJS.ctx.showDbgWinOnError(DebugJS.ctx);
+  if (!DebugJS.ctx.preventErrCb) {
+    DebugJS.callEvtListeners('error');
+  }
 };
 DebugJS._log.s = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_SYS);
@@ -16058,26 +16083,31 @@ DebugJS.log = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
   DebugJS._log(m);
 };
-DebugJS.log.e = function(m) {
+DebugJS.log.v = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
-  DebugJS.ctx.errStatus |= DebugJS.ERR_ST_LOG;
-  DebugJS._log.e(m);
-};
-DebugJS.log.w = function(m) {
-  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
-  DebugJS._log.w(m);
-};
-DebugJS.log.i = function(m) {
-  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
-  DebugJS._log.i(m);
+  DebugJS._log.v(m);
 };
 DebugJS.log.d = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
   DebugJS._log.d(m);
 };
-DebugJS.log.v = function(m) {
+DebugJS.log.i = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
-  DebugJS._log.v(m);
+  DebugJS._log.i(m);
+};
+DebugJS.log.w = function(m) {
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
+  DebugJS._log.w(m);
+};
+DebugJS.log.e = function(m) {
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
+  DebugJS.ctx.errStatus |= DebugJS.ERR_ST_LOG;
+  DebugJS._log.e(m);
+};
+DebugJS.log.f = function(m) {
+  if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
+  DebugJS.ctx.errStatus |= DebugJS.ERR_ST_LOG_F;
+  DebugJS._log.f(m);
 };
 DebugJS.log.t = function(m, n) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
@@ -16144,7 +16174,7 @@ DebugJS.log.root.fn = function(lv, m) {
   }
 };
 DebugJS.rootFncs = function() {
-  var fn = ['v', 'd', 'i', 'w', 'e'];
+  var fn = ['v', 'd', 'i', 'w', 'e', 'f'];
   for (var i = 0; i < fn.length; i++) {
     var lv = fn[i];
     DebugJS.log[lv].root = (DebugJS.ENABLE ? DebugJS.log.root.fn.bind(undefined, lv) : DebugJS.fn);

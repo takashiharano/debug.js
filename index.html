@@ -257,6 +257,7 @@ var sampleMessages = [
   {fnc: log.i, msg: 'Information log sample.', delay: 50},
   {fnc: log.w, msg: 'Warning log sample.', delay: 50},
   {fnc: log.e, msg: 'Error log sample.', delay: 50},
+  {fnc: log.f, msg: 'Fatal log sample.', delay: 50},
   {fnc: log.res, msg: 'result log sample.', delay: 50},
   {fnc: log.res.err, msg: 'error result log sample.', delay: 50},
 ];
@@ -331,6 +332,9 @@ function randomDemo() {
   var str = dbg.getRndStr(1, 55, 'Aa1', [' ']);
   var type = dbg.random(10);
   switch (type) {
+    case 0:
+      log.f(str);
+      break;
     case 1:
       log.e(str);
       break;
@@ -1317,6 +1321,18 @@ log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:200px;" 
 log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.e(getVal('log-e-txt'));">DEMO</button>
 </pre>
       <span class="name annotation">log.e.root()</span> <span class="annotation">: Output log to root window.</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">log.f<br><span class="alias">( dbg.log.f )</span></td>
+    <td>message</td>
+    <td>
+      Output fatal log<br>
+<pre class="eg">
+log.f('<input type="text" id="log-f-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.f(getVal('log-f-txt'));">DEMO</button>
+</pre>
+      <span class="name annotation">log.f.root()</span> <span class="annotation">: Output log to root window.</span>
     </td>
   </tr>
 
@@ -4419,7 +4435,7 @@ $ log suspend off
 
 <b>lv:</b>
 Set log level filter
-$ log lv LOG|VRB|DBG|INF|WRN|ERR
+$ log lv LOG|VRB|DBG|INF|WRN|ERR|FTL
 $ log lv ALL
 $ log lv NONE
 </pre>
@@ -5916,19 +5932,21 @@ If you want to change the debugger settings, explicitly call for initialization 
   </tr>
 
   <tr>
-    <td class="name">popupOnError</td>
+    <td class="name">autoPopup</td>
     <td>
       Popup the debug window when the following error occurs<br><br>
       scriptError: a JavaScript runtime error<br>
       loadError: .css / .js file load error<br>
-      errorLog: log.e() has been called<br>
+      error: log.e() has been called<br>
+      fatal: log.f() has been called<br>
       <br>
     </td>
     <td>
 {<br>
 &nbsp;&nbsp;scriptError: true,<br>
 &nbsp;&nbsp;loadError: true,<br>
-&nbsp;&nbsp;errorLog: true<br>
+&nbsp;&nbsp;error: true<br>
+&nbsp;&nbsp;fatal: true<br>
 }<br>
     </td>
   </tr>
