@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908182010';
+  this.v = '201908200015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -24,7 +24,7 @@ var DebugJS = DebugJS || function() {
     },
     lines: 18,
     bufsize: 300,
-    width: 533,
+    width: 543,
     zoom: 1,
     position: 'se',
     adjustX: 20,
@@ -238,6 +238,7 @@ var DebugJS = DebugJS || function() {
   this.suspendLogBtn = null;
   this.preserveLogBtn = null;
   this.pinBtn = null;
+  this.clpBtn = null;
   this.winCtrlBtnPanel = null;
   this.closeBtn = null;
   this.mousePosLabel = null;
@@ -508,6 +509,7 @@ DebugJS.ST_TOOLS = 1 << 19;
 DebugJS.ST_EXT_PANEL = 1 << 20;
 DebugJS.ST_WD = 1 << 21;
 DebugJS.ST_NO_HIST = 1 << 22;
+DebugJS.ST_CLP = 1 << 23;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -605,6 +607,7 @@ DebugJS.EXT_BTN_COLOR = '#f8f';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
 DebugJS.LOG_SUSPEND_BTN_COLOR = '#f66';
 DebugJS.PIN_BTN_COLOR = '#fa0';
+DebugJS.CLP_BTN_COLOR = '#eee';
 DebugJS.FLT_BTN_COLOR = '#eee';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
@@ -1340,6 +1343,10 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
 
+    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.useCommandLine) {
+      ctx.clpBtn = ctx.createHeaderBtn('clpBtn', 'C', 3, fontSize, ctx.toggleClp, 'status', 'ST_CLP', 'CLP_BTN_COLOR', false, 'Copy the command result to clipboard');
+    }
+
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.usePinButton) {
       ctx.pinBtn = ctx.createHeaderBtn('pinBtn', 'P', 3, fontSize, ctx.toggleDraggable, 'uiStatus', 'UI_ST_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
@@ -1885,6 +1892,10 @@ DebugJS.prototype = {
 
   updatePinBtn: function(ctx) {
     if (ctx.pinBtn) ctx.setStyle(ctx.pinBtn, 'color', (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? DebugJS.COLOR_INACT : DebugJS.PIN_BTN_COLOR);
+  },
+
+  updateClpBtn: function(ctx) {
+    if (ctx.clpBtn) ctx.setStyle(ctx.clpBtn, 'color', (ctx.status & DebugJS.ST_CLP) ? DebugJS.CLP_BTN_COLOR : DebugJS.COLOR_INACT);
   },
 
   updateBtnActive: function(btn, st, activeColor) {
@@ -2446,6 +2457,24 @@ DebugJS.prototype = {
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
   },
 
+
+  toggleClp: function() {
+    var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.ST_CLP) {
+      ctx.disableClp(ctx);
+    } else {
+      ctx.enableClp(ctx);
+    }
+  },
+  enableClp: function(ctx) {
+    ctx.status |= DebugJS.ST_CLP;
+    ctx.updateClpBtn(ctx);
+  },
+  disableClp: function(ctx) {
+    ctx.status &= ~DebugJS.ST_CLP;
+    ctx.updateClpBtn(ctx);
+  },
+
   startStopStopwatch: function() {
     if (DebugJS.ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       DebugJS.ctx.stopStopwatch();
@@ -2687,6 +2716,7 @@ DebugJS.prototype = {
           ctx.execCmd(ctx);
           ctx.preventErrCb = false;
           e.preventDefault();
+          if (ctx.status & DebugJS.ST_CLP) ctx.focusCmdLine();
         }
         break;
 
@@ -4541,10 +4571,11 @@ DebugJS.prototype = {
         res = DebugJS.quoteStr(r);
       }
       if (echo) DebugJS._log.res(res);
-      return r;
     } catch (e) {
       DebugJS._log.e(e);
+      r = e + '';
     }
+    return r;
   },
   closeJsEditor: function() {
     var ctx = DebugJS.ctx;
@@ -5686,6 +5717,7 @@ DebugJS.prototype = {
     ctx.preventErrCb = false;
   },
   onTxtDrop: function(ctx, t) {
+    var r;
     if (DebugJS.isBat(t)) {
       ctx.openBat(ctx, t);
     } else {
@@ -5693,12 +5725,13 @@ DebugJS.prototype = {
       if (DebugJS.isDataURL(s)) {
         ctx.decodeDataURL(ctx, s);
       } else if (DebugJS.isUnixTm(s.trim())) {
-        ctx.cmdDate(s, null, true);
+        r = ctx.cmdDate(s, null, true);
       } else {
         if (ctx.decB64(ctx, s)) return;
-        ctx.fmtJson(ctx, t);
+        r = ctx.fmtJson(ctx, t);
       }
     }
+    if ((ctx.status & DebugJS.ST_CLP) && (r != undefined)) DebugJS.copy2cb(r);
   },
   fmtJson: function(ctx, t) {
     var a = DebugJS.crlf2lf(t).split('\n');
@@ -5708,7 +5741,12 @@ DebugJS.prototype = {
       if (pos.open != -1) {
         if (s) s += '\n\n';
         s += '<span style="color:#0ff">------------------------------------------------------------</span>\n';
-        s += ctx._fmtJson(ctx, a[i], pos);
+        var o = ctx._fmtJson(ctx, a[i], pos);
+        if (o.e) {
+          s += DebugJS.trimEchoStr(o.j) + '\n<span style="color:' + ctx.opt.logColorE + '">' + o.e + '</span>';
+        } else {
+          s += DebugJS.escHtml(o.r);
+        }
       }
     }
     if (s) {
@@ -5716,17 +5754,21 @@ DebugJS.prototype = {
       DebugJS._log.mlt(s);
       ctx.scrollLogBtm(ctx);
     }
+    var r = DebugJS.html2text(s);
+    r = DebugJS.crlf2lf(r);
+    r = r.substr(61);
+    return r;
   },
   _fmtJson: function(ctx, t, pos) {
     if (pos.open == -1) return '';
     var j = t.substr(pos.open, pos.close - (pos.open - 1));
-    var s;
+    var o = {j: j, r: '', e: null};
     try {
-      s = DebugJS.escHtml(DebugJS.formatJSON(j));
+      o.r = DebugJS.formatJSON(j);
     } catch (e) {
-      s = DebugJS.trimEchoStr(j) + '\n<span style="color:' + ctx.opt.logColorE + '">' + e + '</span>';
+      o.e = e;
     }
-    return s;
+    return o;
   },
   decB64: function(ctx, s) {
     if (!DebugJS.isBase64(s)) return 0;
@@ -6825,6 +6867,7 @@ DebugJS.prototype = {
     if (setValName != null) {
       DebugJS.setCmdVal(setValName, ret);
     }
+    if (ctx.status & DebugJS.ST_CLP) DebugJS.copy2cb(ret);
     return ret;
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
@@ -10814,10 +10857,11 @@ DebugJS._cmdJson = function(s, f, lv) {
     var j = DebugJS.fmtJSON(s, f, lv, p.dumplimit, p.dumpvallen);
     if (f) j = DebugJS.escHtml(j);
     DebugJS._log.mlt(j);
-    return j;
   } catch (e) {
-    DebugJS._log.e('JSON format error: ' + DebugJS.hlJsonErr(s));
+    j = 'JSON format error: ' + DebugJS.hlJsonErr(s);
+    DebugJS._log.e(j);
   }
+  return DebugJS.html2text(j);
 };
 DebugJS.hlJsonErr = function(json) {
   var jsn = json.trim().split('\\');
@@ -12990,6 +13034,18 @@ DebugJS.setCmdVal = function(n, v) {
 };
 DebugJS.isSysVal = function(n) {
   return (((n == '?') || (n.match(/^%.*%$/))) ? true : false);
+};
+
+DebugJS.copy2cb = function(s) {
+  var b = DebugJS.ctx.bodyEl;
+  if (DebugJS.ctx.win) b = DebugJS.ctx.win;
+  var ta = document.createElement('textarea');
+  ta.textContent = s;
+  b.appendChild(ta);
+  ta.select();
+  var r = document.execCommand('copy');
+  b.removeChild(ta);
+  return r;
 };
 
 DebugJS.bat = function(b, a, sl, el) {
