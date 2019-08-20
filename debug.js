@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908202140';
+  this.v = '201908202250';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9243,8 +9243,11 @@ DebugJS.prototype = {
         s += DebugJS.toHex(v, true, true, 2) + '  ';
         s += DebugJS.toBin(v);
         if (j == 0) {
+          var d = DebugJS.getCodePoint(ch);
+          var rf = '&amp;#' + d + ';';
           s += '  ' + DebugJS.getUnicodePoints(ch);
-          s += ' ' + DebugJS.hlCtrlCh(ch, true);
+          s += '  ' + DebugJS.strPadding(rf, ' ', 12, 'L');
+          s += '  ' + DebugJS.hlCtrlCh(ch, true);
         }
         s += '\n';
         cnt++;
@@ -11565,11 +11568,21 @@ DebugJS.decodeUnicode = function(arg) {
 DebugJS.getUnicodePoints = function(str) {
   var code = '';
   for (var i = 0; i < str.length; i++) {
-    var pt = str.charCodeAt(i);
+    var p = DebugJS.getCodePoint(str.charAt(i), true);
     if (i > 0) code += ' ';
-    code += 'U+' + DebugJS.toHex(pt, true, '', 4);
+    code += 'U+' + DebugJS.formatHex(p, true, '', 4);
   }
   return code;
+};
+DebugJS.getCodePoint = function(c, hex) {
+  var p;
+  if (String.prototype.codePointAt) {
+    p = c.codePointAt(0);
+  } else {
+    p = c.charCodeAt(0);
+  }
+  if (hex) p = DebugJS.toHex(p, true, '', 0);
+  return p;
 };
 
 DebugJS.decodeUri = function(s) {
