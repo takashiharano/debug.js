@@ -3831,6 +3831,29 @@ c<span class="nl">&#x2193;</span><span class="nl2">LF</span>
   </tr>
 
   <tr>
+    <td class="name">arr2set</td>
+    <td>array</td>
+    <td>
+     Convert Array to Set.<br><br>
+<pre class="eg">
+$ arr2set ['a', 'b', 'c', 'a', 'b']
+-&gt; ['a', 'b', 'c']
+
+$ arr2set -j ['a', 'b', 'c', 'a', 'b']
+-&gt; Output in JSON format.
+[
+  "a",
+  "b",
+  "c"
+]
+
+$ arr2set -s ['a', 'b', '1', 1]
+-&gt; ['a', 'b', '1', 1] (Strict mode)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">alias</td>
     <td>name=command</td>
     <td>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908202100';
+  this.v = '201908202140';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -328,6 +328,7 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
+    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] array'},
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
@@ -6933,6 +6934,25 @@ DebugJS.prototype = {
     }
 
     return ctx.execCode(cmdline, echo);
+  },
+
+  cmdArr2Set: function(arg, tbl, echo) {
+    var p = arg.indexOf('[');
+    if (p == -1) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var s = DebugJS.hasOpt(arg, 's');
+    var j = DebugJS.hasOpt(arg, 'j');
+    var v = arg.substr(p);
+    try {
+      var a = eval(v);
+      var r = DebugJS.arr.toSet(a, s);
+      if (echo) DebugJS._log.p(r, 0, '', j);
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
+    return r;
   },
 
   cmdAlias: function(arg, tbl) {
