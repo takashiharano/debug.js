@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908200015';
+  this.v = '201908202100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9812,6 +9812,14 @@ DebugJS.indexOfOptVal = function(a, o) {
     r = i + o.length + 1;
   }
   return r;
+};
+DebugJS.countOpts = function(args) {
+  var i = 0;
+  var o = DebugJS.getOptVals(args);
+  for (var k in o) {
+    i++;
+  }
+  return i;
 };
 
 DebugJS.getQuotedStr = function(str) {
