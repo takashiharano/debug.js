@@ -117,7 +117,7 @@ dbg.init({visible:true});
 //dbg.init({mode:'kiosk',zoom:2});
 //dbg.init({mode:'noui'});
 //dbg.init({lockCode:'abc'});
-//dbg.init({target:'debug'});
+//dbg.init({elmId:'debug'});
 
 //dbg.addEvtListener('watchdog', onWatchdogTimeout);
 //dbg.addEvntListener('fileloaded', onFileLoaded);
@@ -157,7 +157,7 @@ var options2 = {
 //dbg.init(options2);
 
 var options3 = {
-  target: 'debug',
+  elmId: 'debug',
   lines: 10,
   bufsize: 10,
   background: 'rgba(0,0,0,0.9)',
@@ -169,7 +169,7 @@ var options3 = {
 //dbg.init(options3);
 
 var options4 = {
-  target: 'debug',
+  elmId: 'debug',
   lines: 10,
   fontSize: 13,
   fontColor: '#333',
@@ -187,13 +187,10 @@ var options4 = {
   //clockColor: '#00f',
   //useClock: true,
   //useCommandLine: true,
-  //useWindowSizeInfo: true,
-  //useMouseStatusInfo: true,
-  //useKeyStatusInfo: true,
+  //useDeviceInfo: true,
   //useLed: true,
   //useLogFilter: true,
   useMsgDisplay: true,
-  msgDisplayPos: 'left',
   msgDisplayBackground: 'rgba(168,168,168,0.2)',
   useClearButton: true
 };
@@ -6226,20 +6223,8 @@ If you want to change the debugger settings, explicitly call for initialization 
   </tr>
 
   <tr>
-    <td class="name">useWindowSizeInfo</td>
-    <td>Show window size monitor</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">useMouseStatusInfo</td>
-    <td>Show mouse status monitor</td>
-    <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">useKeyStatusInfo</td>
-    <td>Show key status monitor</td>
+    <td class="name">useDeviceInfo</td>
+    <td>Show window size / mouse status / key status</td>
     <td>true</td>
   </tr>
 
@@ -6262,12 +6247,6 @@ If you want to change the debugger settings, explicitly call for initialization 
     <td class="name">useMsgDisplay</td>
     <td>Enable Fixed Position Message Display</td>
     <td>true</td>
-  </tr>
-
-  <tr>
-    <td class="name">msgDisplayPos</td>
-    <td>Display Position of the fixed position message ('left' / 'right')</td>
-    <td>'right'</td>
   </tr>
 
   <tr>
@@ -6382,7 +6361,7 @@ Unlock: [ESC] -> [Ctrl] -> lockCode -> [Ctrl]
   </tr>
 
   <tr>
-    <td class="name">target</td>
+    <td class="name">elmId</td>
     <td>Debug window element id<br>(The window is automatically generated in case of null)</td>
     <td>null</td>
   </tr>

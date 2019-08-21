@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908202250';
+  this.v = '201908220010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -61,12 +61,9 @@ var DebugJS = DebugJS || function() {
     usePinButton: true,
     useWinCtrlButton: true,
     useStopwatch: true,
-    useWindowSizeInfo: true,
-    useMouseStatusInfo: true,
-    useKeyStatusInfo: true,
+    useDeviceInfo: true,
     useLed: true,
     useMsgDisplay: true,
-    msgDisplayPos: 'right',
     msgDisplayBackground: 'rgba(0,0,0,0.2)',
     useScreenMeasure: true,
     useSystemInfo: true,
@@ -82,7 +79,7 @@ var DebugJS = DebugJS || function() {
     disableAllFeatures: false,
     mode: '',
     lockCode: null,
-    target: null
+    elmId: null
   };
   this.DFLT_ELM_ID = '_debug_';
   this.id = null;
@@ -702,9 +699,7 @@ DebugJS.FEATURES = [
   'usePinButton',
   'useWinCtrlButton',
   'useStopwatch',
-  'useWindowSizeInfo',
-  'useMouseStatusInfo',
-  'useKeyStatusInfo',
+  'useDeviceInfo',
   'useLed',
   'useMsgDisplay',
   'useScreenMeasure',
@@ -784,7 +779,7 @@ DebugJS.prototype = {
     ctx.computedMinH = DebugJS.DBGWIN_MIN_H * ctx.opt.zoom;
     ctx.computedFontSize = Math.round(ctx.opt.fontSize * ctx.opt.zoom);
     ctx.computedWidth = Math.round(ctx.opt.width * ctx.opt.zoom);
-    if (ctx.opt.target == null) {
+    if (ctx.opt.elmId == null) {
       ctx.id = ctx.DFLT_ELM_ID;
       ctx.win = document.createElement('div');
       ctx.win.id = ctx.id;
@@ -797,7 +792,7 @@ DebugJS.prototype = {
         ctx.setupKioskMode(ctx);
       }
     } else {
-      ctx.id = ctx.opt.target;
+      ctx.id = ctx.opt.elmId;
       ctx.win = document.getElementById(ctx.id);
       ctx.win.style.position = 'relative';
     }
@@ -1166,7 +1161,7 @@ DebugJS.prototype = {
     }
     if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ||
         (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) ||
-        (ctx.opt.useMouseStatusInfo) || (ctx.opt.useScreenMeasure)) {
+        (ctx.opt.useDeviceInfo) || (ctx.opt.useScreenMeasure)) {
       window.addEventListener('mousedown', ctx.onMouseDown, true);
       window.addEventListener('mousemove', ctx.onMouseMove, true);
       window.addEventListener('mouseup', ctx.onMouseUp, true);
@@ -1174,7 +1169,7 @@ DebugJS.prototype = {
       window.addEventListener('touchmove', ctx.onTouchMove, true);
       window.addEventListener('touchend', ctx.onTouchEnd, true);
     }
-    if (ctx.opt.useWindowSizeInfo) {
+    if (ctx.opt.useDeviceInfo) {
       window.addEventListener('resize', ctx.onResize, true);
       ctx.onResize();
       window.addEventListener('scroll', ctx.onScroll, true);
@@ -1183,7 +1178,7 @@ DebugJS.prototype = {
     window.addEventListener('keydown', ctx.onKeyDown, true);
     window.addEventListener('keypress', ctx.onKeyPress, true);
     window.addEventListener('keyup', ctx.onKeyUp, true);
-    if (ctx.opt.useKeyStatusInfo) {
+    if (ctx.opt.useDeviceInfo) {
       ctx.updateKeyDownLabel();
       ctx.updateKeyPressLabel();
       ctx.updateKeyUpLabel();
@@ -1206,14 +1201,14 @@ DebugJS.prototype = {
   },
 
   initUiStatus: function(ctx, opt, rstrOpt) {
-    if (ctx.opt.target == null) {
+    if (ctx.opt.elmId == null) {
       ctx.uiStatus |= DebugJS.UI_ST_DYNAMIC;
       ctx.uiStatus |= DebugJS.UI_ST_DRAGGABLE;
       if ((ctx.opt.lockCode != null) && !rstrOpt) {
         ctx.uiStatus |= DebugJS.UI_ST_PROTECTED;
       }
     }
-    if (ctx.opt.visible || (ctx.opt.target != null)) {
+    if (ctx.opt.visible || (ctx.opt.elmId != null)) {
       ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     } else if (ctx.errStatus) {
       var ap = ctx.opt.autoPopup;
@@ -1344,7 +1339,7 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
 
-    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.useCommandLine) {
+    if (opt.useCommandLine) {
       ctx.clpBtn = ctx.createHeaderBtn('clpBtn', 'C', 3, fontSize, ctx.toggleClp, 'status', 'ST_CLP', 'CLP_BTN_COLOR', false, 'Copy the command result to clipboard');
     }
 
@@ -1417,24 +1412,15 @@ DebugJS.prototype = {
       ctx.infoPanel.appendChild(ctx.ledPanel);
     }
 
-    if (opt.useWindowSizeInfo) {
+    if (opt.useDeviceInfo) {
       ctx.winSizeLabel = ctx.createSysInfoLabel();
       ctx.clientSizeLabel = ctx.createSysInfoLabel();
       ctx.bodySizeLabel = ctx.createSysInfoLabel();
       ctx.pixelRatioLabel = ctx.createSysInfoLabel();
       ctx.scrollPosLabel = ctx.createSysInfoLabel();
-    }
-
-    if (opt.useMouseStatusInfo) {
       ctx.mousePosLabel = ctx.createSysInfoLabel();
       ctx.mouseClickLabel = ctx.createSysInfoLabel();
-    }
-
-    if (opt.useWindowSizeInfo || opt.useMouseStatusInfo) {
       ctx.infoPanel.appendChild(document.createElement('br'));
-    }
-
-    if (opt.useKeyStatusInfo) {
       ctx.keyDownLabel = ctx.createSysInfoLabel();
       ctx.keyPressLabel = ctx.createSysInfoLabel();
       ctx.keyUpLabel = ctx.createSysInfoLabel();
@@ -1442,7 +1428,7 @@ DebugJS.prototype = {
 
     if (opt.useMsgDisplay) {
       var msgLabel = ctx.createSysInfoLabel();
-      msgLabel.style.float = opt.msgDisplayPos;
+      msgLabel.style.float = 'right';
       msgLabel.style.position = 'absolute';
       msgLabel.style.marginRight = '0';
       msgLabel.style.right = '5px';
@@ -1552,11 +1538,9 @@ DebugJS.prototype = {
     if ((ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && opt.useWinCtrlButton) {
       ctx.updateWinCtrlBtnPanel();
     }
-    if (opt.useMouseStatusInfo) {
+    if (opt.useDeviceInfo) {
       ctx.updateMousePosLabel();
       ctx.updateMouseClickLabel();
-    }
-    if (opt.useWindowSizeInfo) {
       ctx.updateWindowSizeLabel();
       ctx.updateClientSizeLabel();
       ctx.updateBodySizeLabel();
@@ -2816,7 +2800,7 @@ DebugJS.prototype = {
   },
   onKeyDown: function(e) {
     var ctx = DebugJS.ctx;
-    if (ctx.opt.useKeyStatusInfo) {
+    if (ctx.opt.useDeviceInfo) {
       ctx.updateStatusInfoOnKeyDown(ctx, e);
     }
     if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
@@ -2825,7 +2809,7 @@ DebugJS.prototype = {
   },
   onKeyPress: function(e) {
     var ctx = DebugJS.ctx;
-    if (ctx.opt.useKeyStatusInfo) {
+    if (ctx.opt.useDeviceInfo) {
       ctx.updateStatusInfoOnKeyPress(ctx, e);
     }
     if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
@@ -2834,7 +2818,7 @@ DebugJS.prototype = {
   },
   onKeyUp: function(e) {
     var ctx = DebugJS.ctx;
-    if (ctx.opt.useKeyStatusInfo) {
+    if (ctx.opt.useDeviceInfo) {
       ctx.updateStatusInfoOnKeyUp(ctx, e);
     }
     if (e.keyCode == 18) {
@@ -2965,7 +2949,7 @@ DebugJS.prototype = {
           }
         }
     }
-    if (ctx.opt.useMouseStatusInfo) {
+    if (ctx.opt.useDeviceInfo) {
       ctx.updateMouseClickLabel();
     }
   },
@@ -2988,7 +2972,7 @@ DebugJS.prototype = {
   _onPointerMove: function(ctx, e) {
     var x = e.clientX;
     var y = e.clientY;
-    if (ctx.opt.useMouseStatusInfo) {
+    if (ctx.opt.useDeviceInfo) {
       ctx.mousePos.x = x;
       ctx.mousePos.y = y;
       ctx.updateMousePosLabel();
@@ -3015,7 +2999,7 @@ DebugJS.prototype = {
       case 2:
         ctx.mouseClick2 = DebugJS.COLOR_INACT;
     }
-    if (ctx.opt.useMouseStatusInfo) {
+    if (ctx.opt.useDeviceInfo) {
       ctx.updateMouseClickLabel();
     }
   },
@@ -6830,7 +6814,7 @@ DebugJS.prototype = {
   },
   _execCmd: function(str, echo, recho, sv) {
     var ctx = DebugJS.ctx;
-    var plain = (ctx.cmdLine.type == 'text');
+    var plain = (!ctx.cmdLine || (ctx.cmdLine.type == 'text'));
     if (sv && plain && !(ctx.status & DebugJS.ST_NO_HIST)) ctx.saveHistory(ctx, str);
     var setValName = null;
     var cmdline = str;
