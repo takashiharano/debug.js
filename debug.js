@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908220010';
+  this.v = '201908222323';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4558,7 +4558,6 @@ DebugJS.prototype = {
       if (echo) DebugJS._log.res(res);
     } catch (e) {
       DebugJS._log.e(e);
-      r = e + '';
     }
     return r;
   },
@@ -5716,7 +5715,7 @@ DebugJS.prototype = {
         r = ctx.fmtJson(ctx, t);
       }
     }
-    if ((ctx.status & DebugJS.ST_CLP) && (r != undefined)) DebugJS.copy2cb(r);
+    if (r != undefined) DebugJS.cp2cb(r);
   },
   fmtJson: function(ctx, t) {
     var a = DebugJS.crlf2lf(t).split('\n');
@@ -6139,6 +6138,7 @@ DebugJS.prototype = {
     ctx.updateFilePreview(html);
   },
   getTextPreview: function(decoded) {
+    DebugJS.cp2cb(decoded);
     if (decoded.length == 0) return '';
     var txt = DebugJS.escHtml(decoded);
     txt = txt.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
@@ -6154,7 +6154,9 @@ DebugJS.prototype = {
   },
   getImgPreview: function(ctx, scheme, data) {
     var ctxSizePos = ctx.getSelfSizePos();
-    return '<img src="' + DebugJS.buildDataUrl(scheme, data) + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
+    var img = DebugJS.buildDataUrl(scheme, data);
+    DebugJS.cp2cb(img);
+    return '<img src="' + img + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
   },
   resizeImgPreview: function() {
     var ctx = DebugJS.ctx;
@@ -6185,47 +6187,42 @@ DebugJS.prototype = {
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
-    var html = '<pre style="white-space:pre !important">';
-    html += DebugJS.ui.createBtnHtml('[' + mode.toUpperCase() + ']', 'DebugJS.ctx.toggleBinMode()') + ' ';
-    html += DebugJS.ui.createBtnHtml('[ADDR]', 'DebugJS.ctx.toggleShowAddr()', (showAddr ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
-    html += DebugJS.ui.createBtnHtml('[SP]', 'DebugJS.ctx.toggleShowSpace()', (showSp ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
-    html += DebugJS.ui.createBtnHtml('[ASCII]', 'DebugJS.ctx.toggleShowAscii()', (showAscii ? '' : 'color:' + DebugJS.COLOR_INACT));
-    html += '\n<span style="background:#0cf;color:#000">';
+    var dmp = '<span style="background:#0cf;color:#000">';
     if (showAddr) {
-      html += 'Address    ';
+      dmp += 'Address    ';
     }
     if (mode == 'bin') {
       if (showSp) {
-        html += '+0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F      ';
+        dmp += '+0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F      ';
       } else {
-        html += '+0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F      ';
+        dmp += '+0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F      ';
       }
     } else if (mode == 'dec') {
       if (showSp) {
-        html += ' +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F';
+        dmp += ' +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F';
       } else {
-        html += ' +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F';
+        dmp += ' +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F';
       }
     } else {
       if (showSp) {
-        html += '+0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F';
+        dmp += '+0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F';
       } else {
-        html += '+0+1+2+3+4+5+6+7+8+9+A+B+C+D+E+F';
+        dmp += '+0+1+2+3+4+5+6+7+8+9+A+B+C+D+E+F';
       }
     }
     if (showAscii) {
-      html += '  ASCII           ';
+      dmp += '  ASCII           ';
     }
-    html += '</span>\n';
+    dmp += '</span>\n';
     if (showAddr) {
-      html += DebugJS.dumpAddr(0);
+      dmp += DebugJS.dumpAddr(0);
     }
     for (var i = 0; i < len; i++) {
-      html += ctx.getDump(mode, i, buf, len, showSp, showAddr, showAscii);
+      dmp += ctx.getDump(mode, i, buf, len, showSp, showAddr, showAscii);
     }
     if (bLen > lm) {
       if (bLen - lm > (0x10 * lastRows)) {
-        html += '\n<span style="color:#ccc">...</span>';
+        dmp += '\n<span style="color:#ccc">...</span>';
       }
       if (lastRows > 0) {
         var rem = (bLen % 0x10);
@@ -6235,16 +6232,26 @@ DebugJS.prototype = {
           start = len + rem;
         }
         var end = bLen + (rem == 0 ? 0 : (0x10 - rem));
-        html += '\n';
+        dmp += '\n';
         if (showAddr) {
-          html += DebugJS.dumpAddr(start);
+          dmp += DebugJS.dumpAddr(start);
         }
         for (i = start; i < end; i++) {
-          html += ctx.getDump(mode, i, buf, end, showSp, showAddr, showAscii);
+          dmp += ctx.getDump(mode, i, buf, end, showSp, showAddr, showAscii);
         }
       }
     }
-    html += '</pre>';
+    dmp += '\n';
+    if (ctx.status & DebugJS.ST_CLP) {
+      var s = DebugJS.html2text(dmp);
+      DebugJS.copy2cb(s);
+    }
+    var html = '<pre style="white-space:pre !important">';
+    html += DebugJS.ui.createBtnHtml('[' + mode.toUpperCase() + ']', 'DebugJS.ctx.toggleBinMode()') + ' ';
+    html += DebugJS.ui.createBtnHtml('[ADDR]', 'DebugJS.ctx.toggleShowAddr()', (showAddr ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
+    html += DebugJS.ui.createBtnHtml('[SP]', 'DebugJS.ctx.toggleShowSpace()', (showSp ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
+    html += DebugJS.ui.createBtnHtml('[ASCII]', 'DebugJS.ctx.toggleShowAscii()', (showAscii ? '' : 'color:' + DebugJS.COLOR_INACT));
+    html += '\n' + dmp + '</pre>';
     return html;
   },
   getDump: function(mode, i, buf, len, showSp, showAddr, showAscii) {
@@ -6852,7 +6859,7 @@ DebugJS.prototype = {
     if (setValName != null) {
       DebugJS.setCmdVal(setValName, ret);
     }
-    if (ctx.status & DebugJS.ST_CLP) DebugJS.copy2cb(ret);
+    DebugJS.cp2cb(ret);
     return ret;
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
@@ -13061,6 +13068,9 @@ DebugJS.isSysVal = function(n) {
   return (((n == '?') || (n.match(/^%.*%$/))) ? true : false);
 };
 
+DebugJS.cp2cb = function(s) {
+  if (DebugJS.ctx.status & DebugJS.ST_CLP) DebugJS.copy2cb(s);
+};
 DebugJS.copy2cb = function(s) {
   var b = DebugJS.ctx.bodyEl;
   if (DebugJS.ctx.win) b = DebugJS.ctx.win;
