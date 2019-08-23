@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908222323';
+  this.v = '201908240000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -711,6 +711,7 @@ DebugJS.FEATURES = [
   'useLogFilter',
   'useCommandLine'
 ];
+DebugJS.TZ = {'pst': '-0800', 'pdt': '-0700', 'mst': '-0700', 'mdt': '-0600', 'cst': '-0600', 'cdt': '-0500', 'est': '-0500', 'edt': '-0400', 'utc': '+0000', 'cet': '+0100', 'cest': '+0200', 'ist': '+0530', 'ctt': '+0800', 'jst': '+0900'};
 DebugJS.fn = function() {};
 DebugJS.prototype = {
   init: function(opt, rstrOpt) {
@@ -6916,8 +6917,13 @@ DebugJS.prototype = {
     ret = ctx.cmdDateConv(cmdline, echo);
     if (ret != null) return ret;
 
-    if (DebugJS.isUnixTm(cmdline.trim())) {
+    var cmdln = cmdline.trim();
+    if (DebugJS.isUnixTm(cmdln)) {
       return ctx.cmdDate(cmdline, null, echo);
+    }
+
+    if (DebugJS.isSTN(cmdln)) {
+      return DebugJS.cmdTZedNow(cmdln, echo);
     }
 
     if (cmdline.match(/^\s*U\+/i)) {
@@ -11693,6 +11699,37 @@ DebugJS.calcTime = function(res, days, byTheDay, isSub) {
 DebugJS.getElapsedTimeStr = function(t1, t2) {
   var delta = t2 - t1;
   return DebugJS.getTimerStr(delta);
+};
+
+DebugJS.isSTN = function(s) {
+  for (var k in DebugJS.TZ) {
+    if (s == k) return true;
+  }
+  return false;
+};
+DebugJS.tzOffset2ms = function(t) {
+  var s = (t.charAt(0) == '-' ? -1 : 1);
+  var h = t.substr(1, 2);
+  var m = t.substr(3, 2);
+  return (h * 3600000 + m * 60000) * s;
+};
+DebugJS.jsTzOffset2ms = function(t) {
+  return t * 60000 * -1;
+};
+DebugJS.getTZedDateTimeStr = function(o) {
+  var t = new Date();
+  var locos = DebugJS.jsTzOffset2ms(t.getTimezoneOffset());
+  var tgtos = DebugJS.tzOffset2ms(o);
+  var df = locos - tgtos;
+  var ts = t.getTime() - df;
+  return DebugJS.getDateTimeStr(ts);
+};
+DebugJS.cmdTZedNow = function(c, echo) {
+  var tz = DebugJS.TZ[c];
+  var os = 'UTC' + tz.substr(0, 3) + ':' + tz.substr(3, 2);
+  var r = DebugJS.getTZedDateTimeStr(tz) + ' ' + os;
+  if (echo) DebugJS._log.res(r);
+  return r;
 };
 
 DebugJS.random = function(min, max) {
