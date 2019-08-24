@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908241327';
+  this.v = '201908241518';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -380,7 +380,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
-    {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: 'time ms|"datestr" ms|"datestr"'},
+    {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: 'time ms|"DateStr" ms|"DateStr"'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'time start|split|stop|list [timer-name]'},
     {cmd: 'timestr', fn: this.cmdTimeStr, desc: 'String <--> millis', help: 'timestr ms|sec.ms'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
@@ -481,7 +481,6 @@ var DebugJS = DebugJS || function() {
   this.setupDefaultOptions();
   DebugJS.copyProp(this.PROPS_DFLT_VALS, this.props);
 };
-DebugJS.MAX_SAFE_INT = 0x1FFFFFFFFFFFFF;
 DebugJS.DFLT_UNIT = 32;
 DebugJS.INIT_CAUSE_ZOOM = 1;
 DebugJS.ST_INITIALIZED = 1;
@@ -8122,7 +8121,7 @@ DebugJS.prototype = {
   },
 
   cmdP: function(arg, tbl) {
-    DebugJS._cmdP(arg, tbl);
+    return DebugJS._cmdP(arg, tbl);
   },
 
   cmdPause: function(arg, tbl) {
@@ -10470,9 +10469,11 @@ DebugJS._cmdP = function(_arg, _tbl) {
     DebugJS.printUsage(_tbl.help);
     return;
   }
-  var _cl = 'DebugJS.buf=DebugJS.objDump(' + _obj + ', ' + _jsn + ', ' + _lvLmt + ', ' + _dmpLmt + ', ' + _vlLen + ');DebugJS._log.mlt(DebugJS.buf);';
+  var _cl = 'DebugJS._$=DebugJS.objDump(' + _obj + ', ' + _jsn + ', ' + _lvLmt + ', ' + _dmpLmt + ', ' + _vlLen + ');';
   try {
     eval(_cl);
+    DebugJS._log.mlt(DebugJS._$);
+    return DebugJS.html2text(DebugJS._$);
   } catch (e) {
     DebugJS._log.e(e);
   }
@@ -11718,9 +11719,9 @@ DebugJS.jsTzOffset2ms = function(t) {
 };
 DebugJS.getTZedDateTimeStr = function(o) {
   var t = new Date();
-  var locos = DebugJS.jsTzOffset2ms(t.getTimezoneOffset());
-  var tgtos = DebugJS.tzOffset2ms(o);
-  var df = locos - tgtos;
+  var loc = DebugJS.jsTzOffset2ms(t.getTimezoneOffset());
+  var tgt = DebugJS.tzOffset2ms(o);
+  var df = loc - tgt;
   var ts = t.getTime() - df;
   return DebugJS.getDateTimeStr(ts);
 };
