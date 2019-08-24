@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908240000';
+  this.v = '201908241327';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -27,8 +27,8 @@ var DebugJS = DebugJS || function() {
     width: 543,
     zoom: 1,
     position: 'se',
-    adjustX: 20,
-    adjustY: 20,
+    adjX: 20,
+    adjY: 20,
     fontSize: 12,
     fontFamily: 'Consolas, monospace',
     fontColor: '#fff',
@@ -610,7 +610,7 @@ DebugJS.FLT_BTN_COLOR = '#eee';
 DebugJS.COLOR_R = '#f66';
 DebugJS.COLOR_G = '#6f6';
 DebugJS.COLOR_B = '#6bf';
-DebugJS.KEY_ST_DFLT = '- <span style="color:' + DebugJS.COLOR_INACT + '">SCAM</span>';
+DebugJS.KEY_ST_DFLT = '- <span style="color:' + DebugJS.COLOR_INACT + '">CSAM</span>';
 DebugJS.WDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 DebugJS.WDAYS_COLOR = ['f74', 'fff', 'fff', 'fff', 'fff', 'fff', '8fd'];
 DebugJS.UPDATE_INTERVAL_H = 21;
@@ -1686,44 +1686,44 @@ DebugJS.prototype = {
 
   setWinPos: function(pos, dbgWinW, dbgWinH) {
     var opt = DebugJS.ctx.opt;
-    var top = opt.adjustY;
-    var left = opt.adjustX;
+    var top = opt.adjY;
+    var left = opt.adjX;
     var clW = document.documentElement.clientWidth;
     var clH = document.documentElement.clientHeight;
     if (clW > window.outerWidth) clW = window.outerWidth;
     if (clH > window.outerHeight) clH = window.outerHeight;
     switch (pos) {
       case 'se':
-        top = clH - dbgWinH - opt.adjustY;
-        left = clW - dbgWinW - opt.adjustX;
+        top = clH - dbgWinH - opt.adjY;
+        left = clW - dbgWinW - opt.adjX;
         break;
       case 'ne':
-        top = opt.adjustY;
-        left = clW - dbgWinW - opt.adjustX;
+        top = opt.adjY;
+        left = clW - dbgWinW - opt.adjX;
         break;
       case 'c':
         top = (clH / 2) - (dbgWinH / 2);
         left = (clW / 2) - (dbgWinW / 2);
         break;
       case 'sw':
-        top = clH - dbgWinH - opt.adjustY;
-        left = opt.adjustX;
+        top = clH - dbgWinH - opt.adjY;
+        left = opt.adjX;
         break;
       case 'n':
-        top = opt.adjustY;
+        top = opt.adjY;
         left = (clW / 2) - (dbgWinW / 2);
         break;
       case 'e':
         top = (clH / 2) - (dbgWinH / 2);
-        left = clW - dbgWinW - opt.adjustX;
+        left = clW - dbgWinW - opt.adjX;
         break;
       case 's':
-        top = clH - dbgWinH - opt.adjustY;
+        top = clH - dbgWinH - opt.adjY;
         left = (clW / 2) - (dbgWinW / 2);
         break;
       case 'w':
         top = (clH / 2) - (dbgWinH / 2);
-        left = opt.adjustX;
+        left = opt.adjX;
     }
     DebugJS.ctx.win.style.top = top + 'px';
     DebugJS.ctx.win.style.left = left + 'px';
@@ -2785,8 +2785,8 @@ DebugJS.prototype = {
         break;
 
       case opt.keyAssign.key:
-        if (((opt.keyAssign.shift == undefined) || (e.shiftKey == opt.keyAssign.shift)) &&
-            ((opt.keyAssign.ctrl == undefined) || (e.ctrlKey == opt.keyAssign.ctrl)) &&
+        if (((opt.keyAssign.ctrl == undefined) || (e.ctrlKey == opt.keyAssign.ctrl)) &&
+            ((opt.keyAssign.shift == undefined) || (e.shiftKey == opt.keyAssign.shift)) &&
             ((opt.keyAssign.alt == undefined) || (e.altKey == opt.keyAssign.alt)) &&
             ((opt.keyAssign.meta == undefined) || (e.metaKey == opt.keyAssign.meta))) {
           if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWin(ctx))) {
@@ -6722,10 +6722,10 @@ DebugJS.prototype = {
       ctx.adjustDbgWinPos(ctx);
     } else {
       if (sp.y2 > clH) {
-        if (clH < (height + ctx.opt.adjustY)) {
+        if (clH < (height + ctx.opt.adjY)) {
           ctx.win.style.top = 0;
         } else {
-          var top = clH - height - ctx.opt.adjustY;
+          var top = clH - height - ctx.opt.adjY;
           ctx.win.style.top = top + 'px';
         }
       }
@@ -10433,11 +10433,11 @@ DebugJS.nan2zero = function(v) {
 };
 
 DebugJS.checkModKey = function(e) {
-  var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
   var ctrl = e.ctrlKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
+  var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
   var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
   var meta = e.metaKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
-  var metaKey = '<span style="color:' + shift + '">S</span><span style="color:' + ctrl + '">C</span><span style="color:' + alt + '">A</span><span style="color:' + meta + '">M</span>';
+  var metaKey = '<span style="color:' + ctrl + '">C</span><span style="color:' + shift + '">S</span><span style="color:' + alt + '">A</span><span style="color:' + meta + '">M</span>';
   return metaKey;
 };
 
@@ -14615,8 +14615,8 @@ DebugJS.point.keyevt = function(args) {
   var key = DebugJS.getOptVal(args, 'key');
   if (key != null) e.key = key;
 
-  e.shiftKey = false;
   e.ctrlKey = false;
+  e.shiftKey = false;
   e.altKey = false;
   e.metaKey = false;
   e = DebugJS.point.setKeyFlag(e, args);
@@ -14624,8 +14624,8 @@ DebugJS.point.keyevt = function(args) {
 };
 DebugJS.point.setKeyFlag = function(e, a) {
   for (var i = 0; i < a.length; i++) {
-    if (a[i] == '-s') e.shiftKey = true;
     if (a[i] == '-c') e.ctrlKey = true;
+    if (a[i] == '-s') e.shiftKey = true;
     if (a[i] == '-a') e.altKey = true;
     if (a[i] == '-m') e.metaKey = true;
   }
@@ -15566,8 +15566,8 @@ DebugJS.keyPress.send = function(type) {
   var data = DebugJS.keyPress.data;
   DebugJS.event.create(type);
   DebugJS.event.set('keyCode', data.keyCode);
-  DebugJS.event.set('shiftKey', data.shift);
   DebugJS.event.set('ctrlKey', data.ctrl);
+  DebugJS.event.set('shiftKey', data.shift);
   DebugJS.event.set('altKey', data.alt);
   DebugJS.event.set('metaKey', data.meta);
   var target = (DebugJS.isDescendant(document.activeElement, DebugJS.ctx.win) ? 'window' : 'active');
