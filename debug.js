@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908251354';
+  this.v = '201908251704';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5156,9 +5156,10 @@ DebugJS.prototype = {
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_PAUSED;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_EXPIRED;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_END;
+    var expire = ctx.calcExpireTimeInp();
+    ctx.timerExpireTime = (new Date()).getTime() + expire;
+    ctx.timerSwTimeCd = expire;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) {
-      var expire = ctx.calcExpireTimeInp();
-      ctx.timerExpireTime = (new Date()).getTime() + expire;
       ctx.updateTimerStopwatchCd();
     } else {
       ctx.replaceTimerSubPanel(ctx.timerSwCdInpSubPanel);
@@ -5169,28 +5170,37 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING)) &&
         (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_END))) return;
-    var now = (new Date()).getTime();
-    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
-      if (ctx.timerSwTimeCdContinue) {
-        ctx.timerSwTimeCd = now - ctx.timerExpireTime;
-      }
-    } else if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_END)) {
-      ctx.timerSwTimeCd = ctx.timerExpireTime - now;
-    }
-    if (ctx.timerSwTimeCd < 0) {
-      ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_EXPIRED;
-      ctx.update0ContinueBtnTimerStopwatchCd();
-      if (ctx.timerSwTimeCdContinue) {
-        ctx.timerSwTimeCd *= -1;
-      } else {
-        ctx._endTimerStopwatchCd(ctx);
-        ctx.timerSwTimeCd = 0;
-      }
-    }
+    ctx._updateTimerStopwatchCd(ctx);
     if (ctx.status & DebugJS.ST_TOOLS) {
       ctx.drawStopwatchCd();
       setTimeout(ctx.updateTimerStopwatchCd, DebugJS.UPDATE_INTERVAL_H);
     }
+  },
+  _updateTimerStopwatchCd: function(ctx) {
+    var t = ctx.timerSwTimeCd;
+    if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING)) {
+      return t;
+    }
+    var now = (new Date()).getTime();
+    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
+      if (ctx.timerSwTimeCdContinue) {
+        t = now - ctx.timerExpireTime;
+      }
+    } else if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_END)) {
+      t = ctx.timerExpireTime - now;
+    }
+    if (t < 0) {
+      ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_EXPIRED;
+      ctx.update0ContinueBtnTimerStopwatchCd();
+      if (ctx.timerSwTimeCdContinue) {
+        t *= -1;
+      } else {
+        ctx._endTimerStopwatchCd(ctx);
+        t = 0;
+      }
+    }
+    ctx.timerSwTimeCd = t;
+    return ((ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) ? (t * (-1)) : t);
   },
   drawStopwatchCd: function() {
     var tm = DebugJS.ms2struct(DebugJS.ctx.timerSwTimeCd, true);
@@ -9171,12 +9181,15 @@ DebugJS.prototype = {
         ctx.endTimerStopwatchCd(ctx);
         break;
       case 'val':
-        DebugJS._log(DebugJS.TMR_NM_SW_CD + ': ' + DebugJS.getTimerStr(ctx.timerSwTimeCd));
         break;
       default:
         return -1;
     }
-    return 0;
+    var t = ctx._updateTimerStopwatchCd(ctx);
+    if (op == 'val') {
+      DebugJS._log(DebugJS.TMR_NM_SW_CD + ': ' + (t < 0 ? '-' : '') + DebugJS.getTimerStr(t));
+    }
+    return t;
   },
 
   cmdUnAlias: function(arg, tbl) {
@@ -12930,14 +12943,16 @@ DebugJS.time.reset = function(tmrNm) {
   ctx.timers[tmrNm].count = 0;
 };
 DebugJS.time.getCount = function(tmrNm) {
-  if (!DebugJS.ctx.timers[tmrNm]) {
-    return 0;
-  } else {
+  if (DebugJS.ctx.timers[tmrNm]) {
     return DebugJS.ctx.timers[tmrNm].count;
+  } else {
+    return 0;
   }
 };
 DebugJS.time.updateCount = function(tmrNm) {
-  DebugJS.ctx.timers[tmrNm].count = (new Date()).getTime() - DebugJS.ctx.timers[tmrNm].start;
+  if (DebugJS.ctx.timers[tmrNm]) {
+    DebugJS.ctx.timers[tmrNm].count = (new Date()).getTime() - DebugJS.ctx.timers[tmrNm].start;
+  }
 };
 DebugJS.time.log = function(msg, tmrNm) {
   var now = (new Date()).getTime();
@@ -13023,6 +13038,7 @@ DebugJS.stopwatch.reset = function(n) {
 DebugJS.stopwatch.val = function(n) {
   if (n != 0) n = 1;
   var nm = DebugJS.stopwatch.tmNm[n];
+  DebugJS.time.updateCount(nm);
   return DebugJS.time.getCount(nm);
 };
 DebugJS.stopwatch.log = function(n, msg) {
