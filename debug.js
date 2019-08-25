@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908251704';
+  this.v = '201908252115';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5798,7 +5798,8 @@ DebugJS.prototype = {
     } else if (file.name.match(/\.json$/)) {
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
       DebugJS._log('');
-      DebugJS._cmdJson(DebugJS.delAllNL(cnt), true);
+      var r = DebugJS._cmdJson(DebugJS.delAllNL(cnt), true);
+      DebugJS.cp2cb(r);
     }
   },
   _onDropOnFeat: function(ctx, e, fn) {
@@ -6036,6 +6037,9 @@ DebugJS.prototype = {
     }
     var b64cnt = DebugJS.splitDataUrl(dturl);
     ctx.fileVwrDataSrc = b64cnt;
+    DebugJS.file.onLoaded(file, dturl);
+    ctx.setDataUrl(ctx, b64cnt.scheme, b64cnt.data);
+    ctx.showB64Preview(ctx, file, b64cnt.scheme, b64cnt.data);
     var cType = DebugJS.getContentType(null, file, b64cnt.data);
     if (cType == 'text') {
       if (ctx.fileVwrSysCb) {
@@ -6043,9 +6047,6 @@ DebugJS.prototype = {
         ctx.fileVwrSysCb(ctx, file, decoded);
       }
     }
-    DebugJS.file.onLoaded(file, dturl);
-    ctx.setDataUrl(ctx, b64cnt.scheme, b64cnt.data);
-    ctx.showB64Preview(ctx, file, b64cnt.scheme, b64cnt.data);
   },
   onFileLoadedBin: function(ctx, file, content) {
     var buf = new Uint8Array(content);
@@ -13123,13 +13124,16 @@ DebugJS.isSysVal = function(n) {
 };
 
 DebugJS.cp2cb = function(s) {
-  if (DebugJS.ctx.status & DebugJS.ST_CLP) DebugJS.copy2cb(s);
+  if ((DebugJS.ctx.status & DebugJS.ST_CLP) && (s !== undefined)) {
+    DebugJS.copy2cb(s);
+  }
 };
 DebugJS.copy2cb = function(s) {
   var b = DebugJS.ctx.bodyEl;
-  if (DebugJS.ctx.win) b = DebugJS.ctx.win;
   var ta = document.createElement('textarea');
-  ta.textContent = s;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999';
+  ta.value = s;
   b.appendChild(ta);
   ta.select();
   var r = document.execCommand('copy');
