@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908241518';
+  this.v = '201908251354';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9123,7 +9123,6 @@ DebugJS.prototype = {
   },
   _cmdStopwatch: function(op, n) {
     var stopwatch = DebugJS.stopwatch;
-    var elps = stopwatch.val(n);
     switch (op) {
       case 'start':
         stopwatch.start(n);
@@ -9141,11 +9140,12 @@ DebugJS.prototype = {
         stopwatch.end(n);
         break;
       case 'val':
-        DebugJS._log('sw' + n + ': ' + DebugJS.getTimerStr(elps));
         break;
       default:
         return -1;
     }
+    var elps = stopwatch.val(n);
+    if (op == 'val') DebugJS._log('sw' + n + ': ' + DebugJS.getTimerStr(elps));
     return elps;
   },
   _cmdStopwatch2: function(ctx, op) {
