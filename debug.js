@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201908310022';
+  this.v = '20190831240';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10336,8 +10336,8 @@ DebugJS.getTimeDurationStr = function(t1, t2) {
 };
 DebugJS.getTimeStampOfDay = function(t, d) {
   if (!d) d = DebugJS.getDateTime();
-  t = t.replace(/:/g, '');
-  t = t.replace(/\./g, '');
+  if (t.indexOf(':') == 1) t = '0' + t;
+  t = t.replace(/:/g, '').replace(/\./g, '');
   var hh = t.substr(0, 2);
   var mi = t.substr(2, 2);
   var ss = t.substr(4, 2);
