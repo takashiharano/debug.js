@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '20190832034';
+  this.v = '201909010127';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2509,7 +2509,7 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       DebugJS.time.updateCount(DebugJS.TMR_NM_SW_0);
     }
-    var str = DebugJS.getTimerStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_0));
+    var str = DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_0));
     if (ctx.swLabel) {
       if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
         str = '<span style="color:' + ctx.opt.timerColor + ' !important">' + str + '</span>';
@@ -2926,7 +2926,7 @@ DebugJS.prototype = {
           ctx.startMeasure(ctx, posX, posY);
         }
         if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
-          DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTimerStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_0)) + '</span>');
+          DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_0)) + '</span>');
           ctx.resetStopwatch();
         }
         if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
@@ -5140,7 +5140,7 @@ DebugJS.prototype = {
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
       color = ctx.opt.timerColorExpr;
     }
-    var t = DebugJS.TMR_NM_SW_CD + ': ' + '<span style="color:' + color + '">' + DebugJS.getTimerStr(ctx.timerSwTimeCd) + '</span>';
+    var t = DebugJS.TMR_NM_SW_CD + ': ' + '<span style="color:' + color + '">' + DebugJS.getTmrStr(ctx.timerSwTimeCd) + '</span>';
     DebugJS._log(t);
   },
   endTimerStopwatchCd: function(ctx) {
@@ -9188,7 +9188,7 @@ DebugJS.prototype = {
         return -1;
     }
     var elps = stopwatch.val(n);
-    if (op == 'val') DebugJS._log('sw' + n + ': ' + DebugJS.getTimerStr(elps));
+    if (op == 'val') DebugJS._log('sw' + n + ': ' + DebugJS.getTmrStr(elps));
     return elps;
   },
   _cmdStopwatch2: function(ctx, op) {
@@ -9220,7 +9220,7 @@ DebugJS.prototype = {
     }
     var t = ctx._updateTimerStopwatchCd(ctx);
     if (op == 'val') {
-      DebugJS._log(DebugJS.TMR_NM_SW_CD + ': ' + (t < 0 ? '-' : '') + DebugJS.getTimerStr(t));
+      DebugJS._log(DebugJS.TMR_NM_SW_CD + ': ' + (t < 0 ? '-' : '') + DebugJS.getTmrStr(t));
     }
     return t;
   },
@@ -9306,11 +9306,8 @@ DebugJS.prototype = {
   cmdVals: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var o = DebugJS.getOptVal(arg, 'c');
-    if (o == null) {
-      ctx._cmdVals(ctx);
-    } else {
-      ctx._cmdValsC(ctx);
-    }
+    var f = (o == null ? ctx._cmdVals : ctx._cmdValsC);
+    f(ctx);
   },
   _cmdVals: function(ctx) {
     var v = '';
@@ -10217,6 +10214,11 @@ DebugJS.num2date = function(s) {
 DebugJS.today = function(s) {
   return DebugJS.getDateStr(DebugJS.getDateTime(), (s === undefined ? '-' : s));
 };
+DebugJS.getDateTimeStr = function(t, w, iso) {
+  var d = DebugJS.getDateTime(t);
+  if (iso) return d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss;
+  return d.yyyy + '-' + d.mm + '-' + d.dd + (w ? ' ' + DebugJS.WDAYS[d.wday] : '') + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
+};
 DebugJS.getDateStr = function(d, s) {
   return d.yyyy + s + d.mm + s + d.dd;
 };
@@ -10224,14 +10226,9 @@ DebugJS.getTimeStr = function(d) {
   if (!isNaN(d)) d = DebugJS.getDateTime(d);
   return d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
 };
-DebugJS.getDateTimeStr = function(t, w, iso) {
-  var d = DebugJS.getDateTime(t);
-  if (iso) return d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss;
-  return d.yyyy + '-' + d.mm + '-' + d.dd + (w ? ' ' + DebugJS.WDAYS[d.wday] : '') + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
-};
-DebugJS.getTimerStr = function(ms) {
-  var tm = DebugJS.ms2struct(ms, true);
-  return tm.hh + ':' + tm.mi + ':' + tm.ss + '.' + tm.sss;
+DebugJS.getTmrStr = function(ms) {
+  var t = DebugJS.ms2struct(ms, true);
+  return t.hh + ':' + t.mi + ':' + t.ss + '.' + t.sss;
 };
 DebugJS.ms2struct = function(ms, fmt) {
   var wk = ms;
@@ -11781,7 +11778,7 @@ DebugJS.calcTime = function(res, days, byTheDay, isSub) {
 };
 DebugJS.getElapsedTimeStr = function(t1, t2) {
   var delta = t2 - t1;
-  return DebugJS.getTimerStr(delta);
+  return DebugJS.getTmrStr(delta);
 };
 
 DebugJS.isTZOffsetStr = function(s) {
@@ -13158,7 +13155,7 @@ DebugJS.stopwatch.val = function(n) {
 };
 DebugJS.stopwatch.log = function(n, msg) {
   var nm = DebugJS.stopwatch.tmNm[n];
-  var t = DebugJS.getTimerStr(DebugJS.time.getCount(nm));
+  var t = DebugJS.getTmrStr(DebugJS.time.getCount(nm));
   var m = nm + ': <span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>';
   if (msg != undefined) m += ' ' + msg;
   DebugJS._log(m);
