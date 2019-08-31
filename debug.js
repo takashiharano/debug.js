@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '20190831240';
+  this.v = '20190832034';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -116,15 +116,15 @@ var DebugJS = DebugJS || function() {
   this.elmNextBtn = null;
   this.elmSelectBtn = null;
   this.elmHighlightBtn = null;
-  this.elmUpdateBtn = null;
+  this.elmUpdBtn = null;
   this.elmCapBtn = null;
   this.elmDelBtn = null;
-  this.elmUpdateInput = null;
+  this.elmUpdInput = null;
   this.elmNumPanel = null;
   this.elmInfoBodyPanel = null;
   this.elmInfoStatus = DebugJS.ELMINFO_ST_SELECT | DebugJS.ELMINFO_ST_HIGHLIGHT;
-  this.elmUpdateInterval = 0;
-  this.elmUpdateTimerId = 0;
+  this.elmUpdInterval = 0;
+  this.elmUpdTimerId = 0;
   this.elmInfofoldingSt = {text: false, allStyles: false, elBorder: false, elValue: false, elSrc: false, htmlSrc: false};
   this.targetEl = null;
   this.toolsBtn = null;
@@ -251,12 +251,12 @@ var DebugJS = DebugJS || function() {
   this.scrollPosLabel = null;
   this.scrollPosX = 0;
   this.scrollPosY = 0;
-  this.keyDownLabel = null;
-  this.keyPressLabel = null;
-  this.keyUpLabel = null;
-  this.keyDownCode = DebugJS.KEY_ST_DFLT;
-  this.keyPressCode = DebugJS.KEY_ST_DFLT;
-  this.keyUpCode = DebugJS.KEY_ST_DFLT;
+  this.keyLabelDw = null;
+  this.keyLabelPr = null;
+  this.keyLabelUp = null;
+  this.keyCodeDw = DebugJS.KEY_ST_DFLT;
+  this.keyCodePr = DebugJS.KEY_ST_DFLT;
+  this.keyCodeUp = DebugJS.KEY_ST_DFLT;
   this.ledPanel = null;
   this.led = 0;
   this.msgLabel = null;
@@ -1422,9 +1422,9 @@ DebugJS.prototype = {
       ctx.mousePosLabel = ctx.createSysInfoLabel();
       ctx.mouseClickLabel = ctx.createSysInfoLabel();
       ctx.infoPanel.appendChild(document.createElement('br'));
-      ctx.keyDownLabel = ctx.createSysInfoLabel();
-      ctx.keyPressLabel = ctx.createSysInfoLabel();
-      ctx.keyUpLabel = ctx.createSysInfoLabel();
+      ctx.keyLabelDw = ctx.createSysInfoLabel();
+      ctx.keyLabelPr = ctx.createSysInfoLabel();
+      ctx.keyLabelUp = ctx.createSysInfoLabel();
     }
 
     if (opt.useMsgDisplay) {
@@ -1801,13 +1801,13 @@ DebugJS.prototype = {
   },
 
   updateKeyDownLabel: function() {
-    this.keyDownLabel.innerHTML = 'Key Down:' + this.keyDownCode;
+    this.keyLabelDw.innerHTML = 'Key Down:' + this.keyCodeDw;
   },
   updateKeyPressLabel: function() {
-    this.keyPressLabel.innerHTML = 'Press:' + this.keyPressCode;
+    this.keyLabelPr.innerHTML = 'Press:' + this.keyCodePr;
   },
   updateKeyUpLabel: function() {
-    this.keyUpLabel.innerHTML = 'Up:' + this.keyUpCode;
+    this.keyLabelUp.innerHTML = 'Up:' + this.keyCodeUp;
   },
 
   updateLedPanel: function() {
@@ -2852,25 +2852,25 @@ DebugJS.prototype = {
 
   updateStatusInfoOnKeyDown: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
-    ctx.keyDownCode = e.keyCode + '(' + e.key + ') ' + modKey;
+    ctx.keyCodeDw = e.keyCode + '(' + e.key + ') ' + modKey;
     ctx.updateKeyDownLabel();
-    ctx.keyPressCode = DebugJS.KEY_ST_DFLT;
+    ctx.keyCodePr = DebugJS.KEY_ST_DFLT;
     ctx.updateKeyPressLabel();
-    ctx.keyUpCode = DebugJS.KEY_ST_DFLT;
+    ctx.keyCodeUp = DebugJS.KEY_ST_DFLT;
     ctx.updateKeyUpLabel();
     ctx.resizeMainHeight();
   },
 
   updateStatusInfoOnKeyPress: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
-    ctx.keyPressCode = e.keyCode + '(' + e.key + ') ' + modKey;
+    ctx.keyCodePr = e.keyCode + '(' + e.key + ') ' + modKey;
     ctx.updateKeyPressLabel();
     ctx.resizeMainHeight();
   },
 
   updateStatusInfoOnKeyUp: function(ctx, e) {
     var modKey = DebugJS.checkModKey(e);
-    ctx.keyUpCode = e.keyCode + '(' + e.key + ') ' + modKey;
+    ctx.keyCodeUp = e.keyCode + '(' + e.key + ') ' + modKey;
     ctx.updateKeyUpLabel();
     ctx.resizeMainHeight();
   },
@@ -3949,15 +3949,15 @@ DebugJS.prototype = {
     ctx.elmHighlightBtn.style.marginLeft = '4px';
     ctx.elmHighlightBtn.style.marginRight = '4px';
 
-    ctx.elmUpdateBtn = ctx.createElmInfoHeadBtn('UPDATE', ctx.updateElementInfo);
-    ctx.elmUpdateBtn.style.marginLeft = '4px';
-    ctx.setStyle(ctx.elmUpdateBtn, 'color', DebugJS.COLOR_INACT);
+    ctx.elmUpdBtn = ctx.createElmInfoHeadBtn('UPDATE', ctx.updateElementInfo);
+    ctx.elmUpdBtn.style.marginLeft = '4px';
+    ctx.setStyle(ctx.elmUpdBtn, 'color', DebugJS.COLOR_INACT);
 
     var UPDATE_COLOR = '#ccc';
     var label1 = DebugJS.ui.addLabel(ctx.elmInfoHeaderPanel, ':');
     label1.style.marginRight = '0px';
     ctx.setStyle(label1, 'color', UPDATE_COLOR);
-    ctx.elmUpdateInput = DebugJS.ui.addTextInput(ctx.elmInfoHeaderPanel, '30px', 'right', UPDATE_COLOR, ctx.elmUpdateInterval, ctx.onchangeElmUpdateInterval);
+    ctx.elmUpdInput = DebugJS.ui.addTextInput(ctx.elmInfoHeaderPanel, '30px', 'right', UPDATE_COLOR, ctx.elmUpdInterval, ctx.onchangeElmUpdInterval);
     var label2 = DebugJS.ui.addLabel(ctx.elmInfoHeaderPanel, 'ms');
     label2.style.marginLeft = '2px';
     ctx.setStyle(label2, 'color', UPDATE_COLOR);
@@ -4261,7 +4261,7 @@ DebugJS.prototype = {
       ctx.targetEl = el;
       ctx.enablePrevElBtn(ctx, (ctx.getPrevElm(ctx, el) ? true : false));
       ctx.enableNextElBtn(ctx, (ctx.getNextElm(ctx, el) ? true : false));
-      ctx.setStyle(ctx.elmUpdateBtn, 'color', ctx.opt.btnColor);
+      ctx.setStyle(ctx.elmUpdBtn, 'color', ctx.opt.btnColor);
       ctx.setStyle(ctx.elmCapBtn, 'color', ctx.opt.btnColor);
       ctx.setStyle(ctx.elmDelBtn, 'color', '#a88');
     }
@@ -4287,22 +4287,22 @@ DebugJS.prototype = {
   showAllElmNum: function() {
     DebugJS.ctx.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
   },
-  onchangeElmUpdateInterval: function() {
+  onchangeElmUpdInterval: function() {
     var ctx = DebugJS.ctx;
-    var v = ctx.elmUpdateInput.value;
+    var v = ctx.elmUpdInput.value;
     if (v == '') v = 0;
     if (isFinite(v)) {
-      ctx.elmUpdateInterval = v;
-      clearTimeout(ctx.elmUpdateTimerId);
-      ctx.elmUpdateTimerId = setTimeout(ctx.updateElmInfoInterval, v);
+      ctx.elmUpdInterval = v;
+      clearTimeout(ctx.elmUpdTimerId);
+      ctx.elmUpdTimerId = setTimeout(ctx.updateElmInfoInterval, v);
     }
   },
   updateElmInfoInterval: function() {
     var ctx = DebugJS.ctx;
     if (!(ctx.status & DebugJS.ST_ELM_INFO)) return;
     ctx.updateElementInfo();
-    if (ctx.elmUpdateInterval > 0) {
-      ctx.elmUpdateTimerId = setTimeout(ctx.updateElmInfoInterval, ctx.elmUpdateInterval);
+    if (ctx.elmUpdInterval > 0) {
+      ctx.elmUpdTimerId = setTimeout(ctx.updateElmInfoInterval, ctx.elmUpdInterval);
     }
   },
   toggleElmSelectMode: function() {
@@ -4420,7 +4420,7 @@ DebugJS.prototype = {
     ctx.htmlSrcUpdInpLbl2.innerText = 'ms';
     ctx.htmlSrcHeaderPanel.appendChild(ctx.htmlSrcUpdInpLbl2);
 
-    ctx.htmlSrcUpdInput = DebugJS.ui.addTextInput(ctx.htmlSrcHeaderPanel, '50px', 'right', UPDATE_COLOR, ctx.htmlSrcUpdInterval, ctx.onchangeHtmlSrcUpdateInterval);
+    ctx.htmlSrcUpdInput = DebugJS.ui.addTextInput(ctx.htmlSrcHeaderPanel, '50px', 'right', UPDATE_COLOR, ctx.htmlSrcUpdInterval, ctx.onchangeHtmlSrcUpdInterval);
     ctx.htmlSrcUpdInput.style.float = 'right';
 
     ctx.htmlSrcUpdInpLbl = document.createElement('span');
@@ -4464,7 +4464,7 @@ DebugJS.prototype = {
     ctx.htmlSrcBodyPanel.appendChild(ctx.htmlSrcBody);
     ctx.htmlSrcBody.innerHTML = html;
   },
-  onchangeHtmlSrcUpdateInterval: function() {
+  onchangeHtmlSrcUpdInterval: function() {
     var ctx = DebugJS.ctx;
     var interval = ctx.htmlSrcUpdInput.value;
     if (interval == '') interval = 0;
@@ -4479,7 +4479,7 @@ DebugJS.prototype = {
     if (!(ctx.status & DebugJS.ST_HTML_SRC)) return;
     ctx.showHtmlSrc();
     if (ctx.htmlSrcUpdInterval > 0) {
-      ctx.elmUpdateTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdInterval);
+      ctx.elmUpdTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdInterval);
     }
   },
 
@@ -10162,13 +10162,12 @@ DebugJS._date = function(ts, tz, iso, showTS) {
 DebugJS.int2DateStr = function(val, tz, iso) {
   tz = DebugJS.toFullTz(tz);
   val += '';
-  var s;
   if (DebugJS.isUnixTm(val)) {
     val = DebugJS.float2ms(val);
   }
   val = DebugJS.parseInt(val);
   var dt = new Date(val);
-  s = DebugJS.getTZedDateTimeStr(dt, tz, iso);
+  var s = DebugJS.getTZedDateTimeStr(dt, tz, iso);
   s += (iso ? tz : ' ' + DebugJS.toClocklikeStr(tz));
   return s;
 };
@@ -10184,24 +10183,24 @@ DebugJS.diffDate = function(d1, d2) {
 DebugJS.isDateFormat = function(s, p) {
   if (s == null) return false;
   var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}';
-  if (!p) r += '$';
-  return (s.match(new RegExp(r)) ? true : false);
+  return DebugJS._isDTFmt(s, p, r);
 };
 DebugJS.isBasicDateFormat = function(s, p) {
   if (s == null) return false;
   var r = '^\\d{4}[0-1][0-9][0-3][0-9]';
-  if (!p) r += '$';
-  return (s.match(new RegExp(r)) ? true : false);
+  return DebugJS._isDTFmt(s, p, r);
 };
 DebugJS.isDateTimeFormat = function(s, p) {
   if (s == null) return false;
   var r = '^\\d{4}[-/]\\d{1,2}[-/]\\d{1,2} {1,}\\d{1,2}:\\d{2}:?\\d{0,2}.?\\d{0,3}';
-  if (!p) r += '$';
-  return (s.match(new RegExp(r)) ? true : false);
+  return DebugJS._isDTFmt(s, p, r);
 };
 DebugJS.isDateTimeFormatIso = function(s, p) {
   if (typeof s != 'string') return false;
   var r = '^\\d{8}T\\d{0,6}.?\\d{0,3}';
+  return DebugJS._isDTFmt(s, p, r);
+};
+DebugJS._isDTFmt = function(s, p, r) {
   if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
