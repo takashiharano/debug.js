@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909010127';
+  this.v = '201909032347';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -367,7 +367,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
-    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-d|-s] [min[d]] [max]'},
+    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max]'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
@@ -624,7 +624,7 @@ DebugJS.LED_COLOR = ['#4cf', '#0ff', '#6f6', '#ee0', '#f80', '#f66', '#f0f', '#d
 DebugJS.LED_COLOR_INACT = '#777';
 DebugJS.ITEM_NM_COLOR = '#cff';
 DebugJS.KEYWRD_COLOR = '#0ff';
-DebugJS.RND_TYPE_NUM = '-d';
+DebugJS.RND_TYPE_NUM = '-n';
 DebugJS.RND_TYPE_STR = '-s';
 DebugJS.ELM_HL_CLASS_SUFFIX = '-elhl';
 DebugJS.EXPANDBTN = '&gt;';
@@ -8529,31 +8529,18 @@ DebugJS.prototype = {
   },
 
   cmdRandom: function(arg, tbl, echo) {
-    var a = DebugJS.splitArgs(arg);
-    var type = a[0] || DebugJS.RND_TYPE_NUM;
-    var min, max;
-    if (a[0] == '') {
-      type = DebugJS.RND_TYPE_NUM;
-    } else {
-      if ((a[0] == DebugJS.RND_TYPE_NUM) || (a[0] == DebugJS.RND_TYPE_STR)) {
-        type = a[0];
-        min = a[1];
-        max = a[2];
-      } else if (a[0].match(/[0-9]{1,}/)) {
-        type = DebugJS.RND_TYPE_NUM;
-        min = a[0];
-        max = a[1];
-      } else {
-        DebugJS.printUsage(tbl.help);
-        return;
-      }
-    }
+    var a = DebugJS.getNonOptVals(arg);
+    var min = a[0];
+    var max = a[1];
+    var o = DebugJS.get1stOpt(arg);
     var r;
-    if ((type == DebugJS.RND_TYPE_NUM) && min && min.match(/^\d+d$/)) {
+    if (o == 's') {
+      r = DebugJS.getRandomS(min, max);
+    } else if (min && min.match(/^\d+d$/)) {
       var d = min.replace(/d/, '') | 0;
       r = DebugJS.getRndNums(d);
     } else {
-      r = DebugJS.getRandom(type, min, max);
+      r = DebugJS.getRandomN(min, max);
     }
     if (echo) DebugJS._log.res(r);
     return r;
@@ -9879,11 +9866,26 @@ DebugJS.countOpts = function(args) {
   var i = 0;
   var o = DebugJS.getOptVals(args);
   for (var k in o) {
-    i++;
+    if (k) i++;
   }
   return i;
 };
-
+DebugJS.get1stOpt = function(args) {
+  var o = DebugJS.getOptVals(args);
+  for (var k in o) {
+    if (k) return k;
+  }
+  return null;
+};
+DebugJS.getNonOptVals = function(args) {
+  var a = DebugJS.splitCmdLine(args);
+  var v = [];
+  if (a[0] == '') return v;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i].charAt(0) != '-') v.push(a[i]);
+  }
+  return v;
+};
 DebugJS.getQuotedStr = function(str) {
   var r = null;
   var start = 0;
@@ -11859,24 +11861,18 @@ DebugJS.isSTN = function(s) {
 };
 
 DebugJS.random = function(min, max) {
-  return DebugJS.getRandom(DebugJS.RND_TYPE_NUM, min, max);
+  return DebugJS.getRandomN(min, max);
 };
-DebugJS.getRandom = function(type, min, max) {
+
+DebugJS.getRandomN = function(min, max) {
   if (min === undefined) {
-    if (type == DebugJS.RND_TYPE_NUM) {
-      min = 0;
-      max = 0x7fffffff;
-    } else if (type == DebugJS.RND_TYPE_STR) {
-      min = 1;
-      max = DebugJS.RND_STR_DFLT_MAX_LEN;
-    }
+    min = 0;
+    max = 0x7fffffff;
   } else {
     min = parseInt(min);
     if (max === undefined) {
       max = min;
-      if (type == DebugJS.RND_TYPE_NUM) {
-        min = 0;
-      }
+      min = 0;
     } else {
       max = parseInt(max);
     }
@@ -11884,14 +11880,27 @@ DebugJS.getRandom = function(type, min, max) {
       var wk = min; min = max; max = wk;
     }
   }
-  var fn;
-  if (type == DebugJS.RND_TYPE_STR) {
-    fn = DebugJS.getRndStr;
-  } else {
-    fn = DebugJS.getRndNum;
-  }
-  return fn(min, max);
+  return DebugJS.getRndNum(min, max);
 };
+
+DebugJS.getRandomS = function(min, max) {
+  if (min === undefined) {
+    min = 1;
+    max = DebugJS.RND_STR_DFLT_MAX_LEN;
+  } else {
+    min = parseInt(min);
+    if (max === undefined) {
+      max = min;
+    } else {
+      max = parseInt(max);
+    }
+    if (min > max) {
+      var wk = min; min = max; max = wk;
+    }
+  }
+  return DebugJS.getRndStr(min, max);
+};
+
 DebugJS.getRndNum = function(min, max) {
   min = parseInt(min);
   max = parseInt(max);
