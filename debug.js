@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909032347';
+  this.v = '201909040013';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8534,7 +8534,10 @@ DebugJS.prototype = {
     var max = a[1];
     var o = DebugJS.get1stOpt(arg);
     var r;
-    if (o == 's') {
+    if (o && ((o != 'n') && (o != 's'))) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    } else if (o == 's') {
       r = DebugJS.getRandomS(min, max);
     } else if (min && min.match(/^\d+d$/)) {
       var d = min.replace(/d/, '') | 0;
@@ -11865,12 +11868,12 @@ DebugJS.random = function(min, max) {
 };
 
 DebugJS.getRandomN = function(min, max) {
-  if (min === undefined) {
+  if (isNaN(min)) {
     min = 0;
     max = 0x7fffffff;
   } else {
     min = parseInt(min);
-    if (max === undefined) {
+    if (isNaN(max)) {
       max = min;
       min = 0;
     } else {
@@ -11884,12 +11887,12 @@ DebugJS.getRandomN = function(min, max) {
 };
 
 DebugJS.getRandomS = function(min, max) {
-  if (min === undefined) {
+  if (isNaN(min)) {
     min = 1;
     max = DebugJS.RND_STR_DFLT_MAX_LEN;
   } else {
     min = parseInt(min);
-    if (max === undefined) {
+    if (isNaN(max)) {
       max = min;
     } else {
       max = parseInt(max);
