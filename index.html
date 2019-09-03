@@ -3679,6 +3679,28 @@ var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-
   </tr>
 
   <tr>
+    <td class="name">dbg.getNonOptVals</td>
+    <td>argument-string</td>
+    <td>
+      Returns values of non options.<br>
+<pre>
+var vals = dbg.getNonOptVals('<input type="text" id="nonopt-vals-arg-txt" class="demo-text" style="width:200px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>'); <button class="demo-button2" onclick="log.p(dbg.getNonOptVals(getVal('nonopt-vals-arg-txt')), 0, 'val =');">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.get1stOpt</td>
+    <td>argument-string</td>
+    <td>
+      Returns the 1st option name in the argument.<br>
+<pre>
+var opt = dbg.get1stOpt('<input type="text" id="opt-1stval-arg-txt" class="demo-text" style="width:200px;" value='-a -b -c'>'); <button class="demo-button2" onclick="log.p(dbg.get1stOpt(getVal('opt-1stval-arg-txt')), 0, 'opt =');">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.hasOpt</td>
     <td>argument-string<br>key</td>
     <td>
