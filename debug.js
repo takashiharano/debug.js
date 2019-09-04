@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909040013';
+  this.v = '201909042240';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -355,7 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
-    {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len "str"|array'},
+    {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|array'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|date|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
@@ -7943,21 +7943,26 @@ DebugJS.prototype = {
   },
 
   cmdLen: function(arg, tbl, echo) {
+    var _n;
     try {
-      var _a = eval(arg);
+      var _a = eval(DebugJS.getNonOptVals(arg)[0]);
+      if (DebugJS.hasOpt(arg, 'b') && (typeof _a == 'string')) {
+        _n = DebugJS.lenB(_a);
+      } else {
+        _n = _a.length;
+      }
     } catch (e) {
       DebugJS._log.e(e);
       return;
     }
-    var n = _a.length;
     if (echo) {
-      if (n == undefined) {
+      if (_n == undefined) {
         DebugJS._log.res.err('uncountable');
       } else {
-        DebugJS._log.res(n);
+        DebugJS._log.res(_n);
       }
     }
-    return n;
+    return _n;
   },
 
   cmdLog: function(arg, tbl, echo) {
@@ -12229,6 +12234,9 @@ DebugJS.toFullWidth = function(s) {
   var f = s.replace(/ /g, '　').replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '‘').replace(/\\/g, '￥');
   f = f.replace(/[!-~]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) + 65248);});
   return f;
+};
+DebugJS.lenB = function(s) {
+  return (new Blob([s], {type: 'text/plain'})).size;
 };
 
 DebugJS.trimDownText = function(txt, maxLen, style) {
