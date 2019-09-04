@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909042240';
+  this.v = '201909050003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2328,8 +2328,7 @@ DebugJS.prototype = {
       }
     }
 
-    ctx.resizeMainHeight();
-    ctx.resizeImgPreview();
+    ctx.adjLayout();
   },
 
   endResize: function(ctx) {
@@ -2345,6 +2344,11 @@ DebugJS.prototype = {
     var cmdPanelH = (ctx.cmdPanel) ? ctx.cmdPanel.offsetHeight : 0;
     var mainPanelHeight = ctx.win.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WIN_ADJUST;
     ctx.mainPanel.style.height = mainPanelHeight + 'px';
+  },
+
+  adjLayout: function() {
+    DebugJS.ctx.resizeMainHeight();
+    DebugJS.ctx.resizeImgPreview();
   },
 
   disableTextSelect: function(ctx) {
@@ -3179,8 +3183,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (w > 0) ctx.win.style.width = w + 'px';
     if (h > 0) ctx.win.style.height = h + 'px';
-    ctx.resizeMainHeight();
-    ctx.resizeImgPreview();
+    ctx.adjLayout();
   },
 
   adjustDbgWinPos: function(ctx) {
@@ -3195,8 +3198,7 @@ DebugJS.prototype = {
     if ((ctx.sizeStatus == DebugJS.SIZE_ST_FULL_H) || (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH)) {
       ctx.win.style.height = document.documentElement.clientHeight + 'px';
     }
-    ctx.resizeMainHeight();
-    ctx.resizeImgPreview();
+    ctx.adjLayout();
   },
 
   saveSizeAndPos: function(ctx) {
@@ -6464,8 +6466,7 @@ DebugJS.prototype = {
     try {
       bat.setExecArg(eval(a));
     } catch (e) {
-      DebugJS._log.e('BAT ARG ERROR (' + e + ')');
-      return;
+      DebugJS._log.e('BAT ARG ERROR (' + e + ')');return;
     }
     var s = ctx.batStartTxt.value;
     var e = ctx.batEndTxt.value;
@@ -6706,14 +6707,12 @@ DebugJS.prototype = {
 
   setSelfSizeW: function(ctx, w) {
     ctx.win.style.width = w + 'px';
-    ctx.resizeMainHeight();
-    ctx.resizeImgPreview();
+    ctx.adjLayout();
   },
 
   setSelfSizeH: function(ctx, h) {
     ctx.win.style.height = h + 'px';
-    ctx.resizeMainHeight();
-    ctx.resizeImgPreview();
+    ctx.adjLayout();
   },
 
   expandHight: function(ctx, height) {
@@ -6751,8 +6750,7 @@ DebugJS.prototype = {
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
       ctx.win.style.width = ctx.expandModeOrg.w + 'px';
       ctx.win.style.height = ctx.expandModeOrg.h + 'px';
-      ctx.resizeMainHeight();
-      ctx.resizeImgPreview();
+      ctx.adjLayout();
       ctx.scrollLogBtm(ctx);
       if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) {
         ctx.adjustDbgWinPos(ctx);
@@ -7039,8 +7037,7 @@ DebugJS.prototype = {
         try {
           p = eval(p);
         } catch (e) {
-          DebugJS._log.e('bat symbols: ' + e);
-          return;
+          DebugJS._log.e('bat symbols: ' + e);return;
         }
         ret = bat.getSymbols(t, p);
         if (echo) DebugJS._log.p(ret);
@@ -7207,8 +7204,7 @@ DebugJS.prototype = {
       var k = eval(a[1]);
       var v = eval(a[2]);
     } catch (e) {
-      DebugJS._log.e(e);
-      return;
+      DebugJS._log.e(e);return;
     }
     var r;
     switch (op) {
@@ -7952,8 +7948,7 @@ DebugJS.prototype = {
         _n = _a.length;
       }
     } catch (e) {
-      DebugJS._log.e(e);
-      return;
+      DebugJS._log.e(e);return;
     }
     if (echo) {
       if (_n == undefined) {
@@ -8023,8 +8018,7 @@ DebugJS.prototype = {
     try {
       s = eval(s);
     } catch (e) {
-      DebugJS._log.e(e);
-      return;
+      DebugJS._log.e(e);return;
     }
     ctx.setLogFilter(ctx, s, DebugJS.hasOpt(arg, 'case'), DebugJS.hasOpt(arg, 'fl'));
   },
@@ -8324,8 +8318,7 @@ DebugJS.prototype = {
       try {
         label = eval(label);
       } catch (e) {
-        DebugJS._log.e(e);
-        return;
+        DebugJS._log.e(e);return;
       }
       point.moveToLabel(label, idx, speed, step, alignX, alignY);
     } else if (isNaN(target)) {
@@ -8455,8 +8448,7 @@ DebugJS.prototype = {
     try {
       label = eval(label);
     } catch (e) {
-      DebugJS._log.e(e);
-      return;
+      DebugJS._log.e(e);return;
     }
     var idx = args[2] | 0;
     DebugJS.pointByLabel(label, idx, alignX, alignY);
@@ -9036,8 +9028,7 @@ DebugJS.prototype = {
     try {
       var inf = eval(info);
     } catch (e) {
-      DebugJS._log.e('Illegal info opt: ' + info);
-      return;
+      DebugJS._log.e('Illegal info opt: ' + info);return;
     }
     DebugJS.test.setResult(st, label, inf);
   },
@@ -11268,8 +11259,7 @@ DebugJS.convertBin = function(data) {
   try {
     val = eval(data.exp);
   } catch (e) {
-    DebugJS._log.e('Invalid value: ' + e);
-    return;
+    DebugJS._log.e('Invalid value: ' + e);return;
   }
   var v2 = parseInt(val).toString(2);
   var v2len = v2.length;
@@ -13996,8 +13986,7 @@ DebugJS.bat.ret = function(arg) {
     try {
       DebugJS.ctx.CMDVALS['%RET%'] = eval(arg);
     } catch (e) {
-      DebugJS._log.e(e);
-      return;
+      DebugJS._log.e(e);return;
     }
     DebugJS.ctx.CMDVALS['%ARG%'] = fnCtx.fnArg;
     ctrl.fnArg = fnCtx.fnArg;
@@ -14836,8 +14825,7 @@ DebugJS.point.setProp = function(prop, val, echo) {
   try {
     var v = eval(val);
   } catch (e) {
-    DebugJS._log.e(e);
-    return;
+    DebugJS._log.e(e);return;
   }
   var p = prop.split('.');
   var e = el;
