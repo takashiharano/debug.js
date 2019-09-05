@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909050003';
+  this.v = '201909052227';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7939,6 +7939,10 @@ DebugJS.prototype = {
   },
 
   cmdLen: function(arg, tbl, echo) {
+    if (!arg) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
     var _n;
     try {
       var _a = eval(DebugJS.getNonOptVals(arg)[0]);
