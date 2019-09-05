@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909052227';
+  this.v = '201909052330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -325,7 +325,7 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] array'},
+    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] Array'},
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
@@ -355,7 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
-    {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|array'},
+    {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|Array'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|date|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
@@ -6833,10 +6833,14 @@ DebugJS.prototype = {
     var plain = (!ctx.cmdLine || (ctx.cmdLine.type == 'text'));
     if (sv && plain && !(ctx.status & DebugJS.ST_NO_HIST)) ctx.saveHistory(ctx, str);
     var setValName = null;
-    var cmdline = str;
+    var cl = str;
     if (str.match(/^\s*@/)) {
       echo = false;
-      cmdline = str.substr(str.indexOf('@') + 1);
+      cl = str.substr(str.indexOf('@') + 1);
+    }
+    if (cl.match(/^\s*#/)) {
+      DebugJS._log(cl.substr(cl.indexOf('#') + 1));
+      return;
     }
     if (echo && plain) {
       var echoStr = str;
@@ -6845,25 +6849,25 @@ DebugJS.prototype = {
       DebugJS._log.s(echoStr);
     }
     if (!DebugJS.callListeners(ctx.cmdListeners, str)) return;
-    var cmds = DebugJS.splitCmdLineInTwo(cmdline);
+    var cmds = DebugJS.splitCmdLineInTwo(cl);
     var cmd = cmds[0];
     var valName = DebugJS.getCmdValName(cmd, '\\$', true);
     if (valName != null) {
-      var vStartPos = cmdline.indexOf(valName);
-      var restCmd = cmdline.substr(vStartPos + valName.length + 1);
+      var vStartPos = cl.indexOf(valName);
+      var restCmd = cl.substr(vStartPos + valName.length + 1);
       if (restCmd.match(/^\s*=/)) {
         setValName = valName;
-        cmdline = restCmd.substr(restCmd.indexOf('=') + 1);
+        cl = restCmd.substr(restCmd.indexOf('=') + 1);
       }
     }
     var ret;
     echo = echo || recho;
-    cmds = DebugJS.splitCmdLineInTwo(cmdline);
+    cmds = DebugJS.splitCmdLineInTwo(cl);
     if (cmds[0] == 'code') {
       ret = ctx.execCode(cmds[1], echo);
     } else {
-      cmdline = DebugJS.replaceCmdVals(cmdline);
-      ret = ctx.__execCmd(ctx, cmdline, echo);
+      cl = DebugJS.replaceCmdVals(cl);
+      ret = ctx.__execCmd(ctx, cl, echo);
     }
     if (setValName != null) {
       DebugJS.setCmdVal(setValName, ret);
@@ -6876,7 +6880,6 @@ DebugJS.prototype = {
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
     var arg = cmds[1];
-
     if (!aliased) {
       for (var key in ctx.CMD_ALIAS) {
         if (cmd == key) {
