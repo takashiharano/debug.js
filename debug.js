@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909052330';
+  this.v = '201909100030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -198,6 +198,11 @@ var DebugJS = DebugJS || function() {
   this.fileVwrDtTxtArea = null;
   this.fileVwrDecMode = 'b64';
   this.fileVwrDecModeBtn = null;
+  this.fileVwrBSB64n = null;
+  this.fileVwrBSB64nL = null;
+  this.decMode = 'b64';
+  this.fileVwrB64Btn = null;
+  this.fileVwrBsbBtn = null;
   this.fileVwrDataSrcType = null;
   this.fileVwrFile = null;
   this.fileVwrDataSrc = null;
@@ -5602,28 +5607,47 @@ DebugJS.prototype = {
     setStyle(ctx.fileVwrDtUrlWrp, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
     ctx.filePreviewWrapper.appendChild(ctx.fileVwrDtUrlWrp);
 
-    ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 15.5em)', null, ctx.opt.fontColor, '', null);
+    ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 28em)', null, ctx.opt.fontColor, '', null);
 
     var decodeBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, 'Decode', ctx.decodeFileVwrData);
     decodeBtn.style.float = 'right';
-    decodeBtn.style.marginRight = '4px';
+    decodeBtn.style.marginRight = '8px';
 
     ctx.fileVwrDecModeBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[B64]', ctx.toggleDecMode);
     ctx.fileVwrDecModeBtn.style.float = 'right';
     ctx.fileVwrDecModeBtn.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
 
-    var imgBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '<image>', ctx.setDtSchmImg);
-    imgBtn.style.float = 'right';
-    imgBtn.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
+    ctx.fileVwrBSB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1em', 'center', '#ccc', '1', null);
+    ctx.fileVwrBSB64n.style.float = 'right';
+    ctx.fileVwrBSB64n.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
 
-    var txtBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '<text>', ctx.setDtSchmTxt);
+    ctx.fileVwrBSB64nL = document.createElement('span');
+    ctx.fileVwrBSB64nL.style.float = 'right';
+    ctx.fileVwrBSB64nL.innerText = 'n=';
+    ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrBSB64nL);
+
+    var bsbBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '<BSB64>', ctx.setModeBSB64);
+    bsbBtn.style.float = 'right';
+    bsbBtn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
+    ctx.fileVwrBsbBtn = bsbBtn;
+    var b64Btn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '<Base64>', ctx.setModeB64);
+    b64Btn.style.float = 'right';
+    b64Btn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
+    ctx.fileVwrB64Btn = b64Btn;
+    ctx.setModeB64();
+
+    var imgBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[image]', ctx.setDtSchmImg);
+    imgBtn.style.float = 'right';
+    imgBtn.style.marginRight = (ctx.computedFontSize * 2) + 'px';
+
+    var txtBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[text]', ctx.setDtSchmTxt);
     txtBtn.style.float = 'right';
     txtBtn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
 
     ctx.fileVwrDtTxtArea = document.createElement('textarea');
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
     setStyle(ctx.fileVwrDtTxtArea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
-    ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxt);
+    ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxtArea);
     ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrDtTxtArea);
   },
   closeFileLoader: function() {
@@ -5683,7 +5707,7 @@ DebugJS.prototype = {
     } catch (e) {DebugJS._log.e(e);}
     ctx.preventErrCb = false;
   },
-  onDropOnFileVwrTxt: function(e) {
+  onDropOnFileVwrTxtArea: function(e) {
     var ctx = DebugJS.ctx;
     ctx.onDrop(e);
     ctx.preventErrCb = true;
@@ -5978,23 +6002,52 @@ DebugJS.prototype = {
     }
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     ctx.setDataUrl(ctx, scheme, data);
+    var r;
+    if (ctx.decMode == 'bsb64') {
+      r = ctx.decodeFileVwrDataBSB64(ctx, data, mode, scheme);
+    } else {
+      r = ctx.decodeFileVwrDataB64(ctx, data, mode, scheme);
+    }
+    DebugJS.cp2cb(r);
+  },
+  decodeFileVwrDataB64: function(ctx, src, mode, scheme) {
+    var data;
     switch (mode) {
       case 'bin':
         ctx.fileVwrDataSrcType = 'bin';
-        ctx.decodeBin(ctx, data);
+        data = ctx.decodeBin(ctx, src);
         break;
       case 'hex':
         ctx.fileVwrDataSrcType = 'hex';
-        ctx.decodeHex(ctx, data);
+        data = ctx.decodeHex(ctx, src);
         break;
-      default:
-        if (mode == 'txt') {
-          data = DebugJS.encodeBase64(data);
-          ctx.fileVwrDtTxtArea.value = ctx.fileVwrDataSrc.data = data;
-        }
+      case 'txt':
+        data = DebugJS.encodeBase64(src);
+        ctx.fileVwrDtTxtArea.value = ctx.fileVwrDataSrc.data = data;
         ctx.fileVwrDataSrcType = 'b64';
         ctx.showB64Preview(ctx, null, scheme, data);
+        break;
+      default:
+        ctx.fileVwrDataSrcType = 'b64';
+        data = ctx.showB64Preview(ctx, null, scheme, src);
     }
+    return data;
+  },
+  decodeFileVwrDataBSB64: function(ctx, src, mode, scheme) {
+    var r, data;
+    var n = ctx.fileVwrBSB64n.value;
+    switch (mode) {
+      case 'txt':
+        r = DebugJS.encodeBSB64(src, n);
+        data = r;
+        break;
+      default:
+        r = DebugJS.decodeBSB64(src, n);
+        data = ctx.getTextPreview(r);
+        ctx.fileVwrDataSrcType = 'b64';
+    }
+    ctx.showFilePreview(ctx, null, scheme, data);
+    return r;
   },
   decodeBin: function(ctx, bin) {
     ctx.fileVwrByteArray = DebugJS.str2binArr(bin, 8, '0b');
@@ -6045,10 +6098,18 @@ DebugJS.prototype = {
     ctx.showB64Preview(ctx, file, b64cnt.scheme, b64cnt.data);
     var cType = DebugJS.getContentType(null, file, b64cnt.data);
     if (cType == 'text') {
+       var decoded = DebugJS.decodeB64(b64cnt.data);
       if (ctx.fileVwrSysCb) {
-        var decoded = DebugJS.decodeB64(b64cnt.data);
         ctx.fileVwrSysCb(ctx, file, decoded);
+      } else {
+        ctx.onFileLoadedB64onFileVwr(ctx, file, decoded);
       }
+    }
+  },
+  onFileLoadedB64onFileVwr: function(ctx, file, decoded) {
+    if (ctx.decMode == 'bsb64') {
+      ctx.fileVwrDtTxtArea.value = decoded;
+      ctx.decodeFileVwrData();
     }
   },
   onFileLoadedBin: function(ctx, file, content) {
@@ -6068,9 +6129,10 @@ DebugJS.prototype = {
     }
   },
   toggleDecMode: function() {
-    var a = ['b64', 'hex', 'bin', 'txt'];
-    var mode = DebugJS.arr.next(a, DebugJS.ctx.fileVwrDecMode);
-    DebugJS.ctx.setDecMode(DebugJS.ctx, mode);
+    var ctx = DebugJS.ctx;
+    var a = (ctx.decMode == 'bsb64' ? ['b64', 'txt'] : ['b64', 'hex', 'bin', 'txt']);
+    var mode = DebugJS.arr.next(a, ctx.fileVwrDecMode);
+    ctx.setDecMode(ctx, mode);
   },
   setDecMode: function(ctx, mode) {
     ctx.fileVwrDecMode = mode;
@@ -6109,7 +6171,7 @@ DebugJS.prototype = {
     html += ctx.getBinDumpHtml(buf, opt.mode, opt.addr, opt.space, opt.ascii);
     ctx.updateFilePreview(html);
   },
-  showB64Preview: function(ctx, file, scheme, data) {
+  showB64Preview: function(ctx, file, scheme, b64) {
     var html = '';
     if (file) {
       var LIMIT = ctx.props.prevlimit;
@@ -6120,15 +6182,24 @@ DebugJS.prototype = {
         ctx.updateFilePreview(html);
         return;
       }
+    }
+    var data;
+    var cType = DebugJS.getContentType(scheme, file, b64);
+    if (cType == 'image') {
+      data = ctx.getImgPreview(ctx, scheme, b64);
+    } else {
+      var decoded = DebugJS.decodeB64(b64);
+      data = ctx.getTextPreview(decoded);
+    }
+    ctx.showFilePreview(ctx, file, scheme, data);
+    return data;
+  },
+  showFilePreview: function(ctx, file, scheme, data) {
+    var html = '';
+    if (file) {
       html += ctx.getFileInfo(file);
     }
-    var cType = DebugJS.getContentType(scheme, file, data);
-    if (cType == 'image') {
-      html += ctx.getImgPreview(ctx, scheme, data);
-    } else {
-      var decoded = DebugJS.decodeB64(data);
-      html += ctx.getTextPreview(decoded);
-    }
+    html += data;
     ctx.updateFilePreview(html);
   },
   setDataUrl: function(ctx, scheme, data) {
@@ -6338,6 +6409,26 @@ DebugJS.prototype = {
     ctx.setDataUrl(ctx, d.scheme, d.data);
     ctx.setDecMode(ctx, 'b64');
     ctx.decodeFileVwrData();
+  },
+  setModeB64: function() {
+    var ctx = DebugJS.ctx;
+    ctx.decMode = 'b64';
+    ctx.setStyle(ctx.fileVwrBsbBtn, 'color', DebugJS.COLOR_INACT);
+    ctx.setStyle(ctx.fileVwrB64Btn, 'color', '');
+    ctx.setStyle(ctx.fileVwrBSB64nL, 'color', '#888');
+    ctx.setStyle(ctx.fileVwrBSB64n, 'color', '#888');
+  },
+  setModeBSB64: function() {
+    var ctx = DebugJS.ctx;
+    ctx.decMode = 'bsb64';
+    ctx.setStyle(ctx.fileVwrB64Btn, 'color', DebugJS.COLOR_INACT);
+    ctx.setStyle(ctx.fileVwrBsbBtn, 'color', '');
+    var m = ctx.fileVwrDecMode;
+    if ((m == 'hex') || (m == 'bin')) {
+      ctx.setDecMode(ctx, 'b64');
+    }
+    ctx.setStyle(ctx.fileVwrBSB64nL, 'color', '#ccc');
+    ctx.setStyle(ctx.fileVwrBSB64n, 'color', '#ccc');
   },
 
   openHtmlEditor: function() {
