@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909100030';
+  this.v = '201909102255';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5606,49 +5606,32 @@ DebugJS.prototype = {
     ctx.fileVwrDtUrlWrp = document.createElement('div');
     setStyle(ctx.fileVwrDtUrlWrp, 'height', 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
     ctx.filePreviewWrapper.appendChild(ctx.fileVwrDtUrlWrp);
-
     ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 28em)', null, ctx.opt.fontColor, '', null);
-
-    var decodeBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, 'Decode', ctx.decodeFileVwrData);
-    decodeBtn.style.float = 'right';
-    decodeBtn.style.marginRight = '8px';
-
-    ctx.fileVwrDecModeBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[B64]', ctx.toggleDecMode);
-    ctx.fileVwrDecModeBtn.style.float = 'right';
-    ctx.fileVwrDecModeBtn.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
-
+    ctx.addFileVwrBtn(ctx, 'Decode', 8, ctx.decodeFileVwrData);
+    ctx.fileVwrDecModeBtn = ctx.addFileVwrBtn(ctx, '[B64]', (ctx.computedFontSize * 0.5), ctx.toggleDecMode);
     ctx.fileVwrBSB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1em', 'center', '#ccc', '1', null);
     ctx.fileVwrBSB64n.style.float = 'right';
     ctx.fileVwrBSB64n.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
-
     ctx.fileVwrBSB64nL = document.createElement('span');
     ctx.fileVwrBSB64nL.style.float = 'right';
     ctx.fileVwrBSB64nL.innerText = 'n=';
     ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrBSB64nL);
-
-    var bsbBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '<BSB64>', ctx.setModeBSB64);
-    bsbBtn.style.float = 'right';
-    bsbBtn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
-    ctx.fileVwrBsbBtn = bsbBtn;
-    var b64Btn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '<Base64>', ctx.setModeB64);
-    b64Btn.style.float = 'right';
-    b64Btn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
-    ctx.fileVwrB64Btn = b64Btn;
-    ctx.setModeB64();
-
-    var imgBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[image]', ctx.setDtSchmImg);
-    imgBtn.style.float = 'right';
-    imgBtn.style.marginRight = (ctx.computedFontSize * 2) + 'px';
-
-    var txtBtn = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[text]', ctx.setDtSchmTxt);
-    txtBtn.style.float = 'right';
-    txtBtn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
-
+    ctx.fileVwrBsbBtn = ctx.addFileVwrBtn(ctx, '<BSB64>', (ctx.computedFontSize * 0.2), ctx.setModeBSB64);
+    ctx.fileVwrB64Btn = ctx.addFileVwrBtn(ctx, '<Base64>', (ctx.computedFontSize * 0.2), ctx.setModeB64);
+    ctx.addFileVwrBtn(ctx, '[image]', (ctx.computedFontSize * 2), ctx.setDtSchmImg);
+    ctx.addFileVwrBtn(ctx, '[text]', (ctx.computedFontSize * 0.2), ctx.setDtSchmTxt);
     ctx.fileVwrDtTxtArea = document.createElement('textarea');
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
     setStyle(ctx.fileVwrDtTxtArea, 'height', 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)');
     ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxtArea);
     ctx.fileVwrDtUrlWrp.appendChild(ctx.fileVwrDtTxtArea);
+    ctx.setModeB64();
+  },
+  addFileVwrBtn: function(ctx, lbl, mgn, fn) {
+    var b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, lbl, fn);
+    b.style.float = 'right';
+    b.style.marginRight = mgn + 'px';
+    return b;
   },
   closeFileLoader: function() {
     var ctx = DebugJS.ctx;
@@ -6271,33 +6254,37 @@ DebugJS.prototype = {
     if (len % 0x10 != 0) {
       len = (((len / 0x10) + 1) | 0) * 0x10;
     }
-    var dmp = '<span style="background:#0cf;color:#000">';
+    var hd = '<span style="background:#0cf;color:#000">';
     if (showAddr) {
-      dmp += 'Address    ';
+      hd += 'Address    ';
     }
     if (mode == 'bin') {
       if (showSp) {
-        dmp += '+0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F      ';
+        hd += '+0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F      ';
       } else {
-        dmp += '+0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F      ';
+        hd += '+0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F      ';
       }
     } else if (mode == 'dec') {
       if (showSp) {
-        dmp += ' +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F';
+        hd += ' +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F';
       } else {
-        dmp += ' +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F';
+        hd += ' +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F';
       }
     } else {
       if (showSp) {
-        dmp += '+0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F';
+        hd += '+0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F';
       } else {
-        dmp += '+0+1+2+3+4+5+6+7+8+9+A+B+C+D+E+F';
+        hd += '+0+1+2+3+4+5+6+7+8+9+A+B+C+D+E+F';
       }
     }
     if (showAscii) {
-      dmp += '  ASCII           ';
+      hd += '  ASCII           ';
     }
-    dmp += '</span>\n';
+    hd += '</span>\n';
+    var dmp = '';
+    if (showAddr || showAscii) {
+      dmp += hd;hd = '';
+    }
     if (showAddr) {
       dmp += DebugJS.dumpAddr(0);
     }
@@ -6335,7 +6322,7 @@ DebugJS.prototype = {
     html += DebugJS.ui.createBtnHtml('[ADDR]', 'DebugJS.ctx.toggleShowAddr()', (showAddr ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
     html += DebugJS.ui.createBtnHtml('[SP]', 'DebugJS.ctx.toggleShowSpace()', (showSp ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
     html += DebugJS.ui.createBtnHtml('[ASCII]', 'DebugJS.ctx.toggleShowAscii()', (showAscii ? '' : 'color:' + DebugJS.COLOR_INACT));
-    html += '\n' + dmp + '</pre>';
+    html += '\n' + hd + dmp + '</pre>';
     return html;
   },
   getDump: function(mode, i, buf, len, showSp, showAddr, showAscii) {
@@ -6417,6 +6404,10 @@ DebugJS.prototype = {
     ctx.setStyle(ctx.fileVwrB64Btn, 'color', '');
     ctx.setStyle(ctx.fileVwrBSB64nL, 'color', '#888');
     ctx.setStyle(ctx.fileVwrBSB64n, 'color', '#888');
+    ctx.fileVwrRadioB64.disabled = false;
+    ctx.fileVwrRadioBin.disabled = false;
+    ctx.setStyle(ctx.fileVwrLabelB64, 'color', '#fff');
+    ctx.setStyle(ctx.fileVwrLabelBin, 'color', '#fff');
   },
   setModeBSB64: function() {
     var ctx = DebugJS.ctx;
@@ -6429,6 +6420,10 @@ DebugJS.prototype = {
     }
     ctx.setStyle(ctx.fileVwrBSB64nL, 'color', '#ccc');
     ctx.setStyle(ctx.fileVwrBSB64n, 'color', '#ccc');
+    ctx.fileVwrRadioB64.disabled = true;
+    ctx.fileVwrRadioBin.disabled = true;
+    ctx.setStyle(ctx.fileVwrLabelB64, 'color', '#888');
+    ctx.setStyle(ctx.fileVwrLabelBin, 'color', '#888');
   },
 
   openHtmlEditor: function() {
