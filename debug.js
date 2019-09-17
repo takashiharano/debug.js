@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909102255';
+  this.v = '201909172321';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -384,6 +384,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
+    {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode', help: 'sw [-q]'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DateStr" ms|HH:MI:SS.sss|"DateStr"\nDateStr: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
@@ -513,6 +514,7 @@ DebugJS.ST_EXT_PANEL = 1 << 20;
 DebugJS.ST_WD = 1 << 21;
 DebugJS.ST_NO_HIST = 1 << 22;
 DebugJS.ST_CLP = 1 << 23;
+DebugJS.ST_SW = 1 << 24;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -2807,6 +2809,9 @@ DebugJS.prototype = {
           }
         }
     }
+    if ((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER)) {
+      ctx.handleTimerKey(e);
+    }
   },
   onKeyDown: function(e) {
     var ctx = DebugJS.ctx;
@@ -3380,6 +3385,9 @@ DebugJS.prototype = {
 
   focusCmdLine: function() {
     if (DebugJS.ctx.cmdLine) DebugJS.ctx.cmdLine.focus();
+  },
+  blurCmdLine: function() {
+    DebugJS.ctx.cmdLine.blur();
   },
 
   startMeasure: function(ctx, x, y) {
@@ -5286,6 +5294,24 @@ DebugJS.prototype = {
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER) && (ctx.timerBasePanel)) {
       ctx.removeToolFuncPanel(ctx, ctx.timerBasePanel);
       ctx.setIntervalL(ctx);
+    }
+  },
+  handleTimerKey: function(e) {
+    var ctx = DebugJS.ctx;
+    if ((ctx.sizeStatus != DebugJS.SIZE_ST_FULL_WH) || DebugJS.cmd.hasFocus()) return;
+    if ((e.keyCode == 13) || (e.keyCode == 32)) {
+      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
+        ctx.startStopTimerStopwatchCu();
+      } else if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
+        ctx.startStopTimerStopwatchCd();
+      }
+    } else if (e.keyCode == 8) {
+      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
+        ctx.resetTimerStopwatchCu();
+      } else if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
+        ctx.resetTimerStopwatchCd();
+      }
+      e.preventDefault();
     }
   },
 
@@ -9302,6 +9328,25 @@ DebugJS.prototype = {
       DebugJS._log(DebugJS.TMR_NM_SW_CD + ': ' + (t < 0 ? '-' : '') + DebugJS.getTmrStr(t));
     }
     return t;
+  },
+
+  cmdSw: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    if (DebugJS.hasOpt(arg, 'q')) {
+      if (ctx.status & DebugJS.ST_SW) {
+        ctx.closeTools(ctx);
+        DebugJS.zoom(1);
+        ctx.restoreDbgWin();
+        ctx.status &= ~DebugJS.ST_SW;
+      }
+    } else {
+      ctx.status |= DebugJS.ST_SW;
+      ctx.launchFnc(ctx, 'tool', 'timer', 'sw1');
+      ctx.expandDbgWin('full');
+      DebugJS.zoom(2);
+      ctx.clearLog();
+      setTimeout(ctx.blurCmdLine, 0);
+    }
   },
 
   cmdUnAlias: function(arg, tbl) {
