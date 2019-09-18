@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909172321';
+  this.v = '201909182156';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -335,7 +335,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
-    {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -348,14 +347,12 @@ var DebugJS = DebugJS || function() {
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
-    {cmd: 'jump', fn: this.cmdJump, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
@@ -374,7 +371,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max]'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
-    {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', help: 'rot 5|13|47 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
     {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', help: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
@@ -384,7 +380,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode', help: 'sw [-q]'},
+    {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DateStr" ms|HH:MI:SS.sss|"DateStr"\nDateStr: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
@@ -399,6 +395,11 @@ var DebugJS = DebugJS || function() {
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
+    {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'jump', fn: this.cmdJump, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'quit', fn: this.cmdQuit, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
+    {cmd: 'return', fn: this.cmdReturn, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'wait', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
@@ -2731,6 +2732,10 @@ DebugJS.prototype = {
           ctx.endResize(ctx);
           break;
         }
+        if ((DebugJS.ctx.status & DebugJS.ST_SW) && (ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER)) {
+          DebugJS.cmd.toggleFocus();
+          break;
+        }
         if (ctx.closeTopFeature(ctx)) break;
         ctx.hideDbgWin(ctx);
         break;
@@ -3387,7 +3392,7 @@ DebugJS.prototype = {
     if (DebugJS.ctx.cmdLine) DebugJS.ctx.cmdLine.focus();
   },
   blurCmdLine: function() {
-    DebugJS.ctx.cmdLine.blur();
+    if (DebugJS.ctx.cmdLine) DebugJS.ctx.cmdLine.blur();
   },
 
   startMeasure: function(ctx, x, y) {
@@ -8644,6 +8649,12 @@ DebugJS.prototype = {
     DebugJS._log.mlt(s);
   },
 
+  cmdQuit: function() {
+    if (DebugJS.ctx.status & DebugJS.ST_SW) {
+      DebugJS.ctx._cmdSwQ(DebugJS.ctx);
+    }
+  },
+
   cmdRandom: function(arg, tbl, echo) {
     var a = DebugJS.getNonOptVals(arg);
     var min = a[0];
@@ -9332,21 +9343,18 @@ DebugJS.prototype = {
 
   cmdSw: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    if (DebugJS.hasOpt(arg, 'q')) {
-      if (ctx.status & DebugJS.ST_SW) {
-        ctx.closeTools(ctx);
-        DebugJS.zoom(1);
-        ctx.restoreDbgWin();
-        ctx.status &= ~DebugJS.ST_SW;
-      }
-    } else {
-      ctx.status |= DebugJS.ST_SW;
-      ctx.launchFnc(ctx, 'tool', 'timer', 'sw1');
-      ctx.expandDbgWin('full');
-      DebugJS.zoom(2);
-      ctx.clearLog();
-      setTimeout(ctx.blurCmdLine, 0);
-    }
+    ctx.status |= DebugJS.ST_SW;
+    ctx.launchFnc(ctx, 'tool', 'timer', 'sw1');
+    ctx.expandDbgWin('full');
+    DebugJS.zoom(2);
+    ctx.clearLog();
+    setTimeout(ctx.blurCmdLine, 0);
+  },
+  _cmdSwQ: function(ctx) {
+    ctx.closeTools(ctx);
+    DebugJS.zoom(1);
+    ctx.restoreDbgWin();
+    ctx.status &= ~DebugJS.ST_SW;
   },
 
   cmdUnAlias: function(arg, tbl) {
@@ -13350,8 +13358,18 @@ DebugJS.cmd.exec = function() {
 DebugJS.cmd.focus = function() {
   DebugJS.ctx.focusCmdLine();
 };
+DebugJS.cmd.blur = function() {
+  DebugJS.ctx.blurCmdLine();
+};
 DebugJS.cmd.hasFocus = function() {
   return document.activeElement == DebugJS.ctx.cmdLine;
+};
+DebugJS.cmd.toggleFocus = function() {
+  if (DebugJS.cmd.hasFocus()) {
+    DebugJS.cmd.blur();
+  } else {
+    DebugJS.cmd.focus();
+  }
 };
 DebugJS.cmd.setMode = function(m) {
   if (m != 'password') m = 'text';
