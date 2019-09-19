@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909192340';
+  this.v = '201909200117';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5673,9 +5673,9 @@ DebugJS.prototype = {
       ctx.removeToolFuncPanel(ctx, ctx.fileVwrPanel);
     }
   },
-  enableDnDFileLoad: function(target, cb) {
-    target.addEventListener('dragover', DebugJS.file.onDragOver, false);
-    target.addEventListener('drop', cb, false);
+  enableDnDFileLoad: function(tgt, cb) {
+    tgt.addEventListener('dragover', DebugJS.file.onDragOver, false);
+    tgt.addEventListener('drop', cb, false);
   },
   onFileSelected: function(e) {
     if (e.target.files.length > 0) {
@@ -6238,8 +6238,8 @@ DebugJS.prototype = {
     return s;
   },
   showFileSizeExceeds: function(ctx, file, lm) {
-    var html = ctx.getFileInfo(file) + '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + lm + ')</span>';
-    ctx.updateFilePreview(html);
+    var s = ctx.getFileInfo(file) + '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + lm + ')</span>';
+    ctx.updateFilePreview(s);
   },
   getTextPreview: function(decoded) {
     DebugJS.cp2cb(decoded);
@@ -6390,8 +6390,8 @@ DebugJS.prototype = {
     }
     return b;
   },
-  updateFilePreview: function(html) {
-    DebugJS.ctx.filePreview.innerHTML = html + '\n';
+  updateFilePreview: function(s) {
+    DebugJS.ctx.filePreview.innerHTML = s + '\n';
     DebugJS.ctx.filePreviewWrapper.scrollTop = 0;
   },
   fileLoadFinalize: function() {
@@ -6888,10 +6888,12 @@ DebugJS.prototype = {
 
   saveExpandModeOrgSizeAndPos: function(ctx) {
     var shadow = (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
-    ctx.expandModeOrg.w = (ctx.win.offsetWidth + DebugJS.WIN_BORDER - shadow);
-    ctx.expandModeOrg.h = (ctx.win.offsetHeight + DebugJS.WIN_BORDER - shadow);
-    ctx.expandModeOrg.t = ctx.win.offsetTop;
-    ctx.expandModeOrg.l = ctx.win.offsetLeft;
+    var o = ctx.expandModeOrg;
+    var w = ctx.win;
+    o.w = (w.offsetWidth + DebugJS.WIN_BORDER - shadow);
+    o.h = (w.offsetHeight + DebugJS.WIN_BORDER - shadow);
+    o.t = w.offsetTop;
+    o.l = w.offsetLeft;
   },
 
   turnLed: function(pos, active) {
@@ -7673,12 +7675,12 @@ DebugJS.prototype = {
         }
         break;
       case 'dispatch':
-        var target = a[1];
-        if (target) {
-          if (target.charAt(0) == '(') {
-            target = target.substr(1, target.length - 2);
+        var tgt = a[1];
+        if (tgt) {
+          if (tgt.charAt(0) == '(') {
+            tgt = tgt.substr(1, tgt.length - 2);
           }
-          DebugJS.event.dispatch(target, a[2]);
+          DebugJS.event.dispatch(tgt, a[2]);
           return;
         }
         break;
@@ -8193,7 +8195,7 @@ DebugJS.prototype = {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var data = DebugJS.getOptVal(arg, 'b64');
     if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage('log load [-b64] log-buf-json');
+      DebugJS.printUsage('log load [-b64] Log-Buf-JSON');
     } else {
       try {
         if (data == null) {
@@ -8439,14 +8441,14 @@ DebugJS.prototype = {
     if (p) {
       DebugJS.point(p.x, p.y);
     } else if (isNaN(args[0])) {
-      var target = args[0];
+      var tgt = args[0];
       var idx = args[1];
-      if (target.charAt(0) == '(') {
-        target = target.substr(1, target.length - 2);
+      if (tgt.charAt(0) == '(') {
+        tgt = tgt.substr(1, tgt.length - 2);
       }
       var alignX = DebugJS.getOptVal(arg, 'alignX');
       var alignY = DebugJS.getOptVal(arg, 'alignY');
-      DebugJS.pointBySelector(target, idx, alignX, alignY);
+      DebugJS.pointBySelector(tgt, idx, alignX, alignY);
     } else {
       x = args[0];
       y = args[1];
@@ -8455,8 +8457,8 @@ DebugJS.prototype = {
   },
   _cmdPointMove: function(ctx, arg, tbl, args) {
     var point = DebugJS.point;
-    var target = args[1];
-    if (target == undefined) {
+    var tgt = args[1];
+    if (tgt == undefined) {
       DebugJS.printUsage(tbl.help);
       return;
     }
@@ -8468,7 +8470,7 @@ DebugJS.prototype = {
     var p = ctx._cmdPointCalcPos(ctx, args[1], args[2]);
     if (p) {
       point.move(p.x, p.y, speed, step);
-    } else if (target == 'label') {
+    } else if (tgt == 'label') {
       var label = args[2];
       idx = args[3] | 0;
       try {
@@ -8477,12 +8479,12 @@ DebugJS.prototype = {
         DebugJS._log.e(e);return;
       }
       point.moveToLabel(label, idx, speed, step, alignX, alignY);
-    } else if (isNaN(target)) {
+    } else if (isNaN(tgt)) {
       idx = args[2];
-      if (target.charAt(0) == '(') {
-        target = target.substr(1, target.length - 2);
+      if (tgt.charAt(0) == '(') {
+        tgt = tgt.substr(1, tgt.length - 2);
       }
-      point.moveToSelector(target, idx, speed, step, alignX, alignY);
+      point.moveToSelector(tgt, idx, speed, step, alignX, alignY);
     } else {
       var x = args[1];
       var y = args[2];
@@ -8797,18 +8799,18 @@ DebugJS.prototype = {
   cmdScrollTo: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
-    var target = a[0];
-    if (target == '') {
+    var tgt = a[0];
+    if (tgt == '') {
       DebugJS.printUsage(tbl.help);
-    } else if (target == 'log') {
+    } else if (tgt == 'log') {
       var pos = a[1];
       ctx._cmdScrollToLog(ctx, tbl, pos);
-    } else if (target == 'window') {
+    } else if (tgt == 'window') {
       ctx._cmdScrollToWin(ctx, arg, tbl);
     } else {
       var x = a[1];
       var y = a[2];
-      DebugJS.scrollElTo(target, x, y);
+      DebugJS.scrollElTo(tgt, x, y);
     }
   },
   _cmdScrollToLog: function(ctx, tbl, pos) {
@@ -9141,9 +9143,9 @@ DebugJS.prototype = {
   _cmdTestSet: function(arg) {
     var test = DebugJS.test;
     var args = DebugJS.splitCmdLine(arg, 3);
-    var target = args[1];
+    var tgt = args[1];
     var fn;
-    switch (target) {
+    switch (tgt) {
       case 'name':
         fn = test.setName;
         break;
@@ -9756,9 +9758,9 @@ DebugJS.getColorBlock = function(color) {
 DebugJS.getElmHexColor = function(color) {
   var hex = '';
   if (color && (color != 'transparent')) {
-    var color10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-    var color16 = DebugJS.convRGB10to16(color10);
-    hex = '#' + color16.r + color16.g + color16.b;
+    var c10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
+    var c16 = DebugJS.convRGB10to16(c10);
+    hex = '#' + c16.r + c16.g + c16.b;
   }
   return hex;
 };
@@ -12892,11 +12894,11 @@ DebugJS.file.onDrop = function(e) {
     ctx.handleDroppedFile(ctx, e, loader.mode, null);
   }
 };
-DebugJS.isTargetEl = function(target, el) {
+DebugJS.isTargetEl = function(tgt, el) {
   do {
-    if (target == el) return true;
-    target = target.parentNode;
-  } while (target != null);
+    if (tgt == el) return true;
+    tgt = tgt.parentNode;
+  } while (tgt != null);
   return false;
 };
 DebugJS.file.onLoaded = function(file, cnt) {
@@ -15617,12 +15619,12 @@ DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg, top) {
   DebugJS.scrollWinTo.initData();
   return false;
 };
-DebugJS.scrollElTo = function(target, x, y) {
+DebugJS.scrollElTo = function(tgt, x, y) {
   x += '';
   y += '';
-  var el = DebugJS.getElement(target);
+  var el = DebugJS.getElement(tgt);
   if (!el) {
-    DebugJS._log.e('Element not found: ' + target);
+    DebugJS._log.e('Element not found: ' + tgt);
     return;
   }
 
@@ -15824,9 +15826,9 @@ DebugJS.selectOption = function(elm, method, type, val) {
   DebugJS._log.e('No such option: ' + val);
 };
 
-DebugJS.dispatchChangeEvt = function(target) {
+DebugJS.dispatchChangeEvt = function(tgt) {
   var e = DebugJS.event.create('change');
-  return target.dispatchEvent(e);
+  return tgt.dispatchEvent(e);
 };
 
 DebugJS.event = {};
@@ -15869,25 +15871,25 @@ DebugJS.event.set = function(prop, v) {
   }
 };
 DebugJS.event.dispatch = function(el, idx) {
-  var target;
+  var tgt;
   if (el == 'window') {
-    target = window;
+    tgt = window;
   } else if (el == 'document') {
-    target = document;
+    tgt = document;
   } else if (el == 'active') {
-    target = document.activeElement;
+    tgt = document.activeElement;
   } else if (el == 'point') {
-    target = DebugJS.point.getElementFromCurrentPos();
+    tgt = DebugJS.point.getElementFromCurrentPos();
   } else {
-    target = DebugJS.getElement(el, idx);
+    tgt = DebugJS.getElement(el, idx);
   }
-  if (!target) {
+  if (!tgt) {
     DebugJS._log.e('Target is not found');
     return false;
   }
   var e = DebugJS.event.evt;
   if (e) {
-    return target.dispatchEvent(e);
+    return tgt.dispatchEvent(e);
   } else {
     DebugJS._log.e('Event is not created');
     return false;
@@ -15919,8 +15921,8 @@ DebugJS.keyPress.send = function(type) {
   DebugJS.event.set('shiftKey', data.shift);
   DebugJS.event.set('altKey', data.alt);
   DebugJS.event.set('metaKey', data.meta);
-  var target = (DebugJS.isDescendant(document.activeElement, DebugJS.ctx.win) ? 'window' : 'active');
-  DebugJS.event.dispatch(target);
+  var tgt = (DebugJS.isDescendant(document.activeElement, DebugJS.ctx.win) ? 'window' : 'active');
+  DebugJS.event.dispatch(tgt);
 };
 DebugJS.keyPress.end = function() {
   DebugJS.bat.unlock();
