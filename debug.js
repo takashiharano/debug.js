@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909182156';
+  this.v = '201909192157';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -330,7 +330,7 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] Array'},
+    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-dnd] Array'},
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
@@ -516,6 +516,7 @@ DebugJS.ST_WD = 1 << 21;
 DebugJS.ST_NO_HIST = 1 << 22;
 DebugJS.ST_CLP = 1 << 23;
 DebugJS.ST_SW = 1 << 24;
+DebugJS.ST_DNDARR2SET = 1 << 25;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -5753,7 +5754,10 @@ DebugJS.prototype = {
   },
   onTxtDrop: function(ctx, t) {
     var r;
-    if (DebugJS.isBat(t)) {
+    if (ctx.status & DebugJS.ST_DNDARR2SET) {
+      DebugJS.dndArr2Set(t);
+      ctx.status &= ~DebugJS.ST_DNDARR2SET;
+    } else if (DebugJS.isBat(t)) {
       ctx.openBat(ctx, t);
     } else {
       var s = DebugJS.delAllNL(t.trim());
@@ -7062,6 +7066,11 @@ DebugJS.prototype = {
   },
 
   cmdArr2Set: function(arg, tbl, echo) {
+    if (DebugJS.hasOpt(arg, 'dnd')) {
+      DebugJS.ctx.status |= DebugJS.ST_DNDARR2SET;
+      DebugJS._log('DnD mode.');
+      return;
+    }
     var p = arg.indexOf('[');
     if (p == -1) {
       DebugJS.printUsage(tbl.help);
@@ -8650,8 +8659,11 @@ DebugJS.prototype = {
   },
 
   cmdQuit: function() {
-    if (DebugJS.ctx.status & DebugJS.ST_SW) {
-      DebugJS.ctx._cmdSwQ(DebugJS.ctx);
+    var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.ST_SW) {
+      ctx._cmdSwQ(ctx);
+    } else {
+      ctx.status &= ~DebugJS.ST_DNDARR2SET;
     }
   },
 
@@ -11270,6 +11282,17 @@ DebugJS.arr.toSet = function(a, f) {
     }
   }
   return s;
+};
+DebugJS.dndArr2Set = function(s) {
+  var a = DebugJS.crlf2lf(s).split('\n');
+  var r = DebugJS.arr.toSet(a).sort();
+  if (r[0] == '') r.splice(0, 1);
+  DebugJS._log.p(r, 0, '', false);
+  var b = '';
+  for (var i = 0; i < r.length; i++) {
+    b += r[i] + '\n';
+  }
+  DebugJS.cp2cb(b);
 };
 
 DebugJS.printUsage = function(m) {
