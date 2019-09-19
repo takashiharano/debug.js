@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909192311';
+  this.v = '201909192340';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -337,7 +337,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
-    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode'},
+    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookie', help: 'cookie keys|get|set|delete [key|-a] [val]'},
@@ -516,8 +516,9 @@ DebugJS.ST_EXT_PANEL = 1 << 20;
 DebugJS.ST_WD = 1 << 21;
 DebugJS.ST_NO_HIST = 1 << 22;
 DebugJS.ST_CLP = 1 << 23;
-DebugJS.ST_SW = 1 << 24;
-DebugJS.ST_DNDARR2SET = 1 << 25;
+DebugJS.ST_CLOCK_FULL = 1 << 24;
+DebugJS.ST_SW = 1 << 25;
+DebugJS.ST_DNDARR2SET = 1 << 26;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -7298,9 +7299,18 @@ DebugJS.prototype = {
 
   cmdClock: function(arg, tbl) {
     var ctx = DebugJS.ctx;
+    if (DebugJS.hasOpt(arg, 'full')) {
+      ctx.status |= DebugJS.ST_CLOCK_FULL;
+      ctx.kiosk2(ctx);
+    }
     ctx.launchFnc(ctx, 'tool', 'timer', 'clock');
     ctx.timerClockSSS = DebugJS.hasOpt(arg, 'sss');
     ctx.updateSSS(ctx);
+  },
+  _cmdClockQ: function(ctx) {
+    ctx.closeTools(ctx);
+    ctx.kioskQ(ctx);
+    ctx.status &= ~DebugJS.ST_CLOCK_FULL;
   },
 
   cmdCls: function() {
@@ -7563,6 +7573,15 @@ DebugJS.prototype = {
       ctx.opt.lockCode = c;
     }
     ctx.lockDbgWin(ctx);
+  },
+  kiosk2: function(ctx) {
+    ctx.expandDbgWin('full');
+    DebugJS.zoom(2);
+    ctx.clearLog();
+  },
+  kioskQ: function(ctx) {
+    DebugJS.zoom(1);
+    ctx.restoreDbgWin();
   },
 
   cmdDelay: function(arg, tbl) {
@@ -8664,6 +8683,7 @@ DebugJS.prototype = {
 
   cmdQuit: function() {
     var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.ST_CLOCK_FULL) ctx._cmdClockQ(ctx);
     if (ctx.status & DebugJS.ST_SW) {
       ctx._cmdSwQ(ctx);
     } else if (ctx.status & DebugJS.ST_DNDARR2SET) {
@@ -9361,15 +9381,12 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.ST_SW;
     ctx.launchFnc(ctx, 'tool', 'timer', 'sw1');
-    ctx.expandDbgWin('full');
-    DebugJS.zoom(2);
-    ctx.clearLog();
+    ctx.kiosk2(ctx);
     setTimeout(ctx.blurCmdLine, 0);
   },
   _cmdSwQ: function(ctx) {
     ctx.closeTools(ctx);
-    DebugJS.zoom(1);
-    ctx.restoreDbgWin();
+    ctx.kioskQ(ctx);
     ctx.status &= ~DebugJS.ST_SW;
   },
 
