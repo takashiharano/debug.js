@@ -3869,6 +3869,9 @@ $ arr2set -j ['a', 'b', 'c', 'a', 'b']
 $ arr2set -s ['a', 'b', '1', 1]
 -&gt; ['a', 'b', '1', 1] (Strict mode)
 
+$ arr2set -sort ['z', 'a', 'b', 'a']
+-&gt; ['a', 'b', 'z']
+
 $ arr2set -dnd
 Text drag and drop mode.
 <span class="annotation">input "quit" to cancel</span>

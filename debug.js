@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909192157';
+  this.v = '201909192311';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -323,6 +323,7 @@ var DebugJS = DebugJS || function() {
   this.toolStatus = 0;
   this.toolTimerMode = DebugJS.TOOL_TMR_MODE_CLOCK;
   this.sizeStatus = 0;
+  this.dndOpt = null;
   this.ptDnTm = 0;
   this.ptOpTm = 0;
   this.logDt = 0;
@@ -330,7 +331,7 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-dnd] Array'},
+    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] [-dnd] Array'},
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
@@ -340,8 +341,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookie', help: 'cookie keys|get|set|delete [key|-a] [val]'},
-    {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
+    {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
@@ -5756,7 +5757,7 @@ DebugJS.prototype = {
     var r;
     if (ctx.status & DebugJS.ST_DNDARR2SET) {
       DebugJS.dndArr2Set(t);
-      ctx.status &= ~DebugJS.ST_DNDARR2SET;
+      DebugJS.dndArr2SetQ();
     } else if (DebugJS.isBat(t)) {
       ctx.openBat(ctx, t);
     } else {
@@ -7066,8 +7067,11 @@ DebugJS.prototype = {
   },
 
   cmdArr2Set: function(arg, tbl, echo) {
+    var sort = DebugJS.hasOpt(arg, 'sort');
+    var j = DebugJS.hasOpt(arg, 'j');
     if (DebugJS.hasOpt(arg, 'dnd')) {
       DebugJS.ctx.status |= DebugJS.ST_DNDARR2SET;
+      DebugJS.ctx.dndOpt = {sort: sort, j: j};
       DebugJS._log('DnD mode.');
       return;
     }
@@ -7077,11 +7081,11 @@ DebugJS.prototype = {
       return;
     }
     var s = DebugJS.hasOpt(arg, 's');
-    var j = DebugJS.hasOpt(arg, 'j');
     var v = arg.substr(p);
     try {
       var a = eval(v);
       var r = DebugJS.arr.toSet(a, s);
+      if (sort) r.sort();
       if (echo) DebugJS._log.p(r, 0, '', j);
     } catch (e) {
       DebugJS._log.e(e);
@@ -7263,7 +7267,7 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0);
   },
 
-  cmdCall: function(arg, tbl) {
+  cmdCall: function(arg) {
     if (DebugJS.bat.isCmdExecutable()) {
       DebugJS.ctx._cmdJump(DebugJS.ctx, arg, true, 'func');
     }
@@ -7299,7 +7303,7 @@ DebugJS.prototype = {
     ctx.updateSSS(ctx);
   },
 
-  cmdCls: function(arg, tbl) {
+  cmdCls: function() {
     DebugJS.ctx.clearLog();
   },
 
@@ -7368,6 +7372,100 @@ DebugJS.prototype = {
         return;
     }
     DebugJS.printUsage(tbl.help);
+  },
+
+  cmdDate: function(arg, tbl) {
+    var val = arg;
+    var iso = false;
+    var idx = DebugJS.indexOfOptVal(arg, '-iso');
+    if (idx >= 0) {
+      iso = true;
+      val = arg.substr(idx);
+    }
+    var d = DebugJS.date(val, iso);
+    if (d == null) {
+      DebugJS.printUsage(tbl.help);
+    } else {
+      if (!DebugJS.hasOpt(arg, 'q')) DebugJS._log.res(d);
+    }
+    return d;
+  },
+  cmdDateConv: function(arg, echo) {
+    var d = arg.trim();
+    var v = d;
+    var tz = d.match(/ [+-]\d{1,4}$/);
+    if (tz) {
+      var idx = d.indexOf(tz);
+      d = d.substr(0, idx);
+      tz = tz[0].trim();
+    } else {
+      tz = DebugJS.getLocalTimeOffsetStr();
+    }
+    if (!(DebugJS.isDateFormat(d) || DebugJS.isDateTimeFormat(d) || DebugJS.isDateTimeFormatIso(d) || (d == 'today'))) {
+      return null;
+    }
+    if (d == 'today') v = DebugJS.today('/');
+    var r = DebugJS.date(v);
+    if (r != null) {
+      if (echo) DebugJS._log.res(r);
+    }
+    return r;
+  },
+  cmdDateCalc: function(arg, echo) {
+    var ret = null;
+    arg = arg.trim();
+    if (!DebugJS.isBasicDateFormat(arg, true) && !DebugJS.isDateFormat(arg, true) && !DebugJS.startsWith(arg, 'today')) {
+      return ret;
+    }
+    arg = DebugJS.delAllSP(arg);
+    var sp = arg.charAt(4);
+    if ((sp != '-') && (sp != '/')) sp = '-';
+    arg = arg.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
+    var op;
+    if (arg.indexOf('+') >= 0) {
+      op = '+';
+    } else if (arg.indexOf('-') >= 0) {
+      op = '-';
+    }
+    var v = arg.split(op);
+    if (v.length < 2) return ret;
+    var d1 = DebugJS.ctx._cmdFmtDate(v[0]);
+    if (!DebugJS.isDateFormat(d1)) return ret;
+    var d2 = v[1];
+    var t1 = DebugJS.getDateTime(d1).time;
+    var t2 = (d2 | 0) * 86400000;
+    var t;
+    if (op == '-') {
+      t = t1 - t2;
+    } else {
+      t = t1 + t2;
+    }
+    var d = DebugJS.getDateTime(t);
+    if (isNaN(d.time)) return ret;
+    ret = DebugJS.getDateStr(d, sp);
+    if (echo) DebugJS._log.res(ret);
+    return ret;
+  },
+  cmdDateDiff: function(arg, echo) {
+    var ret = NaN;
+    var a = DebugJS.splitArgs(arg);
+    if (a.length < 2) return ret;
+    var d1 = DebugJS.ctx._cmdFmtDate(a[0]);
+    var d2 = DebugJS.ctx._cmdFmtDate(a[1]);
+    if (!DebugJS.isDateFormat(d1) || !DebugJS.isDateFormat(d2)) return ret;
+    d1 = d1.replace(/-/g, '/');
+    d2 = d2.replace(/-/g, '/');
+    ret = DebugJS.diffDate(d1, d2);
+    if (echo && !isNaN(ret)) DebugJS._log.res(ret);
+    return ret;
+  },
+  _cmdFmtDate: function(d) {
+    if ((d.length == 8) && !isNaN(d)) {
+      d = DebugJS.num2date(d);
+    } else if (d == 'today') {
+      d = DebugJS.today('/');
+    }
+    return d;
   },
 
   cmdDbgWin: function(arg, tbl) {
@@ -7465,100 +7563,6 @@ DebugJS.prototype = {
       ctx.opt.lockCode = c;
     }
     ctx.lockDbgWin(ctx);
-  },
-
-  cmdDate: function(arg, tbl) {
-    var val = arg;
-    var iso = false;
-    var idx = DebugJS.indexOfOptVal(arg, '-iso');
-    if (idx >= 0) {
-      iso = true;
-      val = arg.substr(idx);
-    }
-    var d = DebugJS.date(val, iso);
-    if (d == null) {
-      DebugJS.printUsage(tbl.help);
-    } else {
-      if (!DebugJS.hasOpt(arg, 'q')) DebugJS._log.res(d);
-    }
-    return d;
-  },
-  cmdDateConv: function(arg, echo) {
-    var d = arg.trim();
-    var v = d;
-    var tz = d.match(/ [+-]\d{1,4}$/);
-    if (tz) {
-      var idx = d.indexOf(tz);
-      d = d.substr(0, idx);
-      tz = tz[0].trim();
-    } else {
-      tz = DebugJS.getLocalTimeOffsetStr();
-    }
-    if (!(DebugJS.isDateFormat(d) || DebugJS.isDateTimeFormat(d) || DebugJS.isDateTimeFormatIso(d) || (d == 'today'))) {
-      return null;
-    }
-    if (d == 'today') v = DebugJS.today('/');
-    var r = DebugJS.date(v);
-    if (r != null) {
-      if (echo) DebugJS._log.res(r);
-    }
-    return r;
-  },
-  cmdDateCalc: function(arg, echo) {
-    var ret = null;
-    arg = arg.trim();
-    if (!DebugJS.isBasicDateFormat(arg, true) && !DebugJS.isDateFormat(arg, true) && !DebugJS.startsWith(arg, 'today')) {
-      return ret;
-    }
-    arg = DebugJS.delAllSP(arg);
-    var sp = arg.charAt(4);
-    if ((sp != '-') && (sp != '/')) sp = '-';
-    arg = arg.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
-    var op;
-    if (arg.indexOf('+') >= 0) {
-      op = '+';
-    } else if (arg.indexOf('-') >= 0) {
-      op = '-';
-    }
-    var v = arg.split(op);
-    if (v.length < 2) return ret;
-    var d1 = DebugJS.ctx._cmdFmtDate(v[0]);
-    if (!DebugJS.isDateFormat(d1)) return ret;
-    var d2 = v[1];
-    var t1 = DebugJS.getDateTime(d1).time;
-    var t2 = (d2 | 0) * 86400000;
-    var t;
-    if (op == '-') {
-      t = t1 - t2;
-    } else {
-      t = t1 + t2;
-    }
-    var d = DebugJS.getDateTime(t);
-    if (isNaN(d.time)) return ret;
-    ret = DebugJS.getDateStr(d, sp);
-    if (echo) DebugJS._log.res(ret);
-    return ret;
-  },
-  cmdDateDiff: function(arg, echo) {
-    var ret = NaN;
-    var a = DebugJS.splitArgs(arg);
-    if (a.length < 2) return ret;
-    var d1 = DebugJS.ctx._cmdFmtDate(a[0]);
-    var d2 = DebugJS.ctx._cmdFmtDate(a[1]);
-    if (!DebugJS.isDateFormat(d1) || !DebugJS.isDateFormat(d2)) return ret;
-    d1 = d1.replace(/-/g, '/');
-    d2 = d2.replace(/-/g, '/');
-    ret = DebugJS.diffDate(d1, d2);
-    if (echo && !isNaN(ret)) DebugJS._log.res(ret);
-    return ret;
-  },
-  _cmdFmtDate: function(d) {
-    if ((d.length == 8) && !isNaN(d)) {
-      d = DebugJS.num2date(d);
-    } else if (d == 'today') {
-      d = DebugJS.today('/');
-    }
-    return d;
   },
 
   cmdDelay: function(arg, tbl) {
@@ -7666,7 +7670,7 @@ DebugJS.prototype = {
     DebugJS.printUsage(tbl.help);
   },
 
-  cmdExit: function(arg, tbl) {
+  cmdExit: function() {
     var ctx = DebugJS.ctx;
     DebugJS.bat.exit();
     ctx._cmdDelayCancel(ctx);
@@ -7707,7 +7711,7 @@ DebugJS.prototype = {
     ctx.updateLogFilterBtns();
   },
 
-  cmdGoto: function(arg, tbl) {
+  cmdGoto: function(arg) {
     if (DebugJS.bat.isCmdExecutable()) {
       DebugJS.ctx._cmdJump(DebugJS.ctx, arg, false, 'label');
     }
@@ -8662,8 +8666,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_SW) {
       ctx._cmdSwQ(ctx);
-    } else {
-      ctx.status &= ~DebugJS.ST_DNDARR2SET;
+    } else if (ctx.status & DebugJS.ST_DNDARR2SET) {
+      DebugJS.dndArr2SetQ();
     }
   },
 
@@ -8722,7 +8726,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdReturn: function(arg, tbl) {
+  cmdReturn: function(arg) {
     DebugJS.bat.ret(arg);
   },
 
@@ -9442,7 +9446,7 @@ DebugJS.prototype = {
     DebugJS._log.mlt(s);
   },
 
-  cmdV: function(arg, tbl) {
+  cmdV: function() {
     DebugJS._log(DebugJS.ctx.v);
     return DebugJS.ctx.v;
   },
@@ -9556,7 +9560,7 @@ DebugJS.prototype = {
     return DebugJS.zoom();
   },
 
-  cmdNop: function(arg, tbl) {},
+  cmdNop: function() {},
 
   execEncAndDec: function(arg, tbl, echo, esc, encFnc, decFnc, iIdx, a1) {
     if (DebugJS.countArgs(arg) == 0) {
@@ -11285,14 +11289,23 @@ DebugJS.arr.toSet = function(a, f) {
 };
 DebugJS.dndArr2Set = function(s) {
   var a = DebugJS.crlf2lf(s).split('\n');
-  var r = DebugJS.arr.toSet(a).sort();
-  if (r[0] == '') r.splice(0, 1);
-  DebugJS._log.p(r, 0, '', false);
+  var r = DebugJS.arr.toSet(a);
+  var o = DebugJS.ctx.dndOpt;
+  if (o.sort) r.sort();
   var b = '';
+  var c = [];
   for (var i = 0; i < r.length; i++) {
-    b += r[i] + '\n';
+    if (r[i] != '') {
+      b += r[i] + '\n';
+      c.push(r[i]);
+    }
   }
+  DebugJS._log.p(c, 0, '', o.j);
   DebugJS.cp2cb(b);
+};
+DebugJS.dndArr2SetQ = function() {
+  DebugJS.ctx.status &= ~DebugJS.ST_DNDARR2SET;
+  DebugJS.ctx.dndOpt = null;
 };
 
 DebugJS.printUsage = function(m) {
