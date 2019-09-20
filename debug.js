@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909202350';
+  this.v = '201909210023';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7579,6 +7579,7 @@ DebugJS.prototype = {
   kioskQ: function(ctx) {
     DebugJS.zoom(1);
     ctx.restoreDbgWin();
+    ctx.updateWinCtrlBtnPanel();
   },
 
   cmdDelay: function(arg, tbl) {
