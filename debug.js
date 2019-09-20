@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909202305';
+  this.v = '201909202350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -126,7 +126,7 @@ var DebugJS = DebugJS || function() {
   this.elmUpdInterval = 0;
   this.elmUpdTimerId = 0;
   this.elmInfofoldingSt = {text: false, allStyles: false, elBorder: false, elValue: false, elSrc: false, htmlSrc: false};
-  this.targetEl = null;
+  this.tgtEl = null;
   this.toolsBtn = null;
   this.toolsPanel = null;
   this.toolsHeaderPanel = null;
@@ -778,7 +778,7 @@ DebugJS.prototype = {
     }
     if (!ctx.bodyEl) return false;
     ctx.initUi(ctx, rstrOpt);
-    ctx.initCommandTable(ctx);
+    ctx.initCmdTbl(ctx);
     ctx.status |= DebugJS.ST_INITIALIZED;
     ctx.initExtension(ctx);
     ctx.printLogs();
@@ -1637,7 +1637,7 @@ DebugJS.prototype = {
     ctx.onchangeLogFilter();
   },
 
-  initCommandTable: function(ctx) {
+  initCmdTbl: function(ctx) {
     ctx.CMD_TBL = [];
     for (var i = 0; i < ctx.INT_CMD_TBL.length; i++) {
       if (ctx.opt.disableAllCommands) {
@@ -2113,8 +2113,7 @@ DebugJS.prototype = {
   },
 
   toggleFilterCase: function() {
-    var ctx = DebugJS.ctx;
-    ctx.setFilterCase(ctx, (ctx.fltrCase ? false : true));
+    DebugJS.ctx.setFilterCase(DebugJS.ctx, (DebugJS.ctx.fltrCase ? false : true));
   },
   setFilterCase: function(ctx, f) {
     ctx.fltrCase = f;
@@ -2123,8 +2122,7 @@ DebugJS.prototype = {
   },
 
   toggleFilterTxtHtml: function() {
-    var ctx = DebugJS.ctx;
-    ctx.setFilterTxtHtml(ctx, (ctx.fltrTxtHtml ? false : true));
+    DebugJS.ctx.setFilterTxtHtml(DebugJS.ctx, (DebugJS.ctx.fltrTxtHtml ? false : true));
   },
   setFilterTxtHtml: function(ctx, f) {
     ctx.fltrTxtHtml = f;
@@ -2458,7 +2456,6 @@ DebugJS.prototype = {
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
   },
 
-
   toggleClp: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_CLP) {
@@ -2505,10 +2502,9 @@ DebugJS.prototype = {
     ctx.updateSwBtnPanel(ctx);
   },
   resetStopwatch: function() {
-    var ctx = DebugJS.ctx;
-    ctx.status &= ~DebugJS.ST_STOPWATCH_END;
+    DebugJS.ctx.status &= ~DebugJS.ST_STOPWATCH_END;
     DebugJS.time.reset(DebugJS.TMR_NM_SW_0);
-    ctx.updateSwLabel();
+    DebugJS.ctx.updateSwLabel();
   },
   splitStopwatch: function() {
     if (DebugJS.ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
@@ -2962,7 +2958,7 @@ DebugJS.prototype = {
         ctx.mouseClick2 = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.ST_ELM_INFO) {
           if (ctx.isOnDbgWin(posX, posY)) {
-            if (DebugJS.el && (DebugJS.el != ctx.targetEl)) {
+            if (DebugJS.el && (DebugJS.el != ctx.tgtEl)) {
               ctx.showElementInfo(DebugJS.el);
               ctx.updateTargetElm(DebugJS.el);
             }
@@ -3894,11 +3890,11 @@ DebugJS.prototype = {
   createFoldingText: function(obj, name, omitpart, lineMaxLen, style, show) {
     var ctx = DebugJS.ctx;
     var DFLT_MAX_LEN = 50;
-    var foldingText;
+    var txt;
     if ((lineMaxLen == undefined) || (lineMaxLen < 0)) lineMaxLen = DFLT_MAX_LEN;
     if (!style) style = 'color:#aaa';
     if (!obj) {
-      foldingText = '<span class="dbg-na">' + obj + '</span>';
+      txt = '<span class="dbg-na">' + obj + '</span>';
     } else {
       var btn = DebugJS.EXPANDBTN;
       var partDisp = 'inline';
@@ -3908,17 +3904,17 @@ DebugJS.prototype = {
         partDisp = 'none';
         bodyDisp = 'block';
       }
-      foldingText = obj + '';
-      if ((foldingText.indexOf('\n') >= 1) || (foldingText.length > lineMaxLen)) {
-        var partial = DebugJS.trimDownText2(foldingText, lineMaxLen, omitpart, style);
-        foldingText = '<span class="dbg-showhide-btn dbg-nomove" id="' + ctx.id + '-' + name + '__button" onclick="DebugJS.ctx.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
+      txt = obj + '';
+      if ((txt.indexOf('\n') >= 1) || (txt.length > lineMaxLen)) {
+        var partial = DebugJS.trimDownText2(txt, lineMaxLen, omitpart, style);
+        txt = '<span class="dbg-showhide-btn dbg-nomove" id="' + ctx.id + '-' + name + '__button" onclick="DebugJS.ctx.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
         '<span id="' + ctx.id + '-' + name + '__partial-body" style="display:' + partDisp + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisp + '" id="' + ctx.id + '-' + name + '__body">' + obj + '</div>';
       } else {
-        foldingText = obj;
+        txt = obj;
       }
     }
-    return foldingText;
+    return txt;
   },
 
   toggleElmInfo: function() {
@@ -4012,11 +4008,11 @@ DebugJS.prototype = {
     return DebugJS.ui.addBtn(DebugJS.ctx.elmInfoHeaderPanel, label, handler);
   },
   closeElmInfo: function(ctx) {
-    if (ctx.targetEl) {
-      if (typeof ctx.targetEl.className == 'string') {
-        DebugJS.removeClass(ctx.targetEl, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
+    if (ctx.tgtEl) {
+      if (typeof ctx.tgtEl.className == 'string') {
+        DebugJS.removeClass(ctx.tgtEl, ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
       }
-      ctx.targetEl = null;
+      ctx.tgtEl = null;
     }
     if (ctx.elmInfoPanel) {
       if (DebugJS.ELM_INFO_FULL_OVERLAY) {
@@ -4038,7 +4034,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (!(ctx.elmInfoStatus & DebugJS.ELMINFO_ST_SELECT) || ctx.isOnDbgWin(x, y)) return;
     var el = document.elementFromPoint(x, y);
-    if (el != ctx.targetEl) {
+    if (el != ctx.tgtEl) {
       ctx.showElementInfo(el);
       ctx.updateTargetElm(el);
     }
@@ -4221,8 +4217,8 @@ DebugJS.prototype = {
   },
   showPrevElem: function() {
     var ctx = DebugJS.ctx;
-    if (!ctx.targetEl) return;
-    var el = ctx.getPrevElm(ctx, ctx.targetEl);
+    if (!ctx.tgtEl) return;
+    var el = ctx.getPrevElm(ctx, ctx.tgtEl);
     if (el) {
       ctx.showElementInfo(el);
       ctx.updateTargetElm(el);
@@ -4230,17 +4226,17 @@ DebugJS.prototype = {
   },
   showNextElem: function() {
     var ctx = DebugJS.ctx;
-    if (!ctx.targetEl) return;
-    var el = ctx.getNextElm(ctx, ctx.targetEl);
+    if (!ctx.tgtEl) return;
+    var el = ctx.getNextElm(ctx, ctx.tgtEl);
     if (el) {
       ctx.showElementInfo(el);
       ctx.updateTargetElm(el);
     }
   },
-  getPrevElm: function(ctx, targetElm) {
-    var el = targetElm.previousElementSibling;
+  getPrevElm: function(ctx, tgtElm) {
+    var el = tgtElm.previousElementSibling;
     if (el && (el.id == ctx.id)) {
-      el = targetElm.previousElementSibling;
+      el = tgtElm.previousElementSibling;
     }
     if (el) {
       if (el.childElementCount > 0) {
@@ -4251,17 +4247,17 @@ DebugJS.prototype = {
         el = lastChild;
       }
     } else {
-      el = targetElm.parentNode;
+      el = tgtElm.parentNode;
     }
     if (el instanceof HTMLDocument) el = null;
     return el;
   },
-  getNextElm: function(ctx, targetElm) {
-    var el = targetElm.firstElementChild;
+  getNextElm: function(ctx, tgtElm) {
+    var el = tgtElm.firstElementChild;
     if ((el == null) || ((el != null) && (el.id == ctx.id))) {
-      el = targetElm.nextElementSibling;
+      el = tgtElm.nextElementSibling;
       if (el == null) {
-        var parent = targetElm.parentNode;
+        var parent = tgtElm.parentNode;
         if (parent) {
           do {
             el = parent.nextElementSibling;
@@ -4278,10 +4274,10 @@ DebugJS.prototype = {
   updateTargetElm: function(el) {
     var ctx = DebugJS.ctx;
     if (ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) {
-      ctx.hlElm(ctx.targetEl, el);
+      ctx.hlElm(ctx.tgtEl, el);
     }
     if (el) {
-      ctx.targetEl = el;
+      ctx.tgtEl = el;
       ctx.enablePrevElBtn(ctx, (ctx.getPrevElm(ctx, el) ? true : false));
       ctx.enableNextElBtn(ctx, (ctx.getNextElm(ctx, el) ? true : false));
       ctx.setStyle(ctx.elmUpdBtn, 'color', ctx.opt.btnColor);
@@ -4305,7 +4301,7 @@ DebugJS.prototype = {
   },
   updateElementInfo: function() {
     DebugJS.ctx.showAllElmNum();
-    DebugJS.ctx.showElementInfo(DebugJS.ctx.targetEl);
+    DebugJS.ctx.showElementInfo(DebugJS.ctx.tgtEl);
   },
   showAllElmNum: function() {
     DebugJS.ctx.elmNumPanel.innerHTML = '(All: ' + document.getElementsByTagName('*').length + ')';
@@ -4346,10 +4342,10 @@ DebugJS.prototype = {
     var b = DebugJS.ELMINFO_ST_HIGHLIGHT;
     if (ctx.elmInfoStatus & b) {
       ctx.elmInfoStatus &= ~b;
-      ctx.hlElm(ctx.targetEl, null);
+      ctx.hlElm(ctx.tgtEl, null);
     } else {
       ctx.elmInfoStatus |= b;
-      ctx.hlElm(null, ctx.targetEl);
+      ctx.hlElm(null, ctx.tgtEl);
     }
     ctx.updateElmHighlightBtn();
   },
@@ -4357,7 +4353,7 @@ DebugJS.prototype = {
     DebugJS.ctx.setStyle(DebugJS.ctx.elmHighlightBtn, 'color', (DebugJS.ctx.elmInfoStatus & DebugJS.ELMINFO_ST_HIGHLIGHT) ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACT);
   },
   exportTargetElm: function() {
-    if (DebugJS.ctx.targetEl) DebugJS.ctx.captureElm(DebugJS.ctx.targetEl);
+    if (DebugJS.ctx.tgtEl) DebugJS.ctx.captureElm(DebugJS.ctx.tgtEl);
   },
   captureElm: function(elm) {
     DebugJS.el = elm;
@@ -4368,7 +4364,7 @@ DebugJS.prototype = {
     DebugJS._log.s('&lt;' + elm.tagName + '&gt; object has been exported to <span style="color:' + DebugJS.KEYWRD_COLOR + '">' + (DebugJS.G_EL_AVAILABLE ? 'el' : ((dbg == DebugJS) ? 'dbg' : 'DebugJS') + '.el') + '</span>');
   },
   delTargetElm: function() {
-    var e = DebugJS.ctx.targetEl;
+    var e = DebugJS.ctx.tgtEl;
     if (e) {
       var p = e.parentNode;
       if (p) {
@@ -5692,9 +5688,7 @@ DebugJS.prototype = {
           ctx.loadFile(e.dataTransfer.files[0], fmt);
         } else {
           DebugJS._log.w('handleDroppedFile() e.dataTransfer.files.length == 0');
-          if (cb) {
-            cb(ctx, false, null, null);
-          }
+          if (cb) cb(ctx, false, null, null);
         }
       }
     } catch (e) {DebugJS._log.e('handleDroppedFile() ' + e);}
@@ -5836,16 +5830,17 @@ DebugJS.prototype = {
     ctx.openFeature(ctx, DebugJS.ST_TOOLS);
     ctx.onBatLoaded(ctx, null, s);
   },
-  onFileLoadedAuto: function(ctx, file, cnt) {
-    if (DebugJS.wBOM(cnt)) cnt = cnt.substr(1);
-    if (DebugJS.isBat(cnt) || DebugJS.isB64Bat(cnt)) {
-      ctx.onBatLoaded(ctx, file, cnt);
+  onFileLoadedAuto: function(ctx, file, ctt) {
+    if (!file) return;
+    if (DebugJS.wBOM(ctt)) ctt = ctt.substr(1);
+    if (DebugJS.isBat(ctt) || DebugJS.isB64Bat(ctt)) {
+      ctx.onBatLoaded(ctx, file, ctt);
     } else if (file.name.match(/\.js$/)) {
-      ctx.onJsLoaded(ctx, file, cnt);
+      ctx.onJsLoaded(ctx, file, ctt);
     } else if (file.name.match(/\.json$/)) {
       ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
       DebugJS._log('');
-      var r = DebugJS._cmdJson(DebugJS.delAllNL(cnt), true);
+      var r = DebugJS._cmdJson(DebugJS.delAllNL(ctt), true);
       DebugJS.cp2cb(r);
     }
   },
@@ -5862,8 +5857,8 @@ DebugJS.prototype = {
   onDropOnBat: function(e) {
     DebugJS.ctx._onDropOnFeat(DebugJS.ctx, e, DebugJS.ctx.onBatLoaded);
   },
-  onBatLoaded: function(ctx, file, cnt) {
-    DebugJS.bat.set(cnt);
+  onBatLoaded: function(ctx, file, ctt) {
+    DebugJS.bat.set(ctt);
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
   onDropOnJS: function(e) {
@@ -13035,15 +13030,14 @@ DebugJS._log.mlt = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_MLT);
 };
 DebugJS._log.out = function(m, type) {
-  var ctx = DebugJS.ctx;
   m = DebugJS.setStyleIfObjNA(m);
   if (typeof m != 'string') {m = m.toString();}
   var data = {type: type, time: DebugJS.now(), msg: m};
-  ctx.logBuf.add(data);
-  if (!(ctx.status & DebugJS.ST_INITIALIZED)) {
+  DebugJS.ctx.logBuf.add(data);
+  if (!(DebugJS.ctx.status & DebugJS.ST_INITIALIZED)) {
     if (!DebugJS._init()) return;
   }
-  ctx.printLogs();
+  DebugJS.ctx.printLogs();
 };
 
 DebugJS.stack = function(ldx, q) {
@@ -13591,7 +13585,6 @@ DebugJS.bat.run = function(s, e, a) {
   bat._run();
 };
 DebugJS.bat._run = function() {
-  var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
   bat.setRunningSt(false);
   bat.setExitStatus(DebugJS.EXIT_SUCCESS);
@@ -13636,13 +13629,13 @@ DebugJS.bat._run = function() {
     el = bat.cmds.length - 1;
   }
   bat.setRunningSt(true);
-  ctx.updateBatRunBtn();
+  DebugJS.ctx.updateBatRunBtn();
   bat.initCtrl(false);
   var ctrl = bat.ctrl;
   if (bat.nestLv() == 0) {
-    ctrl.echo = ctx.cmdEchoFlg;
+    ctrl.echo = DebugJS.ctx.cmdEchoFlg;
   }
-  ctx.updateCurPc();
+  DebugJS.ctx.updateCurPc();
   ctrl.startPc = sl;
   ctrl.endPc = el;
   bat.setExecArg(ctrl.execArg);
