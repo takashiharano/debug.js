@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909200117';
+  this.v = '201909202305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12440,6 +12440,7 @@ DebugJS.trimDownText = function(txt, maxLen, style) {
 DebugJS.trimDownText2 = function(txt, maxLen, omitpart, style) {
   var snip = '...';
   if (style) snip = '<span style="' + style + '">' + snip + '</span>';
+  if (maxLen == 0) return snip;
   var str = DebugJS.unifySP(txt.replace(/(\r?\n|\r)/g, ' ').replace(/\t/g, ' '));
   if (txt.length > maxLen) {
     switch (omitpart) {
