@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909211531';
+  this.v = '201909220017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -200,7 +200,6 @@ var DebugJS = DebugJS || function() {
   this.fileVwrDecModeBtn = null;
   this.fileVwrBSB64n = null;
   this.fileVwrBSB64nL = null;
-  this.decMode = 'b64';
   this.fileVwrB64Btn = null;
   this.fileVwrBsbBtn = null;
   this.fileVwrDataSrcType = null;
@@ -210,6 +209,7 @@ var DebugJS = DebugJS || function() {
   this.fileVwrBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true};
   this.fileVwrSysCb = null;
   this.fileReader = null;
+  this.decMode = 'b64';
   this.jsBtn = null;
   this.jsPanel = null;
   this.jsEditor = null;
@@ -324,7 +324,8 @@ var DebugJS = DebugJS || function() {
   this.toolStatus = 0;
   this.toolTimerMode = DebugJS.TOOL_TMR_MODE_CLOCK;
   this.sizeStatus = 0;
-  this.dndOpt = null;
+  this.dndCmd = null;
+  this.dndArg = null;
   this.ptDnTm = 0;
   this.ptOpTm = 0;
   this.logDt = 0;
@@ -332,7 +333,7 @@ var DebugJS = DebugJS || function() {
   this.toolsActiveFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] [-dnd] Array'},
+    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] Array'},
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
@@ -345,6 +346,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
+    {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c] set|sort'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
@@ -405,6 +407,10 @@ var DebugJS = DebugJS || function() {
     {cmd: 'wait', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
+  this.DND_FN_TBL = {
+    set: DebugJS.dndToSet,
+    sort: DebugJS.dndSort
+  },
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
   this.CMD_ALIAS = {b64: 'base64'};
@@ -519,7 +525,6 @@ DebugJS.ST_NO_HIST = 1 << 22;
 DebugJS.ST_CLP = 1 << 23;
 DebugJS.ST_CLOCK_FULL = 1 << 24;
 DebugJS.ST_SW = 1 << 25;
-DebugJS.ST_DNDARR2SET = 1 << 26;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -5753,9 +5758,9 @@ DebugJS.prototype = {
   },
   onTxtDrop: function(ctx, t) {
     var r;
-    if (ctx.status & DebugJS.ST_DNDARR2SET) {
-      DebugJS.dndArr2Set(t);
-      DebugJS.dndArr2SetQ();
+    if (ctx.dndCmd) {
+      r = ctx.DND_FN_TBL[ctx.dndCmd](t);
+      DebugJS.dndFnFin();
     } else if (DebugJS.isBat(t)) {
       ctx.openBat(ctx, t);
     } else {
@@ -7068,20 +7073,14 @@ DebugJS.prototype = {
   },
 
   cmdArr2Set: function(arg, tbl, echo) {
-    var sort = DebugJS.hasOpt(arg, 'sort');
-    var j = DebugJS.hasOpt(arg, 'j');
-    if (DebugJS.hasOpt(arg, 'dnd')) {
-      DebugJS.ctx.status |= DebugJS.ST_DNDARR2SET;
-      DebugJS.ctx.dndOpt = {sort: sort, j: j};
-      DebugJS._log('DnD mode.');
-      return;
-    }
     var p = arg.indexOf('[');
     if (p == -1) {
       DebugJS.printUsage(tbl.help);
       return;
     }
     var s = DebugJS.hasOpt(arg, 's');
+    var j = DebugJS.hasOpt(arg, 'j');
+    var sort = DebugJS.hasOpt(arg, 'sort');
     var v = arg.substr(p);
     try {
       var a = eval(v);
@@ -7625,6 +7624,24 @@ DebugJS.prototype = {
       clearTimeout(ctx.cmdDelayData.tmid);
       ctx.cmdDelayData.tmid = 0;
       DebugJS._log('command delay execution has been canceled.');
+    }
+  },
+
+  cmdDnd: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    if (arg.trim() == '-c') {
+      if (ctx.dndCmd) DebugJS._log('Canceled.');
+      DebugJS.dndFnFin();
+      return;
+    }
+    var a = DebugJS.splitCmdLineInTwo(arg);
+    var cmd = a[0];
+    if (ctx.DND_FN_TBL[cmd]) {
+      ctx.dndCmd = cmd;
+      ctx.dndArg = a[1];
+      DebugJS._log('Drop a text here.');
+    } else {
+      DebugJS.printUsage(tbl.help);
     }
   },
 
@@ -8689,8 +8706,8 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.ST_CLOCK_FULL) ctx._cmdClockQ(ctx);
     if (ctx.status & DebugJS.ST_SW) {
       ctx._cmdSwQ(ctx);
-    } else if (ctx.status & DebugJS.ST_DNDARR2SET) {
-      DebugJS.dndArr2SetQ();
+    } else if (ctx.dndCmd) {
+      DebugJS.dndFnFin();
     }
   },
 
@@ -11307,25 +11324,34 @@ DebugJS.arr.toSet = function(a, f) {
   }
   return s;
 };
-DebugJS.dndArr2Set = function(s) {
-  var a = DebugJS.crlf2lf(s).split('\n');
-  var r = DebugJS.arr.toSet(a);
-  var o = DebugJS.ctx.dndOpt;
-  if (o.sort) r.sort();
-  var b = '';
+DebugJS.dndToSet = function(s) {
+  var a = DebugJS.txt2arr(s);
+  var b = DebugJS.arr.toSet(a);
+  var arg = DebugJS.ctx.dndArg;
+  if (DebugJS.hasOpt(arg, 'sort')) b.sort();
+  var r = '';
   var c = [];
-  for (var i = 0; i < r.length; i++) {
-    if (r[i] != '') {
-      b += r[i] + '\n';
-      c.push(r[i]);
+  for (var i = 0; i < b.length; i++) {
+    if (b[i] != '') {
+      r += b[i] + '\n';
+      c.push(b[i]);
     }
   }
-  DebugJS._log.p(c, 0, '', o.j);
-  DebugJS.cp2cb(b);
+  DebugJS._log.p(c, 0, '', false);
+  return r;
 };
-DebugJS.dndArr2SetQ = function() {
-  DebugJS.ctx.status &= ~DebugJS.ST_DNDARR2SET;
-  DebugJS.ctx.dndOpt = null;
+DebugJS.dndSort = function(s) {
+  var a = DebugJS.txt2arr(s).sort();
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != '') r += a[i] + '\n';
+  }
+  DebugJS._log.mlt(r);
+  return r;
+};
+DebugJS.dndFnFin = function() {
+  DebugJS.ctx.dndCmd = null;
+  DebugJS.ctx.dndArg = null;
 };
 
 DebugJS.printUsage = function(m) {
@@ -12429,6 +12455,10 @@ DebugJS.toFullWidth = function(s) {
 };
 DebugJS.lenB = function(s) {
   return (new Blob([s], {type: 'text/plain'})).size;
+};
+
+DebugJS.txt2arr = function(s) {
+  return DebugJS.crlf2lf(s).split('\n');
 };
 
 DebugJS.trimDownText = function(txt, maxLen, style) {

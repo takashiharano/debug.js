@@ -3871,23 +3871,6 @@ $ arr2set -s ['a', 'b', '1', 1]
 
 $ arr2set -sort ['z', 'a', 'b', 'a']
 -&gt; ['a', 'b', 'z']
-
-$ arr2set -dnd
-Text drag and drop mode.
-<span class="annotation">input "quit" to cancel</span>
-
-foo
-bar
-foo
-foo
-baz
-foo
-bar
-
--&gt;
-bar
-baz
-foo
 </pre>
     </td>
   </tr>
@@ -4216,9 +4199,51 @@ Cancel delay execution
   </tr>
 
   <tr>
-    <td class="name">
-      echo<br>
+    <td class="name">dnd</td>
+    <td>
+      command
     </td>
+    <td>
+      Drag and drop operation
+<pre class="eg">
+
+$ dnd set [-sort]
+to Set collection.
+
+foo
+bar
+foo
+foo
+baz
+foo
+bar
+
+-&gt;
+bar
+baz
+foo
+
+
+$ dnd sort
+
+foo
+bar
+baz
+
+-&gt;
+bar
+baz
+foo
+
+
+$ dnd -c
+Cancel the operation.
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">echo</td>
     <td>
       string or expression
     </td>
