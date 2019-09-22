@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909220017';
+  this.v = '201909221316';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -397,7 +397,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
-    {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win min|normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -594,7 +594,6 @@ DebugJS.DBGWIN_EXPAND_C_W = 960;
 DebugJS.DBGWIN_EXPAND_C_H = 640;
 DebugJS.DBGWIN_EXPAND_W = 850;
 DebugJS.DBGWIN_EXPAND_H = 580;
-DebugJS.SIZE_ST_MIN = -1;
 DebugJS.SIZE_ST_NORMAL = 0;
 DebugJS.SIZE_ST_EXPANDED = 1;
 DebugJS.SIZE_ST_EXPANDED_C = 2;
@@ -7547,7 +7546,7 @@ DebugJS.prototype = {
     if (isNaN(w) || isNaN(h)) {
       var sp = ctx.getSelfSizePos();
       DebugJS._log('w=' + (sp.w) + ' h=' + (sp.h));
-      DebugJS.printUsage('dbgwin size width height');
+      DebugJS.printUsage('dbgwin size W H');
       return;
     }
     w |= 0; h |= 0;
@@ -9536,7 +9535,6 @@ DebugJS.prototype = {
   cmdWin: function(arg, tbl) {
     var size = arg.trim();
     switch (size) {
-      case 'min':
       case 'normal':
       case 'full':
       case 'expand':
@@ -9553,15 +9551,6 @@ DebugJS.prototype = {
   setWinSize: function(opt) {
     var ctx = DebugJS.ctx;
     switch (opt) {
-      case 'min':
-        ctx.saveSize(ctx);
-        ctx.savePosNone(ctx);
-        ctx.setDbgWinSize(ctx.computedMinW, ctx.computedMinH);
-        ctx.scrollLogBtm(ctx);
-        ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJ;
-        ctx.sizeStatus = DebugJS.SIZE_ST_MIN;
-        ctx.updateWinCtrlBtnPanel();
-        break;
       case 'normal':
         var w = (ctx.initWidth - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
         var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
