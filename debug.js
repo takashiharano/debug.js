@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909221316';
+  this.v = '201909221508';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5758,8 +5758,7 @@ DebugJS.prototype = {
   onTxtDrop: function(ctx, t) {
     var r;
     if (ctx.dndCmd) {
-      r = ctx.DND_FN_TBL[ctx.dndCmd](t);
-      DebugJS.dndFnFin();
+      r = ctx.execDndCmd(ctx, t);
     } else if (DebugJS.isBat(t)) {
       ctx.openBat(ctx, t);
     } else {
@@ -5838,16 +5837,23 @@ DebugJS.prototype = {
     ctx.onBatLoaded(ctx, null, s);
   },
   onFileLoadedAuto: function(ctx, file, ctt) {
+    var r;
     if (!file) return;
     if (DebugJS.wBOM(ctt)) ctt = ctt.substr(1);
+    if (ctx.dndCmd) {
+      r = ctx.execDndCmd(ctx, ctt);
+      ctx.closeTools(ctx);
+      if (r != undefined) DebugJS.cp2cb(r);
+      return;
+    }
     if (DebugJS.isBat(ctt) || DebugJS.isB64Bat(ctt)) {
       ctx.onBatLoaded(ctx, file, ctt);
     } else if (file.name.match(/\.js$/)) {
       ctx.onJsLoaded(ctx, file, ctt);
     } else if (file.name.match(/\.json$/)) {
-      ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
+      ctx.closeTools(ctx);
       DebugJS._log('');
-      var r = DebugJS._cmdJson(DebugJS.delAllNL(ctt), true);
+      r = DebugJS._cmdJson(DebugJS.delAllNL(ctt), true);
       DebugJS.cp2cb(r);
     }
   },
@@ -5872,7 +5878,7 @@ DebugJS.prototype = {
     DebugJS.ctx._onDropOnFeat(DebugJS.ctx, e, DebugJS.ctx.onJsLoaded);
   },
   onJsLoaded: function(ctx, file, cnt) {
-    ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
+    ctx.closeTools(ctx);
     ctx.openFeature(ctx, DebugJS.ST_JS);
     ctx.jsEditor.value = ctx.jsBuf = cnt;
   },
@@ -7638,10 +7644,15 @@ DebugJS.prototype = {
     if (ctx.DND_FN_TBL[cmd]) {
       ctx.dndCmd = cmd;
       ctx.dndArg = a[1];
-      DebugJS._log('Drop a text here.');
+      DebugJS._log('Drop a file or text here.');
     } else {
       DebugJS.printUsage(tbl.help);
     }
+  },
+  execDndCmd: function(ctx, s) {
+    var r = ctx.DND_FN_TBL[ctx.dndCmd](s);
+    DebugJS.dndFnFin();
+    return r;
   },
 
   cmdEcho: function(arg, tbl) {
@@ -12911,7 +12922,7 @@ DebugJS.file.onDrop = function(e) {
   } else {
     var f = (ctx.status & DebugJS.ST_TOOLS ? false : true);
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
-    if (f) ctx.closeFeature(ctx, DebugJS.ST_TOOLS);
+    if (f) ctx.closeTools(ctx);
     ctx.handleDroppedFile(ctx, e, loader.mode, null);
   }
 };
