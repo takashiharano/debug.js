@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909221508';
+  this.v = '201909250015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11329,6 +11329,7 @@ DebugJS.dndToSet = function(s) {
   var b = DebugJS.arr.toSet(a);
   var arg = DebugJS.ctx.dndArg;
   if (DebugJS.hasOpt(arg, 'sort')) b.sort();
+  if (DebugJS.hasOpt(arg, 'desc')) b.reverse();
   var r = '';
   var c = [];
   for (var i = 0; i < b.length; i++) {
@@ -11341,7 +11342,9 @@ DebugJS.dndToSet = function(s) {
   return r;
 };
 DebugJS.dndSort = function(s) {
+  var arg = DebugJS.ctx.dndArg;
   var a = DebugJS.txt2arr(s).sort();
+  if (DebugJS.hasOpt(arg, 'desc')) a.reverse();
   var r = '';
   for (var i = 0; i < a.length; i++) {
     if (a[i] != '') r += a[i] + '\n';
