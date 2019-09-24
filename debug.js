@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909250015';
+  this.v = '201909250747';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -346,7 +346,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
-    {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c] set|sort'},
+    {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c] COMMAND ARG'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
@@ -408,6 +408,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
+    base64: DebugJS.dndBase64,
+    bsb64: DebugJS.dndBSB64,
     set: DebugJS.dndToSet,
     sort: DebugJS.dndSort
   },
@@ -7634,9 +7636,17 @@ DebugJS.prototype = {
 
   cmdDnd: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    if (arg.trim() == '-c') {
+    var c = arg.trim();
+    if (c == '-c') {
       if (ctx.dndCmd) DebugJS._log('Canceled.');
       DebugJS.dndFnFin();
+      return;
+    } else if (c == 'help') {
+      var h = 'Available Commands:\n';
+      for (var k in ctx.DND_FN_TBL) {
+        h += k + '\n';
+      }
+      DebugJS._log.mlt(h);
       return;
     }
     var a = DebugJS.splitCmdLineInTwo(arg);
@@ -11323,6 +11333,30 @@ DebugJS.arr.toSet = function(a, f) {
     }
   }
   return s;
+};
+DebugJS.dndBase64 = function(s) {
+  var arg = DebugJS.ctx.dndArg;
+  var f = DebugJS.encodeBase64;
+  if (DebugJS.hasOpt(arg, 'd')) {
+    f = DebugJS.decodeBase64;
+    s = DebugJS.delAllNL(s);
+  }
+  var r = f(s);
+  DebugJS._log.mlt(r);
+  return r;
+};
+DebugJS.dndBSB64 = function(s) {
+  var arg = DebugJS.ctx.dndArg;
+  var f = DebugJS.encodeBSB64;
+  if (DebugJS.hasOpt(arg, 'd')) {
+    f = DebugJS.decodeBSB64;
+    s = DebugJS.delAllNL(s);
+  }
+  var n = DebugJS.getOptVal(arg, 'n');
+  if (n == null) n = 1;
+  var r = f(s, n);
+  DebugJS._log.mlt(r);
+  return r;
 };
 DebugJS.dndToSet = function(s) {
   var a = DebugJS.txt2arr(s);
