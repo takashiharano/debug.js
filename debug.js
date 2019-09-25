@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909250747';
+  this.v = '201909252307';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10255,6 +10255,13 @@ DebugJS.escEncString = function(s) {
   s = DebugJS.quoteStr(s);
   return s;
 };
+DebugJS.retTxtByN = function(s, n) {
+  var r = '';
+  for (var i = 0; i < s.length; i += n) {
+    r += s.substr(i, n) + '\n';
+  }
+  return r;
+};
 
 DebugJS.styleVal = function(v) {
   var s = v;
@@ -11342,6 +11349,7 @@ DebugJS.dndBase64 = function(s) {
     s = DebugJS.delAllNL(s);
   }
   var r = f(s);
+  r = DebugJS.retByN(r, arg);
   DebugJS._log.mlt(r);
   return r;
 };
@@ -11355,8 +11363,16 @@ DebugJS.dndBSB64 = function(s) {
   var n = DebugJS.getOptVal(arg, 'n');
   if (n == null) n = 1;
   var r = f(s, n);
+  r = DebugJS.retByN(r, arg);
   DebugJS._log.mlt(r);
   return r;
+};
+DebugJS.retByN = function(s, a) {
+  var n = DebugJS.getOptVal(a, 'b');
+  if (n == null) n = 64;
+  n |= 0;
+  if (n) s = DebugJS.retTxtByN(s, n);
+  return s;
 };
 DebugJS.dndToSet = function(s) {
   var a = DebugJS.txt2arr(s);
