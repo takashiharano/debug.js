@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909252307';
+  this.v = '201909280055';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -343,6 +343,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookie', help: 'cookie keys|get|set|delete [key|-a] [val]'},
+    {cmd: 'copy', fn: this.cmdCopy, desc: 'Copy to clipboard', help: 'copy "str"'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
@@ -7388,6 +7389,19 @@ DebugJS.prototype = {
         return;
     }
     DebugJS.printUsage(tbl.help);
+  },
+
+  cmdCopy: function(arg, tbl) {
+    if (arg == '') {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    try {
+      var s = eval(arg) + '';
+      DebugJS.copy2cb(s);
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
   },
 
   cmdDate: function(arg, tbl) {
