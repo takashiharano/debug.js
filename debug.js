@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909280055';
+  this.v = '201909281740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -30,7 +30,7 @@ var DebugJS = DebugJS || function() {
     adjX: 20,
     adjY: 20,
     fontSize: 12,
-    fontFamily: 'Consolas, monospace',
+    fontFamily: 'Consolas, Monaco, Menlo, monospace, sans-serif',
     fontColor: '#fff',
     logColorV: '#99bcc8',
     logColorD: '#ccc',
