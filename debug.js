@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201909281740';
+  this.v = '201910022200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12511,7 +12511,7 @@ DebugJS.plural = function(s, n) {
   return (n >= 2 ? (s + 's') : s);
 };
 DebugJS.toHalfWidth = function(s) {
-  var h = s.replace(/　/g, ' ').replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\').replace(/〜/g, '~');
+  var h = s.replace(/　/g, ' ').replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\');
   h = h.replace(/[！-～]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) - 65248);});
   return h;
 };
