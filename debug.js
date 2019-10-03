@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910032351';
+  this.v = '201910040055';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -411,6 +411,7 @@ var DebugJS = DebugJS || function() {
   this.DND_FN_TBL = {
     base64: DebugJS.dndBase64,
     bsb64: DebugJS.dndBSB64,
+    count: DebugJS.dndCount,
     set: DebugJS.dndToSet,
     sort: DebugJS.dndSort
   },
@@ -11387,6 +11388,49 @@ DebugJS.retByN = function(s, a) {
   n |= 0;
   if (n) s = DebugJS.retTxtByN(s, n);
   return s;
+};
+DebugJS.dndCount = function(s) {
+  var l = DebugJS.txt2arr(s);
+  var o = DebugJS.cntByGrp(l);
+  var arg = DebugJS.ctx.dndArg;
+  var v = [];
+  for (var k in o) {
+    v.push({key: k, cnt: o[k]});
+  }
+  if ((arg == '') || DebugJS.hasOpt(arg, 'desc')) {
+    v.sort(function(a, b) {
+      return b.cnt - a.cnt;
+    });
+  } else if (DebugJS.hasOpt(arg, 'asc')) {
+    v.sort(function(a, b) {
+      return a.cnt - b.cnt;
+    });
+  }
+  var mxL = 0;
+  var mxD = 0;
+  for (var i = 0; i < v.length; i++) {
+    if (v[i].key.length > mxL) mxL = v[i].key.length;
+    var d = DebugJS.digits(v[i].cnt);
+    if (d > mxD) mxD = d;
+  }
+  mxL += 2;
+  var r = '';
+  for (i = 0; i < v.length; i++) {
+    if ((v[i].key != '') || DebugJS.hasOpt(arg, 'blank')) {
+      r += DebugJS.strPadding(v[i].key, ' ', mxL, 'R') + DebugJS.strPadding(v[i].cnt, ' ', mxD, 'L') + '\n';
+    }
+  }
+  DebugJS._log.mlt(r);
+  return r;
+};
+DebugJS.cntByGrp = function(a) {
+  var o = {};
+  for (var i = 0; i < a.length; i++) {
+    var v = a[i];
+    if (o[v] == undefined) o[v] = 0;
+    o[v]++;
+  }
+  return o;
 };
 DebugJS.dndToSet = function(s) {
   var a = DebugJS.txt2arr(s);
