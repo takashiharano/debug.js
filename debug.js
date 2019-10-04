@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910042320';
+  this.v = '201910042337';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -365,6 +365,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|Array'},
+    {cmd: 'loadjs', fn: this.cmdLoadJs, desc: 'Load a JavaScript file', help: 'loadjs file-path'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|date|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
@@ -8193,6 +8194,17 @@ DebugJS.prototype = {
       }
     }
     return _n;
+  },
+
+  cmdLoadJs: function(arg, tbl) {
+    var f = arg.trim();
+    if (f) {
+      var s = document.createElement('script');
+      s.src = f;
+      document.body.appendChild(s);
+    } else {
+      DebugJS.printUsage(tbl.help);
+    }
   },
 
   cmdLog: function(arg, tbl, echo) {
