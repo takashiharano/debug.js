@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910042210';
+  this.v = '201910042320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -326,6 +326,8 @@ var DebugJS = DebugJS || function() {
   this.sizeStatus = 0;
   this.dndCmd = null;
   this.dndArg = null;
+  this.dndFn = null;
+  this.dndRM = false;
   this.ptDnTm = 0;
   this.ptOpTm = 0;
   this.logDt = 0;
@@ -347,7 +349,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
-    {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c] COMMAND ARG'},
+    {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c|-r] COMMAND ARG'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
@@ -412,6 +414,7 @@ var DebugJS = DebugJS || function() {
     base64: DebugJS.dndBase64,
     bsb64: DebugJS.dndBSB64,
     count: DebugJS.dndCount,
+    func: DebugJS.dndFunc,
     sort: DebugJS.dndSort
   },
   this.CMD_TBL = [];
@@ -7651,7 +7654,8 @@ DebugJS.prototype = {
   cmdDnd: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var c = arg.trim();
-    if (c == '-c') {
+    var a0 = DebugJS.getArgVal(arg, 0);
+    if (a0 == '-c') {
       if (ctx.dndCmd) DebugJS._log('Canceled.');
       DebugJS.dndFnFin();
       return;
@@ -7664,18 +7668,39 @@ DebugJS.prototype = {
       return;
     }
     var a = DebugJS.splitCmdLineInTwo(arg);
+    var rm = false;
+    if (a0 == '-r') {
+      rm = true;
+      a = DebugJS.splitCmdLineInTwo(a[1]);
+    }
     var cmd = a[0];
-    if (ctx.DND_FN_TBL[cmd]) {
-      ctx.dndCmd = cmd;
+    var ok = false;
+    if (cmd == 'func') {
+      var f = DebugJS.getNonOptVals(a[1])[0];
+      try {
+        var fn = eval(f);
+        if (typeof fn == 'function') {
+          ctx.dndFn = fn;
+          ok = true;
+        }
+      } catch (e) {}
+    } else if (ctx.DND_FN_TBL[cmd]) {
+      ok = true;
+    }
+    if (ok) {
       ctx.dndArg = a[1];
-      DebugJS._log('Drop a file or text here.');
+      ctx.dndCmd = cmd;
+      ctx.dndRM = rm;
+      DebugJS._log('Drop a file or text here.' + (rm ? ' (Resident mode)' : ''));
     } else {
       DebugJS.printUsage(tbl.help);
     }
   },
   execDndCmd: function(ctx, s) {
     var r = ctx.DND_FN_TBL[ctx.dndCmd](s);
-    DebugJS.dndFnFin();
+    if (!ctx.dndRM) {
+      DebugJS.dndFnFin();
+    }
     return r;
   },
 
@@ -11441,6 +11466,9 @@ DebugJS.cntByGrp = function(a) {
     o[v]++;
   }
   return o;
+};
+DebugJS.dndFunc = function(s) {
+  return DebugJS.ctx.dndFn(s);
 };
 DebugJS.dndSort = function(s) {
   var arg = DebugJS.ctx.dndArg;
