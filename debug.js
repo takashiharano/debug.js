@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910042159';
+  this.v = '201910042210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9613,9 +9613,11 @@ DebugJS.prototype = {
 
   cmdZoom: function(arg, tbl) {
     var zm = arg.trim();
+    var n = DebugJS.ctx.opt.zoom;
     if (zm == '') {
+      DebugJS._log('ratio=' + n);
       DebugJS.printUsage(tbl.help);
-    } else if (zm != DebugJS.ctx.opt.zoom) {
+    } else if (zm != n) {
       DebugJS.zoom(zm);
     }
     return DebugJS.zoom();
