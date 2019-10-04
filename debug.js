@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910040055';
+  this.v = '201910042159';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -412,7 +412,6 @@ var DebugJS = DebugJS || function() {
     base64: DebugJS.dndBase64,
     bsb64: DebugJS.dndBSB64,
     count: DebugJS.dndCount,
-    set: DebugJS.dndToSet,
     sort: DebugJS.dndSort
   },
   this.CMD_TBL = [];
@@ -6364,7 +6363,7 @@ DebugJS.prototype = {
     dmp += '\n';
     if (ctx.status & DebugJS.ST_CLP) {
       var s = DebugJS.html2text(dmp);
-      DebugJS.copy2cb(s);
+      DebugJS.copy2clpbd(s);
     }
     var html = '<pre style="white-space:pre !important">';
     html += DebugJS.ui.createBtnHtml('[' + mode.toUpperCase() + ']', 'DebugJS.ctx.toggleBinMode()') + ' ';
@@ -7399,7 +7398,7 @@ DebugJS.prototype = {
     }
     try {
       var s = eval(arg) + '';
-      DebugJS.copy2cb(s);
+      DebugJS.copy2clpbd(s);
     } catch (e) {
       DebugJS._log.e(e);
     }
@@ -11406,21 +11405,30 @@ DebugJS.dndCount = function(s) {
       return a.cnt - b.cnt;
     });
   }
-  var mxL = 0;
-  var mxD = 0;
+  var mxD = 3;
   for (var i = 0; i < v.length; i++) {
-    if (v[i].key.length > mxL) mxL = v[i].key.length;
     var d = DebugJS.digits(v[i].cnt);
     if (d > mxD) mxD = d;
   }
-  mxL += 2;
-  var r = '';
+  var w = [];
   for (i = 0; i < v.length; i++) {
     if ((v[i].key != '') || DebugJS.hasOpt(arg, 'blank')) {
-      r += DebugJS.strPadding(v[i].key, ' ', mxL, 'R') + DebugJS.strPadding(v[i].cnt, ' ', mxD, 'L') + '\n';
+      w.push(v[i]);
     }
   }
-  DebugJS._log.mlt(r);
+  var idxD = DebugJS.digits(w.length);
+  if (idxD < 2) idxD = 2;
+  var h = DebugJS.strPadding('idx', ' ', idxD, 'R') + ' ' + DebugJS.strPadding('cnt', ' ', mxD, 'R') + ' val\n---------------\n';
+  var r = h;
+  var m = h;
+  for (i = 0; i < w.length; i++) {
+    var idx = DebugJS.strPadding(i + 1, ' ', idxD, 'L');
+    var c = DebugJS.strPadding(w[i].cnt, ' ', mxD, 'L');
+    var p = idx + ': ' + c + ' ';
+    m += p + DebugJS.quoteStr(DebugJS.hlCtrlCh(w[i].key)) + '\n';
+    r += p + w[i].key + '\n';
+  }
+  DebugJS._log.mlt(m);
   return r;
 };
 DebugJS.cntByGrp = function(a) {
@@ -11431,23 +11439,6 @@ DebugJS.cntByGrp = function(a) {
     o[v]++;
   }
   return o;
-};
-DebugJS.dndToSet = function(s) {
-  var a = DebugJS.txt2arr(s);
-  var b = DebugJS.arr.toSet(a);
-  var arg = DebugJS.ctx.dndArg;
-  if (DebugJS.hasOpt(arg, 'sort')) b.sort();
-  if (DebugJS.hasOpt(arg, 'desc')) b.reverse();
-  var r = '';
-  var c = [];
-  for (var i = 0; i < b.length; i++) {
-    if (b[i] != '') {
-      r += b[i] + '\n';
-      c.push(b[i]);
-    }
-  }
-  DebugJS._log.p(c, 0, '', false);
-  return r;
 };
 DebugJS.dndSort = function(s) {
   var arg = DebugJS.ctx.dndArg;
@@ -13599,10 +13590,10 @@ DebugJS.isSysVal = function(n) {
 
 DebugJS.cp2cb = function(s) {
   if ((DebugJS.ctx.status & DebugJS.ST_CLP) && (s !== undefined)) {
-    DebugJS.copy2cb(s);
+    DebugJS.copy2clpbd(s);
   }
 };
-DebugJS.copy2cb = function(s) {
+DebugJS.copy2clpbd = function(s) {
   var b = DebugJS.ctx.bodyEl;
   var ta = document.createElement('textarea');
   ta.style.position = 'fixed';

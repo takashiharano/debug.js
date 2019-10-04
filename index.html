@@ -4238,26 +4238,11 @@ foo
 bar
 
 -&gt;
-foo  4
-bar  2
-baz  1
-
-
-$ dnd set [-sort] [-desc]
-to Set collection.
-
-foo
-bar
-foo
-foo
-baz
-foo
-bar
-
--&gt;
-bar
-baz
-foo
+idx cnt val
+---------------
+ 1:   4 foo
+ 2:   2 bar
+ 3:   1 baz
 
 
 $ dnd sort [-desc]
