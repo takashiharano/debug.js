@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910050231';
+  this.v = '201910051234';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13066,7 +13066,7 @@ DebugJS.file.onDrop = function(e) {
   }
   var d = e.dataTransfer.getData('text');
   if (d) {
-    if (loader.cb) loader.cb(null, d);
+    DebugJS.file.callCb(loader, d, null);
   } else {
     var f = (ctx.status & DebugJS.ST_TOOLS ? false : true);
     ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'file', loader.mode);
@@ -13081,18 +13081,27 @@ DebugJS.isTargetEl = function(tgt, el) {
   } while (tgt != null);
   return false;
 };
-DebugJS.file.onLoaded = function(file, cnt) {
+DebugJS.file.onLoaded = function(file, ctt) {
   var loader = DebugJS.file.ongoingLdr;
   if (!loader || !loader.cb) return;
   if ((loader.mode == 'b64') && loader.decode) {
-    cnt = DebugJS.decodeB64(DebugJS.splitDataUrl(cnt).data);
+    ctt = DebugJS.decodeB64(DebugJS.splitDataUrl(ctt).data);
   }
-  loader.cb(file, cnt);
+  DebugJS.file.callCb(loader, ctt, file);
+};
+DebugJS.file.callCb = function(loader, ctt, file) {
+  if (loader.cb) {
+    if (loader.txtOnly) {
+      loader.cb(ctt);
+    } else {
+      loader.cb(file, ctt);
+    }
+  }
 };
 DebugJS.file.finalize = function() {
   DebugJS.file.ongoingLdr = null;
 };
-DebugJS.addFileLoader = function(el, cb, mode, decode) {
+DebugJS.addFileLoader = function(el, cb, mode, decode, txtOnly) {
   el = DebugJS.getElement(el);
   if (!el) {
     DebugJS._log.e('addFileLoader(): target element is ' + el);
@@ -13100,8 +13109,11 @@ DebugJS.addFileLoader = function(el, cb, mode, decode) {
   }
   el.addEventListener('dragover', DebugJS.file.onDragOver, false);
   el.addEventListener('drop', DebugJS.file.onDrop, false);
-  var loader = {el: el, mode: mode, decode: decode, cb: cb};
+  var loader = {el: el, mode: mode, decode: decode, txtOnly: txtOnly, cb: cb};
   DebugJS.file.loaders.push(loader);
+};
+DebugJS.addDropHandler = function(el, cb) {
+  DebugJS.addFileLoader(el, cb, 'b64', true, true);
 };
 
 DebugJS.getOptionValue = function(k) {

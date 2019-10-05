@@ -87,7 +87,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .overlay-root{position:relative;}
 .overlay{position:absolute;top:0;left:0;white-space:nowrap;}
 .overlay-val{padding:2px;border-radius:4px;background:rgba(0,102,238,0.5); }
-.file-loader{float:left;width:250px; height:100px; border:dotted 1px #888; overflow:auto;margin-left:2px;}
+.file-loader{float:left;width:187px; height:100px; border:dotted 1px #888; overflow:auto;margin-left:2px;}
 .file-content{font-size:12px;}
 #table1, #table1 th, #table1 td{border:solid 1px #000;border-collapse:collapse;}
 #table1 thead {background:#6cf;color:#fff;}
@@ -725,6 +725,7 @@ function addFileLoadHandler() {
   dbg.addFileLoader('#file-loader-b64', fileLoaderHandlerB64, 'b64', false);
   dbg.addFileLoader('#file-loader-b64-decoded', fileLoaderHandlerB64Decoded, 'b64', true);
   dbg.addFileLoader('#file-loader-bin', fileLoaderHandlerBin, 'bin');
+  dbg.addDropHandler('#drop-area', dropHandler);
 }
 
 function fileLoaderHandlerB64(file, content) {
@@ -742,6 +743,12 @@ function fileLoaderHandlerB64Decoded(file, content) {
 function fileLoaderHandlerBin(file, content) {
   log('fileLoaderHandlerBin');
   var el = document.getElementById('file-content-bin');
+  el.innerText = content;
+}
+
+function dropHandler(content) {
+  log('dropHandler');
+  var el = document.getElementById('drop-content');
   el.innerText = content;
 }
 
@@ -3509,9 +3516,23 @@ Callback function which is called when file load has been completed.<br>
       arg4: decode</td>
     <td>
       Add File Loader Handler<br><br>
-      Handler format:<br>
-      function(file, content)<br><br>
+<pre class="eg">Handler format:
+  function(file, content)
+
+</pre>
       In case that mode is 'bin', arg4 decode is ignored.
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.addDropHandler</td>
+    <td>
+      arg1: target element<br>
+      arg2: callback function
+    <td>
+      Add Drop Handler<br><br>
+<pre class="eg">Handler format:
+  function(content)</pre>
     </td>
   </tr>
 
@@ -7057,6 +7078,10 @@ See also: <a href="#" onclick="scrollToSelector('#bat-execution', 700);return fa
 
 <div id="file-loader-bin" class="file-loader">
 <pre id="file-content-bin" class="file-content">File Loader Bin</pre>
+</div>
+
+<div id="drop-area" class="file-loader">
+<pre id="drop-content" class="file-content">Drop Area</pre>
 </div>
 </div>
 </div><!-- content -->
