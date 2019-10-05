@@ -815,28 +815,33 @@ window.addEventListener('error', onError, true);
 //--------------------------------------------------
 var example = {};
 
-example.onCreateP1 = function(panel) {
+example.onCreate = function(panel) {
   var code = document.getElementById('ext-panel-create-code').value;
   eval(code);
 };
 
-example.onActiveP1 = function(panel) {
+example.onActive = function(panel) {
   var code = document.getElementById('ext-panel-active-code').value;
   eval(code);
 };
 
-example.onInActiveP1 = function(panel) {
+example.onInActive = function(panel) {
   var code = document.getElementById('ext-panel-inactive-code').value;
   eval(code);
+};
+
+example.onDrop = function(text) {
+  log(text);
 };
 
 example.regieterExtensionPanel = function() {
   var name = document.getElementById('ext-panel-name-text').value;
   var panel1 = {
     name: name,
-    onCreate: example.onCreateP1,
-    onActive: example.onActiveP1,
-    onInActive: example.onInActiveP1
+    onCreate: example.onCreate,
+    onActive: example.onActive,
+    onInActive: example.onInActive,
+    onDrop: example.onDrop
   };
   var index = dbg.x.addPanel(panel1);
   document.getElementById('ext-panel-index').innerText = index;
@@ -6592,32 +6597,34 @@ $ hello<br>
 // This is where you should do all of your normal static set up:
 // create views, initialize data, etc.
 // The argument <i>panel</i> is the base DOM element of the extension panel.
-<span class="emphasis">example.onCreateP1 = function(panel) {
-  <textarea id="ext-panel-create-code" class="demo-textarea" style="height:105px;">
-log('onCreateP1');
-var html = '&lt;div style="box-sizing:border-box !important; ' +
-           'width:100%; height:100%; padding:4px;"&gt;' +
-           'Extension Panel' +
-           '&lt;/div&gt;';
-panel.innerHTML = html;</textarea>
+<span class="emphasis">example.onCreate = function(panel) {
+  <textarea id="ext-panel-create-code" class="demo-textarea" style="height:140px;">
+log('onCreate P1');
+var body = document.createElement('pre');
+dbg.setStyle(body, 'box-sizing', 'border-box');
+dbg.setStyle(body, 'width', '100%');
+dbg.setStyle(body, 'height', '100%');
+dbg.setStyle(body, 'paddingf', '4px');
+body.innerHTML = 'Extension Panel 1';
+panel.appendChild(body);</textarea>
 };</span>
 
 // Called when the panel is displayed.
-<span class="emphasis">example.onActiveP1 = function(panel) {
-  <textarea id="ext-panel-active-code" class="demo-textarea" style="height:20px;">log('onActiveP1');</textarea>
+<span class="emphasis">example.onActive = function(panel) {
+  <textarea id="ext-panel-active-code" class="demo-textarea" style="height:20px;">log('onActive P1');</textarea>
 };</span>
 
 // Called when the panel is hidden.
-<span class="emphasis">example.onInActiveP1 = function(panel) {
-  <textarea id="ext-panel-inactive-code" class="demo-textarea" style="height:20px;">log('onInActiveP1');</textarea>
+<span class="emphasis">example.onInActive = function(panel) {
+  <textarea id="ext-panel-inactive-code" class="demo-textarea" style="height:20px;">log('onInActive P1');</textarea>
 };
 
 var panel1 = {
   name: '<input type="text" id="ext-panel-name-text" class="inline-text-input" style="width:30px;" value="P1">',
-  onCreate: example.onCreateP1,
-  onActive: example.onActiveP1,
-  onInActive: example.onInActiveP1</span>,
-  onDrop: example.onDropP1, // optional. See dbg.addDropHandler()
+  onCreate: example.onCreate,
+  onActive: example.onActive,
+  onInActive: example.onInActive</span>,
+  onDrop: example.onDrop, // optional. See dbg.addDropHandler()
   fileloader: { // optional
     cb: example.onFileLoaded,
     mode: 'b64',
