@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910042337';
+  this.v = '201910050231';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7685,6 +7685,7 @@ DebugJS.prototype = {
           ok = true;
         }
       } catch (e) {}
+      if (!ok) DebugJS._log.e(f + ' is not a function');
     } else if (ctx.DND_FN_TBL[cmd]) {
       ok = true;
     }
@@ -11494,8 +11495,11 @@ DebugJS.dndSort = function(s) {
   return r;
 };
 DebugJS.dndFnFin = function() {
-  DebugJS.ctx.dndCmd = null;
-  DebugJS.ctx.dndArg = null;
+  var ctx = DebugJS.ctx;
+  ctx.dndCmd = null;
+  ctx.dndArg = null;
+  ctx.dndFn = null;
+  ctx.dndRM = false;
 };
 
 DebugJS.printUsage = function(m) {
