@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910051234';
+  this.v = '201910052050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16926,6 +16926,7 @@ DebugJS.x.addPanel = function(p) {
 DebugJS.x.addFileLdr = function(p) {
   var d = p.fileloader;
   if (d) DebugJS.addFileLoader(p.panel, d.cb, d.mode, d.decode);
+  if (p.onDrop) DebugJS.addDropHandler(p.panel, p.onDrop);
 };
 DebugJS.x.getPanel = function(idx) {
   var p = DebugJS.ctx.extPanels[idx];
