@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910062142';
+  this.v = '201910070023';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -198,6 +198,7 @@ var DebugJS = DebugJS || function() {
   this.fileVwrDtTxtArea = null;
   this.fileVwrDecMode = 'b64';
   this.fileVwrDecModeBtn = null;
+  this.fileVwrRet = null;
   this.fileVwrBSB64n = null;
   this.fileVwrBSB64nL = null;
   this.fileVwrB64Btn = null;
@@ -5659,8 +5660,20 @@ DebugJS.prototype = {
       'height': 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'
     };
     ctx.fileVwrDtUrlWrp = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'div', style);
+    ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 31em)', null, ctx.opt.fontColor, '', null);
+    var b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[text]', ctx.setDtSchmTxt);
+    b.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
+    b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[image]', ctx.setDtSchmImg);
+    b.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
 
-    ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 28em)', null, ctx.opt.fontColor, '', null);
+    b = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span');
+    b.innerText = 'RET=';
+    b.style.marginLeft = (ctx.computedFontSize * 0.4) + 'px';
+    b.style.color = '#ccc';
+
+    ctx.fileVwrRet = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.5em', 'right', '#ccc', '0', null);
+    ctx.fileVwrRet.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
+
     ctx.addFileVwrBtn(ctx, 'Decode', 8, ctx.decodeFileVwrData);
     ctx.fileVwrDecModeBtn = ctx.addFileVwrBtn(ctx, '[B64]', (ctx.computedFontSize * 0.5), ctx.toggleDecMode);
     ctx.fileVwrBSB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1em', 'center', '#ccc', '1', null);
@@ -5670,8 +5683,7 @@ DebugJS.prototype = {
     ctx.fileVwrBSB64nL.innerText = 'n=';
     ctx.fileVwrBsbBtn = ctx.addFileVwrBtn(ctx, '<BSB64>', (ctx.computedFontSize * 0.2), ctx.setModeBSB64);
     ctx.fileVwrB64Btn = ctx.addFileVwrBtn(ctx, '<Base64>', (ctx.computedFontSize * 0.2), ctx.setModeB64);
-    ctx.addFileVwrBtn(ctx, '[image]', (ctx.computedFontSize * 2), ctx.setDtSchmImg);
-    ctx.addFileVwrBtn(ctx, '[text]', (ctx.computedFontSize * 0.2), ctx.setDtSchmTxt);
+
     ctx.fileVwrDtTxtArea = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'textarea', {height: 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'});
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
     ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxtArea);
@@ -6079,8 +6091,10 @@ DebugJS.prototype = {
     var n = ctx.fileVwrBSB64n.value;
     switch (mode) {
       case 'txt':
+        var nl = ctx.fileVwrRet.value | 0;
         r = DebugJS.encodeBSB64(src, n);
-        data = r;
+        r = ctx.fileVwrDtTxtArea.value = DebugJS.retTxtByN(r, nl);
+        data = src;
         break;
       default:
         r = DebugJS.decodeBSB64(src, n);
@@ -6143,14 +6157,10 @@ DebugJS.prototype = {
       if (ctx.fileVwrSysCb) {
         ctx.fileVwrSysCb(ctx, file, decoded);
       } else {
-        ctx.onFileLoadedB64onFileVwr(ctx, file, decoded);
+        if (ctx.decMode == 'bsb64') {
+          ctx.decodeFileVwrData();
+        }
       }
-    }
-  },
-  onFileLoadedB64onFileVwr: function(ctx, file, decoded) {
-    if (ctx.decMode == 'bsb64') {
-      ctx.fileVwrDtTxtArea.value = decoded;
-      ctx.decodeFileVwrData();
     }
   },
   onFileLoadedBin: function(ctx, file, content) {
@@ -6246,7 +6256,8 @@ DebugJS.prototype = {
   setDataUrl: function(ctx, scheme, data) {
     scheme = scheme.replace(/,$/, '');
     ctx.fileVwrDtUrlScheme.value = scheme + ',';
-    ctx.fileVwrDtTxtArea.value = data;
+    var n = ctx.fileVwrRet.value | 0;
+    ctx.fileVwrDtTxtArea.value = DebugJS.retTxtByN(data, n);
   },
   getFileInfo: function(file) {
     var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
@@ -10312,6 +10323,7 @@ DebugJS.escEncString = function(s) {
   return s;
 };
 DebugJS.retTxtByN = function(s, n) {
+  if (n == 0) return s;
   var r = '';
   for (var i = 0; i < s.length; i += n) {
     r += s.substr(i, n) + '\n';
