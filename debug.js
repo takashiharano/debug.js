@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910052126';
+  this.v = '201910061524';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16677,37 +16677,46 @@ DebugJS.getUrlHash = function() {
 };
 
 DebugJS.ui = {};
-DebugJS.ui.addBtn = function(base, label, onclick) {
-  var el = document.createElement('span');
-  el.className = 'dbg-btn dbg-nomove';
-  el.innerText = label;
-  el.onclick = onclick;
+DebugJS.ui.addElement = function(base, tag, style) {
+  var el = document.createElement(tag);
+  if (style) {
+    for (var k in style) {
+      DebugJS.setStyle(el, k, style[k]);
+    }
+  }
   base.appendChild(el);
   return el;
 };
-DebugJS.ui.createBtnHtml = function(label, onclick, style) {
-  return '<span class="dbg-btn dbg-nomove" ' + (style == undefined ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
+DebugJS.ui.addBtn = function(base, label, onclick) {
+  var el = DebugJS.ui.addElement(base, 'span');
+  el.className = 'dbg-btn dbg-nomove';
+  el.innerText = label;
+  el.onclick = onclick;
+  return el;
 };
 DebugJS.ui.addLabel = function(base, label) {
-  var el = document.createElement('span');
+  var el = DebugJS.ui.addElement(base, 'span');
   el.innerText = label;
-  base.appendChild(el);
   return el;
 };
 DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, oninput) {
   var ctx = DebugJS.ctx;
-  var el = document.createElement('input');
+  var s = {
+    'width': width,
+    'min-height': ctx.computedFontSize + 'px',
+    'margin': '0',
+    'padding': '0',
+    'color': color
+  };
+  var el = DebugJS.ui.addElement(base, 'input', s);
   el.className = 'dbg-txtbox';
-  DebugJS.setStyle(el, 'width', width);
-  DebugJS.setStyle(el, 'min-height', ctx.computedFontSize + 'px');
-  DebugJS.setStyle(el, 'margin', '0');
-  DebugJS.setStyle(el, 'padding', '0');
-  DebugJS.setStyle(el, 'color', color);
   if (txtAlign) DebugJS.setStyle(el, 'text-align', txtAlign);
   el.value = val;
   el.oninput = oninput;
-  base.appendChild(el);
   return el;
+};
+DebugJS.ui.createBtnHtml = function(label, onclick, style) {
+  return '<span class="dbg-btn dbg-nomove" ' + (style == undefined ? '' : 'style="' + style + '" ') + 'onclick="' + onclick + '">' + label + '</span>';
 };
 
 DebugJS.wd = {};
