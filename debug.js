@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910070023';
+  this.v = '201910070030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -413,8 +413,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
-    base64: DebugJS.dndBase64,
-    bsb64: DebugJS.dndBSB64,
     count: DebugJS.dndCount,
     func: DebugJS.dndFunc,
     sort: DebugJS.dndSort
@@ -11407,39 +11405,6 @@ DebugJS.arr.toSet = function(a, f) {
       s.push(v);
     }
   }
-  return s;
-};
-DebugJS.dndBase64 = function(s) {
-  var arg = DebugJS.ctx.dndArg;
-  var f = DebugJS.encodeBase64;
-  if (DebugJS.hasOpt(arg, 'd')) {
-    f = DebugJS.decodeBase64;
-    s = DebugJS.delAllNL(s);
-  }
-  var r = f(s);
-  r = DebugJS.retByN(r, arg);
-  DebugJS._log.mlt(r);
-  return r;
-};
-DebugJS.dndBSB64 = function(s) {
-  var arg = DebugJS.ctx.dndArg;
-  var f = DebugJS.encodeBSB64;
-  if (DebugJS.hasOpt(arg, 'd')) {
-    f = DebugJS.decodeBSB64;
-    s = DebugJS.delAllNL(s);
-  }
-  var n = DebugJS.getOptVal(arg, 'n');
-  if (n == null) n = 1;
-  var r = f(s, n);
-  r = DebugJS.retByN(r, arg);
-  DebugJS._log.mlt(r);
-  return r;
-};
-DebugJS.retByN = function(s, a) {
-  var n = DebugJS.getOptVal(a, 'b');
-  if (n == null) n = 64;
-  n |= 0;
-  if (n) s = DebugJS.retTxtByN(s, n);
   return s;
 };
 DebugJS.dndCount = function(s) {
