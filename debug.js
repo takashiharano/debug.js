@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910070030';
+  this.v = '201910070038';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3870,7 +3870,7 @@ DebugJS.prototype = {
     DebugJS.writeHTML(ctx.id + '-sys-' + id, html);
   },
   createStorageEditor: function(ctx, type) {
-    return '<textarea id="' + ctx.id + '-strg' + type + '" class="dbg-editor dbg-strg"></textarea>\n' +
+    return '<textarea id="' + ctx.id + '-strg' + type + '" class="dbg-editor dbg-strg" spellcheck="false"></textarea>\n' +
     ' <span class="dbg-btn" onclick="DebugJS.ctx.setStrg(' + type + ');">setItem</span>(\'<input id="' + ctx.id + '-strgkey' + type + '" class="dbg-txtbox dbg-strgkey">\', v);';
   },
   setStrgEdit: function(type, v, k) {
@@ -4557,6 +4557,7 @@ DebugJS.prototype = {
     ctx.addOverlayPanel(ctx, ctx.jsPanel);
     ctx.jsEditor = document.createElement('textarea');
     ctx.jsEditor.className = 'dbg-editor';
+    ctx.jsEditor.spellcheck = false;
     ctx.jsEditor.onblur = ctx.saveJsBuf;
     ctx.jsEditor.value = ctx.jsBuf;
     ctx.enableDnDFileLoad(ctx.jsEditor, ctx.onDropOnJS);
@@ -5684,6 +5685,7 @@ DebugJS.prototype = {
 
     ctx.fileVwrDtTxtArea = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'textarea', {height: 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'});
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
+    ctx.fileVwrDtTxtArea.spellcheck = false;
     ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxtArea);
     ctx.setModeB64();
   },
@@ -6518,9 +6520,9 @@ DebugJS.prototype = {
     ctx.htmlPrevEditorPanel = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'div');
     ctx.htmlPrevEditorPanel.innerHTML = html;
 
-    ctx.htmlPrevEditor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea');
+    ctx.htmlPrevEditor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', {height: 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)'});
     ctx.htmlPrevEditor.className = 'dbg-editor';
-    DebugJS.setStyle(ctx.htmlPrevEditor, 'height', 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)');
+    ctx.htmlPrevEditor.spellcheck = false;
     ctx.htmlPrevEditor.onblur = ctx.saveHtmlBuf;
     ctx.htmlPrevEditor.value = ctx.htmlPrevBuf;
   },
@@ -6586,6 +6588,7 @@ DebugJS.prototype = {
     ctx.batNestLv = DebugJS.ui.addLabel(basePanel, '0');
     ctx.batTextEditor = document.createElement('textarea');
     ctx.batTextEditor.className = 'dbg-editor';
+    ctx.batTextEditor.spellcheck = false;
     DebugJS.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 2) + 'px)');
     ctx.enableDnDFileLoad(ctx.batTextEditor, ctx.onDropOnBat);
     basePanel.appendChild(ctx.batTextEditor);
