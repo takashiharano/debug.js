@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910070038';
+  this.v = '201910072200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -225,6 +225,7 @@ var DebugJS = DebugJS || function() {
   this.batBasePanel = null;
   this.batEditorPanel = null;
   this.batTextEditor = null;
+  this.batTxtSt = null;
   this.batRunBtn = null;
   this.batStopBtn = null;
   this.batResumeBtn = null;
@@ -6589,9 +6590,12 @@ DebugJS.prototype = {
     ctx.batTextEditor = document.createElement('textarea');
     ctx.batTextEditor.className = 'dbg-editor';
     ctx.batTextEditor.spellcheck = false;
-    DebugJS.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 2) + 'px)');
+    ctx.batTextEditor.addEventListener('input', ctx.onBatInput);
+    ctx.batTextEditor.addEventListener('change', ctx.onBatInput);
+    DebugJS.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)');
     ctx.enableDnDFileLoad(ctx.batTextEditor, ctx.onDropOnBat);
     basePanel.appendChild(ctx.batTextEditor);
+    ctx.batTxtSt = DebugJS.ui.addLabel(basePanel, '', {color: '#ccc'});
     ctx.batBasePanel = basePanel;
     ctx.setBatTxt(ctx);
     ctx.setBatArgTxt(ctx);
@@ -6599,6 +6603,7 @@ DebugJS.prototype = {
     ctx.updateBatNestLv();
     ctx.updateBatRunBtn();
     ctx.updateBatResumeBtn();
+    ctx.onBatInput();
   },
   startPauseBat: function() {
     var ctx = DebugJS.ctx;
@@ -6669,6 +6674,7 @@ DebugJS.prototype = {
     }
     if (ctx.batTextEditor) {
       ctx.batTextEditor.value = b;
+      ctx.onBatInput();
     }
   },
   setBatArgTxt: function(ctx) {
@@ -6705,6 +6711,16 @@ DebugJS.prototype = {
     if ((ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_BAT) && (ctx.batBasePanel)) {
       ctx.removeToolFuncPanel(ctx, ctx.batBasePanel);
     }
+  },
+  onBatInput: function() {
+    var ctx = DebugJS.ctx;
+    if (!ctx.batTxtSt) return;
+    var txt = ctx.batTextEditor.value;
+    var len = txt.length;
+    var lenB = DebugJS.lenB(txt);
+    var lfCount = (txt.match(/\n/g) || []).length;
+    var lenWoLf = len - lfCount;
+    ctx.batTxtSt.innerText = 'LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes';
   },
 
   toggleExtPanel: function() {
@@ -12785,6 +12801,13 @@ DebugJS.hasClass = function(el, n) {
 DebugJS.setStyle = function(el, n, v) {
   el.style.setProperty(n, v, 'important');
 };
+DebugJS.setStyles = function(e, s) {
+  if (s) {
+    for (var k in s) {
+      DebugJS.setStyle(e, k, s[k]);
+    }
+  }
+};
 
 DebugJS.copyProp = function(src, dst) {
   for (var k in src) {
@@ -13695,8 +13718,9 @@ DebugJS.bat.labels = {};
 DebugJS.bat.fncs = {};
 DebugJS.bat.ctx = [];
 DebugJS.bat.set = function(b) {
+  var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
-  if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) {
+  if (ctx.status & DebugJS.ST_BAT_RUNNING) {
     if (bat.nestLv() == 0) {
       bat.stop(DebugJS.EXIT_CLEARED);
     } else {
@@ -13705,8 +13729,9 @@ DebugJS.bat.set = function(b) {
   }
   if (b instanceof DebugJS.TextBuffer) b = b.toString();
   if (DebugJS.isB64Bat(b)) b = DebugJS.decodeB64(b);
-  if (DebugJS.ctx.batTextEditor) {
-    DebugJS.ctx.batTextEditor.value = b;
+  if (ctx.batTextEditor) {
+    ctx.batTextEditor.value = b;
+    ctx.onBatInput();
   }
   bat.store(b);
   if (bat.nestLv() > 0) {
@@ -16663,11 +16688,7 @@ DebugJS.getUrlHash = function() {
 DebugJS.ui = {};
 DebugJS.ui.addElement = function(base, tag, style) {
   var el = document.createElement(tag);
-  if (style) {
-    for (var k in style) {
-      DebugJS.setStyle(el, k, style[k]);
-    }
-  }
+  DebugJS.setStyles(el, style);
   base.appendChild(el);
   return el;
 };
@@ -16678,8 +16699,8 @@ DebugJS.ui.addBtn = function(base, label, onclick) {
   el.onclick = onclick;
   return el;
 };
-DebugJS.ui.addLabel = function(base, label) {
-  var el = DebugJS.ui.addElement(base, 'span');
+DebugJS.ui.addLabel = function(base, label, style) {
+  var el = DebugJS.ui.addElement(base, 'span', style);
   el.innerText = label;
   return el;
 };
