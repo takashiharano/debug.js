@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910072200';
+  this.v = '201910072237';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1278,7 +1278,6 @@ DebugJS.prototype = {
   },
 
   createPanels: function(ctx) {
-    var style;
     var opt = ctx.opt;
     var setStyle = DebugJS.setStyle;
     var fontSize = ctx.computedFontSize + 'px';
@@ -1309,12 +1308,11 @@ DebugJS.prototype = {
     ctx.winBody.appendChild(ctx.mainPanel);
 
     if (opt.useLogFilter) {
-      style = {
-        'position': 'relative',
-        'height': fontSize,
-        'margin-bottom': '2px'
-      };
-      ctx.logHeaderPanel = DebugJS.ui.addElement(ctx.mainPanel, 'div', style);
+      ctx.logHeaderPanel = document.createElement('div');
+      ctx.logHeaderPanel.style.position = 'relative';
+      ctx.logHeaderPanel.style.height = fontSize;
+      ctx.logHeaderPanel.style.marginBottom = '2px';
+      ctx.mainPanel.appendChild(ctx.logHeaderPanel);
     }
 
     if (opt.useClearButton) {
@@ -1328,26 +1326,23 @@ DebugJS.prototype = {
     } else {
       ctx.logPanelHeightAdjust = '';
     }
-
-    style = {
-      'width': '100%',
-      'height': 'calc(100%' + ctx.logPanelHeightAdjust + ')',
-      'padding': '0',
-      'overflow': 'auto'
-    };
-    ctx.logPanel = DebugJS.ui.addElement(ctx.mainPanel, 'div', style);
+    ctx.logPanel = document.createElement('div');
+    ctx.logPanel.style.width = '100%';
+    ctx.logPanel.style.height = 'calc(100%' + ctx.logPanelHeightAdjust + ')';
+    ctx.logPanel.style.padding = '0';
+    ctx.logPanel.style.overflow = 'auto';
     ctx.logPanel.addEventListener('scroll', ctx.onLogScroll, true);
     ctx.enableDnDFileLoad(ctx.logPanel, ctx.onDropOnLogPanel);
+    ctx.mainPanel.appendChild(ctx.logPanel);
 
     if (ctx.isAllFeaturesDisabled(ctx)) return;
 
     if (opt.useClock) {
-      style = {
-        'margin-left': '2px',
-        'color': opt.clockColor,
-        'font-size': fontSize
-      };
-      ctx.clockLabel = DebugJS.ui.addElement(ctx.headPanel, 'span', style);
+      ctx.clockLabel = document.createElement('span');
+      ctx.clockLabel.style.marginLeft = '2px';
+      setStyle(ctx.clockLabel, 'color', opt.clockColor);
+      setStyle(ctx.clockLabel, 'font-size', fontSize);
+      ctx.headPanel.appendChild(ctx.clockLabel);
       ctx.setIntervalL(ctx);
     }
 
@@ -1364,7 +1359,8 @@ DebugJS.prototype = {
     }
 
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && opt.useWinCtrlButton) {
-      ctx.winCtrlBtnPanel = DebugJS.ui.addElement(ctx.headPanel, 'span');
+      ctx.winCtrlBtnPanel = document.createElement('span');
+      ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
 
     if (opt.useCommandLine) {
@@ -1384,19 +1380,16 @@ DebugJS.prototype = {
     }
 
     if (opt.useStopwatch) {
-      style = {
-        'float': 'right',
-        'margin-left': '3px',
-        'color': opt.fontColor
-      };
-      ctx.swLabel = DebugJS.ui.addElement(ctx.headPanel, 'span', style);
+      ctx.swLabel = document.createElement('span');
+      ctx.swLabel.style.float = 'right';
+      ctx.swLabel.style.marginLeft = '3px';
+      setStyle(ctx.swLabel, 'color', opt.fontColor);
+      ctx.headPanel.appendChild(ctx.swLabel);
 
-      style = {
-        'float': 'right',
-        'margin-left': '4px',
-        'color': opt.fontColor
-      };
-      ctx.swBtnPanel = DebugJS.ui.addElement(ctx.headPanel, 'span', style);
+      ctx.swBtnPanel = document.createElement('span');
+      ctx.swBtnPanel.style.float = 'right';
+      ctx.swBtnPanel.style.marginLeft = '4px';
+      ctx.headPanel.appendChild(ctx.swBtnPanel);
     }
 
     ctx.extBtn = ctx.createHeaderBtn('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'ST_EXT_PANEL', 'EXT_BTN_COLOR', false);
@@ -1419,30 +1412,28 @@ DebugJS.prototype = {
     }
 
     if (opt.useScreenMeasure) {
-      style = {
-        'display': 'inline-block',
-        'float': 'right',
-        'margin-top': ((opt.zoom <= 1) ? 1 : (2 * opt.zoom)) + 'px',
-        'margin-left': '3px',
-        'width': (10 * opt.zoom) + 'px',
-        'height': (7 * opt.zoom) + 'px'
-      };
-      var measBtn = DebugJS.ui.addElement(ctx.headPanel, 'span', style);
+      var measBtn = document.createElement('span');
       measBtn.className = 'dbg-btn dbg-nomove';
+      measBtn.style.display = 'inline-block';
+      measBtn.style.float = 'right';
+      measBtn.style.marginTop = ((opt.zoom <= 1) ? 1 : (2 * opt.zoom)) + 'px';
+      measBtn.style.marginLeft = '3px';
+      measBtn.style.width = (10 * opt.zoom) + 'px';
+      measBtn.style.height = (7 * opt.zoom) + 'px';
       measBtn.innerText = ' ';
       measBtn.onclick = ctx.toggleMeasure;
       measBtn.onmouseover = new Function('DebugJS.ctx.measBtn.style.borderColor=\'' + DebugJS.MEAS_BTN_COLOR + '\';');
       measBtn.onmouseout = new Function('DebugJS.ctx.measBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEAS_BTN_COLOR : DebugJS.COLOR_INACT;');
+      ctx.headPanel.appendChild(measBtn);
       ctx.measBtn = measBtn;
     }
 
     if (opt.useLed) {
-      style = {
-        'float': 'right',
-        'margin-right': '4px'
-      };
-      ctx.ledPanel = DebugJS.ui.addElement(ctx.infoPanel, 'span', style);
+      ctx.ledPanel = document.createElement('span');
       ctx.ledPanel.className = 'dbg-sys-info';
+      ctx.ledPanel.style.float = 'right';
+      ctx.ledPanel.style.marginRight = '4px';
+      ctx.infoPanel.appendChild(ctx.ledPanel);
     }
 
     if (opt.useDeviceInfo) {
@@ -1477,26 +1468,25 @@ DebugJS.prototype = {
     }
 
     if (opt.useCommandLine) {
-      style = {padding: DebugJS.CMD_LINE_PADDING + 'px'};
-      ctx.cmdPanel = DebugJS.ui.addElement(ctx.winBody, 'div', style);
+      ctx.cmdPanel = document.createElement('div');
+      ctx.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
+      ctx.winBody.appendChild(ctx.cmdPanel);
       ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + ' !important">$</span>';
-
-      style = {
-        'min-height': fontSize,
-        'width': 'calc(100% - ' + fontSize + ')',
-        'margin': '0 0 0 2px',
-        'border': '0',
-        'border-bottom': 'solid 1px #888',
-        'border-radius': '0',
-        'outline': 'none',
-        'box-shadow': 'none',
-        'padding': '1px',
-        'background': 'transparent',
-        'color': opt.fontColor,
-        'font-size': fontSize
-      };
-      ctx.cmdLine = DebugJS.ui.addElement(ctx.cmdPanel, 'input', style);
-
+      var cmdLine = document.createElement('input');
+      setStyle(cmdLine, 'min-height', fontSize);
+      setStyle(cmdLine, 'width', 'calc(100% - ' + fontSize + ')');
+      setStyle(cmdLine, 'margin', '0 0 0 2px');
+      setStyle(cmdLine, 'border', '0');
+      setStyle(cmdLine, 'border-bottom', 'solid 1px #888');
+      setStyle(cmdLine, 'border-radius', '0');
+      setStyle(cmdLine, 'outline', 'none');
+      setStyle(cmdLine, 'box-shadow', 'none');
+      setStyle(cmdLine, 'padding', '1px');
+      setStyle(cmdLine, 'background', 'transparent');
+      setStyle(cmdLine, 'color', opt.fontColor);
+      setStyle(cmdLine, 'font-size', fontSize);
+      ctx.cmdPanel.appendChild(cmdLine);
+      ctx.cmdLine = cmdLine;
       ctx.initHistory(ctx);
     }
   },
