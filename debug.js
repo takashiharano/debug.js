@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910072237';
+  this.v = '201910072251';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12791,10 +12791,14 @@ DebugJS.hasClass = function(el, n) {
 DebugJS.setStyle = function(el, n, v) {
   el.style.setProperty(n, v, 'important');
 };
-DebugJS.setStyles = function(e, s) {
+DebugJS.setStyles = function(e, s, f) {
   if (s) {
     for (var k in s) {
-      DebugJS.setStyle(e, k, s[k]);
+      if (f) {
+        e.style[k] = s[k];
+      } else {
+        DebugJS.setStyle(e, k, s[k]);
+      }
     }
   }
 };
@@ -16678,7 +16682,7 @@ DebugJS.getUrlHash = function() {
 DebugJS.ui = {};
 DebugJS.ui.addElement = function(base, tag, style) {
   var el = document.createElement(tag);
-  DebugJS.setStyles(el, style);
+  DebugJS.setStyles(el, style, true);
   base.appendChild(el);
   return el;
 };
