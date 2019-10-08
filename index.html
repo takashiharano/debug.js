@@ -2897,15 +2897,15 @@ dbg.test.setSeq(<input type="text" id="test-setseq-txt" class="demo-text" style=
       Returns object type.<br>
 <br>
 <pre class="eg">
-"abc"      -&gt; "string"
-123        -&gt; "number"
-true       -&gt; "boolean"
-false      -&gt; "boolean"
-null       -&gt; "null"
-undefined  -&gt; "undefined"
-function() -&gt; "function"
-[object *] -&gt; "*"
-other      -&gt; "object"
+"abc"         -&gt; "string"
+123           -&gt; "number"
+true          -&gt; "boolean"
+false         -&gt; "boolean"
+null          -&gt; "null"
+undefined     -&gt; "undefined"
+function()    -&gt; "function"
+[object Name] -&gt; "Name"
+other         -&gt; "object"
 
 dbg.getType(<input type="text" id="gettype-txt" class="demo-text" style="width:100px;" value="&quot;abc&quot;">); <button class="demo-button2" onclick="log.res(dbg.getType(eval(getVal('gettype-txt'))));">DEMO</button>
 </pre>
