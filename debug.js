@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910082221';
+  this.v = '201910090000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6582,8 +6582,10 @@ DebugJS.prototype = {
     ctx.batTextEditor = DebugJS.ui.addElement(basePanel, 'textarea', style);
     ctx.batTextEditor.className = 'dbg-editor';
     ctx.batTextEditor.spellcheck = false;
-    ctx.batTextEditor.addEventListener('input', ctx.onBatInput);
-    ctx.batTextEditor.addEventListener('change', ctx.onBatInput);
+    var ev = ['input', 'change', 'keydown', 'keyup', 'click'];
+    for (var i = 0; i < ev.length; i++) {
+      ctx.batTextEditor.addEventListener(ev[i], ctx.onBatInput);
+    }
     ctx.enableDnDFileLoad(ctx.batTextEditor, ctx.onDropOnBat);
     ctx.batTxtSt = DebugJS.ui.addLabel(basePanel, '', {color: '#ccc'});
     ctx.batBasePanel = basePanel;
@@ -6705,12 +6707,22 @@ DebugJS.prototype = {
   onBatInput: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.batTxtSt) return;
-    var txt = ctx.batTextEditor.value;
+    var edt = ctx.batTextEditor;
+    var txt = edt.value;
     var len = txt.length;
     var lenB = DebugJS.lenB(txt);
-    var lfCount = (txt.match(/\n/g) || []).length;
-    var lenWoLf = len - lfCount;
-    ctx.batTxtSt.innerText = 'LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes';
+    var lfCnt = (txt.match(/\n/g) || []).length;
+    var lenWoLf = len - lfCnt;
+    var st = edt.selectionStart;
+    var ed = edt.selectionEnd;
+    var sl = ed - st;
+    var ch = txt.substr(st, 1);
+    var cd = DebugJS.getCodePoint(ch);
+    var cd16 = DebugJS.getUnicodePoints(ch, true);
+    var cp = '';
+    if (cd) cp = (cd == 10 ? 'LF' : ch) + ':' + cd16 + '(' + cd + ')';
+    var slct = (sl ? 'Selected=' + sl : '');
+    ctx.batTxtSt.innerHTML = 'LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes ' + cp + ' ' + slct;
   },
 
   toggleExtPanel: function() {
