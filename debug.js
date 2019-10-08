@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910072251';
+  this.v = '201910082142';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1472,21 +1472,22 @@ DebugJS.prototype = {
       ctx.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
       ctx.winBody.appendChild(ctx.cmdPanel);
       ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + ' !important">$</span>';
-      var cmdLine = document.createElement('input');
-      setStyle(cmdLine, 'min-height', fontSize);
-      setStyle(cmdLine, 'width', 'calc(100% - ' + fontSize + ')');
-      setStyle(cmdLine, 'margin', '0 0 0 2px');
-      setStyle(cmdLine, 'border', '0');
-      setStyle(cmdLine, 'border-bottom', 'solid 1px #888');
-      setStyle(cmdLine, 'border-radius', '0');
-      setStyle(cmdLine, 'outline', 'none');
-      setStyle(cmdLine, 'box-shadow', 'none');
-      setStyle(cmdLine, 'padding', '1px');
-      setStyle(cmdLine, 'background', 'transparent');
-      setStyle(cmdLine, 'color', opt.fontColor);
-      setStyle(cmdLine, 'font-size', fontSize);
-      ctx.cmdPanel.appendChild(cmdLine);
-      ctx.cmdLine = cmdLine;
+      var style = {
+        'min-height': fontSize,
+        'width': 'calc(100% - ' + fontSize + ')',
+        'margin': '0 0 0 2px',
+        'border': '0',
+        'border-bottom': 'solid 1px #888',
+        'border-radius': '0',
+        'outline': 'none',
+        'box-shadow': 'none',
+        'padding': '1px',
+        'background': 'transparent',
+        'color': opt.fontColor,
+        'font-size': fontSize
+      };
+      ctx.cmdLine = DebugJS.ui.addElement(ctx.cmdPanel, 'input', style, true);
+      ctx.cmdLine.spellcheck = false;
       ctx.initHistory(ctx);
     }
   },
@@ -5361,7 +5362,7 @@ DebugJS.prototype = {
       'font-size': dfltFontSize + 'px',
       'font-family': dfltFontFamily
     };
-    ctx.txtChkTxt = DebugJS.ui.addElement(ctx.txtChkPanel, 'input', style);
+    ctx.txtChkTxt = DebugJS.ui.addElement(ctx.txtChkPanel, 'input', style, true);
     ctx.txtChkTxt.value = 'ABCDEFG.abcdefg 12345-67890_!?';
     ctx.txtChkTargetEl = ctx.txtChkTxt;
 
@@ -5558,7 +5559,7 @@ DebugJS.prototype = {
       'outline': 'none',
       'font-size': fontSize
     };
-    ctx.fileInput = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style);
+    ctx.fileInput = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
     ctx.fileInput.type = 'file';
 
     style = {'margin-left': (ctx.computedFontSize * 0.8) + 'px'};
@@ -5601,7 +5602,7 @@ DebugJS.prototype = {
       'font-size': fontSize,
       'overflow': 'auto'
     };
-    ctx.filePreviewWrapper = DebugJS.ui.addElement(ctx.fileVwrPanel, 'div', style);
+    ctx.filePreviewWrapper = DebugJS.ui.addElement(ctx.fileVwrPanel, 'div', style, true);
     ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.onDropOnFileVwr);
 
     style = {
@@ -5610,7 +5611,7 @@ DebugJS.prototype = {
       'color': opt.fontColor,
       'font-size': fontSize
     };
-    ctx.filePreview = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'pre', style);
+    ctx.filePreview = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'pre', style, true);
 
     style = {
       'width': 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)',
@@ -5646,10 +5647,8 @@ DebugJS.prototype = {
     ctx.fileLoadCancelBtn.style.top = '2px';
     ctx.fileLoadCancelBtn.style.float = 'right';
 
-    style = {
-      'height': 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'
-    };
-    ctx.fileVwrDtUrlWrp = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'div', style);
+    style = {height: 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'};
+    ctx.fileVwrDtUrlWrp = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'div', style, true);
     ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 31em)', null, ctx.opt.fontColor, '', null);
     var b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[text]', ctx.setDtSchmTxt);
     b.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
@@ -5674,7 +5673,8 @@ DebugJS.prototype = {
     ctx.fileVwrBsbBtn = ctx.addFileVwrBtn(ctx, '<BSB64>', (ctx.computedFontSize * 0.2), ctx.setModeBSB64);
     ctx.fileVwrB64Btn = ctx.addFileVwrBtn(ctx, '<Base64>', (ctx.computedFontSize * 0.2), ctx.setModeB64);
 
-    ctx.fileVwrDtTxtArea = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'textarea', {height: 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'});
+    style = {height: 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'};
+    ctx.fileVwrDtTxtArea = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'textarea', style, true);
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
     ctx.fileVwrDtTxtArea.spellcheck = false;
     ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxtArea);
@@ -6498,7 +6498,7 @@ DebugJS.prototype = {
   createHtmlPrevBasePanel: function(ctx) {
     ctx.htmlPrevBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
-    var style = {'height': '50%'};
+    var style = {height: '50%'};
     ctx.htmlPrevPrevPanel = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'div', style);
     ctx.htmlPrevPrevPanel.innerHTML = 'HTML PREVIEWER';
 
@@ -6511,7 +6511,8 @@ DebugJS.prototype = {
     ctx.htmlPrevEditorPanel = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'div');
     ctx.htmlPrevEditorPanel.innerHTML = html;
 
-    ctx.htmlPrevEditor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', {height: 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)'});
+    style = {height: 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)'};
+    ctx.htmlPrevEditor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', style, true);
     ctx.htmlPrevEditor.className = 'dbg-editor';
     ctx.htmlPrevEditor.spellcheck = false;
     ctx.htmlPrevEditor.onblur = ctx.saveHtmlBuf;
@@ -6577,14 +6578,13 @@ DebugJS.prototype = {
     ctx.batTotalLine = DebugJS.ui.addLabel(basePanel, DebugJS.bat.cmds.length);
     DebugJS.ui.addLabel(basePanel, ' N:');
     ctx.batNestLv = DebugJS.ui.addLabel(basePanel, '0');
-    ctx.batTextEditor = document.createElement('textarea');
+    var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
+    ctx.batTextEditor = DebugJS.ui.addElement(basePanel, 'textarea', style, true);
     ctx.batTextEditor.className = 'dbg-editor';
     ctx.batTextEditor.spellcheck = false;
     ctx.batTextEditor.addEventListener('input', ctx.onBatInput);
     ctx.batTextEditor.addEventListener('change', ctx.onBatInput);
-    DebugJS.setStyle(ctx.batTextEditor, 'height', 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)');
     ctx.enableDnDFileLoad(ctx.batTextEditor, ctx.onDropOnBat);
-    basePanel.appendChild(ctx.batTextEditor);
     ctx.batTxtSt = DebugJS.ui.addLabel(basePanel, '', {color: '#ccc'});
     ctx.batBasePanel = basePanel;
     ctx.setBatTxt(ctx);
@@ -12795,9 +12795,9 @@ DebugJS.setStyles = function(e, s, f) {
   if (s) {
     for (var k in s) {
       if (f) {
-        e.style[k] = s[k];
-      } else {
         DebugJS.setStyle(e, k, s[k]);
+      } else {
+        e.style[k] = s[k];
       }
     }
   }
@@ -16680,9 +16680,9 @@ DebugJS.getUrlHash = function() {
 };
 
 DebugJS.ui = {};
-DebugJS.ui.addElement = function(base, tag, style) {
+DebugJS.ui.addElement = function(base, tag, style, important) {
   var el = document.createElement(tag);
-  DebugJS.setStyles(el, style, true);
+  DebugJS.setStyles(el, style, important);
   base.appendChild(el);
   return el;
 };
@@ -16694,7 +16694,7 @@ DebugJS.ui.addBtn = function(base, label, onclick) {
   return el;
 };
 DebugJS.ui.addLabel = function(base, label, style) {
-  var el = DebugJS.ui.addElement(base, 'span', style);
+  var el = DebugJS.ui.addElement(base, 'span', style, true);
   el.innerText = label;
   return el;
 };
@@ -16707,7 +16707,7 @@ DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, oninput) {
     'padding': '0',
     'color': color
   };
-  var el = DebugJS.ui.addElement(base, 'input', s);
+  var el = DebugJS.ui.addElement(base, 'input', s, true);
   el.className = 'dbg-txtbox';
   if (txtAlign) DebugJS.setStyle(el, 'text-align', txtAlign);
   el.value = val;
