@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910082142';
+  this.v = '201910082202';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1486,7 +1486,7 @@ DebugJS.prototype = {
         'color': opt.fontColor,
         'font-size': fontSize
       };
-      ctx.cmdLine = DebugJS.ui.addElement(ctx.cmdPanel, 'input', style, true);
+      ctx.cmdLine = DebugJS.ui.addElement(ctx.cmdPanel, 'input', style);
       ctx.cmdLine.spellcheck = false;
       ctx.initHistory(ctx);
     }
@@ -1610,7 +1610,7 @@ DebugJS.prototype = {
       'margin-left': '4px',
       'color': ctx.opt.sysInfoColor
     };
-    ctx.fltrInputLabel = DebugJS.ui.addElement(ctx.logHeaderPanel, 'span', style);
+    ctx.fltrInputLabel = DebugJS.ui.addElement(ctx.logHeaderPanel, 'span', style, true);
     ctx.fltrInputLabel.innerText = 'Search:';
 
     var fltrW = 'calc(100% - 31em)';
@@ -5362,7 +5362,7 @@ DebugJS.prototype = {
       'font-size': dfltFontSize + 'px',
       'font-family': dfltFontFamily
     };
-    ctx.txtChkTxt = DebugJS.ui.addElement(ctx.txtChkPanel, 'input', style, true);
+    ctx.txtChkTxt = DebugJS.ui.addElement(ctx.txtChkPanel, 'input', style);
     ctx.txtChkTxt.value = 'ABCDEFG.abcdefg 12345-67890_!?';
     ctx.txtChkTargetEl = ctx.txtChkTxt;
 
@@ -5559,11 +5559,11 @@ DebugJS.prototype = {
       'outline': 'none',
       'font-size': fontSize
     };
-    ctx.fileInput = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
+    ctx.fileInput = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style);
     ctx.fileInput.type = 'file';
 
     style = {'margin-left': (ctx.computedFontSize * 0.8) + 'px'};
-    ctx.fileVwrRadioB64 = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style);
+    ctx.fileVwrRadioB64 = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
     ctx.fileVwrRadioB64.type = 'radio';
     ctx.fileVwrRadioB64.id = ctx.id + '-load-type-b64';
     ctx.fileVwrRadioB64.name = ctx.id + '-load-type';
@@ -5576,7 +5576,7 @@ DebugJS.prototype = {
     ctx.fileVwrLabelB64.innerText = 'Base64';
 
     style = {'margin-left': (ctx.computedFontSize * 0.8) + 'px'};
-    ctx.fileVwrRadioBin = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style);
+    ctx.fileVwrRadioBin = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
     ctx.fileVwrRadioBin.type = 'radio';
     ctx.fileVwrRadioBin.id = ctx.id + '-load-type-bin';
     ctx.fileVwrRadioBin.name = ctx.id + '-load-type';
@@ -5602,7 +5602,7 @@ DebugJS.prototype = {
       'font-size': fontSize,
       'overflow': 'auto'
     };
-    ctx.filePreviewWrapper = DebugJS.ui.addElement(ctx.fileVwrPanel, 'div', style, true);
+    ctx.filePreviewWrapper = DebugJS.ui.addElement(ctx.fileVwrPanel, 'div', style);
     ctx.enableDnDFileLoad(ctx.filePreviewWrapper, ctx.onDropOnFileVwr);
 
     style = {
@@ -5611,7 +5611,7 @@ DebugJS.prototype = {
       'color': opt.fontColor,
       'font-size': fontSize
     };
-    ctx.filePreview = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'pre', style, true);
+    ctx.filePreview = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'pre', style);
 
     style = {
       'width': 'calc(100% - ' + (DebugJS.WIN_ADJUST + DebugJS.WIN_SHADOW) + 'px)',
@@ -5619,7 +5619,7 @@ DebugJS.prototype = {
       'opacity': '0',
       'transition': 'opacity 0.5s linear'
     };
-    ctx.fileVwrFooter = DebugJS.ui.addElement(ctx.fileVwrPanel, 'div', style);
+    ctx.fileVwrFooter = DebugJS.ui.addElement(ctx.fileVwrPanel, 'div', style, true);
 
     style = {
       'display': 'inline-block',
@@ -5628,7 +5628,7 @@ DebugJS.prototype = {
       'padding': 0,
       'border': '1px solid #ccc'
     };
-    ctx.fileLoadProgBar = DebugJS.ui.addElement(ctx.fileVwrFooter, 'div', style);
+    ctx.fileLoadProgBar = DebugJS.ui.addElement(ctx.fileVwrFooter, 'div', style, true);
 
     style = {
       'width': 'calc(100% - ' + (DebugJS.WIN_BORDER * 2) + 'px)',
@@ -5639,7 +5639,7 @@ DebugJS.prototype = {
       'font-size': (ctx.computedFontSize * 0.8) + 'px',
       'font-family': opt.fontFamily + 'px'
     };
-    ctx.fileLoadProg = DebugJS.ui.addElement(ctx.fileLoadProgBar, 'div', style);
+    ctx.fileLoadProg = DebugJS.ui.addElement(ctx.fileLoadProgBar, 'div', style, true);
     ctx.fileLoadProg.innerText = '0%';
 
     ctx.fileLoadCancelBtn = DebugJS.ui.addBtn(ctx.fileVwrFooter, '[CANCEL]', ctx.cancelLoadFile);
@@ -5648,7 +5648,7 @@ DebugJS.prototype = {
     ctx.fileLoadCancelBtn.style.float = 'right';
 
     style = {height: 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'};
-    ctx.fileVwrDtUrlWrp = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'div', style, true);
+    ctx.fileVwrDtUrlWrp = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'div', style);
     ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 31em)', null, ctx.opt.fontColor, '', null);
     var b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[text]', ctx.setDtSchmTxt);
     b.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
@@ -5668,13 +5668,13 @@ DebugJS.prototype = {
     ctx.fileVwrBSB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1em', 'center', '#ccc', '1', null);
     ctx.fileVwrBSB64n.style.float = 'right';
     ctx.fileVwrBSB64n.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
-    ctx.fileVwrBSB64nL = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span', {float: 'right'});
+    ctx.fileVwrBSB64nL = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span', {float: 'right'}, true);
     ctx.fileVwrBSB64nL.innerText = 'n=';
     ctx.fileVwrBsbBtn = ctx.addFileVwrBtn(ctx, '<BSB64>', (ctx.computedFontSize * 0.2), ctx.setModeBSB64);
     ctx.fileVwrB64Btn = ctx.addFileVwrBtn(ctx, '<Base64>', (ctx.computedFontSize * 0.2), ctx.setModeB64);
 
     style = {height: 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'};
-    ctx.fileVwrDtTxtArea = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'textarea', style, true);
+    ctx.fileVwrDtTxtArea = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'textarea', style);
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
     ctx.fileVwrDtTxtArea.spellcheck = false;
     ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxtArea);
@@ -6499,7 +6499,7 @@ DebugJS.prototype = {
     ctx.htmlPrevBasePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
     var style = {height: '50%'};
-    ctx.htmlPrevPrevPanel = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'div', style);
+    ctx.htmlPrevPrevPanel = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'div', style, true);
     ctx.htmlPrevPrevPanel.innerHTML = 'HTML PREVIEWER';
 
     var html = '<span style="color:#ccc">HTML Editor</span>' +
@@ -6512,7 +6512,7 @@ DebugJS.prototype = {
     ctx.htmlPrevEditorPanel.innerHTML = html;
 
     style = {height: 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)'};
-    ctx.htmlPrevEditor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', style, true);
+    ctx.htmlPrevEditor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', style);
     ctx.htmlPrevEditor.className = 'dbg-editor';
     ctx.htmlPrevEditor.spellcheck = false;
     ctx.htmlPrevEditor.onblur = ctx.saveHtmlBuf;
@@ -6579,7 +6579,7 @@ DebugJS.prototype = {
     DebugJS.ui.addLabel(basePanel, ' N:');
     ctx.batNestLv = DebugJS.ui.addLabel(basePanel, '0');
     var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
-    ctx.batTextEditor = DebugJS.ui.addElement(basePanel, 'textarea', style, true);
+    ctx.batTextEditor = DebugJS.ui.addElement(basePanel, 'textarea', style);
     ctx.batTextEditor.className = 'dbg-editor';
     ctx.batTextEditor.spellcheck = false;
     ctx.batTextEditor.addEventListener('input', ctx.onBatInput);
@@ -12795,9 +12795,9 @@ DebugJS.setStyles = function(e, s, f) {
   if (s) {
     for (var k in s) {
       if (f) {
-        DebugJS.setStyle(e, k, s[k]);
-      } else {
         e.style[k] = s[k];
+      } else {
+        DebugJS.setStyle(e, k, s[k]);
       }
     }
   }
@@ -16680,9 +16680,9 @@ DebugJS.getUrlHash = function() {
 };
 
 DebugJS.ui = {};
-DebugJS.ui.addElement = function(base, tag, style, important) {
+DebugJS.ui.addElement = function(base, tag, style, std) {
   var el = document.createElement(tag);
-  DebugJS.setStyles(el, style, important);
+  DebugJS.setStyles(el, style, std);
   base.appendChild(el);
   return el;
 };
@@ -16694,7 +16694,7 @@ DebugJS.ui.addBtn = function(base, label, onclick) {
   return el;
 };
 DebugJS.ui.addLabel = function(base, label, style) {
-  var el = DebugJS.ui.addElement(base, 'span', style, true);
+  var el = DebugJS.ui.addElement(base, 'span', style);
   el.innerText = label;
   return el;
 };
@@ -16707,7 +16707,7 @@ DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, oninput) {
     'padding': '0',
     'color': color
   };
-  var el = DebugJS.ui.addElement(base, 'input', s, true);
+  var el = DebugJS.ui.addElement(base, 'input', s);
   el.className = 'dbg-txtbox';
   if (txtAlign) DebugJS.setStyle(el, 'text-align', txtAlign);
   el.value = val;
