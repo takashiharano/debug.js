@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910082202';
+  this.v = '201910082221';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15585,17 +15585,17 @@ DebugJS.point.hint.createArea = function() {
   try {
     sz = eval(sz);
   } catch (e) {DebugJS._log.e(e);}
-  var pre = document.createElement('pre');
-  DebugJS.setStyle(pre, 'width', 'auto');
-  DebugJS.setStyle(pre, 'height', 'auto');
-  DebugJS.setStyle(pre, 'margin', 0);
-  DebugJS.setStyle(pre, 'padding', 0);
-  DebugJS.setStyle(pre, 'line-height', '1.2');
-  DebugJS.setStyle(pre, 'color', ctx.opt.fontColor);
-  DebugJS.setStyle(pre, 'font-size', sz);
-  DebugJS.setStyle(pre, 'font-family', ctx.opt.fontFamily);
-  el.appendChild(pre);
-  area.pre = pre;
+  var style = {
+    'width': 'auto',
+    'height': 'auto',
+    'margin': 0,
+    'padding': 0,
+    'line-height': '1.2',
+    'color': ctx.opt.fontColor,
+    'font-size': sz,
+    'font-family': ctx.opt.fontFamily
+  };
+  area.pre = DebugJS.ui.addElement(el, 'pre', style);
   document.body.appendChild(el);
   area.el = el;
 };
