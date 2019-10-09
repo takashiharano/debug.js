@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910090000';
+  this.v = '201910092330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2612,7 +2612,7 @@ DebugJS.prototype = {
         return true;
       case DebugJS.ST_EXT_PANEL:
         if (ctx.extPanels.length == 0) {
-          DebugJS._log('No extension panel');
+          DebugJS._log('No extension panels');
           return false;
         }
         var idx = subfnc;
@@ -6738,13 +6738,13 @@ DebugJS.prototype = {
     ctx.status |= DebugJS.ST_EXT_PANEL;
     ctx.featStack.push(DebugJS.ST_EXT_PANEL);
     ctx.addOverlayPanelFull(ctx.extPanel);
-    var activePanel = ctx.extActPnlIdx;
-    if (activePanel == -1) {
-      activePanel = ctx.nextValidExtPanelIdx(ctx, activePanel);
-      ctx.switchExtPanel(activePanel);
+    var actIdx = ctx.extActPnlIdx;
+    if (actIdx == -1) {
+      actIdx = ctx.nextValidExtPanelIdx(ctx, actIdx);
+      ctx.switchExtPanel(actIdx);
     } else {
-      var p = ctx.extPanels[activePanel];
-      if (p && p.onActive) ctx.onExtPanelActive(ctx, p);
+      var p = ctx.extPanels[actIdx];
+      ctx.onExtPanelActive(ctx, p);
     }
     ctx.updateExtBtns(ctx);
     ctx.updateExtBtn(ctx);
@@ -6765,7 +6765,7 @@ DebugJS.prototype = {
   closeExtPanel: function(ctx) {
     if ((ctx.extPanel) && (ctx.extPanel.parentNode)) {
       var p = ctx.extPanels[ctx.extActPnlIdx];
-      if (p && p.onInActive) ctx.onExtPanelInActive(ctx, p);
+      ctx.onExtPanelInActive(ctx, p);
       ctx.removeOverlayPanelFull(ctx.extPanel);
     }
     ctx.status &= ~DebugJS.ST_EXT_PANEL;
@@ -6780,7 +6780,7 @@ DebugJS.prototype = {
     if (ctx.extActPnlIdx != -1) {
       var p2 = pnls[ctx.extActPnlIdx];
       if (p2) {
-        if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p2.onInActive)) {
+        if (ctx.status & DebugJS.ST_EXT_PANEL) {
           ctx.onExtPanelInActive(ctx, p2);
         }
         ctx.extBodyPanel.removeChild(p2.base);
@@ -6789,7 +6789,7 @@ DebugJS.prototype = {
     var p1 = pnls[idx];
     ctx.extBodyPanel.appendChild(p1.base);
     if (p1) {
-      if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p1.onActive)) {
+      if (ctx.status & DebugJS.ST_EXT_PANEL) {
         ctx.onExtPanelActive(ctx, p1);
       }
     }
@@ -6799,12 +6799,12 @@ DebugJS.prototype = {
 
   onExtPanelActive: function(ctx, p) {
     ctx.extActivePanel = p.panel;
-    p.onActive(p.panel);
+    if (p.onActive) p.onActive(p.panel);
   },
 
   onExtPanelInActive: function(ctx, p) {
     ctx.extActivePanel = null;
-    p.onInActive(p.panel);
+    if (p && p.onInActive) p.onInActive(p.panel);
   },
 
   prevValidExtPanelIdx: function(ctx, idx) {
@@ -16970,7 +16970,7 @@ DebugJS.x.removePanel = function(idx) {
     }
   }
   if (!(ctx.status & DebugJS.ST_INITIALIZED)) return;
-  if ((ctx.status & DebugJS.ST_EXT_PANEL) && (p.onInActive)) {
+  if (ctx.status & DebugJS.ST_EXT_PANEL) {
     ctx.onExtPanelInActive(ctx, p);
   }
   ctx.redrawExtPanelBtn(ctx);
