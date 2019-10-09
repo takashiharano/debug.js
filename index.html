@@ -6592,15 +6592,16 @@ $ hello<br>
 // create views, initialize data, etc.
 // The argument <i>panel</i> is the base DOM element of the extension panel.
 <span class="emphasis">example.onCreate = function(panel) {
-  <textarea id="ext-panel-create-code" class="demo-textarea" style="height:140px;">
+  <textarea id="ext-panel-create-code" class="demo-textarea" style="height:160px;">
 log('onCreate P1');
-var body = document.createElement('pre');
-dbg.setStyle(body, 'box-sizing', 'border-box');
-dbg.setStyle(body, 'width', '100%');
-dbg.setStyle(body, 'height', '100%');
-dbg.setStyle(body, 'paddingf', '4px');
-body.innerHTML = 'Extension Panel 1';
-panel.appendChild(body);</textarea>
+var style = {
+  'box-sizing': 'border-box',
+  'width': '100%',
+  'height': '100%',
+  'paddingf': '4px'
+};
+var body = dbg.ui.addElement(panel, 'pre', style);
+body.innerHTML = 'Extension Panel 1';</textarea>
 };</span>
 
 // Called when the panel is displayed.
