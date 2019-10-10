@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910092330';
+  this.v = '201910102230';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4951,9 +4951,10 @@ DebugJS.prototype = {
     ctx.timerTxtSSS.value = tm.sss;
     ctx.updatePropTimer();
   },
-  toggleTimerMode: function() {
+  toggleTimerMode: function(rvs) {
     var a = [DebugJS.TOOL_TMR_MODE_CLOCK, DebugJS.TOOL_TMR_MODE_SW_CU, DebugJS.TOOL_TMR_MODE_SW_CD];
-    var nextMode = DebugJS.arr.next(a, DebugJS.ctx.toolTimerMode);
+    var f = rvs ? DebugJS.arr.prev : DebugJS.arr.next;
+    var nextMode = f(a, DebugJS.ctx.toolTimerMode);
     DebugJS.ctx.switchTimerMode(nextMode);
   },
   switchTimerMode: function(mode) {
@@ -5329,6 +5330,9 @@ DebugJS.prototype = {
       } else if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
         ctx.resetTimerStopwatchCd();
       }
+      e.preventDefault();
+    } else if (e.keyCode == 9) {
+      ctx.toggleTimerMode(e.shiftKey);
       e.preventDefault();
     }
   },
@@ -11414,6 +11418,15 @@ DebugJS.arr.next = function(a, v) {
   for (var i = 0; i < a.length; i++) {
     if ((a[i] == v) && (i < (a.length - 1))) {
       r = a[i + 1];break;
+    }
+  }
+  return r;
+};
+DebugJS.arr.prev = function(a, v) {
+  var r = a[a.length - 1];
+  for (var i = 0; i < a.length; i++) {
+    if ((a[i] == v) && (i > 0)) {
+      r = a[i - 1];break;
     }
   }
   return r;
