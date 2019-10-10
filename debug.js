@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910102353';
+  this.v = '201910110131';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16715,6 +16715,57 @@ DebugJS.getQuery = function(k) {
 DebugJS.getUrlHash = function() {
   var s = window.location.hash;
   if (s) s = s.substr(1);
+  return s;
+};
+
+DebugJS.xlsCol = function(c) {
+  var f = (isNaN(c) ? DebugJS.xlsColA2N : DebugJS.xlsColN2A);
+  return f(c);
+};
+DebugJS.xlsColA2N = function(c) {
+  var n = 0;
+  for (var i = 0; i < c.length; i++) {
+    var a = c.substr((i + 1) * (-1), 1);
+    var d = a.charCodeAt() - 64;
+    n += Math.pow(26, i) * d;
+  }
+  return n;
+};
+DebugJS.xlsColN2A = function(n) {
+  var t = [];
+  for (var i = 65; i <= 90; i++) {
+    t.push(String.fromCharCode(i));
+  }
+  var a = DebugJS.getPermutedString(t, n);
+  if (n <= 0) a = '';
+  return a;
+};
+
+DebugJS.getPermutedString = function(tbl, idx) {
+  var len = tbl.length;
+  var a = [-1];
+  for (var i = 0; i < idx; i++) {
+    var j = 0;
+    var cb = 1;
+    while (j < a.length) {
+      if (cb) {
+        a[j]++;
+        if (a[j] > len - 1) {
+          a[j] = 0;
+          if (a.length <= j + 1) {
+            a[j + 1] = -1;
+          }
+        } else {
+          cb = 0;
+        }
+      }
+      j++;
+    }
+  }
+  var s = '';
+  for (i = a.length - 1; i >= 0; i--) {
+    s += tbl[a[i]];
+  }
   return s;
 };
 
