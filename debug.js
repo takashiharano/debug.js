@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910102230';
+  this.v = '201910102245';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4951,9 +4951,9 @@ DebugJS.prototype = {
     ctx.timerTxtSSS.value = tm.sss;
     ctx.updatePropTimer();
   },
-  toggleTimerMode: function(rvs) {
+  toggleTimerMode: function(e, rv) {
     var a = [DebugJS.TOOL_TMR_MODE_CLOCK, DebugJS.TOOL_TMR_MODE_SW_CU, DebugJS.TOOL_TMR_MODE_SW_CD];
-    var f = rvs ? DebugJS.arr.prev : DebugJS.arr.next;
+    var f = rv ? DebugJS.arr.prev : DebugJS.arr.next;
     var nextMode = f(a, DebugJS.ctx.toolTimerMode);
     DebugJS.ctx.switchTimerMode(nextMode);
   },
@@ -5332,7 +5332,7 @@ DebugJS.prototype = {
       }
       e.preventDefault();
     } else if (e.keyCode == 9) {
-      ctx.toggleTimerMode(e.shiftKey);
+      ctx.toggleTimerMode(null, e.shiftKey);
       e.preventDefault();
     }
   },
