@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910110131';
+  this.v = '201910110700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16723,25 +16723,37 @@ DebugJS.xlsCol = function(c) {
   return f(c);
 };
 DebugJS.xlsColA2N = function(c) {
-  var n = 0;
-  for (var i = 0; i < c.length; i++) {
-    var a = c.substr((i + 1) * (-1), 1);
-    var d = a.charCodeAt() - 64;
-    n += Math.pow(26, i) * d;
-  }
-  return n;
+  var t = DebugJS.A2Z();
+  return DebugJS.permIdx(t, c);
 };
 DebugJS.xlsColN2A = function(n) {
+  var t = DebugJS.A2Z();
+  var a = DebugJS.strperm(t, n);
+  if (n <= 0) a = '';
+  return a;
+};
+DebugJS.A2Z = function() {
   var t = [];
   for (var i = 65; i <= 90; i++) {
     t.push(String.fromCharCode(i));
   }
-  var a = DebugJS.getPermutedString(t, n);
-  if (n <= 0) a = '';
-  return a;
+  return t;
 };
 
-DebugJS.getPermutedString = function(tbl, idx) {
+DebugJS.permIdx = function(tbl, ptn) {
+  var len = ptn.length;
+  var rdx = tbl.length;
+  var idx = 0;
+  for (var i = 0; i < len; i++) {
+    var d = len - i - 1;
+    var c = ptn.substr(d, 1);
+    var v = tbl.indexOf(c) + 1;
+    var n = v * Math.pow(rdx, i);
+    idx += n;
+  }
+  return idx;
+};
+DebugJS.strperm = function(tbl, idx) {
   var len = tbl.length;
   var a = [-1];
   for (var i = 0; i < idx; i++) {
