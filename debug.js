@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910102245';
+  this.v = '201910102310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -364,6 +364,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
+    {cmd: 'kiosk', fn: this.cmdKiosk, desc: 'Make the debugger window go full screen'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|Array'},
@@ -532,6 +533,7 @@ DebugJS.ST_NO_HIST = 1 << 22;
 DebugJS.ST_CLP = 1 << 23;
 DebugJS.ST_CLOCK_FULL = 1 << 24;
 DebugJS.ST_SW = 1 << 25;
+DebugJS.ST_KIOSK = 1 << 26;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -7349,7 +7351,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (DebugJS.hasOpt(arg, 'full')) {
       ctx.status |= DebugJS.ST_CLOCK_FULL;
-      ctx.kiosk2(ctx);
+      ctx.kiosk(ctx, 2);
+      ctx.clearLog();
     }
     ctx.launchFnc(ctx, 'tool', 'timer', 'clock');
     ctx.timerClockSSS = DebugJS.hasOpt(arg, 'sss');
@@ -7635,12 +7638,11 @@ DebugJS.prototype = {
     }
     ctx.lockDbgWin(ctx);
   },
-  kiosk2: function(ctx) {
+  kiosk: function(ctx, z) {
     ctx.saveSizeAndPos(ctx, ctx.orgSizePos2);
     ctx.expandDbgWin('full');
     ctx.orgSizePos2.zm = ctx.opt.zoom;
-    DebugJS.zoom(2);
-    ctx.clearLog();
+    DebugJS.zoom(z);
   },
   kioskQ: function(ctx) {
     DebugJS.zoom(ctx.orgSizePos2.zm);
@@ -8180,6 +8182,16 @@ DebugJS.prototype = {
         DebugJS._log.e(e);
       }
     }
+  },
+
+  cmdKiosk: function(arg, tbl) {
+    var ctx = DebugJS.ctx;
+    DebugJS.ctx.status |= DebugJS.ST_KIOSK;
+    DebugJS.ctx.kiosk(DebugJS.ctx, 1.4);
+  },
+  _cmdKioskQ: function(ctx) {
+    ctx.kioskQ(ctx);
+    ctx.status &= ~DebugJS.ST_KIOSK;
   },
 
   cmdLaptime: function(arg, tbl) {
@@ -8815,6 +8827,8 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.ST_CLOCK_FULL) ctx._cmdClockQ(ctx);
     if (ctx.status & DebugJS.ST_SW) {
       ctx._cmdSwQ(ctx);
+    } else if (ctx.status & DebugJS.ST_KIOSK) {
+      ctx._cmdKioskQ(ctx);
     } else if (ctx.dndCmd) {
       DebugJS.dndFnFin();
     }
@@ -9510,12 +9524,13 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.ST_SW;
     ctx.launchFnc(ctx, 'tool', 'timer', 'sw1');
-    ctx.kiosk2(ctx);
+    if (!(ctx.status & DebugJS.ST_KIOSK)) ctx.kiosk(ctx, 2);
+    ctx.clearLog();
     setTimeout(ctx.blurCmdLine, 0);
   },
   _cmdSwQ: function(ctx) {
     ctx.closeTools(ctx);
-    ctx.kioskQ(ctx);
+    ctx._cmdKioskQ(ctx);
     ctx.status &= ~DebugJS.ST_SW;
   },
 
