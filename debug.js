@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910102322';
+  this.v = '201910102353';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16978,8 +16978,7 @@ DebugJS.x.addFileLdr = function(p) {
 };
 DebugJS.x.getPanel = function(idx) {
   var p = DebugJS.ctx.extPanels[idx];
-  if (p) return p.panel;
-  return null;
+  return (p ? p : null);
 };
 DebugJS.x.getActivePanel = function() {
   return DebugJS.x.getPanel(DebugJS.ctx.extActPnlIdx);
