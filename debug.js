@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910102310';
+  this.v = '201910102322';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7144,7 +7144,7 @@ DebugJS.prototype = {
     return r;
   },
 
-  cmdAlias: function(arg, tbl) {
+  cmdAlias: function(arg) {
     var ctx = DebugJS.ctx;
     if (DebugJS.countArgs(arg) == 0) {
       var lst = DebugJS.getKeys(ctx.CMD_ALIAS);
@@ -7347,7 +7347,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdClock: function(arg, tbl) {
+  cmdClock: function(arg) {
     var ctx = DebugJS.ctx;
     if (DebugJS.hasOpt(arg, 'full')) {
       ctx.status |= DebugJS.ST_CLOCK_FULL;
@@ -7745,7 +7745,7 @@ DebugJS.prototype = {
     return r;
   },
 
-  cmdEcho: function(arg, tbl) {
+  cmdEcho: function(arg) {
     var a = DebugJS.splitArgs(arg)[0];
     if (a == '') {
       DebugJS._log(DebugJS.ctx.cmdEchoFlg ? 'on' : 'off');return;
@@ -7856,7 +7856,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdHelp: function(arg, tbl) {
+  cmdHelp: function(arg) {
     var ctx = DebugJS.ctx;
     var a = arg.trim();
     var t1 = ctx.CMD_TBL;
@@ -8096,7 +8096,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdJump: function(arg, tbl) {
+  cmdJump: function(arg) {
     if (DebugJS.bat.isCmdExecutable()) {
       DebugJS.ctx._cmdJump(DebugJS.ctx, arg, true, 'label');
     }
@@ -8184,8 +8184,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdKiosk: function(arg, tbl) {
-    var ctx = DebugJS.ctx;
+  cmdKiosk: function() {
     DebugJS.ctx.status |= DebugJS.ST_KIOSK;
     DebugJS.ctx.kiosk(DebugJS.ctx, 1.4);
   },
@@ -8194,7 +8193,7 @@ DebugJS.prototype = {
     ctx.status &= ~DebugJS.ST_KIOSK;
   },
 
-  cmdLaptime: function(arg, tbl) {
+  cmdLaptime: function() {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
       ctx.stopStopwatch();
@@ -9520,7 +9519,7 @@ DebugJS.prototype = {
     return t;
   },
 
-  cmdSw: function(arg, tbl) {
+  cmdSw: function() {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.ST_SW;
     ctx.launchFnc(ctx, 'tool', 'timer', 'sw1');
@@ -9612,7 +9611,7 @@ DebugJS.prototype = {
     return DebugJS.ctx.v;
   },
 
-  cmdVals: function(arg, tbl) {
+  cmdVals: function(arg) {
     var ctx = DebugJS.ctx;
     var o = DebugJS.getOptVal(arg, 'c');
     var f = (o == null ? ctx._cmdVals : ctx._cmdValsC);
@@ -11037,7 +11036,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             arg.dump += ': ';
           }
           var hasChildren = false;
-          for (var cKey in obj[key]) {
+          for (var _key in obj[key]) {
             hasChildren = true;
             break;
           }
