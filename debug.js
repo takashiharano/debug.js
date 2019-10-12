@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910121630';
+  this.v = '201910130110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6829,11 +6829,8 @@ DebugJS.prototype = {
     return -1;
   },
 
-  existsValidExtPanel: function(ctx) {
-    for (var i = 0; i < ctx.extPanels.length; i++) {
-      if (ctx.extPanels[i] != null) return true;
-    }
-    return false;
+  existsValidExtPanel: function() {
+    return DebugJS.x.getPanelLen() > 0;
   },
 
   updateExtBtns: function(ctx) {
@@ -17075,6 +17072,14 @@ DebugJS.x.removePanel = function(idx) {
     ctx.closeExtPanel(ctx);
     if (ctx.extBtn) ctx.extBtn.style.display = 'none';
   }
+};
+DebugJS.x.getPanelLen = function() {
+  var a = DebugJS.ctx.extPanels;
+  var n = 0;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != null) n++;
+  }
+  return n;
 };
 DebugJS.x.setBtnLabel = function(l) {
   DebugJS.ctx.extBtnLabel = l;
