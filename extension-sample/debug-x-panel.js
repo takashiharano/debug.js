@@ -6,7 +6,7 @@ var extsample = extsample || {};
 extsample.panel1 = {};
 extsample.panel1.onCreate = function(panel) {
   log('[panel1] onCreate');
-  panel.innerHTML = 'Panel1';
+  panel.innerHTML = 'Panel 1';
 };
 
 extsample.panel1.onActive = function(panel) {
@@ -23,7 +23,7 @@ extsample.panel1.onInActive = function(panel) {
 extsample.panel2 = {};
 extsample.panel2.onCreate = function(panel) {
   log('[panel2] onCreate');
-  var html = '<div>Panel2</div>';
+  var html = '<div>Panel 2</div>';
   panel.innerHTML = html;
 };
 
@@ -43,7 +43,7 @@ extsample.panel3.div = null;
 extsample.panel3.onCreate = function(panel) {
   log('[panel3] onCreate');
   var div1 = document.createElement('div');
-  div1.innerText = 'Panel3';
+  div1.innerText = 'Panel 3';
   panel.appendChild(div1);
 
   var div2 = document.createElement('div');
@@ -69,7 +69,7 @@ extsample.init = function() {
   extsample.registerPanel2();
   extsample.registerPanel3();
 
-  //dbg.x.setBtnLabel('EXT1');
+  //dbg.x.panel.setBtnLabel('EXT1');
 };
 
 extsample.registerPanel1 = function() {
@@ -79,7 +79,7 @@ extsample.registerPanel1 = function() {
     onActive: extsample.panel1.onActive,
     onInActive: extsample.panel1.onInActive
   };
-  dbg.x.addPanel(panel1);
+  dbg.x.panel.add(panel1);
 };
 
 extsample.registerPanel2 = function() {
@@ -96,7 +96,7 @@ extsample.registerPanel2 = function() {
     onActive: extsample.panel2.onActive,
     onInActive: extsample.panel2.onInActive
   };
-  dbg.x.addPanel(panel2);
+  dbg.x.panel.add(panel2);
 };
 
 extsample.registerPanel3 = function() {
@@ -111,9 +111,10 @@ extsample.registerPanel3 = function() {
     panel: p1base,
     onCreate: extsample.panel3.onCreate,
     onActive: extsample.panel3.onActive,
-    onInActive: extsample.panel3.onInActive
+    onInActive: extsample.panel3.onInActive,
+    hidden: true
   };
-  dbg.x.addPanel(panel3);
+  dbg.x.panel.add(panel3);
 };
 
 

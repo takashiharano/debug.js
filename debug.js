@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910130110';
+  this.v = '2019101302100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6746,7 +6746,7 @@ DebugJS.prototype = {
     ctx.addOverlayPanelFull(ctx.extPanel);
     var actIdx = ctx.extActPnlIdx;
     if (actIdx == -1) {
-      actIdx = ctx.nextValidExtPanelIdx(ctx, actIdx);
+      actIdx = ctx.nextVisibleExtPanelIdx(ctx, actIdx);
       ctx.switchExtPanel(actIdx);
     } else {
       var p = ctx.extPanels[actIdx];
@@ -6793,8 +6793,8 @@ DebugJS.prototype = {
       }
     }
     var p1 = pnls[idx];
-    ctx.extBodyPanel.appendChild(p1.base);
     if (p1) {
+      ctx.extBodyPanel.appendChild(p1.base);
       if (ctx.status & DebugJS.ST_EXT_PANEL) {
         ctx.onExtPanelActive(ctx, p1);
       }
@@ -6813,24 +6813,22 @@ DebugJS.prototype = {
     if (p && p.onInActive) p.onInActive(p.panel);
   },
 
-  prevValidExtPanelIdx: function(ctx, idx) {
+  prevVisibleExtPanelIdx: function(ctx, idx) {
+    var a = DebugJS.ctx.extPanels;
     if (idx > 0) {
       for (var i = idx - 1; i >= 0; i--) {
-        if (ctx.extPanels[i] != null) return i;
+        if ((a[i] != null) && !a[i].hidden) return i;
       }
     }
     return -1;
   },
 
-  nextValidExtPanelIdx: function(ctx, idx) {
-    for (var i = idx + 1; i < ctx.extPanels.length; i++) {
-      if (ctx.extPanels[i] != null) return i;
+  nextVisibleExtPanelIdx: function(ctx, idx) {
+    var a = DebugJS.ctx.extPanels;
+    for (var i = idx + 1; i < a.length; i++) {
+      if ((a[i] != null) && !a[i].hidden) return i;
     }
     return -1;
-  },
-
-  existsValidExtPanel: function() {
-    return DebugJS.x.getPanelLen() > 0;
   },
 
   updateExtBtns: function(ctx) {
@@ -9809,11 +9807,12 @@ DebugJS.prototype = {
       if (ctx.extBtn) ctx.extBtn.style.display = '';
       for (var i = 0; i < pnls.length; i++) {
         var p = pnls[i];
-        if ((p != null) && (p.base == null)) {
-          ctx.createExtPanel(ctx, p, i);
+        if (p) {
+          if (p.base == null) ctx.createExtPanel(ctx, p, i);
+          DebugJS.x.panel.addFileLdr(p);
         }
-        DebugJS.x.addFileLdr(p);
       }
+      ctx.redrawExtPanelBtn(ctx);
     }
   },
   redrawExtPanelBtn: function(ctx) {
@@ -9824,7 +9823,7 @@ DebugJS.prototype = {
     if (pnls.length > 0) {
       for (i = 0; i < pnls.length; i++) {
         var p = pnls[i];
-        if (p != null) {
+        if ((p != null) && !p.hidden) {
           ctx.extHeaderPanel.appendChild(p.btn);
         }
       }
@@ -17024,66 +17023,110 @@ DebugJS.x.addCmdTbl = function(table) {
     ctx.EXT_CMD_TBL.push(c);
   }
 };
-DebugJS.x.addPanel = function(p) {
+
+DebugJS.x.panel = {};
+DebugJS.x.panel.add = function(p) {
   var ctx = DebugJS.ctx;
-  p.base = null; p.btn = null;
+  p.base = null;
+  p.btn = null;
+  if (p.hidden == undefined) p.hidden = false;
   var idx = ctx.extPanels.push(p) - 1;
   if (ctx.status & DebugJS.ST_INITIALIZED) {
     ctx.initExtPanel(ctx);
   }
   return idx;
 };
-DebugJS.x.addFileLdr = function(p) {
+DebugJS.x.panel.remove = function(id, hidden) {
+  var ctx = DebugJS.ctx;
+  var idx = (typeof id == 'string' ? DebugJS.x.panel.getIndex(id) : id);
+  var p = ctx.extPanels[idx];
+  if (!p) return;
+  if (!(ctx.status & DebugJS.ST_INITIALIZED)) {
+    if (!hidden) ctx.extPanels[idx] = null;
+    return;
+  }
+  var nIdx = ctx.extActPnlIdx;
+  if (ctx.extActPnlIdx == idx) {
+    nIdx = ctx.prevVisibleExtPanelIdx(ctx, idx);
+    if (nIdx == -1) {
+      nIdx = ctx.nextVisibleExtPanelIdx(ctx, idx);
+    }
+  }
+  ctx.switchExtPanel(nIdx);
+  if (!hidden) ctx.extPanels[idx] = null;
+  ctx.redrawExtPanelBtn(ctx);
+  if (nIdx == -1) {
+    ctx.closeExtPanel(ctx);
+    if (DebugJS.x.panel.len(true) == 0) ctx.extPanels = [];
+    if (ctx.extBtn) ctx.extBtn.style.display = 'none';
+  }
+};
+DebugJS.x.panel.setBtnLabel = function(l) {
+  DebugJS.ctx.extBtnLabel = l;
+  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
+};
+DebugJS.x.panel.getIndex = function(nm) {
+  var a = DebugJS.ctx.extPanels;
+  var i = -1;
+  for (i = 0; i < a.length; i++) {
+    if (a[i] && a[i].name == nm) {
+      break;
+    }
+  }
+  return i;
+};
+DebugJS.x.panel.getPanel = function(id) {
+  var a = DebugJS.ctx.extPanels;
+  var i = (typeof id == 'string' ? DebugJS.x.panel.getIndex(id) : id);
+  var p = a[i];
+  return (p ? p : null);
+};
+DebugJS.x.panel.getActivePanel = function() {
+  return DebugJS.x.panel.getPanel(DebugJS.ctx.extActPnlIdx);
+};
+DebugJS.x.panel.len = function(all) {
+  var a = DebugJS.ctx.extPanels;
+  var n = 0;
+  for (var i = 0; i < a.length; i++) {
+    if ((a[i] != null) && (all || !a[i].hidden)) n++;
+  }
+  return n;
+};
+DebugJS.x.panel.exists = function(nm) {
+  return DebugJS.x.panel.getPanel(nm) != null;
+};
+DebugJS.x.panel.setHidden = function(nm, f) {
+  var ctx = DebugJS.ctx;
+  var p = DebugJS.x.panel.getPanel(nm);
+  if (p) {
+    if (f) {
+      p.hidden = true;
+      DebugJS.x.panel.remove(nm, true);
+    } else {
+      p.hidden = false;
+      ctx.redrawExtPanelBtn(ctx);
+      if (ctx.extBtn) ctx.extBtn.style.display = '';
+    }
+  }
+};
+DebugJS.x.panel.addFileLdr = function(p) {
   var d = p.fileloader;
   if (d) DebugJS.addFileLoader(p.panel, d.cb, d.mode, d.decode);
   if (p.onDrop) DebugJS.addDropHandler(p.panel, p.onDrop);
 };
-DebugJS.x.getPanel = function(idx) {
-  var p = DebugJS.ctx.extPanels[idx];
-  return (p ? p : null);
+DebugJS._dprctd = function() {
+  var x = DebugJS.x;
+  var p = DebugJS.x.panel;
+  x.addPanel = p.add;
+  x.removePanel = p.remove;
+  x.setBtnLabel = p.setBtnLabel;
+  x.getPanel = p.getPanel;
+  x.getActivePanel = p.getActivePanel;
+  x.addFileLdr = p.addFileLdr;
 };
-DebugJS.x.getActivePanel = function() {
-  return DebugJS.x.getPanel(DebugJS.ctx.extActPnlIdx);
-};
-DebugJS.x.removePanel = function(idx) {
-  var ctx = DebugJS.ctx;
-  if (!ctx.extPanels[idx]) return;
-  var nIdx = -1;
-  var p = ctx.extPanels[idx];
-  ctx.extPanels[idx] = null;
-  if (ctx.extActPnlIdx == idx) {
-    nIdx = ctx.prevValidExtPanelIdx(ctx, idx);
-    if (nIdx == -1) {
-      nIdx = ctx.nextValidExtPanelIdx(ctx, idx);
-    }
-  }
-  if (!(ctx.status & DebugJS.ST_INITIALIZED)) return;
-  if (ctx.status & DebugJS.ST_EXT_PANEL) {
-    ctx.onExtPanelInActive(ctx, p);
-  }
-  ctx.redrawExtPanelBtn(ctx);
-  if (ctx.existsValidExtPanel(ctx)) {
-    if (nIdx != -1) {
-      ctx.switchExtPanel(nIdx);
-    }
-  } else {
-    ctx.extActPnlIdx = -1;
-    ctx.extPanels = [];
-    ctx.closeExtPanel(ctx);
-    if (ctx.extBtn) ctx.extBtn.style.display = 'none';
-  }
-};
-DebugJS.x.getPanelLen = function() {
-  var a = DebugJS.ctx.extPanels;
-  var n = 0;
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != null) n++;
-  }
-  return n;
-};
-DebugJS.x.setBtnLabel = function(l) {
-  DebugJS.ctx.extBtnLabel = l;
-  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
+DebugJS._dprctd();
+DebugJS.init = function(opt) {
+  DebugJS.ctx.init(opt, null);
 };
 DebugJS._init = function() {
   if (DebugJS.ctx.status & DebugJS.ST_INITIALIZED) {
@@ -17091,9 +17134,6 @@ DebugJS._init = function() {
   } else {
     return DebugJS.ctx.init(null, null);
   }
-};
-DebugJS.init = function(opt) {
-  DebugJS.ctx.init(opt, null);
 };
 DebugJS.onReady = function() {
   DebugJS._init();

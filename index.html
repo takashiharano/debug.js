@@ -197,14 +197,14 @@ var options4 = {
 //dbg.init(options4);
 
 //log.t('init start');
-log('Here is the log output example!');
+log('Hello, world!');
 
 var logMessageText = null;
 var msgMessageText = null;
 
 //window.addEventListener('load', init, true);
 window.onload = function() {
-  log('The window\'s load event fired.');
+  log('Here is the log output example.');
 
   logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
@@ -831,7 +831,8 @@ example.onInActive = function(panel) {
 };
 
 example.onDrop = function(text) {
-  log(text);
+  var code = document.getElementById('ext-panel-drop-code').value;
+  eval(code);
 };
 
 example.regieterExtensionPanel = function() {
@@ -843,7 +844,7 @@ example.regieterExtensionPanel = function() {
     onInActive: example.onInActive,
     onDrop: example.onDrop
   };
-  var index = dbg.x.addPanel(panel1);
+  var index = dbg.x.panel.add(panel1);
   document.getElementById('ext-panel-index').innerText = index;
 };
 
@@ -1097,6 +1098,26 @@ function addScript() {
   document.body.appendChild(scriptElement);
 }
 setTimeout(addScript, 100);
+
+demo.getExtPanel = function(id) {
+  var p = dbg.x.panel.getPanel(id);
+  if (p) {
+    var s = '[ExtPanel] name=' + p.name;
+    log(s);
+  } else {
+    log(p);
+  }
+};
+
+demo.getActvExtPanel = function(id) {
+  var p = dbg.x.panel.getActivePanel(id);
+  if (p) {
+    var s = '[ExtPanel] name=' + p.name;
+    log(s);
+  } else {
+    log(p);
+  }
+};
 
 function scrollToSelector(selector, step) {
   dbg.cmd('scrollto window ' + selector + ' -step ' + step);
@@ -6618,9 +6639,14 @@ body.innerHTML = 'Extension Panel 1';</textarea>
 // Called when the panel is hidden.
 <span class="emphasis">example.onInActive = function(panel) {
   <textarea id="ext-panel-inactive-code" class="demo-textarea" style="height:20px;">log('onInActive P1');</textarea>
+};</span>
+
+// Called when a file/text is fropped.
+example.onDrop = function(text) {
+  <textarea id="ext-panel-drop-code" class="demo-textarea" style="height:20px;color:#aaa;">log('onDrop P1:\n' + text);</textarea>
 };
 
-var panel1 = {
+<span class="emphasis">var panel1 = {
   name: '<input type="text" id="ext-panel-name-text" class="inline-text-input" style="width:30px;" value="P1">',
   onCreate: example.onCreate,
   onActive: example.onActive,
@@ -6632,15 +6658,22 @@ var panel1 = {
     decode: true
   }<span class="emphasis">
 };
-<span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = dbg.x.addPanel(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span>
-</span></pre>
+<span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = dbg.x.panel.add(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span></span>
+dbg.x.addPanel(panel); *deprecated
+</pre>
 
-Change the button label
-<pre class="code"><span class="emphasis">dbg.x.setBtnLabel('<input type="text" id="ext-btn-label-text" class="inline-text-input" style="width:40px;" value="ABC1">');<button class="demo-button2" onclick="dbg.x.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span></pre>
+Remove a panel
+<pre class="code"><span class="emphasis">dbg.x.panel.remove('<input type="text" id="ext-rmvpnl-nm-text" class="inline-text-input" style="width:40px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="dbg.x.panel.remove(document.getElementById('ext-rmvpnl-nm-text').value);">DEMO</button></span>
+dbg.x.removePanel(index);<span class="annotation">(by index)</span> *deprecated</pre>
+
+Show / Hide
+<pre class="code"><span class="emphasis">dbg.x.panel.setHidden('<input type="text" id="ext-hidden-nm-text" class="inline-text-input" style="width:50px;" value="P1">', <input type="text" id="ext-hidden-flg-text" class="inline-text-input" style="width:50px;" value="true">);<button class="demo-button2" onclick="dbg.x.panel.setHidden(document.getElementById('ext-hidden-nm-text').value, (document.getElementById('ext-hidden-flg-text').value == 'true'));">DEMO</button></span></pre>
 
 Get a panel
-<pre class="code"><span class="emphasis">dbg.x.getPanel(index);
-dbg.x.getActivePanel();
+<pre class="code"><span class="emphasis">dbg.x.panel.getPanel('<input type="text" id="ext-getpnl-nm-text" class="inline-text-input" style="width:50px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="demo.getExtPanel(document.getElementById('ext-getpnl-nm-text').value);">DEMO</button></span>
+dbg.x.getPanel(index);<span class="annotation">(by index)</span> *deprecated
+
+<span class="emphasis">dbg.x.panel.getActivePanel();<button class="demo-button2" onclick="demo.getActvExtPanel();">DEMO</button>
 </span>
 Panel object structure:
 {
@@ -6654,11 +6687,12 @@ Panel object structure:
 }
 </pre>
 
-Remove a panel
-<pre class="code"><span class="emphasis">dbg.x.removePanel(<input type="text" id="ext-btn-rmvidx-text" class="inline-text-input" style="width:20px;" value="0">);<button class="demo-button2" onclick="dbg.x.removePanel(document.getElementById('ext-btn-rmvidx-text').value | 0);">DEMO</button></span></pre>
-
 Get the panel length
-<pre class="code"><span class="emphasis">dbg.x.getPanelLen();<button class="demo-button2" onclick="log.res(dbg.x.getPanelLen());">DEMO</button></span></pre>
+<pre class="code"><span class="emphasis">dbg.x.panel.len();<span class="annotation">(visible only)</span><button class="demo-button2" onclick="log.res(dbg.x.panel.len());">DEMO</button></span>
+<span class="emphasis">dbg.x.panel.len(true);<span class="annotation">(all)</span><button class="demo-button2" onclick="log.res(dbg.x.panel.len(true));">DEMO</button></span></pre>
+
+Exists
+<pre class="code"><span class="emphasis">dbg.x.panel.exists('<input type="text" id="ext-exists-nm-text" class="inline-text-input" style="width:50px;" value="P1">');<button class="demo-button2" onclick="log.res(dbg.x.panel.exists(document.getElementById('ext-exists-nm-text').value));">DEMO</button></span></pre>
 
 Append UI parts
 <pre class="code"><span class="emphasis">dbg.ui.addElement(parentElement, 'TagName', style);
@@ -6673,6 +6707,11 @@ style = {
   'margin-top': '8px',
   'color': '#fff'
 };</pre>
+
+Change the button label
+<pre class="code"><span class="emphasis">dbg.x.panel.setBtnLabel('<input type="text" id="ext-btn-label-text" class="inline-text-input" style="width:40px;" value="ABC1">');<button class="demo-button2" onclick="dbg.x.panel.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span>
+dbg.x.setBtnLabel(label); *deprecated
+</pre>
 
 Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-cmd.js" target="_blank" rel="noopener">extension-sample/debug-x-cmd.js</a> 
 and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-panel.js" target="_blank" rel="noopener">extension-sample/debug-x-panel.js</a> for details.
