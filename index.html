@@ -3178,6 +3178,7 @@ dbg.isAscii('<input type="text" id="isascii-txt" class="demo-text" style="width:
 </pre>
     </td>
   </tr>
+
   <tr>
     <td class="name">dbg.getProtocol</td>
     <td></td>
@@ -3318,6 +3319,36 @@ dbg.formatJSON(str); <button class="demo-button2" onclick="log('\n' + dbg.format
   </tr>
 
   <tr>
+    <td class="name">dbg.getKeys</td>
+    <td>object</td>
+    <td>
+      Returns property key name array of the object<br>
+<pre class="eg">
+var obj = {
+  key1: 'A',
+  key2: 'B',
+  key3: 'C',
+};
+
+dbg.getKeys(obj);
+-&gt; ['key1', 'key2', 'key3']
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.xlsCol</td>
+    <td>column name / column number</td>
+    <td>
+      Returns the Excel column number for a reference and vice versa.<br>
+<pre class="eg">
+dbg.xlsCol('<input type="text" id="xlscol-txt" class="demo-text" style="width:30px;" value="A">'); <button class="demo-button2" onclick="log.res(dbg.xlsCol(getVal('xlscol-txt')));">DEMO</button>
+dbg.xlsCol(<input type="text" id="xlscol-n-txt" class="demo-text" style="width:30px;" value="1">); <button class="demo-button2" onclick="log.res(dbg.xlsCol(getVal('xlscol-n-txt') | 0));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.arr.count</td>
     <td>
       arg1: array<br>
@@ -3385,24 +3416,6 @@ var array = [<textarea id="arr2set-arr-text" class="demo-textarea2" style="width
 
 dbg.arr.toSet(array); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr.toSet(arr));">DEMO</button>
 dbg.arr.toSet(array, <input type="text" id="arr2set-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr.toSet(arr, (getVal('arr2set-flg-text') == 'true' ? true : false)));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.getKeys</td>
-    <td>object</td>
-    <td>
-      Returns property key name array of the object<br>
-<pre class="eg">
-var obj = {
-  key1: 'A',
-  key2: 'B',
-  key3: 'C',
-};
-
-dbg.getKeys(obj);
--&gt; ['key1', 'key2', 'key3']
 </pre>
     </td>
   </tr>
