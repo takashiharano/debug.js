@@ -3150,7 +3150,7 @@ dbg.escape('abc"123"xy\\z', ['\\\\', '"']);
     <td class="name">dbg.toHalfWidth</td>
     <td>string</td>
     <td>
-      Convert full-width character(s) to half-width.<br><br>
+      Convert full-width character(s) to half-width.<br>
 <pre class="eg">
 dbg.toHalfWidth('<input type="text" id="tohalf-txt" class="demo-text" style="width:350px;" value="　！”＃＄％＆’（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［￥］＾＿‘ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～">'); <button class="demo-button2" onclick="log.p(dbg.toHalfWidth(getVal('tohalf-txt')));">DEMO</button>
 </pre>
@@ -3161,13 +3161,23 @@ dbg.toHalfWidth('<input type="text" id="tohalf-txt" class="demo-text" style="wid
     <td class="name">dbg.toFullWidth</td>
     <td>string</td>
     <td>
-      Convert half-width character(s) to full-width.<br><br>
+      Convert half-width character(s) to full-width.<br>
 <pre class="eg">
 dbg.toFullWidth('<input type="text" id="tofull-txt" class="demo-text" style="width:350px;" value=" !&quot;#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~">'); <button class="demo-button2" onclick="log.p(dbg.toFullWidth(getVal('tofull-txt')));">DEMO</button>
 </pre>
     </td>
   </tr>
 
+  <tr>
+    <td class="name">dbg.isAscii</td>
+    <td>string</td>
+    <td>
+      Returns if the given string consists of valid 7–bit US-ASCII characters.<br>
+<pre class="eg">
+dbg.isAscii('<input type="text" id="isascii-txt" class="demo-text" style="width:350px;" value="abc">'); <button class="demo-button2" onclick="log.res(dbg.isAscii(getVal('isascii-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
   <tr>
     <td class="name">dbg.getProtocol</td>
     <td></td>
