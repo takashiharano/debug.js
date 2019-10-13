@@ -69,7 +69,7 @@ extsample.init = function() {
   extsample.registerPanel2();
   extsample.registerPanel3();
 
-  //dbg.x.panel.setBtnLabel('EXT1');
+  //dbg.x.pnl.setBtnLabel('EXT1');
 };
 
 extsample.registerPanel1 = function() {
@@ -79,7 +79,7 @@ extsample.registerPanel1 = function() {
     onActive: extsample.panel1.onActive,
     onInActive: extsample.panel1.onInActive
   };
-  dbg.x.panel.add(panel1);
+  dbg.x.pnl.add(panel1);
 };
 
 extsample.registerPanel2 = function() {
@@ -96,7 +96,7 @@ extsample.registerPanel2 = function() {
     onActive: extsample.panel2.onActive,
     onInActive: extsample.panel2.onInActive
   };
-  dbg.x.panel.add(panel2);
+  dbg.x.pnl.add(panel2);
 };
 
 extsample.registerPanel3 = function() {
@@ -114,7 +114,7 @@ extsample.registerPanel3 = function() {
     onInActive: extsample.panel3.onInActive,
     hidden: true
   };
-  dbg.x.panel.add(panel3);
+  dbg.x.pnl.add(panel3);
 };
 
 
