@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910140100';
+  this.v = '201910140137';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2746,6 +2746,9 @@ DebugJS.prototype = {
         }
         if ((DebugJS.ctx.status & DebugJS.ST_SW) && (ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActiveFnc & DebugJS.TOOLS_FNC_TIMER)) {
           DebugJS.cmd.toggleFocus();
+          break;
+        } else if (DebugJS.ctx.status & DebugJS.ST_KIOSK) {
+          DebugJS.cmd.focus();
           break;
         }
         if (ctx.closeTopFeature(ctx)) break;
@@ -8180,8 +8183,10 @@ DebugJS.prototype = {
   },
 
   cmdKiosk: function() {
-    DebugJS.ctx.status |= DebugJS.ST_KIOSK;
-    DebugJS.ctx.kiosk(DebugJS.ctx, 1.4);
+    if (!(DebugJS.ctx.status & DebugJS.ST_KIOSK)) {
+      DebugJS.ctx.status |= DebugJS.ST_KIOSK;
+      DebugJS.ctx.kiosk(DebugJS.ctx, 1.4);
+    }
   },
   _cmdKioskQ: function(ctx) {
     ctx.kioskQ(ctx);
