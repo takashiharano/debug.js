@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910140137';
+  this.v = '201910140202';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12633,7 +12633,7 @@ DebugJS.lenB = function(s) {
   return (new Blob([s], {type: 'text/plain'})).size;
 };
 DebugJS.isAscii = function(s) {
-  return (s.match(/^[\x20-\x7e]*$/) ? true : false);
+  return (s.match(/^[\x0-\x7f]*$/) ? true : false);
 };
 DebugJS.txt2arr = function(s) {
   return DebugJS.crlf2lf(s).split('\n');
