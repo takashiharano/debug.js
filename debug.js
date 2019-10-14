@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910141613';
+  this.v = '201910142136';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2617,11 +2617,19 @@ DebugJS.prototype = {
           DebugJS._log('No extension panels');
           return false;
         }
-        var idx = subfnc;
+        try {
+          var id = eval(subfnc);
+        } catch (e) {
+          DebugJS._log.e('No such panel: ' + subfnc);
+          return false;
+        }
+        var idx = id;
+        if (typeof id == 'string') idx = DebugJS.x.pnl.getIdx(id);
         if (idx == undefined) idx = ctx.extActPnlIdx;
         if (idx < 0) idx = 0;
-        if (idx >= ctx.extPanels.length) {
-          DebugJS._log.e('No such panel: ' + idx + ' (0-' + (ctx.extPanels.length - 1) + ')');
+        var p = DebugJS.x.pnl.getPanel(idx);
+        if (!p || p.hidden) {
+          DebugJS._log.e('No such panel: ' + subfnc);
           return false;
         }
         if (!(ctx.status & DebugJS.ST_EXT_PANEL)) {
@@ -17048,7 +17056,7 @@ DebugJS.x.pnl.add = function(p) {
 };
 DebugJS.x.pnl.remove = function(id, hidden) {
   var ctx = DebugJS.ctx;
-  var idx = (typeof id == 'string' ? DebugJS.x.pnl.getIndex(id) : id);
+  var idx = (typeof id == 'string' ? DebugJS.x.pnl.getIdx(id) : id);
   var p = ctx.extPanels[idx];
   if (!p) return;
   if (!(ctx.status & DebugJS.ST_INITIALIZED)) {
@@ -17075,7 +17083,7 @@ DebugJS.x.pnl.setBtnLabel = function(l) {
   DebugJS.ctx.extBtnLabel = l;
   if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
-DebugJS.x.pnl.getIndex = function(nm) {
+DebugJS.x.pnl.getIdx = function(nm) {
   var a = DebugJS.ctx.extPanels;
   var i = -1;
   for (i = 0; i < a.length; i++) {
@@ -17087,7 +17095,7 @@ DebugJS.x.pnl.getIndex = function(nm) {
 };
 DebugJS.x.pnl.getPanel = function(id) {
   var a = DebugJS.ctx.extPanels;
-  var i = (typeof id == 'string' ? DebugJS.x.pnl.getIndex(id) : id);
+  var i = (typeof id == 'string' ? DebugJS.x.pnl.getIdx(id) : id);
   var p = a[i];
   return (p ? p : null);
 };
@@ -17124,7 +17132,7 @@ DebugJS.x.pnl.addFileLdr = function(p) {
   if (d) DebugJS.addFileLoader(p.panel, d.cb, d.mode, d.decode);
   if (p.onDrop) DebugJS.addDropHandler(p.panel, p.onDrop);
 };
-DebugJS._dprctd = function() {
+DebugJS._xx = function() {
   var x = DebugJS.x;
   var p = DebugJS.x.pnl;
   x.addPanel = p.add;
@@ -17134,7 +17142,7 @@ DebugJS._dprctd = function() {
   x.getActivePanel = p.getActivePanel;
   x.addFileLdr = p.addFileLdr;
 };
-DebugJS._dprctd();
+DebugJS._xx();
 DebugJS.init = function(opt) {
   DebugJS.ctx.init(opt, null);
 };
