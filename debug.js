@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910140202';
+  this.v = '201910141533';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -369,7 +369,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|Array'},
     {cmd: 'loadjs', fn: this.cmdLoadJs, desc: 'Load a JavaScript file', help: 'loadjs file-path'},
-    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|date|dump|filter|html|load|preserve|suspend|lv'},
+    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|date|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -8261,6 +8261,7 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     var fn = {
       bufsize: ctx._cmdLogBufsize,
+      copy: ctx._cmdLogCopy,
       date: ctx._cmdLogDate,
       dump: ctx._cmdLogDump,
       filter: ctx._cmdLogFilter,
@@ -8283,6 +8284,10 @@ DebugJS.prototype = {
       DebugJS.printUsage('log bufsize [size]');
     }
     return n;
+  },
+  _cmdLogCopy: function() {
+    var s = DebugJS.dumpLog('text', false, true);
+    DebugJS.copy2clpbd(s);
   },
   _cmdLogDate: function(ctx, arg) {
     var op = DebugJS.splitArgs(arg)[1];
