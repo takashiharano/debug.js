@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910142136';
+  this.v = '201910152127';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17102,13 +17102,10 @@ DebugJS.x.pnl.getPanel = function(id) {
 DebugJS.x.pnl.getActivePanel = function() {
   return DebugJS.x.pnl.getPanel(DebugJS.ctx.extActPnlIdx);
 };
-DebugJS.x.pnl.len = function(all) {
-  var a = DebugJS.ctx.extPanels;
-  var n = 0;
-  for (var i = 0; i < a.length; i++) {
-    if ((a[i] != null) && (all || !a[i].hidden)) n++;
-  }
-  return n;
+DebugJS.x.pnl.isActive = function(nm) {
+  if (!(DebugJS.ctx.status & DebugJS.ST_EXT_PANEL)) return false;
+  var i = DebugJS.x.pnl.getIdx(nm);
+  return i == DebugJS.ctx.extActPnlIdx;
 };
 DebugJS.x.pnl.exists = function(nm) {
   return DebugJS.x.pnl.getPanel(nm) != null;
@@ -17126,6 +17123,14 @@ DebugJS.x.pnl.setHidden = function(nm, f) {
       if (ctx.extBtn) ctx.extBtn.style.display = '';
     }
   }
+};
+DebugJS.x.pnl.len = function(all) {
+  var a = DebugJS.ctx.extPanels;
+  var n = 0;
+  for (var i = 0; i < a.length; i++) {
+    if ((a[i] != null) && (all || !a[i].hidden)) n++;
+  }
+  return n;
 };
 DebugJS.x.pnl.addFileLdr = function(p) {
   var d = p.fileloader;

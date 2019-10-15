@@ -6714,12 +6714,15 @@ Panel object structure:
 }
 </pre>
 
-Get the panel length
-<pre class="code"><span class="emphasis">dbg.x.pnl.len();<span class="annotation">(visible only)</span><button class="demo-button2" onclick="log.res(dbg.x.pnl.len());">DEMO</button></span>
-<span class="emphasis">dbg.x.pnl.len(true);<span class="annotation">(all)</span><button class="demo-button2" onclick="log.res(dbg.x.pnl.len(true));">DEMO</button></span></pre>
+is Active
+<pre class="code"><span class="emphasis">dbg.x.pnl.isActive('<input type="text" id="ext-isactv-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<button class="demo-button2" onclick="log.res(dbg.x.pnl.isActive(document.getElementById('ext-isactv-nm-text').value));">DEMO</button></span></pre>
 
 Exists
 <pre class="code"><span class="emphasis">dbg.x.pnl.exists('<input type="text" id="ext-exists-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<button class="demo-button2" onclick="log.res(dbg.x.pnl.exists(document.getElementById('ext-exists-nm-text').value));">DEMO</button></span></pre>
+
+Get the panel length
+<pre class="code"><span class="emphasis">dbg.x.pnl.len();<span class="annotation">(visible only)</span><button class="demo-button2" onclick="log.res(dbg.x.pnl.len());">DEMO</button></span>
+<span class="emphasis">dbg.x.pnl.len(true);<span class="annotation">(all)</span><button class="demo-button2" onclick="log.res(dbg.x.pnl.len(true));">DEMO</button></span></pre>
 
 Append UI parts
 <pre class="code"><span class="emphasis">dbg.ui.addElement(parentElement, 'TagName', style);
