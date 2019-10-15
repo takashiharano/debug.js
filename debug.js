@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910152141';
+  this.v = '201910152255';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -308,7 +308,7 @@ var DebugJS = DebugJS || function() {
   this.orgSizePos = {w: 0, h: 0, t: 0, l: 0};
   this.orgSizePos2 = {w: 0, h: 0, t: 0, l: 0, zm: 1};
   this.expandModeOrg = {w: 0, h: 0, t: 0, l: 0};
-  this.winExpandHeight = DebugJS.DBGWIN_EXPAND_C_H * this.DEFAULT_OPTIONS.zoom;
+  this.winExpandHeight = DebugJS.DBGWIN_EXPAND_H2 * this.DEFAULT_OPTIONS.zoom;
   this.winExpandCnt = 0;
   this.clickedPosX = 0;
   this.clickedPosY = 0;
@@ -404,7 +404,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
-    {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|center|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -599,16 +599,14 @@ DebugJS.CMD_ATTR_DISABLED = 0x10;
 DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DBGWIN_MIN_W = 292;
 DebugJS.DBGWIN_MIN_H = 155;
-DebugJS.DBGWIN_EXPAND_C_W = 960;
-DebugJS.DBGWIN_EXPAND_C_H = 640;
 DebugJS.DBGWIN_EXPAND_W = 850;
 DebugJS.DBGWIN_EXPAND_H = 580;
+DebugJS.DBGWIN_EXPAND_H2 = 640;
 DebugJS.SIZE_ST_NORMAL = 0;
 DebugJS.SIZE_ST_EXPANDED = 1;
-DebugJS.SIZE_ST_EXPANDED_C = 2;
-DebugJS.SIZE_ST_FULL_W = 4;
-DebugJS.SIZE_ST_FULL_H = 5;
-DebugJS.SIZE_ST_FULL_WH = 6;
+DebugJS.SIZE_ST_FULL_W = 2;
+DebugJS.SIZE_ST_FULL_H = 3;
+DebugJS.SIZE_ST_FULL_WH = 4;
 DebugJS.DBGWIN_POS_NONE = -9999;
 DebugJS.WIN_SHADOW = 10;
 DebugJS.WIN_BORDER = 1;
@@ -858,7 +856,7 @@ DebugJS.prototype = {
       ctx.initWidth = ctx.win.offsetWidth - DebugJS.WIN_ADJUST;
       ctx.initHeight = ctx.win.offsetHeight - DebugJS.WIN_ADJUST;
     }
-    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_C_H * ctx.opt.zoom;
+    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_H2 * ctx.opt.zoom;
     if ((rstrOpt != null) && (rstrOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom(ctx);
       ctx.reopenFeatures(ctx);
@@ -1704,8 +1702,6 @@ DebugJS.prototype = {
   restoreDbgWinSize: function(ctx, sizeStatus) {
     if (sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       ctx.setWinSize('full');
-    } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED_C) {
-      ctx.setWinSize('center');
     } else if (sizeStatus == DebugJS.SIZE_ST_EXPANDED) {
       ctx._expandDbgWin(ctx);
     }
@@ -3104,9 +3100,6 @@ DebugJS.prototype = {
           ctx._expandDbgWinAuto(ctx, sp);
         }
         break;
-      case 'center':
-        ctx._expandDbgWinCenter(ctx);
-        break;
       default:
         ctx._expandDbgWinAuto(ctx, sp);
     }
@@ -3157,7 +3150,7 @@ DebugJS.prototype = {
 
     if ((DebugJS.DBGWIN_EXPAND_W > clW) || (sp.w > expThrW)) {
       w = clW;
-      ctx.sizeStatus |= DebugJS.SIZE_ST_FULL_W;
+      ctx.sizeStatus = DebugJS.SIZE_ST_FULL_W;
       if ((DebugJS.DBGWIN_EXPAND_H > clH) || (sp.h > expThrH)) {
         h = clH;
       } else {
@@ -3185,19 +3178,6 @@ DebugJS.prototype = {
     } else if (h == clH) {
       ctx.sizeStatus = DebugJS.SIZE_ST_FULL_H;
     }
-  },
-
-  _expandDbgWinCenter: function(ctx) {
-    var clW = document.documentElement.clientWidth;
-    var clH = document.documentElement.clientHeight;
-    var w = DebugJS.DBGWIN_EXPAND_C_W;
-    var h = DebugJS.DBGWIN_EXPAND_C_H;
-    var l = clW / 2 - w / 2;
-    var t = clH / 2 - h / 2;
-    ctx.setDbgWinPos(t, l);
-    ctx.setDbgWinSize(w, h);
-    ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJ;
-    ctx.sizeStatus = DebugJS.SIZE_ST_EXPANDED_C;
   },
 
   setDbgWinFull: function(ctx) {
@@ -3894,18 +3874,18 @@ DebugJS.prototype = {
   showHideByName: function(name) {
     var ctx = DebugJS.ctx;
     var btn = document.getElementById(ctx.id + '-' + name + '__button');
-    var partialBody = document.getElementById(ctx.id + '-' + name + '__partial-body');
+    var prtBdy = document.getElementById(ctx.id + '-' + name + '__prt-body');
     var body = document.getElementById(ctx.id + '-' + name + '__body');
     if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
       btn.innerHTML = DebugJS.CLOSEBTN;
-      partialBody.style.display = 'none';
+      prtBdy.style.display = 'none';
       body.style.display = 'block';
       if (ctx.elmInfofoldingSt[name] != undefined) {
         ctx.elmInfofoldingSt[name] = true;
       }
     } else {
       btn.innerHTML = DebugJS.EXPANDBTN;
-      partialBody.style.display = 'inline';
+      prtBdy.style.display = 'inline';
       body.style.display = 'none';
       if (ctx.elmInfofoldingSt[name] != undefined) {
         ctx.elmInfofoldingSt[name] = false;
@@ -3934,7 +3914,7 @@ DebugJS.prototype = {
       if ((txt.indexOf('\n') >= 1) || (txt.length > lineMaxLen)) {
         var partial = DebugJS.trimDownText2(txt, lineMaxLen, omitpart, style);
         txt = '<span class="dbg-showhide-btn dbg-nomove" id="' + ctx.id + '-' + name + '__button" onclick="DebugJS.ctx.showHideByName(\'' + name + '\')">' + btn + '</span> ' +
-        '<span id="' + ctx.id + '-' + name + '__partial-body" style="display:' + partDisp + '">' + partial + '</span>' +
+        '<span id="' + ctx.id + '-' + name + '__prt-body" style="display:' + partDisp + '">' + partial + '</span>' +
         '<div style="display:' + bodyDisp + '" id="' + ctx.id + '-' + name + '__body">' + obj + '</div>';
       } else {
         txt = obj;
@@ -5529,15 +5509,14 @@ DebugJS.prototype = {
     }
   },
   onChangeFontWeight: function() {
-    var ctx = DebugJS.ctx;
-    var fontWeight = ctx.txtChkFontWeightRange.value;
-    DebugJS.setStyle(ctx.txtChkTargetEl, 'font-weight', fontWeight);
+    var fontWeight = DebugJS.ctx.txtChkFontWeightRange.value;
+    DebugJS.setStyle(DebugJS.ctx.txtChkTargetEl, 'font-weight', fontWeight);
     if (fontWeight == 400) {
       fontWeight += '(normal)';
     } else if (fontWeight == 700) {
       fontWeight += '(bold)';
     }
-    ctx.txtChkFontWeightLabel.innerText = fontWeight;
+    DebugJS.ctx.txtChkFontWeightLabel.innerText = fontWeight;
   },
   onChangeFontFamily: function(font) {
     DebugJS.setStyle(DebugJS.ctx.txtChkTargetEl, 'font-family', font.value);
@@ -6722,9 +6701,8 @@ DebugJS.prototype = {
     }
   },
   onBatInput: function() {
-    var ctx = DebugJS.ctx;
-    if (!ctx.batTxtSt) return;
-    var edt = ctx.batTextEditor;
+    if (!DebugJS.ctx.batTxtSt) return;
+    var edt = DebugJS.ctx.batTextEditor;
     var txt = edt.value;
     var len = txt.length;
     var lenB = DebugJS.lenB(txt);
@@ -6739,7 +6717,7 @@ DebugJS.prototype = {
     var cp = '';
     if (cd) cp = (cd == 10 ? 'LF' : ch) + ':' + cd16 + '(' + cd + ')';
     var slct = (sl ? 'Selected=' + sl : '');
-    ctx.batTxtSt.innerHTML = 'LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes ' + cp + ' ' + slct;
+    DebugJS.ctx.batTxtSt.innerHTML = 'LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes ' + cp + ' ' + slct;
   },
 
   toggleExtPanel: function() {
@@ -6956,9 +6934,9 @@ DebugJS.prototype = {
     o.l = w.offsetLeft;
   },
 
-  turnLed: function(pos, active) {
+  turnLed: function(pos, actv) {
     var b = DebugJS.LED_BIT[pos];
-    if (active) {
+    if (actv) {
       DebugJS.ctx.led |= b;
     } else {
       DebugJS.ctx.led &= ~b;
@@ -6966,9 +6944,9 @@ DebugJS.prototype = {
     DebugJS.ctx.updateLedPanel();
   },
 
-  setLed: function(val) {
+  setLed: function(v) {
     try {
-      DebugJS.ctx.led = eval(val);
+      DebugJS.ctx.led = eval(v);
       DebugJS.ctx.updateLedPanel();
     } catch (e) {
       DebugJS._log.e('Invalid value');
@@ -9675,7 +9653,6 @@ DebugJS.prototype = {
       case 'normal':
       case 'full':
       case 'expand':
-      case 'center':
       case 'restore':
       case 'reset':
         DebugJS.ctx.setWinSize(size);
@@ -9705,7 +9682,6 @@ DebugJS.prototype = {
       case 'reset':
         ctx.resetDbgWinSizePos();
         break;
-      case 'center':
       case 'full':
       case 'expand':
         ctx.expandDbgWin(opt);
