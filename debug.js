@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910152255';
+  this.v = '201910160011';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7554,7 +7554,7 @@ DebugJS.prototype = {
         ctx._cmdDbgWinStatus(ctx);
         break;
       case 'lock':
-        ctx._cmdDbgWinLock(ctx, a);
+        ctx._cmdDbgWinLock(ctx, a[1]);
         break;
       default:
         DebugJS.printUsage(tbl.help);
@@ -7611,15 +7611,12 @@ DebugJS.prototype = {
     'posX2 : ' + sp.x2 + '\nposY2 : ' + sp.y2 + '\n';
     DebugJS._log.mlt(s);
   },
-  _cmdDbgWinLock: function(ctx, a) {
-    var c = a[1];
-    if (ctx.opt.lockCode == null) {
-      if (c == undefined) {
-        DebugJS.printUsage('dbgwin lock [code]');
-        return;
-      }
-      ctx.opt.lockCode = c;
+  _cmdDbgWinLock: function(ctx, c) {
+    if ((ctx.opt.lockCode == null) && (c == undefined)) {
+      DebugJS.printUsage('dbgwin lock [code]');
+      return;
     }
+    if (c != undefined) ctx.opt.lockCode = c;
     ctx.lockDbgWin(ctx);
   },
   kiosk: function(ctx, z) {
