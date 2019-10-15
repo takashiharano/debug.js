@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910152127';
+  this.v = '201910152141';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8294,7 +8294,7 @@ DebugJS.prototype = {
     return n;
   },
   _cmdLogCopy: function() {
-    var s = DebugJS.dumpLog('text', false, true);
+    var s = DebugJS.html2text(DebugJS.dumpLog('text', false, true));
     DebugJS.copy2clpbd(s);
   },
   _cmdLogDate: function(ctx, arg) {
