@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910162215';
+  this.v = '201910170005';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -405,6 +405,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'xlscol', fn: this.cmdXlsCol, desc: 'Excel column number <--> reference', help: 'xlscol REF [+|-| ] [REF]'},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -9685,6 +9686,38 @@ DebugJS.prototype = {
     }
   },
 
+  cmdXlsCol: function(arg, tbl, echo) {
+    if (!arg) {
+      DebugJS.printUsage(tbl.help);return;
+    }
+    arg = arg.trim();
+    var op;
+    if (arg.indexOf('+') >= 0) {
+      op = '+';
+    } else if (arg.indexOf('-') >= 0) {
+      op = '-';
+    } else if (arg.indexOf(' ') >= 0) {
+      op = ' ';
+    }
+    var v = arg.split(op);
+    var a = v[0];
+    var b = v[1];
+    var r = DebugJS.xlsCol(a);
+    if (isNaN(a)) {
+      if (op == '+') {
+        r = DebugJS.xlsCol(r + (b | 0));
+      } else if (op == '-') {
+        r = DebugJS.xlsCol(r - (b | 0));
+      } else if (op == ' ') {
+        var c = DebugJS.xlsCol(b);
+        r = c - r;
+        r = (r < 0 ? (r * (-1)) : r) + 1;
+      }
+    }
+    if (echo) DebugJS._log.res(r);
+    return r;
+  },
+
   cmdZoom: function(arg, tbl) {
     var zm = arg.trim();
     var n = DebugJS.ctx.opt.zoom;
@@ -16712,7 +16745,7 @@ DebugJS.xlsCol = function(c) {
 };
 DebugJS.xlsColA2N = function(c) {
   var t = DebugJS.A2Z();
-  return DebugJS.permIdx(t, c);
+  return DebugJS.permIdx(t, c.trim());
 };
 DebugJS.xlsColN2A = function(n) {
   var t = DebugJS.A2Z();

@@ -5588,6 +5588,30 @@ option:
   </tr>
 
   <tr>
+    <td class="name">xlscol</td>
+    <td>ref</td>
+    <td>
+      Excel column number &lt;--&gt; reference.<br><br>
+<pre class="eg">
+$ xlscol A
+-&gt; 1
+
+$ xlscol 1
+-&gt; A
+
+$ xlscol A + 1
+-&gt; B
+
+$ xlscol B - 1
+-&gt; A
+
+$ xlscol A B
+-&gt; 2 <span class="annotation">(cells)</span>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">zoom</td>
     <td>ratio</td>
     <td>
