@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910162122';
+  this.v = '201910162215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6770,10 +6770,9 @@ DebugJS.prototype = {
 
   switchExtPanel: function(idx) {
     var ctx = DebugJS.ctx;
-    var pnls = ctx.extPanels;
     if (ctx.extActPnlIdx == idx) return;
     if (ctx.extActPnlIdx != -1) {
-      var p2 = pnls[ctx.extActPnlIdx];
+      var p2 = ctx.extPanels[ctx.extActPnlIdx];
       if (p2) {
         if (ctx.status & DebugJS.ST_EXT_PANEL) {
           ctx.onExtPanelInActive(ctx, p2);
@@ -6781,7 +6780,7 @@ DebugJS.prototype = {
         ctx.extBodyPanel.removeChild(p2.base);
       }
     }
-    var p1 = pnls[idx];
+    var p1 = ctx.extPanels[idx];
     if (p1) {
       ctx.extBodyPanel.appendChild(p1.base);
       if (ctx.status & DebugJS.ST_EXT_PANEL) {
@@ -17095,6 +17094,12 @@ DebugJS.x.pnl.setHidden = function(nm, f) {
       ctx.redrawExtPanelBtn(ctx);
       DebugJS.showExtBtn(true);
     }
+  }
+};
+DebugJS.x.pnl.switchPanel = function(id) {
+  var i = (typeof id == 'string' ? DebugJS.x.pnl.getIdx(id) : id);
+  if (DebugJS.ctx.extPanels[i]) {
+    DebugJS.ctx.switchExtPanel(i);
   }
 };
 DebugJS.x.pnl.len = function(all) {

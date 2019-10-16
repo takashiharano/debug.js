@@ -6689,19 +6689,22 @@ example.onDrop = function(text) {
 dbg.x.addPanel(panel); *deprecated
 </pre>
 
-Remove a panel
-<pre class="code"><span class="emphasis">dbg.x.pnl.remove('<input type="text" id="ext-rmvpnl-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="dbg.x.pnl.remove(document.getElementById('ext-rmvpnl-nm-text').value);">DEMO</button></span>
-dbg.x.removePanel(index);<span class="annotation">(by index)</span> *deprecated</pre>
+Switch panels
+<pre class="code"><span class="emphasis">dbg.x.pnl.switchPanel('<input type="text" id="ext-switch-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="dbg.x.pnl.switchPanel(document.getElementById('ext-switch-nm-text').value);">DEMO</button></span></pre>
 
 Show / Hide
 <pre class="code"><span class="emphasis">dbg.x.pnl.setHidden('<input type="text" id="ext-hidden-nm-text" class="inline-text-input" style="width:100px;" value="P1">', <input type="text" id="ext-hidden-flg-text" class="inline-text-input" style="width:50px;" value="true">);<button class="demo-button2" onclick="dbg.x.pnl.setHidden(document.getElementById('ext-hidden-nm-text').value, (document.getElementById('ext-hidden-flg-text').value == 'true'));">DEMO</button></span></pre>
+
+Remove a panel
+<pre class="code"><span class="emphasis">dbg.x.pnl.remove('<input type="text" id="ext-rmvpnl-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="dbg.x.pnl.remove(document.getElementById('ext-rmvpnl-nm-text').value);">DEMO</button></span>
+dbg.x.removePanel(index);<span class="annotation">(by index)</span> *deprecated</pre>
 
 Get a panel
 <pre class="code"><span class="emphasis">dbg.x.pnl.getPanel('<input type="text" id="ext-getpnl-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="demo.getExtPanel(document.getElementById('ext-getpnl-nm-text').value);">DEMO</button></span>
 dbg.x.getPanel(index);<span class="annotation">(by index)</span> *deprecated
 
-<span class="emphasis">dbg.x.pnl.getActivePanel();<button class="demo-button2" onclick="demo.getActvExtPanel();">DEMO</button>
-</span>
+<span class="emphasis">dbg.x.pnl.getActivePanel();<button class="demo-button2" onclick="demo.getActvExtPanel();">DEMO</button></span>
+<span style="font-size:12px;">
 Panel object structure:
 {
   name: Panel Name String,
@@ -6711,7 +6714,7 @@ Panel object structure:
   onDrop: function(),
   fileloader: Loader Definition,
   panel: Base DIV element
-}
+}</span>
 </pre>
 
 is Active
