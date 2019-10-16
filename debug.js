@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910160011';
+  this.v = '201910162122';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1393,7 +1393,7 @@ DebugJS.prototype = {
     }
 
     ctx.extBtn = ctx.createHeaderBtn('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'ST_EXT_PANEL', 'EXT_BTN_COLOR', false);
-    ctx.extBtn.style.display = 'none';
+    DebugJS.showExtBtn(false);
 
     if (opt.useTools) {
       ctx.toolsBtn = ctx.createHeaderBtn('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'ST_TOOLS', 'TOOLS_BTN_COLOR', false);
@@ -9795,7 +9795,7 @@ DebugJS.prototype = {
     }
     var pnls = ctx.extPanels;
     if (pnls.length > 0) {
-      if (ctx.extBtn) ctx.extBtn.style.display = '';
+      if (DebugJS.x.pnl.len()) DebugJS.showExtBtn(true);
       for (var i = 0; i < pnls.length; i++) {
         var p = pnls[i];
         if (p) {
@@ -9819,7 +9819,7 @@ DebugJS.prototype = {
         }
       }
     } else {
-      ctx.extBtn.style.display = 'none';
+      DebugJS.showExtBtn(false);
     }
   },
   createExtPanel: function(ctx, p, idx) {
@@ -17049,7 +17049,7 @@ DebugJS.x.pnl.remove = function(id, hidden) {
   if (nIdx == -1) {
     ctx.closeExtPanel(ctx);
     if (DebugJS.x.pnl.len(true) == 0) ctx.extPanels = [];
-    if (ctx.extBtn) ctx.extBtn.style.display = 'none';
+    if (!DebugJS.x.pnl.len()) DebugJS.showExtBtn(false);
   }
 };
 DebugJS.x.pnl.setBtnLabel = function(l) {
@@ -17093,7 +17093,7 @@ DebugJS.x.pnl.setHidden = function(nm, f) {
     } else {
       p.hidden = false;
       ctx.redrawExtPanelBtn(ctx);
-      if (ctx.extBtn) ctx.extBtn.style.display = '';
+      DebugJS.showExtBtn(true);
     }
   }
 };
@@ -17109,6 +17109,9 @@ DebugJS.x.pnl.addFileLdr = function(p) {
   var d = p.fileloader;
   if (d) DebugJS.addFileLoader(p.panel, d.cb, d.mode, d.decode);
   if (p.onDrop) DebugJS.addDropHandler(p.panel, p.onDrop);
+};
+DebugJS.showExtBtn = function(f) {
+  if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.style.display = (f ? '' : 'none');
 };
 DebugJS._xx = function() {
   var x = DebugJS.x;
