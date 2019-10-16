@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910170005';
+  this.v = '201910170139';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16745,7 +16745,7 @@ DebugJS.xlsCol = function(c) {
 };
 DebugJS.xlsColA2N = function(c) {
   var t = DebugJS.A2Z();
-  return DebugJS.permIdx(t, c.trim());
+  return DebugJS.permIdx(t, c.trim().toUpperCase());
 };
 DebugJS.xlsColN2A = function(n) {
   var t = DebugJS.A2Z();
@@ -17061,7 +17061,8 @@ DebugJS.x.pnl.add = function(p) {
 };
 DebugJS.x.pnl.remove = function(id, hidden) {
   var ctx = DebugJS.ctx;
-  var idx = (typeof id == 'string' ? DebugJS.x.pnl.getIdx(id) : id);
+  var pnl = DebugJS.x.pnl;
+  var idx = (typeof id == 'string' ? pnl.getIdx(id) : id);
   var p = ctx.extPanels[idx];
   if (!p) return;
   if (!(ctx.status & DebugJS.ST_INITIALIZED)) {
@@ -17080,8 +17081,8 @@ DebugJS.x.pnl.remove = function(id, hidden) {
   ctx.redrawExtPanelBtn(ctx);
   if (nIdx == -1) {
     ctx.closeExtPanel(ctx);
-    if (DebugJS.x.pnl.len(true) == 0) ctx.extPanels = [];
-    if (!DebugJS.x.pnl.len()) DebugJS.showExtBtn(false);
+    if (pnl.len(true) == 0) ctx.extPanels = [];
+    if (!pnl.len()) DebugJS.showExtBtn(false);
   }
 };
 DebugJS.x.pnl.setBtnLabel = function(l) {
