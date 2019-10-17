@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910172112';
+  this.v = '201910172127';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1616,6 +1616,7 @@ DebugJS.prototype = {
 
     var fltrW = 'calc(100% - 31em)';
     ctx.fltrInput = DebugJS.ui.addTextInput(ctx.logHeaderPanel, fltrW, null, ctx.opt.sysInfoColor, ctx.fltrText, DebugJS.ctx.onchangeLogFilter);
+    ctx.fltrInput.spellcheck = false;
     DebugJS.setStyle(ctx.fltrInput, 'position', 'relative');
     DebugJS.setStyle(ctx.fltrInput, 'top', '-2px');
     DebugJS.setStyle(ctx.fltrInput, 'margin-left', '2px');
@@ -5363,6 +5364,7 @@ DebugJS.prototype = {
     };
     ctx.txtChkTxt = DebugJS.ui.addElement(ctx.txtChkPanel, 'input', style);
     ctx.txtChkTxt.value = 'ABCDEFG.abcdefg 12345-67890_!?';
+    ctx.txtChkTxt.spellcheck = false;
     ctx.txtChkTargetEl = ctx.txtChkTxt;
 
     var html = 'font-size: <input type="range" min="0" max="128" step="1" id="' + ctx.id + '-fontsize-range" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeFontSize(true);" onchange="DebugJS.ctx.onChangeFontSize(true);">' +
