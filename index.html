@@ -778,6 +778,10 @@ function onErrorEvt() {
   log('onError');
 }
 
+function onStopwatchEvt(id, type) {
+  log('id=' + id + ', type=' + type);
+}
+
 function onUnlock() {
   log('onUnlock');
 }
@@ -790,6 +794,7 @@ function onReady() {
   //dbg.addEvtListener('batstop', onBatStop);
   //dbg.addEvtListener('drop', onDrop);
   //dbg.addEvtListener('error', onErrorEvt);
+  //dbg.addEvtListener('stopwatch', onStopwatchEvt);
   //dbg.addEvtListener('unlock', onUnlock);
 }
 
@@ -3542,6 +3547,17 @@ Callback function which is called when file load has been completed.<br>
   file   : meta info (MIME Type, Size, Modified date)
   content: File content
   isB64  : true = Base64 encoded / false = Binary ArrayBuffer
+</pre>
+<br>
+      type: <b>stopwatch</b><br>
+      Callback function which is called when the stopwatch status is changed.<br>
+<pre class="eg">Function format:
+  function onStopwatch(id, type) {}
+
+  id  : 0 = mini stopwatch
+        1 = stopwatch on tool window
+        2 = count down timer on tool window
+  type: start, stop, reset, timesup (id 2 dedicated)
 </pre>
 <br>
       type: <b>unlock</b><br>

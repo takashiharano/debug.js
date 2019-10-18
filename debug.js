@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910172127';
+  this.v = '201910182102';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -499,6 +499,7 @@ var DebugJS = DebugJS || function() {
     drop: [],
     error: [],
     fileloaded: [],
+    stopwatch: [],
     unlock: [],
     watchdog: []
   };
@@ -2498,6 +2499,7 @@ DebugJS.prototype = {
     DebugJS.time.restart(DebugJS.TMR_NM_SW_0);
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
+    DebugJS.callEvtListeners('stopwatch', 0, 'start');
   },
   stopStopwatch: function() {
     var ctx = DebugJS.ctx;
@@ -2508,6 +2510,7 @@ DebugJS.prototype = {
         ctx.resetStopwatch();
       }
       DebugJS.time.pause(DebugJS.TMR_NM_SW_0);
+      DebugJS.callEvtListeners('stopwatch', 0, 'stop');
     }
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
@@ -2516,6 +2519,7 @@ DebugJS.prototype = {
     DebugJS.ctx.status &= ~DebugJS.ST_STOPWATCH_END;
     DebugJS.time.reset(DebugJS.TMR_NM_SW_0);
     DebugJS.ctx.updateSwLabel();
+    DebugJS.callEvtListeners('stopwatch', 0, 'reset');
   },
   splitStopwatch: function() {
     if (DebugJS.ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
@@ -5052,6 +5056,7 @@ DebugJS.prototype = {
     DebugJS.time.restart(DebugJS.TMR_NM_SW_CU);
     ctx.updateTimerStopwatchCu();
     ctx.updateTimerSwBtnsCu();
+    DebugJS.callEvtListeners('stopwatch', 1, 'start');
   },
   stopTimerStopwatchCu: function() {
     var ctx = DebugJS.ctx;
@@ -5060,6 +5065,7 @@ DebugJS.prototype = {
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CU_RUNNING;
     ctx.drawStopwatchCu();
     ctx.updateTimerSwBtnsCu();
+    DebugJS.callEvtListeners('stopwatch', 1, 'stop');
   },
   endTimerStopwatchCu: function() {
     var ctx = DebugJS.ctx;
@@ -5080,6 +5086,7 @@ DebugJS.prototype = {
     DebugJS.time.reset(DebugJS.TMR_NM_SW_CU);
     ctx.drawStopwatchCu();
     ctx.updateTimerSwBtnsCu();
+    DebugJS.callEvtListeners('stopwatch', 1, 'reset');
   },
   updateTimerStopwatchCu: function() {
     var ctx = DebugJS.ctx;
@@ -5155,6 +5162,7 @@ DebugJS.prototype = {
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_RUNNING;
     ctx.updateTimerStopwatchCd();
     ctx.updateTimerSwBtnsCd();
+    DebugJS.callEvtListeners('stopwatch', 2, 'start');
   },
   stopTimerStopwatchCd: function() {
     var ctx = DebugJS.ctx;
@@ -5163,6 +5171,7 @@ DebugJS.prototype = {
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_PAUSED;
     if (ctx.status & DebugJS.ST_TOOLS) ctx.drawStopwatchCd();
     ctx.updateTimerSwBtnsCd();
+    DebugJS.callEvtListeners('stopwatch', 2, 'stop');
   },
   splitTimerStopwatchCd: function() {
     var ctx = DebugJS.ctx;
@@ -5196,6 +5205,7 @@ DebugJS.prototype = {
       ctx.replaceTimerSubPanel(ctx.timerSwCdInpSubPanel);
     }
     ctx.updateTimerSwBtnsCd();
+    DebugJS.callEvtListeners('stopwatch', 2, 'reset');
   },
   updateTimerStopwatchCd: function() {
     var ctx = DebugJS.ctx;
@@ -5221,6 +5231,7 @@ DebugJS.prototype = {
       t = ctx.timerExpireTime - now;
     }
     if (t < 0) {
+      DebugJS.callEvtListeners('stopwatch', 2, 'timesup');
       ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_EXPIRED;
       ctx.update0ContinueBtnTimerStopwatchCd();
       if (ctx.timerSwTimeCdContinue) {
