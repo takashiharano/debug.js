@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910191400';
+  this.v = '201910191451';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5329,7 +5329,7 @@ DebugJS.prototype = {
   },
   handleTimerKey: function(e) {
     var ctx = DebugJS.ctx;
-    if ((ctx.sizeStatus != DebugJS.SIZE_ST_FULL_WH) || DebugJS.cmd.hasFocus()) return;
+    if ((ctx.sizeStatus != DebugJS.SIZE_ST_FULL_WH) || (DebugJS.getTagName(document.activeElement) == 'INPUT')) return;
     if ((e.keyCode == 13) || (e.keyCode == 32)) {
       if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
         ctx.startStopTimerStopwatchCu();
@@ -5346,6 +5346,18 @@ DebugJS.prototype = {
     } else if (e.keyCode == 9) {
       ctx.toggleTimerMode(null, e.shiftKey);
       e.preventDefault();
+    } else if (e.keyCode == 16) {
+      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
+        ctx.splitTimerStopwatchCu();
+      } else if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
+        ctx.splitTimerStopwatchCd();
+      }
+    } else if ((e.keyCode == 48) || (e.keyCode == 96)) {
+      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
+        ctx.toggle0ContinueTimerStopwatchCd();
+      }
+    } else if (e.keyCode == 83) {
+      ctx.toggleSSS();
     }
   },
 
@@ -11239,6 +11251,10 @@ DebugJS.setVal = function(id, v) {
 DebugJS.writeHTML = function(id, s) {
   var el = document.getElementById(id);
   if (el) el.innerHTML = s;
+};
+DebugJS.getTagName = function(el) {
+  if (el) return el.tagName;
+  return '';
 };
 DebugJS.countElements = function(selector, showDetail) {
   if (!selector) selector = '*';
