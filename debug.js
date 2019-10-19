@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910191520';
+  this.v = '201910191544';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5329,7 +5329,7 @@ DebugJS.prototype = {
   },
   handleTimerKey: function(e) {
     var ctx = DebugJS.ctx;
-    if ((ctx.sizeStatus != DebugJS.SIZE_ST_FULL_WH) || (DebugJS.getTagName(document.activeElement) == 'INPUT')) return;
+    if ((ctx.sizeStatus != DebugJS.SIZE_ST_FULL_WH) || DebugJS.cmd.hasFocus()) return;
     if ((e.keyCode == 13) || (e.keyCode == 32)) {
       if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
         ctx.startStopTimerStopwatchCu();
@@ -5337,12 +5337,14 @@ DebugJS.prototype = {
         ctx.startStopTimerStopwatchCd();
       }
     } else if (e.keyCode == 8) {
-      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
-        ctx.resetTimerStopwatchCu();
-      } else if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
-        ctx.resetTimerStopwatchCd();
+      if (!DebugJS.isFocusInput()) {
+        if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
+          ctx.resetTimerStopwatchCu();
+        } else if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
+          ctx.resetTimerStopwatchCd();
+        }
+        e.preventDefault();
       }
-      e.preventDefault();
     } else if (e.keyCode == 9) {
       ctx.toggleTimerMode(null, e.shiftKey);
       e.preventDefault();
@@ -5358,7 +5360,9 @@ DebugJS.prototype = {
       }
     } else if ((e.keyCode == 48) || (e.keyCode == 96)) {
       if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CD) {
-        ctx.toggle0ContinueTimerStopwatchCd();
+        if (!DebugJS.isFocusInput()) {
+          ctx.toggle0ContinueTimerStopwatchCd();
+        }
       }
     } else if (e.keyCode == 83) {
       ctx.toggleSSS();
@@ -11256,9 +11260,8 @@ DebugJS.writeHTML = function(id, s) {
   var el = document.getElementById(id);
   if (el) el.innerHTML = s;
 };
-DebugJS.getTagName = function(el) {
-  if (el) return el.tagName;
-  return '';
+DebugJS.isFocusInput = function(el) {
+  return DebugJS.isTxtInp(document.activeElement);
 };
 DebugJS.countElements = function(selector, showDetail) {
   if (!selector) selector = '*';
