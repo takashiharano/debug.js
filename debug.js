@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910191551';
+  this.v = '201910191826';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10265,12 +10265,18 @@ DebugJS.get1stOpt = function(args) {
   }
   return null;
 };
-DebugJS.getNonOptVals = function(args) {
+DebugJS.getNonOptVals = function(args, all) {
   var a = DebugJS.splitCmdLine(args);
   var v = [];
   if (a[0] == '') return v;
+  var pv = '';
   for (var i = 0; i < a.length; i++) {
-    if (a[i].charAt(0) != '-') v.push(a[i]);
+    if (a[i].charAt(0) != '-') {
+      if (all || (pv.charAt(0) != '-')) {
+        v.push(a[i]);
+      }
+    }
+    pv = a[i];
   }
   return v;
 };
