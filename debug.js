@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910191544';
+  this.v = '201910191551';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5346,8 +5346,10 @@ DebugJS.prototype = {
         e.preventDefault();
       }
     } else if (e.keyCode == 9) {
-      ctx.toggleTimerMode(null, e.shiftKey);
-      e.preventDefault();
+      if (!DebugJS.isFocusInput()) {
+        ctx.toggleTimerMode(null, e.shiftKey);
+        e.preventDefault();
+      }
     } else if (e.keyCode == 16) {
       if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW_CU) {
         if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CU_RUNNING) {
