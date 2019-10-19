@@ -5326,6 +5326,24 @@ $ stopwatch sw1 stop
   </tr>
 
   <tr>
+    <td class="name">str</td>
+    <td>
+      arg1: start character<br>
+      arg2: end character
+</td>
+    <td>
+      Generate a string that consists of consecutive code points<br><br>
+<pre class="eg">
+$ str A Z
+$ str 65 90
+$ str 0x41 0x5A
+$ str U+0041 U+005A
+-&gt; ABCDEFGHIJKLMNOPQRSTUVWXYZ
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">sw</td>
     <td></td>
     <td>

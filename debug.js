@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910182355';
+  this.v = '201910191400';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -391,6 +391,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
+    {cmd: 'str', fn: this.cmdStr, desc: 'Generate a string that consists of consecutive code points', help: 'str ch1 [ch2]'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
@@ -9525,6 +9526,22 @@ DebugJS.prototype = {
     return t;
   },
 
+  cmdStr: function(arg, tbl, echo) {
+    if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
+      arg = arg.substr(0, 1) + ' ' + arg.substr(2);
+    }
+    var a = DebugJS.splitArgs(arg);
+    var c1 = a[0];
+    var c2 = a[1];
+    if (!c1) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var s = DebugJS.str(c1, c2);
+    if (echo) DebugJS._log(DebugJS.quoteStrIfNeeded(s));
+    return s;
+  },
+
   cmdSw: function() {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.ST_SW;
@@ -12651,6 +12668,37 @@ DebugJS.repeatCh = function(c, n) {
 };
 DebugJS.crlf2lf = function(s) {
   return s.replace(/\r\n/g, '\n');
+};
+DebugJS.str = function(c1, c2) {
+  var p1 = c1, p2 = c2;
+  if (typeof c1 == 'string') {
+    c1 = c1.replace(/^U\+/, '0x');
+    if (!isNaN(c1) && c1.length > 1) {
+      p1 = c1 | 0;
+    } else {
+      p1 = DebugJS.getCodePoint(c1);
+    }
+  }
+  if (!c2) p2 = p1;
+  if (typeof c2 == 'string') {
+    c2 = c2.replace(/^U\+/, '0x');
+    if (!isNaN(c2) && c2.length > 1) {
+      p2 = c2 | 0;
+    } else {
+      p2 = DebugJS.getCodePoint(c2);
+    }
+  }
+  var s = '';
+  if (p1 > p2) {
+    for (var i = p1; i >= p2; i--) {
+      s += String.fromCharCode(i);
+    }
+  } else {
+    for (i = p1; i <= p2; i++) {
+      s += String.fromCharCode(i);
+    }
+  }
+  return s;
 };
 DebugJS.plural = function(s, n) {
   return (n >= 2 ? (s + 's') : s);
