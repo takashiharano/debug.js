@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910232117';
+  this.v = '201910232222';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -500,6 +500,7 @@ var DebugJS = DebugJS || function() {
     drop: [],
     error: [],
     fileloaded: [],
+    ready: [],
     stopwatch: [],
     unlock: [],
     watchdog: []
@@ -798,6 +799,7 @@ DebugJS.prototype = {
     ctx.initExtension(ctx);
     ctx.printLogs();
     ctx.showDbgWinOnError(ctx);
+    DebugJS.callEvtListeners('ready');
     return true;
   },
   initUi: function(ctx, rstrOpt) {
