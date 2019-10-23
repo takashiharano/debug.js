@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910191826';
+  this.v = '201910232117';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8207,10 +8207,7 @@ DebugJS.prototype = {
   },
 
   cmdKiosk: function() {
-    if (!(DebugJS.ctx.status & DebugJS.ST_KIOSK)) {
-      DebugJS.ctx.status |= DebugJS.ST_KIOSK;
-      DebugJS.ctx.kiosk(DebugJS.ctx, 1.4);
-    }
+    DebugJS.kiosk();
   },
   _cmdKioskQ: function(ctx) {
     ctx.kioskQ(ctx);
@@ -11268,7 +11265,7 @@ DebugJS.writeHTML = function(id, s) {
   var el = document.getElementById(id);
   if (el) el.innerHTML = s;
 };
-DebugJS.isFocusInput = function(el) {
+DebugJS.isFocusInput = function() {
   return DebugJS.isTxtInp(document.activeElement);
 };
 DebugJS.countElements = function(selector, showDetail) {
@@ -13292,6 +13289,13 @@ DebugJS.show = function() {
 };
 DebugJS.hide = function() {
   DebugJS.ctx.closeDbgWin();
+};
+DebugJS.kiosk = function() {
+  var ctx = DebugJS.ctx;
+  if (!(ctx.status & DebugJS.ST_KIOSK)) {
+    ctx.status |= DebugJS.ST_KIOSK;
+    ctx.kiosk(ctx, 1.4);
+  }
 };
 DebugJS.opacity = function(v) {
   if (v > 1) {
