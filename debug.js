@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910232222';
+  this.v = '201910232315';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -323,6 +323,7 @@ var DebugJS = DebugJS || function() {
   this.featStackBak = [];
   this.status = 0;
   this.uiStatus = 0;
+  this.zoom = this.DEFAULT_OPTIONS.zoom;
   this.toolStatus = 0;
   this.toolTimerMode = DebugJS.TOOL_TMR_MODE_CLOCK;
   this.sizeStatus = 0;
@@ -778,6 +779,7 @@ DebugJS.prototype = {
           }
         }
       }
+      if (opt.zoom) ctx.zoom = opt.zoom;
     }
     if (ctx.logBuf.size() != ctx.opt.bufsize) {
       if (!(ctx.status & DebugJS.ST_LOG_PRESERVED) ||
@@ -804,10 +806,10 @@ DebugJS.prototype = {
   },
   initUi: function(ctx, rstrOpt) {
     ctx.initUiStatus(ctx, ctx.opt, rstrOpt);
-    ctx.computedMinW = DebugJS.DBGWIN_MIN_W * ctx.opt.zoom;
-    ctx.computedMinH = DebugJS.DBGWIN_MIN_H * ctx.opt.zoom;
-    ctx.computedFontSize = Math.round(ctx.opt.fontSize * ctx.opt.zoom);
-    ctx.computedWidth = Math.round(ctx.opt.width * ctx.opt.zoom);
+    ctx.computedMinW = DebugJS.DBGWIN_MIN_W * ctx.zoom;
+    ctx.computedMinH = DebugJS.DBGWIN_MIN_H * ctx.zoom;
+    ctx.computedFontSize = Math.round(ctx.opt.fontSize * ctx.zoom);
+    ctx.computedWidth = Math.round(ctx.opt.width * ctx.zoom);
     if (ctx.opt.elmId == null) {
       ctx.id = ctx.DFLT_ELM_ID;
       ctx.win = document.createElement('div');
@@ -861,7 +863,7 @@ DebugJS.prototype = {
       ctx.initWidth = ctx.win.offsetWidth - DebugJS.WIN_ADJUST;
       ctx.initHeight = ctx.win.offsetHeight - DebugJS.WIN_ADJUST;
     }
-    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_H2 * ctx.opt.zoom;
+    ctx.winExpandHeight = DebugJS.DBGWIN_EXPAND_H2 * ctx.zoom;
     if ((rstrOpt != null) && (rstrOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
       ctx.resetStylesOnZoom(ctx);
       ctx.reopenFeatures(ctx);
@@ -1013,8 +1015,8 @@ DebugJS.prototype = {
     };
     styles['.dbg-txt-range'] = {
       'display': 'inline-block !important',
-      'width': (256 * opt.zoom) + 'px !important',
-      'height': (15 * opt.zoom) + 'px !important',
+      'width': (256 * ctx.zoom) + 'px !important',
+      'height': (15 * ctx.zoom) + 'px !important',
       'padding': '0 !important',
       'border': 'none !important',
       'outline': 'none !important',
@@ -1037,8 +1039,8 @@ DebugJS.prototype = {
     };
     styles['#' + ctx.id + ' input[type="radio"]'] = {
       'margin': '0 3px !important',
-      'width': 13 * opt.zoom + 'px !important',
-      'height': 13 * opt.zoom + 'px !important'
+      'width': 13 * ctx.zoom + 'px !important',
+      'height': 13 * ctx.zoom + 'px !important'
     };
     styles['.dbg-editor'] = {
       'width': 'calc(100% - 6px) !important',
@@ -1358,7 +1360,7 @@ DebugJS.prototype = {
       ctx.closeBtn.style.top = '-1px';
       ctx.closeBtn.style.marginRight = '2px';
       setStyle(ctx.closeBtn, 'color', '#888');
-      setStyle(ctx.closeBtn, 'font-size', (18 * opt.zoom) + 'px');
+      setStyle(ctx.closeBtn, 'font-size', (18 * ctx.zoom) + 'px');
       ctx.closeBtn.onmouseover = new Function('DebugJS.setStyle(this, \'color\', \'#d88\');');
       ctx.closeBtn.onmouseout = new Function('DebugJS.setStyle(this, \'color\', \'#888\');');
     }
@@ -1421,10 +1423,10 @@ DebugJS.prototype = {
       measBtn.className = 'dbg-btn dbg-nomove';
       measBtn.style.display = 'inline-block';
       measBtn.style.float = 'right';
-      measBtn.style.marginTop = ((opt.zoom <= 1) ? 1 : (2 * opt.zoom)) + 'px';
+      measBtn.style.marginTop = ((ctx.zoom <= 1) ? 1 : (2 * ctx.zoom)) + 'px';
       measBtn.style.marginLeft = '3px';
-      measBtn.style.width = (10 * opt.zoom) + 'px';
-      measBtn.style.height = (7 * opt.zoom) + 'px';
+      measBtn.style.width = (10 * ctx.zoom) + 'px';
+      measBtn.style.height = (7 * ctx.zoom) + 'px';
       measBtn.innerText = ' ';
       measBtn.onclick = ctx.toggleMeasure;
       measBtn.onmouseover = new Function('DebugJS.ctx.measBtn.style.borderColor=\'' + DebugJS.MEAS_BTN_COLOR + '\';');
@@ -1584,7 +1586,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var btn = DebugJS.ui.addBtn(ctx.headPanel, label, handler);
     btn.style.float = 'right';
-    btn.style.marginLeft = (marginLeft * ctx.opt.zoom) + 'px';
+    btn.style.marginLeft = (marginLeft * ctx.zoom) + 'px';
     if (fontSize) DebugJS.setStyle(btn, 'font-size', fontSize);
     DebugJS.setStyle(btn, 'color', DebugJS.COLOR_INACT);
     btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.' + actvColor + ');');
@@ -1682,7 +1684,7 @@ DebugJS.prototype = {
     }
     if (ctx.fileVwrPanel) {
       setStyle(ctx.fileInput, 'width', 'calc(100% - ' + (ctx.computedFontSize * 12) + 'px)');
-      setStyle(ctx.fileInput, 'min-height', (20 * ctx.opt.zoom) + 'px');
+      setStyle(ctx.fileInput, 'min-height', (20 * ctx.zoom) + 'px');
       setStyle(ctx.fileInput, 'font-size', fontSize);
       setStyle(ctx.filePreviewWrapper, 'height', 'calc(100% - ' + ((ctx.computedFontSize * 4) + 10) + 'px)');
       setStyle(ctx.filePreviewWrapper, 'font-size', fontSize);
@@ -1862,7 +1864,7 @@ DebugJS.prototype = {
   },
 
   updateMeasBtn: function(ctx) {
-    ctx.measBtn.style.border = 'solid ' + ctx.opt.zoom + 'px ' + ((ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEAS_BTN_COLOR : DebugJS.COLOR_INACT);
+    ctx.measBtn.style.border = 'solid ' + ctx.zoom + 'px ' + ((ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEAS_BTN_COLOR : DebugJS.COLOR_INACT);
   },
 
   updateSysInfoBtn: function(ctx) {
@@ -1892,7 +1894,7 @@ DebugJS.prototype = {
   updateSwBtnPanel: function(ctx) {
     if (!ctx.swBtnPanel) return;
     var lbl = (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) ? '||' : '>>';
-    var margin = (2 * ctx.opt.zoom) + 'px';
+    var margin = (2 * ctx.zoom) + 'px';
     var btns = DebugJS.ui.createBtnHtml('0', 'DebugJS.ctx.resetStopwatch();', 'margin-right:' + margin) + DebugJS.ui.createBtnHtml(lbl, 'DebugJS.ctx.startStopStopwatch();', 'margin-right:' + margin);
     ctx.swBtnPanel.innerHTML = btns;
   },
@@ -1927,8 +1929,8 @@ DebugJS.prototype = {
       btn = DebugJS.CHR_WIN_RST;
     }
     fn += 'DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();';
-    var b = '<span class="dbg-btn dbg-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.opt.zoom) + 'px;font-size:' + (16 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="' + fn + '" onmouseover="DebugJS.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">' + btn + '</span>' +
-    '<span class="dbg-btn dbg-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.opt.zoom + 'px;margin-right:' + ctx.opt.zoom + 'px;font-size:' + (30 * ctx.opt.zoom) + 'px !important;color:#888 !important" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.focusCmdLine();" onmouseover="DebugJS.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">-</span>';
+    var b = '<span class="dbg-btn dbg-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.zoom) + 'px;font-size:' + (16 * ctx.zoom) + 'px !important;color:#888 !important" onclick="' + fn + '" onmouseover="DebugJS.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">' + btn + '</span>' +
+    '<span class="dbg-btn dbg-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.zoom + 'px;margin-right:' + ctx.zoom + 'px;font-size:' + (30 * ctx.zoom) + 'px !important;color:#888 !important" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.focusCmdLine();" onmouseover="DebugJS.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">-</span>';
     ctx.winCtrlBtnPanel.innerHTML = b;
   },
 
@@ -4542,7 +4544,7 @@ DebugJS.prototype = {
     ctx.jsPanel.className = 'dbg-overlay-panel';
     var html = '<div class="dbg-btn dbg-nomove" ' +
     'style="position:relative;top:-1px;float:right;' +
-    'font-size:' + (18 * ctx.opt.zoom) + 'px;color:#888 !important" ' +
+    'font-size:' + (18 * ctx.zoom) + 'px;color:#888 !important" ' +
     'onclick="DebugJS.ctx.closeJsEditor();" ' +
     'onmouseover="DebugJS.setStyle(this, \'color\', \'#d88\');" ' +
     'onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">x</div>' +
@@ -4755,7 +4757,7 @@ DebugJS.prototype = {
     var btnFontSize = fontSize * 3;
     ctx.timerClockSubPanel = document.createElement('div');
 
-    var marginB = 20 * ctx.opt.zoom;
+    var marginB = 20 * ctx.zoom;
     ctx.timerClockLabel = document.createElement('div');
     ctx.timerClockLabel.style.marginBottom = marginB + 'px';
     ctx.timerClockSubPanel.appendChild(ctx.timerClockLabel);
@@ -4790,8 +4792,8 @@ DebugJS.prototype = {
     var btnFontSize = fontSize * 3;
     panel.basePanel = document.createElement('div');
 
-    var marginT = 40 * ctx.opt.zoom;
-    var marginB = 39 * ctx.opt.zoom;
+    var marginT = 40 * ctx.zoom;
+    var marginB = 39 * ctx.zoom;
     panel.stopWatchLabel = document.createElement('div');
     panel.stopWatchLabel.style.margin = marginT + 'px 0 ' + marginB + 'px 0';
     panel.basePanel.appendChild(panel.stopWatchLabel);
@@ -5021,15 +5023,15 @@ DebugJS.prototype = {
     var dtFontSize = fontSize * 0.45;
     var ssFontSize = fontSize * 0.65;
     var msFontSize = fontSize * 0.45;
-    var marginT = 20 * ctx.opt.zoom;
-    var marginB = 10 * ctx.opt.zoom;
+    var marginT = 20 * ctx.zoom;
+    var marginB = 10 * ctx.zoom;
     var dot = '.';
     if (tm.sss > 500) dot = '&nbsp;';
     var date = tm.yyyy + '-' + tm.mm + '-' + tm.dd + ' <span style="color:#' + DebugJS.WDAYS_COLOR[tm.wday] + ' !important;font-size:' + dtFontSize + 'px !important">' + DebugJS.WDAYS[tm.wday] + '</span>';
     var time = tm.hh + ':' + tm.mi + '<span style="margin-left:' + (ssFontSize / 5) + 'px;color:' + ctx.opt.fontColor + ' !important;font-size:' + ssFontSize + 'px !important">' + tm.ss + dot + '</span>';
     if (ctx.timerClockSSS) {
       time += '<span style="font-size:' + msFontSize + 'px !important">' + tm.sss + '</span>';
-      marginB -= 16 * ctx.opt.zoom;
+      marginB -= 16 * ctx.zoom;
     }
     var s = '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + dtFontSize + 'px !important">' + date + '</div>' +
     '<div style="color:' + ctx.opt.fontColor + ' !important;font-size:' + fontSize + 'px !important;margin:-' + marginT + 'px 0 ' + marginB + 'px 0">' + time + '</div>';
@@ -5393,7 +5395,7 @@ DebugJS.prototype = {
 
     var style = {
       'width': 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)',
-      'min-height': (20 * ctx.opt.zoom) + 'px',
+      'min-height': (20 * ctx.zoom) + 'px',
       'margin-bottom': '8px',
       'padding': txtPadding + 'px',
       'border': '0',
@@ -5585,13 +5587,12 @@ DebugJS.prototype = {
     }
   },
   createFileVwrPanel: function(ctx) {
-    var opt = ctx.opt;
     var fontSize = ctx.computedFontSize + 'px';
     ctx.fileVwrPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
 
     var style = {
       'width': 'calc(100% - ' + (ctx.computedFontSize * 19) + 'px)',
-      'min-height': (20 * opt.zoom) + 'px',
+      'min-height': (20 * ctx.zoom) + 'px',
       'margin': '0 0 4px 0',
       'padding': '1px',
       'border': '0',
@@ -5648,7 +5649,7 @@ DebugJS.prototype = {
     style = {
       'min-height': 'calc(50% + 10px)',
       'background': 'transparent',
-      'color': opt.fontColor,
+      'color': ctx.opt.fontColor,
       'font-size': fontSize
     };
     ctx.filePreview = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'pre', style);
@@ -5677,7 +5678,7 @@ DebugJS.prototype = {
       'border': 'none',
       'background': '#00f',
       'font-size': (ctx.computedFontSize * 0.8) + 'px',
-      'font-family': opt.fontFamily + 'px'
+      'font-family': ctx.opt.fontFamily + 'px'
     };
     ctx.fileLoadProg = DebugJS.ui.addElement(ctx.fileLoadProgBar, 'div', style, true);
     ctx.fileLoadProg.innerText = '0%';
@@ -7665,7 +7666,7 @@ DebugJS.prototype = {
   kiosk: function(ctx, z) {
     ctx.saveSizeAndPos(ctx, ctx.orgSizePos2);
     ctx.expandDbgWin('full');
-    ctx.orgSizePos2.zm = ctx.opt.zoom;
+    ctx.orgSizePos2.zm = ctx.zoom;
     DebugJS.zoom(z);
   },
   kioskQ: function(ctx) {
@@ -9775,15 +9776,16 @@ DebugJS.prototype = {
   },
 
   cmdZoom: function(arg, tbl) {
-    var zm = arg.trim();
-    var n = DebugJS.ctx.opt.zoom;
-    if (zm == '') {
-      DebugJS._log('ratio=' + n);
+    var n = arg.trim();
+    var zm = DebugJS.ctx.zoom;
+    if (n == '') {
+      DebugJS._log('ratio=' + zm);
       DebugJS.printUsage(tbl.help);
-    } else if (zm != n) {
-      DebugJS.zoom(zm);
+      return zm;
+    } else if (n != zm) {
+      DebugJS.zoom(n);
     }
-    return DebugJS.zoom();
+    return n;
   },
 
   cmdNop: function() {},
@@ -13323,9 +13325,13 @@ DebugJS.pin = function(f) {
   DebugJS.ctx[fn](DebugJS.ctx);
   return DebugJS.pin();
 };
-DebugJS.zoom = function(zm) {
+DebugJS.zoom = function(n) {
   var ctx = DebugJS.ctx;
-  if (zm == undefined) return ctx.opt.zoom;
+  if (n == undefined) {
+    return ctx.zoom;
+  } else if (n == 0) {
+    n = ctx.opt.zoom;
+  }
   var rstrOpt = {
     cause: DebugJS.INIT_CAUSE_ZOOM,
     status: ctx.status,
@@ -13334,8 +13340,9 @@ DebugJS.zoom = function(zm) {
   ctx.featStackBak = ctx.featStack.concat();
   ctx.finalizeFeatures(ctx);
   ctx.setWinSize('normal');
-  ctx.init({zoom: zm}, rstrOpt);
-  return DebugJS.zoom();
+  ctx.zoom = n;
+  ctx.init(null, rstrOpt);
+  return n;
 };
 DebugJS.isTmrMode = function() {
   return ((DebugJS.ctx.status & DebugJS.ST_TOOLS) && (DebugJS.ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TIMER));
