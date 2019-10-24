@@ -5362,6 +5362,30 @@ $ str U+0041 U+005A
   </tr>
 
   <tr>
+    <td class="name">strp</td>
+    <td>
+      arg1: pattern table<br>
+      arg2: index or string
+</td>
+    <td>
+      String permutation<br><br>
+<pre class="eg">
+$ strp "ABC" 2
+-&gt; B
+
+$ strp "ABC" 4
+-&gt; AA
+
+$ strp "ABC" "B"
+-&gt; 2
+
+$ strp "ABC" "AA"
+-&gt; 4
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">sw</td>
     <td></td>
     <td>

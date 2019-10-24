@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910242220';
+  this.v = '201910242328';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -393,6 +393,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
     {cmd: 'str', fn: this.cmdStr, desc: 'Generate a string that consists of consecutive code points', help: 'str ch1 [ch2]'},
+    {cmd: 'strp', fn: this.cmdStrp, desc: 'String permutation', help: 'strp "CHARS" INDEX|"STR"'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
@@ -9561,6 +9562,24 @@ DebugJS.prototype = {
     return s;
   },
 
+  cmdStrp: function(arg, tbl, echo) {
+    var a = DebugJS.splitCmdLine(arg);
+    try {
+      var t = eval(a[0]).split('');
+      var p = eval(a[1]);
+    } catch (e) {
+      DebugJS.printUsage(tbl.help);return;
+      return;
+    }
+    if (!t || (p == undefined)) {
+      DebugJS.printUsage(tbl.help);return;
+    }
+    var f = (typeof p == 'string') ? DebugJS.permIdx : DebugJS.strperm;
+    var r = f(t, p);
+    if (echo) DebugJS._log.res(r);
+    return r;
+  },
+
   cmdSw: function() {
     var ctx = DebugJS.ctx;
     ctx.status |= DebugJS.ST_SW;
@@ -11580,7 +11599,7 @@ DebugJS._dndSet = function(w, a) {
   }
   if (DebugJS.hasOpt(a, 'asc')) {
     b.sort();
-  } else if(DebugJS.hasOpt(a, 'desc')) {
+  } else if (DebugJS.hasOpt(a, 'desc')) {
     b.reverse();
   }
   for (i = 0; i < b.length; i++) {
@@ -16908,7 +16927,9 @@ DebugJS.permIdx = function(tbl, ptn) {
   for (var i = 0; i < len; i++) {
     var d = len - i - 1;
     var c = ptn.substr(d, 1);
-    var v = tbl.indexOf(c) + 1;
+    var v = tbl.indexOf(c);
+    if (v == -1) return 0;
+    v++;
     var n = v * Math.pow(rdx, i);
     idx += n;
   }
