@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910232315';
+  this.v = '201910242220';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -418,8 +418,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
-    count: DebugJS.dndCount,
     func: DebugJS.dndFunc,
+    set: DebugJS.dndSet,
     sort: DebugJS.dndSort
   },
   this.CMD_TBL = [];
@@ -7718,18 +7718,10 @@ DebugJS.prototype = {
 
   cmdDnd: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var c = arg.trim();
     var a0 = DebugJS.getArgVal(arg, 0);
     if (a0 == '-c') {
       if (ctx.dndCmd) DebugJS._log('Canceled.');
       DebugJS.dndFnFin();
-      return;
-    } else if (c == 'help') {
-      var h = 'Available Commands:\n';
-      for (var k in ctx.DND_FN_TBL) {
-        h += k + '\n';
-      }
-      DebugJS._log.mlt(h);
       return;
     }
     var a = DebugJS.splitCmdLineInTwo(arg);
@@ -7760,6 +7752,11 @@ DebugJS.prototype = {
       DebugJS._log('Drop a file or text here.' + (rm ? ' (Resident mode)' : ''));
     } else {
       DebugJS.printUsage(tbl.help);
+      var h = 'Available Commands:\n';
+      for (var k in ctx.DND_FN_TBL) {
+        h += k + '\n';
+      }
+      DebugJS._log.mlt(h);
     }
   },
   execDndCmd: function(ctx, s) {
@@ -11541,7 +11538,7 @@ DebugJS.arr.toSet = function(a, f) {
   }
   return s;
 };
-DebugJS.dndCount = function(s) {
+DebugJS.dndSet = function(s) {
   var l = DebugJS.txt2arr(s);
   var o = DebugJS.cntByGrp(l);
   var arg = DebugJS.ctx.dndArg;
@@ -11549,25 +11546,55 @@ DebugJS.dndCount = function(s) {
   for (var k in o) {
     v.push({key: k, cnt: o[k]});
   }
-  if ((arg == '') || DebugJS.hasOpt(arg, 'desc')) {
-    v.sort(function(a, b) {
-      return b.cnt - a.cnt;
-    });
-  } else if (DebugJS.hasOpt(arg, 'asc')) {
-    v.sort(function(a, b) {
-      return a.cnt - b.cnt;
-    });
+  if (DebugJS.hasOpt(arg, 'count')) {
+    if (DebugJS.hasOpt(arg, 'asc')) {
+      v.sort(function(a, b) {
+        return a.cnt - b.cnt;
+      });
+    } else {
+      v.sort(function(a, b) {
+        return b.cnt - a.cnt;
+      });
+    }
   }
+  var w = [];
+  for (var i = 0; i < v.length; i++) {
+    if ((v[i].key != '') || DebugJS.hasOpt(arg, 'blank')) {
+      w.push(v[i]);
+    }
+  }
+  var r;
+  if (DebugJS.hasOpt(arg, 'count')) {
+    r = DebugJS._dndSetCnt(v, w);
+  } else {
+    r = DebugJS._dndSet(w, arg);
+  }
+  return r;
+};
+DebugJS._dndSet = function(w, a) {
+  var r = '';
+  var m = '';
+  var b = [];
+  for (var i = 0; i < w.length; i++) {
+    b.push(w[i].key);
+  }
+  if (DebugJS.hasOpt(a, 'asc')) {
+    b.sort();
+  } else if(DebugJS.hasOpt(a, 'desc')) {
+    b.reverse();
+  }
+  for (i = 0; i < b.length; i++) {
+    m += DebugJS.hlCtrlCh(b[i]) + '\n';
+    r += b[i] + '\n';
+  }
+  DebugJS._log.mlt(m);
+  return r;
+};
+DebugJS._dndSetCnt = function(v, w) {
   var mxD = 3;
   for (var i = 0; i < v.length; i++) {
     var d = DebugJS.digits(v[i].cnt);
     if (d > mxD) mxD = d;
-  }
-  var w = [];
-  for (i = 0; i < v.length; i++) {
-    if ((v[i].key != '') || DebugJS.hasOpt(arg, 'blank')) {
-      w.push(v[i]);
-    }
   }
   var idxD = DebugJS.digits(w.length);
   if (idxD < 2) idxD = 2;

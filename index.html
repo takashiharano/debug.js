@@ -4328,8 +4328,8 @@ Cancel delay execution
       Drag and drop operation
 <pre class="eg">
 
-$ dnd count [-asc] [-desc] [-blank]
-Count by value.
+$ dnd set [-count] [-asc] [-desc] [-blank]
+Array to set.
 
 foo
 bar
@@ -4339,6 +4339,13 @@ baz
 foo
 bar
 
+$ dnd set
+-&gt;
+foo
+baz
+bar
+
+$ dnd set -count
 -&gt;
 idx cnt val
 ---------------
