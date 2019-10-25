@@ -4143,7 +4143,7 @@ function
       Sets condition key and pause BAT execution.
 <pre class="eg">
 $ condwait set -key &lt;key&gt;
-$ condwait pause [-timeout ms|1d2h3m4s500]
+$ condwait pause [-timeout ms|1d2h3m4s500] [-q]
 dbg.bat.setCond(&lt;key&gt;);
 
 $ condwait init
@@ -4862,9 +4862,10 @@ $ p -a object
      Suspends processing of batch file.<br>
      Click, press any key, or execute "resume" command to resume.<br>
      -key option requires "resume -key <i>key</i>" command or dbg.bat.resume('<i>key</i>') to resume.<br>
-     -timeout option: Set time-out value in milliseconds.<span class="annotation">(opt)</span><br>
+     -timeout option<span class="annotation">(opt)</span>: Set time-out value in milliseconds.<br>
+     -q option<span class="annotation">(opt)</span>: Silent mode<br><br>
 <pre class="eg">
-$ pause
+$ pause [-q]
 <span class="annotation">click / key press</span>
 
 $ pause -key aaa [-timeout ms|1d2h3m4s500|T123456|T****00]

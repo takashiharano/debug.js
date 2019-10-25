@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910252328';
+  this.v = '201910260025';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7411,7 +7411,8 @@ DebugJS.prototype = {
       case 'pause':
         if (bat.ctrl.condKey) {
           var to = DebugJS.getOptVal(arg, 'timeout');
-          DebugJS.ctx._cmdPause('key', bat.ctrl.condKey, to);
+          var q = DebugJS.hasOpt(arg, 'q');
+          DebugJS.ctx._cmdPause('key', bat.ctrl.condKey, to, q);
         }
         break;
       default:
@@ -8489,11 +8490,12 @@ DebugJS.prototype = {
     if (DebugJS.hasOpt(arg, 'key')) op = 'key';
     var key = DebugJS.getOptVal(arg, 'key');
     var to = DebugJS.getOptVal(arg, 'timeout');
-    if (!DebugJS.ctx._cmdPause(op, key, to)) {
+    var q = DebugJS.hasOpt(arg, 'q');
+    if (!DebugJS.ctx._cmdPause(op, key, to, q)) {
       DebugJS.printUsage(tbl.help);
     }
   },
-  _cmdPause: function(op, key, tout) {
+  _cmdPause: function(op, key, tout, q) {
     var ctx = DebugJS.ctx;
     var bat = DebugJS.bat;
     if (tout) {
@@ -8507,16 +8509,14 @@ DebugJS.prototype = {
     ctx.CMDVALS['%RESUMED_KEY%'] = null;
     if (op == '') {
       ctx.status |= DebugJS.ST_BAT_PAUSE_CMD;
-      DebugJS._log('Click or press any key to continue...');
-    } else {
-      if (op == 'key') {
+      if (!q) DebugJS._log('Click or press any key to continue...');
+    } else if (op == 'key') {
         if (key == undefined) key = '';
         bat.ctrl.pauseKey = key;
-        DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
-      } else {
-        return false;
-      }
-      ctx.status |= DebugJS.ST_BAT_PAUSE_CMD_KEY;
+        if (!q) DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
+        ctx.status |= DebugJS.ST_BAT_PAUSE_CMD_KEY;
+    } else {
+      return false;
     }
     if (tout > 0) {
       bat.ctrl.pauseTimeout = DebugJS.now() + tout;
