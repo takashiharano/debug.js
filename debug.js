@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910242333';
+  this.v = '201910252328';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -365,7 +365,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
-    {cmd: 'kiosk', fn: this.cmdKiosk, desc: 'Make the debugger window go full screen'},
+    {cmd: 'kiosk', fn: this.cmdKiosk, desc: 'Make the debugger window go full screen', help: 'kiosk [zoom]'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|Array'},
@@ -8207,8 +8207,8 @@ DebugJS.prototype = {
     }
   },
 
-  cmdKiosk: function() {
-    DebugJS.kiosk();
+  cmdKiosk: function(arg) {
+    DebugJS.kiosk(parseFloat(arg));
   },
   _cmdKioskQ: function(ctx) {
     ctx.kioskQ(ctx);
@@ -13339,11 +13339,12 @@ DebugJS.show = function() {
 DebugJS.hide = function() {
   DebugJS.ctx.closeDbgWin();
 };
-DebugJS.kiosk = function() {
+DebugJS.kiosk = function(z) {
   var ctx = DebugJS.ctx;
   if (!(ctx.status & DebugJS.ST_KIOSK)) {
     ctx.status |= DebugJS.ST_KIOSK;
-    ctx.kiosk(ctx, 1.4);
+    if (!z) z = 1.4;
+    ctx.kiosk(ctx, z);
   }
 };
 DebugJS.opacity = function(v) {
