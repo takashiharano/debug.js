@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910260025';
+  this.v = '201910261742';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -185,7 +185,7 @@ var DebugJS = DebugJS || function() {
   this.fileVwrRadioB64 = null;
   this.fileVwrLabelBin = null;
   this.fileVwrRadioBin = null;
-  this.fileReloadBtn = null;
+  this.fileCopyBtn = null;
   this.fileClrBtn = null;
   this.fileVwrFooter = null;
   this.fileLoadProgBar = null;
@@ -924,13 +924,6 @@ DebugJS.prototype = {
     styles['.dbg-btn:hover'] = {
       'text-shadow': '0 0 3px',
       'cursor': 'pointer'
-    };
-    styles['.dbg-btn-disabled'] = {
-      'opacity': 0.5
-    };
-    styles['.dbg-btn-disabled:hover'] = {
-      'text-shadow': 'none',
-      'cursor': 'auto'
     };
     styles['.dbg-btn-red'] = {
       'color': '#a88 !important'
@@ -5629,8 +5622,9 @@ DebugJS.prototype = {
     ctx.fileVwrLabelBin.htmlFor = ctx.id + '-load-type-bin';
     ctx.fileVwrLabelBin.innerText = 'Binary';
 
-    ctx.fileReloadBtn = DebugJS.ui.addBtn(ctx.fileVwrPanel, 'Reload', ctx.reloadFile);
-    ctx.fileReloadBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+    ctx.fileCopyBtn = DebugJS.ui.addBtn(ctx.fileVwrPanel, 'Copy', ctx.copyFileCtt, {color: DebugJS.COLOR_INACT});
+    ctx.fileCopyBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+    ctx.enableFileCopyBtn(ctx, false);
 
     ctx.fileClrBtn = DebugJS.ui.addBtn(ctx.fileVwrPanel, 'Clear', ctx.clearFile);
     ctx.fileClrBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
@@ -6088,13 +6082,11 @@ DebugJS.prototype = {
     }
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     ctx.setDataUrl(ctx, scheme, data);
-    var r;
     if (ctx.decMode == 'bsb64') {
-      r = ctx.decodeFileVwrDataBSB64(ctx, data, mode, scheme);
+      ctx.decodeFileVwrDataBSB64(ctx, data, mode, scheme);
     } else {
-      r = ctx.decodeFileVwrDataB64(ctx, data, mode, scheme);
+      ctx.decodeFileVwrDataB64(ctx, data, mode, scheme);
     }
-    DebugJS.cp2cb(r);
   },
   decodeFileVwrDataB64: function(ctx, src, mode, scheme) {
     var data;
@@ -6307,6 +6299,8 @@ DebugJS.prototype = {
     ctx.updateFilePreview(s);
   },
   getTextPreview: function(decoded) {
+    DebugJS.ctx.fileCtt = decoded;
+    DebugJS.ctx.enableFileCopyBtn(DebugJS.ctx, true);
     DebugJS.cp2cb(decoded);
     if (decoded.length == 0) return '';
     var txt = DebugJS.escHtml(decoded);
@@ -6324,6 +6318,8 @@ DebugJS.prototype = {
   getImgPreview: function(ctx, scheme, data) {
     var ctxSizePos = ctx.getSelfSizePos();
     var img = DebugJS.buildDataUrl(scheme, data);
+    DebugJS.ctx.fileCtt = img;
+    DebugJS.ctx.enableFileCopyBtn(DebugJS.ctx, true);
     DebugJS.cp2cb(img);
     return '<img src="' + img + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
   },
@@ -6415,10 +6411,8 @@ DebugJS.prototype = {
       }
     }
     dmp += '\n';
-    if (ctx.status & DebugJS.ST_CLP) {
-      var s = DebugJS.html2text(dmp);
-      DebugJS.copy2clpbd(s);
-    }
+    ctx.fileCtt = DebugJS.html2text(dmp);
+    ctx.enableFileCopyBtn(ctx, true);
     var html = '<pre style="white-space:pre !important">';
     html += DebugJS.ui.createBtnHtml('[' + mode.toUpperCase() + ']', 'DebugJS.ctx.toggleBinMode()') + ' ';
     html += DebugJS.ui.createBtnHtml('[ADDR]', 'DebugJS.ctx.toggleShowAddr()', (showAddr ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
@@ -6462,8 +6456,10 @@ DebugJS.prototype = {
   fileLoadFinalize: function() {
     DebugJS.removeClass(DebugJS.ctx.fileVwrFooter, 'dbg-loading');
   },
-  reloadFile: function() {
-    DebugJS.ctx.loadFile(DebugJS.ctx.fileVwrFile, DebugJS.ctx.fileVwrMode);
+  copyFileCtt: function() {
+    if (!DebugJS.ctx.fileCopyBtn.disabled) {
+      DebugJS.copy2clpbd(DebugJS.ctx.fileCtt);
+    }
   },
   clearFile: function() {
     var ctx = DebugJS.ctx;
@@ -6472,11 +6468,17 @@ DebugJS.prototype = {
     ctx.fileVwrDataSrc = null;
     ctx.fileVwrByteArray = null;
     ctx.fileReader = null;
+    ctx.fileCtt = null;
+    ctx.enableFileCopyBtn(ctx, false);
     if (ctx.fileVwrPanel) {
       ctx.filePreview.innerText = 'Drop a file here';
       ctx.setDtSchmTxt();
       ctx.fileVwrDtTxtArea.value = '';
     }
+  },
+  enableFileCopyBtn: function(ctx, f) {
+    ctx.fileCopyBtn.disabled = !f;
+    DebugJS.setStyle(ctx.fileCopyBtn, 'color', (f ? '' : DebugJS.COLOR_INACT));
   },
   dataSrcType: function() {
     return DebugJS.ctx.fileVwrDataSrcType;
@@ -16970,8 +16972,8 @@ DebugJS.ui.addElement = function(base, tag, style, std) {
   base.appendChild(el);
   return el;
 };
-DebugJS.ui.addBtn = function(base, label, onclick) {
-  var el = DebugJS.ui.addElement(base, 'span');
+DebugJS.ui.addBtn = function(base, label, onclick, style) {
+  var el = DebugJS.ui.addElement(base, 'span', style);
   el.className = 'dbg-btn dbg-nomove';
   el.innerText = label;
   el.onclick = onclick;
