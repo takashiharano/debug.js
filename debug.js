@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910271626';
+  this.v = '201910271927';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -332,7 +332,6 @@ var DebugJS = DebugJS || function() {
   this.sizeStatus = 0;
   this.dndCmd = null;
   this.dndArg = null;
-  this.dndFn = null;
   this.dndRM = false;
   this.ptDnTm = 0;
   this.ptOpTm = 0;
@@ -422,7 +421,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
-    func: DebugJS.dndFunc,
     set: DebugJS.dndSet,
     sort: DebugJS.dndSort
   },
@@ -7750,21 +7748,7 @@ DebugJS.prototype = {
       a = DebugJS.splitCmdLineInTwo(a[1]);
     }
     var cmd = a[0];
-    var ok = false;
-    if (cmd == 'func') {
-      var f = DebugJS.getNonOptVals(a[1])[0];
-      try {
-        var fn = eval(f);
-        if (typeof fn == 'function') {
-          ctx.dndFn = fn;
-          ok = true;
-        }
-      } catch (e) {}
-      if (!ok) DebugJS._log.e(f + ' is not a function');
-    } else if (ctx.DND_FN_TBL[cmd]) {
-      ok = true;
-    }
-    if (ok) {
+    if (ctx.DND_FN_TBL[cmd]) {
       ctx.dndArg = a[1];
       ctx.dndCmd = cmd;
       ctx.dndRM = rm;
@@ -11655,9 +11639,6 @@ DebugJS.cntByGrp = function(a) {
   }
   return o;
 };
-DebugJS.dndFunc = function(s) {
-  return DebugJS.ctx.dndFn(s);
-};
 DebugJS.dndSort = function(s) {
   var arg = DebugJS.ctx.dndArg;
   var a = DebugJS.txt2arr(s).sort();
@@ -11673,7 +11654,6 @@ DebugJS.dndFnFin = function() {
   var ctx = DebugJS.ctx;
   ctx.dndCmd = null;
   ctx.dndArg = null;
-  ctx.dndFn = null;
   ctx.dndRM = false;
 };
 
