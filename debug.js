@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910261742';
+  this.v = '201910271236';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -205,6 +205,9 @@ var DebugJS = DebugJS || function() {
   this.fileVwrBsbBtn = null;
   this.fileVwrDataSrcType = null;
   this.fileVwrFile = null;
+  this.fileVwrFileInfo = null;
+  this.fileVwrBinInfo = null;
+  this.fileVwrCtt = null;
   this.fileVwrDataSrc = null;
   this.fileVwrByteArray = null;
   this.fileVwrBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true};
@@ -5940,7 +5943,7 @@ DebugJS.prototype = {
     ctx.fileVwrFile = file;
     if (!file) return;
     if ((file.size == 0) && (file.type == '')) {
-      var html = ctx.getFileInfo(file);
+      var html = ctx.getFileInfo(ctx, file);
       ctx.updateFilePreview(html);
       return;
     }
@@ -6167,7 +6170,7 @@ DebugJS.prototype = {
         ctx.showFileSizeExceeds(ctx, file, LIMIT);
         return;
       } else if (file.size == 0) {
-        ctx.updateFilePreview(ctx.getFileInfo(file));
+        ctx.updateFilePreview(ctx.getFileInfo(ctx, file));
         return;
       }
     }
@@ -6233,29 +6236,38 @@ DebugJS.prototype = {
   toggleBinVwrOpt: function(ctx, key) {
     var opt = ctx.fileVwrBinViewOpt;
     opt[key] = (opt[key] ? false : true);
-    var file = ctx.fileVwrFile;
-    var html = '';
-    if (file) html += ctx.getFileInfo(file);
-    html += ctx.getBinDumpHtml(ctx.fileVwrByteArray, opt.mode, opt.addr, opt.space, opt.ascii);
-    ctx.updateFilePreview(html);
+    var buf = ctx.fileVwrByteArray;
+    ctx._showBinDump(ctx, buf, opt);
   },
   showBinDump: function(ctx, buf) {
-    var file = ctx.fileVwrFile;
     var opt = ctx.fileVwrBinViewOpt;
-    var html = '';
-    if (file) html += ctx.getFileInfo(file);
-    html += ctx.getBinDumpHtml(buf, opt.mode, opt.addr, opt.space, opt.ascii);
+    ctx._showBinDump(ctx, buf, opt);
+  },
+  _showBinDump: function(ctx, buf, opt) {
+    var file = ctx.fileVwrFile;
+    var fInfo = ctx.fileVwrFileInfo;
+    if (fInfo == null) {
+      fInfo = (file ? DebugJS.getFileInfo(file) : '');
+      ctx.fileVwrFileInfo = fInfo;
+    }
+    var bInfo = ctx.fileVwrBinInfo;
+    if (bInfo == null) {
+      bInfo = DebugJS.getBinInfo(buf);
+      ctx.fileVwrBinInfo = bInfo;
+    }
+    var cttInfo = DebugJS.createCttInfo(fInfo, bInfo);
+    var bin = ctx.getBinDump(buf, opt.mode, opt.addr, opt.space, opt.ascii);
+    var html = cttInfo + bin;
     ctx.updateFilePreview(html);
   },
   showB64Preview: function(ctx, file, scheme, b64) {
-    var html = '';
     if (file) {
       var LIMIT = ctx.props.prevlimit;
       if (file.size > LIMIT) {
         ctx.showFileSizeExceeds(ctx, file, LIMIT);
         return;
       } else if (file.size == 0) {
-        ctx.updateFilePreview(html);
+        ctx.updateFilePreview('');
         return;
       }
     }
@@ -6272,9 +6284,7 @@ DebugJS.prototype = {
   },
   showFilePreview: function(ctx, file, scheme, data) {
     var html = '';
-    if (file) {
-      html += ctx.getFileInfo(file);
-    }
+    if (file) html += ctx.getFileInfo(ctx, file);
     html += data;
     ctx.updateFilePreview(html);
   },
@@ -6284,24 +6294,21 @@ DebugJS.prototype = {
     var n = ctx.fileVwrRet.value | 0;
     ctx.fileVwrDtTxtArea.value = DebugJS.retTxtByN(data, n);
   },
-  getFileInfo: function(file) {
-    var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
-    var fileDate = DebugJS.getDateTimeStr(lastMod, true);
-    var s = '<span style="color:#cff">' +
-    'file    : ' + file.name + '\n' +
-    'type    : ' + file.type + '\n' +
-    'size    : ' + DebugJS.formatDec(file.size) + ' ' + DebugJS.plural('byte', file.size) + '\n' +
-    'modified: ' + fileDate + '</span>\n';
-    return s;
+  getFileInfo: function(ctx, file) {
+    var fInfo = ctx.fileVwrFileInfo;
+    if (fInfo == null) {
+      fInfo = (file ? DebugJS.getFileInfo(file) : '');
+      ctx.fileVwrFileInfo = fInfo;
+    }
+    return DebugJS.createCttInfo(fInfo);
   },
   showFileSizeExceeds: function(ctx, file, lm) {
-    var s = ctx.getFileInfo(file) + '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + lm + ')</span>';
+    var s = ctx.getFileInfo(ctx, file) + '<span style="color:' + ctx.opt.logColorW + '">The file size exceeds the limit allowed. (limit=' + lm + ')</span>';
     ctx.updateFilePreview(s);
   },
   getTextPreview: function(decoded) {
-    DebugJS.ctx.fileCtt = decoded;
+    DebugJS.ctx.fileVwrCtt = decoded;
     DebugJS.ctx.enableFileCopyBtn(DebugJS.ctx, true);
-    DebugJS.cp2cb(decoded);
     if (decoded.length == 0) return '';
     var txt = DebugJS.escHtml(decoded);
     txt = txt.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
@@ -6318,9 +6325,8 @@ DebugJS.prototype = {
   getImgPreview: function(ctx, scheme, data) {
     var ctxSizePos = ctx.getSelfSizePos();
     var img = DebugJS.buildDataUrl(scheme, data);
-    DebugJS.ctx.fileCtt = img;
+    DebugJS.ctx.fileVwrCtt = img;
     DebugJS.ctx.enableFileCopyBtn(DebugJS.ctx, true);
-    DebugJS.cp2cb(img);
     return '<img src="' + img + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
   },
   resizeImgPreview: function() {
@@ -6340,7 +6346,7 @@ DebugJS.prototype = {
     imgPreview.style.maxWidth = maxW + 'px';
     imgPreview.style.maxHeight = maxH + 'px';
   },
-  getBinDumpHtml: function(buf, mode, showAddr, showSp, showAscii) {
+  getBinDump: function(buf, mode, showAddr, showSp, showAscii) {
     if (buf == null) return '';
     var ctx = DebugJS.ctx;
     var lm = ctx.props.hexdumplimit | 0;
@@ -6411,7 +6417,7 @@ DebugJS.prototype = {
       }
     }
     dmp += '\n';
-    ctx.fileCtt = DebugJS.html2text(dmp);
+    ctx.fileVwrCtt = DebugJS.html2text(dmp);
     ctx.enableFileCopyBtn(ctx, true);
     var html = '<pre style="white-space:pre !important">';
     html += DebugJS.ui.createBtnHtml('[' + mode.toUpperCase() + ']', 'DebugJS.ctx.toggleBinMode()') + ' ';
@@ -6458,17 +6464,19 @@ DebugJS.prototype = {
   },
   copyFileCtt: function() {
     if (!DebugJS.ctx.fileCopyBtn.disabled) {
-      DebugJS.copy2clpbd(DebugJS.ctx.fileCtt);
+      DebugJS.copy2clpbd(DebugJS.ctx.fileVwrCtt);
     }
   },
   clearFile: function() {
     var ctx = DebugJS.ctx;
     ctx.fileVwrDataSrcType = null;
     ctx.fileVwrFile = null;
+    ctx.fileVwrFileInfo = null;
+    ctx.fileVwrBinInfo = null;
     ctx.fileVwrDataSrc = null;
     ctx.fileVwrByteArray = null;
     ctx.fileReader = null;
-    ctx.fileCtt = null;
+    ctx.fileVwrCtt = null;
     ctx.enableFileCopyBtn(ctx, false);
     if (ctx.fileVwrPanel) {
       ctx.filePreview.innerText = 'Drop a file here';
@@ -13021,6 +13029,95 @@ DebugJS.sleep = function(ms) {
     var t2 = DebugJS.now();
     if (t2 - t1 > ms) break;
   }
+};
+
+DebugJS.createCttInfo = function(fInfo, bInfo) {
+  var s = '<span style="color:#cff">';
+  if (fInfo) s += fInfo;
+  if (bInfo) s += bInfo;
+  s += '</span>';
+  return s;
+};
+DebugJS.getFileInfo = function(file) {
+  var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
+  var fileDate = DebugJS.getDateTimeStr(lastMod, true);
+  var s = 'File    : ' + file.name + '\n' +
+  'Type    : ' + file.type + '\n' +
+  'Size    : ' + DebugJS.formatDec(file.size) + ' ' + DebugJS.plural('byte', file.size) + '\n' +
+  'Modified: ' + fileDate + '\n';
+  return s;
+};
+DebugJS.getBinInfo = function(b) {
+  var inf = '';
+  var t = DebugJS.getBinType(b);
+  if (t) inf = DebugJS._getBinInfo[t](b) + '\n';
+  return inf;
+};
+DebugJS.getBinType = function(b) {
+  var HDR = {exe: 0x4D5A, java: 0xCAFEBABE};
+  var t = '';
+  for (var k in HDR) {
+    if (DebugJS.chkBinHdr(b, HDR[k])) {
+      t = k;break;
+    }
+  }
+  return t;
+};
+DebugJS._getBinInfo = {
+  exe: function(b) {
+    var pe = -1;
+    var len = 512;
+    for (var i = 0; i < len; i++) {
+      if (i + 3 >= len) break;
+      var ptn = DebugJS.scanBin(b, i, 4);
+      if (ptn == 0x50450000) {
+        pe = i;break;
+      }
+    }
+    var v = 0;
+    if ((pe >= 0) && (pe + 5 < len)) {
+      v = DebugJS.scanBin(b, pe + 4, 2);
+    }
+    var r = '';
+    var arch = '';
+    if (v == 0x6486) {
+      arch = 'x86-64 (64bit)';
+    } else if (v == 0x4C01) {
+      arch = 'x86 (32bit)';
+    }
+    if (arch) r += 'Arch    : ' + arch;
+    return r;
+  },
+  java: function(b) {
+    var v = b[7];
+    var j;
+    if (v <= 48) {
+      j = '1.' + v - 44;
+    } else {
+      j = v - 44;
+    }
+    var r = '';
+    if (j) r += 'Java ver: Java SE ' + j + ' (' + DebugJS.toHex(v, true, '0x', 2) + ')';
+    return r;
+  }
+};
+DebugJS.scanBin = function(b, p, ln) {
+  var upto = 6;
+  if ((p + (ln - 1) >= b.length) || (ln > upto)) return -1;
+  var r = 0;
+  for (var i = 0; i < ln; i++) {
+    var d = b[p + i] * Math.pow(256, ln - (i + 1));
+    r += d;
+  }
+  return r;
+};
+DebugJS.chkBinHdr = function(b, v) {
+  var ln = (DebugJS.getBaseLog(256, v) + 1) | 0;
+  return (v == DebugJS.scanBin(b, 0, ln));
+};
+
+DebugJS.getBaseLog = function(x, y) {
+  return Math.log(y) / Math.log(x);
 };
 
 DebugJS.getLogBufSize = function() {
