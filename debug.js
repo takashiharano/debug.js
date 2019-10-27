@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910271236';
+  this.v = '201910271626';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6083,6 +6083,11 @@ DebugJS.prototype = {
     if (mode != 'txt') {
       data = DebugJS.delAllNL(DebugJS.delAllSP(data));
     }
+    if ((mode == 'b64') && (data.match(/,/))) {
+      var w = data.split(',');
+      scheme = w[0] + ',';
+      data = w[1];
+    }
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     ctx.setDataUrl(ctx, scheme, data);
     if (ctx.decMode == 'bsb64') {
@@ -6485,8 +6490,10 @@ DebugJS.prototype = {
     }
   },
   enableFileCopyBtn: function(ctx, f) {
-    ctx.fileCopyBtn.disabled = !f;
-    DebugJS.setStyle(ctx.fileCopyBtn, 'color', (f ? '' : DebugJS.COLOR_INACT));
+    if (ctx.fileCopyBtn) {
+      ctx.fileCopyBtn.disabled = !f;
+      DebugJS.setStyle(ctx.fileCopyBtn, 'color', (f ? '' : DebugJS.COLOR_INACT));
+    }
   },
   dataSrcType: function() {
     return DebugJS.ctx.fileVwrDataSrcType;
