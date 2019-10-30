@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910271927';
+  this.v = '201910302312';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16,6 +16,7 @@ var DebugJS = DebugJS || function() {
       alt: undefined,
       meta: undefined
     },
+    focusOnShow: false,
     autoPopup: {
       scriptError: true,
       loadError: true,
@@ -2840,6 +2841,7 @@ DebugJS.prototype = {
             ctx.closeDbgWin();
           } else {
             ctx.showDbgWin();
+            if (opt.focusOnShow) ctx.focusCmdLine();
           }
         }
     }
