@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201910302312';
+  this.v = '201910302330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3132,7 +3132,7 @@ DebugJS.prototype = {
     var t = sp.y1 + 3;
     var w = DebugJS.DBGWIN_EXPAND_W;
     var h = DebugJS.DBGWIN_EXPAND_H;
-    if (sp.x1 > (clW - sp.x2)) {
+    if (sp.x1 - 1 > (clW - sp.x2)) {
       l = (sp.x1 - (DebugJS.DBGWIN_EXPAND_W - sp.w)) + 1;
     }
     if (sp.y1 > (clH - sp.y2)) {
