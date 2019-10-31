@@ -6793,7 +6793,6 @@ example.onDrop = function(text) {
   }<span class="emphasis">
 };
 <span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = dbg.x.pnl.add(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span></span>
-dbg.x.addPanel(panel); *deprecated
 </pre>
 
 Switch panels
@@ -6804,11 +6803,10 @@ Show / Hide
 
 Remove a panel
 <pre class="code"><span class="emphasis">dbg.x.pnl.remove('<input type="text" id="ext-rmvpnl-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="dbg.x.pnl.remove(document.getElementById('ext-rmvpnl-nm-text').value);">DEMO</button></span>
-dbg.x.removePanel(index);<span class="annotation">(by index)</span> *deprecated</pre>
+</pre>
 
 Get a panel
 <pre class="code"><span class="emphasis">dbg.x.pnl.getPanel('<input type="text" id="ext-getpnl-nm-text" class="inline-text-input" style="width:100px;" value="P1">');<span class="annotation">(by name)</span><button class="demo-button2" onclick="demo.getExtPanel(document.getElementById('ext-getpnl-nm-text').value);">DEMO</button></span>
-dbg.x.getPanel(index);<span class="annotation">(by index)</span> *deprecated
 
 <span class="emphasis">dbg.x.pnl.getActivePanel();<button class="demo-button2" onclick="demo.getActvExtPanel();">DEMO</button></span>
 <span style="font-size:12px;">
@@ -6850,7 +6848,6 @@ style = {
 
 Change the button label
 <pre class="code"><span class="emphasis">dbg.x.pnl.setBtnLabel('<input type="text" id="ext-btn-label-text" class="inline-text-input" style="width:40px;" value="ABC1">');<button class="demo-button2" onclick="dbg.x.pnl.setBtnLabel(document.getElementById('ext-btn-label-text').value);">DEMO</button></span>
-dbg.x.setBtnLabel(label); *deprecated
 </pre>
 
 Please refer to <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sample/debug-x-cmd.js" target="_blank" rel="noopener">extension-sample/debug-x-cmd.js</a> 
