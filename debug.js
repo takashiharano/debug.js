@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911010000';
+  this.v = '201911012210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17410,6 +17410,9 @@ DebugJS._init = function() {
   } else {
     return DebugJS.ctx.init(null, null);
   }
+};
+DebugJS.isReady = function() {
+  return DebugJS.ctx.status & DebugJS.ST_INITIALIZED ? true : false;
 };
 DebugJS.onReady = function() {
   DebugJS._init();
