@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911012210';
+  this.v = '201911021336';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -504,7 +504,6 @@ var DebugJS = DebugJS || function() {
     drop: [],
     error: [],
     fileloaded: [],
-    ready: [],
     stopwatch: [],
     unlock: [],
     watchdog: []
@@ -744,6 +743,7 @@ DebugJS.FEATURES = [
 ];
 DebugJS.TZ = {'pst': '-8', 'pdt': '-7', 'mst': '-7', 'mdt': '-6', 'cst': '-6', 'cdt': '-5', 'est': '-5', 'edt': '-4', 'utc': '+0', 'cet': '+1', 'cest': '+2', 'ist': '+0530', 'ctt': '+8', 'jst': '+9'};
 DebugJS.fn = function() {};
+DebugJS.rdy = false;
 DebugJS.prototype = {
   init: function(opt, rstrOpt) {
     if (!DebugJS.ENABLE) return false;
@@ -782,7 +782,7 @@ DebugJS.prototype = {
           }
         }
       }
-      if (opt.zoom) ctx.zoom = opt.zoom;
+      ctx.zoom = opt.zoom ? opt.zoom : ctx.DEFAULT_OPTIONS.zoom;
     }
     if (ctx.logBuf.size() != ctx.opt.bufsize) {
       if (!(ctx.status & DebugJS.ST_LOG_PRESERVED) ||
@@ -795,6 +795,7 @@ DebugJS.prototype = {
       ctx.init = DebugJS.fn;
       DebugJS.init = DebugJS.fn;
       ctx.status |= DebugJS.ST_INITIALIZED;
+      DebugJS.onDbgRdy();
       return false;
     }
     if (!ctx.bodyEl) return false;
@@ -804,7 +805,7 @@ DebugJS.prototype = {
     ctx.initExtension(ctx);
     ctx.printLogs();
     ctx.showDbgWinOnError(ctx);
-    DebugJS.callEvtListeners('ready');
+    DebugJS.onDbgRdy();
     return true;
   },
   initUi: function(ctx, rstrOpt) {
@@ -17411,6 +17412,13 @@ DebugJS._init = function() {
     return DebugJS.ctx.init(null, null);
   }
 };
+DebugJS.onDbgRdy = function() {
+  if (!DebugJS.rdy) {
+    DebugJS.rdy = true;
+    var f = window.ondbgready;
+    if (f) f();
+  }
+};
 DebugJS.isReady = function() {
   return DebugJS.ctx.status & DebugJS.ST_INITIALIZED ? true : false;
 };
@@ -17509,6 +17517,10 @@ DebugJS.boot = function() {
   }
   if (DebugJS.LS_AVAILABLE) {
     DebugJS.restoreStatus(DebugJS.ctx);
+  }
+  if (document.body) {
+    DebugJS.onReady();
+    DebugJS.onLoad();
   }
 };
 DebugJS.start = function(o) {

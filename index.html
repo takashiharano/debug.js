@@ -1207,10 +1207,9 @@ function test1() {
 
 }
 
-//function onDbgReady() {
-//
-//}
-//dbg.addEvtListener('ready', onDbgReady);
+//ondbgready = function() {
+//  log('ondbgready');
+//};
 </script>
 </head>
 <body>
@@ -3553,11 +3552,6 @@ Callback function which is called when file load has been completed.<br>
   content: File content
   isB64  : true = Base64 encoded / false = Binary ArrayBuffer
 </pre>
-<br>
-      type: <b>ready</b><br>
-      Callback function which is called when the debugger is initialized.<br>
-<pre class="eg">Function format:
-  function onDbgReady() {}</pre>
 <br>
       type: <b>stopwatch</b><br>
       Callback function which is called when the stopwatch status is changed.<br>
