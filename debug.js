@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911102310';
+  this.v = '201911102320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17534,4 +17534,4 @@ if (DebugJS.ENABLE) {
   DebugJS = DebugJS.balse(DebugJS);
 }
 var dbg = (dbg === undefined ? DebugJS : dbg);
-window.log = DebugJS.log;
+var log = DebugJS.log;
