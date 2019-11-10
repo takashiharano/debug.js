@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911071924';
+  this.v = '201911102310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -346,6 +346,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
+    {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char ch1 [ch2]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -395,7 +396,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'str', fn: this.cmdStr, desc: 'Generate a string that consists of consecutive code points', help: 'str ch1 [ch2]'},
     {cmd: 'strp', fn: this.cmdStrp, desc: 'String permutation', help: 'strp "CHARS" INDEX|"STR"'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
@@ -7371,6 +7371,22 @@ DebugJS.prototype = {
     }
   },
 
+  cmdChar: function(arg, tbl, echo) {
+    if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
+      arg = arg.substr(0, 1) + ' ' + arg.substr(2);
+    }
+    var a = DebugJS.splitArgs(arg);
+    var c1 = a[0];
+    var c2 = a[1];
+    if (!c1) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var s = DebugJS.str(c1, c2);
+    if (echo) DebugJS._log(DebugJS.quoteStrIfNeeded(s));
+    return s;
+  },
+
   cmdClose: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     var fn = DebugJS.splitArgs(arg)[0];
@@ -9548,22 +9564,6 @@ DebugJS.prototype = {
       DebugJS._log(DebugJS.TMR_NM_SW_CD + ': ' + (t < 0 ? '-' : '') + DebugJS.getTmrStr(t));
     }
     return t;
-  },
-
-  cmdStr: function(arg, tbl, echo) {
-    if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
-      arg = arg.substr(0, 1) + ' ' + arg.substr(2);
-    }
-    var a = DebugJS.splitArgs(arg);
-    var c1 = a[0];
-    var c2 = a[1];
-    if (!c1) {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var s = DebugJS.str(c1, c2);
-    if (echo) DebugJS._log(DebugJS.quoteStrIfNeeded(s));
-    return s;
   },
 
   cmdStrp: function(arg, tbl, echo) {
