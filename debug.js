@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911152305';
+  this.v = '201911152345';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -144,7 +144,7 @@ var DebugJS = DebugJS || function() {
   this.timerSwCdLabel = null;
   this.timerSwCdInpSubPanel = null;
   this.timerSwCdInput = null;
-  this.timerExpireTime = 0;
+  this.timerExpTime = 0;
   this.timerSwTimeCd = 0;
   this.timerSwTimeCdContinue = false;
   this.timerStartStopBtnCu = null;
@@ -5157,13 +5157,13 @@ DebugJS.prototype = {
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_PAUSED) {
       ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_PAUSED;
       if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
-        ctx.timerExpireTime = now - ctx.timerSwTimeCd;
+        ctx.timerExpTime = now - ctx.timerSwTimeCd;
       } else {
-        ctx.timerExpireTime = now + ctx.timerSwTimeCd;
+        ctx.timerExpTime = now + ctx.timerSwTimeCd;
       }
     } else {
       var expire = ctx.calcExpireTimeInp();
-      ctx.timerExpireTime = now + expire;
+      ctx.timerExpTime = now + expire;
       ctx.replaceTimerSubPanel(ctx.timerSwCdSubPanel);
     }
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_CD_RUNNING;
@@ -5204,7 +5204,7 @@ DebugJS.prototype = {
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_EXPIRED;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_CD_END;
     var expire = ctx.calcExpireTimeInp();
-    ctx.timerExpireTime = DebugJS.now() + expire;
+    ctx.timerExpTime = DebugJS.now() + expire;
     ctx.timerSwTimeCd = expire;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) {
       ctx.updateTimerStopwatchCd();
@@ -5232,10 +5232,10 @@ DebugJS.prototype = {
     var now = DebugJS.now();
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
       if (ctx.timerSwTimeCdContinue) {
-        t = now - ctx.timerExpireTime;
+        t = now - ctx.timerExpTime;
       }
     } else if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_END)) {
-      t = ctx.timerExpireTime - now;
+      t = ctx.timerExpTime - now;
     }
     if (t < 0) {
       DebugJS.callEvtListeners('stopwatch', 2, 'timesup');
@@ -13285,9 +13285,10 @@ DebugJS.saveStatus = function() {
     toolsActvFnc: ctx.toolsActvFnc,
     toolTimerMode: ctx.toolTimerMode,
     timerClockSSS: ctx.timerClockSSS,
-    timerExpireTime: ctx.timerExpireTime,
+    timerExpTime: ctx.timerExpTime,
     timerSwTimeCd: ctx.timerSwTimeCd,
     timerSwTimeCdContinue: ctx.timerSwTimeCdContinue,
+    featStackBak: ctx.featStack,
     props: ctx.props,
     timers: ctx.timers,
     alias: ctx.CMD_ALIAS
@@ -17285,9 +17286,10 @@ DebugJS.restoreStatus = function(ctx) {
   ctx.toolsActvFnc = data.toolsActvFnc;
   ctx.toolTimerMode = data.toolTimerMode;
   ctx.timerClockSSS = data.timerClockSSS;
-  ctx.timerExpireTime = data.timerExpireTime;
+  ctx.timerExpTime = data.timerExpTime;
   ctx.timerSwTimeCd = data.timerSwTimeCd;
   ctx.timerSwTimeCdContinue = data.timerSwTimeCdContinue;
+  ctx.featStackBak = data.featStackBak;
   DebugJS.restoreProps(ctx, data.props);
   DebugJS.ctx.CMD_ALIAS = data.alias;
 };
@@ -17448,6 +17450,7 @@ DebugJS.onLoad = function() {
   } else if (DebugJS.bat.q) {
     DebugJS.bat.lazyExec();
   }
+  DebugJS.ctx.reopenFeatures(DebugJS.ctx);
 };
 DebugJS.onB4Unload = function() {};
 DebugJS.onUnload = function() {
