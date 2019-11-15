@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911102320';
+  this.v = '201911152305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13281,6 +13281,13 @@ DebugJS.saveStatus = function() {
   var ctx = DebugJS.ctx;
   var data = {
     status: ctx.status,
+    toolStatus: ctx.toolStatus,
+    toolsActvFnc: ctx.toolsActvFnc,
+    toolTimerMode: ctx.toolTimerMode,
+    timerClockSSS: ctx.timerClockSSS,
+    timerExpireTime: ctx.timerExpireTime,
+    timerSwTimeCd: ctx.timerSwTimeCd,
+    timerSwTimeCdContinue: ctx.timerSwTimeCdContinue,
     props: ctx.props,
     timers: ctx.timers,
     alias: ctx.CMD_ALIAS
@@ -17274,6 +17281,13 @@ DebugJS.restoreStatus = function(ctx) {
   } else {
     ctx.updateSwLabel();
   }
+  ctx.toolStatus = data.toolStatus;
+  ctx.toolsActvFnc = data.toolsActvFnc;
+  ctx.toolTimerMode = data.toolTimerMode;
+  ctx.timerClockSSS = data.timerClockSSS;
+  ctx.timerExpireTime = data.timerExpireTime;
+  ctx.timerSwTimeCd = data.timerSwTimeCd;
+  ctx.timerSwTimeCdContinue = data.timerSwTimeCdContinue;
   DebugJS.restoreProps(ctx, data.props);
   DebugJS.ctx.CMD_ALIAS = data.alias;
 };
