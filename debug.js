@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911152345';
+  this.v = '201911220000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5600,6 +5600,7 @@ DebugJS.prototype = {
     };
     ctx.fileInput = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style);
     ctx.fileInput.type = 'file';
+    ctx.fileInput.addEventListener('change', ctx.onFileSelected);
 
     style = {'margin-left': (ctx.computedFontSize * 0.8) + 'px'};
     ctx.fileVwrRadioB64 = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
