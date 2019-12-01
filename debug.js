@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201911220000';
+  this.v = '201912012100';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9578,7 +9578,7 @@ DebugJS.prototype = {
     if (!t || (p == undefined)) {
       DebugJS.printUsage(tbl.help);return;
     }
-    var f = (typeof p == 'string') ? DebugJS.permIdx : DebugJS.strperm;
+    var f = (typeof p == 'string') ? DebugJS.pIndex : DebugJS.strp;
     var r = f(t, p);
     if (echo) DebugJS._log.res(r);
     return r;
@@ -17002,11 +17002,11 @@ DebugJS.xlsCol = function(c) {
 };
 DebugJS.xlsColA2N = function(c) {
   var t = DebugJS.A2Z();
-  return DebugJS.permIdx(t, c.trim().toUpperCase());
+  return DebugJS.pIndex(t, c.trim().toUpperCase());
 };
 DebugJS.xlsColN2A = function(n) {
   var t = DebugJS.A2Z();
-  var a = DebugJS.strperm(t, n);
+  var a = DebugJS.strp(t, n);
   if (n <= 0) a = '';
   return a;
 };
@@ -17018,7 +17018,7 @@ DebugJS.A2Z = function() {
   return t;
 };
 
-DebugJS.permIdx = function(tbl, ptn) {
+DebugJS.pIndex = function(tbl, ptn) {
   var len = ptn.length;
   var rdx = tbl.length;
   var idx = 0;
@@ -17033,7 +17033,7 @@ DebugJS.permIdx = function(tbl, ptn) {
   }
   return idx;
 };
-DebugJS.strperm = function(tbl, idx) {
+DebugJS.strp = function(tbl, idx) {
   var len = tbl.length;
   var a = [-1];
   for (var i = 0; i < idx; i++) {
