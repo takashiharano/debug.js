@@ -6,6 +6,7 @@
     "browser": true
   },
   "globals": {
+    "window": true,
     "Set": false,
     "Uint8Array": false,
     "ArrayBuffer": false,
