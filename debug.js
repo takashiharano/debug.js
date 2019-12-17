@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201912012100';
+  this.v = '201912180035';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12515,11 +12515,11 @@ DebugJS.http = function(rq, cb) {
     }
   };
   xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
+  var contentType = 'application/x-www-form-urlencoded';
   if (rq.contentType) {
-    xhr.setRequestHeader('Content-Type', rq.contentType);
-  } else {
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    contentType = rq.contentType;
   }
+  xhr.setRequestHeader('Content-Type', contentType);
   if (!rq.cache) {
     xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
   }
