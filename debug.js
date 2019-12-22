@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201912180035';
+  this.v = '201912222000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -346,7 +346,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
-    {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char ch1 [ch2]'},
+    {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars ch1 [ch2]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -7372,7 +7372,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdChar: function(arg, tbl, echo) {
+  cmdChars: function(arg, tbl, echo) {
     if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
       arg = arg.substr(0, 1) + ' ' + arg.substr(2);
     }
