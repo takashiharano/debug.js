@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '201912222000';
+  this.v = '202001062150';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7164,6 +7164,10 @@ DebugJS.prototype = {
       return DebugJS.cmdTZedNow(cmdln, echo);
     }
 
+    if (cmdln.match(/^\d+\.?\d*[KMGTP]B$/i)) {
+      return DebugJS.cmdCnvByte(cmdln, echo);
+    }
+
     if (cmdline.match(/^\s*U\+/i)) {
       return ctx.cmdUnicode('-d ' + cmdline, null, echo);
     }
@@ -11843,19 +11847,26 @@ DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
   }
   return bin;
 };
-DebugJS.formatDec = function(v10) {
-  v10 += '';
-  var len = v10.length;
-  var dec = '';
+DebugJS.formatDec = function(v) {
+  var v0 = v + '';
+  var v1 = '';
+  if (v0.match(/\./)) {
+    var a = v0.split('.');
+    v0 = a[0];
+    v1 = '.' + a[1];
+  }
+  var len = v0.length;
+  var r = '';
   for (var i = 0; i < len; i++) {
     if ((i != 0) && ((len - i) % 3 == 0)) {
-      if (!((i == 1) && (v10.charAt(0) == '-'))) {
-        dec += ',';
+      if (!((i == 1) && (v0.charAt(0) == '-'))) {
+        r += ',';
       }
     }
-    dec += v10.charAt(i);
+    r += v0.charAt(i);
   }
-  return dec;
+  r += v1;
+  return r;
 };
 DebugJS.formatHex = function(hex, uc, pFix, d) {
   if (uc) hex = hex.toUpperCase();
@@ -12391,6 +12402,28 @@ DebugJS.isSTN = function(s) {
     if (s == k) return true;
   }
   return false;
+};
+
+DebugJS.cmdCnvByte = function(c, echo) {
+  c = c.toUpperCase();
+  var v = c.match(/\d\.?\d*/)[0];
+  var u = c.match(/[KMGTP]/)[0];
+  var r = v;
+  switch (u) {
+    case 'P':
+      r *= 1024;
+    case 'T':
+      r *= 1024;
+    case 'G':
+      r *= 1024;
+    case 'M':
+      r *= 1024;
+    default:
+      r *= 1024;
+  }
+  r = DebugJS.formatDec(r) + ' bytes';
+  if (echo) DebugJS._log.res(r);
+  return r;
 };
 
 DebugJS.random = function(min, max) {
