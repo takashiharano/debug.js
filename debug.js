@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001181557';
+  this.v = '202001181627';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8895,7 +8895,16 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return;
     } else if (o == 's') {
-      r = DebugJS.getRndS(min, max);
+      var t = DebugJS.getOptVal(arg, 'tbl');
+      if (t) {
+        try {
+          t = eval(t);
+        } catch (e) {
+          DebugJS._log.e(e);
+          return;
+        }
+      }
+      r = DebugJS.getRndS(min, max, t);
     } else if (min && min.match(/^\d+d$/)) {
       var d = min.replace(/d/, '') | 0;
       r = DebugJS.getRndNums(d);
@@ -12446,7 +12455,7 @@ DebugJS.getRndN = function(min, max) {
   return DebugJS.getRndNum(min, max);
 };
 
-DebugJS.getRndS = function(min, max) {
+DebugJS.getRndS = function(min, max, tbl) {
   if (!isNaN(min)) {
     min = parseInt(min);
     if (isNaN(max)) {
@@ -12455,7 +12464,7 @@ DebugJS.getRndS = function(min, max) {
       max = parseInt(max);
     }
   }
-  return DebugJS.getRandomString(min, max);
+  return DebugJS.getRandomString(min, max, tbl);
 };
 
 DebugJS.getRndNum = function(min, max) {
