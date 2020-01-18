@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001062150';
+  this.v = '202001181557';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8886,7 +8886,7 @@ DebugJS.prototype = {
   },
 
   cmdRandom: function(arg, tbl, echo) {
-    var a = DebugJS.getNonOptVals(arg);
+    var a = DebugJS.getNonOptVals(arg, true);
     var min = a[0];
     var max = a[1];
     var o = DebugJS.get1stOpt(arg);
@@ -8895,12 +8895,12 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return;
     } else if (o == 's') {
-      r = DebugJS.getRandomS(min, max);
+      r = DebugJS.getRndS(min, max);
     } else if (min && min.match(/^\d+d$/)) {
       var d = min.replace(/d/, '') | 0;
       r = DebugJS.getRndNums(d);
     } else {
-      r = DebugJS.getRandomN(min, max);
+      r = DebugJS.getRndN(min, max);
     }
     if (echo) DebugJS._log.res(r);
     return r;
@@ -12427,10 +12427,10 @@ DebugJS.cmdCnvByte = function(c, echo) {
 };
 
 DebugJS.random = function(min, max) {
-  return DebugJS.getRandomN(min, max);
+  return DebugJS.getRndN(min, max);
 };
 
-DebugJS.getRandomN = function(min, max) {
+DebugJS.getRndN = function(min, max) {
   if (isNaN(min)) {
     min = 0;
     max = 0x7fffffff;
@@ -12442,29 +12442,20 @@ DebugJS.getRandomN = function(min, max) {
     } else {
       max = parseInt(max);
     }
-    if (min > max) {
-      var wk = min; min = max; max = wk;
-    }
   }
   return DebugJS.getRndNum(min, max);
 };
 
-DebugJS.getRandomS = function(min, max) {
-  if (isNaN(min)) {
-    min = 1;
-    max = DebugJS.RND_STR_DFLT_MAX_LEN;
-  } else {
+DebugJS.getRndS = function(min, max) {
+  if (!isNaN(min)) {
     min = parseInt(min);
     if (isNaN(max)) {
       max = min;
     } else {
       max = parseInt(max);
     }
-    if (min > max) {
-      var wk = min; min = max; max = wk;
-    }
   }
-  return DebugJS.getRndStr(min, max);
+  return DebugJS.getRandomString(min, max);
 };
 
 DebugJS.getRndNum = function(min, max) {
@@ -12480,50 +12471,19 @@ DebugJS.getRndNums = function(d) {
   return n;
 };
 
-DebugJS.SYM = [' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~'];
-DebugJS.RND_STR_DFLT_MAX_LEN = 10;
-DebugJS.RND_STR_MAX_LEN = 1024;
-DebugJS.getRndStr = function(min, max, tp, atbl) {
-  if (min > DebugJS.RND_STR_MAX_LEN) min = DebugJS.RND_STR_MAX_LEN;
+DebugJS.RND_STR_DFLT_MAX_LEN = 8;
+DebugJS.getRandomString = function(min, max, tbl) {
+  if (!tbl) tbl = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  if (typeof tbl == 'string') tbl = tbl.split('');
+  if (min == undefined) {
+    min = DebugJS.RND_STR_DFLT_MAX_LEN;
+    max = min;
+  }
   if (max == undefined) max = min;
-  if (max > DebugJS.RND_STR_MAX_LEN) max = DebugJS.RND_STR_MAX_LEN;
-  var len = DebugJS.getRndNum(min, max);
-  var alphUc = 1, alphLc = 1, num = 1, sym = 0;
-  if (tp != undefined) {
-    alphUc = (tp.match(/A/) ? 1 : 0);
-    alphLc = (tp.match(/a/) ? 1 : 0);
-    num = (tp.match(/1/) ? 1 : 0);
-    sym = (tp.match(/!/) ? 1 : 0);
-  }
-  var tbl = [];
-  if (alphUc) {
-    for (var i = 0x41; i <= 0x5A; i++) {
-      tbl.push(String.fromCharCode(i));
-    }
-  }
-  if (alphLc) {
-    for (i = 0x61; i <= 0x7A; i++) {
-      tbl.push(String.fromCharCode(i));
-    }
-  }
-  if (num) {
-    for (i = 0x30; i <= 0x39; i++) {
-      tbl.push(String.fromCharCode(i));
-    }
-  }
-  if (sym) {
-    for (i = 0; i < DebugJS.SYM.length; i++) {
-      tbl.push(DebugJS.SYM[i]);
-    }
-  }
-  if (atbl) {
-    for (i = 0; i < atbl.length; i++) {
-      tbl.push(atbl[i]);
-    }
-  }
   var s = '';
+  var len = DebugJS.getRndNum(min, max);
   if (tbl.length > 0) {
-    for (i = 0; i < len; i++) {
+    for (var i = 0; i < len; i++) {
       s += tbl[Math.floor(Math.random() * tbl.length)];
     }
   }

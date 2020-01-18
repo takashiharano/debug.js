@@ -326,7 +326,7 @@ randomDemoFlag = false;
 function randomDemo() {
   if (!randomDemoFlag) return;
   var next = dbg.random(0, 1000);
-  var str = dbg.getRndStr(1, 55, 'Aa1', [' ']);
+  var str = dbg.getRandomString(1, 55, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ');
   var type = dbg.random(10);
   switch (type) {
     case 0:
@@ -3097,30 +3097,22 @@ max: maximum number
   </tr>
 
   <tr>
-    <td class="name">dbg.getRndStr</td>
+    <td class="name">dbg.getRandomString</td>
     <td>
       arg1: min<br>
       arg2: max<br>
-      arg3: type<span class="annotation">(opt)</span>
-      arg4: table<span class="annotation">(opt)</span>
+      arg3: table<span class="annotation">(opt)</span>
     </td>
     <td>
       Get random string<br>
 <pre class="eg">
 min  : minimum length
 max  : maximum length
-type : Char type
-       "Aa1!" <span class="annotation">default:"Aa1"</span>
-       A: Alphabet (Upper case)
-       a: Alphabet (Lower case)
-       1: Number
-       !: Symbol
-table: User defined char table (list of char)
+table: character table
 
-dbg.getRndStr(8);
-dbg.getRndStr(1, 8);
-dbg.getRndStr(1, 8, 'Aa1!');
-dbg.getRndStr(1, 8, 'Aa', [' ', '?']);
+dbg.getRandomString(8);
+dbg.getRandomString(1, 8);
+dbg.getRandomString(1, 8, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 </pre>
     </td>
   </tr>
