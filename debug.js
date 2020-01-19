@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001181627';
+  this.v = '202001200000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -719,7 +719,7 @@ DebugJS.HTML_SNIPPET = [
 '<button onclick=""></button>',
 '<video src="" controls autoplay>',
 '',
-'<!DOCTYPE html>\n<html>\n<head>\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<meta charset="utf-8">\n<meta name="robots" content="none">\n<meta name="referrer" content="no-referrer">\n<meta name="referrer" content="never">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\nonReady = function() {\n};\nwindow.addEventListener(\'DOMContentLoaded\', onReady, true);\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
+'<!DOCTYPE html>\n<html>\n<head>\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<meta charset="utf-8">\n<meta name="robots" content="none">\n<meta name="referrer" content="no-referrer">\n<meta name="referrer" content="never">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\nonReady = function() {\n};\nonLoad = function() {\n};\nwindow.addEventListener(\'DOMContentLoaded\', onReady, true);\nwindow.addEventListener(\'load\', onLoad, true);\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
   'togglableShowHide',
@@ -8889,6 +8889,8 @@ DebugJS.prototype = {
     var a = DebugJS.getNonOptVals(arg, true);
     var min = a[0];
     var max = a[1];
+    if (isNaN(min)) min = undefined;
+    if (isNaN(max)) max = undefined;
     var o = DebugJS.get1stOpt(arg);
     var r;
     if (o && ((o != 'n') && (o != 's'))) {
@@ -8904,12 +8906,12 @@ DebugJS.prototype = {
           return;
         }
       }
-      r = DebugJS.getRndS(min, max, t);
+      r = DebugJS.getRandomString(min, max, t);
     } else if (min && min.match(/^\d+d$/)) {
       var d = min.replace(/d/, '') | 0;
       r = DebugJS.getRndNums(d);
     } else {
-      r = DebugJS.getRndN(min, max);
+      r = DebugJS.random(min, max);
     }
     if (echo) DebugJS._log.res(r);
     return r;
@@ -12436,61 +12438,40 @@ DebugJS.cmdCnvByte = function(c, echo) {
 };
 
 DebugJS.random = function(min, max) {
-  return DebugJS.getRndN(min, max);
-};
-
-DebugJS.getRndN = function(min, max) {
   if (isNaN(min)) {
     min = 0;
     max = 0x7fffffff;
-  } else {
-    min = parseInt(min);
-    if (isNaN(max)) {
-      max = min;
-      min = 0;
-    } else {
-      max = parseInt(max);
-    }
+  } else if (isNaN(max)) {
+    max = min;
+    min = 0;
   }
-  return DebugJS.getRndNum(min, max);
+  return DebugJS._random(min, max);
 };
-
-DebugJS.getRndS = function(min, max, tbl) {
-  if (!isNaN(min)) {
-    min = parseInt(min);
-    if (isNaN(max)) {
-      max = min;
-    } else {
-      max = parseInt(max);
-    }
-  }
-  return DebugJS.getRandomString(min, max, tbl);
-};
-
-DebugJS.getRndNum = function(min, max) {
+DebugJS._random = function(min, max) {
   min = parseInt(min);
   max = parseInt(max);
   return parseInt(Math.random() * (max - min + 1)) + min;
 };
+
 DebugJS.getRndNums = function(d) {
   var n = '';
   for (var i = 0; i < d; i++) {
-    n += DebugJS.getRndNum(0, 9);
+    n += DebugJS._random(0, 9);
   }
   return n;
 };
 
-DebugJS.RND_STR_DFLT_MAX_LEN = 8;
 DebugJS.getRandomString = function(min, max, tbl) {
+  var DFLT_MAX_LEN = 8;
   if (!tbl) tbl = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   if (typeof tbl == 'string') tbl = tbl.split('');
   if (min == undefined) {
-    min = DebugJS.RND_STR_DFLT_MAX_LEN;
+    min = DFLT_MAX_LEN;
     max = min;
   }
   if (max == undefined) max = min;
   var s = '';
-  var len = DebugJS.getRndNum(min, max);
+  var len = DebugJS._random(min, max);
   if (tbl.length > 0) {
     for (var i = 0; i < len; i++) {
       s += tbl[Math.floor(Math.random() * tbl.length)];
@@ -16293,7 +16274,7 @@ DebugJS.getSpeed = function(v) {
   var min = a[0];
   var max = a[1];
   if ((min == '') || (max == '')) return 0;
-  return DebugJS.getRndNum(min, max);
+  return DebugJS._random(min, max);
 };
 
 DebugJS.selectOption = function(elm, method, type, val) {
