@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001230040';
+  this.v = '202001230705';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7614,12 +7614,21 @@ DebugJS.prototype = {
     return d;
   },
 
-  cmdFmtNum: function(v, echo) {
-    v = DebugJS.unifySP(v.trim());
-    if (!v.match(/^-?\d|,+\.?\d* 4$/)) return null;
-    v = v.split(' ')[0];
-    var r = DebugJS.formatDec(v, 4);
-    if (echo) DebugJS._log.res(r);
+  cmdFmtNum: function(c, echo) {
+    c = DebugJS.unifySP(c.trim());
+    var r = null;
+    if (c.match(/^-?\d|,+\.?\d* \d$/)) {
+      var a = c.split(' ');
+      var v = a[0];
+      var n = a[1];
+      r = v;
+      if ((n == 3) || (n == 4)) {
+        r = DebugJS.formatDec(v, n);
+      } else if (n == 0) {
+        r = v.replace(/,/g, '');
+      }
+    }
+    if (echo && (r != null)) DebugJS._log.res(r);
     return r;
   },
 
