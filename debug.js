@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001200000';
+  this.v = '202001230040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7143,6 +7143,9 @@ DebugJS.prototype = {
     var ret = ctx.cmdRadixConv(cmdline, echo);
     if (ret) return cmd | 0;
 
+    ret = ctx.cmdFmtNum(cmdline, echo);
+    if (ret != null) return ret;
+
     ret = ctx.cmdTimeCalc(cmdline, echo);
     if (ret != null) return ret;
 
@@ -7609,6 +7612,15 @@ DebugJS.prototype = {
       d = DebugJS.today('/');
     }
     return d;
+  },
+
+  cmdFmtNum: function(v, echo) {
+    v = DebugJS.unifySP(v.trim());
+    if (!v.match(/^-?\d|,+\.?\d* 4$/)) return null;
+    v = v.split(' ')[0];
+    var r = DebugJS.formatDec(v, 4);
+    if (echo) DebugJS._log.res(r);
+    return r;
   },
 
   cmdDbgWin: function(arg, tbl) {
@@ -11858,20 +11870,28 @@ DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
   }
   return bin;
 };
-DebugJS.formatDec = function(v) {
-  var v0 = v + '';
+DebugJS.formatDec = function(v, n) {
+  var U = [0x4E07, 0x5104, 0x5146, 0x4EAC, 0x5793];
+  if (n == undefined) n = 3;
+  var v0 = (v + '').replace(/,/g, '');
   var v1 = '';
   if (v0.match(/\./)) {
     var a = v0.split('.');
     v0 = a[0];
     v1 = '.' + a[1];
   }
+  v0 = v0.replace(/^0*/, '');
   var len = v0.length;
   var r = '';
   for (var i = 0; i < len; i++) {
-    if ((i != 0) && ((len - i) % 3 == 0)) {
+    if ((i != 0) && ((len - i) % n == 0)) {
       if (!((i == 1) && (v0.charAt(0) == '-'))) {
-        r += ',';
+        if (n == 4) {
+          var j = (len - i) / 4;
+          r += String.fromCharCode(U[j - 1]);
+        } else {
+          r += ',';
+        }
       }
     }
     r += v0.charAt(i);
