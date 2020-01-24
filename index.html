@@ -609,8 +609,11 @@ function getFileLineDemo2b(idx, abs) {
 }
 
 function clrlog() {
-  var r = {url: '/savelog.py?data='};
-  dbg.http(r, cbClrlog); 
+  var rq = {
+    url: '/savelog.py?data=',
+    cb: cbClrlog
+  };
+  dbg.http(rq); 
 }
 function cbClrlog(xhr) {
   if (xhr.status == 200) {
@@ -700,13 +703,14 @@ function httpDemo() {
     user: user,
     pass: pass,
     contentType: contentType,
-    withCredentials: withCredentials
+    withCredentials: withCredentials,
+    cb: httpCallback
   };
 
-  dbg.http(request, httpCallback);
+  dbg.http(request);
 }
 
-function httpCallback(xhr) {
+function httpCallback(xhr, res, req) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
     log.e('cannot load: ' + statusMsg);
@@ -714,7 +718,7 @@ function httpCallback(xhr) {
     log(statusMsg);
   }
   var head = xhr.getAllResponseHeaders();
-  var body = xhr.responseText.replace(/</g, '&lt;');
+  var body = res.replace(/</g, '&lt;');
   body = body.replace(/>/g, '&gt;');
   if (head || body) {
     log('Response:\n' + head + '\n'+ body);
@@ -3444,12 +3448,16 @@ dbg.arr.toSet(array, <input type="text" id="arr2set-flg-text" class="demo-text" 
     key1: value1,
     key2: value2,
     ...
-  }
+  },
+  cb: callback
 };
 
-dbg.http(request, callback); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
+dbg.http(request); <button class="demo-button" onclick="httpDemo();">DEMO</button></span>
 
-function callback(xhr, req) { // req = request
+// xhr: XMLHttpRequest
+// res: xhr.responseText
+// req: request
+function callback(xhr, res, req) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
     log.e('cannot load: ' + statusMsg);
@@ -3457,7 +3465,7 @@ function callback(xhr, req) { // req = request
     log(statusMsg);
   }
   var head = xhr.getAllResponseHeaders();
-  var body = xhr.responseText.replace(/&lt;/g, '&amp;lt;');
+  var body = res.replace(/&lt;/g, '&amp;lt;');
   body = body.replace(/&gt;/g, '&amp;gt;');
   if (head || body) {
     log(head + '\n'+ body);

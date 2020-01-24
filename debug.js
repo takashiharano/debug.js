@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001230705';
+  this.v = '202001250010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7617,7 +7617,7 @@ DebugJS.prototype = {
   cmdFmtNum: function(c, echo) {
     c = DebugJS.unifySP(c.trim());
     var r = null;
-    if (c.match(/^-?\d|,+\.?\d* \d$/)) {
+    if (c.match(/^-?[\d,]+\.?\d*\s\d$/)) {
       var a = c.split(' ');
       var v = a[0];
       var n = a[1];
@@ -9902,7 +9902,7 @@ DebugJS.prototype = {
       req += '\nuser: ' + user + ':' + (pass ? '*' : '');
     }
     if (echo) DebugJS._log(req);
-    var request = {
+    var rq = {
       url: url,
       method: method,
       data: data,
@@ -9911,12 +9911,13 @@ DebugJS.prototype = {
       user: user,
       pass: pass,
       headers: headers,
-      withCredentials: true
+      withCredentials: true,
+      cb: DebugJS.onHttpReqDone
     };
     var r;
     DebugJS.http.echo = echo;
     try {
-      r = DebugJS.http(request, DebugJS.onHttpReqDone);
+      r = DebugJS.http(rq);
     } catch (e) {
       DebugJS._log.e(e);
       var baseURI = document.baseURI;
@@ -12509,37 +12510,59 @@ DebugJS.getRandomString = function(min, max, tbl) {
   return s;
 };
 
-DebugJS.http = function(rq, cb) {
+DebugJS.http = function(req) {
+  if (!req.method) req.method = 'GET';
+  req.method = req.method.toUpperCase();
   var data = null;
-  if (!rq.method) rq.method = 'GET';
-  if (rq.async == undefined) rq.async = true;
-  if ((rq.data != undefined) && (rq.data != '')) {
-    data = rq.data;
-    if (data instanceof Object) {
-      data = DebugJS.http.buildParam(data);
-    }
+  if ((req.data != undefined) && (req.data != '')) {
+    data = req.data;
   }
-  rq.method = rq.method.toUpperCase();
+  if (data instanceof Object) {
+    data = DebugJS.http.buildParam(data);
+  }
+  var url = req.url;
+  if (data && (req.method == 'GET')) {
+    url += '?' + data;
+    data = null;
+  }
+  if (req.async == undefined) req.async = true;
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
-      if (cb) cb(xhr, rq);
+      var res = xhr.responseText;
+      if (DebugJS.http.log) {
+        var m = res;
+        if (m) {
+          if (m.length > DebugJS.http.LOG_LIMIT) {
+            m = '(size=' + m.length + ')';
+          } else if (m.length > DebugJS.http.maxLogLen) {
+            m = m.substr(0, DebugJS.http.maxLogLen) + '...';
+          }
+        }
+        m = DebugJS.escHtml(m);
+        DebugJS.log.v('<= ' + m);
+      }
+      if (req.cb) req.cb(xhr, res, req);
     }
   };
-  xhr.open(rq.method, rq.url, rq.async, rq.user, rq.pass);
+  xhr.open(req.method, url, req.async, req.user, req.pass);
   var contentType = 'application/x-www-form-urlencoded';
-  if (rq.contentType) {
-    contentType = rq.contentType;
+  if (req.contentType) {
+    contentType = req.contentType;
   }
   xhr.setRequestHeader('Content-Type', contentType);
-  if (!rq.cache) {
+  if (!req.cache) {
     xhr.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
   }
-  for (var key in rq.headers) {
-    xhr.setRequestHeader(key, rq.headers[key]);
+  for (var k in req.headers) {
+    xhr.setRequestHeader(k, req.headers[k]);
   }
-  if (rq.withCredentials) {
+  if (req.withCredentials) {
     xhr.withCredentials = true;
+  }
+  if (DebugJS.http.log) {
+    DebugJS.log.v('=> ' + url);
+    if (data) DebugJS.log.v('[DATA] ' + data.substr(0, DebugJS.http.maxLogLen));
   }
   xhr.send(data);
   return xhr;
@@ -12571,6 +12594,9 @@ DebugJS.onHttpReqDone = function(xhr) {
     if (echo) DebugJS._log.mlt(r);
   }
 };
+DebugJS.http.log = true;
+DebugJS.http.LOG_LIMIT = 3145728;
+DebugJS.http.maxLogLen = 4096;
 
 DebugJS.encodeURIString = function(data) {
   var s = encodeURIComponent(data);
@@ -13185,9 +13211,10 @@ DebugJS.sendLog = function(url, pName, param, extInfo, flg, cb) {
   var r = {
     url: url,
     method: 'POST',
-    data: data
+    data: data,
+    cb: (cb ? cb : DebugJS.sendLogCb)
   };
-  DebugJS.http(r, (cb ? cb : DebugJS.sendLogCb));
+  DebugJS.http(r);
 };
 DebugJS.sendLogCb = function(xhr) {
   var st = xhr.status;
