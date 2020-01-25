@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001250010';
+  this.v = '202001251339';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -385,7 +385,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
-    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max]'},
+    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-tbl "ABC..."]'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', help: 'rot 5|13|47 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
@@ -8928,8 +8928,8 @@ DebugJS.prototype = {
         }
       }
       r = DebugJS.getRandomString(min, max, t);
-    } else if (min && min.match(/^\d+d$/)) {
-      var d = min.replace(/d/, '') | 0;
+    } else if (a[0] && a[0].match(/^\d+d$/)) {
+      var d = a[0].replace(/d/, '') | 0;
       r = DebugJS.getRndNums(d);
     } else {
       r = DebugJS.random(min, max);
