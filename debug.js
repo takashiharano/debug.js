@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001251339';
+  this.v = '202001310027';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -427,7 +427,7 @@ var DebugJS = DebugJS || function() {
   },
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
-  this.CMD_ALIAS = {b64: 'base64'};
+  this.CMD_ALIAS = {b64: 'base64', copy: 'log copy'};
   this.CMDVALS = {};
   this.opt = null;
   this.errStatus = DebugJS.ERR_ST_NONE;
@@ -9800,28 +9800,33 @@ DebugJS.prototype = {
   },
 
   cmdXlsCol: function(arg, tbl, echo) {
+    var r;
     if (!arg) {
       DebugJS.printUsage(tbl.help);return;
     }
-    arg = arg.trim();
+    arg = DebugJS.unifySP(arg).trim();
     var op;
-    if (arg.indexOf('+') >= 0) {
+    if (arg.match(/^[A-Za-z\d]+\s[A-Za-z\d]+$/)) {
+      r = DebugJS.ctx._cmdXlsCols(arg);
+      if (echo) DebugJS._log.mlt(r);
+      return r;
+    } else if (arg.indexOf('+') >= 0) {
       op = '+';
     } else if (arg.indexOf('-') >= 0) {
       op = '-';
-    } else if (arg.indexOf(' ') >= 0) {
-      op = ' ';
+    } else if (arg.indexOf(':') >= 0) {
+      op = ':';
     }
     var v = arg.split(op);
     var a = v[0];
     var b = v[1];
-    var r = DebugJS.xlsCol(a);
+    r = DebugJS.xlsCol(a);
     if (isNaN(a)) {
       if (op == '+') {
         r = DebugJS.xlsCol(r + (b | 0));
       } else if (op == '-') {
         r = DebugJS.xlsCol(r - (b | 0));
-      } else if (op == ' ') {
+      } else if (op == ':') {
         var c = DebugJS.xlsCol(b);
         r = c - r;
         r = (r < 0 ? (r * (-1)) : r) + 1;
@@ -9829,6 +9834,30 @@ DebugJS.prototype = {
     }
     if (echo) DebugJS._log.res(r);
     return r;
+  },
+  _cmdXlsCols: function(v) {
+    var a = v.split(' ');
+    var b = a[0];
+    var e = a[1];
+    if (isNaN(b)) {
+      b = DebugJS.xlsColA2N(b);
+    }
+    if (isNaN(e)) {
+      e = DebugJS.xlsColA2N(e);
+    }
+    b |= 0;
+    e |= 0;
+    var s = '';
+    if (b < e) {
+      for (var i = b; i <= e; i++) {
+        s += DebugJS.xlsColN2A(i) + '\n';
+      }
+    } else {
+      for (i = b; i >= e; i--) {
+        s += DebugJS.xlsColN2A(i) + '\n';
+      }
+    }
+    return s;
   },
 
   cmdZoom: function(arg, tbl) {
