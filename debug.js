@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202001310027';
+  this.v = '202002022305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -411,7 +411,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
-    {cmd: 'xlscol', fn: this.cmdXlsCol, desc: 'Excel column number <--> reference', help: 'xlscol REF [+|-| ] [REF]'},
+    {cmd: 'xlscol', fn: this.cmdXlsCol, desc: 'Excel column number <--> reference', help: 'xlscol COL [+|-|:] [COL]'},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
