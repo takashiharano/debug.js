@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002022305';
+  this.v = '20200212200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -341,8 +341,9 @@ var DebugJS = DebugJS || function() {
   this.toolsActvFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
-    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] Array'},
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
+    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] Array'},
+    {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print ASCII characters'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
@@ -7178,27 +7179,6 @@ DebugJS.prototype = {
     return ctx.execCode(cmdline, echo);
   },
 
-  cmdArr2Set: function(arg, tbl, echo) {
-    var p = arg.indexOf('[');
-    if (p == -1) {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var s = DebugJS.hasOpt(arg, 's');
-    var j = DebugJS.hasOpt(arg, 'j');
-    var sort = DebugJS.hasOpt(arg, 'sort');
-    var v = arg.substr(p);
-    try {
-      var a = eval(v);
-      var r = DebugJS.arr.toSet(a, s);
-      if (sort) r.sort();
-      if (echo) DebugJS._log.p(r, 0, '', j);
-    } catch (e) {
-      DebugJS._log.e(e);
-    }
-    return r;
-  },
-
   cmdAlias: function(arg) {
     var ctx = DebugJS.ctx;
     if (DebugJS.countArgs(arg) == 0) {
@@ -7233,6 +7213,36 @@ DebugJS.prototype = {
     } else {
       s += "='" + c + "'";
     }
+    return s;
+  },
+
+  cmdArr2Set: function(arg, tbl, echo) {
+    var p = arg.indexOf('[');
+    if (p == -1) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var s = DebugJS.hasOpt(arg, 's');
+    var j = DebugJS.hasOpt(arg, 'j');
+    var sort = DebugJS.hasOpt(arg, 'sort');
+    var v = arg.substr(p);
+    try {
+      var a = eval(v);
+      var r = DebugJS.arr.toSet(a, s);
+      if (sort) r.sort();
+      if (echo) DebugJS._log.p(r, 0, '', j);
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
+    return r;
+  },
+
+  cmdAscii: function() {
+    var s = '';
+    for (var i = 32; i < 127; i++) {
+      s += String.fromCharCode(i);
+    }
+    DebugJS._log(s);
     return s;
   },
 
