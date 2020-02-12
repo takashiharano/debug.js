@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002122200';
+  this.v = '202002122256';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -708,6 +708,7 @@ DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
 DebugJS.G_EL_AVAILABLE = false;
+DebugJS.Aa0 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 DebugJS.JS_SNIPPET = [
 'dbg.time.s();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.e();\n\'done\';',
 '',
@@ -9615,9 +9616,15 @@ DebugJS.prototype = {
 
   cmdStrp: function(arg, tbl, echo) {
     var a = DebugJS.splitCmdLine(arg);
+    var t = a[0];
+    var p = a[1];
+    if (a.length == 1) {
+      t = '"' + DebugJS.Aa0 + '"';
+      p = a[0];
+    }
     try {
-      var t = eval(a[0]).split('');
-      var p = eval(a[1]);
+      t = eval(t).split('');
+      p = eval(p);
     } catch (e) {
       DebugJS.printUsage(tbl.help);return;
     }
@@ -12529,10 +12536,9 @@ DebugJS.getRndNums = function(d) {
   }
   return n;
 };
-
 DebugJS.getRandomString = function(min, max, tbl) {
   var DFLT_MAX_LEN = 8;
-  if (!tbl) tbl = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  if (!tbl) tbl = DebugJS.Aa0;
   if (typeof tbl == 'string') tbl = tbl.split('');
   if (min == undefined) {
     min = DFLT_MAX_LEN;
