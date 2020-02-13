@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002122256';
+  this.v = '202002132129';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7628,15 +7628,16 @@ DebugJS.prototype = {
   cmdFmtNum: function(c, echo) {
     c = DebugJS.unifySP(c.trim());
     var r = null;
-    if (c.match(/^-?[\d,]+\.?\d*\s\d$/)) {
+    if (c.match(/^-?[\d,]+\.?\d*\s[\dBb]$/)) {
       var a = c.split(' ');
       var v = a[0];
       var n = a[1];
-      r = v;
       if ((n == 3) || (n == 4)) {
         r = DebugJS.formatDec(v, n);
       } else if (n == 0) {
         r = v.replace(/,/g, '');
+      } else if ((n == 'b') || (n == 'B')) {
+        return DebugJS.cmdCnvByte2(v, echo);
       }
     }
     if (echo && (r != null)) DebugJS._log.res(r);
@@ -12511,6 +12512,49 @@ DebugJS.cmdCnvByte = function(c, echo) {
   r = DebugJS.formatDec(r) + ' bytes';
   if (echo) DebugJS._log.res(r);
   return r;
+};
+DebugJS.cmdCnvByte2 = function(v, echo) {
+  var K = 1024;
+  var M = 1048576;
+  var G = 1073741824;
+  var T = 1099511627776;
+  var P = 1125899906842624;
+  var kb, mb, gb, tb, pb;
+  v = parseInt((v + '').replace(/,/g, ''));
+  var r = '';
+  if (v >= P) {
+    pb = v / P;
+    r += DebugJS.formatDec(DebugJS.round(pb, 2)) + ' PB\n';
+  }
+  if (v >= T) {
+    tb = v / T;
+    r += DebugJS.formatDec(DebugJS.round(tb, 2)) + ' TB\n';
+  }
+  if (v >= G) {
+    gb = v / G;
+    r += DebugJS.formatDec(DebugJS.round(gb, 2)) + ' GB\n';
+  }
+  if (v >= M) {
+    mb = v / M;
+    r += DebugJS.formatDec(DebugJS.round(mb, 2)) + ' MB\n';
+  }
+  if (v >= K) {
+    kb = v / K;
+    r += DebugJS.formatDec(DebugJS.round(kb, 2)) + ' KB\n';
+  }
+  r += DebugJS.formatDec(v) + '  B';
+  if (echo) DebugJS._log.mlt('<span style="display:inline-block;text-align:right;">' + r + '</span>');
+  return r;
+};
+
+DebugJS.round = function(number, precision) {
+  precision |= 0;
+  return DebugJS._shift(Math.round(DebugJS._shift(number, precision, false)), precision, true);
+};
+DebugJS._shift = function(number, precision, reverseShift) {
+  if (reverseShift) precision = -precision;
+  var numArray = ('' + number).split('e');
+  return +(numArray[0] + 'e' + (numArray[1] ? (+numArray[1] + precision) : precision));
 };
 
 DebugJS.random = function(min, max) {
