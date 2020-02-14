@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002132129';
+  this.v = '202002142202';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7217,7 +7217,7 @@ DebugJS.prototype = {
     return s;
   },
 
-  cmdArr2Set: function(arg, tbl, echo) {
+  cmdArr2Set: function(arg, tbl) {
     var p = arg.indexOf('[');
     if (p == -1) {
       DebugJS.printUsage(tbl.help);
@@ -7231,7 +7231,7 @@ DebugJS.prototype = {
       var a = eval(v);
       var r = DebugJS.arr.toSet(a, s);
       if (sort) r.sort();
-      if (echo) DebugJS._log.p(r, 0, '', j);
+      DebugJS._log.p(r, 0, '', j);
     } catch (e) {
       DebugJS._log.e(e);
     }
@@ -7390,7 +7390,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdChars: function(arg, tbl, echo) {
+  cmdChars: function(arg, tbl) {
     if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
       arg = arg.substr(0, 1) + ' ' + arg.substr(2);
     }
@@ -7402,7 +7402,7 @@ DebugJS.prototype = {
       return;
     }
     var s = DebugJS.str(c1, c2);
-    if (echo) DebugJS._log(DebugJS.quoteStrIfNeeded(s));
+    DebugJS._log(DebugJS.quoteStrIfNeeded(s));
     return s;
   },
 
@@ -7547,7 +7547,7 @@ DebugJS.prototype = {
     }
     return d;
   },
-  cmdDateConv: function(arg, echo) {
+  cmdDateConv: function(arg) {
     var d = arg.trim();
     var v = d;
     var tz = d.match(/ [+-]\d{1,4}$/);
@@ -7564,7 +7564,7 @@ DebugJS.prototype = {
     if (d == 'today') v = DebugJS.today('/');
     var r = DebugJS.date(v);
     if (r != null) {
-      if (echo) DebugJS._log.res(r);
+      DebugJS._log.res(r);
     }
     return r;
   },
@@ -7640,7 +7640,7 @@ DebugJS.prototype = {
         return DebugJS.cmdCnvByte2(v, echo);
       }
     }
-    if (echo && (r != null)) DebugJS._log.res(r);
+    if (r != null) DebugJS._log.res(r);
     return r;
   },
 
@@ -8918,7 +8918,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdRandom: function(arg, tbl, echo) {
+  cmdRandom: function(arg, tbl) {
     var a = DebugJS.getNonOptVals(arg, true);
     var min = a[0];
     var max = a[1];
@@ -8946,7 +8946,7 @@ DebugJS.prototype = {
     } else {
       r = DebugJS.random(min, max);
     }
-    if (echo) DebugJS._log.res(r);
+    DebugJS._log.res(r);
     return r;
   },
 
@@ -9508,7 +9508,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdTimeStr: function(arg, tbl, echo) {
+  cmdTimeStr: function(arg, tbl) {
     if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage(tbl.help);
       return;
@@ -9524,7 +9524,7 @@ DebugJS.prototype = {
       t = DebugJS.parseInt(t);
       s = DebugJS.getTimeDurationStr(t);
     }
-    if (echo) DebugJS._log.res(s);
+    DebugJS._log.res(s);
     return s;
   },
 
@@ -9615,7 +9615,7 @@ DebugJS.prototype = {
     return t;
   },
 
-  cmdStrp: function(arg, tbl, echo) {
+  cmdStrp: function(arg, tbl) {
     var a = DebugJS.splitCmdLine(arg);
     var t = a[0];
     var p = a[1];
@@ -9634,7 +9634,7 @@ DebugJS.prototype = {
     }
     var f = (typeof p == 'string') ? DebugJS.pIndex : DebugJS.strp;
     var r = f(t, p);
-    if (echo) DebugJS._log.res(r);
+    DebugJS._log.res(r);
     return r;
   },
 
@@ -9684,12 +9684,12 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeUri, DebugJS.decodeUri, iIdx);
   },
 
-  cmdUtf8: function(arg, tbl, echo) {
+  cmdUtf8: function(arg, tbl) {
     try {
       var s = eval(arg);
       if (typeof s == 'string') {
         var bf = DebugJS.UTF8.toByte(s);
-        if (echo) DebugJS.ctx._dumpByteSeq(s, bf.length);
+        DebugJS.ctx._dumpByteSeq(s, bf.length);
         return bf;
       } else {
         DebugJS.printUsage(tbl.help);
@@ -9817,7 +9817,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdXlsCol: function(arg, tbl, echo) {
+  cmdXlsCol: function(arg, tbl) {
     var r;
     if (!arg) {
       DebugJS.printUsage(tbl.help);return;
@@ -9826,7 +9826,7 @@ DebugJS.prototype = {
     var op;
     if (arg.match(/^[A-Za-z\d]+\s[A-Za-z\d]+$/)) {
       r = DebugJS.ctx._cmdXlsCols(arg);
-      if (echo) DebugJS._log.mlt(r);
+      DebugJS._log.mlt(r);
       return r;
     } else if (arg.indexOf('+') >= 0) {
       op = '+';
@@ -9850,7 +9850,7 @@ DebugJS.prototype = {
         r = (r < 0 ? (r * (-1)) : r) + 1;
       }
     }
-    if (echo) DebugJS._log.res(r);
+    DebugJS._log.res(r);
     return r;
   },
   _cmdXlsCols: function(v) {
@@ -12435,11 +12435,11 @@ DebugJS.getTZedDateTimeStr = function(d, tz, iso) {
   var ts = d.getTime() - df;
   return DebugJS.getDateTimeStr(ts, true, iso);
 };
-DebugJS.cmdTZedNow = function(c, echo) {
+DebugJS.cmdTZedNow = function(c) {
   var tz = DebugJS.toFullTz(DebugJS.TZ[c]);
   var ts = DebugJS.now();
   var r = DebugJS._date(ts, tz, false, false);
-  if (echo) DebugJS._log.res(r);
+  DebugJS._log.res(r);
   return r;
 };
 DebugJS.toFullTz = function(t) {
@@ -12492,7 +12492,7 @@ DebugJS.isSTN = function(s) {
   return false;
 };
 
-DebugJS.cmdCnvByte = function(c, echo) {
+DebugJS.cmdCnvByte = function(c) {
   c = c.toUpperCase();
   var v = c.match(/\d\.?\d*/)[0];
   var u = c.match(/[KMGTP]/)[0];
@@ -12510,10 +12510,10 @@ DebugJS.cmdCnvByte = function(c, echo) {
       r *= 1024;
   }
   r = DebugJS.formatDec(r) + ' bytes';
-  if (echo) DebugJS._log.res(r);
+  DebugJS._log.res(r);
   return r;
 };
-DebugJS.cmdCnvByte2 = function(v, echo) {
+DebugJS.cmdCnvByte2 = function(v) {
   var K = 1024;
   var M = 1048576;
   var G = 1073741824;
@@ -12543,7 +12543,7 @@ DebugJS.cmdCnvByte2 = function(v, echo) {
     r += DebugJS.formatDec(DebugJS.round(kb, 2)) + ' KB\n';
   }
   r += DebugJS.formatDec(v) + '  B';
-  if (echo) DebugJS._log.mlt('<span style="display:inline-block;text-align:right;">' + r + '</span>');
+  DebugJS._log.mlt('<span style="display:inline-block;text-align:right;">' + r + '</span>');
   return r;
 };
 
