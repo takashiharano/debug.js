@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002142202';
+  this.v = '202002161436';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2762,8 +2762,8 @@ DebugJS.prototype = {
           DebugJS.cmd.toggleFocus();
           break;
         } else if (DebugJS.ctx.status & DebugJS.ST_KIOSK) {
-          if (DebugJS.isTmrMode()) {
-            DebugJS.cmd.toggleFocus();
+          if (ctx.featStack.length > 0) {
+            ctx.closeTopFeature(ctx);
           } else {
             DebugJS.cmd.focus();
           }
