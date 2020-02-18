@@ -3185,6 +3185,50 @@ dbg.isAscii('<input type="text" id="isascii-txt" class="demo-text" style="width:
   </tr>
 
   <tr>
+    <td class="name">dbg.hex2base64</td>
+    <td>HEX</td>
+    <td>
+      Convert HEX to Base64 encoded string.<br>
+<pre class="eg">
+dbg.hex2base64('<input type="text" id="hex2base64-txt" class="demo-text" style="width:350px;" value="61 62 63">'); <button class="demo-button2" onclick="log.res(dbg.hex2base64(getVal('hex2base64-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.base642hex</td>
+    <td>string</td>
+    <td>
+      Convert Base64 encoded string to HEX.<br>
+<pre class="eg">
+dbg.base642hex('<input type="text" id="base642hex-txt" class="demo-text" style="width:350px;" value="YWJj">'); <button class="demo-button2" onclick="log.res(dbg.base642hex(getVal('base642hex-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.hex2str</td>
+    <td>HEX</td>
+    <td>
+      Convert HEX to string. (UTF-8)<br>
+<pre class="eg">
+dbg.hex2str('<input type="text" id="hex2str-txt" class="demo-text" style="width:350px;" value="61 62 63">'); <button class="demo-button2" onclick="log.res(dbg.hex2str(getVal('hex2str-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.str2hex</td>
+    <td>string</td>
+    <td>
+      Convert string(UTF-8) to HEX<br>
+<pre class="eg">
+dbg.str2hex('<input type="text" id="str2hex-txt" class="demo-text" style="width:350px;" value="abc">'); <button class="demo-button2" onclick="log.res(dbg.str2hex(getVal('str2hex-txt')));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.getProtocol</td>
     <td></td>
     <td>
