@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002182340';
+  this.v = '202002202350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9672,10 +9672,10 @@ DebugJS.prototype = {
     }
   },
 
-  cmdUnicode: function(arg, tbl, echo) {
+  cmdUnicode: function(arg, tbl) {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, false, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, true, false, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
   },
 
   cmdUri: function(arg, tbl, echo) {
