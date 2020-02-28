@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002282307';
+  this.v = '202002290000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2057,7 +2057,7 @@ DebugJS.prototype = {
     DebugJS.ctx.uiStatus &= ~DebugJS.UI_ST_LOG_SCROLL;
   },
   onClr: function() {
-    DebugJS.ctx.clearLog();
+    DebugJS.cls();
     DebugJS.ctx.focusCmdLine();
   },
   clearLog: function() {
@@ -7073,7 +7073,7 @@ DebugJS.prototype = {
     }
     if (str == 'copy') {
       var cmdActv = DebugJS.cmd.hasFocus();
-      ctx._cmdLogCopy();
+      DebugJS.copy2clpbd(ctx.logPanel.innerText);
       if (cmdActv) setTimeout(ctx.focusCmdLine, 0);
       return;
     }
@@ -7468,7 +7468,7 @@ DebugJS.prototype = {
   },
 
   cmdCls: function() {
-    DebugJS.ctx.clearLog();
+    DebugJS.cls();
   },
 
   cmdCondWait: function(arg, tbl) {
@@ -11702,6 +11702,7 @@ DebugJS._dndSet = function(w, a) {
     m += DebugJS.hlCtrlCh(b[i]) + '\n';
     r += b[i] + '\n';
   }
+  DebugJS.cls();
   DebugJS._log.mlt(m);
   return r;
 };
@@ -11743,6 +11744,7 @@ DebugJS.dndSort = function(s) {
   for (var i = 0; i < a.length; i++) {
     if (a[i] != '') r += a[i] + '\n';
   }
+  DebugJS.cls();
   DebugJS._log.mlt(r);
   return r;
 };
@@ -17364,7 +17366,7 @@ DebugJS.log.mlt = function(m) {
 };
 DebugJS.log.clear = function() {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
-  DebugJS.ctx.clearLog();
+  DebugJS.cls();
 };
 DebugJS.log.suspend = function() {
   DebugJS.ctx.suspendLog();
@@ -17407,6 +17409,9 @@ DebugJS.rootFncs = function() {
     var lv = fn[i];
     DebugJS.log[lv].root = (DebugJS.ENABLE ? DebugJS.log.root.fn.bind(undefined, lv) : DebugJS.fn);
   }
+};
+DebugJS.cls = function() {
+  DebugJS.ctx.clearLog();
 };
 
 DebugJS.setConsoleLogOut = function(f) {
