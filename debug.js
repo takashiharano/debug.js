@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202002290000';
+  this.v = '202003011551';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8299,7 +8299,7 @@ DebugJS.prototype = {
   cmdLed: function(arg, tbl) {
     if (arg == '') {
       var v = DebugJS.ctx.led;
-      var h = DebugJS.formatHex(DebugJS.toHex(v), true, true);
+      var h = DebugJS.formatHex(DebugJS.toHex(v), true, '0x');
       DebugJS._log.res(v + '(' + h + ')');
       DebugJS.printUsage(tbl.help);
     } else {
@@ -9716,7 +9716,7 @@ DebugJS.prototype = {
       for (var j = 0; j < a.length; j++) {
         var v = a[j];
         s += '[' + DebugJS.strPadding(cnt, ' ', DebugJS.digits(len), 'L') + '] ';
-        s += DebugJS.toHex(v, true, true, 2) + '  ';
+        s += DebugJS.toHex(v, true, '0x', 2) + '  ';
         s += DebugJS.strPadding(v, ' ', 3, 'L') + '  ';
         s += DebugJS.toBin(v);
         if (j == 0) {
@@ -11825,7 +11825,7 @@ DebugJS.convRadixFromHEX = function(v16) {
     var v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
   }
-  var hex = DebugJS.formatHex(v16, true, false);
+  var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -11845,7 +11845,7 @@ DebugJS.convRadixFromDEC = function(v10) {
     v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
   }
-  var hex = DebugJS.formatHex(v16, true, false);
+  var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -11860,7 +11860,7 @@ DebugJS.convRadixFromBIN = function(v2) {
     v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
   }
-  var hex = DebugJS.formatHex(v16, true, false);
+  var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) {
     hex = '0x' + hex;
   }
@@ -11971,7 +11971,7 @@ DebugJS.formatHex = function(hex, uc, pFix, d) {
   if ((d) && (hex.length < d)) {
     hex = (DebugJS.repeatCh('0', d) + hex).slice(d * (-1));
   }
-  if (pFix) hex = '0x' + hex;
+  if (pFix) hex = pFix + hex;
   return hex;
 };
 
@@ -12323,7 +12323,7 @@ DebugJS.base642hex = function(s) {
   var h = '';
   for (var i = 0; i < b.length; i++) {
     if (i > 0) h += ' ';
-    h += DebugJS.toHex(b[i], true, false, 2);
+    h += DebugJS.toHex(b[i], true, '', 2);
   }
   return h;
 };
@@ -12338,7 +12338,7 @@ DebugJS.str2hex = function(s) {
     var a = DebugJS.UTF8.toByte(ch);
     for (var j = 0; j < a.length; j++) {
       if (cnt > 0) h += ' ';
-      h += DebugJS.toHex(a[j], true, false, 2);
+      h += DebugJS.toHex(a[j], true, '', 2);
       cnt++;
     }
   }
@@ -13257,7 +13257,7 @@ DebugJS._getBinInfo = {
       j = v - 44;
     }
     var r = '';
-    if (j) r += 'Java ver: Java SE ' + j + ' (' + DebugJS.toHex(v, true, '0x', 2) + ')';
+    if (j) r += 'Java ver: Java SE ' + j + ' = ' + v + ' (' + DebugJS.toHex(v, true, '0x', 2) + ')';
     return r;
   }
 };
