@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003062310';
+  this.v = '202003070001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11997,7 +11997,7 @@ DebugJS.UTF8.toByteArray = function(s) {
   for (var i = 0; i < chs.length; i++) {
     var ch = chs[i];
     var c = ch.charCodeAt(0);
-    if (c <= 0xFF) {
+    if (c <= 0x7F) {
       a.push(c);
     } else {
       var e = encodeURIComponent(ch);
