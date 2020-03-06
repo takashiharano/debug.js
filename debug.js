@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003011551';
+  this.v = '202003062134';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9696,7 +9696,7 @@ DebugJS.prototype = {
     try {
       var s = eval(arg);
       if (typeof s == 'string') {
-        var bf = DebugJS.UTF8.toByte(s);
+        var bf = DebugJS.UTF8.toByteArray(s);
         DebugJS.ctx._dumpByteSeq(s, bf.length);
         return bf;
       } else {
@@ -9710,9 +9710,10 @@ DebugJS.prototype = {
   _dumpByteSeq: function(str, len) {
     var s = '';
     var cnt = 0;
-    for (var i = 0; i < str.length; i++) {
-      var ch = str.charAt(i);
-      var a = DebugJS.UTF8.toByte(ch);
+    var chs = DebugJS.str2arr(str);
+    for (var i = 0; i < chs.length; i++) {
+      var ch = chs[i];
+      var a = DebugJS.UTF8.toByteArray(ch);
       for (var j = 0; j < a.length; j++) {
         var v = a[j];
         s += '[' + DebugJS.strPadding(cnt, ' ', DebugJS.digits(len), 'L') + '] ';
@@ -11989,25 +11990,26 @@ DebugJS.bit8.invert = function(v) {
 };
 
 DebugJS.UTF8 = {};
-DebugJS.UTF8.toByte = function(s) {
+DebugJS.UTF8.toByteArray = function(s) {
   var a = [];
   if (!s) return a;
-  for (var i = 0; i < s.length; i++) {
-    var c = s.charCodeAt(i);
-    if (c <= 0x7F) {
+  var chs = DebugJS.str2arr(s);
+  for (var i = 0; i < chs.length; i++) {
+    var ch = chs[i];
+    var c = ch.charCodeAt(0);
+    if (c <= 0xFF) {
       a.push(c);
-    } else if (c <= 0x07FF) {
-      a.push(((c >> 6) & 0x1F) | 0xC0);
-      a.push((c & 0x3F) | 0x80);
     } else {
-      a.push(((c >> 12) & 0x0F) | 0xE0);
-      a.push(((c >> 6) & 0x3F) | 0x80);
-      a.push((c & 0x3F) | 0x80);
+      var e = encodeURIComponent(ch);
+      var w = e.split('%');
+      for (var j = 1; j < w.length; j++) {
+        a.push(('0x' + w[j]) | 0);
+      }
     }
   }
   return a;
 };
-DebugJS.UTF8.fmByte = function(a) {
+DebugJS.UTF8.fromByteArray = function(a) {
   if (!a) return null;
   var s = '';
   var i, c;
@@ -12141,7 +12143,7 @@ DebugJS.isBase64 = function(s) {
   return (s && s.match(/^[A-Za-z0-9/+]*=*$/) ? true : false);
 };
 DebugJS.encodeBSB64 = function(s, n) {
-  var a = DebugJS.UTF8.toByte(s);
+  var a = DebugJS.UTF8.toByteArray(s);
   return DebugJS.BSB64.encode(a, n);
 };
 DebugJS.decodeBSB64 = function(s, n) {
@@ -12151,7 +12153,7 @@ DebugJS.decodeBSB64 = function(s, n) {
     n = v[1];
   }
   var a = DebugJS.BSB64.decode(s, n);
-  return DebugJS.UTF8.fmByte(a);
+  return DebugJS.UTF8.fromByteArray(a);
 };
 DebugJS.BSB64 = {};
 DebugJS.BSB64.encode = function(a, n) {
@@ -12287,13 +12289,14 @@ DebugJS.decodeUnicode = function(arg) {
   return str;
 };
 DebugJS.getUnicodePoints = function(str) {
-  var code = '';
-  for (var i = 0; i < str.length; i++) {
-    var p = DebugJS.getCodePoint(str.charAt(i), true);
-    if (i > 0) code += ' ';
-    code += 'U+' + DebugJS.formatHex(p, true, '', 4);
+  var cd = '';
+  var chs = DebugJS.str2arr(str);
+  for (var i = 0; i < chs.length; i++) {
+    var p = DebugJS.getCodePoint(chs[i], true);
+    if (i > 0) cd += ' ';
+    cd += 'U+' + DebugJS.formatHex(p, true, '', 4);
   }
-  return code;
+  return cd;
 };
 DebugJS.getCodePoint = function(c, hex) {
   var p;
@@ -12335,7 +12338,7 @@ DebugJS.str2hex = function(s) {
   var cnt = 0;
   for (var i = 0; i < s.length; i++) {
     var ch = s.charAt(i);
-    var a = DebugJS.UTF8.toByte(ch);
+    var a = DebugJS.UTF8.toByteArray(ch);
     for (var j = 0; j < a.length; j++) {
       if (cnt > 0) h += ' ';
       h += DebugJS.toHex(a[j], true, '', 2);
@@ -12862,6 +12865,9 @@ DebugJS.substr = function(txt, len) {
     str = txt.substr(i);
   }
   return str;
+};
+DebugJS.str2arr = function(s) {
+  return s.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\s\S]/g) || [];
 };
 DebugJS.startsWith = function(s, p, o) {
   if (o) s = s.substr(o);
