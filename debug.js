@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003062134';
+  this.v = '202003062310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12009,29 +12009,13 @@ DebugJS.UTF8.toByteArray = function(s) {
   }
   return a;
 };
-DebugJS.UTF8.fromByteArray = function(a) {
-  if (!a) return null;
-  var s = '';
-  var i, c;
-  while (i = a.shift()) {
-    if (i <= 0x7F) {
-      s += String.fromCharCode(i);
-    } else if (i <= 0xDF) {
-      c = ((i & 0x1F) << 6);
-      c += a.shift() & 0x3F;
-      s += String.fromCharCode(c);
-    } else if (i <= 0xE0) {
-      c = ((a.shift() & 0x1F) << 6) | 0x800;
-      c += a.shift() & 0x3F;
-      s += String.fromCharCode(c);
-    } else {
-      c = ((i & 0x0F) << 12);
-      c += (a.shift() & 0x3F) << 6;
-      c += a.shift() & 0x3F;
-      s += String.fromCharCode(c);
-    }
+DebugJS.UTF8.fromByteArray = function(b) {
+  if (!b) return null;
+  var e = '';
+  for (var i = 0; i < b.length; i++) {
+    e += '%' + DebugJS.toHex(b[i], true, '', 2);
   }
-  return s;
+  return decodeURIComponent(e);
 };
 
 DebugJS.encodeB64 = function(s) {
