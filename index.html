@@ -224,18 +224,13 @@ function getVal(id) {
 var demoDispCount = 0;
 function displayDemoMessages() {
   if (demoDispCount >= demoMessages.length) {
-    setTimeout(clearDemoMessages, 3000);
+    dbg.cmd.focus();
     return;
   }
   var msgData = demoMessages[demoDispCount];
   demoDispCount++;
   msgData.fnc(msgData.msg);
   setTimeout(displayDemoMessages, msgData.delay);
-}
-
-function clearDemoMessages() {
-  dbg.cls();
-  dbg.cmd.focus();
 }
 
 var demoMessages = [
