@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003070001';
+  this.v = '202003081305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6778,7 +6778,7 @@ DebugJS.prototype = {
     var st = edt.selectionStart;
     var ed = edt.selectionEnd;
     var sl = ed - st;
-    var ch = txt.substr(st, 1);
+    var ch = DebugJS.str2arr(txt)[st] || '';
     var cd = DebugJS.getCodePoint(ch);
     var cd16 = DebugJS.getUnicodePoints(ch, true);
     var cp = '';
