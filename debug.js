@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003081305';
+  this.v = '202003091356';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12701,14 +12701,12 @@ DebugJS.onHttpReqDone = function(xhr) {
   var stmsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
     if (echo) DebugJS._log.e('Cannot load: ' + stmsg);
-  } else {
-    if (echo) DebugJS._log(stmsg);
   }
   var head = xhr.getAllResponseHeaders();
   var txt = xhr.responseText.replace(/</g, '&lt;');
   txt = txt.replace(/>/g, '&gt;');
   if (head || txt) {
-    var r = '<span style="color:#5ff">' + head + '</span>' + txt;
+    var r = '<span style="color:#5ff">' + stmsg + '\n' + head + '</span>' + txt;
     if (echo) DebugJS._log.mlt(r);
   }
 };
