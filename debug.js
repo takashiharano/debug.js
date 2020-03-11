@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003091356';
+  this.v = '202003120021';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5824,7 +5824,7 @@ DebugJS.prototype = {
       var s = DebugJS.delAllNL(t.trim());
       if (DebugJS.isDataURL(s)) {
         ctx.decodeDataURL(ctx, s);
-      } else if (DebugJS.isUnixTm(s.trim())) {
+      } else if (DebugJS.isUnixTm(s.trim()) || DebugJS.isDateTimeStr(s)) {
         r = ctx.cmdDate(s, null, true);
       } else {
         if (ctx.decB64(ctx, s)) return;
@@ -7566,7 +7566,7 @@ DebugJS.prototype = {
     } else {
       tz = DebugJS.getLocalTimeOffsetStr();
     }
-    if (!(DebugJS.isDateFormat(d) || DebugJS.isDateTimeFormat(d) || DebugJS.isDateTimeFormatIso(d) || (d == 'today'))) {
+    if (!(DebugJS.isDateTimeStr(d) || (d == 'today'))) {
       return null;
     }
     if (d == 'today') v = DebugJS.today('/');
@@ -10721,6 +10721,9 @@ DebugJS._isDTFmt = function(s, p, r) {
 };
 DebugJS.isTimeFormat = function(s) {
   return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T[\d*]{4,6}$/))) ? true : false;
+};
+DebugJS.isDateTimeStr = function(s) {
+  return (DebugJS.isDateFormat(s) || DebugJS.isDateTimeFormat(s) || DebugJS.isDateTimeFormatIso(s));
 };
 DebugJS.num2date = function(s) {
   var d = null;
