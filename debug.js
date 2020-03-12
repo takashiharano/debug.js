@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003120021';
+  this.v = '202003122320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7151,7 +7151,7 @@ DebugJS.prototype = {
     var ret = ctx.cmdRadixConv(cmdline, echo);
     if (ret) return cmd | 0;
 
-    ret = ctx.cmdFmtNum(cmdline, echo);
+    ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
 
     ret = ctx.cmdTimeCalc(cmdline, echo);
@@ -7175,7 +7175,7 @@ DebugJS.prototype = {
       return DebugJS.cmdTZedNow(cmdln, echo);
     }
 
-    if (cmdln.match(/^\d+\.?\d*[KMGTP]B$/i)) {
+    if (cmdln.match(/^\d+\.?\d*\s*[KMGTP]?B$/i)) {
       return DebugJS.cmdCnvByte(cmdln, echo);
     }
 
@@ -7633,7 +7633,7 @@ DebugJS.prototype = {
     return d;
   },
 
-  cmdFmtNum: function(c, echo) {
+  cmdFmtNum: function(c) {
     c = DebugJS.unifySP(c.trim());
     var r = null;
     if (c.match(/^-?[\d,]+\.?\d*\s[\dBb]$/)) {
@@ -7644,8 +7644,6 @@ DebugJS.prototype = {
         r = DebugJS.formatDec(v, n);
       } else if (n == 0) {
         r = v.replace(/,/g, '');
-      } else if ((n == 'b') || (n == 'B')) {
-        return DebugJS.cmdCnvByte2(v, echo);
       }
     }
     if (r != null) DebugJS._log.res(r);
@@ -12527,7 +12525,7 @@ DebugJS.isSTN = function(s) {
 DebugJS.cmdCnvByte = function(c) {
   c = c.toUpperCase();
   var v = c.match(/\d\.?\d*/)[0];
-  var u = c.match(/[KMGTP]/)[0];
+  var u = c.match(/[BKMGTP]/)[0];
   var r = v;
   switch (u) {
     case 'P':
@@ -12538,12 +12536,10 @@ DebugJS.cmdCnvByte = function(c) {
       r *= 1024;
     case 'M':
       r *= 1024;
-    default:
+    case 'K':
       r *= 1024;
   }
-  r = DebugJS.formatDec(r) + ' bytes';
-  DebugJS._log.res(r);
-  return r;
+  return DebugJS.cmdCnvByte2(r);
 };
 DebugJS.cmdCnvByte2 = function(v) {
   var K = 1024;
