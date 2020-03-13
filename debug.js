@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003132250';
+  this.v = '202003140012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7175,7 +7175,7 @@ DebugJS.prototype = {
       return DebugJS.cmdTZedNow(cmdln, echo);
     }
 
-    if (cmdln.match(/^\d+\.?\d*\s*[KMGTP]?B$/i)) {
+    if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
       return DebugJS.cmdCnvByte(cmdln, echo);
     }
 
@@ -12525,8 +12525,8 @@ DebugJS.isSTN = function(s) {
 };
 
 DebugJS.cmdCnvByte = function(c) {
-  c = c.toUpperCase();
-  var v = c.match(/\d\.?\d*/)[0];
+  c = c.toUpperCase().replace(/,/g, '');
+  var v = c.match(/\d+\.?\d*/)[0];
   var u = c.match(/[BKMGTP]/)[0];
   var r = v;
   switch (u) {
@@ -12541,16 +12541,15 @@ DebugJS.cmdCnvByte = function(c) {
     case 'K':
       r *= 1024;
   }
-  return DebugJS.cmdCnvByte2(r);
+  return DebugJS._cmdCnvByte(r);
 };
-DebugJS.cmdCnvByte2 = function(v) {
+DebugJS._cmdCnvByte = function(v) {
   var K = 1024;
   var M = 1048576;
   var G = 1073741824;
   var T = 1099511627776;
   var P = 1125899906842624;
   var kb, mb, gb, tb, pb;
-  v = parseInt((v + '').replace(/,/g, ''));
   var r = '';
   if (v >= P) {
     pb = v / P;
