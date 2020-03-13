@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003122320';
+  this.v = '202003132250';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -743,7 +743,7 @@ DebugJS.FEATURES = [
   'useLogFilter',
   'useCommandLine'
 ];
-DebugJS.TZ = {'pst': '-8', 'pdt': '-7', 'mst': '-7', 'mdt': '-6', 'cst': '-6', 'cdt': '-5', 'est': '-5', 'edt': '-4', 'utc': '+0', 'cet': '+1', 'cest': '+2', 'ist': '+0530', 'ctt': '+8', 'jst': '+9'};
+DebugJS.TZ = {'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
 DebugJS.fn = function() {};
 DebugJS.rdy = false;
 DebugJS.prototype = {
@@ -12466,6 +12466,7 @@ DebugJS.getTZedDateTimeStr = function(d, tz, iso) {
   return DebugJS.getDateTimeStr(ts, true, iso);
 };
 DebugJS.cmdTZedNow = function(c) {
+  c = c.toUpperCase();
   var tz = DebugJS.toFullTz(DebugJS.TZ[c]);
   var ts = DebugJS.now();
   var r = DebugJS._date(ts, tz, false, false);
@@ -12516,6 +12517,7 @@ DebugJS.toClocklikeStr = function(s) {
   return s.substr(0, 3) + ':' + s.substr(3, 2);
 };
 DebugJS.isSTN = function(s) {
+  s = s.toUpperCase();
   for (var k in DebugJS.TZ) {
     if (s == k) return true;
   }
