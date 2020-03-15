@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003140012';
+  this.v = '202003151540';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5825,7 +5825,7 @@ DebugJS.prototype = {
       if (DebugJS.isDataURL(s)) {
         ctx.decodeDataURL(ctx, s);
       } else if (DebugJS.isUnixTm(s.trim()) || DebugJS.isDateTimeStr(s)) {
-        r = ctx.cmdDate(s, null, true);
+        r = ctx.cmdDate(s, null);
       } else {
         if (ctx.decB64(ctx, s)) return;
         r = ctx.fmtJson(ctx, t);
@@ -7167,8 +7167,8 @@ DebugJS.prototype = {
     if (ret != null) return ret;
 
     var cmdln = cmdline.trim();
-    if (DebugJS.isUnixTm(cmdln)) {
-      return ctx.cmdDate(cmdline, null, echo);
+    if (DebugJS.isUnixTm(cmd)) {
+      return ctx.cmdDate(cmdline, null);
     }
 
     if (DebugJS.isSTN(cmdln)) {
@@ -10630,10 +10630,9 @@ DebugJS.now = function() {
 };
 DebugJS.date = function(val, iso) {
   val = (val + '').trim();
-  var showTS = true;
-  var dt;
   var ts = val;
   var tz = DebugJS.getLocalTimeOffsetStr();
+  var _tz, st;
   var idx = val.lastIndexOf(' ');
   if (val == '') {
     ts = DebugJS.now();
@@ -10641,31 +10640,38 @@ DebugJS.date = function(val, iso) {
     ts = ts.substr(0, ts.length - 1);
     tz = '+0000';
   } else if (idx > 0) {
-    var _tz = val.substr(idx + 1);
+    _tz = val.substr(idx + 1).replace(/:/, '');
+    st = DebugJS.TZ[_tz.toUpperCase()];
+    if (st) _tz = st;
     if (DebugJS.isTZOffsetStr(_tz)) {
       ts = val.substr(0, idx);
       tz = _tz;
     }
-    showTS = isNaN(ts);
-  } else if (DebugJS.isTZOffsetStr(val)) {
-    tz = val;
-    ts = DebugJS.now();
-  } else if (!isNaN(ts)) {
-    showTS = false;
-  }
-  if (isNaN(ts)) {
-    if (DebugJS.isDateTimeFormatIso(ts)) {
-      dt = DebugJS.getDateTimeIso(ts);
-    } else {
-      ts = ts.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
-      dt = DebugJS.getDateTime(ts);
+  } else {
+    _tz = val.replace(/:/, '');
+    st = DebugJS.TZ[_tz.toUpperCase()];
+    if (st) _tz = st;
+    if (DebugJS.isTZOffsetStr(_tz)) {
+      tz = _tz;
+      ts = DebugJS.now();
     }
-    var loc = DebugJS.jsTzOffset2ms(dt.offset);
-    var tgt = DebugJS.tzOffset2ms(tz);
-    var df = loc - tgt;
-    ts = dt.time + df;
   }
-  return DebugJS._date(ts, tz, iso, showTS);
+  if (isNaN(ts)) return DebugJS.date2ts(ts, tz, iso);
+  return DebugJS._date(ts, tz, iso, false);
+};
+DebugJS.date2ts = function(ts, tz, iso) {
+  var dt;
+  if (DebugJS.isDateTimeFormatIso(ts)) {
+    dt = DebugJS.getDateTimeIso(ts);
+  } else {
+    ts = ts.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
+    dt = DebugJS.getDateTime(ts);
+  }
+  var loc = DebugJS.jsTzOffset2ms(dt.offset);
+  var tgt = DebugJS.tzOffset2ms(tz);
+  var df = loc - tgt;
+  ts = dt.time + df;
+  return DebugJS._date(ts, tz, iso, true);
 };
 DebugJS._date = function(ts, tz, iso, showTS) {
   var s = DebugJS.int2DateStr(ts, tz, iso);
