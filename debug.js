@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003151540';
+  this.v = '202003162125';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -347,7 +347,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
-    {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars ch1 [ch2]'},
+    {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars CH1(U+xxxx) [CH2(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
     {cmd: 'clpbd', fn: this.cmdClpbd, desc: 'Copy to clipboard', help: 'clpbd copy "str"'},
@@ -7407,7 +7407,7 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return;
     }
-    var s = DebugJS.str(c1, c2);
+    var s = DebugJS.chars(c1, c2);
     DebugJS._log(DebugJS.quoteStrIfNeeded(s));
     return s;
   },
@@ -12910,11 +12910,11 @@ DebugJS.repeatCh = function(c, n) {
 DebugJS.crlf2lf = function(s) {
   return s.replace(/\r\n/g, '\n');
 };
-DebugJS.str = function(c1, c2) {
+DebugJS.chars = function(c1, c2) {
   var p1 = c1, p2 = c2;
   if (typeof c1 == 'string') {
     c1 = c1.replace(/^U\+/, '0x');
-    if (!isNaN(c1) && c1.length > 1) {
+    if (!isNaN(c1) && c1.match(/^0x/)) {
       p1 = c1 | 0;
     } else {
       p1 = DebugJS.getCodePoint(c1);
@@ -12923,7 +12923,7 @@ DebugJS.str = function(c1, c2) {
   if (!c2) p2 = p1;
   if (typeof c2 == 'string') {
     c2 = c2.replace(/^U\+/, '0x');
-    if (!isNaN(c2) && c2.length > 1) {
+    if (!isNaN(c2) && c2.match(/^0x/)) {
       p2 = c2 | 0;
     } else {
       p2 = DebugJS.getCodePoint(c2);
@@ -12932,11 +12932,19 @@ DebugJS.str = function(c1, c2) {
   var s = '';
   if (p1 > p2) {
     for (var i = p1; i >= p2; i--) {
-      s += String.fromCharCode(i);
+      if (String.fromCodePoint) {
+        s += String.fromCodePoint(i);
+      } else {
+        s += String.fromCharCode(i);
+      }
     }
   } else {
     for (i = p1; i <= p2; i++) {
-      s += String.fromCharCode(i);
+      if (String.fromCodePoint) {
+        s += String.fromCodePoint(i);
+      } else {
+        s += String.fromCharCode(i);
+      }
     }
   }
   return s;
