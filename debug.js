@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003162125';
+  this.v = '202003162159';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7171,8 +7171,8 @@ DebugJS.prototype = {
       return ctx.cmdDate(cmdline, null);
     }
 
-    if (DebugJS.isSTN(cmdln)) {
-      return DebugJS.cmdTZedNow(cmdln, echo);
+    if (DebugJS.isSTN(cmd)) {
+      return DebugJS.cmdTZedNow(cmd, arg);
     }
 
     if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
@@ -12471,10 +12471,16 @@ DebugJS.getTZedDateTimeStr = function(d, tz, iso) {
   var ts = d.getTime() - df;
   return DebugJS.getDateTimeStr(ts, true, iso);
 };
-DebugJS.cmdTZedNow = function(c) {
-  c = c.toUpperCase();
-  var tz = DebugJS.toFullTz(DebugJS.TZ[c]);
+DebugJS.cmdTZedNow = function(t, o) {
+  t = t.toUpperCase();
+  var tz = DebugJS.toFullTz(DebugJS.TZ[t]);
   var ts = DebugJS.now();
+  if (o) {
+    o = o.replace(/:/, '');
+    o = DebugJS.toFullTz(o);
+    o = DebugJS.tzOffset2ms(o) | 0;
+    ts += o;
+  }
   var r = DebugJS._date(ts, tz, false, false);
   DebugJS._log.res(r);
   return r;
