@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003162159';
+  this.v = '202003211713';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3135,7 +3135,11 @@ DebugJS.prototype = {
     var t = sp.y1 + 3;
     var w = DebugJS.DBGWIN_EXPAND_W;
     var h = DebugJS.DBGWIN_EXPAND_H;
-    if (sp.x1 - 1 > (clW - sp.x2)) {
+    var cx = (clW / 2) - (sp.w / 2);
+    var dx = Math.abs(sp.x1 - cx);
+    if (dx <= 4) {
+      l = (clW / 2) - (DebugJS.DBGWIN_EXPAND_W / 2);
+    } else if (sp.x1 - 1 > (clW - sp.x2)) {
       l = (sp.x1 - (DebugJS.DBGWIN_EXPAND_W - sp.w)) + 1;
     }
     if (sp.y1 > (clH - sp.y2)) {
@@ -3258,6 +3262,8 @@ DebugJS.prototype = {
   restoreDbgWin: function(org) {
     var ctx = DebugJS.ctx;
     if (!org) org = ctx.orgSizePos;
+    var clW = document.documentElement.clientWidth;
+    var clH = document.documentElement.clientHeight;
     var w = org.w;
     var h = org.h;
     var t = org.t;
@@ -3270,10 +3276,11 @@ DebugJS.prototype = {
       var sp = ctx.getSelfSizePos();
       var orgY2 = t + h;
       var orgX2 = l + w;
-      if (((Math.abs(sp.x1 - l) > thold) && (Math.abs(sp.x2 - orgX2) > thold)) ||
-          ((Math.abs(sp.y1 - t) > thold) && (Math.abs(sp.y2 - orgY2) > thold))) {
-        var clW = document.documentElement.clientWidth;
-        var clH = document.documentElement.clientHeight;
+      var cx = (clW / 2) - (sp.w / 2);
+      var dx = Math.abs(sp.x1 - cx);
+      if ((dx > 4) &&
+          (((Math.abs(sp.x1 - l) > thold) && (Math.abs(sp.x2 - orgX2) > thold)) ||
+           ((Math.abs(sp.y1 - t) > thold) && (Math.abs(sp.y2 - orgY2) > thold)))) {
         var mL = (sp.x1 < 0 ? 0 : sp.x1);
         var mT = (sp.y1 < 0 ? 0 : sp.y1);
         var mR = clW - sp.x2;
