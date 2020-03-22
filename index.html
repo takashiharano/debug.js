@@ -2597,6 +2597,41 @@ dbg.wd.start(<input type="text" id="wd-demo-val-text" class="demo-text" style="w
   </tr>
 
   <tr>
+    <td class="name">dbg.setWindowSize</td>
+    <td>
+      arg1: width<br>
+      arg2: height<br>
+      <br>or<br>
+      arg1:<br>
+      normal<br>
+      expand<br>
+      full<br>
+      restore<br>
+      reset
+    </td>
+    <td>
+      Set the debugger window size.<br>
+<pre>
+dbg.setWindowSize(<input type="text" id="size-w-text" value="600" class="demo-text" style="width:30px;">, <input type="text" id="size-h-text" value="400" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.setWindowSize(getVal('size-w-text'), getVal('size-h-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">dbg.setWindowPos</td>
+    <td>
+      arg1: x<br>
+      arg2: y
+    </td>
+    <td>
+      Set the debugger window position.<br>
+<pre>
+dbg.setWindowPos(<input type="text" id="pos-x-text" value="100" class="demo-text" style="width:30px;">, <input type="text" id="pos-y-text" value="200" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.setWindowPos(getVal('pos-x-text'), getVal('pos-y-text'));">DEMO</button>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">dbg.opacity</td>
     <td>
       0.1-1
@@ -2617,34 +2652,6 @@ dbg.opacity(<input type="text" id="opacity-text" value="0.5" class="demo-text" s
 <pre>
 dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('isvisible-ret').innerText = dbg.isVisible();">DEMO</button>
 -&gt; <span id="isvisible-ret"></span>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.pos</td>
-    <td>
-      arg1: x<br>
-      arg2: y
-    </td>
-    <td>
-      Set the debugger window position.<br>
-<pre>
-dbg.pos(<input type="text" id="pos-x-text" value="100" class="demo-text" style="width:30px;">, <input type="text" id="pos-y-text" value="200" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.pos(getVal('pos-x-text'), getVal('pos-y-text'));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.size</td>
-    <td>
-      arg1: width<br>
-      arg2: height
-    </td>
-    <td>
-      Set the debugger window size.<br>
-<pre>
-dbg.size(<input type="text" id="size-w-text" value="600" class="demo-text" style="width:30px;">, <input type="text" id="size-h-text" value="400" class="demo-text" style="width:30px;">); <button class="demo-button2" onclick="dbg.size(getVal('size-w-text'), getVal('size-h-text'));">DEMO</button>
 </pre>
     </td>
   </tr>

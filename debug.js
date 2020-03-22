@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003221510';
+  this.v = '202003230014';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13641,6 +13641,16 @@ DebugJS.show = function() {
 DebugJS.hide = function() {
   DebugJS.ctx.closeDbgWin();
 };
+DebugJS.setWindowSize = function(a, b) {
+  if (b) {
+    DebugJS.ctx._cmdDbgWinSize(DebugJS.ctx, a, b);
+  } else {
+    DebugJS.ctx.setWinSize(a);
+  }
+};
+DebugJS.setWindowPos = function(x, y) {
+  DebugJS.ctx._cmdDbgWinPos(DebugJS.ctx, x, y);
+};
 DebugJS.kiosk = function(z) {
   var ctx = DebugJS.ctx;
   if (!(ctx.status & DebugJS.ST_KIOSK)) {
@@ -13660,12 +13670,6 @@ DebugJS.opacity = function(v) {
 DebugJS.isVisible = function() {
   if (DebugJS.ctx.uiStatus & DebugJS.UI_ST_VISIBLE) return true;
   return false;
-};
-DebugJS.pos = function(x, y) {
-  DebugJS.ctx._cmdDbgWinPos(DebugJS.ctx, x, y);
-};
-DebugJS.size = function(w, h) {
-  DebugJS.ctx._cmdDbgWinSize(DebugJS.ctx, w, h);
 };
 DebugJS.pin = function(f) {
   if (f == undefined) return ((DebugJS.ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? false : true);
