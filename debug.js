@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003211713';
+  this.v = '202003221510';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -404,6 +404,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DateStr" ms|HH:MI:SS.sss|"DateStr"\nDateStr: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'timer start|split|stop|list [timer-name]'},
     {cmd: 'timestr', fn: this.cmdTimeStr, desc: 'String <--> millis', help: 'timestr ms|sec.ms'},
+    {cmd: 'tofull', fn: this.cmdToFull, desc: 'Convert half-width character(s) to full-width', help: 'tofull STR'},
+    {cmd: 'tohalf', fn: this.cmdToHalf, desc: 'Convert full-width character(s) to half-width', help: 'tohalf STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode code point / Decodes unicode string', help: 'unicode [-e|-d] str|codePoint(s)'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
@@ -9541,6 +9543,17 @@ DebugJS.prototype = {
     return s;
   },
 
+  cmdToFull: function(arg) {
+    var s = DebugJS.toFullWidth(arg);
+    DebugJS._log.res(s);
+    return s;
+  },
+  cmdToHalf: function(arg) {
+    var s = DebugJS.toHalfWidth(arg);
+    DebugJS._log.res(s);
+    return s;
+  },
+
   cmdStack: function(arg, tbl) {
     var f = arg.trim();
     if (f) {
@@ -12967,13 +12980,19 @@ DebugJS.plural = function(s, n) {
 };
 DebugJS.toHalfWidth = function(s) {
   var h = s.replace(/　/g, ' ').replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\');
-  h = h.replace(/[！-～]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) - 65248);});
+  h = h.replace(/[！-～]/g, DebugJS.shift2half);
   return h;
+};
+DebugJS.shift2half = function(w) {
+  return String.fromCharCode(w.charCodeAt(0) - 65248);
 };
 DebugJS.toFullWidth = function(s) {
   var f = s.replace(/ /g, '　').replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '‘').replace(/\\/g, '￥');
-  f = f.replace(/[!-~]/g, function(wk) {return String.fromCharCode(wk.charCodeAt(0) + 65248);});
+  f = f.replace(/[!-~]/g, DebugJS.shift2full);
   return f;
+};
+DebugJS.shift2full = function(w) {
+  return String.fromCharCode(w.charCodeAt(0) + 65248);
 };
 DebugJS.lenB = function(s) {
   return (new Blob([s], {type: 'text/plain'})).size;
