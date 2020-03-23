@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003230014';
+  this.v = '202003232133';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -745,7 +745,7 @@ DebugJS.FEATURES = [
   'useLogFilter',
   'useCommandLine'
 ];
-DebugJS.TZ = {'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
+DebugJS.TZ = {'HST': '-10', 'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
 DebugJS.fn = function() {};
 DebugJS.rdy = false;
 DebugJS.prototype = {
@@ -12495,23 +12495,33 @@ DebugJS.cmdTZedNow = function(t, o) {
   t = t.toUpperCase();
   var tz = DebugJS.toFullTz(DebugJS.TZ[t]);
   var ts = DebugJS.now();
+  var os;
   if (o) {
     o = o.replace(/:/, '');
-    o = DebugJS.toFullTz(o);
-    o = DebugJS.tzOffset2ms(o) | 0;
+    os = DebugJS.toFullTz(o);
+    o = DebugJS.tzOffset2ms(os) | 0;
+    os = os.substr(0, 3) + ':' + os.substr(3);
     ts += o;
   }
   var r = DebugJS._date(ts, tz, false, false);
+  if ((t == 'UTC') && os) r = r.replace('+00:00', os);
   DebugJS._log.res(r);
   return r;
 };
 DebugJS.toFullTz = function(t) {
-  if (t.length == 2) {
-    t = t.charAt(0) + '0' + t.charAt(1) + '00';
+  var s = t.charAt(0);
+  if (t.length == 1) {
+    t = '+0' + t + '00';
+  } else if (t.length == 2) {
+    if (s.match(/\d/)) {
+      t = '+' + t + '00';
+    } else {
+      t = s + '0' + t.charAt(1) + '00';
+    }
   } else if (t.length == 3) {
     t += '00';
   } else if (t.length == 4) {
-    t = t.charAt(0) + '0' + t.charAt(1) + t.substr(2);
+    t = s + '0' + t.charAt(1) + t.substr(2);
   }
   return t;
 };
