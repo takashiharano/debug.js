@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003232133';
+  this.v = '202003240000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1372,7 +1372,7 @@ DebugJS.prototype = {
     }
 
     if (opt.useCommandLine) {
-      ctx.clpBtn = ctx.createHdrBtn('clpBtn', 'C', 3, fontSize, ctx.toggleClp, 'status', 'ST_CLP', 'CLP_BTN_COLOR', false, 'Copy the command result to clipboard');
+      ctx.clpBtn = ctx.createHdrBtn('clpBtn', 'C', 3, fontSize, DebugJS.copyLogs, null, null, 'CLP_BTN_COLOR', false, 'Copy the logs');
     }
 
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.usePinButton) {
@@ -1583,7 +1583,7 @@ DebugJS.prototype = {
     if (opt.useMsgDisplay) ctx.updateMsgLabel();
   },
 
-  createHdrBtn: function(btnObj, label, marginLeft, fontSize, handler, status, state, actvColor, reverse, title) {
+  createHdrBtn: function(btnObj, label, marginLeft, fontSize, handler, stVar, stNm, actvColor, reverse, title) {
     var ctx = DebugJS.ctx;
     var btn = DebugJS.ui.addBtn(ctx.headPanel, label, handler);
     btn.style.float = 'right';
@@ -1592,7 +1592,11 @@ DebugJS.prototype = {
     DebugJS.setStyle(btn, 'color', DebugJS.COLOR_INACT);
     btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.' + actvColor + ');');
     var fnSfx = (reverse ? 'DebugJS.COLOR_INACT : DebugJS.' + actvColor + ');' : 'DebugJS.' + actvColor + ' : DebugJS.COLOR_INACT);');
-    btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + status + ' & DebugJS.' + state + ') ? ' + fnSfx);
+    if (stVar) {
+      btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + stVar + ' & DebugJS.' + stNm + ') ? ' + fnSfx);
+    } else {
+      btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.COLOR_INACT)');
+    }
     if (title) btn.title = title;
     return btn;
   },
@@ -1910,10 +1914,6 @@ DebugJS.prototype = {
 
   updatePinBtn: function(ctx) {
     if (ctx.pinBtn) DebugJS.setStyle(ctx.pinBtn, 'color', (ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) ? DebugJS.COLOR_INACT : DebugJS.PIN_BTN_COLOR);
-  },
-
-  updateClpBtn: function(ctx) {
-    if (ctx.clpBtn) DebugJS.setStyle(ctx.clpBtn, 'color', (ctx.status & DebugJS.ST_CLP) ? DebugJS.CLP_BTN_COLOR : DebugJS.COLOR_INACT);
   },
 
   updateBtnActive: function(btn, st, actvColor) {
@@ -2472,23 +2472,6 @@ DebugJS.prototype = {
   },
   disableResize: function(ctx) {
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
-  },
-
-  toggleClp: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_CLP) {
-      ctx.disableClp(ctx);
-    } else {
-      ctx.enableClp(ctx);
-    }
-  },
-  enableClp: function(ctx) {
-    ctx.status |= DebugJS.ST_CLP;
-    ctx.updateClpBtn(ctx);
-  },
-  disableClp: function(ctx) {
-    ctx.status &= ~DebugJS.ST_CLP;
-    ctx.updateClpBtn(ctx);
   },
 
   startStopStopwatch: function() {
@@ -7081,9 +7064,7 @@ DebugJS.prototype = {
       return;
     }
     if (str == 'copy') {
-      var cmdActv = DebugJS.cmd.hasFocus();
-      DebugJS.copy2clpbd(ctx.logPanel.innerText);
-      if (cmdActv) setTimeout(ctx.focusCmdLine, 0);
+      DebugJS.copyLogs();
       return;
     }
     if (echo && plain) {
@@ -14199,6 +14180,12 @@ DebugJS.copy2clpbd = function(s) {
   var r = document.execCommand('copy');
   b.removeChild(ta);
   return r;
+};
+
+DebugJS.copyLogs = function() {
+  var cmdActv = DebugJS.cmd.hasFocus();
+  DebugJS.copy2clpbd(DebugJS.ctx.logPanel.innerText);
+  if (cmdActv) setTimeout(DebugJS.ctx.focusCmdLine, 0);
 };
 
 DebugJS.bat = function(b, a, sl, el) {
