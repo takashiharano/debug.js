@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003240000';
+  this.v = '202003300053';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -407,7 +407,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'tofull', fn: this.cmdToFull, desc: 'Convert half-width character(s) to full-width', help: 'tofull STR'},
     {cmd: 'tohalf', fn: this.cmdToHalf, desc: 'Convert full-width character(s) to half-width', help: 'tohalf STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
-    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode code point / Decodes unicode string', help: 'unicode [-e|-d] str|codePoint(s)'},
+    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] str|codePoint(s)'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
     {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', help: 'utf8 "str"'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -9682,7 +9682,7 @@ DebugJS.prototype = {
   cmdUnicode: function(arg, tbl) {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
-    return DebugJS.ctx.execEncAndDec(arg, tbl, true, false, DebugJS.getUnicodePoints, DebugJS.decodeUnicode, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, true, false, DebugJS.getUnicodePtEsc, DebugJS.decodeUnicode, iIdx);
   },
 
   cmdUri: function(arg, tbl, echo) {
@@ -12280,9 +12280,9 @@ DebugJS.decodeUnicode = function(arg) {
   }
   return str;
 };
-DebugJS.getUnicodePoints = function(str) {
+DebugJS.getUnicodePoints = function(s) {
   var cd = '';
-  var chs = DebugJS.str2arr(str);
+  var chs = DebugJS.str2arr(s);
   for (var i = 0; i < chs.length; i++) {
     var p = DebugJS.getCodePoint(chs[i], true);
     if (i > 0) cd += ' ';
@@ -12299,6 +12299,15 @@ DebugJS.getCodePoint = function(c, hex) {
   }
   if (hex) p = DebugJS.toHex(p, true, '', 0);
   return p;
+};
+DebugJS.getUnicodePtEsc = function(s) {
+  var r = '';
+  var chs = DebugJS.str2arr(s);
+  for (var i = 0; i < chs.length; i++) {
+    var p = DebugJS.getCodePoint(chs[i], false);
+    r += '\\u' + DebugJS.toHex(p, false, '', 4);
+  }
+  return r;
 };
 
 DebugJS.decodeUri = function(s) {

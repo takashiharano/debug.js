@@ -1739,6 +1739,7 @@ def main():
     status = 'ERROR'
 
   result = '{"status":"' + status + '"}'
+
   print('Content-Type: application/json')
   print()
   print(result)
@@ -5668,13 +5669,13 @@ $ unalias name [name ...]
       arg2: string
     </td>
     <td>
-     Displays Unicode code point(s) from text string / Decodes Unicode string from code point(s).
+     Displays Unicode escape sequences from text string / Decodes Unicode string from code point(s).
 <pre class="eg">
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
 
-$ unicode -e abc
--&gt; U+0041 U+0042 U+0043
+$ unicode -e ABC
+-&gt; \u0041\u0042\u0043
 
 $ unicode -d 41 42 43
 -&gt; ABC
