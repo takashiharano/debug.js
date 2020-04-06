@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202003300053';
+  this.v = '202004070818';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7173,6 +7173,10 @@ DebugJS.prototype = {
       return ctx.cmdUnicode('-d ' + cmdline, null, echo);
     }
 
+    if (DebugJS.isURIencoding(cmdln)) {
+      return ctx.cmdUri('-d ' + cmdln, null, echo);
+    }
+
     return ctx.execCode(cmdline, echo);
   },
 
@@ -12554,6 +12558,10 @@ DebugJS.isSTN = function(s) {
     if (s == k) return true;
   }
   return false;
+};
+
+DebugJS.isURIencoding = function(s) {
+  return s.match(/^(%[A-Fa-f0-9][A-Fa-f0-9])+$/) ? true : false;
 };
 
 DebugJS.cmdCnvByte = function(c) {
