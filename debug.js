@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202004070818';
+  this.v = '202004072220';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -425,7 +425,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
-    set: DebugJS.dndSet,
+    unique: DebugJS.dndUnique,
     sort: DebugJS.dndSort
   },
   this.CMD_TBL = [];
@@ -11666,7 +11666,7 @@ DebugJS.arr.toSet = function(a, f) {
   }
   return s;
 };
-DebugJS.dndSet = function(s) {
+DebugJS.dndUnique = function(s) {
   var l = DebugJS.txt2arr(s);
   var o = DebugJS.cntByGrp(l);
   var arg = DebugJS.ctx.dndArg;
@@ -11693,13 +11693,13 @@ DebugJS.dndSet = function(s) {
   }
   var r;
   if (DebugJS.hasOpt(arg, 'count')) {
-    r = DebugJS._dndSetCnt(v, w);
+    r = DebugJS._dndUniqueCnt(v, w);
   } else {
-    r = DebugJS._dndSet(w, arg);
+    r = DebugJS._dndUnique(w, arg);
   }
   return r;
 };
-DebugJS._dndSet = function(w, a) {
+DebugJS._dndUnique = function(w, a) {
   var r = '';
   var m = '';
   var b = [];
@@ -11719,7 +11719,7 @@ DebugJS._dndSet = function(w, a) {
   DebugJS._log.mlt(m);
   return r;
 };
-DebugJS._dndSetCnt = function(v, w) {
+DebugJS._dndUniqueCnt = function(v, w) {
   var mxD = 3;
   for (var i = 0; i < v.length; i++) {
     var d = DebugJS.digits(v[i].cnt);
