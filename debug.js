@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202004072220';
+  this.v = '202005101845';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12785,8 +12785,14 @@ DebugJS.getBrowserType = function() {
   var ver;
   var brws = {name: '', version: ''};
   if (ua.indexOf('Edge') >= 1) {
-    brws.name = 'Edge';
+    brws.name = 'Edge Legacy';
     ver = ua.match(/Edge\/(.*)/);
+    if (ver) brws.version = ver[1];
+    return brws;
+  }
+  if (ua.indexOf('Edg') >= 1) {
+    brws.name = 'Edge';
+    ver = ua.match(/Edg\/(.*)/);
     if (ver) brws.version = ver[1];
     return brws;
   }
@@ -12831,25 +12837,28 @@ DebugJS.getBrowserType = function() {
   }
   return brws;
 };
-DebugJS.browserColoring = function(nm) {
-  var s = nm;
-  switch (nm) {
+DebugJS.browserColoring = function(n) {
+  var s = n;
+  switch (n) {
     case 'Chrome':
       s = '<span style="color:#f44">Ch</span><span style="color:#ff0">ro</span><span style="color:#4f4">m</span><span style="color:#6cf">e</span>';
       break;
+    case 'Edge Legacy':
+      s = '<span style="color:#0af">Edge</span>';
+      break;
     case 'Edge':
-      s = '<span style="color:#0af">' + nm + '</span>';
+      s = '<span style="color:#4e7">E</span><span style="color:#3df">d</span><span style="color:#0af">ge</span>';
       break;
     case 'Firefox':
-      s = '<span style="color:#e57f25">' + nm + '</span>';
+      s = '<span style="color:#e57f25">' + n + '</span>';
       break;
     case 'Opera':
-      s = '<span style="color:#f44">' + nm + '</span>';
+      s = '<span style="color:#f44">' + n + '</span>';
       break;
     case 'IE11':
     case 'IE10':
     case 'IE9':
-      s = '<span style="color:#61d5f8">' + nm + '</span>';
+      s = '<span style="color:#61d5f8">' + n + '</span>';
       break;
     case 'Safari':
       s = '<span style="color:#86c8e8">Safa</span><span style="color:#dd5651">r</span><span style="color:#ececec">i</span>';
