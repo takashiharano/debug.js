@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202005101845';
+  this.v = '202005252230';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3678,7 +3678,7 @@ DebugJS.prototype = {
     var docOncontextmenu = foldingTxt(document.oncontextmenu, 'documentOncontextmenu', OMIT_LAST);
 
     var html = '<pre>';
-    html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.getTimeOffsetStr(offset, true) + ')\n';
+    html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset, true) + ')\n';
     html += addSysInfo('screen.     ', screenInfo);
     html += addSysInfo('Browser     ', DebugJS.browserColoring(browser.name) + ' ' + browser.version);
     html += addPropSep();
@@ -7558,7 +7558,7 @@ DebugJS.prototype = {
       d = d.substr(0, idx);
       tz = tz[0].trim();
     } else {
-      tz = DebugJS.getLocalTimeOffsetStr();
+      tz = DebugJS.getTZ();
     }
     if (!(DebugJS.isDateTimeStr(d) || (d == 'today'))) {
       return null;
@@ -10636,7 +10636,7 @@ DebugJS.now = function() {
 DebugJS.date = function(val, iso) {
   val = (val + '').trim();
   var ts = val;
-  var tz = DebugJS.getLocalTimeOffsetStr();
+  var tz = DebugJS.getTZ();
   var _tz, st;
   var idx = val.lastIndexOf(' ');
   if (val == '') {
@@ -10692,7 +10692,7 @@ DebugJS.int2DateStr = function(val, tz, iso) {
   val = DebugJS.parseInt(val);
   var dt = new Date(val);
   var s = DebugJS.getTZedDateTimeStr(dt, tz, iso);
-  s += (iso ? tz : ' ' + DebugJS.toClocklikeStr(tz));
+  s += (iso ? tz : ' ' + DebugJS.toClockFormat(tz));
   return s;
 };
 DebugJS.float2ms = function(t) {
@@ -10820,7 +10820,7 @@ DebugJS.timestr2struct = function(str) {
   };
   return st;
 };
-DebugJS.getTimeOffsetStr = function(v, e) {
+DebugJS.formatTZ = function(v, e) {
   var s = '-';
   if (v <= 0) {
     v *= (-1);
@@ -10829,11 +10829,11 @@ DebugJS.getTimeOffsetStr = function(v, e) {
   var h = (v / 60) | 0;
   var m = v - h * 60;
   var str = s + ('0' + h).slice(-2) + ('0' + m).slice(-2);
-  if (e) str = DebugJS.toClocklikeStr(str);
+  if (e) str = DebugJS.toClockFormat(str);
   return str;
 };
-DebugJS.getLocalTimeOffsetStr = function() {
-  return DebugJS.getTimeOffsetStr(new Date().getTimezoneOffset());
+DebugJS.getTZ = function() {
+  return DebugJS.formatTZ(new Date().getTimezoneOffset());
 };
 DebugJS.getTimeDurationStr = function(t1, t2) {
   if (isNaN(t1)) t1 = DebugJS.getDateTimeEx(t1).time;
@@ -12549,7 +12549,7 @@ DebugJS.isTimeStr = function(v) {
   if (sss < 0) return false;
   return true;
 };
-DebugJS.toClocklikeStr = function(s) {
+DebugJS.toClockFormat = function(s) {
   return s.substr(0, 3) + ':' + s.substr(3, 2);
 };
 DebugJS.isSTN = function(s) {
@@ -13454,7 +13454,7 @@ DebugJS.createLogData = function(extInfo, flg) {
 DebugJS.createLogHeader = function() {
   var dt = DebugJS.getDateTime();
   var brw = DebugJS.getBrowserType();
-  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.getTimeOffsetStr(dt.offset, true) + '\n';
+  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.formatTZ(dt.offset, true) + '\n';
   s += 'Timestamp    : ' + dt.time + '\n';
   s += 'Browser      : ' + brw.name + (brw.version == '' ? '' : ' ' + brw.version) + '\n';
   s += 'User Agent   : ' + navigator.userAgent + '\n';
