@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202005252230';
+  this.v = '202005301747';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3595,6 +3595,7 @@ DebugJS.prototype = {
     var setStyleIfObjNA = DebugJS.setStyleIfObjNA;
     var foldingTxt = ctx.createFoldingText;
     var offset = (new Date()).getTimezoneOffset();
+    var tznm = DebugJS.getTzName();
     var screenSize = 'width=' + screen.width + ' x height=' + screen.height;
     var screenInfo = screenSize + ' (colorDepth=' + screen.colorDepth + ')';
     var languages = DebugJS.getLanguages(INDENT);
@@ -3678,7 +3679,9 @@ DebugJS.prototype = {
     var docOncontextmenu = foldingTxt(document.oncontextmenu, 'documentOncontextmenu', OMIT_LAST);
 
     var html = '<pre>';
-    html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset, true) + ')\n';
+    html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset, true) + ')';
+    if (tznm) html += ' ' + tznm;
+    html += '\n';
     html += addSysInfo('screen.     ', screenInfo);
     html += addSysInfo('Browser     ', DebugJS.browserColoring(browser.name) + ' ' + browser.version);
     html += addPropSep();
@@ -12351,6 +12354,12 @@ DebugJS.str2hex = function(s) {
     }
   }
   return h;
+};
+
+DebugJS.getTzName = function() {
+  var n = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (!n) n = '';
+  return n;
 };
 
 DebugJS.tmStr2ms = function(t) {
