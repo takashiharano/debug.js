@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202005301747';
+  this.v = '202006052337';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13394,7 +13394,7 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
   return l;
 };
 DebugJS.sendLog = function(url, pName, param, extInfo, flg, cb) {
-  var b = DebugJS.createLogData(extInfo, flg);
+  var b = DebugJS.buildLogData(extInfo, flg);
   var data = DebugJS.http.buildParam(param);
   if (data != '') data += '&';
   if (DebugJS.isEmptyVal(pName)) pName = 'data';
@@ -13415,7 +13415,7 @@ DebugJS.sendLogCb = function(xhr) {
     DebugJS._log.e('Send Log ERR (' + st + ')');
   }
 };
-DebugJS.createLogData = function(extInfo, flg) {
+DebugJS.buildLogData = function(extInfo, flg) {
   var LINE = '------------------------------------------------------------------------\n';
   if (flg == undefined) flg = 'head|log';
   var info = ['', '', '', ''];
@@ -13430,7 +13430,7 @@ DebugJS.createLogData = function(extInfo, flg) {
     b = DebugJS.strcatWnl(b, info[0]);
   }
   if (DebugJS.hasKeyWd(flg, 'head', '|')) {
-    b += LINE + DebugJS.createLogHeader() + LINE;
+    b += LINE + DebugJS.buildLogHeader() + LINE;
   }
   if (info[1]) {
     info[1] = DebugJS.crlf2lf(info[1]);
@@ -13460,10 +13460,10 @@ DebugJS.createLogData = function(extInfo, flg) {
   }
   return b;
 };
-DebugJS.createLogHeader = function() {
+DebugJS.buildLogHeader = function() {
   var dt = DebugJS.getDateTime();
   var brw = DebugJS.getBrowserType();
-  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.formatTZ(dt.offset, true) + '\n';
+  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.formatTZ(dt.offset, true) + ' (' + DebugJS.getTzName() + ')\n';
   s += 'Timestamp    : ' + dt.time + '\n';
   s += 'Browser      : ' + brw.name + (brw.version == '' ? '' : ' ' + brw.version) + '\n';
   s += 'User Agent   : ' + navigator.userAgent + '\n';
