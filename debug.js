@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202006052337';
+  this.v = '202006251953';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9298,37 +9298,39 @@ DebugJS.prototype = {
   },
 
   cmdTimeCalc: function(arg, echo) {
-    var ret = null;
-    arg = DebugJS.unifySP(arg.trim());
-    if (!arg.match(/^\d{1,}:{1}\d{2}/)) {
-      return ret;
+    var r = null;
+    arg = DebugJS.delAllSP(arg.trim());
+    if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]/)) {
+      return r;
     }
-    arg = DebugJS.delAllSP(arg);
-    var op;
-    if (arg.indexOf('-') >= 0) {
-      op = '-';
-    } else if (arg.indexOf('+') >= 0) {
-      op = '+';
-    }
+    var op = arg.match(/[+\-*/]/);
     var vals = arg.split(op);
-    if (vals.length < 2) {
-      return ret;
-    }
-    var timeL = DebugJS.tmStr2ms(vals[0]);
-    var timeR = DebugJS.tmStr2ms(vals[1]);
-    if ((timeL == null) || (timeR == null)) {
-      ret = 'Invalid time format';
-      DebugJS._log.e(ret);
-      return ret;
+    var tL = DebugJS.tmStr2ms(vals[0]);
+    var tR = vals[1];
+    if ((op == '+') || (op == '-')) {
+      tR = DebugJS.tmStr2ms(tR);
+      if (tR == null) {
+        r = 'Invalid time format';
+        DebugJS._log.e(r);
+        return r;
+      }
+    } else {
+      tR |= 0;
     }
     var byTheDay = (vals[2] == undefined);
-    if (op == '-') {
-      ret = DebugJS.subTime(timeL, timeR, byTheDay);
+    var fn;
+    if (op == '+') {
+      fn = DebugJS.addTime;
+    } else if (op == '-') {
+      fn = DebugJS.subTime;
+    } else if (op == '*') {
+      fn = DebugJS.mltTime;
     } else {
-      ret = DebugJS.addTime(timeL, timeR, byTheDay);
+      fn = DebugJS.divTime;
     }
-    if (echo) DebugJS._log.res(ret);
-    return ret;
+    r = fn(tL, tR, byTheDay);
+    if (echo) DebugJS._log.res(r);
+    return r;
   },
 
   cmdTest: function(arg, tbl) {
@@ -12430,6 +12432,15 @@ DebugJS.isUnixTm = function(s) {
   return (s.match(/^\d*\.\d*$/));
 };
 
+DebugJS.addTime = function(tL, tR, byTheDay) {
+  var res = tL + tR;
+  var days = 0;
+  if (byTheDay) {
+    days = (res / 86400000) | 0;
+    res -= days * 86400000;
+  }
+  return DebugJS.calcTime(res, days, byTheDay, false);
+};
 DebugJS.subTime = function(tL, tR, byTheDay) {
   var A_DAY = 86400000;
   var res = tL - tR;
@@ -12447,9 +12458,8 @@ DebugJS.subTime = function(tL, tR, byTheDay) {
   }
   return DebugJS.calcTime(res, days, byTheDay, true);
 };
-
-DebugJS.addTime = function(tL, tR, byTheDay) {
-  var res = tL + tR;
+DebugJS.mltTime = function(tL, tR, byTheDay) {
+  var res = tL * tR;
   var days = 0;
   if (byTheDay) {
     days = (res / 86400000) | 0;
@@ -12457,7 +12467,15 @@ DebugJS.addTime = function(tL, tR, byTheDay) {
   }
   return DebugJS.calcTime(res, days, byTheDay, false);
 };
-
+DebugJS.divTime = function(tL, tR, byTheDay) {
+  var res = tL / tR;
+  var days = 0;
+  if (byTheDay) {
+    days = (res / 86400000) | 0;
+    res -= days * 86400000;
+  }
+  return DebugJS.calcTime(res, days, byTheDay, false);
+};
 DebugJS.calcTime = function(res, days, byTheDay, isSub) {
   var t = DebugJS.ms2struct(res);
   var ex = '';
