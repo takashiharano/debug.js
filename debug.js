@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202006251953';
+  this.v = '202006272352';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9305,18 +9305,8 @@ DebugJS.prototype = {
     }
     var op = arg.match(/[+\-*/]/);
     var vals = arg.split(op);
-    var tL = DebugJS.tmStr2ms(vals[0]);
-    var tR = vals[1];
-    if ((op == '+') || (op == '-')) {
-      tR = DebugJS.tmStr2ms(tR);
-      if (tR == null) {
-        r = 'Invalid time format';
-        DebugJS._log.e(r);
-        return r;
-      }
-    } else {
-      tR |= 0;
-    }
+    var vL = vals[0];
+    var vR = vals[1];
     var byTheDay = (vals[2] == undefined);
     var fn;
     if (op == '+') {
@@ -9328,7 +9318,13 @@ DebugJS.prototype = {
     } else {
       fn = DebugJS.divTime;
     }
-    r = fn(tL, tR, byTheDay);
+    r = fn(vL, vR);
+    if (isNaN(r)) {
+      r = 'Invalid time format';
+      DebugJS._log.e(r);
+      return r;
+    }
+    r = DebugJS.fmtCalcTime(r, byTheDay);
     if (echo) DebugJS._log.res(r);
     return r;
   },
@@ -12379,7 +12375,7 @@ DebugJS.tmStr2ms = function(t) {
     hour = times[0] | 0;
     min = times[1] | 0;
   } else {
-    return null;
+    return NaN;
   }
   var ss = s.split('.');
   sec = ss[0] | 0;
@@ -12432,59 +12428,55 @@ DebugJS.isUnixTm = function(s) {
   return (s.match(/^\d*\.\d*$/));
 };
 
-DebugJS.addTime = function(tL, tR, byTheDay) {
-  var res = tL + tR;
+DebugJS.addTime = function(t1, t2) {
+  var s1 = DebugJS.tmStr2ms(t1);
+  var s2 = DebugJS.tmStr2ms(t2);
+  if (isNaN(s1) || isNaN(s2)) return NaN;
+  return s1 + s2;
+};
+DebugJS.subTime = function(t1, t2) {
+  var s1 = DebugJS.tmStr2ms(t1);
+  var s2 = DebugJS.tmStr2ms(t2);
+  if (isNaN(s1) || isNaN(s2)) return NaN;
+  return s1 - s2;
+};
+DebugJS.mltTime = function(t, v) {
+  v |= 0;
+  var s = DebugJS.tmStr2ms(t);
+  if (isNaN(s)) return NaN;
+  return s * v;
+};
+DebugJS.divTime = function(t, v) {
+  v |= 0;
+  var s = DebugJS.tmStr2ms(t);
+  if (isNaN(s)) return NaN;
+  return s / v;
+};
+DebugJS.fmtCalcTime = function(ms, byTheDay) {
+  var A_DAY = 86400000;
+  var s = ms < 0;
   var days = 0;
   if (byTheDay) {
-    days = (res / 86400000) | 0;
-    res -= days * 86400000;
-  }
-  return DebugJS.calcTime(res, days, byTheDay, false);
-};
-DebugJS.subTime = function(tL, tR, byTheDay) {
-  var A_DAY = 86400000;
-  var res = tL - tR;
-  var days = 0;
-  if ((res < 0) && (byTheDay)) {
-    res *= (-1);
-    days = ((res / A_DAY) | 0);
-    days = days + ((res % A_DAY != 0) ? 1 : 0);
-    if (tL != 0) {
-      if ((res % A_DAY == 0) && (res != A_DAY)) {
+    if (s) {
+      ms *= (-1);
+      days = ((ms / A_DAY) | 0);
+      days = days + ((ms % A_DAY != 0) ? 1 : 0);
+      if ((ms % A_DAY == 0) && (ms != A_DAY)) {
         days += 1;
       }
+      ms = A_DAY - (ms - days * A_DAY);
+    } else {
+      days = (ms / A_DAY) | 0;
+      ms -= days * A_DAY;
     }
-    res = A_DAY - (res - days * A_DAY);
   }
-  return DebugJS.calcTime(res, days, byTheDay, true);
-};
-DebugJS.mltTime = function(tL, tR, byTheDay) {
-  var res = tL * tR;
-  var days = 0;
-  if (byTheDay) {
-    days = (res / 86400000) | 0;
-    res -= days * 86400000;
-  }
-  return DebugJS.calcTime(res, days, byTheDay, false);
-};
-DebugJS.divTime = function(tL, tR, byTheDay) {
-  var res = tL / tR;
-  var days = 0;
-  if (byTheDay) {
-    days = (res / 86400000) | 0;
-    res -= days * 86400000;
-  }
-  return DebugJS.calcTime(res, days, byTheDay, false);
-};
-DebugJS.calcTime = function(res, days, byTheDay, isSub) {
-  var t = DebugJS.ms2struct(res);
-  var ex = '';
-  if (days > 0) {
-    ex = ' (' + (isSub ? '-' : '+') + days + ' ' + DebugJS.plural('Day', days) + ')';
-  }
+  var t = DebugJS.ms2struct(ms);
   var hh = (byTheDay ? t.hr : t.hh);
   if (hh < 10) hh = '0' + hh;
-  var r = (t.sign ? '-' : '') + hh + ':' + ('0' + t.mi).slice(-2) + ':' + ('0' + t.ss).slice(-2) + '.' + ('00' + t.sss).slice(-3) + ex;
+  var r = (t.sign ? '-' : '') + hh + ':' + ('0' + t.mi).slice(-2) + ':' + ('0' + t.ss).slice(-2) + '.' + ('00' + t.sss).slice(-3);
+  if (days > 0) {
+    r += ' (' + (s ? '-' : '+') + days + ' ' + DebugJS.plural('Day', days) + ')';
+  }
   return r;
 };
 DebugJS.getElapsedTimeStr = function(t1, t2) {
