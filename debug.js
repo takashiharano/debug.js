@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202006272352';
+  this.v = '202006292120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9300,30 +9300,46 @@ DebugJS.prototype = {
   cmdTimeCalc: function(arg, echo) {
     var r = null;
     arg = DebugJS.delAllSP(arg.trim());
-    if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]/)) {
-      return r;
+    if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]\d{1,}/)) return r;
+    var ops = arg.match(/[+\-*/]/g);
+    var n = ops.length;
+    var op = ops[0];
+    var opp = arg.indexOf(op);
+    var vL = arg.substr(0, opp);
+    var p = opp + 1;
+    for (var i = 0; i < n; i++) {
+      var nOp = ops[i + 1];
+      var nOpp = arg.indexOf(nOp, p);
+      if (nOp) {
+        var ln = nOpp - p;
+        var vR = arg.substr(p, ln);
+      } else {
+        vR = arg.substr(p);
+      }
+      var fn;
+      if (op == '+') {
+        fn = DebugJS.addTime;
+      } else if (op == '-') {
+        fn = DebugJS.subTime;
+      } else if (op == '*') {
+        fn = DebugJS.mltTime;
+      } else {
+        fn = DebugJS.divTime;
+      }
+      if (vR != '') {
+        r = fn(vL, vR);
+        if (isNaN(r)) {
+          r = 'Invalid time format';
+          DebugJS._log.e(r);
+          return r;
+        }
+      }
+      op = nOp;
+      opp = nOpp;
+      p = opp + 1;
+      vL = r;
     }
-    var op = arg.match(/[+\-*/]/);
-    var vals = arg.split(op);
-    var vL = vals[0];
-    var vR = vals[1];
-    var byTheDay = (vals[2] == undefined);
-    var fn;
-    if (op == '+') {
-      fn = DebugJS.addTime;
-    } else if (op == '-') {
-      fn = DebugJS.subTime;
-    } else if (op == '*') {
-      fn = DebugJS.mltTime;
-    } else {
-      fn = DebugJS.divTime;
-    }
-    r = fn(vL, vR);
-    if (isNaN(r)) {
-      r = 'Invalid time format';
-      DebugJS._log.e(r);
-      return r;
-    }
+    var byTheDay = (vR != '');
     r = DebugJS.fmtCalcTime(r, byTheDay);
     if (echo) DebugJS._log.res(r);
     return r;
@@ -12429,26 +12445,26 @@ DebugJS.isUnixTm = function(s) {
 };
 
 DebugJS.addTime = function(t1, t2) {
-  var s1 = DebugJS.tmStr2ms(t1);
+  var s1 = (typeof t1 == 'number' ? t1 : DebugJS.tmStr2ms(t1));
   var s2 = DebugJS.tmStr2ms(t2);
   if (isNaN(s1) || isNaN(s2)) return NaN;
   return s1 + s2;
 };
 DebugJS.subTime = function(t1, t2) {
-  var s1 = DebugJS.tmStr2ms(t1);
+  var s1 = (typeof t1 == 'number' ? t1 : DebugJS.tmStr2ms(t1));
   var s2 = DebugJS.tmStr2ms(t2);
   if (isNaN(s1) || isNaN(s2)) return NaN;
   return s1 - s2;
 };
 DebugJS.mltTime = function(t, v) {
   v |= 0;
-  var s = DebugJS.tmStr2ms(t);
+  var s = (typeof t == 'number' ? t : DebugJS.tmStr2ms(t));
   if (isNaN(s)) return NaN;
   return s * v;
 };
 DebugJS.divTime = function(t, v) {
   v |= 0;
-  var s = DebugJS.tmStr2ms(t);
+  var s = (typeof t == 'number' ? t : DebugJS.tmStr2ms(t));
   if (isNaN(s)) return NaN;
   return s / v;
 };
