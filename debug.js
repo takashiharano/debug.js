@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202006292120';
+  this.v = '202006300137';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -425,6 +425,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
+    date: DebugJS.dndDate,
     unique: DebugJS.dndUnique,
     sort: DebugJS.dndSort
   },
@@ -11682,6 +11683,24 @@ DebugJS.arr.toSet = function(a, f) {
     }
   }
   return s;
+};
+DebugJS.dndDate = function(s) {
+  var arg = DebugJS.ctx.dndArg;
+  var a = DebugJS.txt2arr(s);
+  var m = DebugJS.hasOpt(arg, 'm');
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    var ms = parseFloat(a[i]);
+    if (isNaN(ms)) {
+      r += '\n';
+    } else {
+      if (!m) ms = parseInt(ms * 1000);
+      r += DebugJS.getDateTimeStr(ms) + '\n';
+    }
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(r);
+  return r;
 };
 DebugJS.dndUnique = function(s) {
   var l = DebugJS.txt2arr(s);

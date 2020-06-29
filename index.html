@@ -4413,9 +4413,25 @@ Cancel delay execution
     <td>
       Drag and drop operation
 <pre class="eg">
+$ dnd date [-m]
 
-$ dnd set [-count] [-asc] [-desc] [-blank]
-Array to set.
+$ dnd date
+1585666800.123
+1589511600.200
+1593477000.300
+
+$ dnd date -m
+1585666800123
+1589511600200
+1593477000300
+
+-&gt;
+2020-04-01 00:00:00.123
+2020-05-15 12:00:00.200
+2020-06-30 09:30:00.300
+
+$ dnd unique [-count] [-asc] [-desc] [-blank]
+Extract unique values from the given array.
 
 foo
 bar
@@ -4425,13 +4441,13 @@ baz
 foo
 bar
 
-$ dnd set
+$ dnd unique
 -&gt;
 foo
 baz
 bar
 
-$ dnd set -count
+$ dnd unique -count
 -&gt;
 idx cnt val
 ---------------
