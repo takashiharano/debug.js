@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202006300137';
+  this.v = '202007040036';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12730,7 +12730,7 @@ DebugJS.http = function(req) {
     data = req.data;
   }
   if (data instanceof Object) {
-    data = DebugJS.http.buildParam(data);
+    data = DebugJS.http.buildQueryString(data);
   }
   var url = req.url;
   if (data && (req.method == 'GET')) {
@@ -12779,7 +12779,7 @@ DebugJS.http = function(req) {
   xhr.send(data);
   return xhr;
 };
-DebugJS.http.buildParam = function(p) {
+DebugJS.http.buildQueryString = function(p) {
   var s = '';
   var cnt = 0;
   for (var k in p) {
@@ -12808,9 +12808,9 @@ DebugJS.http.log = true;
 DebugJS.http.LOG_LIMIT = 3145728;
 DebugJS.http.maxLogLen = 4096;
 
-DebugJS.encodeURIString = function(data) {
-  var s = encodeURIComponent(data);
-  return s.replace(/%20/g, '+').replace(/%3D/gi, '=').replace(/%26/g, '&');
+DebugJS.encodeURIString = function(s) {
+  var r = encodeURIComponent(s);
+  return r.replace(/%20/g, '+').replace(/%3D/gi, '=').replace(/%26/g, '&');
 };
 
 DebugJS.getWinZoomRatio = function() {
@@ -12819,17 +12819,17 @@ DebugJS.getWinZoomRatio = function() {
 
 DebugJS.getLanguages = function(indent) {
   var langs;
-  var navLangs = navigator.languages;
-  if (navLangs) {
-    for (var i = 0; i < navLangs.length; i++) {
+  var navLngs = navigator.languages;
+  if (navLngs) {
+    for (var i = 0; i < navLngs.length; i++) {
       if (i == 0) {
-        langs = '[' + i + '] ' + navLangs[i];
+        langs = '[' + i + '] ' + navLngs[i];
       } else {
-        langs += '\n' + indent + '[' + i + '] ' + navLangs[i];
+        langs += '\n' + indent + '[' + i + '] ' + navLngs[i];
       }
     }
   } else {
-    langs = DebugJS.setStyleIfObjNA(navLangs);
+    langs = DebugJS.setStyleIfObjNA(navLngs);
   }
   return langs;
 };
@@ -13440,7 +13440,7 @@ DebugJS.dumpLog = function(fmt, b64, fmtTime) {
 };
 DebugJS.sendLog = function(url, pName, param, extInfo, flg, cb) {
   var b = DebugJS.buildLogData(extInfo, flg);
-  var data = DebugJS.http.buildParam(param);
+  var data = DebugJS.http.buildQueryString(param);
   if (data != '') data += '&';
   if (DebugJS.isEmptyVal(pName)) pName = 'data';
   data += pName + '=' + encodeURIComponent(b);
