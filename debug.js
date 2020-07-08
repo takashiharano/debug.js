@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202007040036';
+  this.v = '202007082207';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -425,6 +425,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
+    align: DebugJS.dndAlign,
     date: DebugJS.dndDate,
     unique: DebugJS.dndUnique,
     sort: DebugJS.dndSort
@@ -11684,6 +11685,32 @@ DebugJS.arr.toSet = function(a, f) {
   }
   return s;
 };
+DebugJS.dndAlign = function(s) {
+  var arg = DebugJS.ctx.dndArg;
+  var a = DebugJS.txt2arr(s);
+  var n = DebugJS.getOptVal(arg, 'n') | 0;
+  if (!n) n = 1;
+  var d = ' ';
+  var c = [];
+  for (var i = 0; i < a.length; i++) {
+    var l = a[i].split('\t');
+    for (var j = 0; j < l.length; j++) {
+      var b = DebugJS.lenW(l[j]);
+      if ((c[j] | 0) < b) c[j] = b;
+    }
+  }
+  var r = '';
+  for (i = 0; i < a.length; i++) {
+    l = a[i].split('\t');
+    for (j = 0; j < l.length - 1; j++) {
+      r += DebugJS.strPadding(l[j], d, c[j] + n, 'R');
+    }
+    r += l[j] + '\n';
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(r);
+  return r;
+};
 DebugJS.dndDate = function(s) {
   var arg = DebugJS.ctx.dndArg;
   var a = DebugJS.txt2arr(s);
@@ -12989,7 +13016,7 @@ DebugJS.strcatWnl = function(s1, s2) {
 };
 DebugJS.strPadding = function(s, c, l, p) {
   var t = s + '';
-  var d = l - t.length;
+  var d = l - DebugJS.lenW(t);
   if (d <= 0) return t;
   var pd = DebugJS.repeatCh(c, d);
   if (p == 'L') {
@@ -13067,6 +13094,15 @@ DebugJS.shift2full = function(w) {
 };
 DebugJS.lenB = function(s) {
   return (new Blob([s], {type: 'text/plain'})).size;
+};
+DebugJS.lenW = function(s) {
+  var n = 0;
+  for (var i = 0; i < s.length; i++) {
+    var p = String.prototype.codePointAt ? s.codePointAt(i) : s.charCodeAt(i);
+    n += (p < 128) ? 1 : 2;
+    if (p >= 0x10000) i++;
+  }
+  return n;
 };
 DebugJS.isAscii = function(s) {
   return (s.match(/^[\x0-\x7f]*$/) ? true : false);
