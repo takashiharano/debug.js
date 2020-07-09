@@ -107,6 +107,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .box {position: relative; display:inline-block; width:50px; height:50px; color:#fff; cursor:move; z-index:10}
 #box1 {top:50px; left:0px; background:#64b5f6;}
 #box2 {top:50px; left:100px; background:#f48fb1;}
+.cc{color:#88f;}
 </style>
 <script>
 dbg.init({visible:true});
@@ -4413,6 +4414,18 @@ Cancel delay execution
     <td>
       Drag and drop operation
 <pre class="eg">
+$ dnd align [-n N]
+
+a<span class="cc">\t</span>bb<span class="cc">\t</span>ccc
+a123<span class="cc">\t</span>b<span class="cc">\t</span>c
+a12<span class="cc">\t</span>bbbb<span class="cc">\t</span>c
+
+-&gt;
+a    bb   ccc
+a123 b    c
+a12  bbbb c
+
+
 $ dnd date [-m]
 
 $ dnd date
