@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202007082207';
+  this.v = '202007102103';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9303,6 +9303,11 @@ DebugJS.prototype = {
     var r = null;
     arg = DebugJS.delAllSP(arg.trim());
     if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]\d{1,}/)) return r;
+    var byTheDay = false;
+    if (arg.match(/d$/i)) {
+      byTheDay = true;
+      arg = arg.substr(0, arg.length - 1);
+    }
     var ops = arg.match(/[+\-*/]/g);
     var n = ops.length;
     var op = ops[0];
@@ -9341,7 +9346,6 @@ DebugJS.prototype = {
       p = opp + 1;
       vL = r;
     }
-    var byTheDay = (vR != '');
     r = DebugJS.fmtCalcTime(r, byTheDay);
     if (echo) DebugJS._log.res(r);
     return r;
