@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202007102103';
+  this.v = '202007111407';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9484,28 +9484,29 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return;
     }
+    var now = DebugJS.now() + '';
+    if (t1 == 'now') t1 = now;
+    if (t2 == 'now') t2 = now;
     try {
-      if (DebugJS.isUnixTm(t1)) {
-        s1 = DebugJS.parseInt(DebugJS.float2ms(t1));
-      } else if (DebugJS.isTimeStr(t1)) {
-        s1 = DebugJS.getTimeStampOfDay(t1);
-        s2 = DebugJS.getTimeStampOfDay(t2);
-      } else {
-        s1 = eval(t1);
-      }
-      if (s2 == undefined) {
-        if (DebugJS.isUnixTm(t2)) {
-          s2 = DebugJS.parseInt(DebugJS.float2ms(t2));
-        } else {
-          s2 = eval(t2);
-        }
-      }
+      s1 = DebugJS.ctx._cnv2ms(t1);
+      s2 = DebugJS.ctx._cnv2ms(t2);
       var s = DebugJS.getTimeDurationStr(s1, s2).replace('-', '');
       if (echo) DebugJS._log.res(s);
       return s;
     } catch (e) {
       DebugJS.printUsage(tbl.help);
     }
+  },
+  _cnv2ms: function(t) {
+    var s;
+    if (DebugJS.isUnixTm(t)) {
+      s = DebugJS.parseInt(DebugJS.float2ms(t));
+    } else if (DebugJS.isTimeStr(t)) {
+      s = DebugJS.getTimeStampOfDay(t);
+    } else {
+      s = eval(t);
+    }
+    return s;
   },
 
   cmdTimer: function(arg, tbl) {
