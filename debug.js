@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202007111407';
+  this.v = '202007132300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -397,7 +397,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1|sw2] start|stop|reset|split|end|val'},
-    {cmd: 'strp', fn: this.cmdStrp, desc: 'String permutation', help: 'strp "CHARS" INDEX|"STR"'},
+    {cmd: 'strp', fn: this.cmdStrp, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR"'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
@@ -713,6 +713,7 @@ DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
 DebugJS.G_EL_AVAILABLE = false;
 DebugJS.Aa0 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+DebugJS.A2Z = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 DebugJS.JS_SNIPPET = [
 'dbg.time.s();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.e();\n\'done\';',
 '',
@@ -9651,15 +9652,22 @@ DebugJS.prototype = {
   },
 
   cmdStrp: function(arg, tbl) {
-    var a = DebugJS.splitCmdLine(arg);
-    var t = a[0];
-    var p = a[1];
-    if (a.length == 1) {
-      t = '"' + DebugJS.Aa0 + '"';
-      p = a[0];
+    if (DebugJS.hasOpt(arg, 'total')) {
+      var v = dbg.getNonOptVals(arg, true);
+      var t = v[0];
+      var p = v[1];
+      var f = DebugJS.strpTotal;
+    } else {
+      var a = DebugJS.splitCmdLine(arg);
+      t = a[0];
+      p = a[1];
+      if (a.length == 1) {
+        t = '"' + DebugJS.Aa0 + '"';
+        p = a[0];
+      }
     }
     try {
-      t = eval(t).split('');
+      t = eval(t);
       p = eval(p);
     } catch (e) {
       DebugJS.printUsage(tbl.help);return;
@@ -9667,7 +9675,7 @@ DebugJS.prototype = {
     if (!t || (p == undefined)) {
       DebugJS.printUsage(tbl.help);return;
     }
-    var f = (typeof p == 'string') ? DebugJS.pIndex : DebugJS.strp;
+    if (!f) f = (typeof p == 'string') ? DebugJS.strpIndex : DebugJS.strp;
     var r = f(t, p);
     DebugJS._log.res(r);
     return r;
@@ -17327,39 +17335,16 @@ DebugJS.xlsCol = function(c) {
   return f(c);
 };
 DebugJS.xlsColA2N = function(c) {
-  var t = DebugJS.A2Z();
-  return DebugJS.pIndex(t, c.trim().toUpperCase());
+  return DebugJS.strpIndex(DebugJS.A2Z, c.trim().toUpperCase());
 };
 DebugJS.xlsColN2A = function(n) {
-  var t = DebugJS.A2Z();
-  var a = DebugJS.strp(t, n);
+  var a = DebugJS.strp(DebugJS.A2Z, n);
   if (n <= 0) a = '';
   return a;
 };
-DebugJS.A2Z = function() {
-  var t = [];
-  for (var i = 65; i <= 90; i++) {
-    t.push(String.fromCharCode(i));
-  }
-  return t;
-};
 
-DebugJS.pIndex = function(tbl, ptn) {
-  var len = ptn.length;
-  var rdx = tbl.length;
-  var idx = 0;
-  for (var i = 0; i < len; i++) {
-    var d = len - i - 1;
-    var c = ptn.substr(d, 1);
-    var v = tbl.indexOf(c);
-    if (v == -1) return 0;
-    v++;
-    var n = v * Math.pow(rdx, i);
-    idx += n;
-  }
-  return idx;
-};
 DebugJS.strp = function(tbl, idx) {
+  if (typeof tbl == 'string') tbl = tbl.split('');
   var len = tbl.length;
   var a = [-1];
   for (var i = 0; i < idx; i++) {
@@ -17385,6 +17370,30 @@ DebugJS.strp = function(tbl, idx) {
     s += tbl[a[i]];
   }
   return s;
+};
+DebugJS.strpIndex = function(tbl, ptn) {
+  var len = ptn.length;
+  var rdx = tbl.length;
+  var idx = 0;
+  for (var i = 0; i < len; i++) {
+    var d = len - i - 1;
+    var c = ptn.substr(d, 1);
+    var v = tbl.indexOf(c);
+    if (v == -1) return 0;
+    v++;
+    var n = v * Math.pow(rdx, i);
+    idx += n;
+  }
+  return idx;
+};
+DebugJS.strpTotal = function(tbl, d) {
+  if (typeof tbl == 'string') tbl = tbl.split('');
+  var c = tbl.length;
+  var n = 0;
+  for (var i = 1; i <= d; i++) {
+    n += Math.pow(c, i);
+  }
+  return n;
 };
 
 DebugJS.ui = {};

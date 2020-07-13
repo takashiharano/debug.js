@@ -5471,17 +5471,23 @@ $ stopwatch sw1 stop
     <td>
       String permutation<br><br>
 <pre class="eg">
+Get the string pattern from the index
 $ strp "ABC" 2
 -&gt; B
-
 $ strp "ABC" 4
 -&gt; AA
 
+Get the index of the pattern
 $ strp "ABC" "B"
 -&gt; 2
-
 $ strp "ABC" "AA"
 -&gt; 4
+
+Count total patterns
+$ strp -total "ABC" 1
+-&gt; 3
+$ strp -total "ABC" 2
+-&gt; 12
 </pre>
     </td>
   </tr>
