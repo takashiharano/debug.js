@@ -5865,19 +5865,37 @@ $ 128
 -&gt;
 DEC 128
 HEX 0x80
-BIN 1000 0000 (8 bits)
+BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
 
 $ 0x20
 -&gt;
-HEX 0x20
 DEC 32
-BIN 10 0000 (6 bits)
+HEX 0x20
+BIN 0000 0000 0000 0000 0000 0000 0010 0000 (6 bits)
 
-$ 0b11110000
+$ 0b1010
 -&gt;
-BIN 1111 0000 (8 bits)
-DEC 240
-HEX 0xF0
+DEC 10
+HEX A
+BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">bit</td>
+    <td>
+     number of bits
+    </td>
+    <td>
+     Displays the maximum value of the given number of bits.
+<pre class="eg">
+
+$ 8bit
+-&gt;
+DEC 255
+HEX 0xFF
+BIN 0000 0000 0000 0000 0000 0000 1111 1111 (8 bits)
 </pre>
     </td>
   </tr>

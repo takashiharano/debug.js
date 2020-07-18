@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202007132300';
+  this.v = '202007181300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -401,7 +401,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
-    {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DateStr" ms|HH:MI:SS.sss|"DateStr"\nDateStr: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
+    {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'timer start|split|stop|list [timer-name]'},
     {cmd: 'timestr', fn: this.cmdTimeStr, desc: 'String <--> millis', help: 'timestr ms|sec.ms'},
     {cmd: 'tofull', fn: this.cmdToFull, desc: 'Convert half-width character(s) to full-width', help: 'tofull STR'},
@@ -7150,6 +7150,9 @@ DebugJS.prototype = {
     ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
 
+    ret = ctx.cmdBit(cmdline, echo);
+    if (ret) return ret;
+
     ret = ctx.cmdTimeCalc(cmdline, echo);
     if (ret != null) return ret;
 
@@ -7172,7 +7175,7 @@ DebugJS.prototype = {
     }
 
     if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
-      return DebugJS.cmdCnvByte(cmdln, echo);
+      return DebugJS.cmdCnvByte(cmdln);
     }
 
     if (cmdline.match(/^\s*U\+/i)) {
@@ -7376,6 +7379,17 @@ DebugJS.prototype = {
         return;
     }
     if (echo) DebugJS._log.res(v);
+  },
+
+  cmdBit: function(arg, echo) {
+    var a = DebugJS.delAllSP(arg);
+    if (!a.match(/^\d+bit$/)) return null;
+    a = a.replace(/bit/, '');
+    var b = '0b';
+    for (var i = 0; i < a; i++) {
+      b += '1';
+    }
+    return DebugJS.ctx.cmdRadixConv(b, echo);
   },
 
   cmdBSB64: function(arg, tbl, echo) {
