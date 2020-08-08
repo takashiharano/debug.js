@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202007181415';
+  this.v = '202008082051';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -403,7 +403,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'timer start|split|stop|list [timer-name]'},
-    {cmd: 'timestr', fn: this.cmdTimeStr, desc: 'String <--> millis', help: 'timestr ms|sec.ms'},
+    {cmd: 'timestr', fn: this.cmdTimeStr, desc: 'String <--> millis', help: 'timestr ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'tofull', fn: this.cmdToFull, desc: 'Convert half-width character(s) to full-width', help: 'tofull STR'},
     {cmd: 'tohalf', fn: this.cmdToHalf, desc: 'Convert full-width character(s) to half-width', help: 'tohalf STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
@@ -7174,6 +7174,10 @@ DebugJS.prototype = {
       return DebugJS.cmdTZedNow(cmd, arg);
     }
 
+    if (DebugJS.isTimerFormat(cmdln)) {
+      return DebugJS.ctx.cmdTimeStr(cmdln);
+    }
+
     if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
       return DebugJS.cmdCnvByte(cmdln);
     }
@@ -7778,7 +7782,7 @@ DebugJS.prototype = {
     } else if (d.match(/\|/)) {
       d = DebugJS.calcNextTime(d).t;
       d = DebugJS.calcTargetTime(d);
-    } else if (DebugJS.isTimeFormat(d)) {
+    } else if (DebugJS.isTTimeFormat(d)) {
       d = DebugJS.calcTargetTime(d);
     } else if (DebugJS.isTmStr(d)) {
       d = DebugJS.str2ms(d);
@@ -8579,7 +8583,7 @@ DebugJS.prototype = {
     if (tout) {
       if (DebugJS.isTmStr(tout)) {
         tout = DebugJS.str2ms(tout);
-      } else if (DebugJS.isTimeFormat(tout)) {
+      } else if (DebugJS.isTTimeFormat(tout)) {
         tout = DebugJS.calcNextTime(tout).time - DebugJS.now();
       }
     }
@@ -9516,7 +9520,7 @@ DebugJS.prototype = {
     var s;
     if (DebugJS.isUnixTm(t)) {
       s = DebugJS.parseInt(DebugJS.float2ms(t));
-    } else if (DebugJS.isTimeStr(t)) {
+    } else if (DebugJS.isClockFormat(t)) {
       s = DebugJS.getTimeStampOfDay(t);
     } else {
       s = eval(t);
@@ -9556,6 +9560,8 @@ DebugJS.prototype = {
     var s;
     if (DebugJS.isTmStr(t)) {
       s = DebugJS.str2ms(t);
+    } else if (DebugJS.isTimerFormat(t)) {
+      s = DebugJS.clock2ms(t);
     } else {
       if (DebugJS.isUnixTm(t)) {
         t = DebugJS.float2ms(t);
@@ -10381,7 +10387,7 @@ DebugJS.getOptVals = function(args) {
     args = DebugJS.splitCmdLine(args);
   }
   for (i = 0; i < args.length; i++) {
-    if ((args[i].charAt(0) == '-') && ((k = args[i].substring(1)) != '')) {
+    if ((args[i].charAt(0) == '-') && ((k = args[i].substr(1)) != '')) {
       if ((args[i + 1] != undefined) && (args[i + 1].charAt(0) != '-')) {
         i++;
         v = args[i];
@@ -10738,7 +10744,7 @@ DebugJS.int2DateStr = function(val, tz, iso) {
   val = DebugJS.parseInt(val);
   var dt = new Date(val);
   var s = DebugJS.getTZedDateTimeStr(dt, tz, iso);
-  s += (iso ? tz : ' ' + DebugJS.toClockFormat(tz));
+  s += (iso ? tz : ' ' + DebugJS.nnnn2clock(tz));
   return s;
 };
 DebugJS.float2ms = function(t) {
@@ -10774,7 +10780,40 @@ DebugJS._isDTFmt = function(s, p, r) {
   if (!p) r += '$';
   return (s.match(new RegExp(r)) ? true : false);
 };
-DebugJS.isTimeFormat = function(s) {
+DebugJS.isClockFormat = function(v) {
+  var a = v.split(':');
+  if ((a.length < 2) || (a.length > 3)) return false;
+  var h = a[0];
+  var m = a[1];
+  var s = a[2];
+  var ss, sss;
+  if (!s) {
+    ss = '00';
+    sss = '000';
+  } else {
+    s = s.split('.');
+    ss = s[0];
+    sss = s[1];
+    if (!sss) sss = '000';
+  }
+  if (h.length > 2) return false;
+  if (m.length != 2) return false;
+  if (ss.length != 2) return false;
+  if (sss.length != 3) return false;
+  h |= 0;
+  m |= 0;
+  ss |= 0;
+  sss |= 0;
+  if ((h < 0) || (h > 23)) return false;
+  if ((m < 0) || (m > 59)) return false;
+  if ((ss < 0) || (ss > 59)) return false;
+  if (sss < 0) return false;
+  return true;
+};
+DebugJS.isTimerFormat = function(s) {
+  return (s.match(/^\d*:?\d{1,2}:\d{2}\.?\d*$/)) ? true : false;
+};
+DebugJS.isTTimeFormat = function(s) {
   return ((s.match(/^\d{8}T\d{4,6}$/)) || (s.match(/^T[\d*]{4,6}$/))) ? true : false;
 };
 DebugJS.isDateTimeStr = function(s) {
@@ -10875,7 +10914,7 @@ DebugJS.formatTZ = function(v, e) {
   var h = (v / 60) | 0;
   var m = v - h * 60;
   var str = s + ('0' + h).slice(-2) + ('0' + m).slice(-2);
-  if (e) str = DebugJS.toClockFormat(str);
+  if (e) str = DebugJS.nnnn2clock(str);
   return str;
 };
 DebugJS.getTZ = function() {
@@ -10895,7 +10934,7 @@ DebugJS.getTimeDurationStr = function(t1, t2) {
   if (t.d || t.hr || t.mi) s += t.mi + 'm ';
   if (t.d || t.hr || t.mi || t.ss) {
     s += t.ss + 's';
-    if (t.sss) s += ' ' + t.sss + 'ms';
+    if (t.sss) s += ' ' + t.sss;
   } else {
     if (t.sss) {
       s += '0.' + ('00' + t.sss).slice(-3).replace(/0+$/, '');
@@ -11912,9 +11951,9 @@ DebugJS.convRGB10to16 = function(rgb10) {
   var g16 = ('0' + parseInt(rgb10s[1]).toString(16)).slice(-2);
   var b16 = ('0' + parseInt(rgb10s[2]).toString(16)).slice(-2);
   if ((r16.charAt(0) == r16.charAt(1)) && (g16.charAt(0) == g16.charAt(1)) && (b16.charAt(0) == b16.charAt(1))) {
-    r16 = r16.substring(0, 1);
-    g16 = g16.substring(0, 1);
-    b16 = b16.substring(0, 1);
+    r16 = r16.substr(0, 1);
+    g16 = g16.substr(0, 1);
+    b16 = b16.substr(0, 1);
   }
   var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:#' + r16 + g16 + b16 + ';width:' + boxSize + ';height:' + boxSize + ';margin-top:0.2em;display:inline-block"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
   var rgb = {r: r16, g: g16, b: b16, rgb: rgb16};
@@ -12449,7 +12488,7 @@ DebugJS.getTzName = function() {
   return n;
 };
 
-DebugJS.tmStr2ms = function(t) {
+DebugJS.clock2ms = function(t) {
   var hour = 0;
   var min = 0;
   var sec = 0;
@@ -12469,7 +12508,7 @@ DebugJS.tmStr2ms = function(t) {
   var ss = s.split('.');
   sec = ss[0] | 0;
   if (ss.length >= 2) {
-    msec = ss[1] | 0;
+    msec = (ss[1] + '00').substr(0, 3) | 0;
   }
   var time = (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
   return time;
@@ -12518,26 +12557,26 @@ DebugJS.isUnixTm = function(s) {
 };
 
 DebugJS.addTime = function(t1, t2) {
-  var s1 = (typeof t1 == 'number' ? t1 : DebugJS.tmStr2ms(t1));
-  var s2 = DebugJS.tmStr2ms(t2);
+  var s1 = (typeof t1 == 'number' ? t1 : DebugJS.clock2ms(t1));
+  var s2 = DebugJS.clock2ms(t2);
   if (isNaN(s1) || isNaN(s2)) return NaN;
   return s1 + s2;
 };
 DebugJS.subTime = function(t1, t2) {
-  var s1 = (typeof t1 == 'number' ? t1 : DebugJS.tmStr2ms(t1));
-  var s2 = DebugJS.tmStr2ms(t2);
+  var s1 = (typeof t1 == 'number' ? t1 : DebugJS.clock2ms(t1));
+  var s2 = DebugJS.clock2ms(t2);
   if (isNaN(s1) || isNaN(s2)) return NaN;
   return s1 - s2;
 };
 DebugJS.mltTime = function(t, v) {
   v |= 0;
-  var s = (typeof t == 'number' ? t : DebugJS.tmStr2ms(t));
+  var s = (typeof t == 'number' ? t : DebugJS.clock2ms(t));
   if (isNaN(s)) return NaN;
   return s * v;
 };
 DebugJS.divTime = function(t, v) {
   v |= 0;
-  var s = (typeof t == 'number' ? t : DebugJS.tmStr2ms(t));
+  var s = (typeof t == 'number' ? t : DebugJS.clock2ms(t));
   if (isNaN(s)) return NaN;
   return s / v;
 };
@@ -12627,37 +12666,7 @@ DebugJS.toFullTz = function(t) {
   }
   return t;
 };
-DebugJS.isTimeStr = function(v) {
-  var a = v.split(':');
-  if ((a.length < 2) || (a.length > 3)) return false;
-  var h = a[0];
-  var m = a[1];
-  var s = a[2];
-  var ss, sss;
-  if (!s) {
-    ss = '00';
-    sss = '000';
-  } else {
-    s = s.split('.');
-    ss = s[0];
-    sss = s[1];
-    if (!sss) sss = '000';
-  }
-  if (h.length > 2) return false;
-  if (m.length != 2) return false;
-  if (ss.length != 2) return false;
-  if (sss.length != 3) return false;
-  h |= 0;
-  m |= 0;
-  ss |= 0;
-  sss |= 0;
-  if ((h < 0) || (h > 23)) return false;
-  if ((m < 0) || (m > 59)) return false;
-  if ((ss < 0) || (ss > 59)) return false;
-  if (sss < 0) return false;
-  return true;
-};
-DebugJS.toClockFormat = function(s) {
+DebugJS.nnnn2clock = function(s) {
   return s.substr(0, 3) + ':' + s.substr(3, 2);
 };
 DebugJS.isSTN = function(s) {
@@ -14834,7 +14843,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
         w = ctx.props.wait;
       } else if (DebugJS.isTmStr(w)) {
         w = DebugJS.str2ms(w);
-      } else if (!(DebugJS.isTimeFormat(w) || w.match(/\|/))) {
+      } else if (!(DebugJS.isTTimeFormat(w) || w.match(/\|/))) {
         try {
           w = eval(w);
         } catch (e) {
@@ -14845,7 +14854,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
       if (w.match(/\|/)) {
         w = DebugJS.calcNextTime(w).t;
       }
-      if (DebugJS.isTimeFormat(w)) {
+      if (DebugJS.isTTimeFormat(w)) {
         w = DebugJS.calcTargetTime(w);
       }
       bat.ppEcho(cmd);
