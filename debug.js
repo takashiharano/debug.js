@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008082051';
+  this.v = '202008091346';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4253,10 +4253,10 @@ DebugJS.prototype = {
       ctx.updateTargetElm(el);
     }
   },
-  getPrevElm: function(ctx, tgtElm) {
-    var el = tgtElm.previousElementSibling;
+  getPrevElm: function(ctx, node) {
+    var el = node.previousElementSibling;
     if (el && (el.id == ctx.id)) {
-      el = tgtElm.previousElementSibling;
+      el = node.previousElementSibling;
     }
     if (el) {
       if (el.childElementCount > 0) {
@@ -4267,17 +4267,17 @@ DebugJS.prototype = {
         el = lastChild;
       }
     } else {
-      el = tgtElm.parentNode;
+      el = node.parentNode;
     }
     if (el instanceof HTMLDocument) el = null;
     return el;
   },
-  getNextElm: function(ctx, tgtElm) {
-    var el = tgtElm.firstElementChild;
-    if ((el == null) || ((el != null) && (el.id == ctx.id))) {
-      el = tgtElm.nextElementSibling;
+  getNextElm: function(ctx, node) {
+    var el = node.firstElementChild;
+    if (!el || (el && (el.id == ctx.id))) {
+      el = node.nextElementSibling;
       if (el == null) {
-        var parent = tgtElm.parentNode;
+        var parent = node.parentNode;
         if (parent) {
           do {
             el = parent.nextElementSibling;
