@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008091346';
+  this.v = '202008101447';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7147,6 +7147,9 @@ DebugJS.prototype = {
     var ret = ctx.cmdRadixConv(cmdline, echo);
     if (ret) return cmd | 0;
 
+    ret = ctx.cmdRatio(cmdline, echo);
+    if (ret != null) return ret;
+
     ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
 
@@ -8997,6 +9000,40 @@ DebugJS.prototype = {
     }
   },
 
+  cmdRatio: function(v, echo) {
+    var ctx = DebugJS.ctx;
+    v = DebugJS.delAllSP(v);
+    var o = v.split('=');
+    var r = null;
+    if (o.length != 2) return null;
+    var mL = o[0].split(':');
+    if (mL.length != 2) return null;
+    var mR = o[1].split(':');
+    if (mR.length != 2) return null;
+    if (mL[0] == 'x') {
+      if (!ctx._isNaN(mL[1], mR[0], mR[1])) {
+        r = mL[1] * mR[0] / mR[1];
+      }
+    } else if (mL[1] == 'x') {
+      if (!ctx._isNaN(mL[0], mR[0], mR[1])) {
+        r = mL[0] * mR[1] / mR[0];
+      }
+    } else if (mR[0] == 'x') {
+      if (!ctx._isNaN(mL[0], mL[1], mR[1])) {
+        r = mL[0] * mR[1] / mL[1];
+      }
+    } else if (mR[1] == 'x') {
+      if (!ctx._isNaN(mL[0], mL[1], mR[0])) {
+        r = mL[1] * mR[0] / mL[0];
+      }
+    }
+    if (echo) DebugJS._log.res('x=' + r);
+    return r;
+  },
+  _isNaN: function(a, b, c) {
+    return (isNaN(a) || isNaN(b) || isNaN(c));
+  },
+
   cmdResume: function(arg, tbl) {
     var k = DebugJS.getOptVal(arg, 'key');
     if (arg == '') {
@@ -9320,7 +9357,7 @@ DebugJS.prototype = {
 
   cmdTimeCalc: function(arg, echo) {
     var r = null;
-    arg = DebugJS.delAllSP(arg.trim());
+    arg = DebugJS.delAllSP(arg);
     if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]\d{1,}/)) return r;
     var byTheDay = false;
     if (arg.match(/d$/i)) {
