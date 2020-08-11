@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008101447';
+  this.v = '202008111544';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6254,7 +6254,15 @@ DebugJS.prototype = {
     var file = ctx.fileVwrFile;
     var fInfo = ctx.fileVwrFileInfo;
     if (fInfo == null) {
-      fInfo = (file ? DebugJS.getFileInfo(file) : '');
+      fInfo = '';
+      if (file) {
+        fInfo = DebugJS.getFileInfo(file);
+        if (DebugJS.shaAvailable()) {
+          fInfo += 'SHA-1   : ' + DebugJS.getSHA('SHA-1', buf) + '\n';
+          fInfo += 'SHA-256 : ' + DebugJS.getSHA('SHA-256', buf) + '\n';
+          fInfo += 'SHA-512 : ' + DebugJS.getSHA('SHA-512', buf) + '\n';
+        }
+      }
       ctx.fileVwrFileInfo = fInfo;
     }
     var bInfo = ctx.fileVwrBinInfo;
@@ -13300,6 +13308,15 @@ DebugJS.dumpAscii = function(pos, buf) {
     }
   }
   return b;
+};
+DebugJS.shaAvailable = function() {
+  return window.jsSHA ? true : false;
+};
+DebugJS.getSHA = function(a, b) {
+  if (!DebugJS.shaAvailable()) return '';
+  var s = new window.jsSHA(a, 'UINT8ARRAY');
+  s.update(b);
+  return s.getHash('HEX');
 };
 
 DebugJS.escape = function(s, c) {
