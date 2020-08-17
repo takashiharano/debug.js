@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008111544';
+  this.v = '202008171252';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7183,6 +7183,8 @@ DebugJS.prototype = {
 
     if (DebugJS.isSTN(cmd)) {
       return DebugJS.cmdTZedNow(cmd, arg);
+    } else if (cmdln.match(/^UTC[+-]\d+/i)) {
+      return DebugJS.cmdTZedNow('UTC', cmdln.substr(3));
     }
 
     if (DebugJS.isTimerFormat(cmdln)) {
