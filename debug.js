@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008171252';
+  this.v = '202008171332';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3562,12 +3562,15 @@ DebugJS.prototype = {
   },
   updateSystemTime: function() {
     if (!(DebugJS.ctx.status & DebugJS.ST_SYS_INFO)) return;
-    var time = DebugJS.now();
+    var d = new Date();
+    var time = d.getTime();
     var timeBin = DebugJS.formatBin(time.toString(2), false, 1);
+    var offset = d.getTimezoneOffset();
+    var tznm = DebugJS.getTzName();
     var span = '<span style="color:' + DebugJS.ITEM_NM_COLOR + '">';
-    var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, true) + '\n' +
-    span + '         RAW</span>  (new Date()).getTime() = ' + time + '\n' +
-    span + '         BIN</span>  ' + timeBin + '\n</pre>';
+    var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, true) + ' ' + DebugJS.formatTZ(offset, true);
+    if (tznm) html += ' ' + tznm;
+    html += '\n' + span + '         RAW</span>  (new Date()).getTime() = ' + time + '\n' + span + '         BIN</span>  ' + timeBin + '\n</pre>';
     DebugJS.ctx.sysTimePanel.innerHTML = html;
     setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
@@ -3597,8 +3600,6 @@ DebugJS.prototype = {
     var addSysInfoPropH = DebugJS.addSysInfoPropH;
     var setStyleIfObjNA = DebugJS.setStyleIfObjNA;
     var foldingTxt = ctx.createFoldingText;
-    var offset = (new Date()).getTimezoneOffset();
-    var tznm = DebugJS.getTzName();
     var screenSize = 'width=' + screen.width + ' x height=' + screen.height;
     var screenInfo = screenSize + ' (colorDepth=' + screen.colorDepth + ')';
     var languages = DebugJS.getLanguages(INDENT);
@@ -3680,10 +3681,8 @@ DebugJS.prototype = {
     var docOnkeyup = foldingTxt(document.onkeyup, 'documentOnkeyup', OMIT_LAST);
     var docOnselectstart = foldingTxt(document.onselectstart, 'documentOnselectstart', OMIT_LAST);
     var docOncontextmenu = foldingTxt(document.oncontextmenu, 'documentOncontextmenu', OMIT_LAST);
-
     var html = '<pre>';
-    html += '              getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset, true) + ')';
-    if (tznm) html += ' ' + tznm;
+    html += '              .getTimezoneOffset() = ' + (new Date()).getTimezoneOffset();
     html += '\n';
     html += addSysInfo('screen.     ', screenInfo);
     html += addSysInfo('Browser     ', DebugJS.browserColoring(browser.name) + ' ' + browser.version);
