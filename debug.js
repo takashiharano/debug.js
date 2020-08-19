@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008171332';
+  this.v = '202008200030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12862,7 +12862,7 @@ DebugJS.http = function(req) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
       var res = xhr.responseText;
-      if (DebugJS.http.log) {
+      if (DebugJS.http.logging && !req.sys) {
         var m = res;
         if (m) {
           if (m.length > DebugJS.http.LOG_LIMIT) {
@@ -12892,7 +12892,7 @@ DebugJS.http = function(req) {
   if (req.withCredentials) {
     xhr.withCredentials = true;
   }
-  if (DebugJS.http.log) {
+  if (DebugJS.http.logging && !req.sys) {
     DebugJS.log.v('=> ' + url);
     if (data) DebugJS.log.v('[DATA] ' + data.substr(0, DebugJS.http.maxLogLen));
   }
@@ -12909,22 +12909,21 @@ DebugJS.http.buildQueryString = function(p) {
   }
   return s;
 };
-DebugJS.http.echo = true;
 DebugJS.onHttpReqDone = function(xhr) {
   var echo = DebugJS.http.echo;
   var stmsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 0) {
     if (echo) DebugJS._log.e('Cannot load: ' + stmsg);
   }
-  var head = xhr.getAllResponseHeaders();
-  var txt = xhr.responseText.replace(/</g, '&lt;');
-  txt = txt.replace(/>/g, '&gt;');
-  if (head || txt) {
-    var r = '<span style="color:#5ff">' + stmsg + '\n' + head + '</span>' + txt;
+  var hd = xhr.getAllResponseHeaders();
+  var bd = DebugJS.escHtml(xhr.responseText);
+  if (hd || bd) {
+    var r = '<span style="color:#5ff">' + stmsg + '\n' + hd + '</span>' + bd;
     if (echo) DebugJS._log.mlt(r);
   }
 };
-DebugJS.http.log = true;
+DebugJS.http.echo = true;
+DebugJS.http.logging = true;
 DebugJS.http.LOG_LIMIT = 3145728;
 DebugJS.http.maxLogLen = 4096;
 
@@ -13586,7 +13585,8 @@ DebugJS.sendLog = function(url, pName, param, extInfo, flg, cb) {
     url: url,
     method: 'POST',
     data: data,
-    cb: (cb ? cb : DebugJS.sendLogCb)
+    cb: (cb ? cb : DebugJS.sendLogCb),
+    sys: 1
   };
   DebugJS.http(r);
 };
