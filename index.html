@@ -615,7 +615,7 @@ function getFileLineDemo2b(idx, abs) {
 
 function clrlog() {
   var rq = {
-    url: '/savelog.py?data=',
+    url: '/savelog.cgi?data=',
     cb: cbClrlog
   };
   dbg.http(rq); 
@@ -988,7 +988,7 @@ demo.getFileLineDemo = function(idx, abs) {
   log(fl);
 };
 demo.sendLogDemoNoInf = function() {
-  var url = '/savelog.py';
+  var url = '/savelog.cgi';
   var params = {
     foo: 'aaa',
     bar: 'bbb'
@@ -996,7 +996,7 @@ demo.sendLogDemoNoInf = function() {
   dbg.sendLog(url, 'data', params, null, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
 demo.sendLogDemo0 = function() {
-  var url = '/savelog.py';
+  var url = '/savelog.cgi';
   var params = {
     foo: 'aaa',
     bar: 'bbb'
@@ -1007,7 +1007,7 @@ demo.sendLogDemo0 = function() {
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
 demo.sendLogDemo1 = function() {
-  var url = '/savelog.py';
+  var url = '/savelog.cgi';
   var params = {
     foo: 'aaa',
     bar: 'bbb'
@@ -1018,7 +1018,7 @@ demo.sendLogDemo1 = function() {
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
 demo.sendLogDemo2 = function() {
-  var url = '/savelog.py';
+  var url = '/savelog.cgi';
   var params = {
     foo: 'aaa',
     bar: 'bbb'
@@ -1029,7 +1029,7 @@ demo.sendLogDemo2 = function() {
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
 demo.sendLogDemo3 = function() {
-  var url = '/savelog.py';
+  var url = '/savelog.cgi';
   var params = {
     foo: 'aaa',
     bar: 'bbb'
@@ -1040,7 +1040,7 @@ demo.sendLogDemo3 = function() {
   dbg.sendLog(url, 'data', params, extInfo, getVal('sendlog-flag-text'), demo.sendLogDemoCbFunc);
 };
 demo.sendLogDemo4 = function() {
-  var url = '/savelog.py';
+  var url = '/savelog.cgi';
   var params = {
     foo: 'aaa',
     bar: 'bbb'
@@ -1658,7 +1658,7 @@ var cbFunc = function(xhr) {
   }
 };
 
-var url = 'https://[host]/savelog.py';
+var url = 'https://[host]/savelog.cgi';
 
 var params = {
   foo: 'aaa',
@@ -1678,7 +1678,7 @@ dbg.sendLog(url, 'data', params, extInfo, flag, cbFunc);
 <b>DEMO</b>
 var flag = '<input type="text" id="sendlog-flag-text" value="head|log|b64buf" class="demo-text" style="width:150px;">';
 
-dbg.sendLog('https://debugjs.net/savelog.py'); <button class="demo-button2" onclick="dbg.sendLog('/savelog.py');">DEMO</button>
+dbg.sendLog('https://debugjs.net/savelog.cgi'); <button class="demo-button2" onclick="dbg.sendLog('/savelog.cgi');">DEMO</button>
 dbg.sendLog(url, 'data', params, extInfo, sendFlag, cbFunc); //no-info <button class="demo-button2" onclick="demo.sendLogDemoNoInf();">DEMO</button>
 dbg.sendLog(url, 'data', params, extInfo, sendFlag, cbFunc); //info0 <button class="demo-button2" onclick="demo.sendLogDemo0();">DEMO</button>
 dbg.sendLog(url, 'data', params, extInfo, sendFlag, cbFunc); //info1 <button class="demo-button2" onclick="demo.sendLogDemo1();">DEMO</button>
@@ -1720,7 +1720,7 @@ W3sidHlwZSI6MSwidGltZSI6MTUzOTc4ODMxNTY4OSwibXNnIjoiU0dWc2J...
 <span class="info3">info3</span>
 </pre>
 <pre class="code emphasis" style="width:520px">
-<span style="color:#0ff">SERVER SIDE PROGRAM SAMPLE (savelog.py)</span>
+<span style="color:#0ff">SERVER SIDE PROGRAM SAMPLE (savelog.cgi)</span>
 
 #!/usr/bin/python
 
