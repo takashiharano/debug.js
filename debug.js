@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008200030';
+  this.v = '202008210000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -48,7 +48,7 @@ var DebugJS = DebugJS || function() {
     btnHoverColor: '#8ef',
     promptColor: '#0cf',
     promptColorE: '#f45',
-    background: 'rgba(0,0,0,0.65)',
+    background: 'linear-gradient(150deg, rgba(0,0,0,0.8),rgba(0,0,0,0.5))',
     border: 'solid 1px #888',
     borderRadius: '0',
     opacity: '1',
