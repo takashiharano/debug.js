@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008210000';
+  this.v = '202008230234';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -23,9 +23,9 @@ var DebugJS = DebugJS || function() {
       error: true,
       fatal: true
     },
-    lines: 18,
+    lines: 20,
     bufsize: 300,
-    width: 543,
+    width: 602,
     zoom: 1,
     position: 'se',
     adjX: 20,
@@ -42,7 +42,6 @@ var DebugJS = DebugJS || function() {
     logColorS: '#fff',
     clockColor: '#8f0',
     timerColor: '#9ef',
-    timerColorExpr: '#fcc',
     sysInfoColor: '#ddd',
     btnColor: '#6cf',
     btnHoverColor: '#8ef',
@@ -611,8 +610,8 @@ DebugJS.CMD_ATTR_DISABLED = 0x10;
 DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DBGWIN_MIN_W = 292;
 DebugJS.DBGWIN_MIN_H = 155;
-DebugJS.DBGWIN_EXPAND_W = 850;
-DebugJS.DBGWIN_EXPAND_H = 580;
+DebugJS.DBGWIN_EXPAND_W = 900;
+DebugJS.DBGWIN_EXPAND_H = 600;
 DebugJS.DBGWIN_EXPAND_H2 = 640;
 DebugJS.SIZE_ST_NORMAL = 0;
 DebugJS.SIZE_ST_EXPANDED = 1;
@@ -5139,7 +5138,7 @@ DebugJS.prototype = {
     var color = DebugJS.TOOL_TMR_BTN_COLOR;
     if (ctx.timerSwTimeCdContinue) {
       if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
-        color = ctx.opt.timerColorExpr;
+        color = '#888';
       }
     } else {
       color = '#888';
@@ -5181,11 +5180,11 @@ DebugJS.prototype = {
   },
   splitTimerStopwatchCd: function() {
     var ctx = DebugJS.ctx;
-    var color = '#fff';
+    var pfx = 'T-';
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
-      color = ctx.opt.timerColorExpr;
+      pfx = 'T+';
     }
-    var t = DebugJS.TMR_NM_SW_CD + ': ' + '<span style="color:' + color + '">' + DebugJS.getTmrStr(ctx.timerSwTimeCd) + '</span>';
+    var t = DebugJS.TMR_NM_SW_CD + ': ' + pfx + DebugJS.getTmrStr(ctx.timerSwTimeCd);
     DebugJS._log(t);
   },
   endTimerStopwatchCd: function(ctx) {
@@ -5298,26 +5297,27 @@ DebugJS.prototype = {
     var msFontSize = fontSize * 0.65;
     var color = ctx.opt.fontColor;
     var str;
+    var pfx = 'T-';
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_END) {
       var now = DebugJS.getDateTime();
       if (now.sss > 500) {
         str = '&nbsp;<span style="font-size:' + msFontSize + 'px !important">' + '&nbsp;</span>';
       } else {
-        str = tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">.' + tm.sss + '</span>';
+        str = pfx + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">.' + tm.sss + '</span>';
       }
     } else {
       var dot;
       var styleS = '';
       var styleE = '';
       if (ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_EXPIRED) {
-        color = ctx.opt.timerColorExpr;
+        pfx = 'T+';
         dot = (((ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) && (tm.sss > 500)) ? '&nbsp;' : '.');
         styleS = '<span style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">';
         styleE = '</span>';
       } else {
         dot = (((ctx.toolStatus & DebugJS.TOOL_ST_SW_CD_RUNNING) && (tm.sss < 500)) ? '&nbsp;' : '.');
       }
-      str = styleS + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>' + styleE;
+      str = styleS + pfx + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>' + styleE;
     }
     return '<div style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
   },
