@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008230234';
+  this.v = '202008250701';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3564,11 +3564,8 @@ DebugJS.prototype = {
     var d = new Date();
     var time = d.getTime();
     var timeBin = DebugJS.formatBin(time.toString(2), false, 1);
-    var offset = d.getTimezoneOffset();
-    var tznm = DebugJS.getTzName();
     var span = '<span style="color:' + DebugJS.ITEM_NM_COLOR + '">';
-    var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, true) + ' ' + DebugJS.formatTZ(offset, true);
-    if (tznm) html += ' ' + tznm;
+    var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, true);
     html += '\n' + span + '         RAW</span>  (new Date()).getTime() = ' + time + '\n' + span + '         BIN</span>  ' + timeBin + '\n</pre>';
     DebugJS.ctx.sysTimePanel.innerHTML = html;
     setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
@@ -3680,8 +3677,11 @@ DebugJS.prototype = {
     var docOnkeyup = foldingTxt(document.onkeyup, 'documentOnkeyup', OMIT_LAST);
     var docOnselectstart = foldingTxt(document.onselectstart, 'documentOnselectstart', OMIT_LAST);
     var docOncontextmenu = foldingTxt(document.oncontextmenu, 'documentOncontextmenu', OMIT_LAST);
+    var offset = (new Date()).getTimezoneOffset();
     var html = '<pre>';
-    html += '              .getTimezoneOffset() = ' + (new Date()).getTimezoneOffset();
+    html += '              .getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset, true) + ')';
+    var tznm = DebugJS.getTzName();
+    if (tznm) html += ' ' + tznm;
     html += '\n';
     html += addSysInfo('screen.     ', screenInfo);
     html += addSysInfo('Browser     ', DebugJS.browserColoring(browser.name) + ' ' + browser.version);
@@ -4833,7 +4833,7 @@ DebugJS.prototype = {
     ctx.timerSwCdLabel = panel.stopWatchLabel;
     ctx.timerStartStopBtnCd = panel.startStopBtn;
     ctx.timerSplitBtnCd = panel.splitBtn;
-    ctx.timer0CntBtnCd1 = ctx.createTimerBtn(panel.btns, '0=>', ctx.toggle0ContinueTimerStopwatchCd, false, (ctx.computedFontSize * 1.5));
+    ctx.timer0CntBtnCd1 = ctx.createTimerBtn(panel.btns, 'T+', ctx.toggle0ContinueTimerStopwatchCd, false, (ctx.computedFontSize * 1.5));
     ctx.update0ContinueBtnTimerStopwatchCd();
   },
   createTimerStopwatchCdInpSubPanel: function() {
@@ -4884,7 +4884,7 @@ DebugJS.prototype = {
     ctx.createTimerBtn(btns, 'RESET', ctx.resetTimerStopwatchCd, false, btnFontSize);
     ctx.timerStartStopBtnCdInp = ctx.createTimerBtn(btns, '>>', ctx.startStopTimerStopwatchCd, false, btnFontSize);
     ctx.createTimerBtn(btns, 'SPLIT', null, true, btnFontSize);
-    ctx.timer0CntBtnCd2 = ctx.createTimerBtn(btns, '0=>', ctx.toggle0ContinueTimerStopwatchCd, false, (fontSize * 1.5));
+    ctx.timer0CntBtnCd2 = ctx.createTimerBtn(btns, 'T+', ctx.toggle0ContinueTimerStopwatchCd, false, (fontSize * 1.5));
     basePanel.appendChild(btns);
 
     ctx.timerSwCdInpSubPanel = basePanel;
