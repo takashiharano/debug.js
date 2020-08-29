@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008291415';
+  this.v = '202008300048';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11824,17 +11824,17 @@ DebugJS.dndAlign = function(s) {
   DebugJS._log.mlt(r);
   return r;
 };
-DebugJS.dndDate = function(s) {
+DebugJS.dndDate = function(t) {
   var arg = DebugJS.ctx.dndArg;
-  var a = DebugJS.txt2arr(s);
-  var m = DebugJS.hasOpt(arg, 'm');
+  var a = DebugJS.txt2arr(t);
+  var s = DebugJS.hasOpt(arg, 's');
   var r = '';
   for (var i = 0; i < a.length; i++) {
     var ms = parseFloat(a[i]);
     if (isNaN(ms)) {
       r += '\n';
     } else {
-      if (!m) ms = parseInt(ms * 1000);
+      if (s) ms = parseInt(ms * 1000);
       r += DebugJS.getDateTimeStr(ms) + '\n';
     }
   }
