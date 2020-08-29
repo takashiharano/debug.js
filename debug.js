@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008250701';
+  this.v = '202008291415';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -426,8 +426,9 @@ var DebugJS = DebugJS || function() {
   this.DND_FN_TBL = {
     align: DebugJS.dndAlign,
     date: DebugJS.dndDate,
-    unique: DebugJS.dndUnique,
-    sort: DebugJS.dndSort
+    format: DebugJS.dndFormat,
+    sort: DebugJS.dndSort,
+    unique: DebugJS.dndUnique
   },
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
@@ -11841,6 +11842,32 @@ DebugJS.dndDate = function(s) {
   DebugJS._log.mlt(r);
   return r;
 };
+DebugJS.dndFormat = function(s) {
+  var r;
+  if (DebugJS.hasOpt(DebugJS.ctx.dndArg, 'newline')) {
+    r = DebugJS.crlf2lf(s).replace(/\n\n/g, '\n');
+  } else {
+    r = DebugJS.fmtTxt(s);
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(r);
+  return r;
+};
+DebugJS.fmtTxt = function(s) {
+  return DebugJS.crlf2lf(s).replace(/\s+\n/g, '\n\n');
+};
+DebugJS.dndSort = function(s) {
+  var arg = DebugJS.ctx.dndArg;
+  var a = DebugJS.txt2arr(s).sort();
+  if (DebugJS.hasOpt(arg, 'desc')) a.reverse();
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != '') r += a[i] + '\n';
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(r);
+  return r;
+};
 DebugJS.dndUnique = function(s) {
   var l = DebugJS.txt2arr(s);
   var o = DebugJS.cntByGrp(l);
@@ -11923,18 +11950,6 @@ DebugJS.cntByGrp = function(a) {
     o[v]++;
   }
   return o;
-};
-DebugJS.dndSort = function(s) {
-  var arg = DebugJS.ctx.dndArg;
-  var a = DebugJS.txt2arr(s).sort();
-  if (DebugJS.hasOpt(arg, 'desc')) a.reverse();
-  var r = '';
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != '') r += a[i] + '\n';
-  }
-  DebugJS.cls();
-  DebugJS._log.mlt(r);
-  return r;
 };
 DebugJS.dndFnFin = function() {
   var ctx = DebugJS.ctx;

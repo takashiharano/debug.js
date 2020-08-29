@@ -4444,6 +4444,29 @@ $ dnd date -m
 2020-05-15 12:00:00.200
 2020-06-30 09:30:00.300
 
+
+$ dnd format
+AAAAA<span class="cc">&#x21b5;</span>
+<span class="cc">&nbsp;&nbsp;&nbsp;&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+
+-&gt;
+AAAAA<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+
+$ dnd format -newline
+AAAAA<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+CCCCC<span class="cc">&#x21b5;</span>
+
+-&gt;
+AAAAA<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+CCCCC<span class="cc">&#x21b5;</span>
+
 $ dnd unique [-count] [-asc] [-desc] [-blank]
 Extract unique values from the given array.
 
