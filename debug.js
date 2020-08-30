@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008300048';
+  this.v = '202008310042';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -114,6 +114,9 @@ var DebugJS = DebugJS || function() {
   this.elmPrevBtn = null;
   this.elmTitle = null;
   this.elmNextBtn = null;
+  this.elmPrevSblBtn = null;
+  this.elmNextSblBtn = null;
+  this.elmParenttBtn = null;
   this.elmSelectBtn = null;
   this.elmHighlightBtn = null;
   this.elmUpdBtn = null;
@@ -3965,7 +3968,11 @@ DebugJS.prototype = {
     ctx.elmInfoHdrPanel = document.createElement('div');
     ctx.elmInfoPanel.appendChild(ctx.elmInfoHdrPanel);
 
-    ctx.elmPrevBtn = ctx.createElmInfoHeadBtn('<<', ctx.showPrevElem);
+    ctx.elmPrevSblBtn = ctx.createElmInfoHeadBtn('<<', ctx.showPrevSblElm);
+    ctx.elmPrevSblBtn.style.marginRight = '4px';
+    ctx.enablePrevSblElBtn(ctx, false);
+
+    ctx.elmPrevBtn = ctx.createElmInfoHeadBtn('<', ctx.showPrevElm);
     ctx.enablePrevElBtn(ctx, false);
 
     ctx.elmTitle = document.createElement('span');
@@ -3975,8 +3982,16 @@ DebugJS.prototype = {
     ctx.elmTitle.innerText = 'ELEMENT INFO';
     ctx.elmInfoHdrPanel.appendChild(ctx.elmTitle);
 
-    ctx.elmNextBtn = ctx.createElmInfoHeadBtn('>>', ctx.showNextElem);
+    ctx.elmNextBtn = ctx.createElmInfoHeadBtn('>', ctx.showNextElm);
     ctx.enableNextElBtn(ctx, false);
+
+    ctx.elmNextSblBtn = ctx.createElmInfoHeadBtn('>>', ctx.showNextSblElm);
+    ctx.elmNextSblBtn.style.marginLeft = '4px';
+    ctx.enableNextSblElBtn(ctx, false);
+
+    ctx.elmParenttBtn = ctx.createElmInfoHeadBtn('PARENT', ctx.showParentElm);
+    ctx.elmParenttBtn.style.marginLeft = '8px';
+    ctx.elmParenttBtn.style.marginRight = '4px';
 
     ctx.elmSelectBtn = ctx.createElmInfoHeadBtn('SELECT', ctx.toggleElmSelectMode);
     ctx.elmSelectBtn.style.marginLeft = '8px';
@@ -4234,23 +4249,39 @@ DebugJS.prototype = {
     html += addPropSep() + 'outerHTML: ' + htmlSrc;
     return html;
   },
-  showPrevElem: function() {
+  showPrevElm: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.tgtEl) return;
     var el = ctx.getPrevElm(ctx, ctx.tgtEl);
-    if (el) {
-      ctx.showElementInfo(el);
-      ctx.updateTargetElm(el);
-    }
+    if (el) ctx._updateElmInfo(ctx, el);
   },
-  showNextElem: function() {
+  showNextElm: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.tgtEl) return;
     var el = ctx.getNextElm(ctx, ctx.tgtEl);
-    if (el) {
-      ctx.showElementInfo(el);
-      ctx.updateTargetElm(el);
-    }
+    if (el) ctx._updateElmInfo(ctx, el);
+  },
+  showPrevSblElm: function() {
+    var ctx = DebugJS.ctx;
+    if (!ctx.tgtEl) return;
+    var el = ctx.tgtEl.previousElementSibling;
+    if (el) ctx._updateElmInfo(ctx, el);
+  },
+  showNextSblElm: function() {
+    var ctx = DebugJS.ctx;
+    if (!ctx.tgtEl) return;
+    var el = ctx.tgtEl.nextElementSibling;
+    if (el) ctx._updateElmInfo(ctx, el);
+  },
+  showParentElm: function() {
+    var ctx = DebugJS.ctx;
+    if (!ctx.tgtEl || (ctx.tgtEl.tagName == 'HTML')) return;
+    var el = ctx.tgtEl.parentNode;
+    if (el) ctx._updateElmInfo(ctx, el);
+  },
+  _updateElmInfo: function(ctx, el) {
+    ctx.showElementInfo(el);
+    ctx.updateTargetElm(el);
   },
   getPrevElm: function(ctx, node) {
     var el = node.previousElementSibling;
@@ -4299,6 +4330,8 @@ DebugJS.prototype = {
       ctx.tgtEl = el;
       ctx.enablePrevElBtn(ctx, (ctx.getPrevElm(ctx, el) ? true : false));
       ctx.enableNextElBtn(ctx, (ctx.getNextElm(ctx, el) ? true : false));
+      ctx.enablePrevSblElBtn(ctx, (el.previousElementSibling ? true : false));
+      ctx.enableNextSblElBtn(ctx, (el.nextElementSibling ? true : false));
       DebugJS.setStyle(ctx.elmUpdBtn, 'color', ctx.opt.btnColor);
       DebugJS.setStyle(ctx.elmCapBtn, 'color', ctx.opt.btnColor);
       DebugJS.setStyle(ctx.elmDelBtn, 'color', '#a88');
@@ -4313,10 +4346,19 @@ DebugJS.prototype = {
     }
   },
   enablePrevElBtn: function(ctx, f) {
-    DebugJS.setStyle(ctx.elmPrevBtn, 'color', (f ? ctx.opt.btnColor : DebugJS.COLOR_INACT));
+    ctx.enableElBtn(ctx, ctx.elmPrevBtn, f);
   },
   enableNextElBtn: function(ctx, f) {
-    DebugJS.setStyle(ctx.elmNextBtn, 'color', (f ? ctx.opt.btnColor : DebugJS.COLOR_INACT));
+    ctx.enableElBtn(ctx, ctx.elmNextBtn, f);
+  },
+  enablePrevSblElBtn: function(ctx, f) {
+    ctx.enableElBtn(ctx, ctx.elmPrevSblBtn, f);
+  },
+  enableNextSblElBtn: function(ctx, f) {
+    ctx.enableElBtn(ctx, ctx.elmNextSblBtn, f);
+  },
+  enableElBtn: function(ctx, b, f) {
+    DebugJS.setStyle(b, 'color', (f ? ctx.opt.btnColor : DebugJS.COLOR_INACT));
   },
   updateElementInfo: function() {
     DebugJS.ctx.showAllElmNum();
