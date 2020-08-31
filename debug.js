@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202008310042';
+  this.v = '202009010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16,7 +16,7 @@ var DebugJS = DebugJS || function() {
       alt: undefined,
       meta: undefined
     },
-    focusOnShow: false,
+    focusOnShow: true,
     autoPopup: {
       scriptError: true,
       loadError: true,

@@ -226,7 +226,6 @@ function getVal(id) {
 var demoDispCount = 0;
 function displayDemoMessages() {
   if (demoDispCount >= demoMessages.length) {
-    dbg.cmd.focus();
     return;
   }
   var msgData = demoMessages[demoDispCount];
@@ -811,6 +810,7 @@ function onLoad() {
   //log('load');
   evttest.regieterEventHandler();
   dragtest.init();
+  dbg.cmd.focus();
 }
 
 function onUnload() {
@@ -6628,7 +6628,7 @@ If you want to change the debugger settings, explicitly call for initialization 
   <tr>
     <td class="name">focusOnShow</td>
     <td>If true, the command-line will be given focus when the debug window is shown.</td>
-    <td>false</td>
+    <td>true</td>
   </tr>
 
   <tr>
