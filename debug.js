@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009010000';
+  this.v = '202009070001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9645,7 +9645,7 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return;
     }
-    var t = arg;
+    var t = arg.trim();
     var s;
     if (DebugJS.isTmStr(t)) {
       s = DebugJS.str2ms(t);
