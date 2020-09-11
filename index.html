@@ -4958,8 +4958,7 @@ sub function (for ext)
 option
   for timer: mode
     clock: Clock
-    sw1  : Stopwatch (count up)
-    sw2  : Stopwatch (count down)
+    sw1  : Stopwatch
   for tools.file: load format
     b64: Base64
     bin: Binary
@@ -5464,18 +5463,17 @@ $ stack func1
 <pre class="eg">
 target:
   sw0: Mini stopwatch on the upper right of the debug window
-  sw1: CountUp Timer in TOOL window
-  sw2: CountDown Timer in TOOL window
+  sw1: Timer in TOOL window
 
 operation:
-  start: (sw0/sw1/sw2)
-  stop : (sw0/sw1/sw2)
-  reset: (sw0/sw1/sw2)
-  split: (sw0/sw1/sw2)
-  end  : (sw0/sw1/sw2)
-  val  : (sw0/sw1/sw2)
+  start: (sw0/sw1)
+  stop : (sw0/sw1)
+  reset: (sw0/sw1)
+  split: (sw0/sw1)
+  end  : (sw0/sw1)
+  val  : (sw0/sw1)
 
-e.g.,)
+e.g.,
 $ stopwatch start
 $ stopwatch stop
 
