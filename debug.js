@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009112250';
+  this.v = '202009121753';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -145,8 +145,8 @@ var DebugJS = DebugJS || function() {
   this.timerSwInpSubPanel = null;
   this.timerSwInputDiv = null;
   this.timerSign = true;
-  this.timerExprAt = 0;
-  this.timerSwTime = 0;
+  this.timerZeroAt = 0;
+  this.timerSwVal = 0;
   this.timerSwPrevSplit = 0;
   this.timerContinueTplus = true;
   this.timerStartStopBtn = null;
@@ -483,7 +483,7 @@ var DebugJS = DebugJS || function() {
     textstep: 1,
     testvallimit: 4096,
     wait: 500,
-    timer: '00:00:00.000',
+    timer: '-00:00:00.000',
     wdt: 500,
     mousemovesim: 'false',
     consolelog: 'native'
@@ -565,7 +565,7 @@ DebugJS.UI_ST_LOG_SCROLL = 1 << 12;
 DebugJS.UI_ST_PROTECTED = 1 << 13;
 DebugJS.TOOL_ST_SW_RUNNING = 1;
 DebugJS.TOOL_ST_SW_PAUSED = 1 << 1;
-DebugJS.TOOL_ST_SW_EXPIRED = 1 << 2;
+DebugJS.TOOL_ST_SW_TPLUS = 1 << 2;
 DebugJS.TOOL_ST_SW_END = 1 << 3;
 DebugJS.TOOL_TMR_MODE_CLOCK = 0;
 DebugJS.TOOL_TMR_MODE_SW = 1;
@@ -2525,7 +2525,7 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       DebugJS.time.updateCount(DebugJS.TMR_NM_SW_S);
     }
-    var str = DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_S));
+    var str = DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_S)).substr(2);
     if (ctx.swLabel) {
       if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
         str = '<span style="color:' + ctx.opt.timerColor + ' !important">' + str + '</span>';
@@ -4825,7 +4825,7 @@ DebugJS.prototype = {
     ctx.timerStartStopBtn = panel.startStopBtn;
     ctx.timerSplitBtn = panel.splitBtn;
     ctx.timerCntTplsBtn1 = ctx.createTimerBtn(panel.btns, 'T+', ctx.toggleContinueTplus, false, (ctx.computedFontSize * 1.5));
-    ctx.updateContinueTplusBtn();
+    ctx.updateContinueTplusBtn(ctx);
   },
   _createTimerStopwatchSubPanel: function(ctx, handlers) {
     var panel = {
@@ -4879,16 +4879,23 @@ DebugJS.prototype = {
     ctx.timerSwInputDiv.style.lineHeight = baseFontSize + 'px';
     basePanel.appendChild(ctx.timerSwInputDiv);
 
-    ctx.btnTPM = ctx.createTimerBtn(ctx.timerSwInputDiv, 'T-', ctx.togglePlusMinus, false, baseFontSize * 0.9);
+    var initTmrVal = DebugJS.timerstr2struct(ctx.props.timer);
+    var tpm = 'T+';
+    ctx.timerSign = false;
+    if (initTmrVal.sign) {
+      tpm = 'T-';
+      ctx.timerSign = true;
+    }
+    ctx.btnTPM = ctx.createTimerBtn(ctx.timerSwInputDiv, tpm, ctx.togglePlusMinus, false, baseFontSize * 0.9);
     ctx.btnTPM.style.marginRight = '5px';
 
-    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerSwInputDiv, DebugJS.timestr2struct(ctx.props.timer).hh, baseFontSize);
+    ctx.timerTxtHH = ctx.createTimerInput(ctx.timerSwInputDiv, initTmrVal.hh, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerSwInputDiv, ':', baseFontSize);
-    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerSwInputDiv, DebugJS.timestr2struct(ctx.props.timer).mi, baseFontSize);
+    ctx.timerTxtMI = ctx.createTimerInput(ctx.timerSwInputDiv, initTmrVal.mi, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerSwInputDiv, ':', baseFontSize);
-    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerSwInputDiv, DebugJS.timestr2struct(ctx.props.timer).ss, baseFontSize);
+    ctx.timerTxtSS = ctx.createTimerInput(ctx.timerSwInputDiv, initTmrVal.ss, baseFontSize);
     ctx.createTimerInputLabel(ctx.timerSwInputDiv, '.', msFontSize);
-    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerSwInputDiv, DebugJS.timestr2struct(ctx.props.timer).sss, msFontSize, '1.7em');
+    ctx.timerTxtSSS = ctx.createTimerInput(ctx.timerSwInputDiv, initTmrVal.sss, msFontSize, '1.7em');
 
     var timerDwnBtns = document.createElement('div');
     var marginT = fontSize * 2;
@@ -4961,7 +4968,7 @@ DebugJS.prototype = {
   },
   timerUpDwn: function(part, up) {
     var ctx = DebugJS.ctx;
-    var val = ctx.calcExpireTimeInp();
+    var val = ctx.calcTimerZeroAt(ctx);
     var ms = {'hh': 3600000, 'mi': 60000, 'ss': 1000, 'sss': 1};
     var v = (ms[part] === undefined ? 0 : ms[part]);
     if (up) {
@@ -4971,15 +4978,15 @@ DebugJS.prototype = {
     }
     ctx.timerSign = (val <= 0);
     ctx.updatePlusMinusBtn(ctx);
-    ctx.updateExpireTimeInp(val);
+    ctx.updateTimeZeroAtInp(val);
     ctx.drawStopwatch();
   },
   updatePropTimer: function() {
     var ctx = DebugJS.ctx;
-    ctx.props.timer = ctx.timerTxtHH.value + ':' + ctx.timerTxtMI.value + ':' + ctx.timerTxtSS.value + '.' + ctx.timerTxtSSS.value;
+    var sn = ctx.timerSign ? '-' : '+';
+    ctx.props.timer = sn + ctx.timerTxtHH.value + ':' + ctx.timerTxtMI.value + ':' + ctx.timerTxtSS.value + '.' + ctx.timerTxtSSS.value;
   },
-  calcExpireTimeInp: function() {
-    var ctx = DebugJS.ctx;
+  calcTimerZeroAt: function(ctx) {
     var h = (ctx.timerTxtHH.value | 0) * 3600000;
     var m = (ctx.timerTxtMI.value | 0) * 60000;
     var s = (ctx.timerTxtSS.value | 0) * 1000;
@@ -4988,7 +4995,7 @@ DebugJS.prototype = {
     if (ctx.timerSign) v *= -1;
     return v;
   },
-  updateExpireTimeInp: function(v) {
+  updateTimeZeroAtInp: function(v) {
     var ctx = DebugJS.ctx;
     var tm = DebugJS.ms2struct(v, true);
     ctx.timerTxtHH.value = tm.hh;
@@ -5073,16 +5080,17 @@ DebugJS.prototype = {
     }
   },
   toggleContinueTplus: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_EXPIRED) return;
-    ctx.timerContinueTplus = (ctx.timerContinueTplus ? false : true);
-    ctx.updateContinueTplusBtn();
+    DebugJS.ctx.setContinueTplus(DebugJS.ctx, DebugJS.ctx.timerContinueTplus ? false : true);
   },
-  updateContinueTplusBtn: function() {
-    var ctx = DebugJS.ctx;
+  setContinueTplus: function(ctx, f) {
+    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_TPLUS) return;
+    ctx.timerContinueTplus = f;
+    ctx.updateContinueTplusBtn(ctx);
+  },
+  updateContinueTplusBtn: function(ctx) {
     var color = DebugJS.TOOL_TMR_BTN_COLOR;
     if (ctx.timerContinueTplus) {
-      if (ctx.toolStatus & DebugJS.TOOL_ST_SW_EXPIRED) {
+      if (ctx.toolStatus & DebugJS.TOOL_ST_SW_TPLUS) {
         color = '#888';
       }
     } else {
@@ -5094,20 +5102,15 @@ DebugJS.prototype = {
   startTimerStopwatch: function() {
     var ctx = DebugJS.ctx;
     var now = DebugJS.now();
-    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_END) {
-      ctx.resetTimerStopwatch();
-    }
+    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_END) ctx.resetTimerStopwatch();
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_PAUSED) {
       ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_PAUSED;
-      if (ctx.toolStatus & DebugJS.TOOL_ST_SW_EXPIRED) {
-        ctx.timerExprAt = now - ctx.timerSwTime;
-      } else {
-        ctx.timerExprAt = now + ctx.timerSwTime;
-      }
+      ctx.timerZeroAt = now - ctx.timerSwVal;
     } else {
-      var timerV = ctx.calcExpireTimeInp();
-      ctx.timerExprAt = now - timerV;
+      var timerV = ctx.calcTimerZeroAt(ctx);
+      ctx.timerZeroAt = now - timerV;
       ctx.timerSwPrevSplit = timerV;
+      if (timerV > 0) ctx.timerContinueTplus = true;
       ctx.replaceTimerSubPanel(ctx.timerSwSubPanel);
     }
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_RUNNING;
@@ -5126,23 +5129,19 @@ DebugJS.prototype = {
   },
   splitTimerStopwatch: function() {
     var ctx = DebugJS.ctx;
-    ctx._updateTimerStopwatch(ctx);
-    var t = ctx.timerSwTime;
-    var pfx;
-    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_EXPIRED) {
-      pfx = 'T+';
-    } else {
-      pfx = 'T-';
-      t *= (-1);
-    }
-    var dt = DebugJS.getElapsedTimeStr(ctx.timerSwPrevSplit, t);
-    var m = DebugJS.TMR_NM_SW_L + ': <span style="color:' + ctx.opt.timerColor + '">' + pfx + DebugJS.getTmrStr(ctx.timerSwTime) + '</span>(' + DebugJS.CHR_DELTA + '<span style="color:' + ctx.opt.timerColor + '">' + dt + '</span>)';
-    ctx.timerSwPrevSplit = t;
-    DebugJS._log(m);
+    if (ctx.timerSplitF) ctx._splitTimerStopwatch(ctx);
     if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) {
       ctx.timerSplitF = false;
       if (ctx.status & DebugJS.ST_TOOLS) ctx.updateTimerLapBtn();
     }
+  },
+  _splitTimerStopwatch: function(ctx) {
+    ctx._updateTimerStopwatch(ctx);
+    var t = ctx.timerSwVal;
+    var dt = DebugJS.getElapsedTimeStr(ctx.timerSwPrevSplit, t);
+    var m = DebugJS.TMR_NM_SW_L + ': <span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTmrStr(ctx.timerSwVal) + '</span>(' + DebugJS.CHR_DELTA + '<span style="color:' + ctx.opt.timerColor + '">' + dt + '</span>)';
+    ctx.timerSwPrevSplit = t;
+    DebugJS._log(m);
   },
   endTimerStopwatch: function(ctx) {
     ctx._endTimerStopwatch(ctx);
@@ -5156,12 +5155,13 @@ DebugJS.prototype = {
   resetTimerStopwatch: function() {
     var ctx = DebugJS.ctx;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_PAUSED;
-    ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_EXPIRED;
+    ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_TPLUS;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_END;
-    var timerV = ctx.calcExpireTimeInp();
-    ctx.timerExprAt = DebugJS.now() - timerV;
-    ctx.timerSwTime = timerV;
+    var timerV = ctx.calcTimerZeroAt(ctx);
+    ctx.timerZeroAt = DebugJS.now() - timerV;
+    ctx.timerSwVal = timerV;
     ctx.timerSwPrevSplit = timerV;
+    ctx.timerSplitF = false;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) {
       ctx.updateTimerStopwatch();
     } else {
@@ -5181,34 +5181,27 @@ DebugJS.prototype = {
     }
   },
   _updateTimerStopwatch: function(ctx) {
-    var t = ctx.timerSwTime;
-    if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) {
-      return t;
+    var t = ctx.timerSwVal;
+    if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) return t;
+    if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_END)) {
+      t = DebugJS.now() - ctx.timerZeroAt;
     }
-    var now = DebugJS.now();
-    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_EXPIRED) {
-      if (ctx.timerContinueTplus) {
-        t = now - ctx.timerExprAt;
-      }
-    } else if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_END)) {
-      t = ctx.timerExprAt - now;
-    }
-    if (t < 0) {
-      DebugJS.callEvtListeners('stopwatch', 1, 'timesup');
-      ctx.toolStatus |= DebugJS.TOOL_ST_SW_EXPIRED;
-      ctx.updateContinueTplusBtn();
-      if (ctx.timerContinueTplus) {
-        t *= -1;
-      } else {
-        ctx._endTimerStopwatch(ctx);
-        t = 0;
+    if (t >= 0) {
+      if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_TPLUS)) {
+        ctx.toolStatus |= DebugJS.TOOL_ST_SW_TPLUS;
+        DebugJS.callEvtListeners('stopwatch', 1, 'timesup');
+        ctx.updateContinueTplusBtn(ctx);
+        if (!ctx.timerContinueTplus) {
+          ctx._endTimerStopwatch(ctx);
+          t = 0;
+        }
       }
     }
-    ctx.timerSwTime = t;
-    return ((ctx.toolStatus & DebugJS.TOOL_ST_SW_EXPIRED) ? (t * (-1)) : t);
+    ctx.timerSwVal = t;
+    return t;
   },
   drawStopwatch: function() {
-    var tm = DebugJS.ms2struct(DebugJS.ctx.timerSwTime, true);
+    var tm = DebugJS.ms2struct(DebugJS.ctx.timerSwVal, true);
     DebugJS.ctx.timerSwLabel.innerHTML = DebugJS.ctx.createTimerStr(tm);
   },
   updateTimerSwBtns: function() {
@@ -5222,7 +5215,7 @@ DebugJS.prototype = {
     ctx.timerStartStopBtn.innerText = btn;
     ctx.timerStartStopBtnInp.innerText = btn;
     ctx.updateTimerLapBtn();
-    ctx.updateContinueTplusBtn();
+    ctx.updateContinueTplusBtn(ctx);
   },
   updateTimerLapBtn: function() {
     var ctx = DebugJS.ctx;
@@ -5254,7 +5247,7 @@ DebugJS.prototype = {
       var dot;
       var styleS = '';
       var styleE = '';
-      if (ctx.toolStatus & DebugJS.TOOL_ST_SW_EXPIRED) {
+      if (ctx.toolStatus & DebugJS.TOOL_ST_SW_TPLUS) {
         pfx = 'T+';
         dot = (((ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) && (tm.sss > 500)) ? '&nbsp;' : '.');
         styleS = '<span style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">';
@@ -5293,19 +5286,15 @@ DebugJS.prototype = {
         e.preventDefault();
       }
     } else if (e.keyCode == 16) {
-      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW) {
-        if (ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) {
-          ctx.splitTimerStopwatch();
-        }
-      }
-    } else if ((e.keyCode == 48) || (e.keyCode == 96)) {
+      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW) ctx.splitTimerStopwatch();
+    } else if (e.keyCode == 83) {
+      if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_CLOCK) ctx.toggleSSS();
+    } else if (e.keyCode == 84) {
       if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW) {
         if (!DebugJS.isFocusInput()) {
           ctx.toggleContinueTplus();
         }
       }
-    } else if (e.keyCode == 83) {
-      ctx.toggleSSS();
     }
   },
 
@@ -9254,7 +9243,7 @@ DebugJS.prototype = {
     if (el) DebugJS.setStyle(el, 'font-size', s);
   },
   setPropTimerCb: function(ctx, v) {
-    var tm = DebugJS.timestr2struct(v);
+    var tm = DebugJS.timerstr2struct(v);
     if (ctx.timerSwInputDiv) {
       ctx.timerTxtHH.value = tm.hh;
       ctx.timerTxtMI.value = tm.mi;
@@ -9582,13 +9571,17 @@ DebugJS.prototype = {
       n = a[0].charAt(2) | 0;
       op = a[1];
     }
-    var r = -1;
+    var r;
     if (n == 0) {
       r = DebugJS.ctx._cmdStopwatch(op, n);
     } else if (n == 1) {
-      r = DebugJS.ctx._cmdStopwatch2(DebugJS.ctx, op);
+      r = DebugJS.ctx._cmdStopwatch1(DebugJS.ctx, op);
     }
-    if (r == -1) DebugJS.printUsage(tbl.help);
+    if (r == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return r;
+    }
+    if (op == 'val') DebugJS._log('sw' + n + ': ' + DebugJS.getTmrStr(r));
     return r;
   },
   _cmdStopwatch: function(op, n) {
@@ -9612,14 +9605,13 @@ DebugJS.prototype = {
       case 'val':
         break;
       default:
-        return -1;
+        return;
     }
-    var elps = stopwatch.val(n);
-    if (op == 'val') DebugJS._log('sw' + n + ': ' + DebugJS.getTmrStr(elps));
-    return elps;
+    var t = stopwatch.val(n);
+    return t;
   },
-  _cmdStopwatch2: function(ctx, op) {
-    if (!ctx.isAvailableTools(ctx)) return false;
+  _cmdStopwatch1: function(ctx, op) {
+    if (!ctx.isAvailableTools(ctx)) return;
     switch (op) {
       case 'start':
         DebugJS.stopwatch(1);
@@ -9643,12 +9635,9 @@ DebugJS.prototype = {
       case 'val':
         break;
       default:
-        return -1;
+        return;
     }
     var t = ctx._updateTimerStopwatch(ctx);
-    if (op == 'val') {
-      DebugJS._log(DebugJS.TMR_NM_SW_L + ': ' + (t < 0 ? '-' : '') + DebugJS.getTmrStr(t));
-    }
     return t;
   },
 
@@ -10824,7 +10813,8 @@ DebugJS.getTimeStr = function(d) {
 };
 DebugJS.getTmrStr = function(ms) {
   var t = DebugJS.ms2struct(ms, true);
-  return t.hh + ':' + t.mi + ':' + t.ss + '.' + t.sss;
+  var pfx = 'T' + (t.sign ? '-' : '+');
+  return pfx + t.hh + ':' + t.mi + ':' + t.ss + '.' + t.sss;
 };
 DebugJS.ms2struct = function(ms, fmt) {
   var wk = ms;
@@ -10867,8 +10857,17 @@ DebugJS.ms2struct = function(ms, fmt) {
   }
   return tm;
 };
-DebugJS.timestr2struct = function(str) {
-  var wk = str.split(':');
+DebugJS.timerstr2struct = function(str) {
+  var wk = str;
+  var sn = str.charAt(0);
+  var sign = false;
+  if (sn == '-') {
+    sign = true;
+    wk = wk.substr(1);
+  } else if (sn == '+') {
+    wk = wk.substr(1);
+  }
+  wk = wk.split(':');
   var h = wk[0];
   var mi = (wk[1] == undefined ? '' : wk[1]);
   var s = (wk[2] == undefined ? '' : wk[2]);
@@ -10879,6 +10878,7 @@ DebugJS.timestr2struct = function(str) {
   ss = DebugJS.nan2zero(ss);
   sss = DebugJS.nan2zero(sss);
   var st = {
+    sign: sign,
     hh: DebugJS.nan2zero(h),
     mi: ('00' + mi).slice(-2),
     ss: ('00' + ss).slice(-2),
@@ -13648,8 +13648,8 @@ DebugJS.saveStatus = function() {
     toolsActvFnc: ctx.toolsActvFnc,
     toolTimerMode: ctx.toolTimerMode,
     timerClockSSS: ctx.timerClockSSS,
-    timerExprAt: ctx.timerExprAt,
-    timerSwTime: ctx.timerSwTime,
+    timerZeroAt: ctx.timerZeroAt,
+    timerSwVal: ctx.timerSwVal,
     timerSwPrevSplit: ctx.timerSwPrevSplit,
     timerSplitF: ctx.timerSplitF,
     timerContinueTplus: ctx.timerContinueTplus,
@@ -14219,11 +14219,14 @@ DebugJS.stopwatch.end = function(n, m) {
   return DebugJS.stopwatch.val(n);
 };
 DebugJS.stopwatch.split = function(n, m) {
-  if (n != 0) n = 1;
-  var nm = DebugJS.stopwatch.tmNm[n];
-  if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
-    m = nm + ': %t(' + DebugJS.CHR_DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
-    DebugJS.time._split(nm, false, m);
+  if (n == 0) {
+    DebugJS.ctx.splitStopwatch();
+  } else {
+    var nm = DebugJS.stopwatch.tmNm[1];
+    if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
+      m = nm + ': %t(' + DebugJS.CHR_DELTA + '%lt)' + (m == undefined ? '' : ' ' + m);
+      DebugJS.time._split(nm, false, m);
+    }
   }
 };
 DebugJS.stopwatch.reset = function(n) {
@@ -14238,15 +14241,30 @@ DebugJS.stopwatch.reset = function(n) {
 DebugJS.stopwatch.val = function(n) {
   if (n != 0) n = 1;
   var nm = DebugJS.stopwatch.tmNm[n];
-  DebugJS.time.updateCount(nm);
-  return DebugJS.time.getCount(nm);
+  if (n == 0) {
+    if (DebugJS.ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
+      DebugJS.time.updateCount(nm);
+    }
+    return DebugJS.time.getCount(nm);
+  } else {
+    return DebugJS.ctx._updateTimerStopwatch(DebugJS.ctx);
+  }
 };
 DebugJS.stopwatch.log = function(n, msg) {
   var nm = DebugJS.stopwatch.tmNm[n];
-  var t = DebugJS.getTmrStr(DebugJS.time.getCount(nm));
+  var v;
+  if (n == 1) {
+    v = DebugJS.ctx._updateTimerStopwatch(DebugJS.ctx);
+  } else {
+    v = DebugJS.time.getCount(nm);
+  }
+  var t = DebugJS.getTmrStr(v);
   var m = nm + ': <span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>';
   if (msg != undefined) m += ' ' + msg;
   DebugJS._log(m);
+};
+DebugJS.stopwatch.setContinueTplus = function(f) {
+  DebugJS.ctx.setContinueTplus(DebugJS.ctx, f);
 };
 
 DebugJS.addCmdListener = function(fn) {
@@ -17664,8 +17682,8 @@ DebugJS.restoreStatus = function(ctx) {
   ctx.toolsActvFnc = data.toolsActvFnc;
   ctx.toolTimerMode = data.toolTimerMode;
   ctx.timerClockSSS = data.timerClockSSS;
-  ctx.timerExprAt = data.timerExprAt;
-  ctx.timerSwTime = data.timerSwTime;
+  ctx.timerZeroAt = data.timerZeroAt;
+  ctx.timerSwVal = data.timerSwVal;
   ctx.timerSwPrevSplit = data.timerSwPrevSplit;
   ctx.timerSplitF = data.timerSplitF;
   ctx.timerContinueTplus = data.timerContinueTplus;
