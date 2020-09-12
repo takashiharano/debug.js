@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009121753';
+  this.v = '202009121935';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -434,7 +434,8 @@ var DebugJS = DebugJS || function() {
   },
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
-  this.CMD_ALIAS = {b64: 'base64'};
+  this.CMD_ALIAS = {};
+  this.CMD_ALIAS_BI = {b64: 'base64', t: 'date'};
   this.CMDVALS = {};
   this.opt = null;
   this.errStatus = DebugJS.ERR_ST_NONE;
@@ -7045,15 +7046,19 @@ DebugJS.prototype = {
     var cmd = cmds[0];
     var arg = cmds[1];
     if (!aliased) {
-      for (var key in ctx.CMD_ALIAS) {
-        if (cmd == key) {
-          var cl = cmdline.replace(new RegExp(cmd), ctx.CMD_ALIAS[key]);
-          return ctx.__execCmd(ctx, cl, echo, true);
+      var alsTbls = [ctx.CMD_ALIAS, ctx.CMD_ALIAS_BI];
+      for (var i = 0; i < alsTbls.length; i++) {
+        var aliases = alsTbls[i];
+        for (var key in aliases) {
+          if (cmd == key) {
+            var cl = cmdline.replace(new RegExp(cmd), aliases[key]);
+            return ctx.__execCmd(ctx, cl, echo, true);
+          }
         }
       }
     }
 
-    for (var i = 0; i < ctx.CMD_TBL.length; i++) {
+    for (i = 0; i < ctx.CMD_TBL.length; i++) {
       if (cmd == ctx.CMD_TBL[i].cmd) {
         return ctx.CMD_TBL[i].fn(arg, ctx.CMD_TBL[i], echo);
       }
