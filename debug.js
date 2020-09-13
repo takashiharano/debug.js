@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009122025';
+  this.v = '202009140014';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -244,10 +244,11 @@ var DebugJS = DebugJS || function() {
   this.swLabel = null;
   this.clearBtn = null;
   this.wdBtn = null;
-  this.suspendLogBtn = null;
   this.preserveLogBtn = null;
+  this.suspendLogBtn = null;
   this.pinBtn = null;
   this.clpBtn = null;
+  this.hdrInfBtn = null;
   this.winCtrlBtnPanel = null;
   this.closeBtn = null;
   this.mousePosLabel = null;
@@ -564,6 +565,7 @@ DebugJS.UI_ST_RESIZING_ALL = DebugJS.UI_ST_RESIZING | DebugJS.UI_ST_RESIZING_N |
 DebugJS.UI_ST_POS_AUTO_ADJ = 1 << 11;
 DebugJS.UI_ST_LOG_SCROLL = 1 << 12;
 DebugJS.UI_ST_PROTECTED = 1 << 13;
+DebugJS.UI_ST_HEADINFO = 1 << 14;
 DebugJS.TOOL_ST_SW_RUNNING = 1;
 DebugJS.TOOL_ST_SW_PAUSED = 1 << 1;
 DebugJS.TOOL_ST_SW_TPLUS = 1 << 2;
@@ -637,6 +639,7 @@ DebugJS.DOM_BTN_COLOR = '#f63';
 DebugJS.JS_BTN_COLOR = '#6df';
 DebugJS.TOOLS_BTN_COLOR = '#ff0';
 DebugJS.EXT_BTN_COLOR = '#f8f';
+DebugJS.HDRINF_BTN_COLOR = '#eee';
 DebugJS.LOG_PRESERVE_BTN_COLOR = '#0f0';
 DebugJS.LOG_SUSPEND_BTN_COLOR = '#f66';
 DebugJS.PIN_BTN_COLOR = '#fa0';
@@ -848,6 +851,9 @@ DebugJS.prototype = {
     ctx.win.style.fontSize = ctx.computedFontSize + 'px',
     ctx.win.style.opacity = ctx.opt.opacity;
     ctx.createPanels(ctx);
+    if (rstrOpt && !(rstrOpt.uiStatus & DebugJS.UI_ST_HEADINFO)) {
+      ctx.showHeaderInfo(false);
+    }
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) {
       ctx.initResize(ctx);
     }
@@ -1306,6 +1312,7 @@ DebugJS.prototype = {
       ctx.infoPanel = document.createElement('div');
       ctx.infoPanel.style.padding = '0 2px 1px 2px';
       ctx.winBody.appendChild(ctx.infoPanel);
+      ctx.uiStatus |= DebugJS.UI_ST_HEADINFO;
     }
 
     ctx.mainPanel = document.createElement('div');
@@ -1323,6 +1330,7 @@ DebugJS.prototype = {
       ctx.logHdrPanel.style.height = fontSize;
       ctx.logHdrPanel.style.marginBottom = '2px';
       ctx.mainPanel.appendChild(ctx.logHdrPanel);
+      ctx.uiStatus |= DebugJS.UI_ST_HEADINFO;
     }
 
     if (opt.useClearButton) {
@@ -1367,24 +1375,22 @@ DebugJS.prototype = {
       ctx.closeBtn.onmouseover = new Function('DebugJS.setStyle(this, \'color\', \'#d88\');');
       ctx.closeBtn.onmouseout = new Function('DebugJS.setStyle(this, \'color\', \'#888\');');
     }
-
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && opt.useWinCtrlButton) {
       ctx.winCtrlBtnPanel = document.createElement('span');
       ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
-
-    if (opt.useCommandLine) {
-      ctx.clpBtn = ctx.createHdrBtn('clpBtn', 'C', 3, fontSize, DebugJS.copyLogs, null, null, 'CLP_BTN_COLOR', false, 'Copy the logs');
+    if (ctx.logHdrPanel || ctx.infoPanel) {
+      ctx.hdrInfBtn = ctx.createHdrBtn('hdrInfBtn', '=', 3, fontSize, ctx.toggleHeaderInfo, null, null, 'HDRINF_BTN_COLOR', false, 'Show header info');
     }
-
+    if (opt.useCommandLine) {
+      ctx.clpBtn = ctx.createHdrBtn('clpBtn', 'C', 3, fontSize, DebugJS.copyLogs, null, null, 'CLP_BTN_COLOR', false, 'Copy log text');
+    }
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.usePinButton) {
       ctx.pinBtn = ctx.createHdrBtn('pinBtn', 'P', 3, fontSize, ctx.toggleDraggable, 'uiStatus', 'UI_ST_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
-
     if (opt.useSuspendLogButton) {
       ctx.suspendLogBtn = ctx.createHdrBtn('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'ST_LOG_SUSPEND', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
     }
-
     if (DebugJS.LS_AVAILABLE) {
       ctx.preserveLogBtn = ctx.createHdrBtn('preserveLogBtn', '*', 5, fontSize, ctx.toggleLogPreserve, 'status', 'ST_LOG_PRESERVED', 'LOG_PRESERVE_BTN_COLOR', false, 'Preserve log');
     }
@@ -3393,6 +3399,25 @@ DebugJS.prototype = {
       ctx.closeElmInfo(ctx);
     }
     ctx.hideDbgWin(ctx);
+  },
+
+  toggleHeaderInfo: function() {
+    var f = (DebugJS.ctx.uiStatus & DebugJS.UI_ST_HEADINFO) ? false : true;
+    DebugJS.ctx.showHeaderInfo(f);
+  },
+  showHeaderInfo: function(f) {
+    var ctx = DebugJS.ctx;
+    if (f) {
+      ctx.uiStatus |= DebugJS.UI_ST_HEADINFO;
+    } else {
+      ctx.uiStatus &= ~DebugJS.UI_ST_HEADINFO;
+    }
+    DebugJS.ctx._showHeaderInfo(ctx);
+  },
+  _showHeaderInfo: function(ctx) {
+    var v = (ctx.uiStatus & DebugJS.UI_ST_HEADINFO) ? 1 : 0;
+    if (ctx.logHdrPanel) ctx.logHdrPanel.style.opacity = v;
+    if (ctx.infoPanel) ctx.infoPanel.style.opacity = v;
   },
 
   lockDbgWin: function(ctx) {
@@ -13852,6 +13877,7 @@ DebugJS.zoom = function(n) {
   var rstrOpt = {
     cause: DebugJS.INIT_CAUSE_ZOOM,
     status: ctx.status,
+    uiStatus: ctx.uiStatus,
     sizeStatus: ctx.sizeStatus
   };
   ctx.featStackBak = ctx.featStack.concat();
@@ -13860,6 +13886,9 @@ DebugJS.zoom = function(n) {
   ctx.zoom = n;
   ctx.init(null, rstrOpt);
   return n;
+};
+DebugJS.showHeaderInfo = function(f) {
+  DebugJS.ctx.showHeaderInfo(f);
 };
 DebugJS.isTmrMode = function() {
   return ((DebugJS.ctx.status & DebugJS.ST_TOOLS) && (DebugJS.ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TIMER));
