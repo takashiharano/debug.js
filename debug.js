@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009150030';
+  this.v = '202009150154';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5205,10 +5205,12 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if ((!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) &&
         (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_END))) return;
-    ctx._updateTimerStopwatch(ctx);
+    var v = ctx._updateTimerStopwatch(ctx);
     if (ctx.status & DebugJS.ST_TOOLS) {
       ctx.drawStopwatch();
-      setTimeout(ctx.updateTimerStopwatch, DebugJS.UPDATE_INTERVAL_H);
+      ctx.nextSwIntvl(ctx);
+    } else if (v < 0) {
+      ctx.nextSwIntvl(ctx);
     }
   },
   _updateTimerStopwatch: function(ctx) {
@@ -5220,7 +5222,7 @@ DebugJS.prototype = {
     if (t >= 0) {
       if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_TPLUS)) {
         ctx.toolStatus |= DebugJS.TOOL_ST_SW_TPLUS;
-        if (!ctx.timerContinueTplus || (ctx.timerStartV != 0)) DebugJS.callEvtListeners('stopwatch', 1, 'timesup');
+        if (!ctx.timerContinueTplus || (ctx.timerContinueTplus && (ctx.timerStartV < 0))) DebugJS.callEvtListeners('stopwatch', 1, 'timesup');
         ctx.updateContinueTplusBtn(ctx);
         if (!ctx.timerContinueTplus) {
           ctx._endTimerStopwatch(ctx);
@@ -5230,6 +5232,9 @@ DebugJS.prototype = {
     }
     ctx.timerSwVal = t;
     return t;
+  },
+  nextSwIntvl: function(ctx) {
+    setTimeout(ctx.updateTimerStopwatch, DebugJS.UPDATE_INTERVAL_H);
   },
   drawStopwatch: function() {
     var tm = DebugJS.ms2struct(DebugJS.ctx.timerSwVal, true);
