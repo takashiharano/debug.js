@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009140014';
+  this.v = '202009150030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -147,6 +147,7 @@ var DebugJS = DebugJS || function() {
   this.timerSign = true;
   this.timerZeroAt = 0;
   this.timerSwVal = 0;
+  this.timerStartV = 0;
   this.timerSwPrevSplit = 0;
   this.timerContinueTplus = true;
   this.timerStartStopBtn = null;
@@ -2496,7 +2497,8 @@ DebugJS.prototype = {
     DebugJS.time.restart(DebugJS.TMR_NM_SW_S);
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
-    DebugJS.callEvtListeners('stopwatch', 0, 'start');
+    var v = DebugJS.time.getCount(DebugJS.TMR_NM_SW_S);
+    DebugJS.callEvtListeners('stopwatch', 0, 'start', v);
   },
   stopStopwatch: function() {
     var ctx = DebugJS.ctx;
@@ -2507,7 +2509,8 @@ DebugJS.prototype = {
         ctx.resetStopwatch();
       }
       DebugJS.time.pause(DebugJS.TMR_NM_SW_S);
-      DebugJS.callEvtListeners('stopwatch', 0, 'stop');
+      var v = DebugJS.time.getCount(DebugJS.TMR_NM_SW_S);
+      DebugJS.callEvtListeners('stopwatch', 0, 'stop', v);
     }
     ctx.updateSwLabel();
     ctx.updateSwBtnPanel(ctx);
@@ -5128,21 +5131,23 @@ DebugJS.prototype = {
   startTimerStopwatch: function() {
     var ctx = DebugJS.ctx;
     var now = DebugJS.now();
+    var timerV;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_END) ctx.resetTimerStopwatch();
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_PAUSED) {
       ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_PAUSED;
-      ctx.timerZeroAt = now - ctx.timerSwVal;
+      timerV = ctx.timerSwVal;
     } else {
-      var timerV = ctx.calcTimerZeroAt(ctx);
-      ctx.timerZeroAt = now - timerV;
+      timerV = ctx.calcTimerZeroAt(ctx);
+      ctx.timerStartV = timerV;
       ctx.timerSwPrevSplit = timerV;
       if (timerV > 0) ctx.timerContinueTplus = true;
       ctx.replaceTimerSubPanel(ctx.timerSwSubPanel);
     }
+    ctx.timerZeroAt = now - timerV;
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_RUNNING;
+    DebugJS.callEvtListeners('stopwatch', 1, 'start', timerV);
     ctx.updateTimerStopwatch();
     ctx.updateTimerSwBtns();
-    DebugJS.callEvtListeners('stopwatch', 1, 'start');
   },
   stopTimerStopwatch: function() {
     var ctx = DebugJS.ctx;
@@ -5151,7 +5156,7 @@ DebugJS.prototype = {
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_PAUSED;
     if (ctx.status & DebugJS.ST_TOOLS) ctx.drawStopwatch();
     ctx.updateTimerSwBtns();
-    DebugJS.callEvtListeners('stopwatch', 1, 'stop');
+    DebugJS.callEvtListeners('stopwatch', 1, 'stop', ctx.timerSwVal);
   },
   splitTimerStopwatch: function() {
     var ctx = DebugJS.ctx;
@@ -5215,7 +5220,7 @@ DebugJS.prototype = {
     if (t >= 0) {
       if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_TPLUS)) {
         ctx.toolStatus |= DebugJS.TOOL_ST_SW_TPLUS;
-        DebugJS.callEvtListeners('stopwatch', 1, 'timesup');
+        if (!ctx.timerContinueTplus || (ctx.timerStartV != 0)) DebugJS.callEvtListeners('stopwatch', 1, 'timesup');
         ctx.updateContinueTplusBtn(ctx);
         if (!ctx.timerContinueTplus) {
           ctx._endTimerStopwatch(ctx);
@@ -9274,13 +9279,15 @@ DebugJS.prototype = {
   },
   setPropTimerCb: function(ctx, v) {
     var tm = DebugJS.timerstr2struct(v);
+    ctx.timerSign = tm.sign;
     if (ctx.timerSwInputDiv) {
       ctx.timerTxtHH.value = tm.hh;
       ctx.timerTxtMI.value = tm.mi;
       ctx.timerTxtSS.value = tm.ss;
       ctx.timerTxtSSS.value = tm.sss;
     }
-    return DebugJS.getTimeStr(tm);
+    var sn = tm.sign ? '-' : '+';
+    return sn + DebugJS.getTimeStr(tm);
   },
   setPropConsoleLogCb: function(ctx, v) {
     DebugJS.setConsoleLogOut((v == 'me'));
@@ -13678,8 +13685,9 @@ DebugJS.saveStatus = function() {
     toolsActvFnc: ctx.toolsActvFnc,
     toolTimerMode: ctx.toolTimerMode,
     timerClockSSS: ctx.timerClockSSS,
-    timerZeroAt: ctx.timerZeroAt,
     timerSwVal: ctx.timerSwVal,
+    timerStartV: ctx.timerStartV,
+    timerZeroAt: ctx.timerZeroAt,
     timerSwPrevSplit: ctx.timerSwPrevSplit,
     timerSplitF: ctx.timerSplitF,
     timerContinueTplus: ctx.timerContinueTplus,
@@ -17714,8 +17722,9 @@ DebugJS.restoreStatus = function(ctx) {
   ctx.toolsActvFnc = data.toolsActvFnc;
   ctx.toolTimerMode = data.toolTimerMode;
   ctx.timerClockSSS = data.timerClockSSS;
-  ctx.timerZeroAt = data.timerZeroAt;
   ctx.timerSwVal = data.timerSwVal;
+  ctx.timerStartV = data.timerStartV;
+  ctx.timerZeroAt = data.timerZeroAt;
   ctx.timerSwPrevSplit = data.timerSwPrevSplit;
   ctx.timerSplitF = data.timerSplitF;
   ctx.timerContinueTplus = data.timerContinueTplus;

@@ -634,6 +634,11 @@ function onWatchdogTimeout(elapsed) {
   log('count = ' + wdtCount + ' / elapsed = ' + elapsed);
 }
 
+onStopwatchEvt = function(id, type, v) {
+  log('stopwatch event: id=' + id + ', type=' + type + ', v=' + v);
+};
+//dbg.addEvtListener('stopwatch', onStopwatchEvt);
+
 function batDemo() {
   var cmds = getVal("bat-demo-text");
   dbg.bat(cmds);
@@ -3627,12 +3632,11 @@ Callback function which is called when file load has been completed.<br>
       type: <b>stopwatch</b><br>
       Callback function which is called when the stopwatch status is changed.<br>
 <pre class="eg">Function format:
-  function onStopwatch(id, type) {}
+  function onStopwatch(id, type, millis<span class="annotation">(for start, stop)</span>) {}
 
   id  : 0 = mini stopwatch
-        1 = stopwatch on tool window
-        2 = count down timer on tool window
-  type: start, stop, reset, timesup (id 2 dedicated)
+        1 = stopwatch on the tool window
+  type: start, stop, reset, timesup (id 1 dedicated)
 </pre>
 <br>
       type: <b>unlock</b><br>
