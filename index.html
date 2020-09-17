@@ -1449,17 +1449,16 @@ log.json(obj, 0, '<input type="text" id="log-json-msg-txt" class="demo-text" sty
     <td class="name">log.t<br><span class="alias">( dbg.log.t )</span></td>
     <td>
       arg1: message<br>
-      arg2: timer name<span class="annotation">(opt)</span>
+      arg2: timer value<span class="annotation">(opt: in millis)</span>
     </td>
     <td>
-      Output log w/ elapsed time
+      Output log w/ elapsed time<br><br>
 <pre class="eg">
-log.t('foo', 'timer1')
--&gt; 00:00:12.345 foo
+log.t('<input type="text" id="log-t-txt" class="demo-text" style="width:200px;" value="%dt Hello, World!">');<button class="demo-button2" onclick="log.t(getVal('log-t-txt'));">DEMO</button>
+<span class="annotation">"%dt" will be replaced with delta time (lap time).</span>
 
-log.t('foo')
--&gt; 00:00:12.345 foo
-<span class="annotation">default timer name will be used in case no name is given to the timer name.</span>
+You can reset the timer by specifying 0 for the second argument.
+log.t('<input type="text" id="log-t-r-txt" class="demo-text" style="width:200px;" value="%dt Hello, World!">', <input type="text" id="log-t-r-t-txt" class="demo-text" style="width:20px;" value="0">);<button class="demo-button2" onclick="log.t(getVal('log-t-r-txt'), getVal('log-t-r-t-txt') | 0);">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -1826,17 +1825,17 @@ dbg.setLogBufSize('<input type="text" id="setlogbufsize-text" value="10" class="
     <td>
      Start a timer
 <pre class="eg">
-dbg.time.start()
+dbg.time.start();<button class="demo-button2" onclick="dbg.time.start();">DEMO</button>
 -&gt; timer0: timer started
 <span class="annotation">default timer name will be used in case no arguments are specified.</span>
 
-dbg.time.start('timer1')
+dbg.time.start('timer1');<button class="demo-button2" onclick="dbg.time.start('timer1');">DEMO</button>
 -&gt; timer1: timer started
 
-dbg.time.start('timer1', 'Timer Start: %n')
+dbg.time.start('timer1', 'Timer Start: %n');<button class="demo-button2" onclick="dbg.time.start('timer1', 'Timer Start: %n');">DEMO</button>
 -&gt; Timer Start: timer1
 
-dbg.time.start('timer1', null)
+dbg.time.start('timer1', null);<button class="demo-button2" onclick="dbg.time.start('timer1', null);">DEMO</button>
 -&gt; <span class="annotation">no output log (only start the timer)</span>
 </pre>
     </td>
@@ -1851,20 +1850,17 @@ dbg.time.start('timer1', null)
     <td>
       Print elapsed time of the timer
 <pre class="eg">
-dbg.time.split()
--&gt; timer0: 00:01:02.345 (⊿00:01:02.345)
+dbg.time.split();<button class="demo-button2" onclick="dbg.time.split();">DEMO</button>
+-&gt; timer0: T+00:01:02.345 (⊿00:01:02.345)
 <span class="annotation">default timer name will be used in case no arguments are specified.</span>
 
-dbg.time.split('timer1')
--&gt; timer1: 00:01:02.345 (⊿00:01:02.345)
+dbg.time.split('timer1');<button class="demo-button2" onclick="dbg.time.split('timer1');">DEMO</button>
+-&gt; timer1: T+00:01:02.345 (⊿00:01:02.345)
 
-dbg.time.split('timer1')
--&gt; timer1: 00:01:03.345 (⊿00:00:01.000)
+dbg.time.split('timer1', '[%n] epalsed time: %t (%dt)');<button class="demo-button2" onclick="dbg.time.split('timer1', '[%n] epalsed time: %t (%dt)');">DEMO</button>
+-&gt; [timer1] elapsed time: T+00:01:03.345 (⊿00:00:01.000)
 
-dbg.time.split('timer1', '[%n] epalsed time: %t (%lt)')
--&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
-
-dbg.time.split('timer1', null)
+dbg.time.split('timer1', null);<button class="demo-button2" onclick="dbg.time.split('timer1', null);">DEMO</button>
 -&gt; <span class="annotation">no output log (only split the timer)</span>
 </pre>
     </td>
@@ -1879,20 +1875,17 @@ dbg.time.split('timer1', null)
     <td>
       Print elapsed time of the timer and clear.
 <pre class="eg">
-dbg.time.end()
--&gt; timer1: 00:01:02.345
+dbg.time.end();<button class="demo-button2" onclick="dbg.time.end();">DEMO</button>
+-&gt; timer1: T+00:01:02.345
 <span class="annotation">default timer name will be used in case no arguments are specified.</span>
 
-dbg.time.end('timer1')
--&gt; timer1: 00:01:02.345
+dbg.time.end('timer1');<button class="demo-button2" onclick="dbg.time.end('timer1');">DEMO</button>
+-&gt; timer1: T+00:01:02.345
 
-dbg.time.end('timer1')
--&gt; timer1: 00:01:03.345 (⊿00:00:01.000)
+dbg.time.end('timer1', '[%n] epalsed time: %t (%dt)');<button class="demo-button2" onclick="dbg.time.end('timer1', '[%n] epalsed time: %t (%dt)');">DEMO</button>
+-&gt; [timer1] elapsed time: T+00:01:03.345 (⊿00:00:01.000)
 
-dbg.time.end('timer1', '[%n] epalsed time: %t (%lt)')
--&gt; [timer1] elapsed time: 00:01:03.345 (⊿00:00:01.000)
-
-dbg.time.end('timer1', null)
+dbg.time.end('timer1', null);<button class="demo-button2" onclick="dbg.time.end('timer1', null);">DEMO</button>
 -&gt; <span class="annotation">no output log (only clear the timer)</span>
 </pre>
     </td>
@@ -1906,12 +1899,12 @@ dbg.time.end('timer1', null)
     <td>
      Get elapsed time of the timer.
 <pre class="eg">
-dbg.time.check()
--&gt; A string like "00:01:23.456" will be returned.
+dbg.time.check();<button class="demo-button2" onclick="log.p(dbg.time.check());">DEMO</button>
+-&gt; A string like "T+00:01:23.456" will be returned.
 <span class="annotation">default timer name will be used in case no arguments are specified.</span>
 
-dbg.time.check('timer1')
--&gt; A string like "00:01:23.456" will be returned.
+dbg.time.check('timer1');<button class="demo-button2" onclick="log.p(dbg.time.check('timer1'));">DEMO</button>
+-&gt; A string like "T+00:01:23.456" will be returned.
 </pre>
     </td>
   </tr>
@@ -7230,13 +7223,13 @@ Execute the following code from F12 console.<br>
 <table class="demo-table">
 <tr>
 <td>
-log with random message<br>
-<button onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">Start Random Demo</button>
+log() log.d() log.i() ...<br>
+<button onclick="displaySampleMessages();">A Series of Logs</button>
 </td>
 
 <td>
-log() log.d() log.i() ...<br>
-<button onclick="displaySampleMessages();">A Series of Logs</button>
+log with random message<br>
+<button onclick="startStopRandomDemo();randomDemo();" id="random-demo-button">Start Random Demo</button>
 </td>
 </table>
 
@@ -7249,78 +7242,6 @@ log() log.d() log.i() ...<br>
 </td>
 <td>
 <button id="led-demo-btn2" onclick="demo.led.ledDemo();">LED DEMO2</button>
-</td>
-</tr>
-</table>
-<br>
-
-<!-- ********************************************************************** -->
-<div class="caption2">time</div>
-<input type="text" id="log-message-text" value="Hello, World!" style="width:400px;margin-top:3px;">
-<table class="demo-table">
-<tr>
-<td>
-dbg.time.start();<br>
-<button onclick="dbg.time.start();">dbg.time.start()</button>
-</td>
-
-<td>
-dbg.time.split();<br>
-<button onclick="dbg.time.split();">dbg.time.split()</button>
-</td>
-
-<td>
-dbg.time.end();<br>
-<button onclick="dbg.time.end();">dbg.time.end()</button>
-</td>
-
-<td>
-log w/ timing measurement<br>
-<button onclick="log.t(logMessageText.value);">log.t()</button>
-</td>
-</tr>
-
-<tr>
-<td>
-dbg.time.start('timer1');<br>
-<button onclick="dbg.time.start('timer1');">dbg.time.start() 1</button>
-</td>
-
-<td>
-dbg.time.split('timer1');<br>
-<button onclick="dbg.time.split('timer1');">dbg.time.split() 1</button>
-</td>
-
-<td>
-dbg.time.end('timer1');<br>
-<button onclick="dbg.time.end('timer1');">dbg.time.end() 1</button>
-</td>
-
-<td>
-log.t('elapsed time of %n', 'timer1');<br>
-<button onclick="log.t('elapsed time of %n', 'timer1');">log.t() 1</button>
-</td>
-</tr>
-
-<tr>
-<td>
-dbg.time.start('timer2', '%t start [Timer Name = %n]');<br>
-<button onclick="dbg.time.start('timer2', '%t start [Timer Name = %n]');">dbg.time.start() 2</button>
-</td>
-
-<td>
-dbg.time.split('timer2', '%n: split=%t/lap=%lt');<br>
-<button onclick="dbg.time.split('timer2', '%n: split=%t lap=%lt');">dbg.time.split() 2</button>
-</td>
-
-<td>
-dbg.time.eEnd('timer2', '%n: split=%t/lap=%lt');<br>
-<button onclick="dbg.time.end('timer2', '%n: split=%t lap=%lt');">dbg.time.end() 2</button>
-</td>
-
-<td>
-log.t('elapsed time of %n t=%t lap=%lt', 'timer2');<br>
-<button onclick="log.t('n=%n t=%t lap=%lt', 'timer2');">log.t() 2</button>
 </td>
 </tr>
 </table>
