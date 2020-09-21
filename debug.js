@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009180013';
+  this.v = '202009212200';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8496,6 +8496,7 @@ DebugJS.prototype = {
   },
 
   cmdNextTime: function(arg, tbl) {
+    var now = DebugJS.now();
     var t, ms, dt;
     var v = arg;
     var p = true;
@@ -8508,10 +8509,10 @@ DebugJS.prototype = {
     if ((v.match(/^T.{4,6}/))) {
       t = DebugJS.calcNextTime(v);
     } else if (ms = DebugJS.parseToMillis(v)) {
-      dt = DebugJS.getDateTime(DebugJS.now() + ms);
+      dt = DebugJS.getDateTime(now + ms);
       t = {time: dt.time, t: 'T' + dt.hh + dt.mi + dt.ss};
     } else if (DebugJS.isNum(v)) {
-      dt = DebugJS.getDateTime(DebugJS.now() + (v | 0));
+      dt = DebugJS.getDateTime(now + (v | 0));
       t = {time: dt.time, t: 'T' + dt.hh + dt.mi + dt.ss};
     } else {
       DebugJS.printUsage(tbl.help);
@@ -8554,13 +8555,14 @@ DebugJS.prototype = {
     }
   },
   _cmdPause: function(op, key, tout, q) {
+    var now = DebugJS.now();
     var ctx = DebugJS.ctx;
     var bat = DebugJS.bat;
     if (tout) {
       if (DebugJS.isTmStr(tout)) {
         tout = DebugJS.str2ms(tout);
       } else if (DebugJS.isTTimeFormat(tout)) {
-        tout = DebugJS.calcNextTime(tout).time - DebugJS.now();
+        tout = DebugJS.calcNextTime(tout).time - now;
       }
     }
     tout |= 0;
@@ -8577,7 +8579,7 @@ DebugJS.prototype = {
       return false;
     }
     if (tout > 0) {
-      bat.ctrl.pauseTimeout = DebugJS.now() + tout;
+      bat.ctrl.pauseTimeout = now + tout;
       bat.ctrl.pauseTmId = setTimeout(bat.onPauseTimeout, tout);
     }
     ctx.updateBatResumeBtn();
@@ -10698,13 +10700,14 @@ DebugJS.now = function() {
   return (new Date()).getTime();
 };
 DebugJS.date = function(val, iso) {
+  var now = DebugJS.now();
   val = (val + '').trim();
   var ts = val;
   var tz = DebugJS.getTZ();
   var _tz, st;
   var idx = val.lastIndexOf(' ');
   if (val == '') {
-    ts = DebugJS.now();
+    ts = now;
   } else if (ts.charAt(ts.length - 1) == 'Z') {
     ts = ts.substr(0, ts.length - 1);
     tz = '+0000';
@@ -10722,7 +10725,7 @@ DebugJS.date = function(val, iso) {
     if (st) _tz = st;
     if (DebugJS.isTZOffsetStr(_tz)) {
       tz = _tz;
-      ts = DebugJS.now();
+      ts = now;
     }
   }
   if (isNaN(ts)) return DebugJS.date2ts(ts, tz, iso);
@@ -10978,7 +10981,7 @@ DebugJS.getTimeStampOfDay = function(t, d) {
   var sss = t.substr(6, 3);
   if (ss == '') ss = '00';
   if (sss == '') sss = '000';
-  return DebugJS.getTime(d.yyyy, d.mm, d.dd, hh, mi, ss, sss);
+  return DebugJS.getTimestamp(d.yyyy, d.mm, d.dd, hh, mi, ss, sss);
 };
 DebugJS.calcTargetTime = function(tgt) {
   var yyyy, mm, dd, t1;
@@ -11047,7 +11050,7 @@ DebugJS.calcNextTime2 = function(now, t) {
     ss = (((hh == now.hh) && (mi == now.mi)) ? now.ss : 0);
   }
   hh |= 0;mi |= 0;ss |= 0;
-  var d = DebugJS.getTime(now.yyyy, now.mm, now.dd, hh, mi, ss);
+  var d = DebugJS.getTimestamp(now.yyyy, now.mm, now.dd, hh, mi, ss);
   var cf = 1;
   if (d < now.time) {
     if (s == '**') {
@@ -11077,7 +11080,7 @@ DebugJS.calcNextTime2 = function(now, t) {
         cf = 1;
       }
     }
-    d = DebugJS.getTime(now.yyyy, now.mm, (now.dd | 0) + cf, hh, mi, ss);
+    d = DebugJS.getTimestamp(now.yyyy, now.mm, (now.dd | 0) + cf, hh, mi, ss);
     if (d < now.time) {
       cf = 1;
       if (s == '**') ss = 0;
@@ -11095,7 +11098,7 @@ DebugJS.calcNextTime2 = function(now, t) {
           hh = 0;
         }
       }
-      d = DebugJS.getTime(now.yyyy, now.mm, (now.dd | 0) + cf, hh, mi, ss);
+      d = DebugJS.getTimestamp(now.yyyy, now.mm, (now.dd | 0) + cf, hh, mi, ss);
     }
   }
   var ret = {
@@ -11104,7 +11107,7 @@ DebugJS.calcNextTime2 = function(now, t) {
   };
   return ret;
 };
-DebugJS.getTime = function(y, m, d, h, mi, s, ms) {
+DebugJS.getTimestamp = function(y, m, d, h, mi, s, ms) {
   y |= 0;
   m |= 0;
   d |= 0;
@@ -11112,7 +11115,8 @@ DebugJS.getTime = function(y, m, d, h, mi, s, ms) {
   mi |= 0;
   s |= 0;
   m |= 0;
-  return (new Date(y, m - 1, d, h, mi, s, ms)).getTime();
+  ms |= 0;
+  return (new Date(y, m - 1, d, h, mi, s)).getTime() + ms;
 };
 DebugJS.parseToMillis = function(v) {
   var d = 0, h = 0, m = 0, s = 0;
@@ -17545,8 +17549,8 @@ DebugJS.wd.start = function(interval) {
 };
 DebugJS.wd.pet = function() {
   if (!(DebugJS.ctx.status & DebugJS.ST_WD)) return;
-  var wd = DebugJS.wd;
   var now = DebugJS.now();
+  var wd = DebugJS.wd;
   var elps = now - wd.wdPetTime;
   if (elps > DebugJS.ctx.props.wdt) {
     wd.cnt++;
