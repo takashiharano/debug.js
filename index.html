@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <title>debug.js</title>
-<meta name="description" content="debug.js is an embeddable JavaScript debugger for web development. It allows you to debug easily without the F12 Tools. The library has useful features such as logging, DOM element inspenction, screen measure, command-line, etc.">
+<meta name="description" content="debug.js is an embeddable JavaScript debugger for web development. It allows you to debug easily without the F12 Tools. The library has useful features such as Logger, DOM element inspector, Screen measure, Command-line interpreter, etc.">
 <meta name="viewport" content="width=1096, initial-scale=1">
 <!--<script src="../../sha.js"></script>-->
 <script src="debug.js"></script>
@@ -2755,15 +2755,17 @@ dbg.test.init('<input type="text" id="test-init-txt" class="demo-text" style="wi
   </tr>
 
   <tr>
-    <td class="name">dbg.test.fin</td>
+    <td class="name">dbg.test.end</td>
     <td></td>
     <td>
       Finalize the test.<br>
-      "running" status will be set to false.<br>
-      This is the same as <i>$test fin</i> command.
+      The running status will be set to false.<br>
+      Test finished time will be set.<br>
+      This is the same as <i>$test end</i> command.
 <pre>
-dbg.test.fin(); <button class="demo-button2" onclick="dbg.test.fin();">DEMO</button>
+dbg.test.end(); <button class="demo-button2" onclick="dbg.test.end();">DEMO</button>
 </pre>
+<span class="annotation">"dbg.test.fin()" has been deprecated.</span>
     </td>
   </tr>
 
@@ -2799,7 +2801,7 @@ test verify -label "label2" c == "abc"
 test set id "Test03"
 test set result ERR -label "label3" -info "Something went wrong"
 
-test fin</pre>dbg.test.getResult(true);
+test end</pre>dbg.test.getResult(true);
 <pre class="code textfmt" style="width:500px">
 {
  "name": "TestName",
@@ -5552,7 +5554,7 @@ to close the stopwatch.
       result: Displays the test result.<br>
       last: Last result of test/point verify command. (OK / NG / ERR / NT)<br>
       status: Displays the total test result. (OK / NG / ERR / NT)<br>
-      fin: Finalize the test execution.<br><br>
+      end: Finalize the test execution. (The running status will be set to false and finished time will be set)<br><br>
 
 <pre class="eg">
 $ test init -name "TestName"
@@ -5575,7 +5577,7 @@ $ test set result NT -label "result4" -info "nt test"
 
 $ test set seq 10 <span class="annotation">Explicitly set number for "%SEQ%".</span>
 
-$ test fin
+$ test end
 $ test result
 
 [Result Output Example]
@@ -7397,7 +7399,7 @@ test set id "Test1-3"
 point move #textarea1
 point verify value == "abcdefg\n1234567890"
 
-test fin
+test end
 test result
 
 point move center

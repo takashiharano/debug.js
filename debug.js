@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202009212200';
+  this.v = '202010010145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -402,7 +402,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1] start|stop|reset|split|end|val'},
     {cmd: 'strp', fn: this.cmdStrp, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR"'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
-    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify got-val method expected-val|fin'},
+    {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXPECTED|end'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'timer start|split|stop|list [timer-name]'},
@@ -9424,8 +9424,9 @@ DebugJS.prototype = {
         break;
       case 'verify':
         return DebugJS.ctx._CmdTestVerify(arg);
+      case 'end':
       case 'fin':
-        test.fin();
+        test.end();
         DebugJS._log('Test completed.');
         break;
       default:
@@ -16923,7 +16924,7 @@ DebugJS.test.load = function() {
   if (d == null) return;
   DebugJS.test.data = JSON.parse(d);
 };
-DebugJS.test.fin = function() {
+DebugJS.test.end = function() {
   DebugJS.test.data.running = false;
   DebugJS.test.data.endTime = DebugJS.now();
 };
