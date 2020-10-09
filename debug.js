@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202010080037';
+  this.v = '202010092002';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16471,7 +16471,7 @@ DebugJS._scrollWinTo = function() {
   window.scrollBy(dX.step, dY.step);
   if ((d.dstX == 0) && (d.dstY == 0)) {
     if (d.cb) d.cb(d.arg);
-    DebugJS.scrollWinTo.fin();
+    DebugJS.scrollWinTo.end();
   } else {
     d.tmid = setTimeout(DebugJS._scrollWinTo, d.speed);
   }
@@ -16492,10 +16492,10 @@ DebugJS.scrollWinTo.stop = function() {
   var tmid = DebugJS.scrollWinTo.data.tmid;
   if (tmid > 0) {
     clearTimeout(tmid);
-    DebugJS.scrollWinTo.fin();
+    DebugJS.scrollWinTo.end();
   }
 };
-DebugJS.scrollWinTo.fin = function() {
+DebugJS.scrollWinTo.end = function() {
   DebugJS.scrollWinTo.initData();
   DebugJS.bat.unlock();
 };
