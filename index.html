@@ -1738,17 +1738,10 @@ def save_log():
   f.close()
 
 def main():
-  try:
-    save_log()
-    status = 'OK'
-  except Exception as e:
-    status = 'ERROR'
-
-  result = '{"status":"' + status + '"}'
-
+  save_log()
   print('Content-Type: application/json')
   print()
-  print(result)
+  print('{"status":"OK"}')
 
 main()
 </pre></pre>
