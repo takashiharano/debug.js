@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202010092002';
+  this.v = '202010262107';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2752,10 +2752,10 @@ DebugJS.prototype = {
           ctx.endResize(ctx);
           break;
         }
-        if ((DebugJS.ctx.status & DebugJS.ST_SW) && DebugJS.isTmrMode()) {
+        if ((ctx.status & DebugJS.ST_SW) && DebugJS.isTmrMode()) {
           DebugJS.cmd.toggleFocus();
           break;
-        } else if (DebugJS.ctx.status & DebugJS.ST_KIOSK) {
+        } else if (ctx.status & DebugJS.ST_KIOSK) {
           if (ctx.featStack.length > 0) {
             ctx.closeTopFeature(ctx);
           } else {
@@ -5946,20 +5946,20 @@ DebugJS.prototype = {
   onFileLoaded: function() {
     var ctx = DebugJS.ctx;
     var file = ctx.fileReader.file;
-    var content = '';
+    var ctt = '';
     try {
-      if (ctx.fileReader.result != null) content = ctx.fileReader.result;
+      if (ctx.fileReader.result != null) ctt = ctx.fileReader.result;
     } catch (e) {
       DebugJS._log.e('onFileLoaded: ' + e);
     }
     if (ctx.fileVwrMode == 'bin') {
-      ctx.onFileLoadedBin(ctx, file, content);
+      ctx.onFileLoadedBin(ctx, file, ctt);
     } else {
-      ctx.onFileLoadedB64(ctx, file, content);
+      ctx.onFileLoadedB64(ctx, file, ctt);
     }
     setTimeout(ctx.fileLoadFinalize, 1000);
     var isB64 = (ctx.fileVwrMode == 'b64');
-    DebugJS.callEvtListeners('fileloaded', file, content, isB64);
+    DebugJS.callEvtListeners('fileloaded', file, ctt, isB64);
     ctx.fileVwrSysCb = null;
     DebugJS.file.finalize();
   },
@@ -6159,8 +6159,8 @@ DebugJS.prototype = {
       }
     }
   },
-  onFileLoadedBin: function(ctx, file, content) {
-    var buf = new Uint8Array(content);
+  onFileLoadedBin: function(ctx, file, ctt) {
+    var buf = new Uint8Array(ctt);
     ctx.fileVwrByteArray = buf;
     DebugJS.file.onLoaded(file, buf);
     ctx.showBinDump(ctx, buf);
@@ -11925,10 +11925,9 @@ DebugJS.cntByGrp = function(a) {
   return o;
 };
 DebugJS.dndFnFin = function() {
-  var ctx = DebugJS.ctx;
-  ctx.dndCmd = null;
-  ctx.dndArg = null;
-  ctx.dndRM = false;
+  DebugJS.ctx.dndCmd = null;
+  DebugJS.ctx.dndArg = null;
+  DebugJS.ctx.dndRM = false;
 };
 
 DebugJS.printUsage = function(m) {
@@ -13759,7 +13758,7 @@ DebugJS.file.onDrop = function(e) {
   var loader = null;
   for (var i = 0; i < DebugJS.file.loaders.length; i++) {
     loader = DebugJS.file.loaders[i];
-    if (DebugJS.isTargetEl(e.target, loader.el)) {
+    if (DebugJS.isTargetEl(loader.el, e.target)) {
       DebugJS.file.ongoingLdr = loader;
       break;
     }
@@ -13778,11 +13777,11 @@ DebugJS.file.onDrop = function(e) {
     ctx.handleDroppedFile(ctx, e, loader.mode, null);
   }
 };
-DebugJS.isTargetEl = function(tgt, el) {
+DebugJS.isTargetEl = function(el, tgt) {
   do {
-    if (tgt == el) return true;
-    tgt = tgt.parentNode;
-  } while (tgt != null);
+    if (el == tgt) return true;
+    el = el.parentNode;
+  } while (el != null);
   return false;
 };
 DebugJS.file.onLoaded = function(file, ctt) {
@@ -14250,11 +14249,12 @@ DebugJS.stopwatch.end = function(n, m) {
   return DebugJS.stopwatch.val(n);
 };
 DebugJS.stopwatch.split = function(n) {
+  var ctx = DebugJS.ctx;
   if (n == 0) {
-    DebugJS.ctx.splitStopwatch();
+    ctx.splitStopwatch();
   } else {
-    if (DebugJS.ctx.isAvailableTools(DebugJS.ctx)) {
-      DebugJS.ctx.splitTimerStopwatch();
+    if (ctx.isAvailableTools(ctx)) {
+      ctx.splitTimerStopwatch();
     }
   }
 };
