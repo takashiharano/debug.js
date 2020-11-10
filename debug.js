@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202010262107';
+  this.v = '202011110000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4727,12 +4727,13 @@ DebugJS.prototype = {
   },
   updateToolsBtns: function() {
     var ctx = DebugJS.ctx;
+    var setStyle = DebugJS.setStyle;
     var f = ctx.toolsActvFnc;
-    DebugJS.setStyle(ctx.timerBtn, 'color', (f & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
-    DebugJS.setStyle(ctx.txtChkBtn, 'color', (f & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
-    DebugJS.setStyle(ctx.htmlPrevBtn, 'color', (f & DebugJS.TOOLS_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
-    DebugJS.setStyle(ctx.fileVwrBtn, 'color', (f & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
-    DebugJS.setStyle(ctx.batBtn, 'color', (f & DebugJS.TOOLS_FNC_BAT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
+    setStyle(ctx.timerBtn, 'color', (f & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
+    setStyle(ctx.txtChkBtn, 'color', (f & DebugJS.TOOLS_FNC_TEXT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
+    setStyle(ctx.htmlPrevBtn, 'color', (f & DebugJS.TOOLS_FNC_HTML) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
+    setStyle(ctx.fileVwrBtn, 'color', (f & DebugJS.TOOLS_FNC_FILE) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
+    setStyle(ctx.batBtn, 'color', (f & DebugJS.TOOLS_FNC_BAT) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
   },
   switchToolsFunction: function(kind, param) {
     var ctx = DebugJS.ctx;
@@ -6489,31 +6490,33 @@ DebugJS.prototype = {
   },
   setModeB64: function() {
     var ctx = DebugJS.ctx;
+    var setStyle = DebugJS.setStyle;
     ctx.decMode = 'b64';
-    DebugJS.setStyle(ctx.fileVwrBsbBtn, 'color', DebugJS.COLOR_INACT);
-    DebugJS.setStyle(ctx.fileVwrB64Btn, 'color', '');
-    DebugJS.setStyle(ctx.fileVwrBSB64nL, 'color', '#888');
-    DebugJS.setStyle(ctx.fileVwrBSB64n, 'color', '#888');
+    setStyle(ctx.fileVwrBsbBtn, 'color', DebugJS.COLOR_INACT);
+    setStyle(ctx.fileVwrB64Btn, 'color', '');
+    setStyle(ctx.fileVwrBSB64nL, 'color', '#888');
+    setStyle(ctx.fileVwrBSB64n, 'color', '#888');
     ctx.fileVwrRadioB64.disabled = false;
     ctx.fileVwrRadioBin.disabled = false;
-    DebugJS.setStyle(ctx.fileVwrLabelB64, 'color', '#fff');
-    DebugJS.setStyle(ctx.fileVwrLabelBin, 'color', '#fff');
+    setStyle(ctx.fileVwrLabelB64, 'color', '#fff');
+    setStyle(ctx.fileVwrLabelBin, 'color', '#fff');
   },
   setModeBSB64: function() {
     var ctx = DebugJS.ctx;
+    var setStyle = DebugJS.setStyle;
     ctx.decMode = 'bsb64';
-    DebugJS.setStyle(ctx.fileVwrB64Btn, 'color', DebugJS.COLOR_INACT);
-    DebugJS.setStyle(ctx.fileVwrBsbBtn, 'color', '');
+    setStyle(ctx.fileVwrB64Btn, 'color', DebugJS.COLOR_INACT);
+    setStyle(ctx.fileVwrBsbBtn, 'color', '');
     var m = ctx.fileVwrDecMode;
     if ((m == 'hex') || (m == 'bin')) {
       ctx.setDecMode(ctx, 'b64');
     }
-    DebugJS.setStyle(ctx.fileVwrBSB64nL, 'color', '#ccc');
-    DebugJS.setStyle(ctx.fileVwrBSB64n, 'color', '#ccc');
+    setStyle(ctx.fileVwrBSB64nL, 'color', '#ccc');
+    setStyle(ctx.fileVwrBSB64n, 'color', '#ccc');
     ctx.fileVwrRadioB64.disabled = true;
     ctx.fileVwrRadioBin.disabled = true;
-    DebugJS.setStyle(ctx.fileVwrLabelB64, 'color', '#888');
-    DebugJS.setStyle(ctx.fileVwrLabelBin, 'color', '#888');
+    setStyle(ctx.fileVwrLabelB64, 'color', '#888');
+    setStyle(ctx.fileVwrLabelBin, 'color', '#888');
   },
 
   openHtmlEditor: function() {
@@ -10045,8 +10048,8 @@ DebugJS.prototype = {
     } catch (e) {
       DebugJS._log.e(e);
       var baseURI = document.baseURI;
-      var reg = new RegExp('^' + baseURI + '(.*?)');
-      if (!url.match(reg)) {
+      var re = new RegExp('^' + baseURI + '(.*?)');
+      if (!url.match(re)) {
         DebugJS._log.w('Cross-Origin Request\nsource : ' + baseURI + '\nrequest: ' + url);
       }
     }
