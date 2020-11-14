@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202011110000';
+  this.v = '202011150017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -307,7 +307,7 @@ var DebugJS = DebugJS || function() {
   this.cmdHistoryIdx = this.CMD_HISTORY_MAX;
   this.cmdTmp = '';
   this.cmdEchoFlg = true;
-  this.cmdDelayData = {tmid: 0, cmd: null};
+  this.cmdDelayData = {tmid: 0, cmd: null, t: 0};
   this.cmdListeners = [];
   this.timers = {};
   this.initWidth = 0;
@@ -359,7 +359,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookie', help: 'cookie keys|get|set|delete [key|-a] [val]'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
-    {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c] ms|YYYYMMDDTHHMISS|1d2h3m4s500 command'},
+    {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
     {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c|-r] COMMAND ARG'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
@@ -7754,11 +7754,17 @@ DebugJS.prototype = {
 
   cmdDelay: function(arg, tbl) {
     var ctx = DebugJS.ctx;
+    var dat = ctx.cmdDelayData;
     var d = DebugJS.splitArgs(arg)[0];
     if (d == '-c') {
       ctx._cmdDelayCancel(ctx);
       return;
-    } else if (d.match(/\|/)) {
+    } else if (d == '-q') {
+      var t = dat.t;
+      if (t) DebugJS._log(DebugJS.getDateTimeStr(t) + ': ' + dat.cmd);
+      return;
+    }
+    if (d.match(/\|/)) {
       d = DebugJS.calcNextTime(d).t;
       d = DebugJS.calcTargetTime(d);
     } else if (DebugJS.isTTimeFormat(d)) {
@@ -7769,28 +7775,38 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return;
     }
-    var c = DebugJS.getArgsFrom(arg, 1);
-    ctx.cmdDelayData.cmd = c;
-    ctx._cmdDelayCancel(ctx);
-    ctx.cmdDelayData.tmid = setTimeout(ctx._cmdDelayExec, d | 0);
+    ctx._cmdDelayRst(ctx);
+    d |= 0;
+    dat.cmd = DebugJS.getArgsFrom(arg, 1);
+    dat.t = d + DebugJS.now();
+    dat.tmid = setTimeout(ctx._cmdDelayExec, d);
   },
   _cmdDelayExec: function() {
     var ctx = DebugJS.ctx;
-    ctx.cmdDelayData.tmid = 0;
     var c = ctx.cmdDelayData.cmd;
     if (c == '') {
       DebugJS._log(c);
     } else {
       ctx._execCmd(c, false, ctx.cmdEchoFlg);
     }
-    ctx.cmdDelayData.cmd = null;
+    ctx._cmdDelayRst(ctx);
   },
   _cmdDelayCancel: function(ctx) {
-    if (ctx.cmdDelayData.tmid > 0) {
-      clearTimeout(ctx.cmdDelayData.tmid);
-      ctx.cmdDelayData.tmid = 0;
-      DebugJS._log('command delay execution has been canceled.');
+    if (ctx._cmdDelayRst(ctx)) {
+      DebugJS._log('Command delay execution has been canceled.');
     }
+  },
+  _cmdDelayRst: function(ctx) {
+    var r = false;
+    var dat = ctx.cmdDelayData;
+    if (dat.tmid > 0) {
+      clearTimeout(dat.tmid);
+      r = true;
+    }
+    dat.tmid = 0;
+    dat.t = 0;
+    dat.cmd = null;
+    return r;
   },
 
   cmdDnd: function(arg, tbl) {
@@ -7897,7 +7913,7 @@ DebugJS.prototype = {
   cmdExit: function() {
     var ctx = DebugJS.ctx;
     DebugJS.bat.exit();
-    ctx._cmdDelayCancel(ctx);
+    ctx._cmdDelayRst(ctx);
     ctx.CMDVALS = {};
     ctx.finalizeFeatures(ctx);
     ctx.toolsActvFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
@@ -10842,7 +10858,7 @@ DebugJS.today = function(s) {
 };
 DebugJS.getDateTimeStr = function(t, w, iso) {
   var d = DebugJS.getDateTime(t);
-  if (iso) return d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss;
+  if (iso) return '' + d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss;
   return d.yyyy + '-' + d.mm + '-' + d.dd + (w ? ' ' + DebugJS.WDAYS[d.wday] : '') + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
 };
 DebugJS.getDateStr = function(d, s) {
@@ -17975,11 +17991,11 @@ DebugJS.start = function(o) {
   if (!o) o = {visible: true};
   DebugJS.init(o);
 };
+var dbg = (dbg === undefined ? DebugJS : dbg);
+var log = DebugJS.log;
 DebugJS.ENABLE = true;
 if (DebugJS.ENABLE) {
   DebugJS.boot();
 } else {
   DebugJS = DebugJS.balse(DebugJS);
 }
-var dbg = (dbg === undefined ? DebugJS : dbg);
-var log = DebugJS.log;
