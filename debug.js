@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202011220000';
+  this.v = '202011300120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -357,7 +357,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookie', help: 'cookie keys|get|set|delete [key|-a] [val]'},
-    {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
+    {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [-iso] [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
     {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c|-r] COMMAND ARG'},
@@ -3591,7 +3591,7 @@ DebugJS.prototype = {
     var time = d.getTime();
     var timeBin = DebugJS.formatBin(time.toString(2), false, 1);
     var span = '<span style="color:' + DebugJS.ITEM_NM_COLOR + '">';
-    var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, true);
+    var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, 1);
     html += '\n' + span + '         RAW</span>  (new Date()).getTime() = ' + time + '\n' + span + '         BIN</span>  ' + timeBin + '\n</pre>';
     DebugJS.ctx.sysTimePanel.innerHTML = html;
     setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
@@ -8536,7 +8536,7 @@ DebugJS.prototype = {
       return '';
     }
     if (p) {
-      DebugJS.log.res(DebugJS.getDateTimeStr(t.time, true));
+      DebugJS.log.res(DebugJS.getDateTimeStr(t.time, 1));
     }
     return t.t;
   },
@@ -10731,7 +10731,9 @@ DebugJS.getDateWithTimestamp = function(val, iso) {
     }
   }
   if (isNaN(dt)) return DebugJS._getDateWithTimestamp(dt, tz, iso);
-  return DebugJS.int2DateStr(dt, tz, iso, false);
+  var s = DebugJS.int2DateStr(dt, tz, iso);
+  if (val == '') s += ' (' + dt + ')';
+  return s;
 };
 DebugJS._getDateWithTimestamp = function(v, tz, iso) {
   var dt;
@@ -10746,18 +10748,19 @@ DebugJS._getDateWithTimestamp = function(v, tz, iso) {
   var tgt = DebugJS.tzOffset2ms(tz);
   var df = loc - tgt;
   v = dt.time + df;
-  return DebugJS.int2DateStr(v, tz, iso, true);
+  return DebugJS.int2DateStr(v, tz, iso) + ' (' + v + ')';
 };
-DebugJS.int2DateStr = function(v, tz, iso, wTS) {
+DebugJS.int2DateStr = function(v, tz, iso) {
   tz = DebugJS.toFullTz(tz);
   v += '';
   if (DebugJS.isUnixTm(v)) v = DebugJS.float2ms(v);
   var ms = DebugJS.parseInt(v);
   var dt = new Date(ms);
-  var s = DebugJS.getTZedDateTimeStr(dt, tz, iso);
-  s += (iso ? tz : ' ' + DebugJS.nnnn2clock(tz));
-  if (wTS) s += ' (' + v + ')';
-  return s;
+  var loc = DebugJS.jsTzOffset2ms(dt.getTimezoneOffset());
+  var tgt = DebugJS.tzOffset2ms(tz);
+  var df = loc - tgt;
+  var ts = dt.getTime() - df;
+  return DebugJS.getDateTimeStr(ts, 2, iso, tz);
 };
 DebugJS.float2ms = function(t) {
   var v = t.split('.');
@@ -10855,10 +10858,21 @@ DebugJS.num2date = function(s) {
 DebugJS.today = function(s) {
   return DebugJS.getDateStr(DebugJS.getDateTime(), (s === undefined ? '-' : s));
 };
-DebugJS.getDateTimeStr = function(t, w, iso) {
+DebugJS.getDateTimeStr = function(t, w, iso, tz) {
   var d = DebugJS.getDateTime(t);
-  if (iso) return '' + d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss;
-  return d.yyyy + '-' + d.mm + '-' + d.dd + (w ? ' ' + DebugJS.WDAYS[d.wday] : '') + ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
+  var s;
+  if (iso) {
+    s = '' + d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss;
+    if (tz != undefined) s += tz;
+  } else {
+    var wk = DebugJS.WDAYS[d.wday];
+    s = d.yyyy + '-' + d.mm + '-' + d.dd;
+    if (w == 1) s += ' ' + wk;
+    s += ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
+    if (tz != undefined) s += ' ' + DebugJS.nnnn2clock(tz);
+    if (w == 2) s += ' ' + wk;
+  }
+  return s;
 };
 DebugJS.getDateStr = function(d, s) {
   return d.yyyy + s + d.mm + s + d.dd;
@@ -12673,13 +12687,6 @@ DebugJS.tzOffset2ms = function(t) {
 DebugJS.jsTzOffset2ms = function(t) {
   return t * 60000 * -1;
 };
-DebugJS.getTZedDateTimeStr = function(d, tz, iso) {
-  var loc = DebugJS.jsTzOffset2ms(d.getTimezoneOffset());
-  var tgt = DebugJS.tzOffset2ms(tz);
-  var df = loc - tgt;
-  var ts = d.getTime() - df;
-  return DebugJS.getDateTimeStr(ts, true, iso);
-};
 DebugJS.cmdTZedNow = function(t, o) {
   var ts = DebugJS.now();
   t = t.toUpperCase();
@@ -12692,7 +12699,7 @@ DebugJS.cmdTZedNow = function(t, o) {
     os = os.substr(0, 3) + ':' + os.substr(3);
     ts += o;
   }
-  var r = DebugJS.int2DateStr(ts, tz, false, false);
+  var r = DebugJS.int2DateStr(ts, tz, false);
   if ((t == 'UTC') && os) r = r.replace('+00:00', os);
   DebugJS._log.res(r);
   return r;
@@ -13444,7 +13451,7 @@ DebugJS.createCttInfo = function(fInfo, bInfo) {
 };
 DebugJS.getFileInfo = function(file) {
   var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
-  var fileDate = DebugJS.getDateTimeStr(lastMod, true);
+  var fileDate = DebugJS.getDateTimeStr(lastMod, 1);
   var s = 'File    : ' + file.name + '\n' +
   'Type    : ' + file.type + '\n' +
   'Size    : ' + DebugJS.formatDec(file.size) + ' ' + DebugJS.plural('byte', file.size) + '\n' +
