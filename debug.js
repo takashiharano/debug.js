@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202011300120';
+  this.v = '202012070000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -404,9 +404,9 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
+    {cmd: 'time', fn: this.cmdTime, desc: 'String <--> millis', help: 'time ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'timer start|split|stop|list [timer-name]'},
-    {cmd: 'timestr', fn: this.cmdTimeStr, desc: 'String <--> millis', help: 'timestr ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'tofull', fn: this.cmdToFull, desc: 'Convert half-width character(s) to full-width', help: 'tofull STR'},
     {cmd: 'tohalf', fn: this.cmdToHalf, desc: 'Convert full-width character(s) to half-width', help: 'tohalf STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
@@ -7156,7 +7156,7 @@ DebugJS.prototype = {
     }
 
     if (DebugJS.isTimerFormat(cmdln)) {
-      return DebugJS.ctx.cmdTimeStr(cmdln);
+      return DebugJS.ctx.cmdTime(cmdln);
     }
 
     if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
@@ -9525,6 +9525,28 @@ DebugJS.prototype = {
     DebugJS.setText(slctr, txt, speed, step, start, end);
   },
 
+  cmdTime: function(arg, tbl) {
+    if (DebugJS.countArgs(arg) == 0) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var t = arg.trim();
+    var s;
+    if (DebugJS.isTmStr(t)) {
+      s = DebugJS.str2ms(t);
+    } else if (DebugJS.isTimerFormat(t)) {
+      s = DebugJS.clock2ms(t);
+    } else {
+      if (DebugJS.isUnixTm(t)) {
+        t = DebugJS.float2ms(t);
+      }
+      t = DebugJS.parseInt(t);
+      s = DebugJS.getTimeDurationStr(t);
+    }
+    DebugJS._log.res(s);
+    return s;
+  },
+
   cmdTimeDiff: function(arg, tbl, echo) {
     var a = DebugJS.splitCmdLine(arg);
     var t1 = a[0];
@@ -9580,28 +9602,6 @@ DebugJS.prototype = {
       default:
         DebugJS.printUsage(tbl.help);
     }
-  },
-
-  cmdTimeStr: function(arg, tbl) {
-    if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var t = arg.trim();
-    var s;
-    if (DebugJS.isTmStr(t)) {
-      s = DebugJS.str2ms(t);
-    } else if (DebugJS.isTimerFormat(t)) {
-      s = DebugJS.clock2ms(t);
-    } else {
-      if (DebugJS.isUnixTm(t)) {
-        t = DebugJS.float2ms(t);
-      }
-      t = DebugJS.parseInt(t);
-      s = DebugJS.getTimeDurationStr(t);
-    }
-    DebugJS._log.res(s);
-    return s;
   },
 
   cmdToFull: function(arg) {
