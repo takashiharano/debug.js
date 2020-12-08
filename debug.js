@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202012070000';
+  this.v = '202012090037';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -400,7 +400,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1] start|stop|reset|split|end|val'},
-    {cmd: 'strp', fn: this.cmdStrp, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR"'},
+    {cmd: 'strp', fn: this.cmdStrP, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR"'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
@@ -9702,7 +9702,7 @@ DebugJS.prototype = {
     return t;
   },
 
-  cmdStrp: function(arg, tbl) {
+  cmdStrP: function(arg, tbl, echo) {
     if (DebugJS.hasOpt(arg, 'total')) {
       var v = dbg.getNonOptVals(arg, true);
       var t = v[0];
@@ -9728,7 +9728,7 @@ DebugJS.prototype = {
     }
     if (!f) f = (typeof p == 'string') ? DebugJS.strpIndex : DebugJS.strp;
     var r = f(t, p);
-    DebugJS._log.res(r);
+    if (echo) DebugJS._log.res(r);
     return r;
   },
 
