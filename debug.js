@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202012170000';
+  this.v = '202012230000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -550,10 +550,9 @@ DebugJS.ST_TOOLS = 1 << 19;
 DebugJS.ST_EXT_PANEL = 1 << 20;
 DebugJS.ST_WD = 1 << 21;
 DebugJS.ST_NO_HIST = 1 << 22;
-DebugJS.ST_CLP = 1 << 23;
-DebugJS.ST_CLOCK_FULL = 1 << 24;
-DebugJS.ST_SW = 1 << 25;
-DebugJS.ST_KIOSK = 1 << 26;
+DebugJS.ST_CLOCK_FULL = 1 << 23;
+DebugJS.ST_SW = 1 << 24;
+DebugJS.ST_KIOSK = 1 << 25;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -2724,7 +2723,6 @@ DebugJS.prototype = {
           ctx.execCmd(ctx);
           ctx.preventErrCb = false;
           e.preventDefault();
-          if (ctx.status & DebugJS.ST_CLP) ctx.focusCmdLine();
         }
         break;
 
@@ -5737,9 +5735,8 @@ DebugJS.prototype = {
     ctx.preventErrCb = false;
   },
   onTxtDrop: function(ctx, t) {
-    var r;
     if (ctx.dndCmd) {
-      r = ctx.execDndCmd(ctx, t);
+      ctx.execDndCmd(ctx, t);
     } else if (DebugJS.isBat(t)) {
       ctx.openBat(ctx, t);
     } else {
@@ -5747,13 +5744,12 @@ DebugJS.prototype = {
       if (DebugJS.isDataURL(s)) {
         ctx.decodeDataURL(ctx, s);
       } else if (DebugJS.isUnixTm(s.trim()) || DebugJS.isDateTimeStr(s)) {
-        r = ctx.cmdDate(s, null);
+        ctx.cmdDate(s, null);
       } else {
         if (ctx.decB64(ctx, s)) return;
-        r = ctx.fmtJson(ctx, t);
+        ctx.fmtJson(ctx, t);
       }
     }
-    if (r != undefined) DebugJS.cp2cb(r);
   },
   fmtJson: function(ctx, t) {
     var a = DebugJS.crlf2lf(t).split('\n');
@@ -5818,13 +5814,11 @@ DebugJS.prototype = {
     ctx.onBatLoaded(ctx, null, s);
   },
   onFileLoadedAuto: function(ctx, file, ctt) {
-    var r;
     if (!file) return;
     if (DebugJS.wBOM(ctt)) ctt = ctt.substr(1);
     if (ctx.dndCmd) {
-      r = ctx.execDndCmd(ctx, ctt);
+      ctx.execDndCmd(ctx, ctt);
       ctx.closeTools(ctx);
-      if (r != undefined) DebugJS.cp2cb(r);
       return;
     }
     if (DebugJS.isBat(ctt) || DebugJS.isB64Bat(ctt)) {
@@ -5834,8 +5828,7 @@ DebugJS.prototype = {
     } else if (file.name.match(/\.json$/)) {
       ctx.closeTools(ctx);
       DebugJS._log('');
-      r = DebugJS._cmdJson(DebugJS.delAllNL(ctt), true);
-      DebugJS.cp2cb(r);
+      DebugJS._cmdJson(DebugJS.delAllNL(ctt), true);
     }
   },
   _onDropOnFeat: function(ctx, e, fn) {
@@ -6403,7 +6396,7 @@ DebugJS.prototype = {
   },
   copyFileCtt: function() {
     if (!DebugJS.ctx.fileCopyBtn.disabled) {
-      DebugJS.copy2clpbd(DebugJS.ctx.fileVwrCtt);
+      DebugJS.copy(DebugJS.ctx.fileVwrCtt);
     }
   },
   clearFile: function() {
@@ -7037,7 +7030,6 @@ DebugJS.prototype = {
     if (setValName != null) {
       DebugJS.setCmdVal(setValName, ret);
     }
-    DebugJS.cp2cb(ret);
     return ret;
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
@@ -7422,7 +7414,7 @@ DebugJS.prototype = {
     var c = DebugJS.getArgsFrom(arg, 1);
     try {
       var s = eval(c) + '';
-      DebugJS.copy2clpbd(s);
+      DebugJS.copy(s);
     } catch (e) {
       DebugJS._log.e(e);
     }
@@ -8347,7 +8339,7 @@ DebugJS.prototype = {
   },
   _cmdLogCopy: function() {
     var s = DebugJS.html2text(DebugJS.dumpLog('text', false, true));
-    DebugJS.copy2clpbd(s);
+    DebugJS.copy(s);
   },
   _cmdLogDate: function(ctx, arg) {
     var op = DebugJS.splitArgs(arg)[1];
@@ -14394,12 +14386,7 @@ DebugJS.isSysVal = function(n) {
   return (((n == '?') || (n.match(/^%.*%$/))) ? true : false);
 };
 
-DebugJS.cp2cb = function(s) {
-  if ((DebugJS.ctx.status & DebugJS.ST_CLP) && (s !== undefined)) {
-    DebugJS.copy2clpbd(s);
-  }
-};
-DebugJS.copy2clpbd = function(s) {
+DebugJS.copy = function(s) {
   var b = DebugJS.ctx.bodyEl;
   var ta = document.createElement('textarea');
   ta.style.position = 'fixed';
@@ -14414,7 +14401,7 @@ DebugJS.copy2clpbd = function(s) {
 
 DebugJS.copyLogs = function() {
   var cmdActv = DebugJS.cmd.hasFocus();
-  DebugJS.copy2clpbd(DebugJS.ctx.logPanel.innerText);
+  DebugJS.copy(DebugJS.ctx.logPanel.innerText);
   if (cmdActv) setTimeout(DebugJS.ctx.focusCmdLine, 0);
 };
 
