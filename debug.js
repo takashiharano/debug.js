@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202012230000';
+  this.v = '202012260000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10629,8 +10629,23 @@ DebugJS.styleVal = function(v) {
 DebugJS.getDateTime = function(dt) {
   if ((dt == undefined) || (dt === '')) {
     dt = new Date();
-  } else if (!(dt instanceof Date)) {
+  } else if (typeof dt == 'number') {
     dt = new Date(dt);
+  } else if (typeof dt == 'string') {
+    dt = dt.replace(/(.)-/g, '$1/');
+    var wk = dt.split('.');
+    var _ms = wk[1] | 0;
+    wk = wk[0].split(' ');
+    var _wkD = wk[0].split('/');
+    var _wkT = (wk[1] ? wk[1].split(':') : []);
+    var _y = _wkD[0] | 0;
+    var _m = _wkD[1] | 0;
+    var _d = _wkD[2] | 0;
+    var _h = _wkT[0] | 0;
+    var _mi = _wkT[1] | 0;
+    var _s = _wkT[2] | 0;
+    dt = new Date(_y, _m - 1, _d, _h, _mi, _s, _ms);
+    dt.setFullYear(_y);
   }
   var time = dt.getTime();
   var offset = dt.getTimezoneOffset();
@@ -10652,7 +10667,7 @@ DebugJS.getDateTime = function(dt) {
   var dateTime = {time: time, offset: offset, yyyy: yyyy, mm: mm, dd: dd, hh: hh, mi: mi, ss: ss, sss: ms, wday: wd};
   return dateTime;
 };
-DebugJS.getDateTimeIso = function(s) {
+DebugJS.getDateTimeByIso = function(s) {
   var p = s.split('T');
   var d = p[0];
   var t = p[1];
@@ -10668,7 +10683,7 @@ DebugJS.getDateTimeIso = function(s) {
 };
 DebugJS.getDateTimeEx = function(s) {
   if (DebugJS.isDateTimeFormatIso(s)) {
-    return DebugJS.getDateTimeIso(s);
+    return DebugJS.getDateTimeByIso(s);
   }
   if (typeof s == 'string') {
     s = s.replace(/-/g, '/');
@@ -10717,7 +10732,7 @@ DebugJS._getDateTimeAndTimestamp = function(v, tz, iso) {
   var dt;
   var _v = v.replace(/-/g, '').replace(/:/g, '');
   if (DebugJS.isDateTimeFormatIso(_v)) {
-    dt = DebugJS.getDateTimeIso(_v);
+    dt = DebugJS.getDateTimeByIso(_v);
   } else {
     v = v.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
     dt = DebugJS.getDateTime(v);
