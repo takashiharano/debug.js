@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202012260000';
+  this.v = '202012290000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10146,12 +10146,29 @@ DebugJS.RingBuffer = function(len) {
 };
 DebugJS.RingBuffer.prototype = {
   add: function(data) {
-    var idx = this.cnt % this.len;
-    this.buffer[idx] = data;
+    var i = this.cnt % this.len;
+    this.buffer[i] = data;
     this.cnt++;
   },
   set: function(idx, data) {
-    this.buffer[idx] = data;
+    var ctx = this;
+    var p;
+    if (idx < 0) {
+      idx *= -1;
+      if (((ctx.cnt < ctx.len) && (idx > ctx.cnt)) || ((ctx.cnt >= ctx.len) && (idx > ctx.len))) {
+        return;
+      }
+      p = ctx.cnt - idx;
+    } else {
+      if (((ctx.cnt < ctx.len) && (idx >= ctx.cnt)) || ((ctx.cnt >= ctx.len) && (idx >= ctx.len))) {
+        return;
+      }
+      p = ctx.cnt - ctx.len;
+      if (p < 0) p = 0;
+      p += idx;
+    }
+    var i = p % ctx.len;
+    ctx.buffer[i] = data;
   },
   get: function(idx) {
     if (this.len < this.cnt) {
@@ -10189,9 +10206,6 @@ DebugJS.RingBuffer.prototype = {
   },
   size: function() {
     return this.len;
-  },
-  lastIndex: function() {
-    return ((this.cnt - 1) % this.len);
   }
 };
 
