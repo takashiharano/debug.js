@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202012290000';
+  this.v = '202101010022';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -451,7 +451,7 @@ var DebugJS = DebugJS || function() {
     hexdumplimit: /^[0-9]+$/,
     hexdumplastrows: /^[0-9]+$/,
     indent: /^[0-9]+$/,
-    radix: /^[^|][a-z|]+[^|]$/,
+    radix: /^[^|][a-z|]+[^|]$/i,
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
     pointmsgsize: /.*/,
@@ -5412,7 +5412,7 @@ DebugJS.prototype = {
   onChangeFgRGB: function() {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputFgRGB.value;
-    var rgb10 = DebugJS.convRGB16to10(rgb16);
+    var rgb10 = DebugJS.rgb16to10(rgb16);
     ctx.txtChkRangeFgR.value = rgb10.r;
     ctx.txtChkRangeFgG.value = rgb10.g;
     ctx.txtChkRangeFgB.value = rgb10.b;
@@ -5422,7 +5422,7 @@ DebugJS.prototype = {
   onChangeBgRGB: function() {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputBgRGB.value;
-    var rgb10 = DebugJS.convRGB16to10(rgb16);
+    var rgb10 = DebugJS.rgb16to10(rgb16);
     ctx.txtChkRangeBgR.value = rgb10.r;
     ctx.txtChkRangeBgG.value = rgb10.g;
     ctx.txtChkRangeBgB.value = rgb10.b;
@@ -5434,7 +5434,7 @@ DebugJS.prototype = {
     var fgR = ctx.txtChkRangeFgR.value;
     var fgG = ctx.txtChkRangeFgG.value;
     var fgB = ctx.txtChkRangeFgB.value;
-    var rgb16 = DebugJS.convRGB10to16(fgR + ' ' + fgG + ' ' + fgB);
+    var rgb16 = DebugJS.rgb10to16(fgR, fgG, fgB);
     ctx.txtChkLabelFgR.innerText = fgR;
     ctx.txtChkLabelFgG.innerText = fgG;
     ctx.txtChkLabelFgB.innerText = fgB;
@@ -5448,7 +5448,7 @@ DebugJS.prototype = {
     var bgR = ctx.txtChkRangeBgR.value;
     var bgG = ctx.txtChkRangeBgG.value;
     var bgB = ctx.txtChkRangeBgB.value;
-    var rgb16 = DebugJS.convRGB10to16(bgR + ' ' + bgG + ' ' + bgB);
+    var rgb16 = DebugJS.rgb10to16(bgR, bgG, bgB);
     ctx.txtChkLabelBgR.innerText = bgR;
     ctx.txtChkLabelBgG.innerText = bgG;
     ctx.txtChkLabelBgB.innerText = bgB;
@@ -7074,7 +7074,7 @@ DebugJS.prototype = {
       return DebugJS.ctx.doHttpRequest('GET', cmdline, echo);
     }
 
-    var ret = ctx.cmdRadixConv(cmdline, echo);
+    var ret = ctx.cmdRadixConv(cmdline);
     if (ret) return cmd | 0;
 
     ret = ctx.cmdRatio(cmdline, echo);
@@ -7320,7 +7320,7 @@ DebugJS.prototype = {
     if (echo) DebugJS._log.res(v);
   },
 
-  cmdBit: function(arg, echo) {
+  cmdBit: function(arg) {
     var a = DebugJS.delAllSP(arg);
     if (!a.match(/^\d+bit$/)) return null;
     a = a.replace(/bit/, '');
@@ -7328,7 +7328,7 @@ DebugJS.prototype = {
     for (var i = 0; i < a; i++) {
       b += '1';
     }
-    return DebugJS.ctx.cmdRadixConv(b, echo);
+    return DebugJS.ctx.cmdRadixConv(b);
   },
 
   cmdBSB64: function(arg, tbl, echo) {
@@ -8923,18 +8923,8 @@ DebugJS.prototype = {
     return r;
   },
 
-  cmdRadixConv: function(v, echo) {
+  cmdRadixConv: function(v) {
     v = v.trim();
-    var rdx = DebugJS.checkRadix(v);
-    if ((rdx == 10) || (rdx == 16) || (rdx == 2)) {
-      DebugJS.ctx._cmdRadixConv(v, echo);
-      return true;
-    } else {
-      return false;
-    }
-  },
-  _cmdRadixConv: function(v, echo) {
-    if (!echo) return;
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
       v = v.replace(/,/g, '');
@@ -8943,7 +8933,10 @@ DebugJS.prototype = {
       DebugJS.convRadixFromHEX(v.substr(2));
     } else if (rdx == 2) {
       DebugJS.convRadixFromBIN(v.substr(2));
+    } else {
+      return false;
     }
+    return true;
   },
 
   cmdRatio: function(v, echo) {
@@ -10133,7 +10126,8 @@ DebugJS.getElmHexColor = function(color) {
   var hex = '';
   if (color && (color != 'transparent')) {
     var c10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-    var c16 = DebugJS.convRGB10to16(c10);
+    var c10a = c10.split(' ');
+    var c16 = DebugJS.rgb10to16(c10a[0], c10a[1], c10a[2]);
     hex = '#' + c16.r + c16.g + c16.b;
   }
   return hex;
@@ -11979,61 +11973,71 @@ DebugJS.printUsage = function(m) {
 };
 
 DebugJS.convRGB = function(v) {
-  var r, rgb;
+  var boxSize = '0.7em';
+  var r = null;
+  var s = '<span style="color:' + DebugJS.ctx.opt.logColorE + '">invalid value</span>';
+  var span1 = '<span style="vertical-align:top;display:inline-block;height:1em">';
+  var rgb;
   if (v.indexOf('#') == 0) {
-    rgb = DebugJS.convRGB16to10(v);
-    r = 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
+    rgb = DebugJS.rgb16to10(v);
+    if (rgb) {
+      r = 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
+      s = span1 + '<span style="background:rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ');width:' + boxSize + ';height:' + boxSize + ';margin-top:0.2em;display:inline-block"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + rgb.r + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + rgb.g + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + rgb.b + '</span>';
+    }
   } else {
-    v = v.replace(/rgb\(/, '').replace(/\)/, '').replace(/,/g, ' ').trim();
+    v = v.trim().replace(/rgb\(/, '').replace(/\)/, '').replace(/,/g, ' ');
     v = DebugJS.unifySP(v);
-    rgb = DebugJS.convRGB10to16(v);
-    r = '#' + rgb.r + rgb.g + rgb.b;
+    var a = v.split(' ');
+    if (a.length == 3) {
+      rgb = DebugJS.rgb10to16(a[0], a[1], a[2]);
+      if (rgb) {
+        r = '#' + rgb.r + rgb.g + rgb.b;
+        s = span1 + '<span style="background:#' + rgb.r + rgb.g + rgb.b + ';width:' + boxSize + ';height:' + boxSize + ';margin-top:0.2em;display:inline-block"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + rgb.r + '</span><span style="color:' + DebugJS.COLOR_G + '">' + rgb.g + '</span><span style="color:' + DebugJS.COLOR_B + '">' + rgb.b + '</span>';
+      }
+    }
   }
-  DebugJS._log(rgb.rgb);
+  DebugJS._log(s);
   return r;
 };
-DebugJS.convRGB16to10 = function(rgb16) {
-  var boxSize = '0.7em';
+DebugJS.rgb16to10 = function(rgb16) {
   var r16, g16, b16, r10, g10, b10;
-  rgb16 = rgb16.replace(/\s/g, '');
-  if (rgb16.length == 7) {
-    r16 = rgb16.substr(1, 2);
-    g16 = rgb16.substr(3, 2);
-    b16 = rgb16.substr(5, 2);
-  } else if (rgb16.length == 4) {
-    r16 = rgb16.substr(1, 1);
-    g16 = rgb16.substr(2, 1);
-    b16 = rgb16.substr(3, 1);
+  rgb16 = rgb16.replace(/#/, '').replace(/\s/g, '');
+  if (rgb16.length == 6) {
+    r16 = rgb16.substr(0, 2);
+    g16 = rgb16.substr(2, 2);
+    b16 = rgb16.substr(4, 2);
+  } else if (rgb16.length == 3) {
+    r16 = rgb16.substr(0, 1);
+    g16 = rgb16.substr(1, 1);
+    b16 = rgb16.substr(2, 1);
     r16 += r16;
     g16 += g16;
     b16 += b16;
   } else {
-    return {rgb: '<span style="color:' + DebugJS.ctx.opt.logColorE + '">invalid value</span>'};
+    return null;
   }
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
-  var rgb10 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:rgb(' + r10 + ',' + g10 + ',' + b10 + ');width:' + boxSize + ';height:' + boxSize + ';margin-top:0.2em;display:inline-block"> </span></span> <span style="color:' + DebugJS.COLOR_R + '">' + r10 + '</span> <span style="color:' + DebugJS.COLOR_G + '">' + g10 + '</span> <span style="color:' + DebugJS.COLOR_B + '">' + b10 + '</span>';
-  var rgb = {r: r10, g: g10, b: b10, rgb: rgb10};
+  var rgb = {r: r10, g: g10, b: b10};
   return rgb;
 };
-DebugJS.convRGB10to16 = function(rgb10) {
-  var boxSize = '0.7em';
-  rgb10 = DebugJS.unifySP(rgb10);
-  var rgb10s = rgb10.split(' ', 3);
-  if ((rgb10s.length != 3) || ((rgb10s[0] < 0) || (rgb10s[0] > 255)) || ((rgb10s[1] < 0) || (rgb10s[1] > 255)) || ((rgb10s[2] < 0) || (rgb10s[2] > 255))) {
-    return {rgb: '<span style="color:' + DebugJS.ctx.opt.logColorE + '">invalid value</span>'};
+DebugJS.rgb10to16 = function(r, g, b) {
+  var r16 = ('0' + parseInt(r).toString(16)).slice(-2);
+  var g16 = ('0' + parseInt(g).toString(16)).slice(-2);
+  var b16 = ('0' + parseInt(b).toString(16)).slice(-2);
+  var r0 = r16.charAt(0);
+  var r1 = r16.charAt(1);
+  var g0 = g16.charAt(0);
+  var g1 = g16.charAt(1);
+  var b0 = b16.charAt(0);
+  var b1 = b16.charAt(1);
+  if ((r0 == r1) && (g0 == g1) && (b0 == b1)) {
+    r16 = r0;
+    g16 = g0;
+    b16 = b0;
   }
-  var r16 = ('0' + parseInt(rgb10s[0]).toString(16)).slice(-2);
-  var g16 = ('0' + parseInt(rgb10s[1]).toString(16)).slice(-2);
-  var b16 = ('0' + parseInt(rgb10s[2]).toString(16)).slice(-2);
-  if ((r16.charAt(0) == r16.charAt(1)) && (g16.charAt(0) == g16.charAt(1)) && (b16.charAt(0) == b16.charAt(1))) {
-    r16 = r16.substr(0, 1);
-    g16 = g16.substr(0, 1);
-    b16 = b16.substr(0, 1);
-  }
-  var rgb16 = '<span style="vertical-align:top;display:inline-block;height:1em"><span style="background:#' + r16 + g16 + b16 + ';width:' + boxSize + ';height:' + boxSize + ';margin-top:0.2em;display:inline-block"> </span></span> #<span style="color:' + DebugJS.COLOR_R + '">' + r16 + '</span><span style="color:' + DebugJS.COLOR_G + '">' + g16 + '</span><span style="color:' + DebugJS.COLOR_B + '">' + b16 + '</span>';
-  var rgb = {r: r16, g: g16, b: b16, rgb: rgb16};
+  var rgb = {r: r16, g: g16, b: b16};
   return rgb;
 };
 
@@ -12044,16 +12048,12 @@ DebugJS.convRadixFromHEX = function(v16) {
     var v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
   }
-  var hex = DebugJS.formatHex(v16, true);
-  if (hex.length >= 2) {
-    hex = '0x' + hex;
-  }
-  DebugJS.printRadixConv(v10, hex, bin);
+  DebugJS.printRadixConv(v10, v16, bin);
 };
 DebugJS.convRadixFromDEC = function(v10) {
   var unit = DebugJS.DFLT_UNIT;
-  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
   var v16 = parseInt(v10).toString(16);
+  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
   var v2 = '';
   if (v10 < 0) {
     for (var i = (unit - 1); i >= 0; i--) {
@@ -12064,11 +12064,7 @@ DebugJS.convRadixFromDEC = function(v10) {
     v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
   }
-  var hex = DebugJS.formatHex(v16, true);
-  if (hex.length >= 2) {
-    hex = '0x' + hex;
-  }
-  DebugJS.printRadixConv(v10, hex, bin);
+  DebugJS.printRadixConv(v10, v16, bin);
 };
 DebugJS.convRadixFromBIN = function(v2) {
   v2 = v2.replace(/\s/g, '');
@@ -12079,14 +12075,12 @@ DebugJS.convRadixFromBIN = function(v2) {
     v2 = parseInt(v10).toString(2);
     bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
   }
-  var hex = DebugJS.formatHex(v16, true);
-  if (hex.length >= 2) {
-    hex = '0x' + hex;
-  }
-  DebugJS.printRadixConv(v10, hex, bin);
+  DebugJS.printRadixConv(v10, v16, bin);
 };
-DebugJS.printRadixConv = function(v10, hex, bin) {
-  var rdx = DebugJS.ctx.props.radix;
+DebugJS.printRadixConv = function(v10, v16, bin) {
+  var hex = DebugJS.formatHex(v16, true);
+  if (hex.length >= 2) hex = '0x' + hex;
+  var rdx = DebugJS.ctx.props.radix.toLowerCase();
   var s = '';
   if (DebugJS.hasKeyWd(rdx, 'dec', '|')) s += 'DEC ' + DebugJS.formatDec(v10) + '\n';
   if (DebugJS.hasKeyWd(rdx, 'hex', '|')) s += 'HEX ' + hex + '\n';
