@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101010022';
+  this.v = '202101050000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5413,6 +5413,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputFgRGB.value;
     var rgb10 = DebugJS.rgb16to10(rgb16);
+    if (!rgb10) return;
     ctx.txtChkRangeFgR.value = rgb10.r;
     ctx.txtChkRangeFgG.value = rgb10.g;
     ctx.txtChkRangeFgB.value = rgb10.b;
@@ -5423,6 +5424,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputBgRGB.value;
     var rgb10 = DebugJS.rgb16to10(rgb16);
+    if (!rgb10) return;
     ctx.txtChkRangeBgR.value = rgb10.r;
     ctx.txtChkRangeBgG.value = rgb10.g;
     ctx.txtChkRangeBgB.value = rgb10.b;
