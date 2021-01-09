@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101050000';
+  this.v = '202101091657';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -35,10 +35,10 @@ var DebugJS = DebugJS || function() {
     fontColor: '#fff',
     logColorV: '#99bcc8',
     logColorD: '#ccc',
-    logColorI: '#9ef',
-    logColorW: '#eee000',
-    logColorE: '#f88',
-    logColorF: '#f80',
+    logColorI: '#9de',
+    logColorW: '#ee4',
+    logColorE: '#d9a',
+    logColorF: '#ea4',
     logColorS: '#fff',
     clockColor: '#8f0',
     timerColor: '#9ef',
