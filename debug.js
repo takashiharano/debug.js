@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101091657';
+  this.v = '202101110001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7072,10 +7072,6 @@ DebugJS.prototype = {
       }
     }
 
-    if (cmdline.match(/^\s*http/)) {
-      return DebugJS.ctx.doHttpRequest('GET', cmdline, echo);
-    }
-
     var ret = ctx.cmdRadixConv(cmdline);
     if (ret) return cmd | 0;
 
@@ -7125,6 +7121,10 @@ DebugJS.prototype = {
 
     if (DebugJS.isURIencoding(cmdln)) {
       return ctx.cmdUri('-d ' + cmdln, null, echo);
+    }
+
+    if (cmdline.match(/^\s*http/)) {
+      return DebugJS.ctx.doHttpRequest('GET', cmdline, echo);
     }
 
     return ctx.execCode(cmdline, echo);
@@ -8929,12 +8929,16 @@ DebugJS.prototype = {
     v = v.trim();
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
-      v = v.replace(/,/g, '');
-      DebugJS.convRadixFromDEC(v);
+      var val = parseInt(v.replace(/,/g, ''));
+      DebugJS.printRadixConv(val);
     } else if (rdx == 16) {
-      DebugJS.convRadixFromHEX(v.substr(2));
+      var v16 = v.substr(2).replace(/\s/g, '');
+      val = parseInt(v16, 16);
+      DebugJS.printRadixConv(val);
     } else if (rdx == 2) {
-      DebugJS.convRadixFromBIN(v.substr(2));
+      var v2 = v.substr(2).replace(/\s/g, '');
+      val = parseInt(v2, 2);
+      DebugJS.printRadixConv(val);
     } else {
       return false;
     }
@@ -11747,7 +11751,7 @@ DebugJS.parseInt = function(v) {
 DebugJS.checkRadix = function(v) {
   if (v.match(/^-{0,1}[0-9,]+$/)) {
     return 10;
-  } else if (v.match(/^-{0,1}0x[0-9A-Fa-f]+$/i)) {
+  } else if (v.match(/^-{0,1}0x[0-9A-Fa-f\s]+$/i)) {
     return 16;
   } else if (v.match(/^-{0,1}0b[01\s]+$/i)) {
     return 2;
@@ -12043,48 +12047,29 @@ DebugJS.rgb10to16 = function(r, g, b) {
   return rgb;
 };
 
-DebugJS.convRadixFromHEX = function(v16) {
-  var v10 = parseInt(v16, 16).toString(10);
-  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
-  if (v10 > 0xffffffff) {
-    var v2 = parseInt(v10).toString(2);
-    bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
-  }
-  DebugJS.printRadixConv(v10, v16, bin);
-};
-DebugJS.convRadixFromDEC = function(v10) {
-  var unit = DebugJS.DFLT_UNIT;
-  var v16 = parseInt(v10).toString(16);
-  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
-  var v2 = '';
-  if (v10 < 0) {
-    for (var i = (unit - 1); i >= 0; i--) {
-      v2 += (v10 & 1 << i) ? '1' : '0';
+DebugJS.printRadixConv = function(val) {
+  var MAX = 0x20000000000000;
+  var bin, v16;
+  if (val > MAX) {
+    bin = '<span style="color:#888">' + DebugJS.repeatCh('1', 64) + '</span> (overflow)';
+    v16 = val.toString(16);
+  } else {
+    var fullDigits = DebugJS.DFLT_UNIT;
+    var v2 = DebugJS.cnvBin(val);
+    var digits = v2.length;
+    var b = v2;
+    if (digits % fullDigits != 0) {
+      var pd = fullDigits - (digits % fullDigits);
+      b = DebugJS.repeatCh('0', pd) + v2;
     }
-    v16 = parseInt(v2, 2).toString(16);
-  } else if (v10 > 0xffffffff) {
-    v2 = parseInt(v10).toString(2);
-    bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
+    bin = DebugJS.formatBin(b, true, DebugJS.DISP_BIN_DIGITS_THR, digits);
+    v16 = DebugJS.bin2hex(v2);
   }
-  DebugJS.printRadixConv(v10, v16, bin);
-};
-DebugJS.convRadixFromBIN = function(v2) {
-  v2 = v2.replace(/\s/g, '');
-  var v10 = parseInt(v2, 2).toString(10);
-  var v16 = parseInt(v2, 2).toString(16);
-  var bin = DebugJS.convertBin({exp: v10, digit: DebugJS.DFLT_UNIT});
-  if (v10 > 0xffffffff) {
-    v2 = parseInt(v10).toString(2);
-    bin = DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR);
-  }
-  DebugJS.printRadixConv(v10, v16, bin);
-};
-DebugJS.printRadixConv = function(v10, v16, bin) {
   var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) hex = '0x' + hex;
   var rdx = DebugJS.ctx.props.radix.toLowerCase();
   var s = '';
-  if (DebugJS.hasKeyWd(rdx, 'dec', '|')) s += 'DEC ' + DebugJS.formatDec(v10) + '\n';
+  if (DebugJS.hasKeyWd(rdx, 'dec', '|')) s += 'DEC ' + DebugJS.formatDec(val) + '\n';
   if (DebugJS.hasKeyWd(rdx, 'hex', '|')) s += 'HEX ' + hex + '\n';
   if (DebugJS.hasKeyWd(rdx, 'bin', '|')) s += 'BIN ' + bin + '\n';
   DebugJS._log.mlt(s);
@@ -12096,37 +12081,52 @@ DebugJS.toHex = function(v, uc, pFix, d) {
   var hex = parseInt(v).toString(16);
   return DebugJS.formatHex(hex, uc, pFix, d);
 };
-DebugJS.convertBin = function(data) {
-  var digit = data.digit;
-  if (digit == 0) digit = DebugJS.DFLT_UNIT;
-  var val;
-  try {
-    val = eval(data.exp);
-  } catch (e) {
-    DebugJS._log.e('Invalid value: ' + e);return;
-  }
-  var v2 = parseInt(val).toString(2);
-  var v2len = v2.length;
-  var loop = ((digit > v2len) ? digit : v2len);
-  v2 = '';
-  for (var i = (loop - 1); i >= 0; i--) {
-    v2 += (val & 1 << i) ? '1' : '0';
-  }
-  var hldigit = v2len;
-  var overflow = false;
+DebugJS.cnvBin = function(val) {
+  var v2 = Math.abs(val).toString(2);
   if (val < 0) {
-    hldigit = digit;
-  } else if ((data.digit > 0) && (v2len > data.digit)) {
-    overflow = true;
-    hldigit = data.digit;
+    v2 = DebugJS.cnvNegativeBin(v2);
   }
-  return DebugJS.formatBin(v2, true, DebugJS.DISP_BIN_DIGITS_THR, hldigit, overflow);
+  return v2;
 };
-DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
+DebugJS.cnvNegativeBin = function(absV2) {
+  var absBin = DebugJS.strPadding(absV2, '0', 32, 'L');
+  var p1 = -1;
+  for (var i = absBin.length - 1; i >= 0; i--) {
+    if (absBin.charAt(i) == '1') {
+      p1 = i;
+      break;
+    }
+  }
+  var v2 = '';
+  for (i = 0; i < p1; i++) {
+    var b = absBin.charAt(i);
+    v2 += (b == '0' ? '1' : '0');
+  }
+  for (i = p1; i < absBin.length; i++) {
+    v2 += absBin.charAt(i);
+  }
+  if (absV2.length == 32) {
+    v2 = DebugJS.repeatCh('1', 32) + v2;
+  }
+  return v2;
+};
+DebugJS.bin2hex = function(b) {
+  var h = '';
+  if ((b.length % 4) != 0) {
+    var pd = 4 - (b.length % 4);
+    b = DebugJS.repeatCh('0', pd) + b;
+  }
+  for (var i = 0; i < b.length; i += 4) {
+    var v = b.substr(i, 4);
+    h += parseInt(v, 2).toString(16);
+  }
+  return h;
+};
+DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   var len = v2.length;
   var bin = '';
   if (grouping) {
-    if ((highlight > 0) && (len > highlight)) {
+    if ((hlDigits > 0) && (len > hlDigits)) {
       bin += '<span style="color:#888">';
     }
     for (var i = 0; i < len; i++) {
@@ -12134,21 +12134,15 @@ DebugJS.formatBin = function(v2, grouping, n, highlight, overflow) {
         bin += ' ';
       }
       bin += v2.charAt(i);
-      if ((highlight > 0) && ((len - i) == (highlight + 1))) {
+      if ((hlDigits > 0) && ((len - i) == (hlDigits + 1))) {
         bin += '</span>';
       }
     }
   } else {
     bin = v2;
   }
-  if (n) {
-    if (len >= n) {
-      var digits = len;
-      if (overflow == false) {
-        digits = highlight;
-      }
-      bin += ' (' + digits + ' bits)';
-    }
+  if ((n) && (len >= n)) {
+    bin += ' (' + hlDigits + ' bits)';
   }
   return bin;
 };
