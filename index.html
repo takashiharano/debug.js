@@ -4138,7 +4138,7 @@ $ bat set pc 1
     <td class="name">bsb64</td>
     <td></td>
     <td>
-     Encodes / Decodes <a href="https://bsb64.com/">BSB64</a>(Bit Shifted Base64) reversible encryption string.<br><br>
+     Encodes / Decodes <a href="https://bsb64.com/" target="_blank">BSB64</a>(Bit Shifted Base64) reversible encryption string.<br><br>
 <pre class="eg">
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
@@ -4658,6 +4658,31 @@ HEAD
 
 w/ User Auth
  http [METHOD] -u USER:PASS URL DATA</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">ieee754</td>
+    <td>
+      value<br>
+    </td>
+    <td>
+      Displays IEEE 754 bit-level encodings.<br><br>
+<pre class="eg">
+$ ieee754 -118.625
+
+binary32:
+ 8bits   23bits
+seeeeeeeefffffffffffffffffffffff
+11000010111011010100000000000000
+C   2   E   D   4   0   0   0
+
+binary64:
+ 11bits     52bits
+seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
+1100000001011101101010000000000000000000000000000000000000000000
+C   0   5   D   A   8   0   0   0   0   0   0   0   0   0   0
+</pre>
     </td>
   </tr>
 
@@ -7556,7 +7581,7 @@ See also: <a href="#" onclick="scrollToSelector('#bat-execution', 700);return fa
 <div id="footer">
 <div id="footer-wrapper">
 <div id="footer-content">
-debug.js is released under the <a href="LICENSE.txt" id="license">MIT license</a>.
+debug.js is released under the <a href="LICENSE.txt" id="license" target="_blank">MIT license</a>.
 </div><!-- footer-content -->
 </div><!-- footer-wrapper -->
 </div><!-- footer -->

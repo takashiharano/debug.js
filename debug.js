@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101110001';
+  this.v = '202101120110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -368,6 +368,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
+    {cmd: 'ieee754', fn: this.cmdIEEE754, desc: 'Displays IEEE 754 bit-level encodings', help: 'ieee754 VAL'},
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
@@ -7073,16 +7074,18 @@ DebugJS.prototype = {
     }
 
     var ret = ctx.cmdRadixConv(cmdline);
-    if (ret) return cmd | 0;
-
-    ret = ctx.cmdRatio(cmdline, echo);
     if (ret != null) return ret;
+
+    if (DebugJS.isFloat(cmd)) return ctx.cmdIEEE754(cmd, null, echo);
 
     ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
 
-    ret = ctx.cmdBit(cmdline, echo);
-    if (ret) return ret;
+    ret = ctx.cmdBit(cmdline);
+    if (ret != null) return ret;
+
+    ret = ctx.cmdRatio(cmdline, echo);
+    if (ret != null) return ret;
 
     ret = ctx.cmdTimeCalc(cmdline, echo);
     if (ret != null) return ret;
@@ -7093,7 +7096,7 @@ DebugJS.prototype = {
     ret = ctx.cmdDateDiff(cmdline, echo);
     if (!isNaN(ret)) return ret;
 
-    ret = ctx.cmdDateConv(cmdline, echo);
+    ret = ctx.cmdDateConv(cmdline);
     if (ret != null) return ret;
 
     var cmdln = cmdline.trim();
@@ -8101,6 +8104,31 @@ DebugJS.prototype = {
     return DebugJS.ctx.doHttpRequest(method, data, echo);
   },
 
+  cmdIEEE754: function(arg, tbl, echo) {
+    var v = parseFloat(arg);
+    var b32 = DebugJS.cnvIEEE754Bin(v, 32);
+    var b64 = DebugJS.cnvIEEE754Bin(v, 64);
+    var s = 'binary32:\n' + DebugJS.ctx._cmdIEEE754(b32, 8, 23) + '\n\n';
+    s += 'binary64:\n' + DebugJS.ctx._cmdIEEE754(b64, 11, 52);
+    if (echo) DebugJS._log.mlt(s);
+    return v;
+  },
+  _cmdIEEE754: function(b, de, df) {
+    var cS = '#aff';
+    var cE = '#afa';
+    var cF = '#fbb';
+    var h = DebugJS.bin2hex(b.s + b.e + b.f);
+    var ebit = DebugJS.strPadding(de + 'bits', ' ', de, 'R');
+    var s = '<span style="color:' + cS + ';"> </span><span style="color:' + cE + ';">' + ebit + '</span><span style="color:' + cF + ';">' + df + 'bits</span>\n';
+    s += '<span style="color:' + cS + ';">s</span><span style="color:' + cE + ';">' + DebugJS.repeatCh('e', de) + '</span><span style="color:' + cF + ';">' + DebugJS.repeatCh('f', df) + '</span>\n';
+    s += '<span style="color:' + cS + ';">' + b.s + '</span><span style="color:' + cE + ';">' + b.e + '</span><span style="color:' + cF + ';">' + b.f + '</span>\n';
+    var a = h.split('');
+    for (var i = 0; i < a.length; i++) {
+      s += a[i] + '   ';
+    }
+    return s;
+  },
+
   cmdInject: function(arg, tbl) {
     var a = DebugJS.splitCmdLine(arg);
     var f = a[0].trim();
@@ -8940,9 +8968,9 @@ DebugJS.prototype = {
       val = parseInt(v2, 2);
       DebugJS.printRadixConv(val);
     } else {
-      return false;
+      return null;
     }
-    return true;
+    return val;
   },
 
   cmdRatio: function(v, echo) {
@@ -10552,6 +10580,9 @@ DebugJS.isTypographic = function(ch) {
 DebugJS.isNum = function(s) {
   return (s.match(/^\d+$/) ? true : false);
 };
+DebugJS.isFloat = function(s) {
+  return (s.match(/^[+-]?\d+\.\d+$/) ? true : false);
+};
 DebugJS.wBOM = function(s) {
  return s.charCodeAt(0) == 65279;
 };
@@ -12118,9 +12149,37 @@ DebugJS.bin2hex = function(b) {
   }
   for (var i = 0; i < b.length; i += 4) {
     var v = b.substr(i, 4);
-    h += parseInt(v, 2).toString(16);
+    var n = parseInt(v, 2);
+    h += (isNaN(n) ? ' ' : n.toString(16));
   }
-  return h;
+  return h.toUpperCase();
+};
+DebugJS.cnvIEEE754Bin = function(v, fmt) {
+  var BIAS = (fmt == 32 ? 127 : 1023);
+  var EXP = (fmt == 32 ? 8 : 11);
+  var DIGITS = (fmt == 32 ? 23 : 52);
+  var s = ((v < 0) ? '1' : '0');
+  if (v == 0) {
+    return {s: s, e: DebugJS.repeatCh('0', EXP), f: DebugJS.repeatCh('0', DIGITS)};
+  } else if (isNaN(v)) {
+    return {s: s, e: DebugJS.repeatCh('1', EXP), f: DebugJS.repeatCh('x', DIGITS)};
+  } else if (!isFinite(v)) {
+    return {s: s, e: DebugJS.repeatCh('1', EXP), f: DebugJS.repeatCh('0', DIGITS)};
+  }
+  var b = v.toString(2);
+  var a = b.replace(/-/, '');
+  var f = a.replace(/\./, '').replace(/^0+/, '').substr(1, DIGITS);
+  var p1 = a.indexOf('1');
+  var p2 = a.indexOf('.');
+  if (p2 == -1) {
+    a += '.0';
+    p2 = a.indexOf('.');
+  }
+  var sft = ((p1 < p2) ? (p2 - 1) : ((p1 - 1) * (-1)));
+  var e = (BIAS + sft).toString(2);
+  var ee = DebugJS.strPadding(e, '0', EXP, 'L');
+  var ff = DebugJS.strPadding(f, '0', DIGITS, 'R');
+  return {s: s, e: ee, f: ff};
 };
 DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   var len = v2.length;
