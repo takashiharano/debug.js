@@ -4617,6 +4617,33 @@ $ event dispatch window
   </tr>
 
   <tr>
+    <td class="name">float</td>
+    <td>
+      value<br>
+    </td>
+    <td>
+      Displays IEEE 754 bit-level encodings.<br><br>
+<pre class="eg">
+$ float -118.625
+
+binary32:
+ 133(+6)
+ 8bits   23bits
+seeeeeeeefffffffffffffffffffffff
+11000010111011010100000000000000
+C   2   E   D   4   0   0   0
+
+binary64:
+ 1029(+6)
+ 11bits     52bits
+seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
+1100000001011101101010000000000000000000000000000000000000000000
+C   0   5   D   A   8   0   0   0   0   0   0   0   0   0   0
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">history</td>
     <td>option<span class="annotation">(opt)</span></td>
     <td>
@@ -4662,31 +4689,6 @@ w/ User Auth
   </tr>
 
   <tr>
-    <td class="name">ieee754</td>
-    <td>
-      value<br>
-    </td>
-    <td>
-      Displays IEEE 754 bit-level encodings.<br><br>
-<pre class="eg">
-$ ieee754 -118.625
-
-binary32:
- 8bits   23bits
-seeeeeeeefffffffffffffffffffffff
-11000010111011010100000000000000
-C   2   E   D   4   0   0   0
-
-binary64:
- 11bits     52bits
-seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
-1100000001011101101010000000000000000000000000000000000000000000
-C   0   5   D   A   8   0   0   0   0   0   0   0   0   0   0
-</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">inject</td>
     <td>
       arg1: function name<br>
@@ -4697,6 +4699,35 @@ C   0   5   D   A   8   0   0   0   0   0   0   0   0   0   0
       The given code will be inserted into the beginning of the function.<br><br>
 <pre class="eg">
 $ inject func1 "log('func1 was called');"</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">int</td>
+    <td>
+      value
+    </td>
+    <td>
+     Convert DEC / HEX / BIN to other radix base number.
+<pre class="eg">
+$ int 128
+-&gt;
+DEC 128
+HEX 0x80
+BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
+
+$ int 0x20
+-&gt;
+DEC 32
+HEX 0x20
+BIN 0000 0000 0000 0000 0000 0000 0010 0000 (6 bits)
+
+$ int 0b1010
+-&gt;
+DEC 10
+HEX A
+BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
+</pre>
     </td>
   </tr>
 
@@ -5934,11 +5965,30 @@ DEC 10
 HEX A
 BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
 </pre>
+<span class="annotation">This is an alias of int command.</span>
     </td>
   </tr>
 
   <tr>
     <td class="name">bit</td>
+    <td>
+      bit position (LSB=1)
+    </td>
+    <td>
+     Displays the value of the given number of bit.
+<pre class="eg">
+
+$ 8bit
+-&gt;
+DEC 128
+HEX 0x80
+BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">bits</td>
     <td>
      number of bits
     </td>
@@ -5946,7 +5996,7 @@ BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
      Displays the maximum value of the given number of bits.
 <pre class="eg">
 
-$ 8bit
+$ 8bits
 -&gt;
 DEC 255
 HEX 0xFF

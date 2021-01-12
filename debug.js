@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101120110';
+  this.v = '202101130001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -365,11 +365,12 @@ var DebugJS = DebugJS || function() {
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float VAL'},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
-    {cmd: 'ieee754', fn: this.cmdIEEE754, desc: 'Displays IEEE 754 bit-level encodings', help: 'ieee754 VAL'},
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
+    {cmd: 'int', fn: this.cmdInt, desc: 'Radix conversion', help: 'int VAL'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
@@ -7073,15 +7074,17 @@ DebugJS.prototype = {
       }
     }
 
-    var ret = ctx.cmdRadixConv(cmdline);
+    var ret = ctx.cmdInt(cmdline);
     if (ret != null) return ret;
 
-    if (DebugJS.isFloat(cmd)) return ctx.cmdIEEE754(cmd, null, echo);
+    if (DebugJS.isFloat(cmd)) return ctx.cmdFloat(cmd, null, echo);
 
     ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
 
     ret = ctx.cmdBit(cmdline);
+    if (ret != null) return ret;
+    ret = ctx.cmdBits(cmdline);
     if (ret != null) return ret;
 
     ret = ctx.cmdRatio(cmdline, echo);
@@ -7329,11 +7332,21 @@ DebugJS.prototype = {
     var a = DebugJS.delAllSP(arg);
     if (!a.match(/^\d+bit$/)) return null;
     a = a.replace(/bit/, '');
+    var b = '0b1';
+    for (var i = 0; i < a - 1; i++) {
+      b += '0';
+    }
+    return DebugJS.ctx.cmdInt(b);
+  },
+  cmdBits: function(arg) {
+    var a = DebugJS.delAllSP(arg);
+    if (!a.match(/^\d+bits$/)) return null;
+    a = a.replace(/bits/, '');
     var b = '0b';
     for (var i = 0; i < a; i++) {
       b += '1';
     }
-    return DebugJS.ctx.cmdRadixConv(b);
+    return DebugJS.ctx.cmdInt(b);
   },
 
   cmdBSB64: function(arg, tbl, echo) {
@@ -8104,23 +8117,29 @@ DebugJS.prototype = {
     return DebugJS.ctx.doHttpRequest(method, data, echo);
   },
 
-  cmdIEEE754: function(arg, tbl, echo) {
+  cmdFloat: function(arg, tbl, echo) {
     var v = parseFloat(arg);
     var b32 = DebugJS.cnvIEEE754Bin(v, 32);
     var b64 = DebugJS.cnvIEEE754Bin(v, 64);
-    var s = 'binary32:\n' + DebugJS.ctx._cmdIEEE754(b32, 8, 23) + '\n\n';
-    s += 'binary64:\n' + DebugJS.ctx._cmdIEEE754(b64, 11, 52);
+    var s = 'binary32:\n' + DebugJS.ctx._cmdFloat(b32, 8, 23, 127) + '\n\n';
+    s += 'binary64:\n' + DebugJS.ctx._cmdFloat(b64, 11, 52, 1023);
     if (echo) DebugJS._log.mlt(s);
     return v;
   },
-  _cmdIEEE754: function(b, de, df) {
-    var cS = '#aff';
+  _cmdFloat: function(b, de, df, eb) {
+    var cSh = '#6cc';
+    var cEh = '#8c8';
+    var cFh = '#c88';
+    var cS = '#8ff';
     var cE = '#afa';
     var cF = '#fbb';
     var h = DebugJS.bin2hex(b.s + b.e + b.f);
-    var ebit = DebugJS.strPadding(de + 'bits', ' ', de, 'R');
-    var s = '<span style="color:' + cS + ';"> </span><span style="color:' + cE + ';">' + ebit + '</span><span style="color:' + cF + ';">' + df + 'bits</span>\n';
-    s += '<span style="color:' + cS + ';">s</span><span style="color:' + cE + ';">' + DebugJS.repeatCh('e', de) + '</span><span style="color:' + cF + ';">' + DebugJS.repeatCh('f', df) + '</span>\n';
+    var eDigits = DebugJS.strPadding(de + 'bits', ' ', de, 'R');
+    var q = parseInt(b.e, 2);
+    var e = q + '(' + (q == 0 ? '+0' : (q < eb ? '' : '+') + (q - eb)) + ')';
+    var s = ' <span style="color:' + cEh + ';">' + e + '</span>\n';
+    s += ' <span style="color:' + cEh + ';">' + eDigits + '</span><span style="color:' + cFh + ';">' + df + 'bits</span>\n';
+    s += '<span style="color:' + cSh + ';">s</span><span style="color:' + cEh + ';">' + DebugJS.repeatCh('e', de) + '</span><span style="color:' + cFh + ';">' + DebugJS.repeatCh('f', df) + '</span>\n';
     s += '<span style="color:' + cS + ';">' + b.s + '</span><span style="color:' + cE + ';">' + b.e + '</span><span style="color:' + cF + ';">' + b.f + '</span>\n';
     var a = h.split('');
     for (var i = 0; i < a.length; i++) {
@@ -8953,7 +8972,7 @@ DebugJS.prototype = {
     return r;
   },
 
-  cmdRadixConv: function(v) {
+  cmdInt: function(v) {
     v = v.trim();
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
