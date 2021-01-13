@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101130001';
+  this.v = '202101140002';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -378,7 +378,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'kiosk', fn: this.cmdKiosk, desc: 'Make the debugger window go full screen', help: 'kiosk [zoom]'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
-    {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given arg', help: 'len [-b] "str"|Array'},
+    {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
     {cmd: 'loadjs', fn: this.cmdLoadJs, desc: 'Load a JavaScript file', help: 'loadjs file-path'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|date|dump|filter|html|load|preserve|suspend|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
@@ -3551,12 +3551,12 @@ DebugJS.prototype = {
   },
   updateSystemTime: function() {
     if (!(DebugJS.ctx.status & DebugJS.ST_SYS_INFO)) return;
-    var d = new Date();
-    var time = d.getTime();
-    var timeBin = DebugJS.formatBin(time.toString(2), false, 1);
+    var time = (new Date()).getTime();
+    var b = time.toString(2);
+    var tBin = DebugJS.formatBin(b, false, 1, b.length);
     var span = '<span style="color:' + DebugJS.ITEM_NM_COLOR + '">';
     var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, 1);
-    html += '\n' + span + '         RAW</span>  (new Date()).getTime() = ' + time + '\n' + span + '         BIN</span>  ' + timeBin + '\n</pre>';
+    html += '\n' + span + '         RAW</span>  (new Date()).getTime() = ' + time + '\n' + span + '         BIN</span>  ' + tBin + '\n</pre>';
     DebugJS.ctx.sysTimePanel.innerHTML = html;
     setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
@@ -8327,8 +8327,8 @@ DebugJS.prototype = {
     }
     var _n;
     try {
-      var _a = eval(DebugJS.getNonOptVals(arg)[0]);
-      if (DebugJS.hasOpt(arg, 'b') && (typeof _a == 'string')) {
+      var _a = DebugJS.getNonOptVals(arg, true)[0];
+      if (DebugJS.hasOpt(arg, 'b')) {
         _n = DebugJS.lenB(_a);
       } else {
         _n = _a.length;

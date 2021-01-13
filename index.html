@@ -4819,20 +4819,17 @@ $ led 0b111  <span style="color:#999;margin-right:2px;">●</span><span style="c
 
   <tr>
     <td class="name">len</td>
-    <td>string or array</td>
+    <td>string</td>
     <td>
-      Count the length of the given argument.<br>
+      Count the length of the given string.<br>
 <pre class="eg">
-$ len "abc"
+$ len abc
 -&gt; 3
 
-$ len [1,2,3]
--&gt; 3
-
-$ len "abc★"<span class="annotation">(length)</span>
+$ len abc★<span class="annotation">(length)</span>
 -&gt; 4
 
-$ len -b "abc★"<span class="annotation">(UTF-8 bytes)</span>
+$ len -b abc★<span class="annotation">(UTF-8 bytes)</span>
 -&gt; 6
 </pre>
     </td>
