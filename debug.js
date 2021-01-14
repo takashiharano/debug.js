@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101140002';
+  this.v = '202101150030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10600,7 +10600,7 @@ DebugJS.isNum = function(s) {
   return (s.match(/^\d+$/) ? true : false);
 };
 DebugJS.isFloat = function(s) {
-  return (s.match(/^[+-]?\d+\.\d+$/) ? true : false);
+  return (s.match(/^[+-]?\d*\.\d*$/) ? true : false);
 };
 DebugJS.wBOM = function(s) {
  return s.charCodeAt(0) == 65279;
@@ -10732,7 +10732,7 @@ DebugJS.getDateTime = function(dt) {
   return dateTime;
 };
 DebugJS.getDateTimeByIso = function(s) {
-  var p = s.split('T');
+  var p = s.replace(/[.,]/, '').split('T');
   var d = p[0];
   var t = p[1];
   var yyyy = d.substr(0, 4);
@@ -10741,7 +10741,7 @@ DebugJS.getDateTimeByIso = function(s) {
   var hh = (t.substr(0, 2) + '00').substr(0, 2);
   var mi = (t.substr(2, 2) + '00').substr(0, 2);
   var ss = (t.substr(4, 2) + '00').substr(0, 2);
-  var sss = (t.substr(7, 3) + '000').substr(0, 3);
+  var sss = (t.substr(6, 3) + '000').substr(0, 3);
   var dt = new Date(yyyy, (mm | 0) - 1, dd, hh, mi, ss, sss);
   return DebugJS.getDateTime(dt);
 };
@@ -10850,7 +10850,7 @@ DebugJS.isDateTimeFormat = function(s, p) {
 };
 DebugJS.isDateTimeFormatIso = function(s, p) {
   if (typeof s != 'string') return false;
-  var r = '^\\d{8}T\\d{0,6}.?\\d{0,3}';
+  var r = '^\\d{8}T\\d{0,6}[.,]?\\d{0,3}';
   return DebugJS._isDTFmt(s, p, r);
 };
 DebugJS._isDTFmt = function(s, p, r) {
