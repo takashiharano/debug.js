@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101150030';
+  this.v = '202101160002';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -385,7 +385,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|sw1]|[b64|bin]'},
-    {cmd: 'p', fn: this.cmdP, desc: 'Print JavaScript Objects', help: 'p [-l&lt;n&gt;] [-json] object'},
+    {cmd: 'p', fn: this.cmdP, desc: 'Print value of expression EXP', help: 'p [-l&lt;n&gt;] [-json] EXP'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
@@ -7932,14 +7932,15 @@ DebugJS.prototype = {
     var a = arg.trim();
     var t1 = ctx.CMD_TBL;
     var t2 = ctx.EXT_CMD_TBL;
-    if (ctx._cmdHelp(t1, a)) return;
-    if (ctx._cmdHelp(t2, a)) return;
-    var s = 'Available Commands:\n<table>' + ctx._cmdHelpTbl(t1);
+    if (a) {
+      if (ctx._cmdHelp(t1, a) || ctx._cmdHelp(t2, a)) return;
+      DebugJS._log('No help topics match `' + a + '\'');
+      return;
+    }
+    var s = 'Available Commands:\n<table>' + ctx._cmdHelpList(t1);
     if (!ctx.opt.disableAllCommands) {
-      if (t2.length > 0) {
-        s += '<tr><td colspan="2">' + '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
-      }
-      s += ctx._cmdHelpTbl(t2);
+      if (t2.length > 0) s += '<tr><td colspan="2">' + '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
+      s += ctx._cmdHelpList(t2);
     }
     s += '</table>';
     DebugJS._log.mlt(s);
@@ -7948,30 +7949,30 @@ DebugJS.prototype = {
     for (var i = 0; i < tbl.length; i++) {
       var t = tbl[i];
       if ((t.cmd == c) && !(t.attr & DebugJS.CMD_ATTR_HIDDEN) && !(t.attr & DebugJS.CMD_ATTR_DISABLED)) {
-        if (t.help) {
-          DebugJS.printUsage(t.help);
+        if (t.help || t.desc) {
+          if (t.desc) DebugJS._log(t.desc);
+          if (t.help) DebugJS.printUsage(t.help);
         } else {
-          DebugJS._log('No help message for this command');
+          DebugJS._log('No help topics match `' + c + '\'');
         }
-        return true;
+        return 1;
       }
     }
-    return false;
+    return 0;
   },
-  _cmdHelpTbl: function(tbl) {
-    var s = '';
+  _cmdHelpList: function(tbl) {
+    var r = '';
     for (var i = 0; i < tbl.length; i++) {
-      if (!(tbl[i].attr & DebugJS.CMD_ATTR_HIDDEN)) {
-        var style1 = '';
-        var style2 = '';
-        if (tbl[i].attr & DebugJS.CMD_ATTR_DISABLED) {
-          style1 = '<span style="color:#aaa">';
-          style2 = '</span>';
-        }
-        s += '<tr><td class="dbg-cmdtd">' + style1 + tbl[i].cmd + style2 + '</td><td>' + style1 + tbl[i].desc + style2 + '</td></tr>';
+      if (tbl[i].attr & DebugJS.CMD_ATTR_HIDDEN) continue;
+      var s1 = '';
+      var s2 = '';
+      if (tbl[i].attr & DebugJS.CMD_ATTR_DISABLED) {
+        s1 = '<span style="color:#aaa">';
+        s2 = '</span>';
       }
+      r += '<tr><td class="dbg-cmdtd">' + s1 + tbl[i].cmd + s2 + '</td><td>' + s1 + tbl[i].desc + s2 + '</td></tr>';
     }
-    return s;
+    return r;
   },
 
   radixCmd: function(arg, tbl) {
