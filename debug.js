@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101160002';
+  this.v = '202101170020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -356,7 +356,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'clpbd', fn: this.cmdClpbd, desc: 'Copy to clipboard', help: 'clpbd copy "str"'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
-    {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookie', help: 'cookie keys|get|set|delete [key|-a] [val]'},
+    {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookies', help: 'cookie keys|get|set|delete [key|-a] [val]'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [-iso] [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
@@ -1280,6 +1280,7 @@ DebugJS.prototype = {
     ctx.opt.useScreenMeasure = false;
     ctx.opt.useHtmlSrc = false;
     ctx.opt.useElementInfo = false;
+    ctx.status |= DebugJS.ST_KIOSK;
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
   },
@@ -3786,7 +3787,7 @@ DebugJS.prototype = {
   },
   updateCookieInfo: function() {
     var ctx = DebugJS.ctx;
-    var ks = DebugJS.cookie.getKeys();
+    var ks = DebugJS.getCookieKeys();
     var html = '';
     if (DebugJS.LS_AVAILABLE) {
       for (var i = 0; i < ks.length; i++) {
@@ -3800,16 +3801,16 @@ DebugJS.prototype = {
   },
   setCookieEdit: function(k) {
     DebugJS.setVal(DebugJS.ctx.id + '-cookiekey', k);
-    DebugJS.setVal(DebugJS.ctx.id + '-cookieval', DebugJS.cookie.get(k));
+    DebugJS.setVal(DebugJS.ctx.id + '-cookieval', DebugJS.getCookie(k));
   },
   setCookie: function() {
     var k = DebugJS.getVal(DebugJS.ctx.id + '-cookiekey');
     var v = DebugJS.getVal(DebugJS.ctx.id + '-cookieval');
-    DebugJS.cookie.set(k, v);
+    DebugJS.setCookie(k, v);
     DebugJS.ctx.updateCookieInfo();
   },
   delCookie: function(k) {
-    DebugJS.cookie.delete(k);
+    DebugJS.deleteCookie(k);
     DebugJS.ctx.updateCookieInfo();
   },
   clearLocalStrage: function() {
@@ -7185,7 +7186,7 @@ DebugJS.prototype = {
     var v = arg.substr(p);
     try {
       var a = eval(v);
-      var r = DebugJS.arr.toSet(a, s);
+      var r = DebugJS.arr2set(a, s);
       if (sort) r.sort();
       DebugJS._log.p(r, 0, '', j);
     } catch (e) {
@@ -7466,7 +7467,6 @@ DebugJS.prototype = {
   },
 
   cmdCookie: function(arg, tbl, echo) {
-    var cookie = DebugJS.cookie;
     var a = DebugJS.splitCmdLine(arg);
     var op = a[0];
     try {
@@ -7478,15 +7478,15 @@ DebugJS.prototype = {
     var r;
     switch (op) {
       case 'keys':
-        r = cookie.getKeys();
+        r = DebugJS.getCookieKeys();
         if (echo) DebugJS._log.p(r);
         return r;
       case 'get':
-        if (DebugJS.hasOpt(arg, 'a')) {
-          r = cookie.getAll();
-          if (echo) DebugJS._log.res(document.cookie);
+        if (DebugJS.hasOpt(arg, 'a') || (k == undefined)) {
+          r = DebugJS.getCookie();
+          if (echo) DebugJS._log.resQ(document.cookie);
         } else {
-          r = cookie.get(k);
+          r = DebugJS.getCookie(k);
           if (r == undefined) {
             DebugJS._log('No such key');
           } else {
@@ -7495,14 +7495,14 @@ DebugJS.prototype = {
         }
         return r;
       case 'set':
-        cookie.set(k, v);
+        DebugJS.setCookie(k, v);
         if (echo) DebugJS._log.res(k + '=' + v);
         return;
       case 'delete':
         if (DebugJS.hasOpt(arg, 'a')) {
-          DebugJS.cookie.deleteAll();
+          DebugJS.deleteCookie();
         } else {
-          cookie.delete(k);
+          DebugJS.deleteCookie(k);
         }
         if (echo) DebugJS._log.res('Deleted');
         return;
@@ -7975,42 +7975,6 @@ DebugJS.prototype = {
     return r;
   },
 
-  radixCmd: function(arg, tbl) {
-    var args = DebugJS.splitArgs(arg);
-    if (args[0] == '') {
-      DebugJS.printUsage(tbl.help);
-      return null;
-    }
-    var argLen = args.length;
-    var digit = 0;
-    var exp = args[0];
-    var expLen;
-    if (argLen == 2) {
-      digit = args[1];
-    } else if (argLen >= 3) {
-      if (args[0].match(/^\(/)) {
-        if (args[argLen - 2].match(/\)$/)) {
-          digit = args[argLen - 1];
-          expLen = argLen - 1;
-        } else if (args[argLen - 1].match(/\)$/)) {
-          expLen = argLen;
-        } else {
-          DebugJS._log.e('Invalid value');
-          return null;
-        }
-        exp = '';
-        for (var i = 0; i < expLen; i++) {
-          exp += ((i >= 1) ? ' ' : '') + args[i];
-        }
-      } else {
-        DebugJS._log.e('Invalid value');
-        return null;
-      }
-    }
-    var data = {exp: exp, digit: (digit | 0)};
-    return data;
-  },
-
   cmdHistory: function(arg, tbl) {
     var ctx = DebugJS.ctx;
     try {
@@ -8135,7 +8099,7 @@ DebugJS.prototype = {
     var cE = '#afa';
     var cF = '#fbb';
     var h = DebugJS.bin2hex(b.s + b.e + b.f);
-    var eDigits = DebugJS.strPadding(de + 'bits', ' ', de, 'R');
+    var eDigits = DebugJS.rpad(de + 'bits', ' ', de);
     var q = parseInt(b.e, 2);
     var e = q + '(' + (q == 0 ? '+0' : (q < eb ? '' : '+') + (q - eb)) + ')';
     var s = ' <span style="color:' + cEh + ';">' + e + '</span>\n';
@@ -9815,15 +9779,15 @@ DebugJS.prototype = {
       var a = DebugJS.UTF8.toByteArray(ch);
       for (var j = 0; j < a.length; j++) {
         var v = a[j];
-        s += '[' + DebugJS.strPadding(cnt, ' ', DebugJS.digits(len), 'L') + '] ';
+        s += '[' + DebugJS.lpad(cnt, ' ', DebugJS.digits(len)) + '] ';
         s += DebugJS.toHex(v, true, '0x', 2) + '  ';
-        s += DebugJS.strPadding(v, ' ', 3, 'L') + '  ';
+        s += DebugJS.lpad(v, ' ', 3) + '  ';
         s += DebugJS.toBin(v);
         if (j == 0) {
           var d = DebugJS.getCodePoint(ch);
           var rf = '&amp;#' + d + ';';
           s += '  ' + DebugJS.getUnicodePoints(ch);
-          s += '  ' + DebugJS.strPadding(rf, ' ', 12, 'L');
+          s += '  ' + DebugJS.lpad(rf, ' ', 12);
           s += '  ' + DebugJS.hlCtrlCh(ch, true);
         }
         s += '\n';
@@ -11648,9 +11612,7 @@ DebugJS.isDescendant = function(el, t) {
   if (el) {
     var p = el.parentNode;
     while (p) {
-      if (p == t) {
-        return true;
-      }
+      if (p == t) return true;
       p = p.parentNode;
     }
   }
@@ -11666,7 +11628,7 @@ DebugJS.isChild = function(p, el) {
   return false;
 };
 
-DebugJS.getHTML = function(b64) {
+DebugJS.getHTML = function(inB64) {
   var ctx = DebugJS.ctx;
   var el = document.getElementsByTagName('html').item(0);
   var cmdActive = false;
@@ -11680,7 +11642,7 @@ DebugJS.getHTML = function(b64) {
     ctx.scrollLogBtm(ctx);
     if (cmdActive) ctx.focusCmdLine();
   }
-  if (b64) html = DebugJS.encodeB64(html);
+  if (inB64) html = DebugJS.encodeB64(html);
   return html;
 };
 
@@ -11856,7 +11818,7 @@ DebugJS.arr.prev = function(a, v) {
   }
   return r;
 };
-DebugJS.arr.toSet = function(a, f) {
+DebugJS.arr2set = function(a, f) {
   var s = [];
   for (var i = 0; i < a.length; i++) {
     var v = a[i];
@@ -11884,7 +11846,7 @@ DebugJS.dndAlign = function(s) {
   for (i = 0; i < a.length; i++) {
     l = a[i].split('\t');
     for (j = 0; j < l.length - 1; j++) {
-      r += DebugJS.strPadding(l[j], d, c[j] + n, 'R');
+      r += DebugJS.rpad(l[j], d, c[j] + n);
     }
     r += l[j] + '\n';
   }
@@ -11997,12 +11959,12 @@ DebugJS._dndUniqueCnt = function(v, w) {
   }
   var idxD = DebugJS.digits(w.length);
   if (idxD < 2) idxD = 2;
-  var h = DebugJS.strPadding('idx', ' ', idxD, 'R') + ' ' + DebugJS.strPadding('cnt', ' ', mxD, 'R') + ' val\n---------------\n';
+  var h = DebugJS.rpad('idx', ' ', idxD) + ' ' + DebugJS.rpad('cnt', ' ', mxD) + ' val\n---------------\n';
   var r = h;
   var m = h;
   for (i = 0; i < w.length; i++) {
-    var idx = DebugJS.strPadding(i + 1, ' ', idxD, 'L');
-    var c = DebugJS.strPadding(w[i].cnt, ' ', mxD, 'L');
+    var idx = DebugJS.lpad(i + 1, ' ', idxD);
+    var c = DebugJS.lpad(w[i].cnt, ' ', mxD);
     var p = idx + ': ' + c + ' ';
     m += p + DebugJS.quoteStr(DebugJS.hlCtrlCh(w[i].key)) + '\n';
     r += p + w[i].key + '\n';
@@ -12140,7 +12102,7 @@ DebugJS.cnvBin = function(val) {
   return v2;
 };
 DebugJS.cnvNegativeBin = function(absV2) {
-  var absBin = DebugJS.strPadding(absV2, '0', 32, 'L');
+  var absBin = DebugJS.lpad(absV2, '0', 32);
   var p1 = -1;
   for (var i = absBin.length - 1; i >= 0; i--) {
     if (absBin.charAt(i) == '1') {
@@ -12197,8 +12159,8 @@ DebugJS.cnvIEEE754Bin = function(v, fmt) {
   }
   var sft = ((p1 < p2) ? (p2 - 1) : ((p1 - 1) * (-1)));
   var e = (BIAS + sft).toString(2);
-  var ee = DebugJS.strPadding(e, '0', EXP, 'L');
-  var ff = DebugJS.strPadding(f, '0', DIGITS, 'R');
+  var ee = DebugJS.lpad(e, '0', EXP);
+  var ff = DebugJS.rpad(f, '0', DIGITS);
   return {s: s, e: ee, f: ff};
 };
 DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
@@ -13196,17 +13158,19 @@ DebugJS.strcatWnl = function(s1, s2) {
   if (!DebugJS.endsWith(s2, '\n')) s1 += '\n';
   return s1;
 };
-DebugJS.strPadding = function(s, c, l, p) {
-  var t = s + '';
-  var d = l - DebugJS.lenW(t);
-  if (d <= 0) return t;
-  var pd = DebugJS.repeatCh(c, d);
-  if (p == 'L') {
-    t = pd + t;
-  } else {
-    t += pd;
-  }
-  return t;
+DebugJS.lpad = function(s, c, l) {
+  s += '';
+  var d = l - DebugJS.lenW(s);
+  if (d <= 0) return s;
+  var p = DebugJS.repeatCh(c, d);
+  return (p + s);
+};
+DebugJS.rpad = function(s, c, l) {
+  s += '';
+  var d = l - DebugJS.lenW(s);
+  if (d <= 0) return s;
+  var p = DebugJS.repeatCh(c, d);
+  return (s += p);
 };
 DebugJS.repeatCh = function(c, n) {
   var s = '';
@@ -13809,43 +13773,39 @@ DebugJS.loadStatus = function() {
   return JSON.parse(st);
 };
 
-DebugJS.cookie = {};
-DebugJS.cookie.getAll = function() {
+DebugJS.getAllCookie = function() {
   var a = document.cookie.replace(/\s/g, '').split(';');
   var c = {};
   for (var i = 0; i < a.length; i++) {
     var nv = a[i].split('=');
     if (nv[1] == undefined) {
-      if (nv[0] != '') {
-        c[''] = nv[0];
-      }
+      if (nv[0] != '') c[''] = nv[0];
     } else {
       c[nv[0]] = nv[1];
     }
   }
   return c;
 };
-DebugJS.cookie.get = function(k) {
-  return DebugJS.cookie.getAll()[k];
+DebugJS.getCookie = function(k) {
+  var c = DebugJS.getAllCookie();
+  if (k) return c[k];
+  return c;
 };
-DebugJS.cookie.getKeys = function() {
-  var c = DebugJS.cookie.getAll();
-  var a = [];
-  for (var k in c) {
-    a.push(k);
-  }
-  return a;
+DebugJS.getCookieKeys = function() {
+  return DebugJS.getKeys(DebugJS.getAllCookie());
 };
-DebugJS.cookie.set = function(k, v) {
-  document.cookie = k + '=' + v;
+DebugJS.setCookie = function(k, v) {
+  document.cookie = ((v == undefined) ? k : (k + '=' + v));
 };
-DebugJS.cookie.delete = function(k) {
-  document.cookie = k + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-};
-DebugJS.cookie.deleteAll = function() {
-  var k = DebugJS.cookie.getKeys();
-  for (var i = 0; i < k.length; i++) {
-    DebugJS.cookie.delete(k[i]);
+DebugJS.deleteCookie = function(k) {
+  var v = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  if (k) {
+    document.cookie = k + v;
+  } else {
+    var keys = DebugJS.getCookieKeys();
+    for (var i = 0; i < keys.length; i++) {
+      document.cookie = keys[i] + v;
+    }
   }
 };
 
@@ -14080,6 +14040,9 @@ DebugJS._log.res = function(m) {
 };
 DebugJS._log.res.err = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_ERES);
+};
+DebugJS._log.resQ = function(m) {
+  DebugJS._log.res(DebugJS.quoteStr(m));
 };
 DebugJS._log.mlt = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_MLT);
@@ -17223,12 +17186,12 @@ DebugJS.test.result = function() {
   }
   if (data.desc.length > 0) s += '\n';
   if (test.countTotal(cnt) > 0) s += '[RESULTS]\n---------\n';
-  s += test.getDetailStr(data.results);
+  s += test.getDetails(data.results);
   s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n';
   s += DebugJS.repeatCh('-', ttl.length + 2) + '\n' + test.getStyledStStr(ttl);
   return s;
 };
-DebugJS.test.getDetailStr = function(results) {
+DebugJS.test.getDetails = function(results) {
   var test = DebugJS.test;
   var M = 16;
   var n = test.countLongestLabel();
@@ -17246,7 +17209,7 @@ DebugJS.test.getDetailStr = function(results) {
     for (i = 0; i < results[id].results.length; i++) {
       var result = results[id].results[i];
       var info = test.getStyledInfoStr(result);
-      details += ' ' + DebugJS.strPadding(result.label, ' ', n, 'R') + ' ' + test.getStyledResultStr(result.status, info) + '\n';
+      details += ' ' + DebugJS.rpad(result.label, ' ', n) + ' ' + test.getStyledResultStr(result.status, info) + '\n';
     }
     details += '\n';
   }

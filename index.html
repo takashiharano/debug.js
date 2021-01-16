@@ -3472,7 +3472,7 @@ dbg.arr.has(array, <input type="text" id="arr-has-val-text2" class="demo-text" s
   </tr>
 
   <tr>
-    <td class="name">dbg.arr.toSet</td>
+    <td class="name">dbg.arr2set</td>
     <td>
       arg1: array<br>
       arg2: strict mode<span class="annotation">(opt)</span>
@@ -3482,8 +3482,8 @@ dbg.arr.has(array, <input type="text" id="arr-has-val-text2" class="demo-text" s
 <pre class="eg">
 var array = [<textarea id="arr2set-arr-text" class="demo-textarea2" style="width:400px;height:25px;">1, 2, 1, 3, '1', 2</textarea>];
 
-dbg.arr.toSet(array); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr.toSet(arr));">DEMO</button>
-dbg.arr.toSet(array, <input type="text" id="arr2set-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr.toSet(arr, (getVal('arr2set-flg-text') == 'true' ? true : false)));">DEMO</button>
+dbg.arr2set(array); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr));">DEMO</button>
+dbg.arr2set(array, <input type="text" id="arr2set-flg-text" class="demo-text" style="width:50px;" value="true">); <button class="demo-button2" onclick="eval('arr=[' + getVal('arr2set-arr-text') + ']');log.p(dbg.arr2set(arr, (getVal('arr2set-flg-text') == 'true' ? true : false)));">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -3703,56 +3703,40 @@ dbg.adjustResBox(<input type="text" id="resbox-adj-txt" class="demo-text" style=
 
   <tr><td colspan="3" class="cat">Cookie</td></tr>
   <tr>
-    <td class="name">dbg.cookie.getAll</td>
-    <td></td>
+    <td class="name">dbg.getCookie</td>
+    <td>key<span class="annotation">(opt)</span></td>
     <td>
-      Returns a map object consists of key and value.<br>
+      Returns a value of the specified key.<br><br>
 <pre>
-var cookies = dbg.cookie.getAll(); <button class="demo-button2" onclick="log.p(dbg.cookie.getAll(), 0, 'cookies =');">DEMO</button>
+var cookies = dbg.getCookie(); <button class="demo-button2" onclick="log.p(dbg.getCookie(), 0, 'cookies =');">DEMO</button>
+Returns a map object consists of key and value.
+
+var val = dbg.getCookie('<input type="text" id="getcookie-txt" class="demo-text" style="width:100px;" value="">'); <button class="demo-button2" onclick="log.res(dbg.getCookie(getVal('getcookie-txt')));">DEMO</button>
 </pre>
     </td>
   </tr>
 
   <tr>
-    <td class="name">dbg.cookie.get</td>
-    <td>key</td>
-    <td>
-      Returns a value of the specified key.<br>
-<pre>
-var val = dbg.cookie.get('<input type="text" id="getcookie-txt" class="demo-text" style="width:100px;" value="">'); <button class="demo-button2" onclick="log.res(dbg.cookie.get(getVal('getcookie-txt')));">DEMO</button>
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">dbg.cookie.set</td>
+    <td class="name">dbg.setCookie</td>
     <td>arg1: key<br>arg2: value</td>
     <td>
       Set a value for the specified key.<br>
 <pre>
-dbg.cookie.set('<input type="text" id="setcookie-key-txt" class="demo-text" style="width:100px;" value="">', '<input type="text" id="setcookie-val-txt" class="demo-text" style="width:200px;" value="">'); <button class="demo-button2" onclick="dbg.cookie.set(getVal('setcookie-key-txt'), getVal('setcookie-val-txt'));log.res('OK');">DEMO</button>
+dbg.setCookie('<input type="text" id="setcookie-key-txt" class="demo-text" style="width:100px;" value="">', '<input type="text" id="setcookie-val-txt" class="demo-text" style="width:200px;" value="">'); <button class="demo-button2" onclick="dbg.setCookie(getVal('setcookie-key-txt'), getVal('setcookie-val-txt'));log.res('OK');">DEMO</button>
 </pre>
     </td>
   </tr>
 
   <tr>
-    <td class="name">dbg.cookie.delete</td>
+    <td class="name">dbg.deleteCookie</td>
     <td>key</td>
     <td>
       Delete the specified key.<br>
 <pre>
-dbg.cookie.delete('<input type="text" id="delcookie-txt" class="demo-text" style="width:100px;" value="">'); <button class="demo-button2" onclick="dbg.cookie.delete(getVal('delcookie-txt'));log.res('OK');">DEMO</button>
-</pre>
-    </td>
-  </tr>
+dbg.deleteCookie('<input type="text" id="delcookie-txt" class="demo-text" style="width:100px;" value="">'); <button class="demo-button2" onclick="dbg.deleteCookie(getVal('delcookie-txt'));log.res('OK');">DEMO</button>
 
-  <tr>
-    <td class="name">dbg.cookie.deleteAll</td>
-    <td></td>
-    <td>
-      Delete all cookies.<br>
-<pre>
-dbg.cookie.deleteAll(); <button class="demo-button2" onclick="dbg.cookie.deleteAll();log.res('OK');">DEMO</button>
+Delete all cookies.
+dbg.deleteCookie(); <button class="demo-button2" onclick="dbg.deleteCookie();log.res('OK');">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -5027,11 +5011,12 @@ option
   <tr>
     <td class="name">p</td>
     <td>
-      arg1: recursion level limit<span class="annotation">(opt)</span><br>
-      arg2: object
+      -l: recursion level limit<br>
+      -j: in JSON format(opt)<br>
+      expression
     </td>
     <td>
-     Print object dump. (recursive)
+     Print value of expression EXP.
 <pre class="eg">
 $ p object
 -&gt; dump all properties w/ limit (1000)
