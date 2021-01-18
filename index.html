@@ -4610,19 +4610,41 @@ $ event dispatch window
 <pre class="eg">
 $ float -118.625
 
-binary32:
+binary32: -118.625
  133(+6)
  8bits   23bits
 seeeeeeeefffffffffffffffffffffff
 11000010111011010100000000000000
 C   2   E   D   4   0   0   0
 
-binary64:
+binary64: -118.625
  1029(+6)
  11bits     52bits
 seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
 1100000001011101101010000000000000000000000000000000000000000000
 C   0   5   D   A   8   0   0   0   0   0   0   0   0   0   0
+
+
+$float -b 11000010111011010100000000000000
+$float 0b11000010111011010100000000000000
+
+binary32: -118.625
+ 133(+6)
+ 8bits   23bits
+seeeeeeeefffffffffffffffffffffff
+11000010111011010100000000000000
+C   2   E   D   4   0   0   0
+
+
+$ float -h C2ED4000
+$ float 0xC2ED4000
+
+binary32: -118.625
+ 133(+6)
+ 8bits   23bits
+seeeeeeeefffffffffffffffffffffff
+11000010111011010100000000000000
+C   2   E   D   4   0   0   0
 </pre>
     </td>
   </tr>

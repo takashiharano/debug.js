@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101170020';
+  this.v = '202101190021';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -365,7 +365,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
-    {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float VAL'},
+    {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float [-b|-h] VAL'},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
@@ -8083,13 +8083,65 @@ DebugJS.prototype = {
   },
 
   cmdFloat: function(arg, tbl, echo) {
-    var v = parseFloat(arg);
-    var b32 = DebugJS.cnvIEEE754Bin(v, 32);
-    var b64 = DebugJS.cnvIEEE754Bin(v, 64);
-    var s = 'binary32:\n' + DebugJS.ctx._cmdFloat(b32, 8, 23, 127) + '\n\n';
-    s += 'binary64:\n' + DebugJS.ctx._cmdFloat(b64, 11, 52, 1023);
+    arg = arg.trim();
+    var v, s, fn;
+    var vl = DebugJS.getNonOptVals(arg, true)[0];
+    if (DebugJS.hasOpt(arg, 'b')) {
+      fn = DebugJS.ctx._cmdFloatB;
+    } else if (DebugJS.hasOpt(arg, 'h')) {
+      fn = DebugJS.ctx._cmdFloatH;
+    } else if (arg.match(/^0b/i)) {
+      fn = DebugJS.ctx._cmdFloatB;
+      vl = arg.substr(2);
+    } else if (arg.match(/^0x/i)) {
+      fn = DebugJS.ctx._cmdFloatH;
+      vl = arg.substr(2);
+    }
+    if (fn) {
+      var o = fn(vl);
+      if (!o) {
+        DebugJS._log.e('invalid bit pattern');
+        return;
+      }
+      v = o.v;
+      s = o.s;
+    } else {
+      v = parseFloat(arg);
+      var b32 = DebugJS.cnvIEEE754Bin(v, 32);
+      var b64 = DebugJS.cnvIEEE754Bin(v, 64);
+      s = 'binary32: ' + DebugJS.ctx._cmdFloat(b32, 8, 23, 127).s + '\n\n';
+      s += 'binary64: ' + DebugJS.ctx._cmdFloat(b64, 11, 52, 1023).s;
+    }
     if (echo) DebugJS._log.mlt(s);
     return v;
+  },
+  _cmdFloatB: function(bin) {
+    var de, df, eb;
+    var len = bin.length;
+    if (len == 32) {
+      de = 8;
+      df = 23;
+      eb = 127;
+    } else if (len == 64) {
+      de = 11;
+      df = 52;
+      eb = 1023;
+    } else {
+      return null;
+    }
+    var b = {
+      s: bin.substr(0, 1),
+      e: bin.substr(1, de),
+      f: bin.substr(de + 1, df)
+    };
+    var o = DebugJS.ctx._cmdFloat(b, de, df, eb);
+    var s = 'binary' + len + ': ' + o.s + '\n\n';
+    return {v: o.v, s: s};
+  },
+  _cmdFloatH: function(hex) {
+    var len = hex.length;
+    if ((len != 8) && (len != 16)) return null;
+    return DebugJS.ctx._cmdFloatB(DebugJS.hex2bin(hex));
   },
   _cmdFloat: function(b, de, df, eb) {
     var cSh = '#6cc';
@@ -8101,16 +8153,29 @@ DebugJS.prototype = {
     var h = DebugJS.bin2hex(b.s + b.e + b.f);
     var eDigits = DebugJS.rpad(de + 'bits', ' ', de);
     var q = parseInt(b.e, 2);
-    var e = q + '(' + (q == 0 ? '+0' : (q < eb ? '' : '+') + (q - eb)) + ')';
-    var s = ' <span style="color:' + cEh + ';">' + e + '</span>\n';
+    var e = q - eb;
+    var ex = q + '(' + (q == 0 ? '+0' : (q < eb ? '' : '+') + e) + ')';
+    var v = ((q == 0) ? 0 : DebugJS.fBin2Dec(b.f, e));
+    var vl;
+    if (DebugJS.isAll1(b.e)) {
+      vl = ((parseInt(b.f) == 0) ? 'Infinity' : 'NaN');
+    } else {
+      vl = v + '';
+      if (!vl.match(/\./)) vl += '.0';
+    }
+    if (b.s == '1') vl = '-' + vl;
+    var s = '<span style="color:#0ff">' + vl + '</span>\n';
+    s += ' <span style="color:' + cEh + ';">' + ex + '</span>\n';
     s += ' <span style="color:' + cEh + ';">' + eDigits + '</span><span style="color:' + cFh + ';">' + df + 'bits</span>\n';
     s += '<span style="color:' + cSh + ';">s</span><span style="color:' + cEh + ';">' + DebugJS.repeatCh('e', de) + '</span><span style="color:' + cFh + ';">' + DebugJS.repeatCh('f', df) + '</span>\n';
     s += '<span style="color:' + cS + ';">' + b.s + '</span><span style="color:' + cE + ';">' + b.e + '</span><span style="color:' + cF + ';">' + b.f + '</span>\n';
     var a = h.split('');
+    s += '<span style="color:#ddd">';
     for (var i = 0; i < a.length; i++) {
       s += a[i] + '   ';
     }
-    return s;
+    s += '</span>';
+    return {v: v, s: s};
   },
 
   cmdInject: function(arg, tbl) {
@@ -12136,6 +12201,15 @@ DebugJS.bin2hex = function(b) {
   }
   return h.toUpperCase();
 };
+DebugJS.hex2bin = function(h) {
+  var bin = '';
+  for (var i = 0; i < h.length; i++) {
+    var b = parseInt(h[i], 16).toString(2);
+    if (b == 'NaN') return b;
+    bin += DebugJS.lpad(b, '0', 4);
+  }
+  return bin;
+};
 DebugJS.cnvIEEE754Bin = function(v, fmt) {
   var BIAS = (fmt == 32 ? 127 : 1023);
   var EXP = (fmt == 32 ? 8 : 11);
@@ -12162,6 +12236,31 @@ DebugJS.cnvIEEE754Bin = function(v, fmt) {
   var ee = DebugJS.lpad(e, '0', EXP);
   var ff = DebugJS.rpad(f, '0', DIGITS);
   return {s: s, e: ee, f: ff};
+};
+DebugJS.fBin2Dec = function(bin, e) {
+  bin = '1' + bin;
+  var bI = 0;
+  var bF;
+  if (e < 0) {
+    bF = DebugJS.repeatCh('0', (e * (-1) - 1)) + bin;
+  } else {
+    bI = bin.substr(0, e + 1);
+    bF = bin.substr(e + 1);
+  }
+  var vI = parseInt(bI, 2);
+  var f = 0;
+  for (var i = 0; i < bin.length; i++) {
+    var b = bF.charAt(i);
+    var w = (-1) * (i + 1);
+    f += Math.pow(2, w) * ((b == '1') ? 1 : 0);
+  }
+  return vI + f;
+};
+DebugJS.isAll1 = function(b) {
+  for (var i = 0; i < b.length; i++) {
+    if (b[i] != '1') return false;
+  }
+  return true;
 };
 DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   var len = v2.length;
