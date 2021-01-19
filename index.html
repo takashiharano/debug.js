@@ -3820,7 +3820,7 @@ var val = dbg.getOptVal('<input type="text" id="opt-val-arg-txt" class="demo-tex
     <td>
       Returns values of options.<br>
 <pre>
-var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-text" style="width:200px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVals(getVal('opt-vals-arg-txt')), 0, 'val =');">DEMO</button>
+var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-text" style="width:200px;" value='foo bar -123 -a abc -b 123 -c -d -e "987 654" baz -ff 111'>'); <button class="demo-button2" onclick="log.p(dbg.getOptVals(getVal('opt-vals-arg-txt')), 0, 'val =');">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -3831,8 +3831,8 @@ var vals = dbg.getOptVals('<input type="text" id="opt-vals-arg-txt" class="demo-
     <td>
       Returns values of non options.<br>
 <pre>
-var vals = dbg.getNonOptVals('<input type="text" id="nonopt-vals-arg-txt" class="demo-text" style="width:200px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>'); <button class="demo-button2" onclick="log.p(dbg.getNonOptVals(getVal('nonopt-vals-arg-txt')), 0, 'val =');">DEMO</button>
-var vals = dbg.getNonOptVals('<input type="text" id="nonopt-vals-arg-all-txt" class="demo-text" style="width:200px;" value='foo bar -a abc -b 123 -c -d -e "987 654" baz -ff 111'>', true); <button class="demo-button2" onclick="log.p(dbg.getNonOptVals(getVal('nonopt-vals-arg-all-txt'), true), 0, 'val =');">DEMO</button>
+var vals = dbg.getNonOptVals('<input type="text" id="nonopt-vals-arg-txt" class="demo-text" style="width:200px;" value='foo bar -123 -a abc -b 123 -c -d -e "987 654" baz -ff 111'>'); <button class="demo-button2" onclick="log.p(dbg.getNonOptVals(getVal('nonopt-vals-arg-txt')), 0, 'val =');">DEMO</button>
+var vals = dbg.getNonOptVals('<input type="text" id="nonopt-vals-arg-all-txt" class="demo-text" style="width:200px;" value='foo bar -123 -a abc -b 123 -c -d -e "987 654" baz -ff 111'>', true); <button class="demo-button2" onclick="log.p(dbg.getNonOptVals(getVal('nonopt-vals-arg-all-txt'), true), 0, 'val =');">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -3843,7 +3843,7 @@ var vals = dbg.getNonOptVals('<input type="text" id="nonopt-vals-arg-all-txt" cl
     <td>
       Returns the 1st option name in the argument.<br>
 <pre>
-var opt = dbg.get1stOpt('<input type="text" id="opt-1stval-arg-txt" class="demo-text" style="width:200px;" value='-a -b -c'>'); <button class="demo-button2" onclick="log.p(dbg.get1stOpt(getVal('opt-1stval-arg-txt')), 0, 'opt =');">DEMO</button>
+var opt = dbg.get1stOpt('<input type="text" id="opt-1stval-arg-txt" class="demo-text" style="width:200px;" value='1 2 3 -a -b -c'>'); <button class="demo-button2" onclick="log.p(dbg.get1stOpt(getVal('opt-1stval-arg-txt')), 0, 'opt =');">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -4611,6 +4611,7 @@ $ event dispatch window
 $ float -118.625
 
 binary32: -118.625
+-1110110.101
  133(+6)
  8bits   23bits
 seeeeeeeefffffffffffffffffffffff
@@ -4618,6 +4619,7 @@ seeeeeeeefffffffffffffffffffffff
 C   2   E   D   4   0   0   0
 
 binary64: -118.625
+-1110110.101
  1029(+6)
  11bits     52bits
 seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -4625,10 +4627,12 @@ seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
 C   0   5   D   A   8   0   0   0   0   0   0   0   0   0   0
 
 
-$float -b 11000010111011010100000000000000
-$float 0b11000010111011010100000000000000
+$ float -b 11000010111011010100000000000000
+$ float 0b11000010111011010100000000000000
+$ float -b -1110110.101
 
 binary32: -118.625
+-1110110.101
  133(+6)
  8bits   23bits
 seeeeeeeefffffffffffffffffffffff
@@ -4640,6 +4644,7 @@ $ float -h C2ED4000
 $ float 0xC2ED4000
 
 binary32: -118.625
+-1110110.101
  133(+6)
  8bits   23bits
 seeeeeeeefffffffffffffffffffffff

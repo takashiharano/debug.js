@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101190021';
+  this.v = '202101200006';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7075,7 +7075,7 @@ DebugJS.prototype = {
       }
     }
 
-    var ret = ctx.cmdInt(cmdline);
+    var ret = ctx.cmdInt(cmdline, null, echo);
     if (ret != null) return ret;
 
     if (DebugJS.isFloat(cmd)) return ctx.cmdFloat(cmd, null, echo);
@@ -8083,19 +8083,34 @@ DebugJS.prototype = {
   },
 
   cmdFloat: function(arg, tbl, echo) {
+    var ctx = DebugJS.ctx;
     arg = arg.trim();
     var v, s, fn;
     var vl = DebugJS.getNonOptVals(arg, true)[0];
     if (DebugJS.hasOpt(arg, 'b')) {
-      fn = DebugJS.ctx._cmdFloatB;
+      fn = ctx._cmdFloatB;
     } else if (DebugJS.hasOpt(arg, 'h')) {
-      fn = DebugJS.ctx._cmdFloatH;
+      fn = ctx._cmdFloatH;
     } else if (arg.match(/^0b/i)) {
-      fn = DebugJS.ctx._cmdFloatB;
+      fn = ctx._cmdFloatB;
       vl = arg.substr(2);
     } else if (arg.match(/^0x/i)) {
-      fn = DebugJS.ctx._cmdFloatH;
+      fn = ctx._cmdFloatH;
       vl = arg.substr(2);
+    } else {
+      vl = arg;
+    }
+    if ((fn == ctx._cmdFloatB) && (vl.match(/\./))) {
+      var fb = vl.split('.');
+      var bI = fb[0];
+      var sn = 1;
+      if (bI.charAt(0) == '-') {
+        sn = -1;
+        bI = bI.replace(/-/, '');
+      }
+      vl = DebugJS._fBin2Dec(bI, fb[1]);
+      vl *= sn;
+      fn = null;
     }
     if (fn) {
       var o = fn(vl);
@@ -8106,11 +8121,16 @@ DebugJS.prototype = {
       v = o.v;
       s = o.s;
     } else {
-      v = parseFloat(arg);
+      v = parseFloat(vl);
       var b32 = DebugJS.cnvIEEE754Bin(v, 32);
       var b64 = DebugJS.cnvIEEE754Bin(v, 64);
-      s = 'binary32: ' + DebugJS.ctx._cmdFloat(b32, 8, 23, 127).s + '\n\n';
-      s += 'binary64: ' + DebugJS.ctx._cmdFloat(b64, 11, 52, 1023).s;
+      s = 'binary32: ';
+      if (Math.abs(v) <= 16777215) {
+        s += ctx._cmdFloat(b32, 8, 23, 127).s;
+      } else {
+        s += 'overflow (max16777215.0)';
+      }
+      s += '\n\nbinary64: ' + ctx._cmdFloat(b64, 11, 52, 1023).s;
     }
     if (echo) DebugJS._log.mlt(s);
     return v;
@@ -8156,15 +8176,26 @@ DebugJS.prototype = {
     var e = q - eb;
     var ex = q + '(' + (q == 0 ? '+0' : (q < eb ? '' : '+') + e) + ')';
     var v = ((q == 0) ? 0 : DebugJS.fBin2Dec(b.f, e));
-    var vl;
+    var vl, b2;
     if (DebugJS.isAll1(b.e)) {
       vl = ((parseInt(b.f) == 0) ? 'Infinity' : 'NaN');
     } else {
       vl = v + '';
       if (!vl.match(/\./)) vl += '.0';
+      b2 = DebugJS.suppressR('1' + b.f, '0');
+      if (v == 0) {
+        b2 = '0.0';
+      } else if (e < 0) {
+        b2 = '0.' + DebugJS.repeatCh('0', (e * (-1) - 1)) + b2;
+      } else {
+        var bI = b2.substr(0, e + 1);
+        var bF = b2.substr(e + 1);
+        b2 = bI + '.' + ((bF == '') ? '0' : bF);
+      }
     }
-    if (b.s == '1') vl = '-' + vl;
-    var s = '<span style="color:#0ff">' + vl + '</span>\n';
+    var sn = ((b.s == '1') ? '-' : '');
+    var s = '<span style="color:#0ff">' + sn + vl + '</span>\n';
+    if (b2) s += '<span style="color:#ddd">' + sn + b2 + '</span>\n';
     s += ' <span style="color:' + cEh + ';">' + ex + '</span>\n';
     s += ' <span style="color:' + cEh + ';">' + eDigits + '</span><span style="color:' + cFh + ';">' + df + 'bits</span>\n';
     s += '<span style="color:' + cSh + ';">s</span><span style="color:' + cEh + ';">' + DebugJS.repeatCh('e', de) + '</span><span style="color:' + cFh + ';">' + DebugJS.repeatCh('f', df) + '</span>\n';
@@ -9002,20 +9033,20 @@ DebugJS.prototype = {
     return r;
   },
 
-  cmdInt: function(v) {
+  cmdInt: function(v, tbl, echo) {
     v = v.trim();
     var rdx = DebugJS.checkRadix(v);
     if (rdx == 10) {
       var val = parseInt(v.replace(/,/g, ''));
-      DebugJS.printRadixConv(val);
+      DebugJS.printRadixConv(val, echo);
     } else if (rdx == 16) {
       var v16 = v.substr(2).replace(/\s/g, '');
       val = parseInt(v16, 16);
-      DebugJS.printRadixConv(val);
+      DebugJS.printRadixConv(val, echo);
     } else if (rdx == 2) {
       var v2 = v.substr(2).replace(/\s/g, '');
       val = parseInt(v2, 2);
-      DebugJS.printRadixConv(val);
+      DebugJS.printRadixConv(val, echo);
     } else {
       return null;
     }
@@ -10469,18 +10500,20 @@ DebugJS.getOptVal = function(args, opt) {
   return (v[opt] == undefined ? null : v[opt]);
 };
 DebugJS.getOptVals = function(args) {
-  var i, k, v;
+  var i, k, v, nv;
   var o = {'': []};
   if (typeof args == 'string') {
     args = DebugJS.splitCmdLine(args);
   }
   for (i = 0; i < args.length; i++) {
-    if ((args[i].charAt(0) == '-') && ((k = args[i].substr(1)) != '')) {
-      if ((args[i + 1] != undefined) && (args[i + 1].charAt(0) != '-')) {
-        i++;
-        v = args[i];
-      } else {
+    k = args[i].substr(1);
+    if (DebugJS.isOptTkn(args[i])) {
+      nv = args[i + 1];
+      if ((nv == undefined) || DebugJS.isOptTkn(nv)) {
         v = '';
+      } else {
+        v = nv;
+        i++;
       }
       o[k] = v;
     } else {
@@ -10524,18 +10557,20 @@ DebugJS.get1stOpt = function(args) {
 };
 DebugJS.getNonOptVals = function(args, all) {
   var a = DebugJS.splitCmdLine(args);
-  var v = [];
-  if (a[0] == '') return v;
+  var r = [];
+  if (a[0] == '') return r;
   var pv = '';
   for (var i = 0; i < a.length; i++) {
-    if (a[i].charAt(0) != '-') {
-      if (all || (pv.charAt(0) != '-')) {
-        v.push(a[i]);
-      }
+    var v = a[i];
+    if (!DebugJS.isOptTkn(v)) {
+      if (all || (!DebugJS.isOptTkn(pv))) r.push(v);
     }
-    pv = a[i];
+    pv = v;
   }
-  return v;
+  return r;
+};
+DebugJS.isOptTkn = function(s) {
+  return ((s.length > 1) && ((s.charAt(0) == '-') && (!s.match(/^-\d+/))) ? true : false);
 };
 DebugJS.getQuotedStr = function(str) {
   var r = null;
@@ -12125,7 +12160,8 @@ DebugJS.rgb10to16 = function(r, g, b) {
   return rgb;
 };
 
-DebugJS.printRadixConv = function(val) {
+DebugJS.printRadixConv = function(val, echo) {
+  if (!echo) return;
   var MAX = 0x20000000000000;
   var bin, v16;
   if (val > MAX) {
@@ -12247,9 +12283,12 @@ DebugJS.fBin2Dec = function(bin, e) {
     bI = bin.substr(0, e + 1);
     bF = bin.substr(e + 1);
   }
+  return DebugJS._fBin2Dec(bI, bF);
+};
+DebugJS._fBin2Dec = function(bI, bF) {
   var vI = parseInt(bI, 2);
   var f = 0;
-  for (var i = 0; i < bin.length; i++) {
+  for (var i = 0; i < bF.length; i++) {
     var b = bF.charAt(i);
     var w = (-1) * (i + 1);
     f += Math.pow(2, w) * ((b == '1') ? 1 : 0);
@@ -12261,6 +12300,12 @@ DebugJS.isAll1 = function(b) {
     if (b[i] != '1') return false;
   }
   return true;
+};
+DebugJS.suppressR = function(v, c) {
+  for (var i = v.length - 1; i >= 0; i--) {
+    if (v.charAt(i) != c) break;
+  }
+  return v.substr(0, i + 1);
 };
 DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   var len = v2.length;
