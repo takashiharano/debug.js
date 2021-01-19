@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101200006';
+  this.v = '202101200105';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8087,10 +8087,17 @@ DebugJS.prototype = {
     arg = arg.trim();
     var v, s, fn;
     var vl = DebugJS.getNonOptVals(arg, true)[0];
+    if (vl == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    vl = vl.replace(/[\s\\t()]/g, '');
     if (DebugJS.hasOpt(arg, 'b')) {
       fn = ctx._cmdFloatB;
+      vl = vl.replace(/^0b/i, '');
     } else if (DebugJS.hasOpt(arg, 'h')) {
       fn = ctx._cmdFloatH;
+      vl = vl.replace(/^0x/i, '');
     } else if (arg.match(/^0b/i)) {
       fn = ctx._cmdFloatB;
       vl = arg.substr(2);
@@ -8125,10 +8132,10 @@ DebugJS.prototype = {
       var b32 = DebugJS.cnvIEEE754Bin(v, 32);
       var b64 = DebugJS.cnvIEEE754Bin(v, 64);
       s = 'binary32: ';
-      if (Math.abs(v) <= 16777215) {
+      if ((Math.abs(v) <= 16777215) || isNaN(v) || (!isFinite(v))) {
         s += ctx._cmdFloat(b32, 8, 23, 127).s;
       } else {
-        s += 'overflow (max16777215.0)';
+        s += 'overflow (max 16777215.0)';
       }
       s += '\n\nbinary64: ' + ctx._cmdFloat(b64, 11, 52, 1023).s;
     }
