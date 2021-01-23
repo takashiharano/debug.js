@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101200105';
+  this.v = '202101231235';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -372,7 +372,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
     {cmd: 'int', fn: this.cmdInt, desc: 'Radix conversion', help: 'int VAL'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
-    {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] one-line-json'},
+    {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] {JSON}'},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
     {cmd: 'kiosk', fn: this.cmdKiosk, desc: 'Make the debugger window go full screen', help: 'kiosk [zoom]'},
@@ -7083,9 +7083,9 @@ DebugJS.prototype = {
     ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
 
-    ret = ctx.cmdBit(cmdline);
+    ret = ctx.cmdBit(cmdline, null, echo);
     if (ret != null) return ret;
-    ret = ctx.cmdBits(cmdline);
+    ret = ctx.cmdBits(cmdline, null, echo);
     if (ret != null) return ret;
 
     ret = ctx.cmdRatio(cmdline, echo);
@@ -7329,7 +7329,7 @@ DebugJS.prototype = {
     if (echo) DebugJS._log.res(v);
   },
 
-  cmdBit: function(arg) {
+  cmdBit: function(arg, tbl, echo) {
     var a = DebugJS.delAllSP(arg);
     if (!a.match(/^\d+bit$/)) return null;
     a = a.replace(/bit/, '');
@@ -7337,9 +7337,9 @@ DebugJS.prototype = {
     for (var i = 0; i < a - 1; i++) {
       b += '0';
     }
-    return DebugJS.ctx.cmdInt(b);
+    return DebugJS.ctx.cmdInt(b, null, echo);
   },
-  cmdBits: function(arg) {
+  cmdBits: function(arg, tbl, echo) {
     var a = DebugJS.delAllSP(arg);
     if (!a.match(/^\d+bits$/)) return null;
     a = a.replace(/bits/, '');
@@ -7347,7 +7347,7 @@ DebugJS.prototype = {
     for (var i = 0; i < a; i++) {
       b += '1';
     }
-    return DebugJS.ctx.cmdInt(b);
+    return DebugJS.ctx.cmdInt(b, null, echo);
   },
 
   cmdBSB64: function(arg, tbl, echo) {
@@ -8507,18 +8507,18 @@ DebugJS.prototype = {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
     var data = DebugJS.getOptVal(arg, 'b64');
     if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage('log load [-b64] Log-Buf-JSON');
-    } else {
-      try {
-        if (data == null) {
-          DebugJS.loadLog(arg);
-        } else {
-          DebugJS.loadLog(data, true);
-        }
-        ctx.printLogs();
-      } catch (e) {
-        DebugJS._log.e(e);
+      DebugJS.printUsage('log load [-b64] LOG-BUF-JSON');
+      return;
+    }
+    try {
+      if (data == null) {
+        DebugJS.loadLog(arg);
+      } else {
+        DebugJS.loadLog(data, true);
       }
+      ctx.printLogs();
+    } catch (e) {
+      DebugJS._log.e(e);
     }
   },
   _cmdLogPreserve: function(ctx, arg, echo) {
@@ -8527,12 +8527,10 @@ DebugJS.prototype = {
       ctx.setLogPreserve(ctx, true);
     } else if (op == 'off') {
       ctx.setLogPreserve(ctx, false);
-    } else {
-      if (echo) {
-        var st = ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? 'on' : 'off');
-        DebugJS._log.res(st);
-        DebugJS.printUsage('log preserve on|off');
-      }
+    } else if (echo) {
+      var st = ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? 'on' : 'off');
+      DebugJS._log.res(st);
+      DebugJS.printUsage('log preserve on|off');
     }
     return ((ctx.status & DebugJS.ST_LOG_PRESERVED) ? true : false);
   },
@@ -8606,9 +8604,7 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return '';
     }
-    if (p) {
-      DebugJS.log.res(DebugJS.getDateTimeStr(t.time, 1));
-    }
+    if (p) DebugJS.log.res(DebugJS.getDateTimeStr(t.time, 1));
     return t.t;
   },
 
@@ -8659,10 +8655,10 @@ DebugJS.prototype = {
       ctx.status |= DebugJS.ST_BAT_PAUSE_CMD;
       if (!q) DebugJS._log('Click or press any key to continue...');
     } else if (op == 'key') {
-        if (key == undefined) key = '';
-        bat.ctrl.pauseKey = key;
-        if (!q) DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
-        ctx.status |= DebugJS.ST_BAT_PAUSE_CMD_KEY;
+      if (key == undefined) key = '';
+      bat.ctrl.pauseKey = key;
+      if (!q) DebugJS._log('Type "resume" or "resume -key' + ((key == '') ? '' : ' ' + key) + '" to continue...' + ((tout > 0) ? ' (timeout=' + tout + ')' : ''));
+      ctx.status |= DebugJS.ST_BAT_PAUSE_CMD_KEY;
     } else {
       return false;
     }
