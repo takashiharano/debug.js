@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101231235';
+  this.v = '202101232307';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -349,6 +349,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print ASCII characters'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
+    {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-f] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
     {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars CH1(U+xxxx) [CH2(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
@@ -7054,6 +7055,14 @@ DebugJS.prototype = {
         }
       }
     }
+    var cmdln = cmdline.trim();
+    if (cmdln.match(/^\d+bit$/)) {
+      cmd = 'bit';
+      arg = cmdln.replace(/bit/, '');
+    } else if (cmdln.match(/^\d+bits$/)) {
+      cmd = 'bit';
+      arg = '-f ' + cmdln.replace(/bits/, '');
+    }
 
     for (i = 0; i < ctx.CMD_TBL.length; i++) {
       if (cmd == ctx.CMD_TBL[i].cmd) {
@@ -7083,11 +7092,6 @@ DebugJS.prototype = {
     ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
 
-    ret = ctx.cmdBit(cmdline, null, echo);
-    if (ret != null) return ret;
-    ret = ctx.cmdBits(cmdline, null, echo);
-    if (ret != null) return ret;
-
     ret = ctx.cmdRatio(cmdline, echo);
     if (ret != null) return ret;
 
@@ -7103,7 +7107,6 @@ DebugJS.prototype = {
     ret = ctx.cmdDateConv(cmdline);
     if (ret != null) return ret;
 
-    var cmdln = cmdline.trim();
     if (DebugJS.isUnixTm(cmd)) {
       return ctx.cmdDate(cmdline, null);
     }
@@ -7330,24 +7333,21 @@ DebugJS.prototype = {
   },
 
   cmdBit: function(arg, tbl, echo) {
-    var a = DebugJS.delAllSP(arg);
-    if (!a.match(/^\d+bit$/)) return null;
-    a = a.replace(/bit/, '');
-    var b = '0b1';
-    for (var i = 0; i < a - 1; i++) {
-      b += '0';
+    var n = DebugJS.getNonOptVals(arg, true)[0];
+    if (!n) {
+      DebugJS.printUsage(tbl.help);
+      return;
     }
-    return DebugJS.ctx.cmdInt(b, null, echo);
-  },
-  cmdBits: function(arg, tbl, echo) {
-    var a = DebugJS.delAllSP(arg);
-    if (!a.match(/^\d+bits$/)) return null;
-    a = a.replace(/bits/, '');
-    var b = '0b';
-    for (var i = 0; i < a; i++) {
-      b += '1';
+    n |= 0;
+    var v = 0;
+    if (n != 0) {
+      if (DebugJS.hasOpt(arg, 'f')) {
+        v = Math.pow(2, n) - 1;
+      } else {
+        v = Math.pow(2, n - 1);
+      }
     }
-    return DebugJS.ctx.cmdInt(b, null, echo);
+    return DebugJS._cmdInt(v + '', echo);
   },
 
   cmdBSB64: function(arg, tbl, echo) {
@@ -9037,23 +9037,7 @@ DebugJS.prototype = {
   },
 
   cmdInt: function(v, tbl, echo) {
-    v = v.trim();
-    var rdx = DebugJS.checkRadix(v);
-    if (rdx == 10) {
-      var val = parseInt(v.replace(/,/g, ''));
-      DebugJS.printRadixConv(val, echo);
-    } else if (rdx == 16) {
-      var v16 = v.substr(2).replace(/\s/g, '');
-      val = parseInt(v16, 16);
-      DebugJS.printRadixConv(val, echo);
-    } else if (rdx == 2) {
-      var v2 = v.substr(2).replace(/\s/g, '');
-      val = parseInt(v2, 2);
-      DebugJS.printRadixConv(val, echo);
-    } else {
-      return null;
-    }
-    return val;
+    return DebugJS._cmdInt(v, echo);
   },
 
   cmdRatio: function(v, echo) {
@@ -10538,9 +10522,7 @@ DebugJS.hasOpt = function(arg, opt) {
 DebugJS.indexOfOptVal = function(a, o) {
   var r = -1;
   var i = a.indexOf(o);
-  if (i >= 0) {
-    r = i + o.length + 1;
-  }
+  if (i >= 0) r = i + o.length + 1;
   return r;
 };
 DebugJS.countOpts = function(args) {
@@ -10604,10 +10586,7 @@ DebugJS.getQuotedStr = function(str) {
 };
 
 DebugJS.getJsonPos = function(s) {
-  var pos = {
-    open: -1,
-    close: -1
-  };
+  var pos = {open: -1, close: -1};
   var closeCh = '';
   for (var i = 0; i < s.length; i++) {
     if (pos.open == -1) {
@@ -10619,9 +10598,7 @@ DebugJS.getJsonPos = function(s) {
         closeCh = ']';
       }
     } else {
-      if (s[i] == closeCh) {
-        pos.close = i;
-      }
+      if (s[i] == closeCh) pos.close = i;
     }
   }
   return pos;
@@ -10635,23 +10612,23 @@ DebugJS.decodeEsc = function(s) {
 };
 
 DebugJS.isNumeric = function(ch) {
-  var c = ch.charCodeAt();
+  var c = ch.charCodeAt(0);
   return ((c >= 0x30) && (c <= 0x39));
 };
 DebugJS.isAlphabetic = function(ch) {
-  var c = ch.charCodeAt();
+  var c = ch.charCodeAt(0);
   return (((c >= 0x41) && (c <= 0x5A)) || ((c >= 0x61) && (c <= 0x7A)));
 };
 DebugJS.isUpperCase = function(ch) {
-  var c = ch.charCodeAt();
+  var c = ch.charCodeAt(0);
   return ((c >= 0x41) && (c <= 0x5A));
 };
 DebugJS.isLowerCase = function(ch) {
-  var c = ch.charCodeAt();
+  var c = ch.charCodeAt(0);
   return ((c >= 0x61) && (c <= 0x7A));
 };
 DebugJS.isPunctuation = function(ch) {
-  var c = ch.charCodeAt();
+  var c = ch.charCodeAt(0);
   if (((c >= 0x20) && (c <= 0x2F)) || ((c >= 0x3A) && (c <= 0x40)) ||
       ((c >= 0x5B) && (c <= 0x60)) || ((c >= 0x7B) && (c <= 0x7E))) {
     return true;
@@ -12163,25 +12140,33 @@ DebugJS.rgb10to16 = function(r, g, b) {
   return rgb;
 };
 
-DebugJS.printRadixConv = function(val, echo) {
-  if (!echo) return;
-  var MAX = 0x20000000000000;
-  var bin, v16;
-  if (val > MAX) {
-    bin = '<span style="color:#888">' + DebugJS.repeatCh('1', 64) + '</span> (overflow)';
-    v16 = val.toString(16);
+DebugJS._cmdInt = function(v, echo) {
+  v = v.trim();
+  var rdx = DebugJS.checkRadix(v);
+  if (rdx == 10) {
+    var val = parseInt(v.replace(/,/g, ''));
+  } else if (rdx == 16) {
+    val = parseInt(v.substr(2).replace(/\s/g, ''), 16);
+  } else if (rdx == 2) {
+    val = parseInt(v.substr(2).replace(/\s/g, ''), 2);
   } else {
-    var fullDigits = DebugJS.DFLT_UNIT;
-    var v2 = DebugJS.cnvBin(val);
-    var digits = v2.length;
-    var b = v2;
-    if (digits % fullDigits != 0) {
-      var pd = fullDigits - (digits % fullDigits);
-      b = DebugJS.repeatCh('0', pd) + v2;
-    }
-    bin = DebugJS.formatBin(b, true, DebugJS.DISP_BIN_DIGITS_THR, digits);
-    v16 = DebugJS.bin2hex(v2);
+    return null;
   }
+  if (echo) DebugJS.printRadixConv(val);
+  return val;
+};
+DebugJS.printRadixConv = function(val) {
+  var MAX = 0x20000000000000;
+  var fullDigits = DebugJS.DFLT_UNIT;
+  var v2 = DebugJS.cnvBin(val);
+  var digits = v2.length;
+  var b = v2;
+  if (digits % fullDigits != 0) {
+    var pd = fullDigits - (digits % fullDigits);
+    b = DebugJS.repeatCh('0', pd) + v2;
+  }
+  var bin = DebugJS.formatBin(b, true, DebugJS.DISP_BIN_DIGITS_THR, digits);
+  var v16 = DebugJS.bin2hex(v2);
   var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) hex = '0x' + hex;
   var rdx = DebugJS.ctx.props.radix.toLowerCase();
@@ -12189,6 +12174,7 @@ DebugJS.printRadixConv = function(val, echo) {
   if (DebugJS.hasKeyWd(rdx, 'dec', '|')) s += 'DEC ' + DebugJS.formatDec(val) + '\n';
   if (DebugJS.hasKeyWd(rdx, 'hex', '|')) s += 'HEX ' + hex + '\n';
   if (DebugJS.hasKeyWd(rdx, 'bin', '|')) s += 'BIN ' + bin + '\n';
+  if (val > MAX) s += '<span style="color:' + DebugJS.ctx.opt.logColorE + '">unsafe</span>';
   DebugJS._log.mlt(s);
 };
 DebugJS.toBin = function(v) {
@@ -12330,7 +12316,7 @@ DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
     bin = v2;
   }
   if ((n) && (len >= n)) {
-    bin += ' (' + hlDigits + ' bits)';
+    bin += ' (' + hlDigits + ' ' + DebugJS.plural('bit', hlDigits) + ')';
   }
   return bin;
 };
@@ -12561,7 +12547,7 @@ DebugJS.encodeROT5 = function(s, n) {
   var r = '';
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
-    var cc = c.charCodeAt();
+    var cc = c.charCodeAt(0);
     if (DebugJS.isNumeric(c)) {
       cc += n;
       if (cc > 0x39) {
@@ -12584,7 +12570,7 @@ DebugJS.encodeROT13 = function(s, n) {
   var r = '';
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
-    var cc = c.charCodeAt();
+    var cc = c.charCodeAt(0);
     if (DebugJS.isAlphabetic(c)) {
       cc += n;
       if (DebugJS.isUpperCase(c)) {
@@ -12615,7 +12601,7 @@ DebugJS.encodeROT47 = function(s, n) {
   var r = '';
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
-    var cc = c.charCodeAt();
+    var cc = c.charCodeAt(0);
     if ((cc >= 0x21) && (cc <= 0x7E)) {
       if (n < 0) {
         cc += n;
@@ -13367,7 +13353,7 @@ DebugJS.chars = function(c1, c2) {
   return s;
 };
 DebugJS.plural = function(s, n) {
-  return (n >= 2 ? (s + 's') : s);
+  return (n == 1 ? s : (s + 's'));
 };
 DebugJS.toHalfWidth = function(s) {
   var h = s.replace(/　/g, ' ').replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\');
