@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101260000';
+  this.v = '202101270000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -351,6 +351,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-f] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
+    {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars CH1(U+xxxx) [CH2(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
@@ -7098,7 +7099,7 @@ DebugJS.prototype = {
     }
 
     if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
-      return DebugJS.cmdByte(cmdln);
+      return DebugJS.cmdByte(cmdln, echo);
     }
 
     if (cmdline.match(/^\s*U\+/i)) {
@@ -7336,6 +7337,17 @@ DebugJS.prototype = {
       iIdx += 2;
     }
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBSB64, DebugJS.decodeBSB64, iIdx, n | 0);
+  },
+
+  cmdByte: function(arg, tbl, echo) {
+    var v = DebugJS.getNonOptVals(arg, true)[0];
+    if (v == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var p = DebugJS.get1stOpt(arg);
+    if (p && p.match(/^[KMGTP]$/i)) v += p;
+    return DebugJS.cmdByte(v, echo);
   },
 
   cmdCall: function(arg) {
@@ -8023,13 +8035,9 @@ DebugJS.prototype = {
     ctx.clearHistory();
     for (var i = 0; i < cmds.length; i++) {
       if (cmds.length < ctx.opt.cmdHistoryMax) {
-        if (i != (idx - 1)) {
-          ctx.saveHistory(ctx, cmds[i]);
-        }
+        if (i != (idx - 1)) ctx.saveHistory(ctx, cmds[i]);
       } else if (cmds.length >= ctx.opt.cmdHistoryMax) {
-        if (i != (idx - 2)) {
-          ctx.saveHistory(ctx, cmds[i]);
-        }
+        if (i != (idx - 2)) ctx.saveHistory(ctx, cmds[i]);
       }
     }
   },
@@ -12309,6 +12317,7 @@ DebugJS.formatDec = function(v, n) {
     v1 = '.' + a[1];
   }
   v0 = v0.replace(/^0*/, '');
+  if (!v0) v0 = '0';
   var len = v0.length;
   var r = '';
   for (var i = 0; i < len; i++) {
@@ -12890,77 +12899,49 @@ DebugJS.isURIencoding = function(s) {
   return s.match(/^(%[A-Fa-f0-9][A-Fa-f0-9])+$/) ? true : false;
 };
 
-DebugJS.cmdByte = function(c) {
-  c = c.toUpperCase().replace(/,/g, '');
-  var v = c.match(/\d+\.?\d*/)[0];
-  var u = c.match(/[BKMGTP]/)[0];
-  var r = v;
-  switch (u) {
-    case 'P':
-      r *= 1024;
-    case 'T':
-      r *= 1024;
-    case 'G':
-      r *= 1024;
-    case 'M':
-      r *= 1024;
-    case 'K':
-      r *= 1024;
-  }
-  return DebugJS._cmdByte(r);
+DebugJS.cmdByte = function(s, echo) {
+  s = s.toUpperCase().replace(/,/g, '');
+  var v = s.match(/\d+\.?\d*/)[0];
+  var u = s.match(/[KMGTP]/);
+  var p = (u ? u[0] : '');
+  var c = {P: 5, T: 4, G: 3, M: 2, K: 1};
+  if (c[p]) v *= Math.pow(1024, c[p]);
+  return DebugJS._cmdByte(v, echo);
 };
-DebugJS._cmdByte = function(v) {
-  var K = 1024;
-  var M = 1048576;
-  var G = 1073741824;
-  var T = 1099511627776;
-  var P = 1125899906842624;
-  var kb, mb, gb, tb, pb;
-  var r = '';
-  if (v >= P) {
-    pb = v / P;
-    r += DebugJS.formatDec(DebugJS.round(pb, 2)) + ' PB\n';
+DebugJS._cmdByte = function(v, echo) {
+  var U = ['', 'K', 'M', 'G', 'T', 'P'];
+  var b = '';
+  for (var i = 5; i >= 1; i--) {
+    var c = Math.pow(1024, i);
+    if (v >= c) {
+      var w = v / c;
+      b += DebugJS.formatDec(DebugJS.round(w, 2)) + ' ' + U[i] + 'B\n';
+    }
   }
-  if (v >= T) {
-    tb = v / T;
-    r += DebugJS.formatDec(DebugJS.round(tb, 2)) + ' TB\n';
-  }
-  if (v >= G) {
-    gb = v / G;
-    r += DebugJS.formatDec(DebugJS.round(gb, 2)) + ' GB\n';
-  }
-  if (v >= M) {
-    mb = v / M;
-    r += DebugJS.formatDec(DebugJS.round(mb, 2)) + ' MB\n';
-  }
-  if (v >= K) {
-    kb = v / K;
-    r += DebugJS.formatDec(DebugJS.round(kb, 2)) + ' KB\n';
-  }
-  r += DebugJS.formatDec(v) + '&nbsp;&nbsp;B';
-  var o = v % 1024;
+  b += DebugJS.formatDec(v) + '&nbsp;&nbsp;B';
+  var r = v % 1024;
   var a;
-  if (o == 0) {
-    a = ' *';
-  } else if (o == 1) {
-    a = ' (+1)';
-  } else if (o == 1023) {
-    a = ' (-1)';
+  if ((r == 0) && (v != 0)) {
+    a = '=';
+  } else if ((r == 1) && (v != 1)) {
+    a = '(+1)';
+  } else if (r == 1023) {
+    a = '(-1)';
   }
-  var s = '<span style="display:inline-block;text-align:right;">' + r + '</span>';
-  if (a) s += '<span style="display:inline-block;">' + a + '</span>';
-  DebugJS._log.mlt(s);
-  return r;
+  var s = '<span style="display:inline-block;text-align:right;">' + b + '</span>';
+  if (a) s += '<span style="display:inline-block;"> ' + a + '</span>';
+  if (echo) DebugJS._log.mlt(s);
+  return v;
 };
 
-DebugJS.round = function(number, precision) {
+DebugJS.round = function(num, precision) {
   precision |= 0;
-  return DebugJS._shift(Math.round(DebugJS._shift(number, precision, false)), precision, true);
+  return DebugJS._shift(Math.round(DebugJS._shift(num, precision, false)), precision, true);
 };
-DebugJS._shift = function(number, precision, reverseShift) {
-  if (reverseShift) precision = -precision;
-  var numArray = ('' + number).split('e');
-  return +(numArray[0] + 'e' + (numArray[1] ? (+numArray[1] + precision) : precision));
+DebugJS._shift = function(num, precision, rvsShift) {
+  if (rvsShift) precision = -precision;
+  var numArr = ('' + num).split('e');
+  return +(numArr[0] + 'e' + (numArr[1] ? (+numArr[1] + precision) : precision));
 };
 
 DebugJS.random = function(min, max) {
@@ -14199,8 +14180,7 @@ DebugJS.line = function(idx) {
 };
 DebugJS._line = function(s) {
   var a = s.split(':');
-  var l = a[a.length - 2] | 0;
-  return l;
+  return (a[a.length - 2] | 0);
 };
 DebugJS.funcname = function(idx) {
   return DebugJS._funcname(DebugJS.stktop((idx | 0) + 1));

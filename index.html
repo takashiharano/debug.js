@@ -4169,6 +4169,48 @@ $ bsb64 -d wsTG$N <span class="annotation">(equal to bsb64 -d -i "wsTG" -n N)</s
   </tr>
 
   <tr>
+    <td class="name">byte</td>
+    <td>
+     B<br>KB<br>MB<br>GB<br>TB<br>PB
+    </td>
+    <td>
+     Convert KB/MB/GB/TB/PB &lt;--&gt; Bytes. (case-insensitive)
+<pre class="eg">
+$ byte -k 1
+$ 1KB
+-&gt;
+<span style="display:inline-block;text-align:right;">1 KB
+1,024  B</span>
+
+
+$ byte -m 1
+$ 1MB
+-&gt;
+<span style="display:inline-block;text-align:right;">1 MB
+1,024 KB
+1,048,576  B</span>
+
+
+$ byte -g 1
+$ 1GB
+-&gt;
+<span style="display:inline-block;text-align:right;">1 GB
+1,024 MB
+1,048,576 KB
+1,073,741,824  B</span>
+
+
+$ byte 1048576
+$ 1048576 b
+-&gt;
+<span style="display:inline-block;text-align:right;">1 MB
+1,024 KB
+1,048,576  B</span>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">chars</td>
     <td>
       arg1: start character<br>
@@ -6217,44 +6259,6 @@ $ U+6F22 U+5B57
 -&gt; <span lang="ja">漢字</span>
 </pre>
 <span class="annotation">This is an alias of unicode command.</span>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">Bytes</td>
-    <td>
-     B<br>KB<br>MB<br>GB<br>TB<br>PB
-    </td>
-    <td>
-     Convert KB/MB/GB/TB/PB &lt;--&gt; Bytes. (case-insensitive)
-<pre class="eg">
-$ 1KB
--&gt;
-<span style="display:inline-block;text-align:right;">1 KB
-1,024  B</span>
-
-
-$ 1MB
--&gt;
-<span style="display:inline-block;text-align:right;">1 MB
-1,024 KB
-1,048,576  B</span>
-
-
-$ 1GB
--&gt;
-<span style="display:inline-block;text-align:right;">1 GB
-1,024 MB
-1,048,576 KB
-1,073,741,824  B</span>
-
-
-$ 1048576 b
--&gt;
-<span style="display:inline-block;text-align:right;">1 MB
-1,024 KB
-1,048,576  B</span>
-</pre>
     </td>
   </tr>
 
