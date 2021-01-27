@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101270000';
+  this.v = '202101280000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5730,7 +5730,7 @@ DebugJS.prototype = {
       } else if (DebugJS.isUnixTm(s.trim()) || DebugJS.isDateTimeStr(s)) {
         ctx.cmdDate(s, null);
       } else if (DebugJS.isInt(s)) {
-        DebugJS._cmdInt(s, true);
+        DebugJS.cmdInt(s, true);
       } else {
         if (ctx.decB64(ctx, s)) return;
         ctx.fmtJson(ctx, t);
@@ -7324,7 +7324,7 @@ DebugJS.prototype = {
         v = Math.pow(2, n - 1);
       }
     }
-    return DebugJS._cmdInt(v + '', echo);
+    return DebugJS.cmdInt(v + '', echo);
   },
 
   cmdBSB64: function(arg, tbl, echo) {
@@ -8064,7 +8064,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     arg = arg.trim();
     var v, s, fn;
-    var vl = DebugJS.getNonOptVals(arg, true)[0];
+    var vl = ((arg == '-Infinity') ? arg : DebugJS.getNonOptVals(arg, true)[0]);
     if (vl == undefined) {
       DebugJS.printUsage(tbl.help);
       return;
@@ -8107,8 +8107,11 @@ DebugJS.prototype = {
       s = o.s;
     } else {
       v = parseFloat(vl);
-      var b32 = DebugJS.cnvIEEE754Bin(v, 32);
-      var b64 = DebugJS.cnvIEEE754Bin(v, 64);
+      var b32 = DebugJS.toIEEE754Bin(v, 32);
+      var b64 = DebugJS.toIEEE754Bin(v, 64);
+      if ((v == 0) && (vl.match(/^-/))) {
+        b32.s = '1';b64.s = '1';
+      }
       s = 'binary32: ';
       if ((Math.abs(v) <= 16777215) || isNaN(v) || (!isFinite(v))) {
         s += ctx._cmdFloat(b32, 8, 23, 127).s;
@@ -9013,7 +9016,7 @@ DebugJS.prototype = {
   },
 
   cmdInt: function(v, tbl, echo) {
-    return DebugJS._cmdInt(v, echo);
+    return DebugJS.cmdInt(v, echo);
   },
 
   cmdRatio: function(v, echo) {
@@ -12126,7 +12129,7 @@ DebugJS.rgb10to16 = function(r, g, b) {
   return rgb;
 };
 
-DebugJS._cmdInt = function(v, echo) {
+DebugJS.cmdInt = function(v, echo) {
   v = v.trim();
   var rdx = DebugJS.checkRadix(v);
   if (rdx == 10) {
@@ -12221,7 +12224,7 @@ DebugJS.hex2bin = function(h) {
   }
   return bin;
 };
-DebugJS.cnvIEEE754Bin = function(v, fmt) {
+DebugJS.toIEEE754Bin = function(v, fmt) {
   var BIAS = (fmt == 32 ? 127 : 1023);
   var EXP = (fmt == 32 ? 8 : 11);
   var DIGITS = (fmt == 32 ? 23 : 52);
@@ -12286,17 +12289,11 @@ DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   var len = v2.length;
   var bin = '';
   if (grouping) {
-    if ((hlDigits > 0) && (len > hlDigits)) {
-      bin += '<span style="color:#888">';
-    }
+    if ((hlDigits > 0) && (len > hlDigits)) bin += '<span style="color:#888">';
     for (var i = 0; i < len; i++) {
-      if ((i != 0) && ((len - i) % 4 == 0)) {
-        bin += ' ';
-      }
+      if ((i != 0) && ((len - i) % 4 == 0)) bin += ' ';
       bin += v2.charAt(i);
-      if ((hlDigits > 0) && ((len - i) == (hlDigits + 1))) {
-        bin += '</span>';
-      }
+      if ((hlDigits > 0) && ((len - i) == (hlDigits + 1))) bin += '</span>';
     }
   } else {
     bin = v2;
