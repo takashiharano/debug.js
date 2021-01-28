@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101280000';
+  this.v = '202101290000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7155,15 +7155,14 @@ DebugJS.prototype = {
   },
 
   cmdArr2Set: function(arg, tbl) {
-    var p = arg.indexOf('[');
-    if (p == -1) {
+    var v = DebugJS.getNonOptVal(arg);
+    if (!v) {
       DebugJS.printUsage(tbl.help);
       return;
     }
     var s = DebugJS.hasOpt(arg, 's');
     var j = DebugJS.hasOpt(arg, 'j');
     var sort = DebugJS.hasOpt(arg, 'sort');
-    var v = arg.substr(p);
     try {
       var a = eval(v);
       var r = DebugJS.arr2set(a, s);
@@ -7310,7 +7309,7 @@ DebugJS.prototype = {
   },
 
   cmdBit: function(arg, tbl, echo) {
-    var n = DebugJS.getNonOptVals(arg, true)[0];
+    var n = DebugJS.getNonOptVal(arg);
     if (!n) {
       DebugJS.printUsage(tbl.help);
       return;
@@ -7340,7 +7339,7 @@ DebugJS.prototype = {
   },
 
   cmdByte: function(arg, tbl, echo) {
-    var v = DebugJS.getNonOptVals(arg, true)[0];
+    var v = DebugJS.getNonOptVal(arg);
     if (v == undefined) {
       DebugJS.printUsage(tbl.help);
       return;
@@ -8064,7 +8063,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     arg = arg.trim();
     var v, s, fn;
-    var vl = ((arg == '-Infinity') ? arg : DebugJS.getNonOptVals(arg, true)[0]);
+    var vl = ((arg == '-Infinity') ? arg : DebugJS.getNonOptVal(arg));
     if (vl == undefined) {
       DebugJS.printUsage(tbl.help);
       return;
@@ -8374,7 +8373,7 @@ DebugJS.prototype = {
     }
     var _n;
     try {
-      var _a = DebugJS.getNonOptVals(arg, true)[0];
+      var _a = DebugJS.getNonOptVal(arg);
       if (DebugJS.hasOpt(arg, 'b')) {
         _n = DebugJS.lenB(_a);
       } else {
@@ -10523,6 +10522,9 @@ DebugJS.get1stOpt = function(args) {
   }
   return null;
 };
+DebugJS.getNonOptVal = function(a) {
+  return DebugJS.getNonOptVals(a, true)[0];
+};
 DebugJS.getNonOptVals = function(args, all) {
   var a = DebugJS.splitCmdLine(args);
   var r = [];
@@ -11891,9 +11893,7 @@ DebugJS.arr2set = function(a, f) {
   var s = [];
   for (var i = 0; i < a.length; i++) {
     var v = a[i];
-    if (DebugJS.arr.pos(s, v, f) < 0) {
-      s.push(v);
-    }
+    if (DebugJS.arr.pos(s, v, f) < 0) s.push(v);
   }
   return s;
 };
@@ -11977,20 +11977,14 @@ DebugJS.dndUnique = function(s) {
   }
   if (DebugJS.hasOpt(arg, 'count')) {
     if (DebugJS.hasOpt(arg, 'asc')) {
-      v.sort(function(a, b) {
-        return a.cnt - b.cnt;
-      });
+      v.sort(function(a, b) {return a.cnt - b.cnt;});
     } else {
-      v.sort(function(a, b) {
-        return b.cnt - a.cnt;
-      });
+      v.sort(function(a, b) {return b.cnt - a.cnt;});
     }
   }
   var w = [];
   for (var i = 0; i < v.length; i++) {
-    if ((v[i].key != '') || DebugJS.hasOpt(arg, 'blank')) {
-      w.push(v[i]);
-    }
+    if ((v[i].key != '') || DebugJS.hasOpt(arg, 'blank')) w.push(v[i]);
   }
   var r;
   if (DebugJS.hasOpt(arg, 'count')) {
@@ -12007,10 +12001,12 @@ DebugJS._dndUnique = function(w, a) {
   for (var i = 0; i < w.length; i++) {
     b.push(w[i].key);
   }
-  if (DebugJS.hasOpt(a, 'asc')) {
-    b.sort();
-  } else if (DebugJS.hasOpt(a, 'desc')) {
-    b.reverse();
+  if (!DebugJS.hasOpt(a, 'seq')) {
+    if (DebugJS.hasOpt(a, 'desc')) {
+      b.reverse();
+    } else {
+      b.sort();
+    }
   }
   for (i = 0; i < b.length; i++) {
     m += DebugJS.hlCtrlCh(b[i]) + '\n';
