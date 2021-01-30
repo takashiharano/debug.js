@@ -4497,28 +4497,6 @@ $ dnd date -s
 2020-06-30 09:30:00.300
 
 
-$ dnd format
-AAAAA<span class="cc">&#x21b5;</span>
-<span class="cc">&nbsp;&nbsp;&nbsp;&#x21b5;</span>
-BBBBB<span class="cc">&#x21b5;</span>
-
--&gt;
-AAAAA<span class="cc">&#x21b5;</span>
-<span class="cc">&#x21b5;</span>
-BBBBB<span class="cc">&#x21b5;</span>
-
-$ dnd format -newline
-AAAAA<span class="cc">&#x21b5;</span>
-<span class="cc">&#x21b5;</span>
-BBBBB<span class="cc">&#x21b5;</span>
-<span class="cc">&#x21b5;</span>
-CCCCC<span class="cc">&#x21b5;</span>
-
--&gt;
-AAAAA<span class="cc">&#x21b5;</span>
-BBBBB<span class="cc">&#x21b5;</span>
-CCCCC<span class="cc">&#x21b5;</span>
-
 $ dnd unique [-count] [-asc] [-desc] [-seq] [-blank]
 Extract unique values from the given array.
 
@@ -4555,6 +4533,43 @@ baz
 bar
 baz
 foo
+
+
+$ dnd sort -csv COL [-desc]
+
+222,aaa,zzz
+333,bbb,yyy
+111,ccc,xxx
+
+$ dnd sort -csv 1
+$ dnd sort -csv A
+-&gt;
+111,ccc,xxx
+222,aaa,zzz
+333,bbb,yyy
+
+
+$ dnd trim
+AAAAA<span class="cc">&#x21b5;</span>
+<span class="cc">&nbsp;&nbsp;&nbsp;&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+
+-&gt;
+AAAAA<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+
+$ dnd trim -newline
+AAAAA<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+CCCCC<span class="cc">&#x21b5;</span>
+
+-&gt;
+AAAAA<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+CCCCC<span class="cc">&#x21b5;</span>
 
 
 $ dnd func FUNCTION

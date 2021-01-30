@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101290000';
+  this.v = '202101310000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -434,8 +434,8 @@ var DebugJS = DebugJS || function() {
   this.DND_FN_TBL = {
     align: DebugJS.dndAlign,
     date: DebugJS.dndDate,
-    format: DebugJS.dndFormat,
     sort: DebugJS.dndSort,
+    trim: DebugJS.dndTrim,
     unique: DebugJS.dndUnique
   },
   this.CMD_TBL = [];
@@ -7773,7 +7773,7 @@ DebugJS.prototype = {
     var a0 = DebugJS.getArgVal(arg, 0);
     if (a0 == '-c') {
       if (ctx.dndCmd) DebugJS._log('Canceled.');
-      DebugJS.dndFnFin();
+      DebugJS.dndFnFin(ctx);
       return;
     }
     var a = DebugJS.splitCmdLineInTwo(arg);
@@ -7800,7 +7800,7 @@ DebugJS.prototype = {
   execDndCmd: function(ctx, s) {
     var r = ctx.DND_FN_TBL[ctx.dndCmd](s);
     if (!ctx.dndRM) {
-      DebugJS.dndFnFin();
+      DebugJS.dndFnFin(ctx);
     }
     return r;
   },
@@ -8978,7 +8978,7 @@ DebugJS.prototype = {
     } else if (ctx.status & DebugJS.ST_KIOSK) {
       ctx._cmdKioskQ(ctx);
     } else if (ctx.dndCmd) {
-      DebugJS.dndFnFin();
+      DebugJS.dndFnFin(ctx);
     }
   },
 
@@ -11897,6 +11897,7 @@ DebugJS.arr2set = function(a, f) {
   }
   return s;
 };
+
 DebugJS.dndAlign = function(s) {
   var arg = DebugJS.ctx.dndArg;
   var a = DebugJS.txt2arr(s);
@@ -11941,24 +11942,17 @@ DebugJS.dndDate = function(t) {
   DebugJS._log.mlt(r);
   return r;
 };
-DebugJS.dndFormat = function(s) {
-  var r;
-  if (DebugJS.hasOpt(DebugJS.ctx.dndArg, 'newline')) {
-    r = DebugJS.crlf2lf(s).replace(/\n\n/g, '\n');
-  } else {
-    r = DebugJS.fmtTxt(s);
-  }
-  DebugJS.cls();
-  DebugJS._log.mlt(r);
-  return r;
-};
-DebugJS.fmtTxt = function(s) {
-  return DebugJS.crlf2lf(s).replace(/\s+\n/g, '\n\n');
-};
 DebugJS.dndSort = function(s) {
   var arg = DebugJS.ctx.dndArg;
-  var a = DebugJS.txt2arr(s).sort();
-  if (DebugJS.hasOpt(arg, 'desc')) a.reverse();
+  var dsc = DebugJS.hasOpt(arg, 'desc');
+  var n = DebugJS.getOptVal(arg, 'csv');
+  if (n == null) {
+    var a = DebugJS.txt2arr(s).sort();
+    if (dsc) a.reverse();
+  } else {
+    if (isNaN(n)) n = DebugJS.xlsCol(n);
+    a = DebugJS.csv2arr(s, (n | 0), dsc);
+  }
   var r = '';
   for (var i = 0; i < a.length; i++) {
     if (a[i] != '') r += a[i] + '\n';
@@ -11966,6 +11960,15 @@ DebugJS.dndSort = function(s) {
   DebugJS.cls();
   DebugJS._log.mlt(r);
   return r;
+};
+DebugJS.dndTrim = function(s) {
+  s = DebugJS.crlf2lf(s).replace(/\s+\n/g, '\n\n');
+  if (DebugJS.hasOpt(DebugJS.ctx.dndArg, 'newline')) {
+    s = DebugJS.crlf2lf(s).replace(/\n\n/g, '\n');
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(s);
+  return s;
 };
 DebugJS.dndUnique = function(s) {
   var l = DebugJS.txt2arr(s);
@@ -12046,10 +12049,88 @@ DebugJS.cntByGrp = function(a) {
   }
   return o;
 };
-DebugJS.dndFnFin = function() {
-  DebugJS.ctx.dndCmd = null;
-  DebugJS.ctx.dndArg = null;
-  DebugJS.ctx.dndRM = false;
+DebugJS.dndFnFin = function(ctx) {
+  ctx.dndCmd = null;
+  ctx.dndArg = null;
+  ctx.dndRM = false;
+};
+
+DebugJS.csv2arr = function(s, n, dsc) {
+  var d = ',';
+  if (s.match(/\t/)) d = '\t';
+  var c = DebugJS._csv2arr(s, d);
+  if (n > 0) c = DebugJS.sortCsv(c, n, dsc);
+  var a = [];
+  for (var i = 0; i < c.length; i++) {
+    var w = '';
+    for (var j = 0; j < c[i].length; j++) {
+      if (j > 0) w += d;
+      w += c[i][j];
+    }
+    a.push(w);
+  }
+  return a;
+};
+DebugJS._csv2arr = function(s, d) {
+  var c = DebugJS.txt2arr(s);
+  var a = [];
+  for (var i = 0; i < c.length; i++) {
+    a.push(DebugJS.splitCsvFields(c[i], d, true));
+  }
+  return a;
+};
+DebugJS.splitCsvFields = function(s, d, inclDq) {
+  if ((d == '\t') || (!s.match(/"/))) return s.split(d);
+  var a = [];
+  var p, q;
+  var srch = 1;
+  for (var i = 0; i < s.length; i++) {
+    var ch = s.charAt(i);
+    if (srch) {
+      srch = 0;
+      q = 0;
+      p = ((!inclDq && (ch == '"')) ? (i + 1) : i);
+    } else {
+      if (ch == '"') {
+        q++;
+      } else if (ch == d) {
+        if (inclDq || (q == 0)) {
+          DebugJS._pushCsvCol(s, p, i - p, a, inclDq);
+          srch = 1;
+        } else if ((q % 2) == 1) {
+          DebugJS._pushCsvCol(s, p, i - p - 1, a, inclDq);
+          srch = 1;
+        }
+      }
+    }
+  }
+  if (ch != d) {
+    var j = ((inclDq || (ch != '"')) ? 0 : 1);
+    DebugJS._pushCsvCol(s, p, i - p - j, a, inclDq);
+  }
+  return a;
+};
+DebugJS._pushCsvCol = function(s, p, len, a, inclDq) {
+  var w = s.substr(p, len);
+  if (!inclDq) w = w.replace(/""/g, '"');
+  a.push(w);
+};
+DebugJS.sortCsv = function(c, n, dsc) {
+  n--;
+  if (n < 0) n = 0;
+  if (dsc) {
+    c.sort(function(a, b) {return DebugJS._sortCsv(b, a, n);});
+  } else {
+    c.sort(function(a, b) {return DebugJS._sortCsv(a, b, n);});
+  }
+  return c;
+};
+DebugJS._sortCsv = function(a, b, n) {
+  var x = a[n];
+  var y = b[n];
+  if (x == undefined) x = '';
+  if (y == undefined) y = '';
+  return x.localeCompare(y);
 };
 
 DebugJS.printUsage = function(m) {
@@ -12912,13 +12993,13 @@ DebugJS._cmdByte = function(v, echo) {
     }
   }
   b += DebugJS.formatDec(v) + '&nbsp;&nbsp;B';
-  var r = v % 1024;
+  var m = v % 1024;
   var a;
-  if ((r == 0) && (v != 0)) {
+  if ((m == 0) && (v != 0)) {
     a = '=';
-  } else if ((r == 1) && (v != 1)) {
+  } else if ((m == 1) && (v != 1)) {
     a = '(+1)';
-  } else if (r == 1023) {
+  } else if (m == 1023) {
     a = '(-1)';
   }
   var s = '<span style="display:inline-block;text-align:right;">' + b + '</span>';
@@ -13339,7 +13420,10 @@ DebugJS.isAscii = function(s) {
   return (s.match(/^[\x0-\x7f]*$/) ? true : false);
 };
 DebugJS.txt2arr = function(s) {
-  return DebugJS.crlf2lf(s).split('\n');
+  var a = DebugJS.crlf2lf(s).split('\n');
+  var i = a.length - 1;
+  if (a[i] == '') a.splice(i, 1);
+  return a;
 };
 
 DebugJS.trimDownText = function(txt, maxLen, style) {
