@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202101310000';
+  this.v = '202102010008';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7798,11 +7798,8 @@ DebugJS.prototype = {
     }
   },
   execDndCmd: function(ctx, s) {
-    var r = ctx.DND_FN_TBL[ctx.dndCmd](s);
-    if (!ctx.dndRM) {
-      DebugJS.dndFnFin(ctx);
-    }
-    return r;
+    ctx.DND_FN_TBL[ctx.dndCmd](s);
+    if (!ctx.dndRM) DebugJS.dndFnFin(ctx);
   },
 
   cmdEcho: function(arg) {
@@ -11944,14 +11941,14 @@ DebugJS.dndDate = function(t) {
 };
 DebugJS.dndSort = function(s) {
   var arg = DebugJS.ctx.dndArg;
-  var dsc = DebugJS.hasOpt(arg, 'desc');
+  var desc = DebugJS.hasOpt(arg, 'desc');
   var n = DebugJS.getOptVal(arg, 'csv');
   if (n == null) {
     var a = DebugJS.txt2arr(s).sort();
-    if (dsc) a.reverse();
+    if (desc) a.reverse();
   } else {
     if (isNaN(n)) n = DebugJS.xlsCol(n);
-    a = DebugJS.csv2arr(s, (n | 0), dsc);
+    a = DebugJS.csv2arr(s, (n | 0), desc);
   }
   var r = '';
   for (var i = 0; i < a.length; i++) {
@@ -12055,11 +12052,11 @@ DebugJS.dndFnFin = function(ctx) {
   ctx.dndRM = false;
 };
 
-DebugJS.csv2arr = function(s, n, dsc) {
+DebugJS.csv2arr = function(s, n, desc) {
   var d = ',';
   if (s.match(/\t/)) d = '\t';
   var c = DebugJS._csv2arr(s, d);
-  if (n > 0) c = DebugJS.sortCsv(c, n, dsc);
+  if (n > 0) c = DebugJS.sortCsv(c, n, desc);
   var a = [];
   for (var i = 0; i < c.length; i++) {
     var w = '';
@@ -12115,13 +12112,14 @@ DebugJS._pushCsvCol = function(s, p, len, a, inclDq) {
   if (!inclDq) w = w.replace(/""/g, '"');
   a.push(w);
 };
-DebugJS.sortCsv = function(c, n, dsc) {
+DebugJS.sortCsv = function(c, n, desc) {
+  var f = DebugJS._sortCsv;
   n--;
   if (n < 0) n = 0;
-  if (dsc) {
-    c.sort(function(a, b) {return DebugJS._sortCsv(b, a, n);});
+  if (desc) {
+    c.sort(function(a, b) {return f(b, a, n);});
   } else {
-    c.sort(function(a, b) {return DebugJS._sortCsv(a, b, n);});
+    c.sort(function(a, b) {return f(a, b, n);});
   }
   return c;
 };
@@ -12130,6 +12128,7 @@ DebugJS._sortCsv = function(a, b, n) {
   var y = b[n];
   if (x == undefined) x = '';
   if (y == undefined) y = '';
+  if (DebugJS.isNum(x) && DebugJS.isNum(y)) return x - y;
   return x.localeCompare(y);
 };
 
@@ -12184,8 +12183,7 @@ DebugJS.rgb16to10 = function(rgb16) {
   r10 = parseInt(r16, 16);
   g10 = parseInt(g16, 16);
   b10 = parseInt(b16, 16);
-  var rgb = {r: r10, g: g10, b: b10};
-  return rgb;
+  return {r: r10, g: g10, b: b10};
 };
 DebugJS.rgb10to16 = function(r, g, b) {
   var r16 = ('0' + parseInt(r).toString(16)).slice(-2);
@@ -12202,8 +12200,7 @@ DebugJS.rgb10to16 = function(r, g, b) {
     g16 = g0;
     b16 = b0;
   }
-  var rgb = {r: r16, g: g16, b: b16};
-  return rgb;
+  return {r: r16, g: g16, b: b16};
 };
 
 DebugJS.cmdInt = function(v, echo) {
@@ -12252,9 +12249,7 @@ DebugJS.toHex = function(v, uc, pFix, d) {
 };
 DebugJS.cnvBin = function(val) {
   var v2 = Math.abs(val).toString(2);
-  if (val < 0) {
-    v2 = DebugJS.cnvNegativeBin(v2);
-  }
+  if (val < 0) v2 = DebugJS.cnvNegativeBin(v2);
   return v2;
 };
 DebugJS.cnvNegativeBin = function(absV2) {
@@ -12274,9 +12269,7 @@ DebugJS.cnvNegativeBin = function(absV2) {
   for (i = p1; i < absBin.length; i++) {
     v2 += absBin.charAt(i);
   }
-  if (absV2.length == 32) {
-    v2 = DebugJS.repeatCh('1', 32) + v2;
-  }
+  if (absV2.length == 32) v2 = DebugJS.repeatCh('1', 32) + v2;
   return v2;
 };
 DebugJS.bin2hex = function(b) {
@@ -12910,8 +12903,7 @@ DebugJS.fmtCalcTime = function(ms, byTheDay) {
   return r;
 };
 DebugJS.getElapsedTimeStr = function(t1, t2) {
-  var delta = t2 - t1;
-  return DebugJS.getTmrStr(delta);
+  return DebugJS.getTmrStr(t2 - t1);
 };
 
 DebugJS.tzOffset2ms = function(t) {
@@ -14430,11 +14422,7 @@ DebugJS.time.reset = function(nm) {
   ctx.timers[nm].count = 0;
 };
 DebugJS.time.getCount = function(nm) {
-  if (DebugJS.ctx.timers[nm]) {
-    return DebugJS.ctx.timers[nm].count;
-  } else {
-    return 0;
-  }
+  return (DebugJS.ctx.timers[nm] ? DebugJS.ctx.timers[nm].count : 0);
 };
 DebugJS.time.updateCount = function(nm) {
   if (DebugJS.ctx.timers[nm]) {
