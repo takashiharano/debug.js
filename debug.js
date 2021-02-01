@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102010008';
+  this.v = '202102020000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1405,7 +1405,7 @@ DebugJS.prototype = {
     if (opt.useStopwatch) {
       ctx.swLabel = document.createElement('span');
       ctx.swLabel.style.float = 'right';
-      ctx.swLabel.style.marginLeft = '3px';
+      ctx.swLabel.style.marginLeft = '1px';
       setStyle(ctx.swLabel, 'color', opt.fontColor);
       ctx.headPanel.appendChild(ctx.swLabel);
 
@@ -2529,7 +2529,7 @@ DebugJS.prototype = {
     if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       DebugJS.time.updateCount(DebugJS.TMR_NM_SW_S);
     }
-    var str = DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_S)).substr(2);
+    var str = DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_S));
     if (ctx.swLabel) {
       if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
         str = '<span style="color:' + ctx.opt.timerColor + ' !important">' + str + '</span>';
@@ -9268,9 +9268,9 @@ DebugJS.prototype = {
   },
 
   cmdSet: function(arg, tbl, echo) {
-    var a = DebugJS.splitCmdLine(arg);
+    var a = DebugJS.splitCmdLineInTwo(arg);
     var nm = a[0];
-    var v = ((a[1] == undefined) ? '' : a[1]);
+    var v = a[1].trim();
     if ((nm == '') || (v == '')) {
       DebugJS.printUsage(tbl.help);
       return;
@@ -9290,12 +9290,12 @@ DebugJS.prototype = {
         return;
       }
     }
-    var r;
+    var r = val;
     if (ctx.PROPS_CB[nm]) {
       r = ctx.PROPS_CB[nm](ctx, val);
-      if (r != undefined) props[nm] = r;
+      if (r === undefined) return;
     }
-    props[nm] = (r === undefined ? val : r);
+    props[nm] = r;
     if (echo) DebugJS._log.res(props[nm]);
   },
   setPropBatContCb: function(ctx, v) {
@@ -9324,16 +9324,14 @@ DebugJS.prototype = {
     var el = area.pre;
     if (el) DebugJS.setStyle(el, 'font-size', s);
   },
-  setPropT0Cb: function(ctx, v) {
+  setPropT0Cb: function(ctx, a) {
     var now = DebugJS.now();
-    var t0;
-    if (isNaN(v)) {
-      if (!DebugJS.isDateTimeStr(v + '')) return;
-      var r = DebugJS.getDateTimeAndTimestamp(v);
-      t0 = r.timestamp;
-    } else {
-      v = parseInt(v);
-      t0 = (v == 0 ? now : v);
+    var v = DebugJS.getNonOptVal(a);
+    var t0 = DebugJS.toTimestamp(v, now);
+    if (isNaN(t0)) return;
+    if (DebugJS.hasOpt(a, 'sw0')) {
+      DebugJS.time.setT0(DebugJS.TMR_NM_SW_S, t0);
+      return;
     }
     ctx.timerT0 = t0;
     if (t0 > now) {
@@ -10847,6 +10845,17 @@ DebugJS._getDateTimeAndTimestamp = function(v, tz, iso) {
   };
   return o;
 };
+DebugJS.toTimestamp = function(v, now) {
+  var t;
+  if (isNaN(v)) {
+    if (!DebugJS.isDateTimeStr(v + '')) return NaN;
+    t = DebugJS.getDateTimeAndTimestamp(v).timestamp;
+  } else {
+    v = parseInt(v);
+    t = (v == 0 ? now : v);
+  }
+  return t;
+};
 DebugJS.int2DateStr = function(v, tz, iso) {
   tz = DebugJS.toFullTz(tz);
   v += '';
@@ -11289,9 +11298,7 @@ DebugJS._cmdP = function(_arg, _tbl) {
   var _lvLmt = 0;
   var _opt = DebugJS.getOptVals(_arg);
   for (var _k in _opt) {
-    if ((_k == '') && (_opt[_k].length > 0)) {
-      _obj = _opt[_k][0];
-    }
+    if ((_k == '') && (_opt[_k].length > 0)) _obj = _opt[_k][0];
     var _lv = _k.match(/l(\d+)/);
     if (_lv != null) {
       _lvLmt = _lv[1];
@@ -11643,9 +11650,7 @@ DebugJS.countElements = function(selector, showDetail) {
     }
     els = document.querySelectorAll(selector);
   }
-  if (el) {
-    DebugJS.getChildElements(el, els);
-  }
+  if (el) DebugJS.getChildElements(el, els);
   if (els) {
     for (var i = 0; i < els.length; i++) {
       if (!cnt[els[i].tagName]) {
@@ -11863,9 +11868,7 @@ DebugJS.arr.has = function(a, v, f) {
 };
 DebugJS.arr.del = function(arr, v) {
   for (var i = 0; i < arr.length; i++) {
-    if (arr[i] == v) {
-      arr.splice(i--, 1);
-    }
+    if (arr[i] == v) arr.splice(i--, 1);
   }
 };
 DebugJS.arr.next = function(a, v) {
@@ -14428,6 +14431,9 @@ DebugJS.time.updateCount = function(nm) {
   if (DebugJS.ctx.timers[nm]) {
     DebugJS.ctx.timers[nm].count = DebugJS.now() - DebugJS.ctx.timers[nm].start;
   }
+};
+DebugJS.time.setT0 = function(nm, v) {
+  if (DebugJS.ctx.timers[nm]) DebugJS.ctx.timers[nm].start = v;
 };
 DebugJS.time.s = DebugJS.time.start;
 DebugJS.time.e = DebugJS.time.end;
