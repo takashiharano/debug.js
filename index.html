@@ -1073,7 +1073,7 @@ demo.led.i = 0;
 demo.led.ledDemo = function() {
   dbg.led(demo.led.i);
   var i16 = dbg.toHex(demo.led.i);
-  i16 = DebugJS.formatHex(i16, true, true);
+  i16 = DebugJS.formatHex(i16, true, '0x');
   dbg.msg('LED = ' + demo.led.i + ' (' + i16 + ')');
   if (demo.led.i <= 255) {
     setTimeout(demo.led.ledDemo, demo.led.speed);
@@ -5832,7 +5832,7 @@ $ timediff now "2100-01-01 00:00:00.000"
   <tr>
     <td class="name">timer</td>
     <td>
-      arg1: start / split / stop / list<br>
+      arg1: start / check / split / stop / list<br>
       arg2: timer name<span class="annotation">(opt)</span>
     </td>
     <td>Manipulate the timer.</td>
