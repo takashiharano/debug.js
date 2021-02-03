@@ -4211,7 +4211,7 @@ $ 1048576 b
   </tr>
 
   <tr>
-    <td class="name">chars</td>
+    <td class="name">char</td>
     <td>
       arg1: start character<br>
       arg2: end character
@@ -4219,10 +4219,9 @@ $ 1048576 b
     <td>
       Print Unicode characters that consists of consecutive code points<br><br>
 <pre class="eg">
-$ chars A Z
-$ chars 65 90
-$ chars 0x41 0x5A
-$ chars U+0041 U+005A
+$ char A Z
+$ char 0x41 0x5A
+$ char U+0041 U+005A
 -&gt; ABCDEFGHIJKLMNOPQRSTUVWXYZ
 </pre>
     </td>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102022300';
+  this.v = '202102032145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -346,13 +346,13 @@ var DebugJS = DebugJS || function() {
   this.INT_CMD_TBL = [
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] Array'},
-    {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print ASCII characters'},
+    {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print all ASCII characters'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-f] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
-    {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars CH1(U+xxxx) [CH2(U+xxxx)]'},
+    {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH1(U+xxxx) [CH2(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
     {cmd: 'clpbd', fn: this.cmdClpbd, desc: 'Copy to clipboard', help: 'clpbd copy "str"'},
@@ -728,7 +728,7 @@ DebugJS.JS_SNIPPET = [
 '',
 '',
 '',
-'// Logging performance check\nvar n = 1000;\nvar i = 0;\ndbg.time.s(\'total\');\ntest();\nfunction test() {\n  dbg.time.s();\n  dbg.time.e();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.e(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i = \' + i + \' / \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}'
+'// Logging performance check\nvar n = 1000;\nvar i = 0;\ndbg.time.s(\'total\');\ntest();\nfunction test() {\n  dbg.time.s();\n  dbg.time.e();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.e(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i=\' + i + \' \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}'
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
@@ -7175,10 +7175,7 @@ DebugJS.prototype = {
   },
 
   cmdAscii: function() {
-    var s = '';
-    for (var i = 32; i < 127; i++) {
-      s += String.fromCharCode(i);
-    }
+    var s = DebugJS.chars(32, 126);
     DebugJS._log(s);
     return s;
   },
@@ -7355,7 +7352,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdChars: function(arg, tbl) {
+  cmdChar: function(arg, tbl) {
     if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
       arg = arg.substr(0, 1) + ' ' + arg.substr(2);
     }
@@ -7367,7 +7364,7 @@ DebugJS.prototype = {
       return;
     }
     var s = DebugJS.chars(c1, c2);
-    DebugJS._log(DebugJS.quoteStrIfNeeded(s));
+    DebugJS._log(s);
     return s;
   },
 
@@ -10339,8 +10336,8 @@ DebugJS._replaceCmdVals = function(s, il) {
 };
 
 // " 1  2 3  4 " -> [0]="1" [1]="2" [2]="3" [3]="4"
-DebugJS.splitArgs = function(arg) {
-  return DebugJS.unifySP(arg.trim()).split(' ');
+DebugJS.splitArgs = function(a) {
+  return DebugJS.unifySP(a.trim()).split(' ');
 };
 // ' 1 "abc" "d ef"  "g\"hi" 2 ("jkl" + 3) 4 '
 // -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2 [5]=("jkl" + 3) [6]=4
@@ -10463,8 +10460,8 @@ DebugJS.countArgs = function(a) {
 DebugJS.getArgVal = function(a, idx) {
   return DebugJS.splitCmdLine(a)[idx];
 };
-DebugJS.getOptVal = function(args, opt) {
-  var v = DebugJS.getOptVals(args);
+DebugJS.getOptVal = function(a, opt) {
+  var v = DebugJS.getOptVals(a);
   return (v[opt] == undefined ? null : v[opt]);
 };
 DebugJS.getOptVals = function(args) {
@@ -10490,9 +10487,9 @@ DebugJS.getOptVals = function(args) {
   }
   return o;
 };
-DebugJS.hasOpt = function(arg, opt) {
+DebugJS.hasOpt = function(a, opt) {
   var b = false;
-  var v = DebugJS.getOptVal(arg, opt);
+  var v = DebugJS.getOptVal(a, opt);
   if (opt == '') {
     if (v.length > 0) b = true;
   } else {
@@ -13348,7 +13345,7 @@ DebugJS.crlf2lf = function(s) {
 DebugJS.chars = function(c1, c2) {
   var p1 = c1, p2 = c2;
   if (typeof c1 == 'string') {
-    c1 = c1.replace(/^U\+/, '0x');
+    c1 = c1.replace(/^U\+/i, '0x');
     if (!isNaN(c1) && c1.match(/^0x/)) {
       p1 = c1 | 0;
     } else {
@@ -13357,7 +13354,7 @@ DebugJS.chars = function(c1, c2) {
   }
   if (!c2) p2 = p1;
   if (typeof c2 == 'string') {
-    c2 = c2.replace(/^U\+/, '0x');
+    c2 = c2.replace(/^U\+/i, '0x');
     if (!isNaN(c2) && c2.match(/^0x/)) {
       p2 = c2 | 0;
     } else {
