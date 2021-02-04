@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102032145';
+  this.v = '202102050054';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -455,7 +455,6 @@ var DebugJS = DebugJS || function() {
     hexdumplimit: /^[0-9]+$/,
     hexdumplastrows: /^[0-9]+$/,
     indent: /^[0-9]+$/,
-    radix: /^[^|][a-z|]+[^|]$/i,
     pointspeed: /^[0-9]+$/,
     pointstep: /^[0-9]+$/,
     pointmsgsize: /.*/,
@@ -481,7 +480,6 @@ var DebugJS = DebugJS || function() {
     hexdumplimit: 1048576,
     hexdumplastrows: 16,
     indent: 1,
-    radix: 'bin|dec|hex',
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
     pointmsgsize: '"12px"',
@@ -9990,12 +9988,8 @@ DebugJS.prototype = {
     var a = v.split(' ');
     var b = a[0];
     var e = a[1];
-    if (isNaN(b)) {
-      b = DebugJS.xlsColA2N(b);
-    }
-    if (isNaN(e)) {
-      e = DebugJS.xlsColA2N(e);
-    }
+    if (isNaN(b)) b = DebugJS.xlsColA2N(b);
+    if (isNaN(e)) e = DebugJS.xlsColA2N(e);
     b |= 0;
     e |= 0;
     var s = '';
@@ -11585,11 +11579,7 @@ DebugJS.isObj = function(o) {
   ((window.ArrayBuffer) && !(o instanceof ArrayBuffer)));
 };
 DebugJS._objDmp0 = function(arg, toJson, v) {
-  if (toJson) {
-    arg.dump += '{}';
-  } else {
-    arg.dump += v;
-  }
+  arg.dump += (toJson ? '{}' : v);
   return arg;
 };
 DebugJS._objDmp1 = function(arg, key, toJson, indent, v) {
@@ -11597,12 +11587,7 @@ DebugJS._objDmp1 = function(arg, key, toJson, indent, v) {
   if (toJson) {arg.dump += '"';}
   arg.dump += (toJson ? key : DebugJS.escHtml(key));
   if (toJson) {arg.dump += '"';}
-  arg.dump += ': ';
-  if (toJson) {
-    arg.dump += '{}';
-  } else {
-    arg.dump += v;
-  }
+  arg.dump += ': ' + (toJson ? '{}' : v);
   return arg;
 };
 
@@ -11654,10 +11639,10 @@ DebugJS.countElements = function(selector, showDetail) {
   if (el) DebugJS.getChildElements(el, els);
   if (els) {
     for (var i = 0; i < els.length; i++) {
-      if (!cnt[els[i].tagName]) {
-        cnt[els[i].tagName] = 1;
-      } else {
+      if (cnt[els[i].tagName]) {
         cnt[els[i].tagName]++;
+      } else {
+        cnt[els[i].tagName] = 1;
       }
       total++;
     }
@@ -12236,11 +12221,7 @@ DebugJS.printRadixConv = function(val) {
   var v16 = DebugJS.bin2hex(v2);
   var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) hex = '0x' + hex;
-  var rdx = DebugJS.ctx.props.radix.toLowerCase();
-  var s = '';
-  if (DebugJS.hasKeyWd(rdx, 'dec', '|')) s += 'DEC ' + DebugJS.formatDec(val) + '\n';
-  if (DebugJS.hasKeyWd(rdx, 'hex', '|')) s += 'HEX ' + hex + '\n';
-  if (DebugJS.hasKeyWd(rdx, 'bin', '|')) s += 'BIN ' + bin + '\n';
+  var s = 'DEC ' + DebugJS.formatDec(val) + '\nHEX ' + hex + '\nBIN ' + bin + '\n';
   if (val > MAX) s += '<span style="color:' + DebugJS.ctx.opt.logColorE + '">unsafe</span>';
   DebugJS._log.mlt(s);
 };
@@ -12277,11 +12258,11 @@ DebugJS.cnvNegativeBin = function(absV2) {
   return v2;
 };
 DebugJS.bin2hex = function(b) {
-  var h = '';
   if ((b.length % 4) != 0) {
     var pd = 4 - (b.length % 4);
     b = DebugJS.repeatCh('0', pd) + b;
   }
+  var h = '';
   for (var i = 0; i < b.length; i += 4) {
     var v = b.substr(i, 4);
     var n = parseInt(v, 2);
@@ -12679,8 +12660,7 @@ DebugJS.decodeROT47 = function(s, n) {
 };
 
 DebugJS.buildDataUrl = function(scheme, data) {
-  scheme = scheme.replace(/,$/, '');
-  return scheme + ',' + data;
+  return (scheme.replace(/,$/, '') + ',' + data);
 };
 DebugJS.splitDataUrl = function(url) {
   var a = url.split(',');
@@ -12688,29 +12668,29 @@ DebugJS.splitDataUrl = function(url) {
   return b64cnt;
 };
 DebugJS.str2binArr = function(str, blkSize, pFix) {
-  var arr = [];
+  var a = [];
   for (var i = 0; i < str.length; i += blkSize) {
     var v = str.substr(i, blkSize);
     if (v.length == blkSize) {
-      arr.push(DebugJS.parseInt(pFix + v));
+      a.push(DebugJS.parseInt(pFix + v));
     }
   }
-  return arr;
+  return a;
 };
 
 DebugJS.decodeUnicode = function(arg) {
-  var str = '';
+  var s = '';
   var a = arg.split(' ');
   for (var i = 0; i < a.length; i++) {
     if (a[i] == '') continue;
     var cdpt = a[i].replace(/^U\+/i, '');
     if (cdpt == '20') {
-      str += ' ';
+      s += ' ';
     } else {
-      str += '&#x' + cdpt;
+      s += '&#x' + cdpt;
     }
   }
-  return str;
+  return s;
 };
 DebugJS.getUnicodePoints = function(s) {
   var cd = '';
