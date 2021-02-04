@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102050054';
+  this.v = '202102050120';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15823,7 +15823,8 @@ DebugJS.point.init = function(all) {
     point._init();
   }
   var k = 'pointmsgsize';
-  DebugJS.ctx._cmdSet(DebugJS.ctx, k, DebugJS.ctx.PROPS_DFLT_VALS[k], false);
+  var v = '\'' + DebugJS.ctx.PROPS_DFLT_VALS[k] + '\'';
+  DebugJS.ctx._cmdSet(DebugJS.ctx, k, v, false);
 };
 DebugJS.point._init = function() {
   var point = DebugJS.point;
