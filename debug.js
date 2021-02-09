@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102050120';
+  this.v = '202102100057';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11836,8 +11836,7 @@ DebugJS.arr.pos = function(a, v, f) {
   var r = -1;
   for (var i = 0; i < a.length; i++) {
     if ((!f && (a[i] == v)) || (f && (a[i] === v))) {
-      r = i;
-      break;
+      r = i;break;
     }
   }
   return r;
@@ -11949,7 +11948,7 @@ DebugJS.dndSort = function(s) {
 };
 DebugJS.dndTrim = function(s) {
   s = DebugJS.crlf2lf(s).replace(/\s+\n/g, '\n\n');
-  if (DebugJS.hasOpt(DebugJS.ctx.dndArg, 'newline')) {
+  if (DebugJS.hasOpt(DebugJS.ctx.dndArg, 'line')) {
     s = DebugJS.crlf2lf(s).replace(/\n\n/g, '\n');
   }
   DebugJS.cls();
