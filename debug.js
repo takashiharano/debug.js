@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102100057';
+  this.v = '202102120006';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -352,7 +352,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-f] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
-    {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH1(U+xxxx) [CH2(U+xxxx)]'},
+    {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
     {cmd: 'clpbd', fn: this.cmdClpbd, desc: 'Copy to clipboard', help: 'clpbd copy "str"'},
@@ -363,7 +363,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
     {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c|-r] COMMAND ARG'},
-    {cmd: 'echo', fn: this.cmdEcho, desc: 'Display the ARGs on the log window'},
+    {cmd: 'echo', fn: this.cmdEcho, desc: 'Echo the STRING(s) to the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -372,7 +372,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
-    {cmd: 'int', fn: this.cmdInt, desc: 'Radix conversion', help: 'int VAL'},
+    {cmd: 'int', fn: this.cmdInt, desc: 'Radix conversion', help: 'int VAL [VAL] [-z]'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] {JSON}'},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
@@ -404,7 +404,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1] start|stop|reset|split|end|val'},
-    {cmd: 'strp', fn: this.cmdStrP, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR"'},
+    {cmd: 'strp', fn: this.cmdStrP, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR" [INDEX]'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
@@ -1960,6 +1960,7 @@ DebugJS.prototype = {
     var cnt = ctx.logBuf.count();
     var len = buf.length;
     var lineCnt = cnt - len;
+    var mxDgt = DebugJS.digits(cnt);
     var filter = ctx.fltrText;
     var fltCase = ctx.fltrCase;
     if (!fltCase) filter = filter.toLowerCase();
@@ -2019,7 +2020,7 @@ DebugJS.prototype = {
       }
       var lineNum = '';
       if (opt.showLineNums && (data.type != DebugJS.LOG_TYPE_MLT)) {
-        var diff = DebugJS.digits(cnt) - DebugJS.digits(lineCnt);
+        var diff = mxDgt - DebugJS.digits(lineCnt);
         var pdng = '';
         for (var j = 0; j < diff; j++) {
           pdng += '0';
@@ -7059,7 +7060,7 @@ DebugJS.prototype = {
       }
     }
 
-    var ret = ctx.cmdInt(cmdline, null, echo);
+    var ret = DebugJS.cmdInt(cmdline, echo);
     if (ret != null) return ret;
 
     if (DebugJS.isFloat(cmd)) return ctx.cmdFloat(cmd, null, echo);
@@ -9006,8 +9007,30 @@ DebugJS.prototype = {
     return r;
   },
 
-  cmdInt: function(v, tbl, echo) {
-    return DebugJS.cmdInt(v, echo);
+  cmdInt: function(arg, tbl, echo) {
+    var v = dbg.getNonOptVals(arg, true);
+    var z = DebugJS.hasOpt(arg, 'z');
+    if (v.length == 0) {
+      DebugJS.printUsage(tbl.help);
+    } else if (v.length > 1) {
+      var v1 = v[0] | 0;
+      var v2 = v[1] | 0;
+      var s = '';
+      if (v1 < v2) {
+        var mxD = DebugJS.digits(v2);
+        for (var i = v1; i <= v2; i++) {
+          s += (z ? DebugJS.lpad(i, '0', mxD) : i) + '\n';
+        }
+      } else {
+        mxD = DebugJS.digits(v1);
+        for (i = v1; i >= v2; i--) {
+          s += (z ? DebugJS.lpad(i, '0', mxD) : i) + '\n';
+        }
+      }
+      DebugJS._log.mlt(s);
+    } else {
+      return DebugJS.cmdInt(v[0], echo);
+    }
   },
 
   cmdRatio: function(v, echo) {
@@ -9739,19 +9762,22 @@ DebugJS.prototype = {
   },
 
   cmdStrP: function(arg, tbl, echo) {
+    var a = dbg.getNonOptVals(arg, true);
+    var m = 0;
     if (DebugJS.hasOpt(arg, 'total')) {
-      var v = dbg.getNonOptVals(arg, true);
-      var t = v[0];
-      var p = v[1];
-      var f = DebugJS.strpTotal;
+      var t = a[0];
+      var p = a[1];
+      m = 1;
     } else {
-      var a = DebugJS.splitCmdLine(arg);
       t = a[0];
       p = a[1];
-      if (a.length == 1) {
+      var p2 = a[2];
+      if (DebugJS.hasOpt(arg, 'a')) {
         t = '"' + DebugJS.Aa0 + '"';
         p = a[0];
+        p2 = a[1];
       }
+      if (p2 == undefined) p2 = p;
     }
     try {
       t = eval(t);
@@ -9762,9 +9788,28 @@ DebugJS.prototype = {
     if (!t || (p == undefined)) {
       DebugJS.printUsage(tbl.help);return;
     }
-    if (!f) f = (typeof p == 'string') ? DebugJS.strpIndex : DebugJS.strp;
-    var r = f(t, p);
-    if (echo) DebugJS._log.res(r);
+    var r = '';
+    var logFn = DebugJS._log.res;
+    if (m) {
+      r = DebugJS.strpTotal(t, p);
+    } else if (typeof p == 'string') {
+      r = DebugJS.strpIndex(t, p);
+    } else {
+      if (p == p2) {
+        r = DebugJS.strp(t, p);
+      } else if (p < p2) {
+        logFn = DebugJS._log.mlt;
+        for (var i = p; i <= p2; i++) {
+          r += DebugJS.strp(t, i) + '\n';
+        }
+      } else {
+        logFn = DebugJS._log.mlt;
+        for (i = p; i >= p2; i--) {
+          r += DebugJS.strp(t, i) + '\n';
+        }
+      }
+    }
+    if (echo) logFn(r);
     return r;
   },
 
@@ -13038,13 +13083,8 @@ DebugJS.getRandomString = function(min, max, tbl) {
 DebugJS.http = function(req) {
   if (!req.method) req.method = 'GET';
   req.method = req.method.toUpperCase();
-  var data = null;
-  if ((req.data != undefined) && (req.data != '')) {
-    data = req.data;
-  }
-  if (data instanceof Object) {
-    data = DebugJS.http.buildQueryString(data);
-  }
+  var data = (((req.data != undefined) && (req.data != '')) ? req.data : null);
+  if (data instanceof Object) data = DebugJS.http.buildQueryString(data);
   var url = req.url;
   if (data && (req.method == 'GET')) {
     url += '?' + data;

@@ -4815,6 +4815,15 @@ $ int 0b1010
 DEC 10
 HEX A
 BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
+
+
+$ int 1 5
+-&gt;
+1
+2
+3
+4
+5
 </pre>
     </td>
   </tr>
@@ -5657,6 +5666,15 @@ $ strp -total "ABC" 1
 -&gt; 3
 $ strp -total "ABC" 2
 -&gt; 12
+
+
+$ strp "ABC" 1 5
+-&gt;
+A
+B
+C
+AA
+AB
 </pre>
     </td>
   </tr>
