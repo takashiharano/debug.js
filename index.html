@@ -7307,8 +7307,14 @@ and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sam
 <div class="caption" id="lazyload">// Lazy Load</div>
 Execute the following code from F12 console.<br>
 <div class="note">Note that it depends on <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP" target="_blank" rel="noopener">Content-Security-Policy</a> header.</div>
-<textarea class="code emphasis" style="height:12px;font-size:10px;resize:none;margin-bottom:20px;" readonly>s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</textarea>
-<br>
+<textarea class="code emphasis" style="height:12px;font-size:10px;resize:none;margin-bottom:4px;" readonly>s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</textarea><br>
+<div style="font-size:12px;">for iframe</div>
+<textarea class="code emphasis" style="height:24px;margin-top:1px;font-size:10px;resize:none;margin-bottom:20px;word-break:break-all;" readonly>s=document.createElement('script');s.src='https://debugjs.net/debug.js';var f=document.getElementsByTagName('iframe')[0];f.contentDocument.body.appendChild(s);setTimeout('f.contentWindow.dbg.start()',1000);</textarea>
+
+<div style="font-size:12px;">from Base64 encoded script</div>
+<textarea class="code emphasis" style="height:38px;margin-top:1px;font-size:10px;resize:none;margin-bottom:4px;word-break:break-all;" readonly>(function() {var decodeB64=function(s){return decodeURIComponent(Array.prototype.map.call(atob(s), function(c) {return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);}).join(''));};var d=decodeB64('[BASE64_ENCODED_DEBUGJS]');var s=document.createElement('script');s.innerHTML=d;document.body.appendChild(s);})();dbg.start();</textarea><br>
+<div style="font-size:12px;">for iframe</div>
+<textarea class="code emphasis" style="height:38px;margin-top:1px;font-size:10px;resize:none;margin-bottom:20px;word-break:break-all;" readonly>(function() {var decodeB64=function(s){return decodeURIComponent(Array.prototype.map.call(atob(s), function(c) {return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);}).join(''));};var d=decodeB64('[BASE64_ENCODED_DEBUGJS]');var s=document.createElement('script');var f=document.getElementsByTagName('iframe')[0];f.contentDocument.body.appendChild(s);f.contentWindow.dbg.start();})();</textarea>
 
 <a name="browser"></a>
 <div class="caption">// Browser Support</div>
