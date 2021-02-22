@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102220011';
+  this.v = '202102230000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -357,6 +357,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
     {cmd: 'clpbd', fn: this.cmdClpbd, desc: 'Copy to clipboard', help: 'clpbd copy "str"'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
+    {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookies', help: 'cookie keys|get|set|delete [key|-a] [val]'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [-iso] [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
@@ -7422,6 +7423,27 @@ DebugJS.prototype = {
     DebugJS.cls();
   },
 
+  cmdChmod: function(arg, tbl, echo) {
+    var a = DebugJS.delAllSP(arg);
+    if (!a) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var s = '';
+    if (DebugJS.isNum(a.charAt(0))) {
+      for (var i = 0; i < a.length; i++) {
+        s += DebugJS.n2rwx(+a[i]);
+      }
+    } else {
+      for (i = 0; i < 3; i++) {
+        var p = a.substr(i * 3, 3);
+        if (p) s += DebugJS.rwx2n(p);
+      }
+    }
+    if (echo) DebugJS._log.res(s);
+    return s;
+  },
+
   cmdCondWait: function(arg, tbl) {
     var bat = DebugJS.bat;
     var op = DebugJS.splitCmdLine(arg)[0];
@@ -12440,6 +12462,21 @@ DebugJS.formatHex = function(hex, uc, pFix, d) {
   }
   if (pFix) hex = pFix + hex;
   return hex;
+};
+DebugJS.rwx2n = function(a) {
+  var M = {r: 4, w: 2, x: 1, '-': 0};
+  var n = 0;
+  for (var i = 0; i < a.length; i++) {
+    n += ((M[a[i]] == undefined) ? 0 : M[a[i]]);
+  }
+  return n;
+};
+DebugJS.n2rwx = function(n) {
+  if (n > 7) return '???';
+  var s = ((n & 4) ? 'r' : '-');
+  s += ((n & 2) ? 'w' : '-');
+  s += ((n & 1) ? 'x' : '-');
+  return s;
 };
 
 DebugJS.bit8 = {};
