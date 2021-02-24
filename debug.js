@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102230000';
+  this.v = '202102250010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -859,9 +859,7 @@ DebugJS.prototype = {
     if (rstrOpt && !(rstrOpt.uiStatus & DebugJS.UI_ST_HEADINFO)) {
       ctx.showHeaderInfo(false);
     }
-    if (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) {
-      ctx.initResize(ctx);
-    }
+    if (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) ctx.initResize(ctx);
     ctx.initStyles(ctx);
     ctx.initDbgWin(ctx);
     ctx.setupEventHandler(ctx);
@@ -873,11 +871,10 @@ DebugJS.prototype = {
         ctx.initWidth = ctx.win.offsetWidth;
         ctx.initHeight = ctx.win.offsetHeight;
         ctx.resetDbgWinSizePos();
-        if ((rstrOpt != null) && (rstrOpt.cause == DebugJS.INIT_CAUSE_ZOOM)) {
-          ctx.focusCmdLine();
-        }
         if (!(ctx.uiStatus & DebugJS.UI_ST_VISIBLE) || (ctx.uiStatus & DebugJS.UI_ST_PROTECTED)) {
           ctx.win.style.display = 'none';
+        } else {
+          ctx.focusCmdLine();
         }
       }
     } else {

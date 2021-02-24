@@ -111,6 +111,7 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .cc{color:#88f;}
 </style>
 <script>
+//dbg.start();
 dbg.init({visible:true});
 //dbg.wd.start(500);
 
@@ -150,11 +151,11 @@ var options2 = {
   visible: true,
   lines: 23,
   showTimeStamp: false,
-  disableAllFeatures: true
+  disableAllFeatures: true,
   //useSystemInfo: true,
   //useCommandLine: true,
   //useTools: true,
-  //resizable: false
+  resizable: false
 };
 //dbg.init(options2);
 
@@ -815,7 +816,6 @@ function onLoad() {
   //log('load');
   evttest.regieterEventHandler();
   dragtest.init();
-  dbg.cmd.focus();
 }
 
 function onUnload() {
