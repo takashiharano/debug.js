@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202102250010';
+  this.v = '202103010005';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5110,7 +5110,7 @@ DebugJS.prototype = {
   _splitTimerStopwatch: function(ctx) {
     ctx._updateTimerStopwatch(ctx);
     var t = ctx.timerSwVal;
-    var dt = DebugJS.getElapsedTimeStr(ctx.timerSwPrevSplit, t).substr(2);
+    var dt = DebugJS.getDiffTimeStr(ctx.timerSwPrevSplit, t).substr(2);
     var m = DebugJS.TMR_NM_SW_L + ': <span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTmrStr(ctx.timerSwVal) + '</span> (' + DebugJS.CHR_DELTA + '<span style="color:' + ctx.opt.timerColor + '">' + dt + '</span>)';
     ctx.timerSwPrevSplit = t;
     DebugJS._log(m);
@@ -8595,7 +8595,7 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return '';
     }
-    if (p) DebugJS.log.res(DebugJS.getDateTimeStr(t.time, 1));
+    if (p) DebugJS.log.res(DebugJS.getDateTimeStr(t.time, 2));
     return t.t;
   },
 
@@ -11023,12 +11023,12 @@ DebugJS.getDateTimeStr = function(t, w, iso, tz) {
     s = '' + d.yyyy + d.mm + d.dd + 'T' + d.hh + d.mi + d.ss + '.' + d.sss;
     if (tz != undefined) s += tz;
   } else {
-    var wk = DebugJS.WDAYS[d.wday];
+    var wd = DebugJS.WDAYS[d.wday];
     s = d.yyyy + '-' + d.mm + '-' + d.dd;
-    if (w == 1) s += ' ' + wk;
+    if (w == 1) s += ' ' + wd;
     s += ' ' + d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
     if (tz != undefined) s += ' ' + DebugJS.nnnn2clock(tz);
-    if (w == 2) s += ' ' + wk;
+    if (w == 2) s += ' ' + wd;
   }
   return s;
 };
@@ -12965,7 +12965,7 @@ DebugJS.fmtCalcTime = function(ms, byTheDay) {
   }
   return r;
 };
-DebugJS.getElapsedTimeStr = function(t1, t2) {
+DebugJS.getDiffTimeStr = function(t1, t2) {
   return DebugJS.getTmrStr(t2 - t1);
 };
 
@@ -13710,7 +13710,7 @@ DebugJS.createCttInfo = function(fInfo, bInfo) {
 };
 DebugJS.getFileInfo = function(file) {
   var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
-  var fileDate = DebugJS.getDateTimeStr(lastMod, 1);
+  var fileDate = DebugJS.getDateTimeStr(lastMod, 2);
   var s = 'File    : ' + file.name + '\n' +
   'Type    : ' + file.type + '\n' +
   'Size    : ' + DebugJS.formatDec(file.size) + ' ' + DebugJS.plural('byte', file.size) + '\n' +
@@ -14232,8 +14232,8 @@ DebugJS._log.t = function(m, t) {
     tmr.start = v;
     tmr.split = v;
   }
-  var elps = DebugJS.getElapsedTimeStr(tmr.start, now);
-  var dlta = DebugJS.getElapsedTimeStr(tmr.split, now).substr(2);
+  var elps = DebugJS.getDiffTimeStr(tmr.start, now);
+  var dlta = DebugJS.getDiffTimeStr(tmr.split, now).substr(2);
   tmr.split = now;
 
   var tm = '<span style="color:' + ctx.opt.timerColor + '">' + elps + '</span>';
@@ -14323,9 +14323,7 @@ DebugJS._filename = function(s, idx, abs) {
     var p = n.split('/');
     n = p[p.length - 1];
     if (n == '') {
-      if ((p.length >= 2) && (p.length != 4)) {
-        n = p[p.length - 2];
-      }
+      if ((p.length >= 2) && (p.length != 4)) n = p[p.length - 2];
       n += '/';
     }
   }
@@ -14394,9 +14392,9 @@ DebugJS.time.split = function(nm, msg, isEnd) {
     DebugJS._log.w(nm + ': timer undefined');
     return null;
   }
-  var t = DebugJS.getElapsedTimeStr(tmr[nm].start, now);
+  var t = DebugJS.getDiffTimeStr(tmr[nm].start, now);
   var tm = '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>';
-  var lap = DebugJS.getElapsedTimeStr(tmr[nm].split, now);
+  var lap = DebugJS.getDiffTimeStr(tmr[nm].split, now);
   tmr[nm].split = now;
   var dt = '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + lap.substr(2) + '</span>';
   var s;
@@ -14422,7 +14420,7 @@ DebugJS.time.end = function(nm, msg) {
 DebugJS.time.check = function(nm, echo) {
   if (nm === undefined) nm = DebugJS.DFLT_TMR_NM;
   if (!DebugJS.ctx.timers[nm]) return null;
-  var t = DebugJS.getElapsedTimeStr(DebugJS.ctx.timers[nm].start, Date.now());
+  var t = DebugJS.getDiffTimeStr(DebugJS.ctx.timers[nm].start, Date.now());
   if (echo) DebugJS._log(nm + ': <span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>');
   return t;
 };
