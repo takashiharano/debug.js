@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202103010005';
+  this.v = '202103020000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5802,8 +5802,6 @@ DebugJS.prototype = {
     }
     if (DebugJS.isBat(ctt) || DebugJS.isB64Bat(ctt)) {
       ctx.onBatLoaded(ctx, file, ctt);
-    } else if (file.name.match(/\.js$/)) {
-      ctx.onJsLoaded(ctx, file, ctt);
     } else if (file.name.match(/\.json$/)) {
       ctx.closeTools(ctx);
       DebugJS._log('');
@@ -14038,7 +14036,7 @@ DebugJS.file.onDrop = function(e) {
   var loader = null;
   for (var i = 0; i < DebugJS.file.loaders.length; i++) {
     loader = DebugJS.file.loaders[i];
-    if (DebugJS.isTargetEl(loader.el, e.target)) {
+    if (DebugJS.isTargetEl(e.target, loader.el)) {
       DebugJS.file.ongoingLdr = loader;
       break;
     }
