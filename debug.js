@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202103020000';
+  this.v = '202103040003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -209,6 +209,7 @@ var DebugJS = DebugJS || function() {
   this.fileVwrDataSrcType = null;
   this.fileVwrFile = null;
   this.fileVwrFileInfo = null;
+  this.fileVwrHash = null;
   this.fileVwrBinInfo = null;
   this.fileVwrCtt = null;
   this.fileVwrDataSrc = null;
@@ -6148,16 +6149,20 @@ DebugJS.prototype = {
     var fInfo = ctx.fileVwrFileInfo;
     if (fInfo == null) {
       fInfo = '';
-      if (file) {
-        fInfo = DebugJS.getFileInfo(file);
-        if (DebugJS.shaAvailable()) {
-          fInfo += 'SHA-1   : ' + DebugJS.getSHA('SHA-1', buf) + '\n';
-          fInfo += 'SHA-256 : ' + DebugJS.getSHA('SHA-256', buf) + '\n';
-          fInfo += 'SHA-512 : ' + DebugJS.getSHA('SHA-512', buf) + '\n';
-        }
-      }
+      if (file) fInfo = DebugJS.getFileInfo(file);
       ctx.fileVwrFileInfo = fInfo;
     }
+    var hash = ctx.fileVwrHash;
+    if (hash == null) {
+      hash = '';
+      if (DebugJS.shaAvailable()) {
+        hash = 'SHA-1   : ' + DebugJS.getSHA('SHA-1', buf) + '\n';
+        hash += 'SHA-256 : ' + DebugJS.getSHA('SHA-256', buf) + '\n';
+        hash += 'SHA-512 : ' + DebugJS.getSHA('SHA-512', buf) + '\n';
+        ctx.fileVwrHash = hash;
+      }
+    }
+    fInfo += hash;
     var bInfo = ctx.fileVwrBinInfo;
     if (bInfo == null) {
       bInfo = DebugJS.getBinInfo(buf);
@@ -6208,6 +6213,8 @@ DebugJS.prototype = {
       fInfo = (file ? DebugJS.getFileInfo(file) : '');
       ctx.fileVwrFileInfo = fInfo;
     }
+    var hash = ctx.fileVwrHash;
+    if (hash) fInfo += hash;
     return DebugJS.createCttInfo(fInfo);
   },
   showFileSizeExceeds: function(ctx, file, lm) {
@@ -6380,6 +6387,7 @@ DebugJS.prototype = {
     ctx.fileVwrDataSrcType = null;
     ctx.fileVwrFile = null;
     ctx.fileVwrFileInfo = null;
+    ctx.fileVwrHash = null;
     ctx.fileVwrBinInfo = null;
     ctx.fileVwrDataSrc = null;
     ctx.fileVwrByteArray = null;
