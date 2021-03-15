@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202103040003';
+  this.v = '202103160012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -350,7 +350,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print all ASCII characters'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
-    {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-f] N'},
+    {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
@@ -3541,10 +3541,10 @@ DebugJS.prototype = {
     if (!(DebugJS.ctx.status & DebugJS.ST_SYS_INFO)) return;
     var time = Date.now();
     var b = time.toString(2);
-    var tBin = DebugJS.formatBin(b, false, 1, b.length);
+    var bin = DebugJS.formatBin(b, false, 1, b.length);
     var span = '<span style="color:' + DebugJS.ITEM_NM_COLOR + '">';
     var html = '<pre>' + span + 'SYSTEM TIME</span> : ' + DebugJS.getDateTimeStr(time, 1);
-    html += '\n' + span + '         RAW</span>  Date.now() = ' + time + '\n' + span + '         BIN</span>  ' + tBin + '\n</pre>';
+    html += '\n' + span + '         RAW</span>  Date.now() = ' + time + '\n' + span + '         BIN</span>  ' + bin + '\n</pre>';
     DebugJS.ctx.sysTimePanel.innerHTML = html;
     setTimeout(DebugJS.ctx.updateSystemTime, DebugJS.UPDATE_INTERVAL_H);
   },
