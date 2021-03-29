@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202103160012';
+  this.v = '202103300003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7101,6 +7101,22 @@ DebugJS.prototype = {
       return DebugJS.cmdByte(cmdln, echo);
     }
 
+    if (cmdln.match(/^\d+!$/i)) {
+      return DebugJS.cmdFactorial(cmdln.replace(/!/, ''), echo);
+    }
+
+    if (cmdln.match(/^\d+p\d+$/i)) {
+      return DebugJS.cmdPerm(cmdln, echo);
+    }
+
+    if (cmdln.match(/^\d+c\d+$/i)) {
+      return DebugJS.cmdCombi(cmdln, echo);
+    }
+
+    if (cmdln.match(/^\d+h\d+$/i)) {
+      return DebugJS.cmdMultiChoose(cmdln, echo);
+    }
+
     if (cmdline.match(/^\s*U\+/i)) {
       return ctx.cmdUnicode('-d ' + cmdline, null, echo);
     }
@@ -13067,6 +13083,50 @@ DebugJS._cmdByte = function(v, echo) {
   if (a) s += '<span style="display:inline-block;"> ' + a + '</span>';
   if (echo) DebugJS._log.mlt(s);
   return v;
+};
+DebugJS.cmdFactorial = function(n, echo) {
+  var v = DebugJS.factorial(n);
+  if (echo) DebugJS._log.res(v);
+  return v;
+};
+DebugJS.factorial = function(n) {
+  var v = 1;
+  for (var i = n; i >= 1; i--) {
+    v *= i;
+  }
+  return v;
+};
+DebugJS.cmdPerm = function(s, echo) {
+  var a = s.toLowerCase().split('p');
+  var v = DebugJS.permutation(+a[0], +a[1]);
+  if (echo) DebugJS._log.res(v);
+  return v;
+};
+DebugJS.permutation = function(n, r) {
+  var v = 1;
+  for (var i = 0; i < r; i++) {
+    v *= (n - i);
+  }
+  return v;
+};
+DebugJS.cmdCombi = function(s, echo) {
+  var a = s.toLowerCase().split('c');
+  var v = DebugJS.combination(+a[0], +a[1]);
+  if (echo) DebugJS._log.res(v);
+  return v;
+};
+DebugJS.combination = function(n, r) {
+  return DebugJS.permutation(n, r) / DebugJS.factorial(r);
+};
+
+DebugJS.cmdMultiChoose = function(s, echo) {
+  var a = s.toLowerCase().split('h');
+  var v = DebugJS.multiChoose(+a[0], +a[1]);
+  if (echo) DebugJS._log.res(v);
+  return v;
+};
+DebugJS.multiChoose = function(n, r) {
+  return DebugJS.combination(n + r - 1, r);
 };
 
 DebugJS.round = function(num, precision) {
