@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202103300003';
+  this.v = '202103310031';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9637,8 +9637,7 @@ DebugJS.prototype = {
       s = DebugJS.clock2ms(t);
     } else {
       if (DebugJS.isFloat(t)) t = DebugJS.float2ms(t);
-      t = DebugJS.parseInt(t);
-      s = DebugJS.getTimeDurationStr(t);
+      s = DebugJS.ms2str(+t, 1);
     }
     DebugJS._log.res(s);
     return s;
@@ -9657,25 +9656,14 @@ DebugJS.prototype = {
     if (t1 == 'now') t1 = now;
     if (t2 == 'now') t2 = now;
     try {
-      s1 = DebugJS.ctx._cnv2ms(t1);
-      s2 = DebugJS.ctx._cnv2ms(t2);
-      var s = DebugJS.getTimeDurationStr(s1, s2).replace('-', '');
+      s1 = DebugJS.cnv2ms(t1);
+      s2 = DebugJS.cnv2ms(t2);
+      var s = DebugJS.ms2str(s2 - s1, 0).replace('-', '');
       if (echo) DebugJS._log.res(s);
       return s;
     } catch (e) {
       DebugJS.printUsage(tbl.help);
     }
-  },
-  _cnv2ms: function(t) {
-    var s;
-    if (DebugJS.isUnixTm(t)) {
-      s = DebugJS.parseInt(DebugJS.float2ms(t));
-    } else if (DebugJS.isClockFormat(t)) {
-      s = DebugJS.getTimeStampOfDay(t);
-    } else {
-      s = eval(t);
-    }
-    return s;
   },
 
   cmdTimer: function(arg, tbl) {
@@ -10712,6 +10700,10 @@ DebugJS.isInt = function(s) {
 DebugJS.isFloat = function(s) {
   return (s.match(/^[+-]?\d*\.\d*$/) ? true : false);
 };
+DebugJS.isStr = function(s) {
+  s = s.trim();
+  return ((s.match(/^".*"$/) || s.match(/^'.*'$/)) ? true : false);
+};
 DebugJS.wBOM = function(s) {
  return s.charCodeAt(0) == 65279;
 };
@@ -10806,9 +10798,10 @@ DebugJS.getDateTime = function(dt) {
   } else if (typeof dt == 'number') {
     dt = new Date(dt);
   } else if (typeof dt == 'string') {
-    dt = dt.replace(/(.)-/g, '$1/');
+    dt = dt.replace(/,/, '.').replace(/(.)-/g, '$1/');
     var wk = dt.split('.');
-    var _ms = wk[1] | 0;
+    var _ms = 0;
+    if (wk[1] != undefined) _ms = (wk[1] + '000').substr(0, 3);
     wk = wk[0].split(' ');
     var _wkD = wk[0].split('/');
     var _wkT = (wk[1] ? wk[1].split(':') : []);
@@ -10864,7 +10857,7 @@ DebugJS.getDateTimeEx = function(s) {
     var dec = s.split('.');
     if (dec.length > 0) s = dec[0];
     s = (new Date(s)).getTime();
-    if (dec.length > 0) s += (dec[1] | 0);
+    if (dec.length > 0) s += +((dec[1] + '000').substr(0, 3));
   }
   return DebugJS.getDateTime(s);
 };
@@ -11066,6 +11059,32 @@ DebugJS.getTmrStr = function(ms) {
   var pfx = 'T' + (t.sign ? '-' : '+');
   return pfx + t.hh + ':' + t.mi + ':' + t.ss + '.' + t.sss;
 };
+DebugJS.ms2str = function(v, m) {
+  if (m == 1) {
+    var o = DebugJS.ms2struct(v);
+    var s = (o.sign ? '-' : '');
+    if (o.d) s += o.d + 'd ';
+    if (o.d || o.hr) s += o.hr + 'h ';
+    if (o.d || o.hr || o.mi) s += o.mi + 'm ';
+    if (o.d || o.hr || o.mi || o.ss) {
+      s += o.ss + 's';
+      if (o.sss) s += ' ' + o.sss;
+    } else {
+      if (o.sss) {
+        s += '0.' + ('00' + o.sss).slice(-3).replace(/0+$/, '');
+      } else {
+        s += '0';
+      }
+      s += 's';
+    }
+  } else {
+    o = DebugJS.ms2struct(v, true);
+     s = (o.sign ? '-' : '');
+    if (o.d > 0) s += o.d + 'd ';
+    s += o.hr + ':' + o.mi + ':' + o.ss + '.' + o.sss;
+  }
+  return s;
+};
 DebugJS.ms2struct = function(ms, fmt) {
   var wk = ms;
   var sign = false;
@@ -11096,6 +11115,7 @@ DebugJS.ms2struct = function(ms, fmt) {
     sss: sss
   };
   if (fmt) {
+    if (tm.hr < 10) tm.hr = '0' + tm.hr;
     if (tm.hh < 10) tm.hh = '0' + tm.hh;
     if (tm.mi < 10) tm.mi = '0' + tm.mi;
     if (tm.ss < 10) tm.ss = '0' + tm.ss;
@@ -11136,6 +11156,23 @@ DebugJS.timerstr2struct = function(str) {
   };
   return st;
 };
+DebugJS.cnv2ms = function(t) {
+  var s;
+  if (DebugJS.isUnixTm(t)) {
+    s = +DebugJS.float2ms(t);
+  } else if (DebugJS.isInt(t)) {
+    s = +t;
+  } else {
+    s = (DebugJS.isStr(t) ? eval(t) : t);
+    s = s.replace(/,/, '.');
+    if (DebugJS.isClockFormat(s)) {
+      s = DebugJS.getTimeStampOfDay(s);
+    } else {
+      s = DebugJS.getDateTimeEx(s).time;
+    }
+  }
+  return s;
+};
 DebugJS.formatTZ = function(v, e) {
   var s = '-';
   if (v <= 0) {
@@ -11150,31 +11187,6 @@ DebugJS.formatTZ = function(v, e) {
 };
 DebugJS.getTZ = function() {
   return DebugJS.formatTZ(new Date().getTimezoneOffset());
-};
-DebugJS.getTimeDurationStr = function(t1, t2) {
-  if (isNaN(t1)) t1 = DebugJS.getDateTimeEx(t1).time;
-  var ms = t1;
-  if (t2 != undefined) {
-    if (isNaN(t2)) t2 = DebugJS.getDateTimeEx(t2).time;
-    ms = t2 - t1;
-  }
-  var t = DebugJS.ms2struct(ms);
-  var s = (t.sign ? '-' : '');
-  if (t.d) s += t.d + 'd ';
-  if (t.d || t.hr) s += t.hr + 'h ';
-  if (t.d || t.hr || t.mi) s += t.mi + 'm ';
-  if (t.d || t.hr || t.mi || t.ss) {
-    s += t.ss + 's';
-    if (t.sss) s += ' ' + t.sss;
-  } else {
-    if (t.sss) {
-      s += '0.' + ('00' + t.sss).slice(-3).replace(/0+$/, '');
-    } else {
-      s += '0';
-    }
-    s += 's';
-  }
-  return s;
 };
 DebugJS.getTimeStampOfDay = function(t, d) {
   if (!d) d = DebugJS.getDateTime();
@@ -12933,7 +12945,7 @@ DebugJS.isTmStr = function(s) {
   return (isNaN(s) && m && (m != ''));
 };
 DebugJS.isUnixTm = function(s) {
-  return (s.match(/^\d*\.\d*$/));
+  return (s.match(/^\d*\.\d*$/) ? true : false);
 };
 
 DebugJS.addTime = function(t1, t2) {

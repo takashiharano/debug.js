@@ -5838,25 +5838,26 @@ $ time 93784.567
       Time duration calculator.<br><br>
 <pre class="eg">
 $ timediff 1 3
--&gt; 0.002s
+-&gt; 00:00:00.002
 
 $ timediff 1000 3000
--&gt; 2s
+-&gt; 00:00:02.000
 
 $ timediff 1.0 3.0
--&gt; 2s
+-&gt; 00:00:02.000
 
 $ timediff 09:00:00 10:05:30
--&gt; 1h 5m 30s
+-&gt; 01:05:30.000
 
 $ timediff "2019-02-09 12:00:00.000" "2019-02-10 13:02:03.456"
--&gt; 1d 1h 2m 3s 456ms
+-&gt; 1d 01:02:03.456
 
 $ timediff "20190209T120000.000" "20190210T130203.456"
--&gt; 1d 1h 2m 3s 456ms
+-&gt; 1d 01:02:03.456
 
 $ timediff "2020-01-01 00:00:00.000" now
 $ timediff now "2100-01-01 00:00:00.000"
+-&gt; Xd XX:XX:XX.XXX
 </pre>
     </td>
   </tr>
