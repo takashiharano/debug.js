@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202104011311';
+  this.v = '202104050000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -436,6 +436,7 @@ var DebugJS = DebugJS || function() {
     align: {fn: DebugJS.dndAlign},
     date: {fn: DebugJS.dndDate},
     sort: {fn: DebugJS.dndSort, help: DebugJS.dndSortHelp},
+    timediff: {fn: DebugJS.dndTimediff},
     trim: {fn: DebugJS.dndTrim},
     unique: {fn: DebugJS.dndUnique, help: DebugJS.dndUniqueHelp}
   },
@@ -12026,6 +12027,27 @@ DebugJS.dndSort = function(s) {
   var r = '';
   for (var i = 0; i < a.length; i++) {
     if (a[i] != '') r += a[i] + '\n';
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(r);
+  return r;
+};
+DebugJS.dndTimediff = function(s) {
+  var a = DebugJS.txt2arr(s);
+  var r = '';
+  var t0 = null;
+  var t;
+  for (var i = 0; i < a.length; i++) {
+    var b = a[i];
+    if (DebugJS.isDateTimeStr(b)) {
+      var t1 = DebugJS.cnv2ms(b);
+      if (t0 == null) t0 = t1;
+      var d = t1 - t0;
+      t = '[T' + (d >= 0 ? '+' : '') + DebugJS.ms2str(d, 0) + ']';
+    } else {
+      t = DebugJS.repeatCh(' ', 16);
+    }
+    r += t + ' ' + b + '\n';
   }
   DebugJS.cls();
   DebugJS._log.mlt(r);
