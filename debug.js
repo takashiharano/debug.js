@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202104050000';
+  this.v = '202104070015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11560,12 +11560,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
             if (toJson) {arg.dump += '"';}
             arg.dump += ': ';
           }
-          var hasChildren = false;
-          for (var _key in obj[key]) {
-            hasChildren = true;
-            break;
-          }
-          if ((typeof obj[key] != 'function') || hasChildren) {
+          if ((typeof obj[key] != 'function') || (Object.keys(obj[key]).length > 0)) {
             arg.lv++;
             arg = DebugJS._objDump(obj[key], arg, toJson, levelLimit, limit, valLenLimit);
             arg.lv--;
