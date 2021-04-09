@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202104070015';
+  this.v = '202104100000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9039,7 +9039,7 @@ DebugJS.prototype = {
   },
 
   cmdInt: function(arg, tbl, echo) {
-    var v = dbg.getNonOptVals(arg, true);
+    var v = DebugJS.getNonOptVals(arg, true);
     var z = DebugJS.hasOpt(arg, 'z');
     if (v.length == 0) {
       DebugJS.printUsage(tbl.help);
@@ -9781,7 +9781,7 @@ DebugJS.prototype = {
   },
 
   cmdStrP: function(arg, tbl, echo) {
-    var a = dbg.getNonOptVals(arg, true);
+    var a = DebugJS.getNonOptVals(arg, true);
     var m = 0;
     if (DebugJS.hasOpt(arg, 'total')) {
       var t = a[0];
