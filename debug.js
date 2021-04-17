@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202104150000';
+  this.v = '202104180151';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -404,7 +404,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
-    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [sw0|sw1] start|stop|reset|split|end|val'},
+    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [0|1] start|stop|reset|split|end|val'},
     {cmd: 'strp', fn: this.cmdStrP, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR" [INDEX]'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
@@ -9706,8 +9706,8 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     var n = 0;
     var op = a[0];
-    if (a[0].substr(0, 2) == 'sw') {
-      n = a[0].charAt(2) | 0;
+    if (DebugJS.isInt(op)) {
+      n = +op;
       op = a[1];
     }
     var r;
