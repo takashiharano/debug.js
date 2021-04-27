@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202104180151';
+  this.v = '202104280002';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -443,7 +443,7 @@ var DebugJS = DebugJS || function() {
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
   this.CMD_ALIAS = {};
-  this.CMD_ALIAS_BI = {b64: 'base64', t: 'date'};
+  this.CMD_ALIAS_BI = {b64: 'base64', d: 'date', t: 'time'};
   this.CMDVALS = {};
   this.opt = null;
   this.errStatus = DebugJS.ERR_ST_NONE;
