@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202104290030';
+  this.v = '202105080012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13046,6 +13046,10 @@ DebugJS.cmdTZedNow = function(t, o) {
   return r;
 };
 DebugJS.toFullTz = function(t) {
+  if (t.match(/\./)) {
+    var p = t.split('.');
+    t = p[0] + ('0' + (+('0.' + p[1]) * 60)).slice(-2);
+  }
   var s = t.charAt(0);
   if (t.length == 1) {
     t = '+0' + t + '00';
