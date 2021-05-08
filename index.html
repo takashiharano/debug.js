@@ -1648,10 +1648,10 @@ dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="w
 paramName: request parameter name for log buffer<span class="annotation">(opt) "data" is used in default</span>
 params   : other parameters to send (Map object)<span class="annotation">(opt)</span>
 extInfo  : extra info text<span class="annotation">(opt)</span>
-flag     : head|log|b64buf<span class="annotation">(opt) target part to send. e.g.,) "head|log"</span>
+flag     : head|log|b64buf<span class="annotation">(opt) target part to send. e.g., "head|log"</span>
 callback : callback function<span class="annotation">(opt) format: function(XMLHttpRequest){}</span>
 
-e.g.,)
+e.g.,
 <pre class="code emphasis" style="width:500px">
 var cbFunc = function(xhr) {
   var st = xhr.status;
@@ -1765,11 +1765,11 @@ base64:
 
 format time:
  true:  The time format will be human-readable foamrt.
-        e.g.,) 2017-10-17 12:34:56.789
+        e.g., 2017-10-17 12:34:56.789
 
  false: The numeric value corresponding to the time for 
         the logged time according to universal time. (default)
-        e.g.,) 1508211296789
+        e.g., 1508211296789
 </pre>
     </td>
   </tr>
@@ -2923,7 +2923,7 @@ dbg.test.nextSeq(); <button class="demo-button2" onclick="log.res(dbg.test.nextS
 </pre><br>
       This value is also available for <i>$test set id</i> command.<br>
 <pre>
-e.g.,) $ test set id "TEST-%SEQ%"
+e.g., $ test set id "TEST-%SEQ%"
        -&gt; "TEST-1" is set for ID.
 </pre><br>
       The value will be reset at the beginning of test. ($test init)
@@ -2970,7 +2970,7 @@ dbg.getType(<input type="text" id="gettype-txt" class="demo-text" style="width:1
     <td></td>
     <td>
       Get browser type info<br><br>
-      e.g.,)
+      e.g.,
 <pre class="eg">
 {
   name: 'Firefox',
@@ -3023,7 +3023,7 @@ dbg.countElements('tagName');
     </td>
     <td>
       Get an DOM element object of the specified selector<br><br>
-      e.g.,)
+      e.g.,
 <pre class="eg">
 dbg.getElement('#id');
 dbg.getElement('.className', 0);
@@ -3040,7 +3040,7 @@ Returns an DOM element or null if an element with the specified selector is not 
     </td>
     <td>
       Get the position and size of the specified DOM element<br><br>
-      e.g.,)
+      e.g.,
 <pre class="eg">
 {
  x: 504,
@@ -4686,7 +4686,7 @@ $ event dispatch tagName<span class="annotation">target</span> 0<span class="ann
 Clear the event object
 $ event clear
 
-e.g.,) Send a Key Down Event (A + Shift) to window
+e.g., Send a Key Down Event (A + Shift) to window
 $ event create keydown
 $ event set keyCode 65
 $ event set shiftKey true
@@ -4785,7 +4785,7 @@ C   2   E   D   4   0   0   0
       The HTTP method to use, such as GET, POST, HEAD, PUT, DELETE, OPTIONS, etc.<br>
       <span class="annotation">GET is set as the default value in case of that the method is not specified.</span><br><br>
 <pre class="eg">
-e.g.,)
+e.g.,
 
 GET <span class="annotation">The results of the following commands will be the same.</span>
  http get https://debugjs.net/test/?abc=123&amp;xyz=987
@@ -4932,7 +4932,7 @@ $ keypress 1 -shift -ctrl -alt -meta
     <td>
       Set a bit pattern to the indicator.<br>
 <pre class="eg">
-e.g.,)
+e.g.,
 $ led 1      <span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#4cf;margin-right:2px;">●</span>
 $ led 255    <span style="color:#ddd;margin-right:2px;">●</span><span style="color:#f0f;margin-right:2px;">●</span><span style="color:#f66;margin-right:2px;">●</span><span style="color:#f80;margin-right:2px;">●</span><span style="color:#ee0;margin-right:2px;">●</span><span style="color:#6f6;margin-right:2px;">●</span><span style="color:#0ff;margin-right:2px;">●</span><span style="color:#4cf;margin-right:2px;">●</span>
 $ led 0x20   <span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#f66;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span><span style="color:#999;margin-right:2px;">●</span>
@@ -5352,7 +5352,7 @@ $ point cursor none
 
 $ point getelement
 -&gt; Get an Element object at the current pointed position
-  e.g.,)
+  e.g.,
   $ ${el} = point getelement
   $ ${el}.innerHTML = "abc"
   $ ${el}.style.color = "#f00"
@@ -5365,7 +5365,7 @@ $ point setprop <i>propertyName</i> <i>value</i>
 
 $ point verify <i>propertyName</i> <i>operand</i> <i>value</i>
 -&gt; Verify a property value of the element at the current pointed position
-  e.g.,)
+  e.g.,
   $ point verify value == "123"
   [<span style="color:#0c0">OK</span>] Got="123" == Exp="123"
   [<span style="color:#f00">NG</span>] Got="456" == Exp="123"
@@ -5552,7 +5552,7 @@ position: top|px|bottom
     </td>
     <td>
       Select an option of select element / get value or option label text<br><br>
-e.g.,)<br>
+e.g.,<br>
 <pre class="eg">
 $ select #id set value "1"
 $ select select:nth-child(1) set text "abc"
@@ -5588,7 +5588,7 @@ $ select #id get values
     </td>
     <td>
       Sets the value of an attribute on the specified element.<br><br>
-e.g.,)<br>
+e.g.,<br>
 <pre class="eg">
 $ setattr #id disabled true
 $ setattr .className 1 disabled true
@@ -5809,19 +5809,19 @@ $ text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
       String &lt;--&gt; millis<br><br>
 <pre class="eg">
 $ time 1d2h3m4s567
--&gt; 93784567
+-&gt; 1d 2h 3m 4s 567 (93784567 ms)
 
 $ time 1d 2h 3m 4s 567
--&gt; 93784567
+-&gt; 1d 2h 3m 4s 567 (93784567 ms)
 
 $ time 26:03:04.567
--&gt; 93784567
+-&gt; 1d 2h 3m 4s 567 (93784567 ms)
 
 $ time 93784567
--&gt; 1d 2h 3m 4s 567ms
+-&gt; 1d 2h 3m 4s 567 (93784567 ms)
 
 $ time 93784.567
--&gt; 1d 2h 3m 4s 567ms
+-&gt; 1d 2h 3m 4s 567 (93784567 ms)
 </pre>
     </td>
   </tr>
@@ -5854,7 +5854,7 @@ $ timediff "20190209T120000.000" "20190210T130203.456"
 
 $ timediff "2020-01-01 00:00:00.000" now
 $ timediff now "2100-01-01 00:00:00.000"
--&gt; Xd XX:XX:XX.XXX
+-&gt; Xd HH:MI:SS.sss
 </pre>
     </td>
   </tr>
@@ -6276,13 +6276,13 @@ $ utc+9
     <td>
 <pre class="eg">
 $ 12:00:01
--&gt; 86401000
+-&gt; 12h 0m 1s (43201000 ms)
 
 $ 01:00
--&gt; 3600000
+-&gt; 1h 0m 0s (3600000 ms)
 
 $ 00:00:01.234
--&gt; 1234
+-&gt; 1s 234 (1234 ms)
 
 <span class="annotation">This is an alias of time command.</span>
 </pre>
@@ -7358,7 +7358,7 @@ dbg.ui.addLabel(parentElement, 'LabelText', style);
 dbg.ui.addTextInput(parentElement, width<span class="annotation">'50px'</span>, txtAlign<span class="annotation">'right'|'center'|'left'</span>, color<span class="annotation">'#fff'</span>, val<span class="annotation">default value</span>, oninput<span class="annotation">function</span>);
 </span>
 style:
-e.g.,)
+e.g.,
 style = {
   'width': '50px',
   'margin-top': '8px',
