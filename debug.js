@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202105080012';
+  this.v = '202105100023';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -355,7 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
-    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock [-sss] [-full]'},
+    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock -date|label|offset|start|stop [V]'},
     {cmd: 'clpbd', fn: this.cmdClpbd, desc: 'Copy to clipboard', help: 'clpbd copy "str"'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
@@ -450,6 +450,7 @@ var DebugJS = DebugJS || function() {
   this.PROPS_RESTRICTION = {
     batcont: /^on$|^off$/,
     batstop: /^[^|][a-z|]+[^|]$/,
+    clockoffset: /^-?[0-9]+$/,
     esc: /^enable$|^disable$/,
     dumplimit: /^[0-9]+$/,
     dumpvallen: /^[0-9]+$/,
@@ -475,6 +476,7 @@ var DebugJS = DebugJS || function() {
   this.PROPS_DFLT_VALS = {
     batcont: 'off',
     batstop: 'error',
+    clockoffset: 0,
     esc: 'enable',
     dumplimit: 1000,
     dumpvallen: 4096,
@@ -554,9 +556,8 @@ DebugJS.ST_TOOLS = 1 << 19;
 DebugJS.ST_EXT_PANEL = 1 << 20;
 DebugJS.ST_WD = 1 << 21;
 DebugJS.ST_NO_HIST = 1 << 22;
-DebugJS.ST_CLOCK_FULL = 1 << 23;
-DebugJS.ST_SW = 1 << 24;
-DebugJS.ST_KIOSK = 1 << 25;
+DebugJS.ST_SW = 1 << 23;
+DebugJS.ST_KIOSK = 1 << 24;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -1776,7 +1777,7 @@ DebugJS.prototype = {
 
   updateClockLabel: function() {
     var ctx = DebugJS.ctx;
-    var dt = DebugJS.getDateTime();
+    var dt = DebugJS.getClockVal();
     var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
     ctx.clockLabel.innerText = t;
     ctx.clockTmId = setTimeout(ctx.updateClockLabel, ctx.clockUpdInt);
@@ -5019,7 +5020,7 @@ DebugJS.prototype = {
   updateTimerClock: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.ST_TOOLS)) || (ctx.toolTimerMode != DebugJS.TOOL_TMR_MODE_CLOCK)) return;
-    var tm = DebugJS.getDateTime();
+    var tm = DebugJS.getClockVal();
     ctx.timerClockLabel.innerHTML = ctx.createClockStr(tm);
     setTimeout(ctx.updateTimerClock, ctx.clockUpdInt);
   },
@@ -7406,21 +7407,46 @@ DebugJS.prototype = {
     }
   },
 
-  cmdClock: function(arg) {
+  cmdClock: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    if (DebugJS.hasOpt(arg, 'full')) {
-      ctx.status |= DebugJS.ST_CLOCK_FULL;
-      ctx.kiosk(ctx, 2);
-      ctx.clearLog();
+    var KEYS = ['label', 'date', 'offset', 'start', 'stop'];
+    for (var i = 0; i < KEYS.length; i++) {
+      var k = KEYS[i];
+      var v = DebugJS.getOptVal(arg, k);
+      if (v != null) {
+        ctx['_cmdClock' + DebugJS.capitalize(k)](ctx, v);return;
+      }
     }
-    ctx.launchFnc(ctx, 'tool', 'timer', 'clock');
-    ctx.timerClockSSS = DebugJS.hasOpt(arg, 'sss');
-    ctx.updateSSS(ctx);
+    DebugJS.printUsage(tbl.help);
   },
-  _cmdClockQ: function(ctx) {
-    ctx.closeTools(ctx);
-    ctx.kioskQ(ctx);
-    ctx.status &= ~DebugJS.ST_CLOCK_FULL;
+  _cmdClockDate: function(ctx, v) {
+    var now = Date.now();
+    var t = (v == 'now' ? now : DebugJS.toTimestamp(v, now));
+    ctx._cmdSet(ctx, 'clockoffset', t - now);
+    ctx.startUdtClock(ctx);
+  },
+  _cmdClockLabel: function(ctx, v) {
+    try {
+      v = eval(v);
+      ctx.stopUdtClock(ctx);
+      ctx.clockLabel.innerText = v;
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
+  },
+  _cmdClockOffset: function(ctx, v) {
+    try {
+      ctx._cmdSet(ctx, 'clockoffset', eval(v));
+      ctx.startUdtClock(ctx);
+    } catch (e) {
+      DebugJS._log.e(e);
+    }
+  },
+  _cmdClockStart: function(ctx) {
+    ctx.startUdtClock(ctx);
+  },
+  _cmdClockStop: function(ctx) {
+    ctx.stopUdtClock(ctx);
   },
 
   cmdClpbd: function(arg, tbl) {
@@ -8996,7 +9022,6 @@ DebugJS.prototype = {
 
   cmdQuit: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_CLOCK_FULL) ctx._cmdClockQ(ctx);
     if (ctx.status & DebugJS.ST_SW) {
       ctx._cmdSwQ(ctx);
     } else if (ctx.status & DebugJS.ST_KIOSK) {
@@ -10825,6 +10850,9 @@ DebugJS.getDateTime = function(dt) {
   else if (ms < 100) {ms = '0' + ms;}
   var dateTime = {time: time, offset: offset, yyyy: yyyy, mm: mm, dd: dd, hh: hh, mi: mi, ss: ss, sss: ms, wday: wd};
   return dateTime;
+};
+DebugJS.getClockVal = function() {
+  return DebugJS.getDateTime(Date.now() + (+DebugJS.ctx.props.clockoffset));
 };
 DebugJS.getDateTimeByIso = function(s) {
   var p = s.replace(/[.,]/, '').split('T');
@@ -13430,6 +13458,9 @@ DebugJS.substr = function(txt, len) {
     str = txt.substr(i);
   }
   return str;
+};
+DebugJS.capitalize = function(s) {
+  return ((s && (typeof s == 'string')) ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
 };
 DebugJS.str2arr = function(s) {
   return s.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\s\S]/g) || [];
