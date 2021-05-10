@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202105100023';
+  this.v = '202105110000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -356,11 +356,11 @@ var DebugJS = DebugJS || function() {
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock -date|label|offset|start|stop [V]'},
-    {cmd: 'clpbd', fn: this.cmdClpbd, desc: 'Copy to clipboard', help: 'clpbd copy "str"'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookies', help: 'cookie keys|get|set|delete [key|-a] [val]'},
+    {cmd: 'copy', fn: this.cmdCopy, desc: 'Copy to clipboard', help: 'copy ["STR"]'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [-iso] [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
@@ -6979,8 +6979,10 @@ DebugJS.prototype = {
       DebugJS._log(cl.substr(cl.indexOf('#') + 1));
       return;
     }
-    if (str == 'copy') {
-      DebugJS.copyLogs();
+    var cmds = DebugJS.splitCmdLineInTwo(cl);
+    var cmd = cmds[0];
+    if (cmd == 'copy') {
+      ctx.cmdCopy(cmds[1]);
       return;
     }
     if (echo && plain) {
@@ -6990,8 +6992,6 @@ DebugJS.prototype = {
       DebugJS._log.s(echoStr);
     }
     if (!DebugJS.callListeners(ctx.cmdListeners, str)) return;
-    var cmds = DebugJS.splitCmdLineInTwo(cl);
-    var cmd = cmds[0];
     var valName = DebugJS.getCmdValName(cmd, '\\$', true);
     if (valName != null) {
       var vStartPos = cl.indexOf(valName);
@@ -7449,21 +7449,6 @@ DebugJS.prototype = {
     ctx.stopUdtClock(ctx);
   },
 
-  cmdClpbd: function(arg, tbl) {
-    var a = DebugJS.splitArgs(arg);
-    if (a[0] != 'copy') {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var c = DebugJS.getArgsFrom(arg, 1);
-    try {
-      var s = eval(c) + '';
-      DebugJS.copy(s);
-    } catch (e) {
-      DebugJS._log.e(e);
-    }
-  },
-
   cmdCls: function() {
     DebugJS.cls();
   },
@@ -7554,6 +7539,20 @@ DebugJS.prototype = {
         return;
     }
     DebugJS.printUsage(tbl.help);
+  },
+
+  cmdCopy: function(arg) {
+    var a = arg.trim();
+    if (a) {
+      try {
+        var s = eval(a) + '';
+        DebugJS.copy(s);
+      } catch (e) {
+        DebugJS._log.e(e);
+      }
+    } else {
+      DebugJS.copyLogs();
+    }
   },
 
   cmdDate: function(arg, tbl) {
