@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202105110000';
+  this.v = '202105240007';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -355,7 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
-    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock -date|label|offset|start|stop [V]'},
+    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock DATE_TIME|OFFSET|start|stop|-label TXT'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
@@ -7409,21 +7409,32 @@ DebugJS.prototype = {
 
   cmdClock: function(arg, tbl) {
     var ctx = DebugJS.ctx;
-    var KEYS = ['label', 'date', 'offset', 'start', 'stop'];
-    for (var i = 0; i < KEYS.length; i++) {
-      var k = KEYS[i];
-      var v = DebugJS.getOptVal(arg, k);
-      if (v != null) {
-        ctx['_cmdClock' + DebugJS.capitalize(k)](ctx, v);return;
-      }
+    var v = arg.trim();
+    var s;
+    if (v == '') {
+      DebugJS.printUsage(tbl.help);
+    } else if (v == 'start') {
+      ctx.startUdtClock(ctx);
+    } else if (v == 'stop') {
+      ctx.stopUdtClock(ctx);
+    } else if (v.match(/^[+-]\d+$/)) {
+      ctx._cmdSet(ctx, 'clockoffset', v.replace('+', ''));
+      ctx.startUdtClock(ctx);
+    } else if (s = DebugJS.getOptVal(v, 'label')) {
+      ctx._cmdClockLabel(ctx, s);
+    } else {
+      ctx._cmdClockDate(ctx, v);
     }
-    DebugJS.printUsage(tbl.help);
   },
   _cmdClockDate: function(ctx, v) {
     var now = Date.now();
     var t = (v == 'now' ? now : DebugJS.toTimestamp(v, now));
-    ctx._cmdSet(ctx, 'clockoffset', t - now);
-    ctx.startUdtClock(ctx);
+    if (isNaN(t)) {
+      DebugJS._log.e('Invalid date format');
+    } else {
+      ctx._cmdSet(ctx, 'clockoffset', t - now);
+      ctx.startUdtClock(ctx);
+    }
   },
   _cmdClockLabel: function(ctx, v) {
     try {
@@ -7433,20 +7444,6 @@ DebugJS.prototype = {
     } catch (e) {
       DebugJS._log.e(e);
     }
-  },
-  _cmdClockOffset: function(ctx, v) {
-    try {
-      ctx._cmdSet(ctx, 'clockoffset', eval(v));
-      ctx.startUdtClock(ctx);
-    } catch (e) {
-      DebugJS._log.e(e);
-    }
-  },
-  _cmdClockStart: function(ctx) {
-    ctx.startUdtClock(ctx);
-  },
-  _cmdClockStop: function(ctx) {
-    ctx.stopUdtClock(ctx);
   },
 
   cmdCls: function() {
