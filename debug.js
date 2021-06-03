@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202105240007';
+  this.v = '202106040031';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12084,7 +12084,7 @@ DebugJS.dndTrim = function(s) {
   return s;
 };
 DebugJS.dndUniqueHelp = function() {
-  DebugJS.printUsage('dnd unique [-count] [-asc|desc]');
+  DebugJS.printUsage('dnd unique [-count] [-sort asc|desc]');
 };
 DebugJS.dndUnique = function(s) {
   var l = DebugJS.txt2arr(s);
@@ -12095,10 +12095,11 @@ DebugJS.dndUnique = function(s) {
     v.push({key: k, cnt: o[k]});
   }
   if (DebugJS.hasOpt(arg, 'count')) {
-    if (DebugJS.hasOpt(arg, 'asc')) {
-      v.sort(function(a, b) {return a.cnt - b.cnt;});
-    } else {
+    var srt = DebugJS.getOptVal(arg, 'sort');
+    if (srt == 'desc') {
       v.sort(function(a, b) {return b.cnt - a.cnt;});
+    } else if (srt != null) {
+      v.sort(function(a, b) {return a.cnt - b.cnt;});
     }
   }
   var w = [];
@@ -12120,12 +12121,12 @@ DebugJS._dndUnique = function(w, a) {
   for (var i = 0; i < w.length; i++) {
     b.push(w[i].key);
   }
-  if (!DebugJS.hasOpt(a, 'seq')) {
-    if (DebugJS.hasOpt(a, 'desc')) {
-      b.reverse();
-    } else {
-      b.sort();
-    }
+  var srt = DebugJS.getOptVal(a, 'sort');
+  if (srt == 'desc') {
+    b.sort();
+    b.reverse();
+  } else if (srt != null) {
+    b.sort();
   }
   for (i = 0; i < b.length; i++) {
     m += DebugJS.hlCtrlCh(b[i]) + '\n';
@@ -12143,7 +12144,7 @@ DebugJS._dndUniqueCnt = function(v, w) {
   }
   var idxD = DebugJS.digits(w.length);
   if (idxD < 2) idxD = 2;
-  var h = DebugJS.rpad('idx', ' ', idxD) + ' ' + DebugJS.rpad('cnt', ' ', mxD) + ' val\n---------------\n';
+  var h = DebugJS.rpad('IDX', ' ', idxD) + ' ' + DebugJS.rpad('CNT', ' ', mxD) + ' VAL\n---------------\n';
   var r = h;
   var m = h;
   for (i = 0; i < w.length; i++) {
@@ -15383,32 +15384,32 @@ DebugJS.bat.ppElIf = function(pc) {
 DebugJS.bat.findEndOfBlock = function(type, pc) {
   var bat = DebugJS.bat;
   var l = pc;
-  var ignrBlkLv = 0;
+  var nestingLv = 0;
   var data = {l: 0, endTkn: DebugJS.BAT_TKN_BLOCK_END};
   while (l <= bat.ctrl.endPc) {
     var cmd = bat.cmds[l];
     var c = DebugJS.splitCmdLineInTwo(cmd)[0];
     if (DebugJS.unifySP(cmd.trim()).match(DebugJS.RE_ELIF)) {
-      if (ignrBlkLv == 0) {
+      if (nestingLv == 0) {
         if (type == DebugJS.BAT_TKN_ELIF) {
           data.endTkn = DebugJS.BAT_TKN_ELIF;
           break;
         }
       }
     } else if (DebugJS.delAllSP(cmd) == DebugJS.RE_ELSE) {
-      if (ignrBlkLv == 0) {
+      if (nestingLv == 0) {
         if ((type == DebugJS.BAT_TKN_IF) || (type == DebugJS.BAT_TKN_ELIF)) {
           data.endTkn = DebugJS.BAT_TKN_ELSE;
           break;
         }
       }
     } else if (cmd.trim() == DebugJS.BAT_TKN_BLOCK_END) {
-      if (ignrBlkLv == 0) {
+      if (nestingLv == 0) {
         break;
       }
-      ignrBlkLv--;
+      nestingLv--;
     } else if ((c == DebugJS.BAT_TKN_IF) || (c == DebugJS.BAT_TKN_LOOP)) {
-      ignrBlkLv++;
+      nestingLv++;
     }
     l++;
   }
