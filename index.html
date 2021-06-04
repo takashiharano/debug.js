@@ -2950,15 +2950,15 @@ dbg.test.setSeq(<input type="text" id="test-setseq-txt" class="demo-text" style=
       Returns object type.<br>
 <br>
 <pre class="eg">
-"abc"         -&gt; "string"
-123           -&gt; "number"
-true          -&gt; "boolean"
-false         -&gt; "boolean"
-null          -&gt; "null"
-undefined     -&gt; "undefined"
-function()    -&gt; "function"
-[object Name] -&gt; "Name"
-other         -&gt; "object"
+"abc"        -&gt; "string"
+123          -&gt; "number"
+true         -&gt; "boolean"
+false        -&gt; "boolean"
+null         -&gt; "null"
+undefined    -&gt; "undefined"
+function()   -&gt; "function"
+[object Xxx] -&gt; "Xxx"
+other        -&gt; "object"
 
 dbg.getType(<input type="text" id="gettype-txt" class="demo-text" style="width:100px;" value="&quot;abc&quot;">); <button class="demo-button2" onclick="log.res(dbg.getType(eval(getVal('gettype-txt'))));">DEMO</button>
 </pre>
@@ -3545,9 +3545,11 @@ function callback(xhr, res, req) {
       ms
     </td>
     <td>
-      Causes the currently executing thread to sleep<br>
+      Causes the currently executing thread to sleep<br><br>
 <pre>
-sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2" onclick="sleepDemo();">Sleep</button>
+log('sleep start');
+sleep: <input type="text" id="sleep-text" value="1000" class="demo-text" style="width:50px;">ms; <button class="demo-button2" onclick="sleepDemo();">DEMO</button>
+log('sleep end');
 </pre>
     </td>
   </tr>
