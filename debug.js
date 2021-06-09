@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202106040031';
+  this.v = '202106100007';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10916,6 +10916,7 @@ DebugJS.getDateTimeAndTimestamp = function(val, iso) {
 DebugJS._getDateTimeAndTimestamp = function(v, tz, iso) {
   var dt;
   var _v = v.replace(/-/g, '').replace(/:/g, '');
+  if (DebugJS.isTHHMM(_v)) _v = DebugJS.today('') + _v;
   if (DebugJS.isDateTimeFormatIso(_v)) {
     dt = DebugJS.getDateTimeByIso(_v);
   } else {
@@ -10930,10 +10931,13 @@ DebugJS._getDateTimeAndTimestamp = function(v, tz, iso) {
   var o = {timestamp: v, datetime: s};
   return o;
 };
+DebugJS.isTHHMM = function(v) {
+  return ((v.match(/^T\d{4,}$/)) ? true : false);
+};
 DebugJS.toTimestamp = function(v, now) {
   var t;
   if (isNaN(v)) {
-    if (!DebugJS.isDateTimeStr(v + '')) return NaN;
+    if (!DebugJS.isDateTimeStr(v + '') && !DebugJS.isTHHMM(v)) return NaN;
     t = DebugJS.getDateTimeAndTimestamp(v).timestamp;
   } else {
     v = parseInt(v);
