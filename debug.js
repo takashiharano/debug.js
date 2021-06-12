@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202106100007';
+  this.v = '202106130003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -146,6 +146,7 @@ var DebugJS = DebugJS || function() {
   this.timerSwInputDiv = null;
   this.timerSign = true;
   this.timerT0 = 0;
+  this.timerSwT0 = 0;
   this.timerSwVal = 0;
   this.timerStartedV = 0;
   this.timerSwPrevSplit = 0;
@@ -404,7 +405,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
-    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [0|1] start|stop|reset|split|end|val'},
+    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [0|1] start|stop|reset|split|end|val|t0 V'},
     {cmd: 'strp', fn: this.cmdStrP, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR" [INDEX]'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
@@ -467,7 +468,6 @@ var DebugJS = DebugJS || function() {
     textstep: /^[0-9-]+$/,
     testvallimit: /^[0-9-]+$/,
     wait: /^[0-9]+$/,
-    t0: /.*/,
     timer: /.*/,
     wdt: /^[0-9]+$/,
     mousemovesim: /^true$|^false$/,
@@ -493,7 +493,6 @@ var DebugJS = DebugJS || function() {
     textstep: 1,
     testvallimit: 4096,
     wait: 500,
-    t0: 0,
     timer: '-00:00:00.000',
     wdt: 500,
     mousemovesim: 'false',
@@ -503,7 +502,6 @@ var DebugJS = DebugJS || function() {
     batcont: this.setPropBatContCb,
     indent: this.setPropIndentCb,
     pointmsgsize: this.setPropPointMsgSizeCb,
-    t0: this.setPropT0Cb,
     timer: this.setPropTimerCb,
     consolelog: this.setPropConsoleLogCb
   };
@@ -2532,7 +2530,7 @@ DebugJS.prototype = {
       } else if (ctx.status & DebugJS.ST_STOPWATCH_END) {
         var now = DebugJS.getDateTime();
         if (now.sss > 500) {
-          str = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+          str = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         }
       }
       ctx.swLabel.innerHTML = str;
@@ -5082,11 +5080,15 @@ DebugJS.prototype = {
       timerV = ctx.calcTimerInitVal(ctx);
       ctx.timerStartedV = timerV;
       ctx.timerSwPrevSplit = timerV;
-      if (ctx.props.t0) ctx.timerSwPrevSplit = now - ctx.timerT0;
+      if (ctx.timerT0) ctx.timerSwPrevSplit = now - ctx.timerSwT0;
       if (timerV > 0) ctx.timerContinueTplus = true;
       ctx.replaceTimerSubPanel(ctx.timerSwSubPanel);
     }
-    if (!ctx.props.t0) ctx.timerT0 = now - timerV;
+    if (ctx.timerT0) {
+      ctx.timerT0 = 0;
+    } else {
+      ctx.timerSwT0 = now - timerV;
+    }
     ctx.toolStatus |= DebugJS.TOOL_ST_SW_RUNNING;
     DebugJS.callEvtListeners('stopwatch', 1, 'start', timerV);
     ctx.updateTimerStopwatch();
@@ -5131,9 +5133,9 @@ DebugJS.prototype = {
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_PAUSED;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_TPLUS;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_END;
-    ctx.props.t0 = 0;
+    ctx.timerT0 = 0;
     var timerV = ctx.calcTimerInitVal(ctx);
-    ctx.timerT0 = Date.now() - timerV;
+    ctx.timerSwT0 = Date.now() - timerV;
     ctx.timerSwVal = timerV;
     ctx.timerSwPrevSplit = timerV;
     ctx.timerSplitF = false;
@@ -5161,7 +5163,7 @@ DebugJS.prototype = {
     var t = ctx.timerSwVal;
     if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) return t;
     if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_END)) {
-      t = Date.now() - ctx.timerT0;
+      t = Date.now() - ctx.timerSwT0;
     }
     if (t >= 0) {
       if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_TPLUS)) {
@@ -9394,22 +9396,6 @@ DebugJS.prototype = {
     var el = area.pre;
     if (el) DebugJS.setStyle(el, 'font-size', s);
   },
-  setPropT0Cb: function(ctx, a) {
-    var now = Date.now();
-    var v = DebugJS.getNonOptVal(a);
-    var t0 = DebugJS.toTimestamp(v, now);
-    if (isNaN(t0)) return;
-    if (DebugJS.hasOpt(a, 'sw0')) {
-      DebugJS.time.setT0(DebugJS.TMR_NM_SW_S, t0);
-      return;
-    }
-    ctx.timerT0 = t0;
-    if (t0 > now) {
-      ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_TPLUS;
-      ctx.updateContinueTplusBtn(ctx);
-    }
-    return v;
-  },
   setPropTimerCb: function(ctx, v) {
     var tm = DebugJS.timerstr2struct(v);
     ctx.timerSign = tm.sign;
@@ -9729,15 +9715,17 @@ DebugJS.prototype = {
     var a = DebugJS.splitArgs(arg);
     var n = 0;
     var op = a[0];
+    var v = a[1];
     if (DebugJS.isInt(op)) {
       n = +op;
       op = a[1];
+      v = a[2];
     }
     var r;
     if (n == 0) {
-      r = DebugJS.ctx._cmdStopwatch(op, n);
+      r = DebugJS.ctx._cmdStopwatch(op, v);
     } else if (n == 1) {
-      r = DebugJS.ctx._cmdStopwatch1(DebugJS.ctx, op);
+      r = DebugJS.ctx._cmdStopwatch1(DebugJS.ctx, op, v);
     }
     if (r == undefined) {
       DebugJS.printUsage(tbl.help);
@@ -9746,53 +9734,60 @@ DebugJS.prototype = {
     if (op == 'val') DebugJS._log('sw' + n + ': ' + DebugJS.getTmrStr(r));
     return r;
   },
-  _cmdStopwatch: function(op, n) {
+  _cmdStopwatch: function(op, v) {
     var stopwatch = DebugJS.stopwatch;
     switch (op) {
       case 'start':
-        stopwatch.start(n);
+        stopwatch.start(0);
         break;
       case 'stop':
-        stopwatch.stop(n);
+        stopwatch.stop(0);
         break;
       case 'reset':
-        stopwatch.reset(n);
+        stopwatch.reset(0);
         break;
       case 'split':
-        stopwatch.split(n);
+        stopwatch.split(0);
         break;
       case 'end':
-        stopwatch.end(n);
+        stopwatch.end(0);
+        break;
+      case 't0':
+        stopwatch.t0(0, v);
         break;
       case 'val':
         break;
       default:
         return;
     }
-    var t = stopwatch.val(n);
+    var t = stopwatch.val(0);
     return t;
   },
-  _cmdStopwatch1: function(ctx, op) {
+  _cmdStopwatch1: function(ctx, op, v) {
     if (!ctx.isAvailableTools(ctx)) return;
+    var stopwatch = DebugJS.stopwatch;
     switch (op) {
       case 'start':
-        DebugJS.stopwatch(1);
+        stopwatch(1);
         ctx.startTimerStopwatch();
         break;
       case 'stop':
-        DebugJS.stopwatch(1);
+        stopwatch(1);
         ctx.stopTimerStopwatch();
         break;
       case 'reset':
-        DebugJS.stopwatch(1);
+        stopwatch(1);
         ctx.resetTimerStopwatch();
         break;
       case 'split':
         ctx.splitTimerStopwatch();
         break;
       case 'end':
-        DebugJS.stopwatch(1);
+        stopwatch(1);
         ctx.endTimerStopwatch(ctx);
+        break;
+      case 't0':
+        stopwatch.t0(1, v);
         break;
       case 'val':
         break;
@@ -14098,7 +14093,7 @@ DebugJS.saveStatus = function() {
     timerClockSSS: ctx.timerClockSSS,
     timerSwVal: ctx.timerSwVal,
     timerStartedV: ctx.timerStartedV,
-    timerT0: ctx.timerT0,
+    timerSwT0: ctx.timerSwT0,
     timerSwPrevSplit: ctx.timerSwPrevSplit,
     timerSplitF: ctx.timerSplitF,
     timerContinueTplus: ctx.timerContinueTplus,
@@ -14644,6 +14639,24 @@ DebugJS.stopwatch.reset = function(n) {
       DebugJS.ctx.resetTimerStopwatch();
     }
   }
+};
+DebugJS.stopwatch.t0 = function(n, v) {
+  if (v == undefined) return;
+  var ctx = DebugJS.ctx;
+  var now = Date.now();
+  var t0 = DebugJS.toTimestamp(v, now);
+  if (isNaN(t0)) return;
+  if (n == 0) {
+    DebugJS.time.setT0(DebugJS.TMR_NM_SW_S, t0);
+    return;
+  }
+  ctx.timerT0 = t0;
+  ctx.timerSwT0 = t0;
+  if (t0 > now) {
+    ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_TPLUS;
+    ctx.updateContinueTplusBtn(ctx);
+  }
+  return v;
 };
 DebugJS.stopwatch.val = function(n) {
   if (n != 0) n = 1;
@@ -18075,7 +18088,7 @@ DebugJS.restoreStatus = function(ctx) {
   ctx.timerClockSSS = data.timerClockSSS;
   ctx.timerSwVal = data.timerSwVal;
   ctx.timerStartedV = data.timerStartedV;
-  ctx.timerT0 = data.timerT0;
+  ctx.timerSwT0 = data.timerSwT0;
   ctx.timerSwPrevSplit = data.timerSwPrevSplit;
   ctx.timerSplitF = data.timerSplitF;
   ctx.timerContinueTplus = data.timerContinueTplus;
