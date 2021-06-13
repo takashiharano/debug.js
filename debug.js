@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202106130003';
+  this.v = '202106140016';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5147,6 +5147,17 @@ DebugJS.prototype = {
     ctx.updateTimerSwBtns();
     DebugJS.callEvtListeners('stopwatch', 1, 'reset');
   },
+  setTimerStopwatchVal: function(ctx, v) {
+    if (!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) ctx.toolStatus |= DebugJS.TOOL_ST_SW_PAUSED;
+    var now = Date.now();
+    ctx.timerSwT0 = now - v;
+    ctx.timerSwVal = now - ctx.timerSwT0;
+    ctx._updateTimerStopwatch(ctx);
+    if (ctx.status & DebugJS.ST_TOOLS) {
+      ctx.replaceTimerSubPanel(ctx.timerSwSubPanel);
+      ctx.drawStopwatch();
+    }
+  },
   updateTimerStopwatch: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING)) &&
@@ -9754,15 +9765,15 @@ DebugJS.prototype = {
         break;
       case 't0':
         stopwatch.t0(0, v);
-        break;
+        return stopwatch.val(0);
       case 'val':
         break;
       default:
         return;
     }
-    var t = stopwatch.val(0);
-    return t;
+    return stopwatch.val(0, v);
   },
+
   _cmdStopwatch1: function(ctx, op, v) {
     if (!ctx.isAvailableTools(ctx)) return;
     var stopwatch = DebugJS.stopwatch;
@@ -9788,14 +9799,14 @@ DebugJS.prototype = {
         break;
       case 't0':
         stopwatch.t0(1, v);
-        break;
+        return ctx._updateTimerStopwatch(ctx);
       case 'val':
+        stopwatch.val(1, v);
         break;
       default:
         return;
     }
-    var t = ctx._updateTimerStopwatch(ctx);
-    return t;
+    return ctx._updateTimerStopwatch(ctx);
   },
 
   cmdStrP: function(arg, tbl, echo) {
@@ -14571,6 +14582,12 @@ DebugJS.time.reset = function(nm) {
 DebugJS.time.getCount = function(nm) {
   return (DebugJS.ctx.timers[nm] ? DebugJS.ctx.timers[nm].count : 0);
 };
+DebugJS.time.setCount = function(nm, v) {
+  var tmr = DebugJS.ctx.timers;
+  if (!tmr[nm]) return;
+  tmr[nm].start = Date.now() - v;
+  DebugJS.time.updateCount(nm);
+};
 DebugJS.time.updateCount = function(nm) {
   var tmr = DebugJS.ctx.timers;
   if (tmr[nm]) tmr[nm].count = Date.now() - tmr[nm].start;
@@ -14658,17 +14675,28 @@ DebugJS.stopwatch.t0 = function(n, v) {
   }
   return v;
 };
-DebugJS.stopwatch.val = function(n) {
-  if (n != 0) n = 1;
-  var nm = DebugJS.stopwatch.tmNm[n];
+DebugJS.stopwatch.val = function(n, v) {
+  var ctx = DebugJS.ctx;
   if (n == 0) {
-    if (DebugJS.ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
+    var nm = DebugJS.stopwatch.tmNm[0];
+    if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) {
       DebugJS.time.updateCount(nm);
     }
-    return DebugJS.time.getCount(nm);
+    if (v == undefined) {
+      v = DebugJS.time.getCount(nm);
+    } else {
+      ctx.resetStopwatch();
+      DebugJS.time.setCount(nm, v);
+      ctx.updateSwLabel();
+    }
   } else {
-    return DebugJS.ctx._updateTimerStopwatch(DebugJS.ctx);
+    if (v == undefined) {
+      v = ctx._updateTimerStopwatch(ctx);
+    } else {
+      ctx.setTimerStopwatchVal(ctx, v);
+    }
   }
+  return v;
 };
 DebugJS.stopwatch.log = function(n, msg) {
   var nm = DebugJS.stopwatch.tmNm[n];
