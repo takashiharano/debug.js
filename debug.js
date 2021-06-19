@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202106140016';
+  this.v = '202106200003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -356,7 +356,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
-    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock DATE_TIME|OFFSET|start|stop|-label TXT'},
+    {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock DATE_TIME|OFFSET|now|start|stop|on|off|-label TXT'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
     {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
@@ -1772,17 +1772,19 @@ DebugJS.prototype = {
     DebugJS.ctx.win.style.top = top + 'px';
     DebugJS.ctx.win.style.left = left + 'px';
   },
-
-  updateClockLabel: function() {
+  tick: function() {
     var ctx = DebugJS.ctx;
+    ctx.updateClockLabel(ctx);
+    ctx.clockTmId = setTimeout(ctx.tick, ctx.clockUpdInt);
+  },
+  updateClockLabel: function(ctx) {
     var dt = DebugJS.getClockVal();
     var t = dt.yyyy + '-' + dt.mm + '-' + dt.dd + ' ' + DebugJS.WDAYS[dt.wday] + ' ' + dt.hh + ':' + dt.mi + ':' + dt.ss;
     ctx.clockLabel.innerText = t;
-    ctx.clockTmId = setTimeout(ctx.updateClockLabel, ctx.clockUpdInt);
   },
   startUdtClock: function(ctx) {
     ctx.stopUdtClock(ctx);
-    ctx.updateClockLabel();
+    ctx.tick();
   },
   stopUdtClock: function(ctx) {
     if (ctx.clockTmId > 0) {
@@ -7430,6 +7432,10 @@ DebugJS.prototype = {
       ctx.startUdtClock(ctx);
     } else if (v == 'stop') {
       ctx.stopUdtClock(ctx);
+    } else if (v == 'on') {
+      ctx.clockLabel.style.display = '';
+    } else if (v == 'off') {
+      ctx.clockLabel.style.display = 'none';
     } else if (v.match(/^[+-]\d+$/)) {
       ctx._cmdSet(ctx, 'clockoffset', v.replace('+', ''));
       ctx.startUdtClock(ctx);
@@ -7446,7 +7452,7 @@ DebugJS.prototype = {
       DebugJS._log.e('Invalid date format');
     } else {
       ctx._cmdSet(ctx, 'clockoffset', t - now);
-      ctx.startUdtClock(ctx);
+      ctx.updateClockLabel(ctx);
     }
   },
   _cmdClockLabel: function(ctx, v) {
