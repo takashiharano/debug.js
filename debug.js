@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202106200003';
+  this.v = '202106240027';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -52,7 +52,7 @@ var DebugJS = DebugJS || function() {
     borderRadius: '0',
     opacity: '1',
     showLineNums: true,
-    showTimeStamp: true,
+    showTimeStamp: 1,
     resizable: true,
     togglableShowHide: true,
     useClock: true,
@@ -289,7 +289,7 @@ var DebugJS = DebugJS || function() {
   this.fltrBtnWrn = null;
   this.fltrBtnErr = null;
   this.fltrBtnFtl = null;
-  this.dtBtn = null;
+  this.logTimeBtn = null;
   this.fltrInputLabel = null;
   this.fltrInput = null;
   this.fltrText = '';
@@ -341,7 +341,6 @@ var DebugJS = DebugJS || function() {
   this.dndRM = false;
   this.ptDnTm = 0;
   this.ptOpTm = 0;
-  this.logDt = 0;
   this.logFilter = DebugJS.LOG_FLTR_ALL;
   this.toolsActvFnc = DebugJS.TOOLS_DFLT_ACTIVE_FNC;
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
@@ -384,7 +383,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
-    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|date|dump|filter|html|load|preserve|suspend|lv'},
+    {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|dump|filter|html|load|preserve|suspend|time|lv'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -1617,7 +1616,8 @@ DebugJS.prototype = {
   },
 
   createLogFilter: function(ctx) {
-    if (ctx.opt.showTimeStamp) ctx.dtBtn = ctx.createLogFltBtn2(ctx, '(DATE)', 'dtBtn', ctx.logDt, 'logDt', ctx.toggleLogDt);
+    ctx.logTimeBtn = ctx.createLogFltBtn2(ctx, '', 'logTimeBtn', 1, '', ctx.toggleLogTimeStamp);
+    ctx.updateLogTimestampBtn(ctx, ctx.opt.showTimeStamp);
     ctx.fltrBtnAll = ctx.createLogFltBtn('ALL', 'ALL', 'fltrBtnAll', 'btnColor');
     ctx.fltrBtnStd = ctx.createLogFltBtn('L', 'LOG', 'fltrBtnStd', 'fontColor');
     ctx.fltrBtnVrb = ctx.createLogFltBtn('V', 'VRB', 'fltrBtnVrb', 'logColorV');
@@ -1660,8 +1660,14 @@ DebugJS.prototype = {
     var btn = DebugJS.ui.addBtn(ctx.logHdrPanel, label, fn);
     btn.style.marginLeft = '2px';
     DebugJS.setStyle(btn, 'color', (flg) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACT);
+    var mofn = 'DebugJS.setStyle(DebugJS.ctx.' + btnNm + ', \'color\',';
+    if (flgNm) {
+      mofn += ' (DebugJS.ctx.' + flgNm + ') ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACT);';
+    } else {
+      mofn += ' DebugJS.FLT_BTN_COLOR);';
+    }
     btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnNm + ', \'color\', DebugJS.FLT_BTN_COLOR);');
-    btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnNm + ', \'color\', (DebugJS.ctx.' + flgNm + ') ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACT);');
+    btn.onmouseout = new Function(mofn);
     return btn;
   },
 
@@ -2037,7 +2043,7 @@ DebugJS.prototype = {
       var m = msg;
       if (data.type != DebugJS.LOG_TYPE_MLT) {
         if (opt.showTimeStamp) {
-          var tmfn = (ctx.logDt ? DebugJS.getDateTimeStr : DebugJS.getTimeStr);
+          var tmfn = (opt.showTimeStamp == 2 ? DebugJS.getDateTimeStr : DebugJS.getTimeStr);
           m = tmfn(data.time) + ' ' + msg;
         }
       }
@@ -2078,13 +2084,24 @@ DebugJS.prototype = {
     DebugJS.ctx.printLogs();
   },
 
-  toggleLogDt: function() {
-    DebugJS.ctx.setLogDt(DebugJS.ctx, DebugJS.ctx.logDt ? 0 : 1);
+  toggleLogTimeStamp: function() {
+    var v = DebugJS.ctx.opt.showTimeStamp + 1;
+    if (v > 2) v = 0;
+    DebugJS.ctx.setLogTimeStamp(DebugJS.ctx, v);
   },
-  setLogDt: function(ctx, f) {
-    ctx.logDt = f;
-    ctx.updateBtnActive(ctx.dtBtn, ctx.logDt, DebugJS.COLOR_ACTIVE);
+  setLogTimeStamp: function(ctx, v) {
+    ctx.opt.showTimeStamp = v;
+    ctx.updateLogTimestampBtn(ctx, v);
     ctx.printLogs();
+  },
+  updateLogTimestampBtn: function(ctx, v) {
+    var b = '--';
+    if (v == 2) {
+      b = 'DT';
+    } else if (v == 1) {
+      b = '-T';
+    }
+    ctx.logTimeBtn.innerText = '|' + b + '|';
   },
 
   toggleLogFilter: function(fltr) {
@@ -8474,13 +8491,13 @@ DebugJS.prototype = {
     var fn = {
       bufsize: ctx._cmdLogBufsize,
       copy: ctx._cmdLogCopy,
-      date: ctx._cmdLogDate,
       dump: ctx._cmdLogDump,
       filter: ctx._cmdLogFilter,
       html: ctx._cmdLogHtml,
       load: ctx._cmdLogLoad,
       preserve: ctx._cmdLogPreserve,
       suspend: ctx._cmdLogSuspend,
+      time: ctx._cmdLogTime,
       lv: ctx._cmdLogLv
     };
     if (fn[a[0]]) {return fn[a[0]](ctx, arg, echo);}
@@ -8500,18 +8517,6 @@ DebugJS.prototype = {
   _cmdLogCopy: function() {
     var s = DebugJS.html2text(DebugJS.dumpLog('text', false, true));
     DebugJS.copy(s);
-  },
-  _cmdLogDate: function(ctx, arg) {
-    var op = DebugJS.splitArgs(arg)[1];
-    if (op == 'on') {
-      ctx.setLogDt(ctx, 1);
-    } else if (op == 'off') {
-      ctx.setLogDt(ctx, 0);
-    } else {
-      DebugJS.printUsage('log date on|off');
-    }
-    ctx.printLogs();
-    return ctx.logDt;
   },
   _cmdLogDump: function(ctx, arg) {
     arg = DebugJS.splitCmdLineInTwo(arg)[1];
@@ -8587,6 +8592,16 @@ DebugJS.prototype = {
       DebugJS.printUsage('log suspend on|off');
     }
     return ((ctx.status & DebugJS.ST_LOG_SUSPEND) ? true : false);
+  },
+  _cmdLogTime: function(ctx, arg) {
+    var v = DebugJS.splitArgs(arg)[1];
+    if ((v == '0') || (v == '1') || (v == '2')) {
+      ctx.setLogTimeStamp(ctx, v | 0);
+    } else {
+      DebugJS.printUsage('log date 0|1|2');
+    }
+    ctx.printLogs();
+    return ctx.opt.showTimeStamp;
   },
   _cmdLogLv: function(ctx, arg) {
     var a = DebugJS.delAllSP(DebugJS.getArgsFrom(arg, 1));

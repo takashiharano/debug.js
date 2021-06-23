@@ -150,7 +150,7 @@ var options1 = {
 var options2 = {
   visible: true,
   lines: 23,
-  showTimeStamp: false,
+  showTimeStamp: 0,
   disableAllFeatures: true,
   //useSystemInfo: true,
   //useCommandLine: true,
@@ -164,7 +164,7 @@ var options3 = {
   lines: 10,
   bufsize: 10,
   background: 'rgba(0,0,0,0.9)',
-  showTimeStamp: false,
+  showTimeStamp: 0,
   resizable: false,
   disableAllFeatures: true,
   useClearButton: true
@@ -185,7 +185,7 @@ var options4 = {
   promptColor: '#00f',
   bgColor: '255,255,255',
   background: 'rgba(255,255,255,1.0)',
-  showTimeStamp: false,
+  showTimeStamp: 0,
   disableAllFeatures: true,
   //clockColor: '#00f',
   //useClock: true,
@@ -7062,8 +7062,13 @@ If you want to change the debugger settings, explicitly call for initialization 
 
   <tr>
     <td class="name">showTimeStamp</td>
-    <td>Show log timestamp</td>
-    <td>true</td>
+    <td>
+      Show log timestamp<br>
+      0: None<br>
+      1: Time only<br>
+      2: Date and Time<br>
+    </td>
+    <td>1</td>
   </tr>
 
   <tr>
