@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202106240027';
+  this.v = '202107050001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10838,19 +10838,14 @@ DebugJS.getDateTime = function(dt) {
   } else if (typeof dt == 'number') {
     dt = new Date(dt);
   } else if (typeof dt == 'string') {
-    dt = dt.replace(/,/, '.').replace(/(.)-/g, '$1/');
-    var wk = dt.split('.');
-    var _ms = 0;
-    if (wk[1] != undefined) _ms = (wk[1] + '000').substr(0, 3);
-    wk = wk[0].split(' ');
-    var _wkD = wk[0].split('/');
-    var _wkT = (wk[1] ? wk[1].split(':') : []);
-    var _y = _wkD[0] | 0;
-    var _m = _wkD[1] | 0;
-    var _d = _wkD[2] | 0;
-    var _h = _wkT[0] | 0;
-    var _mi = _wkT[1] | 0;
-    var _s = _wkT[2] | 0;
+    var wk = DebugJS.serializeDateTimeString(dt);
+    var _y = wk.substr(0, 4) | 0;
+    var _m = wk.substr(4, 2) | 0;
+    var _d = wk.substr(6, 2) | 0;
+    var _h = wk.substr(8, 2) | 0;
+    var _mi = wk.substr(10, 2) | 0;
+    var _s = wk.substr(12, 2) | 0;
+    var _ms = wk.substr(14, 3);
     dt = new Date(_y, _m - 1, _d, _h, _mi, _s, _ms);
     dt.setFullYear(_y);
   }
@@ -10869,40 +10864,44 @@ DebugJS.getDateTime = function(dt) {
   if (hh < 10) hh = '0' + hh;
   if (mi < 10) mi = '0' + mi;
   if (ss < 10) ss = '0' + ss;
-  if (ms < 10) {ms = '00' + ms;}
-  else if (ms < 100) {ms = '0' + ms;}
+  if (ms < 10) {ms = '00' + ms;} else if (ms < 100) {ms = '0' + ms;}
   var dateTime = {time: time, offset: offset, yyyy: yyyy, mm: mm, dd: dd, hh: hh, mi: mi, ss: ss, sss: ms, wday: wd};
   return dateTime;
 };
+DebugJS.serializeDateTimeString = function(s) {
+  var w = s.trim().replace(/\s{2,}/g, ' ').replace(/T/, ' ').replace(/,/, '.');
+  if (!w.match(/[-/:]/)) return DebugJS._serializeDateTimeString(w);
+  var prt = w.split(' ');
+  var date = prt[0];
+  var time = (prt[1] ? prt[1] : '');
+  date = date.replace(/\//g, '-');
+  prt = date.split('-');
+  var y = prt[0];
+  var m = DebugJS.lpad(prt[1], '0', 2);
+  var d = DebugJS.lpad(prt[2], '0', 2);
+  date = y + m + d;
+  prt = time.split('.');
+  var ms = '';
+  if (prt[1]) {
+    ms = prt[1];
+    time = prt[0];
+  }
+  prt = time.split(':');
+  var hh = prt[0] | 0;
+  var mi = prt[1] | 0;
+  var ss = prt[2] | 0;
+  hh = DebugJS.lpad(hh, '0', 2);
+  mi = DebugJS.lpad(mi, '0', 2);
+  ss = DebugJS.lpad(ss, '0', 2);
+  time = hh + mi + ss + ms;
+  return DebugJS._serializeDateTimeString(date + time);
+};
+DebugJS._serializeDateTimeString = function(s) {
+  s = s.replace(/-/g, '').replace(/\s/g, '').replace(/:/g, '').replace(/\./g, '');
+  return (s + '000000000').substr(0, 17);
+};
 DebugJS.getClockVal = function() {
   return DebugJS.getDateTime(Date.now() + (+DebugJS.ctx.props.clockoffset));
-};
-DebugJS.getDateTimeByIso = function(s) {
-  var p = s.replace(/[.,]/, '').split('T');
-  var d = p[0];
-  var t = p[1];
-  var yyyy = d.substr(0, 4);
-  var mm = d.substr(4, 2);
-  var dd = d.substr(6, 2);
-  var hh = (t.substr(0, 2) + '00').substr(0, 2);
-  var mi = (t.substr(2, 2) + '00').substr(0, 2);
-  var ss = (t.substr(4, 2) + '00').substr(0, 2);
-  var sss = (t.substr(6, 3) + '000').substr(0, 3);
-  var dt = new Date(yyyy, (mm | 0) - 1, dd, hh, mi, ss, sss);
-  return DebugJS.getDateTime(dt);
-};
-DebugJS.getDateTimeEx = function(s) {
-  if (DebugJS.isDateTimeFormatIso(s)) {
-    return DebugJS.getDateTimeByIso(s);
-  }
-  if (typeof s == 'string') {
-    s = s.replace(/-/g, '/');
-    var dec = s.split('.');
-    if (dec.length > 0) s = dec[0];
-    s = (new Date(s)).getTime();
-    if (dec.length > 0) s += +((dec[1] + '000').substr(0, 3));
-  }
-  return DebugJS.getDateTime(s);
 };
 DebugJS.getDateWithTimestamp = function(val, iso) {
   var o = DebugJS.getDateTimeAndTimestamp(val, iso);
@@ -10941,22 +10940,15 @@ DebugJS.getDateTimeAndTimestamp = function(val, iso) {
   return o;
 };
 DebugJS._getDateTimeAndTimestamp = function(v, tz, iso) {
-  var dt;
   var _v = v.replace(/-/g, '').replace(/:/g, '');
-  if (DebugJS.isTHHMM(_v)) _v = DebugJS.today('') + _v;
-  if (DebugJS.isDateTimeFormatIso(_v)) {
-    dt = DebugJS.getDateTimeByIso(_v);
-  } else {
-    v = v.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
-    dt = DebugJS.getDateTime(v);
-  }
+  if (DebugJS.isTHHMM(_v)) v = DebugJS.today('') + _v;
+  var dt = DebugJS.getDateTime(v);
   var loc = DebugJS.jsTzOffset2ms(dt.offset);
   var tgt = DebugJS.tzOffset2ms(tz);
   var df = loc - tgt;
   v = dt.time + df;
   var s = DebugJS.int2DateStr(v, tz, iso);
-  var o = {timestamp: v, datetime: s};
-  return o;
+  return {timestamp: v, datetime: s};
 };
 DebugJS.isTHHMM = function(v) {
   return ((v.match(/^T\d{4,}$/)) ? true : false);
@@ -11215,7 +11207,7 @@ DebugJS.cnv2ms = function(t) {
     if (DebugJS.isClockFormat(s)) {
       s = DebugJS.getTimeStampOfDay(s);
     } else {
-      s = DebugJS.getDateTimeEx(s).time;
+      s = DebugJS.getDateTime(s).time;
     }
   }
   return s;
