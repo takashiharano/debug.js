@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202107050001';
+  this.v = '202107250005';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5214,7 +5214,7 @@ DebugJS.prototype = {
   },
   drawStopwatch: function() {
     var tm = DebugJS.ms2struct(DebugJS.ctx.timerSwVal, true);
-    DebugJS.ctx.timerSwLabel.innerHTML = DebugJS.ctx.createTimerStr(tm);
+    DebugJS.ctx.timerSwLabel.innerHTML = DebugJS.ctx.buildTmrStr(tm);
   },
   updateTimerSwBtns: function() {
     var ctx = DebugJS.ctx;
@@ -5240,7 +5240,7 @@ DebugJS.prototype = {
     DebugJS.setStyle(ctx.timerSplitBtn, 'color', color);
     ctx.timerSplitBtn.onclick = fn;
   },
-  createTimerStr: function(tm) {
+  buildTmrStr: function(tm) {
     var ctx = DebugJS.ctx;
     var fontSize = ctx.computedFontSize * 7;
     var msFontSize = fontSize * 0.65;
@@ -5253,7 +5253,9 @@ DebugJS.prototype = {
       if (now.sss > 500) {
         str = '&nbsp;<span style="font-size:' + msFontSize + 'px !important">' + '&nbsp;</span>';
       } else {
-        str = '<span style=' + pfxStyle + '>' + pfx + '</span>' + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">.' + tm.sss + '</span>';
+        str = '<span style=' + pfxStyle + '>' + pfx + '</span>';
+        if (tm.d) str += tm.d + 'd';
+        str += tm.hr + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">.' + tm.sss + '</span>';
       }
     } else {
       var dot;
@@ -5267,7 +5269,9 @@ DebugJS.prototype = {
         styleS = '<span style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">';
         styleE = '</span>';
       }
-      str = '<span style=' + pfxStyle + '>' + pfx + '</span>' + styleS + tm.hh + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>' + styleE;
+      str = '<span style=' + pfxStyle + '>' + pfx + '</span>' + styleS;
+      if (tm.d) str += tm.d + 'd';
+      str += tm.hr + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>' + styleE;
     }
     return '<div style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
   },
@@ -11096,7 +11100,10 @@ DebugJS.getTimeStr = function(d) {
 DebugJS.getTmrStr = function(ms) {
   var t = DebugJS.ms2struct(ms, true);
   var pfx = 'T' + (t.sign ? '-' : '+');
-  return pfx + t.hh + ':' + t.mi + ':' + t.ss + '.' + t.sss;
+  var s = pfx;
+  if (t.d) s += t.d + 'd';
+  s += t.hr + ':' + t.mi + ':' + t.ss + '.' + t.sss;
+  return s;
 };
 DebugJS.ms2str = function(v, m) {
   if (m == 1) {
