@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202107250005';
+  this.v = '202107270000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4829,6 +4829,7 @@ DebugJS.prototype = {
     var marginB = 40 * ctx.zoom;
     panel.stopWatchLabel = document.createElement('div');
     panel.stopWatchLabel.style.margin = marginT + 'px 0 ' + marginB + 'px 0';
+    panel.stopWatchLabel.style.whiteSpace = 'nowrap';
     panel.basePanel.appendChild(panel.stopWatchLabel);
 
     var btns = document.createElement('div');
@@ -5254,7 +5255,7 @@ DebugJS.prototype = {
         str = '&nbsp;<span style="font-size:' + msFontSize + 'px !important">' + '&nbsp;</span>';
       } else {
         str = '<span style=' + pfxStyle + '>' + pfx + '</span>';
-        if (tm.d) str += tm.d + 'd';
+        if (tm.d) str += '<span style="margin-right:10px;font-size:' + fontSize + 'px !important">' + tm.d + 'd</span>';
         str += tm.hr + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">.' + tm.sss + '</span>';
       }
     } else {
@@ -5270,7 +5271,7 @@ DebugJS.prototype = {
         styleE = '</span>';
       }
       str = '<span style=' + pfxStyle + '>' + pfx + '</span>' + styleS;
-      if (tm.d) str += tm.d + 'd';
+      if (tm.d) str += '<span style="margin-right:10px;font-size:' + fontSize + 'px !important">' + tm.d + 'd</span>';
       str += tm.hr + ':' + tm.mi + ':' + tm.ss + '<span style="color:' + color + ' !important;font-size:' + msFontSize + 'px !important">' + dot + tm.sss + '</span>' + styleE;
     }
     return '<div style="color:' + color + ' !important;font-size:' + fontSize + 'px !important">' + str + '</div>';
