@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202107311846';
+  this.v = '202108010003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1227,18 +1227,19 @@ DebugJS.prototype = {
   },
 
   rmvEventHandlers: function(ctx) {
-    window.removeEventListener('keydown', ctx.keyHandler, true);
-    window.removeEventListener('mousedown', ctx.onMouseDown, true);
-    window.removeEventListener('mousemove', ctx.onMouseMove, true);
-    window.removeEventListener('mouseup', ctx.onMouseUp, true);
-    window.removeEventListener('resize', ctx.onResize, true);
-    window.removeEventListener('scroll', ctx.onScroll, true);
-    window.removeEventListener('keydown', ctx.onKeyDown, true);
-    window.removeEventListener('keypress', ctx.onKeyPress, true);
-    window.removeEventListener('keyup', ctx.onKeyUp, true);
-    window.removeEventListener('touchstart', ctx.onTouchStart, true);
-    window.removeEventListener('touchmove', ctx.onTouchMove, true);
-    window.removeEventListener('touchend', ctx.onTouchEnd, true);
+    var f =  window.removeEventListener;
+    f('keydown', ctx.keyHandler, true);
+    f('mousedown', ctx.onMouseDown, true);
+    f('mousemove', ctx.onMouseMove, true);
+    f('mouseup', ctx.onMouseUp, true);
+    f('resize', ctx.onResize, true);
+    f('scroll', ctx.onScroll, true);
+    f('keydown', ctx.onKeyDown, true);
+    f('keypress', ctx.onKeyPress, true);
+    f('keyup', ctx.onKeyUp, true);
+    f('touchstart', ctx.onTouchStart, true);
+    f('touchmove', ctx.onTouchMove, true);
+    f('touchend', ctx.onTouchEnd, true);
   },
 
   initUiStatus: function(ctx, opt, rstrOpt) {
@@ -1627,10 +1628,7 @@ DebugJS.prototype = {
     ctx.fltrBtnErr = ctx.createLogFltBtn('E', 'ERR', 'fltrBtnErr', 'logColorE');
     ctx.fltrBtnFtl = ctx.createLogFltBtn('F', 'FTL', 'fltrBtnFtl', 'logColorF');
 
-    var style = {
-      'margin-left': '4px',
-      'color': ctx.opt.sysInfoColor
-    };
+    var style = {'margin-left': '4px', 'color': ctx.opt.sysInfoColor};
     ctx.fltrInputLabel = DebugJS.ui.addElement(ctx.logHdrPanel, 'span', style, true);
     ctx.fltrInputLabel.innerText = 'Search:';
 
@@ -2277,14 +2275,10 @@ DebugJS.prototype = {
     if (DebugJS.hasClass(el, 'dbg-nomove')) return false;
     var ua = DebugJS.getBrowserType();
     if ((ua.family == 'IE') || (ua.name == 'Firefox')) {
-      if ((el == ctx.logPanel) ||
-          (el == ctx.sysInfoPanel) ||
-          (el == ctx.elmInfoBodyPanel) ||
-          (el == ctx.htmlSrcBodyPanel) ||
-          (el == ctx.filePreviewWrapper) ||
-          (el == ctx.toolsPanel) ||
-          (el == ctx.extPanel) ||
-          (el == ctx.extBodyPanel)) {
+      if ((el == ctx.logPanel) || (el == ctx.sysInfoPanel) ||
+          (el == ctx.elmInfoBodyPanel) || (el == ctx.htmlSrcBodyPanel) ||
+          (el == ctx.filePreviewWrapper) || (el == ctx.toolsPanel) ||
+          (el == ctx.extPanel) || (el == ctx.extBodyPanel)) {
         var scrollBarWH = 17;
         var rect = el.getBoundingClientRect();
         var scrollL = rect.left + rect.width - scrollBarWH;
@@ -2784,9 +2778,7 @@ DebugJS.prototype = {
         if (DebugJS.cmd.hasFocus()) {
           cmds = ctx.cmdHistoryBuf.getAll();
           if (cmds.length == 0) return;
-          if (ctx.cmdHistoryIdx < cmds.length) {
-            ctx.cmdHistoryIdx++;
-          }
+          if (ctx.cmdHistoryIdx < cmds.length) ctx.cmdHistoryIdx++;
           if (ctx.cmdHistoryIdx == cmds.length) {
             ctx.cmdLine.value = ctx.cmdTmp;
           } else {
@@ -2843,12 +2835,8 @@ DebugJS.prototype = {
   },
   onKeyDown: function(e) {
     var ctx = DebugJS.ctx;
-    if (ctx.opt.useDeviceInfo) {
-      ctx.updateStatusInfoOnKeyDown(ctx, e);
-    }
-    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) {
-      ctx.procOnProtectedD(ctx, e);
-    }
+    if (ctx.opt.useDeviceInfo) ctx.updateStatusInfoOnKeyDown(ctx, e);
+    if (ctx.uiStatus & DebugJS.UI_ST_PROTECTED) ctx.procOnProtectedD(ctx, e);
   },
   onKeyPress: function(e) {
     var ctx = DebugJS.ctx;
@@ -2857,12 +2845,8 @@ DebugJS.prototype = {
   },
   onKeyUp: function(e) {
     var ctx = DebugJS.ctx;
-    if (ctx.opt.useDeviceInfo) {
-      ctx.updateStatusInfoOnKeyUp(ctx, e);
-    }
-    if (e.keyCode == 18) {
-      ctx.enableDraggable(ctx);
-    }
+    if (ctx.opt.useDeviceInfo) ctx.updateStatusInfoOnKeyUp(ctx, e);
+    if (e.keyCode == 18) ctx.enableDraggable(ctx);
   },
 
   procOnProtectedD: function(ctx, e) {
@@ -2958,16 +2942,12 @@ DebugJS.prototype = {
     switch (e.button) {
       case 0:
         ctx.mouseClick0 = DebugJS.COLOR_ACTIVE;
-        if (ctx.status & DebugJS.ST_MEASURE) {
-          ctx.startMeasure(ctx, posX, posY);
-        }
+        if (ctx.status & DebugJS.ST_MEASURE) ctx.startMeasure(ctx, posX, posY);
         if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
           DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_S)) + '</span>');
           ctx.resetStopwatch();
         }
-        if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) {
-          DebugJS.bat._resume('cmd');
-        }
+        if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) DebugJS.bat._resume('cmd');
         break;
       case 1:
         ctx.mouseClick1 = DebugJS.COLOR_ACTIVE;
@@ -3041,9 +3021,7 @@ DebugJS.prototype = {
   },
   _onPointerUp: function(ctx, e) {
     var el = e.target;
-    if (ctx.status & DebugJS.ST_MEASURING) {
-      ctx.stopMeasure(ctx);
-    }
+    if (ctx.status & DebugJS.ST_MEASURING) ctx.stopMeasure(ctx);
     if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
       ctx.endMove(ctx);
       if ((el != ctx.extActivePanel) && (!DebugJS.isDescendant(el, ctx.extActivePanel))) {
@@ -5327,15 +5305,15 @@ DebugJS.prototype = {
     var dfltFontWeight = 400;
     var dfltFgRGB16 = 'fff';
     var dfltBgRGB16 = '000';
-    var panelPadding = 2;
+    var panelPdng = 2;
     ctx.txtChkPanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
-    var txtPadding = 4;
+    var txtPdng = 4;
 
     var style = {
-      'width': 'calc(100% - ' + ((txtPadding + panelPadding) * 2) + 'px)',
+      'width': 'calc(100% - ' + ((txtPdng + panelPdng) * 2) + 'px)',
       'min-height': (20 * ctx.zoom) + 'px',
       'margin-bottom': '8px',
-      'padding': txtPadding + 'px',
+      'padding': txtPdng + 'px',
       'border': '0',
       'border-radius': '0',
       'outline': 'none',
@@ -6024,10 +6002,14 @@ DebugJS.prototype = {
     }
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     ctx.setDataUrl(ctx, scheme, data);
-    if (ctx.decMode == 'bsb64') {
-      ctx.decodeFileVwrDataBSB64(ctx, data, mode, scheme);
-    } else {
-      ctx.decodeFileVwrDataB64(ctx, data, mode, scheme);
+    try {
+      if (ctx.decMode == 'bsb64') {
+        ctx.decodeFileVwrDataBSB64(ctx, data, mode, scheme);
+      } else {
+        ctx.decodeFileVwrDataB64(ctx, data, mode, scheme);
+      }
+    } catch (e) {
+      ctx.showFilePreview(ctx, null, scheme, 'DECODE ERROOR');
     }
   },
   decodeFileVwrDataB64: function(ctx, src, mode, scheme) {
@@ -6395,9 +6377,7 @@ DebugJS.prototype = {
       }
       if ((i + 1) < len) {
         b += '\n';
-        if (showAddr) {
-          b += DebugJS.dumpAddr(i + 1);
-        }
+        if (showAddr) b += DebugJS.dumpAddr(i + 1);
       }
     } else if (showSp) {
       if ((i + 1) % 8 == 0) {
@@ -6485,9 +6465,7 @@ DebugJS.prototype = {
     setStyle(ctx.fileVwrB64Btn, 'color', DebugJS.COLOR_INACT);
     setStyle(ctx.fileVwrBsbBtn, 'color', '');
     var m = ctx.fileVwrDecMode;
-    if ((m == 'hex') || (m == 'bin')) {
-      ctx.setDecMode(ctx, 'b64');
-    }
+    if ((m == 'hex') || (m == 'bin')) ctx.setDecMode(ctx, 'b64');
     setStyle(ctx.fileVwrBSB64nL, 'color', '#ccc');
     setStyle(ctx.fileVwrBSB64n, 'color', '#ccc');
     ctx.fileVwrRadioB64.disabled = true;
@@ -7047,9 +7025,7 @@ DebugJS.prototype = {
       cl = DebugJS.replaceCmdVals(cl);
       ret = ctx.__execCmd(ctx, cl, echo);
     }
-    if (setValName != null) {
-      DebugJS.setCmdVal(setValName, ret);
-    }
+    if (setValName != null) DebugJS.setCmdVal(setValName, ret);
     return ret;
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
@@ -9485,9 +9461,9 @@ DebugJS.prototype = {
     var r = null;
     arg = DebugJS.delAllSP(arg);
     if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]\d{1,}/)) return r;
-    var byTheDay = false;
+    var byDays = false;
     if (arg.match(/d$/i)) {
-      byTheDay = true;
+      byDays = true;
       arg = arg.substr(0, arg.length - 1);
     }
     var ops = arg.match(/[+\-*/]/g);
@@ -9528,7 +9504,7 @@ DebugJS.prototype = {
       p = opp + 1;
       vL = r;
     }
-    r = DebugJS.fmtCalcTime(r, byTheDay);
+    r = DebugJS.fmtCalcTime(r, byDays);
     if (echo) DebugJS._log.res(r);
     return r;
   },
@@ -9795,6 +9771,9 @@ DebugJS.prototype = {
         break;
       case 't0':
         stopwatch.t0(0, v);
+        break;
+      case 'time':
+      case 'value':
         break;
       default:
         return;
@@ -10259,9 +10238,7 @@ DebugJS.prototype = {
     if (pnls.length > 0) {
       for (i = 0; i < pnls.length; i++) {
         var p = pnls[i];
-        if ((p != null) && !p.hidden) {
-          ctx.extHdrPanel.appendChild(p.btn);
-        }
+        if ((p != null) && !p.hidden) ctx.extHdrPanel.appendChild(p.btn);
       }
     } else {
       DebugJS.showExtBtn(false);
@@ -12663,22 +12640,22 @@ DebugJS.Base64.encode = function(arr) {
   for (var i = 0; i < 62; i++) {
     tbl[i] = (i < 26 ? i + 65 : (i < 52 ? i + 71 : i - 4));
   }
-  var str = '';
+  var s = '';
   for (i = 0; i < len; i += 3) {
-    str += String.fromCharCode(
+    s += String.fromCharCode(
       tbl[arr[i] >>> 2],
       tbl[(arr[i] & 3) << 4 | arr[i + 1] >>> 4],
       tbl[(i + 1) < len ? (arr[i + 1] & 15) << 2 | arr[i + 2] >>> 6 : 64],
       tbl[(i + 2) < len ? (arr[i + 2] & 63) : 64]
     );
   }
-  return str;
+  return s;
 };
-DebugJS.Base64.decode = function(str) {
+DebugJS.Base64.decode = function(s) {
   var arr = [];
-  if (str.length == 0) return arr;
-  for (var i = 0; i < str.length; i++) {
-    var c = str.charCodeAt(i);
+  if (s.length == 0) return arr;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charCodeAt(i);
     if (!(((c >= 0x30) && (c <= 0x39)) || ((c >= 0x41) && (c <= 0x5A)) || ((c >= 0x61) && (c <= 0x7A)) || (c == 0x2B) || (c == 0x2F) || (c == 0x3D))) {
       DebugJS._log.e('invalid b64 char: 0x' + c.toString(16).toUpperCase() + ' at ' + i);
       return arr;
@@ -12689,9 +12666,9 @@ DebugJS.Base64.decode = function(str) {
     tbl[i < 26 ? i + 65 : (i < 52 ? i + 71 : i - 4)] = i;
   }
   var buf = [];
-  for (i = 0; i < str.length; i += 4) {
+  for (i = 0; i < s.length; i += 4) {
     for (var j = 0; j < 4; j++) {
-      buf[j] = tbl[str.charCodeAt(i + j) || 0];
+      buf[j] = tbl[s.charCodeAt(i + j) || 0];
     }
     arr.push(
       buf[0] << 2 | (buf[1] & 63) >>> 4,
@@ -13047,11 +13024,11 @@ DebugJS.divTime = function(t, v) {
   if (isNaN(s)) return NaN;
   return s / v;
 };
-DebugJS.fmtCalcTime = function(ms, byTheDay) {
+DebugJS.fmtCalcTime = function(ms, byDays) {
   var A_DAY = 86400000;
   var s = ms < 0;
   var days = 0;
-  if (byTheDay) {
+  if (byDays) {
     if (s) {
       ms *= (-1);
       days = ((ms / A_DAY) | 0);
@@ -13066,7 +13043,7 @@ DebugJS.fmtCalcTime = function(ms, byTheDay) {
     }
   }
   var t = DebugJS.ms2struct(ms);
-  var hh = (byTheDay ? t.hr : t.hh);
+  var hh = (byDays ? t.hr : t.hh);
   if (hh < 10) hh = '0' + hh;
   var r = (t.sign ? '-' : '') + hh + ':' + ('0' + t.mi).slice(-2) + ':' + ('0' + t.ss).slice(-2) + '.' + ('00' + t.sss).slice(-3);
   if (days > 0) {
@@ -14644,9 +14621,7 @@ DebugJS.stopwatch.stop = function(n) {
   if (n == 0) {
     DebugJS.ctx.stopStopwatch();
   } else {
-    if (DebugJS.stopwatch()) {
-      DebugJS.ctx.stopTimerStopwatch();
-    }
+    if (DebugJS.stopwatch()) DebugJS.ctx.stopTimerStopwatch();
   }
 };
 DebugJS.stopwatch.end = function(n, m) {
@@ -14654,9 +14629,7 @@ DebugJS.stopwatch.end = function(n, m) {
     DebugJS.ctx.endStopwatch();
   } else {
     n = 1;
-    if (DebugJS.stopwatch()) {
-      DebugJS.ctx.endTimerStopwatch(DebugJS.ctx);
-    }
+    if (DebugJS.stopwatch()) DebugJS.ctx.endTimerStopwatch(DebugJS.ctx);
   }
   if (m) DebugJS.stopwatch.log(n, m);
   return DebugJS.stopwatch.val(n);
@@ -14666,18 +14639,14 @@ DebugJS.stopwatch.split = function(n) {
   if (n == 0) {
     ctx.splitStopwatch();
   } else {
-    if (ctx.isAvailableTools(ctx)) {
-      ctx.splitTimerStopwatch();
-    }
+    if (ctx.isAvailableTools(ctx)) ctx.splitTimerStopwatch();
   }
 };
 DebugJS.stopwatch.reset = function(n) {
   if (n == 0) {
     DebugJS.ctx.resetStopwatch();
   } else {
-    if (DebugJS.stopwatch()) {
-      DebugJS.ctx.resetTimerStopwatch();
-    }
+    if (DebugJS.stopwatch()) DebugJS.ctx.resetTimerStopwatch();
   }
 };
 DebugJS.stopwatch.t0 = function(n, v) {
@@ -14916,9 +14885,7 @@ DebugJS.bat.store = function(b) {
   b = b.replace(/(\r?\n|\r)/g, '\n');
   bat.cmds = b.split('\n');
   var last = bat.cmds.pop();
-  if (last != '') {
-    bat.cmds.push(last);
-  }
+  if (last != '') bat.cmds.push(last);
   bat.parseLabelFncs();
   bat.initCtrl(true);
   DebugJS.ctx.updateTotalLine();
@@ -14953,9 +14920,7 @@ DebugJS.bat.run = function(s, e, a) {
   var bat = DebugJS.bat;
   bat.run.arg.s = s;
   bat.run.arg.e = e;
-  if (a != undefined) {
-    bat.setExecArg(a);
-  }
+  if (a != undefined) bat.setExecArg(a);
   bat._run();
 };
 DebugJS.bat._run = function() {
@@ -16093,21 +16058,17 @@ DebugJS.point._init = function() {
 DebugJS.point.show = function() {
   var point = DebugJS.point;
   var ptr = point.getPtr();
-  if (!ptr.el) {
-    point.createPtr();
-  } else {
+  if (ptr.el) {
     document.body.appendChild(ptr.el);
+  } else {
+    point.createPtr();
   }
   var area = point.hint.getArea();
-  if (area.visible) {
-    point.hint.show();
-  }
+  if (area.visible) point.hint.show();
 };
 DebugJS.point.hide = function() {
   var ptr = DebugJS.point.getPtr();
-  if (ptr.el && ptr.el.parentNode) {
-    document.body.removeChild(ptr.el);
-  }
+  if (ptr.el && ptr.el.parentNode) document.body.removeChild(ptr.el);
   DebugJS.point.hint.hide(true);
 };
 DebugJS.point.cursor = function(src, w, h) {
@@ -16601,9 +16562,7 @@ DebugJS.point.drag.proc = function() {
   }
 };
 DebugJS.point.drag.cancel = function() {
-  if (DebugJS.point.drag.data.step == 2) {
-    DebugJS.point.move.stop();
-  }
+  if (DebugJS.point.drag.data.step == 2) DebugJS.point.move.stop();
   DebugJS.point.drag.stop();
 };
 DebugJS.point.drag.stop = function() {
@@ -16723,9 +16682,7 @@ DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
 DebugJS.point.hint = function(msg, speed, step, start, end) {
   var hint = DebugJS.point.hint;
   var area = hint.getArea();
-  if (!area.el) {
-    hint.createArea();
-  }
+  if (!area.el) hint.createArea();
   document.body.appendChild(area.el);
   try {
     var m = eval(msg) + '';
@@ -17395,12 +17352,7 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
     got = DebugJS.trimDownText(got, lm);
   }
   var rslt = {
-    label: label,
-    status: st,
-    method: method,
-    exp: exp,
-    got: got,
-    info: info
+    label: label, status: st, method: method, exp: exp, got: got,info: info
   };
   data.results[id].results.push(rslt);
 };
@@ -17758,16 +17710,12 @@ DebugJS.getLabelEl = function(label, idx) {
   return el;
 };
 
-DebugJS.findFocusableEl = function(e) {
-  var el = e;
-  do {
-    if (el.tagName == 'HTML') {
-      el = null;
-      break;
-    }
+DebugJS.findFocusableEl = function(el) {
+  while (el != null) {
+    if (el.tagName == 'HTML') return null;
     if (DebugJS.isFocusable(el)) break;
     el = el.parentNode;
-  } while (el != null);
+  }
   return el;
 };
 DebugJS.isFocusable = function(el) {
