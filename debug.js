@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202107270000';
+  this.v = '202107311846';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -404,7 +404,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
-    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [0|1] start|stop|reset|split|end|val|t0 V'},
+    {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [0|1] start|stop|reset|split|end|time|value|t0 V'},
     {cmd: 'strp', fn: this.cmdStrP, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR" [INDEX]'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
@@ -2499,6 +2499,7 @@ DebugJS.prototype = {
   },
   startStopwatch: function() {
     var ctx = DebugJS.ctx;
+    if (ctx.status & DebugJS.ST_STOPWATCH_RUNNING) return;
     if (ctx.status & DebugJS.ST_STOPWATCH_END) ctx.resetStopwatch();
     ctx.status |= DebugJS.ST_STOPWATCH_RUNNING;
     DebugJS.time.restart(DebugJS.TMR_NM_SW_S);
@@ -2548,9 +2549,7 @@ DebugJS.prototype = {
         str = '<span style="color:' + ctx.opt.timerColor + ' !important">' + str + '</span>';
       } else if (ctx.status & DebugJS.ST_STOPWATCH_END) {
         var now = DebugJS.getDateTime();
-        if (now.sss > 500) {
-          str = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        }
+        if (now.sss > 500) str = DebugJS.repeatCh('&nbsp;', 14);
       }
       ctx.swLabel.innerHTML = str;
     }
@@ -5091,6 +5090,7 @@ DebugJS.prototype = {
   startTimerStopwatch: function() {
     var now = Date.now();
     var ctx = DebugJS.ctx;
+    if (ctx.toolStatus & DebugJS.TOOL_ST_SW_RUNNING) return;
     var timerV;
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_END) ctx.resetTimerStopwatch();
     if (ctx.toolStatus & DebugJS.TOOL_ST_SW_PAUSED) {
@@ -9748,7 +9748,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdStopwatch: function(arg, tbl) {
+  cmdStopwatch: function(arg, tbl, echo) {
     var a = DebugJS.splitArgs(arg);
     var n = 0;
     var op = a[0];
@@ -9759,6 +9759,7 @@ DebugJS.prototype = {
       v = a[2];
     }
     var r;
+    if ((op != 't0') && (op != 'value')) v = undefined;
     if (n == 0) {
       r = DebugJS.ctx._cmdStopwatch(op, v);
     } else if (n == 1) {
@@ -9768,7 +9769,10 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return r;
     }
-    if (op == 'val') DebugJS._log('sw' + n + ': ' + DebugJS.getTmrStr(r));
+    if (op == 'time') r = DebugJS.getTmrStr(r);
+    if ((op == 'time') || (op == 'value')) {
+      if (echo) DebugJS._log.res(r);
+    }
     return r;
   },
   _cmdStopwatch: function(op, v) {
@@ -9791,8 +9795,6 @@ DebugJS.prototype = {
         break;
       case 't0':
         stopwatch.t0(0, v);
-        return stopwatch.val(0);
-      case 'val':
         break;
       default:
         return;
@@ -9826,7 +9828,9 @@ DebugJS.prototype = {
       case 't0':
         stopwatch.t0(1, v);
         return ctx._updateTimerStopwatch(ctx);
-      case 'val':
+      case 'time':
+        return stopwatch.val(1);
+      case 'value':
         stopwatch.val(1, v);
         break;
       default:
@@ -14632,9 +14636,7 @@ DebugJS.stopwatch.start = function(n, m) {
     DebugJS.ctx.startStopwatch();
   } else {
     n = 1;
-    if (DebugJS.stopwatch()) {
-      DebugJS.ctx.startTimerStopwatch();
-    }
+    if (DebugJS.stopwatch()) DebugJS.ctx.startTimerStopwatch();
   }
   if (m) DebugJS.stopwatch.log(n, m);
 };
