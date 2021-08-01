@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108011433';
+  this.v = '202108011613';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -726,7 +726,7 @@ DebugJS.JS_SNIPPET = [
 '',
 '',
 '',
-'// Logging performance check\nvar n = 1000;\nvar i = 0;\ndbg.time.s(\'total\');\ntest();\nfunction test() {\n  dbg.time.s();\n  dbg.time.e();\n  i++;\n  if (i == n) {\n    dbg.msg.clear();\n    dbg.time.e(\'total\');\n  } else {\n    if (i % 100 == 0) {\n      dbg.msg(\'i=\' + i + \' \' + dbg.time.check(\'total\'));\n    }\n    setTimeout(test, 0);\n  }\n}'
+''
 ];
 DebugJS.HTML_SNIPPET = [
 '<div style="width:100%; height:100%; background:#fff; color:#000;">\n\n</div>\n',
@@ -736,23 +736,10 @@ DebugJS.HTML_SNIPPET = [
 '<!DOCTYPE html>\n<html>\n<head>\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<meta charset="utf-8">\n<meta name="robots" content="none">\n<meta name="referrer" content="no-referrer">\n<meta name="referrer" content="never">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\nonReady = function() {\n};\nonLoad = function() {\n};\nwindow.addEventListener(\'DOMContentLoaded\', onReady, true);\nwindow.addEventListener(\'load\', onLoad, true);\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
-  'togglableShowHide',
-  'useClock',
-  'useClearButton',
-  'useSuspendLogButton',
-  'usePinButton',
-  'useWinCtrlButton',
-  'useStopwatch',
-  'useDeviceInfo',
-  'useLed',
-  'useMsgDisplay',
-  'useScreenMeasure',
-  'useSystemInfo',
-  'useElementInfo',
-  'useHtmlSrc',
-  'useTools',
-  'useJsEditor',
-  'useLogFilter',
+  'togglableShowHide', 'useClock', 'useClearButton', 'useSuspendLogButton',
+  'usePinButton', 'useWinCtrlButton', 'useStopwatch', 'useDeviceInfo',
+  'useLed', 'useMsgDisplay', 'useScreenMeasure', 'useSystemInfo',
+  'useElementInfo', 'useHtmlSrc', 'useTools', 'useJsEditor', 'useLogFilter',
   'useCommandLine'
 ];
 DebugJS.TZ = {'HST': '-10', 'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
@@ -3467,7 +3454,6 @@ DebugJS.prototype = {
       ctx.overlayBasePanel = document.createElement('div');
       ctx.overlayBasePanel.className = 'dbg-overlay-base-panel';
       ctx.mainPanel.appendChild(ctx.overlayBasePanel);
-      //ctx.mainPanel.insertBefore(ctx.overlayBasePanel, ctx.logPanel); // to bottom
     }
     ctx.overlayBasePanel.appendChild(panel);
     ctx.overlayPanels.push(panel);
@@ -3494,6 +3480,10 @@ DebugJS.prototype = {
   },
   removeOverlayPanelFull: function(panel) {
     if (panel.parentNode) DebugJS.ctx.mainPanel.removeChild(panel);
+  },
+
+  getDbgWinElm: function(n) {
+    return document.getElementById(DebugJS.ctx.id + '-' + n);
   },
 
   toggleSystemInfo: function() {
@@ -3857,9 +3847,9 @@ DebugJS.prototype = {
 
   showHideByName: function(name) {
     var ctx = DebugJS.ctx;
-    var btn = document.getElementById(ctx.id + '-' + name + '__button');
-    var prtBdy = document.getElementById(ctx.id + '-' + name + '__prt-body');
-    var body = document.getElementById(ctx.id + '-' + name + '__body');
+    var btn = ctx.getDbgWinElm(name + '__button');
+    var prtBdy = ctx.getDbgWinElm(name + '__prt-body');
+    var body = ctx.getDbgWinElm(name + '__body');
     if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
       btn.innerHTML = DebugJS.CLOSEBTN;
       prtBdy.style.display = 'none';
@@ -4099,17 +4089,14 @@ DebugJS.prototype = {
     var allStyles = '';
     var MIN_KEY_LEN = 20;
     for (var k in cStyle) {
-      if (!k.match(/^\d.*/)) {
-        if (typeof cStyle[k] != 'function') {
-          var indent = '';
-          if (k.length < MIN_KEY_LEN) {
-            for (var i = 0; i < (MIN_KEY_LEN - k.length); i++) {
-              indent += ' ';
-            }
-          }
-          allStyles += ' ' + k + indent + ': ' + cStyle[k] + '\n';
+      if ((k.match(/^\d.*/)) || (typeof cStyle[k] == 'function')) continue;
+      var indent = '';
+      if (k.length < MIN_KEY_LEN) {
+        for (var i = 0; i < (MIN_KEY_LEN - k.length); i++) {
+          indent += ' ';
         }
       }
+      allStyles += ' ' + k + indent + ': ' + cStyle[k] + '\n';
     }
     var allStylesFolding = foldingTxt(allStyles, 'allStyles', OMIT_LAST, 0, OMIT_STYLE, foldingSt.allStyles);
     var name = (el.name == undefined) ? setStyleIfObjNA(el.name) : DebugJS.escHtml(el.name);
@@ -4250,9 +4237,7 @@ DebugJS.prototype = {
   },
   getPrevElm: function(ctx, node) {
     var el = node.previousElementSibling;
-    if (el && (el.id == ctx.id)) {
-      el = node.previousElementSibling;
-    }
+    if (el && (el.id == ctx.id)) el = node.previousElementSibling;
     if (el) {
       if (el.childElementCount > 0) {
         var lastChild = el.lastElementChild;
@@ -5346,25 +5331,25 @@ DebugJS.prototype = {
     ctx.txtChkCtrl = DebugJS.ui.addElement(ctx.txtChkPanel, 'div');
     ctx.txtChkCtrl.innerHTML = html;
 
-    ctx.txtChkFontSizeRange = document.getElementById(ctx.id + '-fontsize-range');
-    ctx.txtChkFontSizeInput = document.getElementById(ctx.id + '-font-size');
-    ctx.txtChkFontSizeUnitInput = document.getElementById(ctx.id + '-font-size-unit');
-    ctx.txtChkFontWeightRange = document.getElementById(ctx.id + '-fontweight-range');
-    ctx.txtChkFontWeightLabel = document.getElementById(ctx.id + '-font-weight');
-    ctx.txtChkInputFgRGB = document.getElementById(ctx.id + '-fg-rgb');
-    ctx.txtChkRangeFgR = document.getElementById(ctx.id + '-fg-range-r');
-    ctx.txtChkRangeFgG = document.getElementById(ctx.id + '-fg-range-g');
-    ctx.txtChkRangeFgB = document.getElementById(ctx.id + '-fg-range-b');
-    ctx.txtChkLabelFgR = document.getElementById(ctx.id + '-fg-r');
-    ctx.txtChkLabelFgG = document.getElementById(ctx.id + '-fg-g');
-    ctx.txtChkLabelFgB = document.getElementById(ctx.id + '-fg-b');
-    ctx.txtChkInputBgRGB = document.getElementById(ctx.id + '-bg-rgb');
-    ctx.txtChkRangeBgR = document.getElementById(ctx.id + '-bg-range-r');
-    ctx.txtChkRangeBgG = document.getElementById(ctx.id + '-bg-range-g');
-    ctx.txtChkRangeBgB = document.getElementById(ctx.id + '-bg-range-b');
-    ctx.txtChkLabelBgR = document.getElementById(ctx.id + '-bg-r');
-    ctx.txtChkLabelBgG = document.getElementById(ctx.id + '-bg-g');
-    ctx.txtChkLabelBgB = document.getElementById(ctx.id + '-bg-b');
+    ctx.txtChkFontSizeRange = ctx.getDbgWinElm('fontsize-range');
+    ctx.txtChkFontSizeInput = ctx.getDbgWinElm('font-size');
+    ctx.txtChkFontSizeUnitInput = ctx.getDbgWinElm('font-size-unit');
+    ctx.txtChkFontWeightRange = ctx.getDbgWinElm('fontweight-range');
+    ctx.txtChkFontWeightLabel = ctx.getDbgWinElm('font-weight');
+    ctx.txtChkInputFgRGB = ctx.getDbgWinElm('fg-rgb');
+    ctx.txtChkRangeFgR = ctx.getDbgWinElm('fg-range-r');
+    ctx.txtChkRangeFgG = ctx.getDbgWinElm('fg-range-g');
+    ctx.txtChkRangeFgB = ctx.getDbgWinElm('fg-range-b');
+    ctx.txtChkLabelFgR = ctx.getDbgWinElm('fg-r');
+    ctx.txtChkLabelFgG = ctx.getDbgWinElm('fg-g');
+    ctx.txtChkLabelFgB = ctx.getDbgWinElm('fg-b');
+    ctx.txtChkInputBgRGB = ctx.getDbgWinElm('bg-rgb');
+    ctx.txtChkRangeBgR = ctx.getDbgWinElm('bg-range-r');
+    ctx.txtChkRangeBgG = ctx.getDbgWinElm('bg-range-g');
+    ctx.txtChkRangeBgB = ctx.getDbgWinElm('bg-range-b');
+    ctx.txtChkLabelBgR = ctx.getDbgWinElm('bg-r');
+    ctx.txtChkLabelBgG = ctx.getDbgWinElm('bg-g');
+    ctx.txtChkLabelBgB = ctx.getDbgWinElm('bg-b');
 
     ctx.onChangeFontSizeTxt();
     ctx.onChangeFontWeight();
@@ -6271,7 +6256,7 @@ DebugJS.prototype = {
         (!(ctx.fileVwrMode == 'b64'))) {
       return;
     }
-    var imgPreview = document.getElementById(ctx.id + '-img-preview');
+    var imgPreview = ctx.getDbgWinElm('img-preview');
     if (imgPreview == null) return;
     var ctxSizePos = ctx.getSelfSizePos();
     var maxW = (ctxSizePos.w - 32);
@@ -11023,18 +11008,16 @@ DebugJS.isClockFormat = function(v) {
     sss = s[1];
     if (!sss) sss = '000';
   }
-  if (h.length > 2) return false;
-  if (m.length != 2) return false;
-  if (ss.length != 2) return false;
-  if (sss.length != 3) return false;
+  if ((h.length > 2) || (m.length != 2) || (ss.length != 2) || (sss.length != 3)) {
+    return false;
+  }
   h |= 0;
   m |= 0;
   ss |= 0;
   sss |= 0;
-  if ((h < 0) || (h > 23)) return false;
-  if ((m < 0) || (m > 59)) return false;
-  if ((ss < 0) || (ss > 59)) return false;
-  if (sss < 0) return false;
+  if (((h < 0) || (h > 23)) || ((m < 0) || (m > 59)) || ((ss < 0) || (ss > 59)) || (sss < 0)) {
+    return false;
+  }
   return true;
 };
 DebugJS.isTimerFormat = function(s) {
@@ -13413,16 +13396,6 @@ DebugJS.getBrowserType = function() {
     brws.family = 'IE';
     return brws;
   }
-  if (ua.indexOf('Trident/6.') >= 1) {
-    brws.name = 'IE10';
-    brws.family = 'IE';
-    return brws;
-  }
-  if (ua.indexOf('Trident/5.') >= 1) {
-    brws.name = 'IE9';
-    brws.family = 'IE';
-    return brws;
-  }
   if ((ua.indexOf('Safari/') >= 1) && (ua.indexOf('Version/') >= 1)) {
     brws.name = 'Safari';
     ver = ua.match(/Version\/(.*)\sSafari/);
@@ -13450,8 +13423,6 @@ DebugJS.browserColoring = function(n) {
       s = '<span style="color:#f44">' + n + '</span>';
       break;
     case 'IE11':
-    case 'IE10':
-    case 'IE9':
       s = '<span style="color:#61d5f8">' + n + '</span>';
       break;
     case 'Safari':
