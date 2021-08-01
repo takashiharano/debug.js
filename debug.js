@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108012043';
+  this.v = '202108012138';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7887,9 +7887,18 @@ DebugJS.prototype = {
     arg = arg.trim();
     if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.help);
-    } else {
-      return DebugJS.countElements(arg, echo);
+      return;
     }
+    var slct = DebugJS.getNonOptVals(arg)[0];
+    var fTxt = DebugJS.getOptVal(arg, 'text');
+    var fVal = DebugJS.getOptVal(arg, 'value');
+    try {
+      fTxt = eval(fTxt);
+      fVal = eval(fVal);
+    } catch (e) {
+      DebugJS._log.e(e);return;
+    }
+    return DebugJS.countElements(slct, fTxt, fVal, !echo);
   },
 
   cmdEvent: function(arg, tbl) {
@@ -11722,7 +11731,7 @@ DebugJS.writeHTML = function(id, s) {
 DebugJS.isFocusInput = function() {
   return DebugJS.isTxtInp(document.activeElement);
 };
-DebugJS.countElements = function(selector, echo) {
+DebugJS.countElements = function(selector, fTxt, fVal, q) {
   if (!selector) selector = '*';
   var cnt = {};
   var el = null;
@@ -11731,23 +11740,20 @@ DebugJS.countElements = function(selector, echo) {
   if (selector.charAt(0) == '#') {
     el = document.getElementById(selector.substr(1));
   } else {
-    if (selector.charAt(0) == '(') {
-      selector = selector.substr(1, selector.length - 2);
-    }
+    if (selector.charAt(0) == '(') selector = selector.substr(1, selector.length - 2);
     els = document.querySelectorAll(selector);
   }
   if (el) DebugJS.getChildElements(el, els);
   if (els) {
     for (var i = 0; i < els.length; i++) {
-      if (cnt[els[i].tagName]) {
-        cnt[els[i].tagName]++;
-      } else {
-        cnt[els[i].tagName] = 1;
-      }
+      el = els[i];
+      if (((fTxt != null) && (el.innerText != fTxt)) || ((fVal != null) && (el.value != fVal))) continue;
+      if (cnt[el.tagName] == undefined) cnt[el.tagName] = 0;
+      cnt[el.tagName]++;
       total++;
     }
   }
-  if (echo) {
+  if (!q) {
     var l = '<table>';
     for (var k in cnt) {
       l += '<tr><td>' + k + '</td><td style="text-align:right">' + cnt[k] + '</td></tr>';
@@ -17707,7 +17713,7 @@ DebugJS.getElByText = function(txt, idx) {
       }
     }
     el = DebugJS.ctx.getNextElm(DebugJS.ctx, el);
-  };
+  }
   return el;
 };
 
