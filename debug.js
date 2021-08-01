@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108010003';
+  this.v = '202108011433';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1227,7 +1227,7 @@ DebugJS.prototype = {
   },
 
   rmvEventHandlers: function(ctx) {
-    var f =  window.removeEventListener;
+    var f = window.removeEventListener;
     f('keydown', ctx.keyHandler, true);
     f('mousedown', ctx.onMouseDown, true);
     f('mousemove', ctx.onMouseMove, true);
@@ -7663,15 +7663,17 @@ DebugJS.prototype = {
 
   cmdFmtNum: function(c) {
     c = DebugJS.unifySP(c.trim());
+    var u1 = ['0', '3', '4'];
+    var u2 = ['m', 'milli', 'u', 'micro', 'n', 'nano', 'p', 'pico'];
     var r = null;
-    if (c.match(/^-?[\d,]+\.?\d*\s[\dBb]$/)) {
+    if (c.match(/^-?[\d,]+\.?\d*\s.+$/)) {
       var a = c.split(' ');
       var v = a[0];
       var n = a[1];
-      if ((n == 3) || (n == 4)) {
+      if (DebugJS.arr.has(u1, n)) {
         r = DebugJS.formatDec(v, n);
-      } else if (n == 0) {
-        r = v.replace(/,/g, '');
+      } else if (DebugJS.arr.has(u2, n)) {
+        r = DebugJS.formatDecF(v, n);
       }
     }
     if (r != null) DebugJS._log.res(r);
@@ -12504,15 +12506,16 @@ DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
 DebugJS.formatDec = function(v, n) {
   var U = [0x4E07, 0x5104, 0x5146, 0x4EAC, 0x5793];
   if (n == undefined) n = 3;
-  var v0 = (v + '').replace(/,/g, '');
+  v = (v + '').replace(/,/g, '').replace(/^0*/, '');
+  if (!v) v = '0';
+  if (n == 0) return v;
+  var v0 = v;
   var v1 = '';
-  if (v0.match(/\./)) {
-    var a = v0.split('.');
+  if (v.match(/\./)) {
+    var a = v.split('.');
     v0 = a[0];
     v1 = '.' + a[1];
   }
-  v0 = v0.replace(/^0*/, '');
-  if (!v0) v0 = '0';
   var len = v0.length;
   var r = '';
   for (var i = 0; i < len; i++) {
@@ -12530,6 +12533,26 @@ DebugJS.formatDec = function(v, n) {
   }
   r += v1;
   return r;
+};
+DebugJS.formatDecF = function(v, p) {
+  var t = {'m': 3, 'milli': 3, 'u': 6, 'micro': 6, 'n': 9, 'nano': 9, 'p': 12, 'pico': 12};
+  var d = t[p];
+  if (!d) return v;
+  v = (v + '').replace(/,/g, '').replace(/^0*/, '');
+  if (!v) v = '0';
+  var a = '0';
+  var b = v;
+  if (v.length > d) {
+    a = v.substr(0, v.length - d);
+    b = v.substr(v.length - d);
+  }
+  b = (DebugJS.repeatCh('0', d) + b).slice(d * -1);
+  var w = '';
+  for (var i = 0; i < d; i++) {
+    if ((i > 0) && (i % 3 == 0)) w += ' ';
+    w += b.charAt(i);
+  }
+  return a + '.' + w;
 };
 DebugJS.formatHex = function(hex, uc, pFix, d) {
   if (uc) hex = hex.toUpperCase();
@@ -17352,7 +17375,7 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
     got = DebugJS.trimDownText(got, lm);
   }
   var rslt = {
-    label: label, status: st, method: method, exp: exp, got: got,info: info
+    label: label, status: st, method: method, exp: exp, got: got, info: info
   };
   data.results[id].results.push(rslt);
 };
