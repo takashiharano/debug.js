@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108011818';
+  this.v = '202108012043';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7883,12 +7883,12 @@ DebugJS.prototype = {
     }
   },
 
-  cmdElements: function(arg, tbl) {
+  cmdElements: function(arg, tbl, echo) {
     arg = arg.trim();
     if ((arg == '-h') || (arg == '--help')) {
       DebugJS.printUsage(tbl.help);
     } else {
-      return DebugJS.countElements(arg, true);
+      return DebugJS.countElements(arg, echo);
     }
   },
 
@@ -8717,8 +8717,8 @@ DebugJS.prototype = {
       point.init(DebugJS.hasOpt(arg, 'a'));
     } else if (op == 'move') {
       ctx._cmdPointMove(ctx, arg, tbl, args);
-    } else if (op == 'label') {
-      ctx._cmdPointLabel(args, alignX, alignY);
+    } else if (op == 'bytext') {
+      ctx._cmdPointByText(args, alignX, alignY);
     } else if (op == 'scroll') {
       ctx._cmdPointScroll(args);
     } else if (op == 'selectoption') {
@@ -8804,15 +8804,15 @@ DebugJS.prototype = {
     var p = ctx._cmdPointCalcPos(ctx, args[1], args[2]);
     if (p) {
       point.move(p.x, p.y, speed, step);
-    } else if (tgt == 'label') {
-      var label = args[2];
+    } else if (tgt == 'bytext') {
+      var txt = args[2];
       idx = args[3] | 0;
       try {
-        label = eval(label);
+        txt = eval(txt);
       } catch (e) {
         DebugJS._log.e(e);return;
       }
-      point.moveToLabel(label, idx, speed, step, alignX, alignY);
+      point.moveToElByText(txt, idx, speed, step, alignX, alignY);
     } else if (isNaN(tgt)) {
       idx = args[2];
       if (tgt.charAt(0) == '(') {
@@ -8935,15 +8935,15 @@ DebugJS.prototype = {
     }
     return ret;
   },
-  _cmdPointLabel: function(args, alignX, alignY) {
-    var label = args[1];
+  _cmdPointByText: function(args, alignX, alignY) {
+    var txt = args[1];
     try {
-      label = eval(label);
+      txt = eval(txt);
     } catch (e) {
       DebugJS._log.e(e);return;
     }
     var idx = args[2] | 0;
-    DebugJS.pointByLabel(label, idx, alignX, alignY);
+    DebugJS.pointByText(txt, idx, alignX, alignY);
   },
   _cmdPointScroll: function(args) {
     var x = args[1];
@@ -11722,7 +11722,7 @@ DebugJS.writeHTML = function(id, s) {
 DebugJS.isFocusInput = function() {
   return DebugJS.isTxtInp(document.activeElement);
 };
-DebugJS.countElements = function(selector, showDetail) {
+DebugJS.countElements = function(selector, echo) {
   if (!selector) selector = '*';
   var cnt = {};
   var el = null;
@@ -11747,7 +11747,7 @@ DebugJS.countElements = function(selector, showDetail) {
       total++;
     }
   }
-  if (showDetail) {
+  if (echo) {
     var l = '<table>';
     for (var k in cnt) {
       l += '<tr><td>' + k + '</td><td style="text-align:right">' + cnt[k] + '</td></tr>';
@@ -16589,15 +16589,14 @@ DebugJS.pointBySelector = function(selector, idx, alignX, alignY) {
   ps = DebugJS.getElPosSize(selector, idx);
   DebugJS.pointTarget(ps, alignX, alignY);
 };
-DebugJS.pointByLabel = function(label, idx, alignX, alignY) {
-  var el = DebugJS.getLabelEl(label, idx);
+DebugJS.pointByText = function(txt, idx, alignX, alignY) {
+  var el = DebugJS.getElByText(txt, idx);
   if (!el) {
-    DebugJS._log.e(label + ' [' + idx + ']: Element not found');
+    DebugJS._log.e('Element not found: text=' + txt + ' [' + idx + ']');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
   DebugJS.scrollWinToTarget(ps);
-  el = DebugJS.getLabelEl(label, idx);
   ps = DebugJS.getElPosSize(el);
   DebugJS.pointTarget(ps, alignX, alignY);
 };
@@ -16630,7 +16629,7 @@ DebugJS.point.moveToSelector = function(selector, idx, speed, step, alignX, alig
   };
   var ps = DebugJS.getElPosSize(selector, idx);
   if (!ps) {
-    DebugJS._log.e(selector + (selector.charAt(0) == '#' ? '' : (idx == undefined ? '' : ' [' + idx + ']')) + ': Element not found');
+    DebugJS._log.e('Element not found: ' + selector + (selector.charAt(0) == '#' ? '' : (idx == undefined ? '' : ' [' + idx + ']')));
     return;
   }
   if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollspeed, DebugJS.ctx.props.scrollstep, DebugJS.point._moveToSelector, data)) {
@@ -16645,28 +16644,28 @@ DebugJS.point._moveToSelector = function(data) {
   if (data.alignY == undefined) data.alignY = 0.5;
   DebugJS.point.moveToElement(ps, data.speed, data.step, data.alignX, data.alignY);
 };
-DebugJS.point.moveToLabel = function(label, idx, speed, step, alignX, alignY) {
+DebugJS.point.moveToElByText = function(txt, idx, speed, step, alignX, alignY) {
   var data = {
-    label: label,
+    text: txt,
     idx: idx,
     speed: speed,
     step: step,
     alignX: alignX,
     alignY: alignY
   };
-  var el = DebugJS.getLabelEl(label, idx);
+  var el = DebugJS.getElByText(txt, idx);
   if (!el) {
-    DebugJS._log.e(label + ' [' + idx + ']: Element not found');
+    DebugJS._log.e('Element not found: text=' + txt + ' [' + idx + ']');
     return;
   }
   var ps = DebugJS.getElPosSize(el);
-  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollspeed, DebugJS.ctx.props.scrollstep, DebugJS.point._moveToLabel, data)) {
+  if (DebugJS.scrollWinToTarget(ps, DebugJS.ctx.props.scrollspeed, DebugJS.ctx.props.scrollstep, DebugJS.point._moveToElByText, data)) {
     return;
   }
-  DebugJS.point._moveToLabel(data);
+  DebugJS.point._moveToElByText(data);
 };
-DebugJS.point._moveToLabel = function(data) {
-  var el = DebugJS.getLabelEl(data.label, data.idx);
+DebugJS.point._moveToElByText = function(data) {
+  var el = DebugJS.getElByText(data.text, data.idx);
   var ps = DebugJS.getElPosSize(el);
   if (data.alignX == undefined) data.alignX = 0.5;
   if (data.alignY == undefined) data.alignY = 0.5;
@@ -16680,7 +16679,6 @@ DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
     }
   }
 };
-
 DebugJS.point.hint = function(msg, speed, step, start, end) {
   var hint = DebugJS.point.hint;
   var area = hint.getArea();
@@ -17696,19 +17694,20 @@ DebugJS.getScreenCenter = function() {
   return p;
 };
 
-DebugJS.getLabelEl = function(label, idx) {
-  var el = null;
-  var cnt = 0;
-  var c = document.getElementsByTagName('label');
-  for (var i = 0; i < c.length; i++) {
-    if (c[i].innerText == label) {
-      if (idx == cnt) {
-        el = c[i];
+DebugJS.getElByText = function(txt, idx) {
+  idx |= 0;
+  var el = document.body;
+  var n = 0;
+  while (el) {
+    if (el.innerText == txt) {
+      if (idx == n) {
         break;
+      } else {
+        n++;
       }
-      cnt++;
     }
-  }
+    el = DebugJS.ctx.getNextElm(DebugJS.ctx, el);
+  };
   return el;
 };
 

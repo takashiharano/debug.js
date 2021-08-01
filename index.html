@@ -5246,7 +5246,7 @@ $ point .className
 $ point .className index
 $ point tagName
 $ point tagName index
-$ point label labelText index
+$ point bytext "INNER_TEXT" index
 -&gt; Point the specified element
 
 $ point center <span class="annotation">Center of the screen</span>
@@ -5329,7 +5329,7 @@ $ point move #id
 $ point move .className 0<span class="annotation">index</span>
 $ point move <i>CSS-Selector</i>
 $ point move tagName 0<span class="annotation">index</span>
-$ point move label labelText 0<span class="annotation">index</span>
+$ point move bytext "INNER_TEXT" 0<span class="annotation">index</span>
 $ point move center <span class="annotation">Center of the screen</span>
 $ point move center 100
 $ point move left 100
@@ -7602,6 +7602,11 @@ point click
 wait 500
 
 point move #radio2
+wait 500
+point click
+wait 500
+
+point move bytext "r3"
 wait 500
 point click
 wait 500
