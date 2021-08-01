@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108012138';
+  this.v = '202108012353';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1317,9 +1317,8 @@ DebugJS.prototype = {
 
     if (opt.useLogFilter) {
       ctx.logHdrPanel = document.createElement('div');
-      ctx.logHdrPanel.style.position = 'relative';
-      ctx.logHdrPanel.style.height = fontSize;
-      ctx.logHdrPanel.style.marginBottom = '2px';
+      var style = {position: 'relative', height: fontSize, 'margin-bottom': '2px'};
+      DebugJS.setStyles(ctx.logHdrPanel, style);
       ctx.mainPanel.appendChild(ctx.logHdrPanel);
       ctx.uiStatus |= DebugJS.UI_ST_HEADINFO;
     }
@@ -1478,21 +1477,15 @@ DebugJS.prototype = {
       ctx.cmdPanel.style.padding = DebugJS.CMD_LINE_PADDING + 'px';
       ctx.winBody.appendChild(ctx.cmdPanel);
       ctx.cmdPanel.innerHTML = '<span style="color:' + opt.promptColor + ' !important">$</span>';
-      var style = {
+      style = {
         'min-height': fontSize,
-        'width': 'calc(100% - ' + fontSize + ')',
         'margin': '0 0 0 2px',
         'border': '0',
         'border-bottom': 'solid 1px #888',
-        'border-radius': '0',
-        'outline': 'none',
-        'box-shadow': 'none',
-        'padding': '1px',
-        'background': 'transparent',
-        'color': opt.fontColor,
-        'font-size': fontSize
+        'padding': '1px'
       };
-      ctx.cmdLine = DebugJS.ui.addElement(ctx.cmdPanel, 'input', style);
+      ctx.cmdLine = DebugJS.ui.addTextInput(ctx.cmdPanel, 'calc(100% - ' + fontSize + ')', null, opt.fontColor, '', null);
+      DebugJS.setStyles(ctx.cmdLine, style);
       ctx.cmdLine.spellcheck = false;
       ctx.initHistory(ctx);
     }
