@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108011613';
+  this.v = '202108011818';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -525,6 +525,8 @@ var DebugJS = DebugJS || function() {
     watchdog: []
   };
   this.unlockCode = null;
+  this.$mF = 0;
+  this.$m = undefined;
   this.setupDefaultOptions();
   DebugJS.copyProp(this.PROPS_DFLT_VALS, this.props);
 };
@@ -2801,6 +2803,12 @@ DebugJS.prototype = {
         }
         break;
 
+      case 119: // F8
+        if (e.shiftKey && DebugJS.cmd.hasFocus()) {
+          if (ctx.$m != undefined) DebugJS.insertText(ctx.cmdLine, ctx.$m + '');
+        }
+        break;
+
       case opt.keyAssign.key:
         if (((opt.keyAssign.ctrl == undefined) || (e.ctrlKey == opt.keyAssign.ctrl)) &&
             ((opt.keyAssign.shift == undefined) || (e.shiftKey == opt.keyAssign.shift)) &&
@@ -4537,38 +4545,31 @@ DebugJS.prototype = {
     'onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">x</div>' +
     '<span style="color:#ccc">JS Editor</span>' +
     DebugJS.ui.createBtnHtml('[EXEC]', 'DebugJS.ctx.execJavaScript();', 'float:right;margin-right:4px') +
-    DebugJS.ui.createBtnHtml('[CLR]', 'DebugJS.ctx.insertJsSnippet();', 'margin-left:4px;margin-right:4px');
+    DebugJS.ui.createBtnHtml('[CLR]', 'DebugJS.ctx.insertJsSnippet(-1);', 'margin-left:4px;margin-right:4px');
     for (var i = 0; i < 5; i++) {
       html += ctx.createJsSnippetBtn(ctx, i);
     }
     ctx.jsPanel.innerHTML = html;
     ctx.addOverlayPanel(ctx, ctx.jsPanel);
-    ctx.jsEditor = document.createElement('textarea');
-    ctx.jsEditor.className = 'dbg-editor';
-    ctx.jsEditor.spellcheck = false;
-    ctx.jsEditor.onblur = ctx.saveJsBuf;
-    ctx.jsEditor.value = ctx.jsBuf;
-    ctx.enableDnDFileLoad(ctx.jsEditor, ctx.onDropOnJS);
-    ctx.jsPanel.appendChild(ctx.jsEditor);
+    var editor = document.createElement('textarea');
+    editor.className = 'dbg-editor';
+    editor.spellcheck = false;
+    editor.onblur = ctx.saveJsBuf;
+    editor.value = ctx.jsBuf;
+    ctx.enableDnDFileLoad(editor, ctx.onDropOnJS);
+    ctx.jsPanel.appendChild(editor);
+    ctx.jsEditor = editor;
   },
   createJsSnippetBtn: function(ctx, i) {
     return DebugJS.ui.createBtnHtml('{CODE' + (i + 1) + '}', 'DebugJS.ctx.insertJsSnippet(' + i + ');', 'margin-left:4px');
   },
   insertJsSnippet: function(n) {
-    var editor = DebugJS.ctx.jsEditor;
-    if (n == undefined) {
-      editor.value = '';
-      editor.focus();
+    var el = DebugJS.ctx.jsEditor;
+    if (n < 0) {
+      el.value = '';
+      el.focus();
     } else {
-      var code = DebugJS.JS_SNIPPET[n];
-      var buf = editor.value;
-      var posCursor = editor.selectionStart;
-      var bufL = buf.substr(0, posCursor);
-      var bufR = buf.substr(posCursor, buf.length);
-      buf = bufL + code + bufR;
-      DebugJS.ctx.jsEditor.focus();
-      DebugJS.ctx.jsEditor.value = buf;
-      editor.selectionStart = editor.selectionEnd = posCursor + code.length;
+      DebugJS.insertText(el, DebugJS.JS_SNIPPET[n]);
     }
   },
   saveJsBuf: function() {
@@ -6477,7 +6478,7 @@ DebugJS.prototype = {
 
     var html = '<span style="color:#ccc">HTML Editor</span>' +
     DebugJS.ui.createBtnHtml('[DRAW]', 'DebugJS.ctx.drawHtml();DebugJS.ctx.htmlPrevEditor.focus();', 'float:right;margin-right:4px') +
-    DebugJS.ui.createBtnHtml('[CLR]', 'DebugJS.ctx.insertHtmlSnippet();', 'margin-left:4px;margin-right:4px');
+    DebugJS.ui.createBtnHtml('[CLR]', 'DebugJS.ctx.insertHtmlSnippet(-1);', 'margin-left:4px;margin-right:4px');
     for (var i = 0; i < 5; i++) {
       html += ctx.createHtmlSnippetBtn(ctx, i);
     }
@@ -6485,30 +6486,23 @@ DebugJS.prototype = {
     ctx.htmlPrevEditorPanel.innerHTML = html;
 
     style = {height: 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)'};
-    ctx.htmlPrevEditor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', style);
-    ctx.htmlPrevEditor.className = 'dbg-editor';
-    ctx.htmlPrevEditor.spellcheck = false;
-    ctx.htmlPrevEditor.onblur = ctx.saveHtmlBuf;
-    ctx.htmlPrevEditor.value = ctx.htmlPrevBuf;
+    var editor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', style);
+    editor.className = 'dbg-editor';
+    editor.spellcheck = false;
+    editor.onblur = ctx.saveHtmlBuf;
+    editor.value = ctx.htmlPrevBuf;
+    ctx.htmlPrevEditor = editor;
   },
   createHtmlSnippetBtn: function(ctx, i) {
     return DebugJS.ui.createBtnHtml('&lt;CODE' + (i + 1) + '&gt;', 'DebugJS.ctx.insertHtmlSnippet(' + i + ');', 'margin-left:4px');
   },
   insertHtmlSnippet: function(n) {
-    var editor = DebugJS.ctx.htmlPrevEditor;
-    if (n == undefined) {
-      editor.value = '';
-      editor.focus();
+    var el = DebugJS.ctx.htmlPrevEditor;
+    if (n < 0) {
+      el.value = '';
+      el.focus();
     } else {
-      var code = DebugJS.HTML_SNIPPET[n];
-      var buf = editor.value;
-      var posCursor = editor.selectionStart;
-      var bufL = buf.substr(0, posCursor);
-      var bufR = buf.substr(posCursor, buf.length);
-      buf = bufL + code + bufR;
-      DebugJS.ctx.htmlPrevEditor.focus();
-      DebugJS.ctx.htmlPrevEditor.value = buf;
-      editor.selectionStart = editor.selectionEnd = posCursor + code.length;
+      DebugJS.insertText(el, DebugJS.HTML_SNIPPET[n]);
     }
   },
   saveHtmlBuf: function() {
@@ -6963,7 +6957,8 @@ DebugJS.prototype = {
         cl = '!' + arg;
       }
     }
-    ctx._execCmd(cl, ctx.cmdEchoFlg, false, true);
+    var r = ctx._execCmd(cl, ctx.cmdEchoFlg, false, true);
+    ctx.$m = ((ctx.$mF || (typeof r == 'number')) ? r : undefined);
   },
   _execCmd: function(str, echo, recho, sv) {
     var ctx = DebugJS.ctx;
@@ -7014,6 +7009,7 @@ DebugJS.prototype = {
     return ret;
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
+    ctx.$mF = 0;
     cmdline = DebugJS.escCtrlCh(cmdline);
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
@@ -7071,7 +7067,10 @@ DebugJS.prototype = {
     if (ret != null) return ret;
 
     ret = ctx.cmdTimeCalc(cmdline, echo);
-    if (ret != null) return ret;
+    if (ret != null) {
+      ctx.$mF = 1;
+      return ret;
+    }
 
     ret = ctx.cmdDateCalc(cmdline, echo);
     if (ret != null) return ret;
@@ -13815,6 +13814,15 @@ DebugJS.setStyles = function(e, s, f) {
       DebugJS.setStyle(e, k, s[k]);
     }
   }
+};
+DebugJS.insertText = function(el, s) {
+  var v = el.value;
+  var p = el.selectionStart;
+  var vL = v.substr(0, p);
+  var vR = v.substr(p, v.length);
+  el.focus();
+  el.value = vL + s + vR;
+  el.selectionStart = el.selectionEnd = p + s.length;
 };
 
 DebugJS.copyProp = function(src, dst) {
