@@ -4668,7 +4668,9 @@ IMG   1
 BR    1
 Total 9
 
-$ elements -text "Download"
+Filtering by attribute:
+
+$ elements -innerText "Download"
 A       1
 BUTTON  1
 Total   2
@@ -5256,6 +5258,7 @@ $ point .className index
 $ point tagName
 $ point tagName index
 $ point bytext "INNER_TEXT" index
+$ point byattr ATTR_NAME "VALUE" index
 -&gt; Point the specified element
 
 $ point center <span class="annotation">Center of the screen</span>
@@ -5339,6 +5342,7 @@ $ point move .className 0<span class="annotation">index</span>
 $ point move <i>CSS-Selector</i>
 $ point move tagName 0<span class="annotation">index</span>
 $ point move bytext "INNER_TEXT" 0<span class="annotation">index</span>
+$ point move byattr ATTR_NAME "VALUE" 0<span class="annotation">index</span>
 $ point move center <span class="annotation">Center of the screen</span>
 $ point move center 100
 $ point move left 100
