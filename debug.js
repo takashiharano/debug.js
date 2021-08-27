@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108152114';
+  this.v = '202108280017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1318,7 +1318,7 @@ DebugJS.prototype = {
     if (opt.useLogFilter) {
       ctx.logHdrPanel = document.createElement('div');
       var style = {position: 'relative', height: fontSize, 'margin-bottom': '2px'};
-      DebugJS.setStyles(ctx.logHdrPanel, style);
+      DebugJS.setStyle(ctx.logHdrPanel, style);
       ctx.mainPanel.appendChild(ctx.logHdrPanel);
       ctx.uiStatus |= DebugJS.UI_ST_HEADINFO;
     }
@@ -1485,7 +1485,7 @@ DebugJS.prototype = {
         'padding': '1px'
       };
       ctx.cmdLine = DebugJS.ui.addTextInput(ctx.cmdPanel, 'calc(100% - ' + fontSize + ')', null, opt.fontColor, '', null);
-      DebugJS.setStyles(ctx.cmdLine, style);
+      DebugJS.setStyle(ctx.cmdLine, style);
       ctx.cmdLine.spellcheck = false;
       ctx.initHistory(ctx);
     }
@@ -2168,17 +2168,17 @@ DebugJS.prototype = {
     var s = ctx.styleEl.sheet;
     for (var selector in styles) {
       var props = styles[selector];
-      var propStr = '';
-      for (var propName in props) {
-        var propVal = props[propName];
-        var propImportant = '';
-        if (propVal[1] === true) {
-          propVal = propVal[0];
-          propImportant = ' !important';
+      var css = '';
+      for (var nm in props) {
+        var vl = props[nm];
+        var impt = '';
+        if (vl[1] === true) {
+          vl = vl[0];
+          impt = ' !important';
         }
-        propStr += propName + ':' + propVal + propImportant + ';\n';
+        css += nm + ':' + vl + impt + ';\n';
       }
-      s.insertRule(selector + '{' + propStr + '}', s.cssRules.length);
+      s.insertRule(selector + '{' + css + '}', s.cssRules.length);
     }
   },
 
@@ -2818,7 +2818,7 @@ DebugJS.prototype = {
         }
     }
     if ((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TIMER)) {
-      ctx.handleTimerKey(e);
+      ctx.handleTimerKey(ctx, e);
     }
   },
   onKeyDown: function(e) {
@@ -2909,18 +2909,18 @@ DebugJS.prototype = {
     }
     ctx.updateScrollPosLabel();
     if (ctx.status & DebugJS.ST_SYS_INFO) {
-      ctx.updateSysInfoScrollPosLabel(ctx);
+      ctx.updateSysInfoScrollPosLabel(ctx.id);
     }
     ctx.resizeMainHeight();
   },
 
-  updateSysInfoScrollPosLabel: function(ctx) {
-    DebugJS.writeHTML(ctx.id + '-sys-scroll-x', DebugJS.setStyleIfObjNA(window.scrollX));
-    DebugJS.writeHTML(ctx.id + '-sys-scroll-y', DebugJS.setStyleIfObjNA(window.scrollY));
-    DebugJS.writeHTML(ctx.id + '-sys-pgoffset-x', window.pageXOffset);
-    DebugJS.writeHTML(ctx.id + '-sys-pgoffset-y', window.pageYOffset);
-    DebugJS.writeHTML(ctx.id + '-sys-cli-scroll-x', document.documentElement.scrollLeft);
-    DebugJS.writeHTML(ctx.id + '-sys-cli-scroll-y', document.documentElement.scrollTop);
+  updateSysInfoScrollPosLabel: function(id) {
+    DebugJS.writeHTML(id + '-sys-scroll-x', DebugJS.setStyleIfObjNA(window.scrollX));
+    DebugJS.writeHTML(id + '-sys-scroll-y', DebugJS.setStyleIfObjNA(window.scrollY));
+    DebugJS.writeHTML(id + '-sys-pgoffset-x', window.pageXOffset);
+    DebugJS.writeHTML(id + '-sys-pgoffset-y', window.pageYOffset);
+    DebugJS.writeHTML(id + '-sys-cli-scroll-x', document.documentElement.scrollLeft);
+    DebugJS.writeHTML(id + '-sys-cli-scroll-y', document.documentElement.scrollTop);
   },
 
   onMouseDown: function(e) {
@@ -3449,22 +3449,22 @@ DebugJS.prototype = {
     ctx.status &= ~DebugJS.ST_MEASURING;
   },
 
-  addOverlayPanel: function(ctx, panel) {
+  addOverlayPanel: function(ctx, pnl) {
     if (ctx.overlayBasePanel == null) {
       ctx.collapseLogPanel(ctx);
       ctx.overlayBasePanel = document.createElement('div');
       ctx.overlayBasePanel.className = 'dbg-overlay-base-panel';
       ctx.mainPanel.appendChild(ctx.overlayBasePanel);
     }
-    ctx.overlayBasePanel.appendChild(panel);
-    ctx.overlayPanels.push(panel);
+    ctx.overlayBasePanel.appendChild(pnl);
+    ctx.overlayPanels.push(pnl);
   },
-  removeOverlayPanel: function(ctx, panel) {
+  removeOverlayPanel: function(ctx, pnl) {
     if (ctx.overlayBasePanel) {
       for (var i = 0; i < ctx.overlayPanels.length; i++) {
-        if (ctx.overlayPanels[i] == panel) {
+        if (ctx.overlayPanels[i] == pnl) {
           ctx.overlayPanels.splice(i, 1);
-          ctx.overlayBasePanel.removeChild(panel);
+          ctx.overlayBasePanel.removeChild(pnl);
           break;
         }
       }
@@ -3476,11 +3476,11 @@ DebugJS.prototype = {
     }
   },
 
-  addOverlayPanelFull: function(panel) {
-    DebugJS.ctx.mainPanel.appendChild(panel);
+  addOverlayPanelFull: function(pnl) {
+    DebugJS.ctx.mainPanel.appendChild(pnl);
   },
-  removeOverlayPanelFull: function(panel) {
-    if (panel.parentNode) DebugJS.ctx.mainPanel.removeChild(panel);
+  removeOverlayPanelFull: function(pnl) {
+    if (pnl.parentNode) DebugJS.ctx.mainPanel.removeChild(pnl);
   },
 
   getDbgWinElm: function(n) {
@@ -3577,10 +3577,7 @@ DebugJS.prototype = {
         var cnt = metaTags[i].getAttribute('content');
         if (cnt) {
           var cntval = cnt.match(/charset=(.*)/);
-          if (cntval != null) {
-            charset = cntval[1];
-            break;
-          }
+          if (cntval != null) {charset = cntval[1];break;}
         }
       }
     }
@@ -4605,7 +4602,7 @@ DebugJS.prototype = {
     ctx.addOverlayPanelFull(ctx.toolsPanel);
     ctx.resizeImgPreview();
     ctx.switchToolsFunction(ctx.toolsActvFnc);
-    ctx.updateToolsBtns();
+    ctx.updateToolsBtns(ctx);
     ctx.updateToolsBtn(ctx);
   },
   isAvailableTools: function(ctx) {
@@ -4639,8 +4636,7 @@ DebugJS.prototype = {
     DebugJS.arr.del(ctx.featStack, DebugJS.ST_TOOLS);
     ctx.updateToolsBtn(ctx);
   },
-  updateToolsBtns: function() {
-    var ctx = DebugJS.ctx;
+  updateToolsBtns: function(ctx) {
     var setStyle = DebugJS.setStyle;
     var f = ctx.toolsActvFnc;
     setStyle(ctx.timerBtn, 'color', (f & DebugJS.TOOLS_FNC_TIMER) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);
@@ -4677,12 +4673,10 @@ DebugJS.prototype = {
       ctx.closeBatEditor();
     }
     if (kind) ctx.toolsActvFnc = kind;
-    ctx.updateToolsBtns();
+    ctx.updateToolsBtns(ctx);
   },
-  removeToolFuncPanel: function(ctx, panel) {
-    if (panel.parentNode) {
-      ctx.toolsBodyPanel.removeChild(panel);
-    }
+  removeToolFuncPanel: function(ctx, pnl) {
+    if (pnl.parentNode) ctx.toolsBodyPanel.removeChild(pnl);
   },
 
   openTimer: function(mode) {
@@ -4719,8 +4713,8 @@ DebugJS.prototype = {
     ctx.timerBasePanel.style.textAlign = 'center';
     ctx.toolsBodyPanel.appendChild(ctx.timerBasePanel);
     ctx.createTimerClockSubPanel();
-    ctx.createTimerStopwatchSubPanel();
-    ctx.createTimerStopwatchInpSubPanel();
+    ctx.createTimerStopwatchSubPanel(ctx);
+    ctx.createTimerStopwatchInpSubPanel(ctx);
     ctx.switchTimerMode(ctx.toolTimerMode);
   },
   createTimerClockSubPanel: function() {
@@ -4756,50 +4750,48 @@ DebugJS.prototype = {
     var color = (ctx.timerClockSSS ? DebugJS.TOOL_TMR_BTN_COLOR : '#888');
     DebugJS.setStyle(ctx.clockSSSbtn, 'color', color);
   },
-  createTimerStopwatchSubPanel: function() {
-    var ctx = DebugJS.ctx;
+  createTimerStopwatchSubPanel: function(ctx) {
     var handlers = {
       reset: ctx.resetTimerStopwatch,
       startStop: ctx.startStopTimerStopwatch,
       split: ctx.splitTimerStopwatch
     };
-    var panel = ctx._createTimerStopwatchSubPanel(ctx, handlers);
-    ctx.timerSwSubPanel = panel.basePanel;
-    ctx.timerSwLabel = panel.stopWatchLabel;
-    ctx.timerStartStopBtn = panel.startStopBtn;
-    ctx.timerSplitBtn = panel.splitBtn;
-    ctx.timerCntTplsBtn1 = ctx.createTimerBtn(panel.btns, 'T+', ctx.toggleContinueTplus, false, (ctx.computedFontSize * 1.5));
+    var pnl = ctx._createTimerStopwatchSubPanel(ctx, handlers);
+    ctx.timerSwSubPanel = pnl.basePanel;
+    ctx.timerSwLabel = pnl.stopWatchLabel;
+    ctx.timerStartStopBtn = pnl.startStopBtn;
+    ctx.timerSplitBtn = pnl.splitBtn;
+    ctx.timerCntTplsBtn1 = ctx.createTimerBtn(pnl.btns, 'T+', ctx.toggleContinueTplus, false, (ctx.computedFontSize * 1.5));
     ctx.updateContinueTplusBtn(ctx);
   },
   _createTimerStopwatchSubPanel: function(ctx, handlers) {
-    var panel = {basePanel: null, stopWatchLabel: null, btns: null, startStopBtn: null, splitBtn: null};
+    var pnl = {basePanel: null, stopWatchLabel: null, btns: null, startStopBtn: null, splitBtn: null};
     var fontSize = ctx.computedFontSize;
     var btnFontSize = fontSize * 3;
-    panel.basePanel = document.createElement('div');
+    pnl.basePanel = document.createElement('div');
 
     var marginT = 40 * ctx.zoom;
     var marginB = 40 * ctx.zoom;
-    panel.stopWatchLabel = document.createElement('div');
-    panel.stopWatchLabel.style.margin = marginT + 'px 0 ' + marginB + 'px 0';
-    panel.stopWatchLabel.style.whiteSpace = 'nowrap';
-    panel.basePanel.appendChild(panel.stopWatchLabel);
+    pnl.stopWatchLabel = document.createElement('div');
+    pnl.stopWatchLabel.style.margin = marginT + 'px 0 ' + marginB + 'px 0';
+    pnl.stopWatchLabel.style.whiteSpace = 'nowrap';
+    pnl.basePanel.appendChild(pnl.stopWatchLabel);
 
     var btns = document.createElement('div');
     btns.style.borderTop = 'solid 2px ' + ctx.opt.timerLineColor;
     btns.style.paddingTop = fontSize + 'px';
     btns.style.lineHeight = btnFontSize + 'px';
-    panel.basePanel.appendChild(btns);
+    pnl.basePanel.appendChild(btns);
 
     ctx.createTimerBtn(btns, 'MODE', ctx.toggleTimerMode, false, btnFontSize);
     ctx.createTimerBtn(btns, 'RESET', handlers.reset, false, btnFontSize);
-    panel.startStopBtn = ctx.createTimerBtn(btns, '>>', handlers.startStop, false, btnFontSize);
-    panel.splitBtn = ctx.createTimerBtn(btns, 'SPLIT', handlers.split, false, btnFontSize);
+    pnl.startStopBtn = ctx.createTimerBtn(btns, '>>', handlers.startStop, false, btnFontSize);
+    pnl.splitBtn = ctx.createTimerBtn(btns, 'SPLIT', handlers.split, false, btnFontSize);
 
-    panel.btns = btns;
-    return panel;
+    pnl.btns = btns;
+    return pnl;
   },
-  createTimerStopwatchInpSubPanel: function() {
-    var ctx = DebugJS.ctx;
+  createTimerStopwatchInpSubPanel: function(ctx) {
     var fontSize = ctx.computedFontSize;
     var baseFontSize = fontSize * 7;
     var btnFontSize = fontSize * 3;
@@ -4980,22 +4972,21 @@ DebugJS.prototype = {
     }
     ctx.updateTimerSwBtns();
   },
-  replaceTimerSubPanel: function(panel) {
+  replaceTimerSubPanel: function(pnl) {
     var ctx = DebugJS.ctx;
     for (var i = ctx.timerBasePanel.childNodes.length - 1; i >= 0; i--) {
       ctx.timerBasePanel.removeChild(ctx.timerBasePanel.childNodes[i]);
     }
-    ctx.timerBasePanel.appendChild(panel);
+    ctx.timerBasePanel.appendChild(pnl);
   },
   updateTimerClock: function() {
     var ctx = DebugJS.ctx;
     if ((!(ctx.status & DebugJS.ST_TOOLS)) || (ctx.toolTimerMode != DebugJS.TOOL_TMR_MODE_CLOCK)) return;
     var tm = DebugJS.getClockVal();
-    ctx.timerClockLabel.innerHTML = ctx.createClockStr(tm);
+    ctx.timerClockLabel.innerHTML = ctx.createClockStr(ctx, tm);
     setTimeout(ctx.updateTimerClock, ctx.clockUpdInt);
   },
-  createClockStr: function(tm) {
-    var ctx = DebugJS.ctx;
+  createClockStr: function(ctx, tm) {
     var fontSize = ctx.computedFontSize * 8;
     var dtFontSize = fontSize * 0.45;
     var ssFontSize = fontSize * 0.65;
@@ -5236,8 +5227,7 @@ DebugJS.prototype = {
       ctx.setIntervalL(ctx);
     }
   },
-  handleTimerKey: function(e) {
-    var ctx = DebugJS.ctx;
+  handleTimerKey: function(ctx, e) {
     if ((ctx.sizeStatus != DebugJS.SIZE_ST_FULL_WH) || DebugJS.cmd.hasFocus()) return;
     if ((e.keyCode == 13) || (e.keyCode == 32)) {
       if (ctx.toolTimerMode == DebugJS.TOOL_TMR_MODE_SW) {
@@ -5268,10 +5258,10 @@ DebugJS.prototype = {
 
   openTextChecker: function() {
     var ctx = DebugJS.ctx;
-    if (!ctx.txtChkPanel) {
-      ctx.createTxtChkPanel(ctx);
-    } else {
+    if (ctx.txtChkPanel) {
       ctx.toolsBodyPanel.appendChild(ctx.txtChkPanel);
+    } else {
+      ctx.createTxtChkPanel(ctx);
     }
   },
   createTxtChkPanel: function(ctx) {
@@ -11338,10 +11328,12 @@ DebugJS.nan2zero = function(v) {
 };
 
 DebugJS.checkModKey = function(e) {
-  var ctrl = e.ctrlKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
-  var shift = e.shiftKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
-  var alt = e.altKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
-  var meta = e.metaKey ? DebugJS.COLOR_ACTIVE : DebugJS.COLOR_INACT;
+  var c0 = DebugJS.COLOR_INACT;
+  var c1 = DebugJS.COLOR_ACTIVE;
+  var ctrl = e.ctrlKey ? c1 : c0;
+  var shift = e.shiftKey ? c1 : c0;
+  var alt = e.altKey ? c1 : c0;
+  var meta = e.metaKey ? c1 : c0;
   var metaKey = '<span style="color:' + ctrl + '">C</span><span style="color:' + shift + '">S</span><span style="color:' + alt + '">A</span><span style="color:' + meta + '">M</span>';
   return metaKey;
 };
@@ -13738,38 +13730,21 @@ DebugJS.html2text = function(html) {
 };
 
 DebugJS.addClass = function(el, n) {
-  if (DebugJS.hasClass(el, n)) return;
-  if (el.className == '') {
-    el.className = n;
-  } else {
-    el.className += ' ' + n;
-  }
+  el.classList.add(n);
 };
 DebugJS.removeClass = function(el, n) {
-  var names = el.className.split(' ');
-  var nm = '';
-  for (var i = 0; i < names.length; i++) {
-    if (names[i] != n) {
-      if (i > 0) nm += ' ';
-      nm += names[i];
-    }
-  }
-  el.className = nm;
+  el.classList.remove(n);
 };
 DebugJS.hasClass = function(el, n) {
-  var names = el.className.split(' ');
-  for (var i = 0; i < names.length; i++) {
-    if (names[i] == n) return true;
+  el.classList.contains(n);
+};
+DebugJS.setStyle = function(e, s, v) {
+  if (typeof s == 'string') {
+    e.style.setProperty(s, v, 'important');
+    return;
   }
-  return false;
-};
-DebugJS.setStyle = function(el, n, v) {
-  el.style.setProperty(n, v, 'important');
-};
-DebugJS.setStyles = function(e, s, f) {
-  if (!s) return;
   for (var k in s) {
-    if (f) {
+    if (v) {
       e.style[k] = s[k];
     } else {
       DebugJS.setStyle(e, k, s[k]);
@@ -13810,24 +13785,24 @@ DebugJS.createCttInfo = function(fInfo, bInfo) {
 };
 DebugJS.getFileInfo = function(file) {
   var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
-  var fileDate = DebugJS.getDateTimeStr(lastMod, 2);
+  var dt = DebugJS.getDateTimeStr(lastMod, 2);
   var s = 'File    : ' + file.name + '\n' +
   'Type    : ' + file.type + '\n' +
   'Size    : ' + DebugJS.formatDec(file.size) + ' ' + DebugJS.plural('byte', file.size) + '\n' +
-  'Modified: ' + fileDate + '\n';
+  'Modified: ' + dt + '\n';
   return s;
 };
 DebugJS.getBinInfo = function(b) {
-  var inf = '';
+  var s = '';
   var t = DebugJS.getBinType(b);
-  if (t) inf = DebugJS._getBinInfo[t](b) + '\n';
-  return inf;
+  if (t) s = DebugJS._getBinInfo[t](b) + '\n';
+  return s;
 };
 DebugJS.getBinType = function(b) {
-  var HDR = {exe: 0x4D5A, java: 0xCAFEBABE};
+  var H = {exe: 0x4D5A, java: 0xCAFEBABE};
   var t = '';
-  for (var k in HDR) {
-    if (DebugJS.chkBinHdr(b, HDR[k])) {
+  for (var k in H) {
+    if (DebugJS.chkBinHdr(b, H[k])) {
       t = k;break;
     }
   }
@@ -17806,7 +17781,7 @@ DebugJS.strpTotal = function(tbl, d) {
 DebugJS.ui = {};
 DebugJS.ui.addElement = function(base, tag, style, std) {
   var el = document.createElement(tag);
-  DebugJS.setStyles(el, style, std);
+  if (style) DebugJS.setStyle(el, style, std);
   base.appendChild(el);
   return el;
 };
