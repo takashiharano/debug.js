@@ -128,11 +128,13 @@ dbg.init({visible:true});
 var options1 = {
   visible: true,
   keyAssign: {
-    key: 113,
-    shift: true,
-    ctrl: false,
-    alt: undefined,
-    meta: undefined
+    show: {
+      key: 113,
+      shift: true,
+      ctrl: false,
+      alt: undefined,
+      meta: undefined
+    }
   },
   position: 'c',
   //position: 'n',
@@ -6872,7 +6874,7 @@ If you want to change the debugger settings, explicitly call for initialization 
     <td>
       Key code for the debug window show/hide control
 <pre class="eg">
-{
+show: {
   key: KeyCode,
   shift: undefined<span class="annotation">(not care)</span> / true / false
   ctrl: undefined<span class="annotation">(not care)</span> / true / false,

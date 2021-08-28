@@ -5,16 +5,12 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108280017';
+  this.v = '202108290009';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
     keyAssign: {
-      key: 113,
-      shift: undefined,
-      ctrl: undefined,
-      alt: undefined,
-      meta: undefined
+      show: {key: 113},
     },
     focusOnShow: true,
     autoPopup: {
@@ -2684,9 +2680,20 @@ DebugJS.prototype = {
 
   keyHandler: function(e) {
     var ctx = DebugJS.ctx;
-    var opt = ctx.opt;
     var cmds;
     if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) DebugJS.bat._resume('cmd');
+    if (e.keyCode == ctx.opt.keyAssign.show.key) {
+      if (DebugJS.chkKeyCmb(ctx.opt.keyAssign.show, e)) {
+        if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWin(ctx))) {
+          ctx.resetWinToOrgPos(ctx);
+        } else if (ctx.uiStatus & DebugJS.UI_ST_VISIBLE) {
+          ctx.closeDbgWin();
+        } else {
+          ctx.showDbgWin();
+          if (ctx.opt.focusOnShow) ctx.focusCmdLine();
+        }
+      }
+    }
     switch (e.keyCode) {
       case 9: // Tab
         if ((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActvFnc & DebugJS.TOOLS_FNC_FILE)) {
@@ -2796,26 +2803,11 @@ DebugJS.prototype = {
         }
         break;
 
-      case 119: // F8
+      case 118: // F7
         if (e.shiftKey && DebugJS.cmd.hasFocus()) {
           if (ctx.$m != undefined) DebugJS.insertText(ctx.cmdLine, ctx.$m + '');
         }
         break;
-
-      case opt.keyAssign.key:
-        if (((opt.keyAssign.ctrl == undefined) || (e.ctrlKey == opt.keyAssign.ctrl)) &&
-            ((opt.keyAssign.shift == undefined) || (e.shiftKey == opt.keyAssign.shift)) &&
-            ((opt.keyAssign.alt == undefined) || (e.altKey == opt.keyAssign.alt)) &&
-            ((opt.keyAssign.meta == undefined) || (e.metaKey == opt.keyAssign.meta))) {
-          if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWin(ctx))) {
-            ctx.resetWinToOrgPos(ctx);
-          } else if (ctx.uiStatus & DebugJS.UI_ST_VISIBLE) {
-            ctx.closeDbgWin();
-          } else {
-            ctx.showDbgWin();
-            if (opt.focusOnShow) ctx.focusCmdLine();
-          }
-        }
     }
     if ((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TIMER)) {
       ctx.handleTimerKey(ctx, e);
@@ -13859,6 +13851,13 @@ DebugJS.scanBin = function(b, p, ln) {
 DebugJS.chkBinHdr = function(b, v) {
   var ln = (DebugJS.getBaseLog(256, v) + 1) | 0;
   return (v == DebugJS.scanBin(b, 0, ln));
+};
+
+DebugJS.chkKeyCmb = function(cnd, e) {
+  return (((cnd.ctrl == undefined) || (cnd.ctrl == e.ctrlKey)) &&
+         ((cnd.shift == undefined) || (cnd.shift == e.shiftKey)) &&
+         ((cnd.alt == undefined) || (cnd.alt == e.altKey)) &&
+         ((cnd.meta == undefined) || (cnd.meta == e.metaKey)));
 };
 
 DebugJS.getBaseLog = function(x, y) {
