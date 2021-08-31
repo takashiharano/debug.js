@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202108290009';
+  this.v = '202109010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5374,6 +5374,9 @@ DebugJS.prototype = {
   onChangeBgRGB: function() {
     var ctx = DebugJS.ctx;
     var rgb16 = '#' + ctx.txtChkInputBgRGB.value;
+    if (rgb16 == '#') {
+      DebugJS.setStyle(ctx.txtChkTargetEl, 'background', 'transparent');return;
+    }
     var rgb10 = DebugJS.rgb16to10(rgb16);
     if (!rgb10) return;
     ctx.txtChkRangeBgR.value = rgb10.r;
