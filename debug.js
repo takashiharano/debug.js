@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202109010000';
+  this.v = '202109020000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13731,7 +13731,7 @@ DebugJS.removeClass = function(el, n) {
   el.classList.remove(n);
 };
 DebugJS.hasClass = function(el, n) {
-  el.classList.contains(n);
+  return el.classList.contains(n);
 };
 DebugJS.setStyle = function(e, s, v) {
   if (typeof s == 'string') {
