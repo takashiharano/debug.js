@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202109020000';
+  this.v = '202109202043';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13535,7 +13535,7 @@ DebugJS.lenW = function(s) {
   var n = 0;
   for (var i = 0; i < s.length; i++) {
     var p = String.prototype.codePointAt ? s.codePointAt(i) : s.charCodeAt(i);
-    n += (p < 128) ? 1 : 2;
+    n += ((p <= 0x7F) || ((p >= 0xFF61) && (p <= 0xFF9F))) ? 1 : 2;
     if (p >= 0x10000) i++;
   }
   return n;
