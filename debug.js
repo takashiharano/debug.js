@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202109202043';
+  this.v = '202109261827';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8858,7 +8858,8 @@ DebugJS.prototype = {
   _cmdPointText: function(arg) {
     var el = DebugJS.point.getElementFromCurrentPos();
     if (!el || !DebugJS.isTxtInp(el)) {
-      DebugJS._log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + ')');
+      var tp = ((el && el.type) ? el.type : '');
+      DebugJS._log.e('Pointed area is not an input element (' + (el ? el.nodeName : 'null') + (tp ? (' type=' + tp) : '') + ')');
       return;
     }
     var txt = DebugJS.getArgVal(arg, 1);
@@ -17649,7 +17650,16 @@ DebugJS.isFocusable = function(el) {
 DebugJS.isTxtInp = function(el) {
   if (el.tagName == 'TEXTAREA') return true;
   if (el.tagName == 'INPUT') {
-    if ((el.type == 'text') || (el.type == 'password')) return true;
+    switch (el.type) {
+      case 'text':
+      case 'password':
+      case 'email':
+      case 'number':
+      case 'search':
+      case 'tel':
+      case 'url':
+        return true;
+    }
   }
   return false;
 };
