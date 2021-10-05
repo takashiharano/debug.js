@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202109261827';
+  this.v = '202110060037';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -360,7 +360,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert ms <--> Date-Time', help: 'date [-iso] [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
-    {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operation', help: 'dnd [-c|-r] COMMAND ARG'},
+    {cmd: 'dnd', fn: this.cmdDnd, desc: 'Drag and drop operations', help: 'dnd [-c|-r] COMMAND ARG'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Echo the STRING(s) to the log window'},
     {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
@@ -429,11 +429,13 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nop', fn: this.cmdNop, attr: DebugJS.CMD_ATTR_HIDDEN}
   ];
   this.DND_FN_TBL = {
-    align: {fn: DebugJS.dndAlign},
     date: {fn: DebugJS.dndDate},
+    datesep: {fn: DebugJS.dndDateSep},
+    lineagg: {fn: DebugJS.dndLineAgg},
     sort: {fn: DebugJS.dndSort, help: DebugJS.dndSortHelp},
+    tabalign: {fn: DebugJS.dndTabAlign},
     timediff: {fn: DebugJS.dndTimediff},
-    trim: {fn: DebugJS.dndTrim},
+    trimblank: {fn: DebugJS.dndTrimBlank},
     unique: {fn: DebugJS.dndUnique, help: DebugJS.dndUniqueHelp}
   },
   this.CMD_TBL = [];
@@ -10712,6 +10714,9 @@ DebugJS.delTrailingSP = function(s) {
 DebugJS.delAllNL = function(s) {
   return s.replace(/\r/g, '').replace(/\n/g, '');
 };
+DebugJS.trimBlank = function(s) {
+  return DebugJS.crlf2lf(s).replace(/[ \t\u3000]+\n/g, '\n');
+};
 DebugJS.quoteStr = function(s) {
   return '<span style="color:#0ff">"</span>' + s + '<span style="color:#0ff">"</span>';
 };
@@ -11932,7 +11937,61 @@ DebugJS.arr2set = function(a, f) {
   return s;
 };
 
-DebugJS.dndAlign = function(s) {
+DebugJS.dndDate = function(t) {
+  var arg = DebugJS.ctx.dndArg;
+  var a = DebugJS.txt2arr(t);
+  var s = DebugJS.hasOpt(arg, 's');
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    var ms = parseFloat(a[i]);
+    if (isNaN(ms)) {
+      r += '\n';
+    } else {
+      if (s) ms = parseInt(ms * 1000);
+      r += DebugJS.getDateTimeStr(ms) + '\n';
+    }
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(r);
+  return r;
+};
+DebugJS.dndDateSep = function(s) {
+  var a = DebugJS.ctx.dndArg.trim();
+  if (!a) a = '/';
+  s = s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3');
+  DebugJS.cls();
+  DebugJS._log.mlt(s);
+  return s;
+};
+DebugJS.dndLineAgg = function(s) {
+  s = DebugJS.trimBlank(s).replace(/\n\n/g, '\n');
+  DebugJS.cls();
+  DebugJS._log.mlt(s);
+  return s;
+};
+DebugJS.dndSortHelp = function() {
+  DebugJS.printUsage('dnd sort [-desc] [-csv COL]');
+};
+DebugJS.dndSort = function(s) {
+  var arg = DebugJS.ctx.dndArg;
+  var desc = DebugJS.hasOpt(arg, 'desc');
+  var n = DebugJS.getOptVal(arg, 'csv');
+  if (n == null) {
+    var a = DebugJS.txt2arr(s).sort();
+    if (desc) a.reverse();
+  } else {
+    if (isNaN(n)) n = DebugJS.xlsCol(n);
+    a = DebugJS.csv2arr(s, (n | 0), desc);
+  }
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != '') r += a[i] + '\n';
+  }
+  DebugJS.cls();
+  DebugJS._log.mlt(r);
+  return r;
+};
+DebugJS.dndTabAlign = function(s) {
   var arg = DebugJS.ctx.dndArg;
   var a = DebugJS.txt2arr(s);
   var n = DebugJS.getOptVal(arg, 'n') | 0;
@@ -11953,46 +12012,6 @@ DebugJS.dndAlign = function(s) {
       r += DebugJS.rpad(l[j], d, c[j] + n);
     }
     r += l[j] + '\n';
-  }
-  DebugJS.cls();
-  DebugJS._log.mlt(r);
-  return r;
-};
-DebugJS.dndDate = function(t) {
-  var arg = DebugJS.ctx.dndArg;
-  var a = DebugJS.txt2arr(t);
-  var s = DebugJS.hasOpt(arg, 's');
-  var r = '';
-  for (var i = 0; i < a.length; i++) {
-    var ms = parseFloat(a[i]);
-    if (isNaN(ms)) {
-      r += '\n';
-    } else {
-      if (s) ms = parseInt(ms * 1000);
-      r += DebugJS.getDateTimeStr(ms) + '\n';
-    }
-  }
-  DebugJS.cls();
-  DebugJS._log.mlt(r);
-  return r;
-};
-DebugJS.dndSortHelp = function() {
-  DebugJS.printUsage('dnd sort [-desc] [-csv COL]');
-};
-DebugJS.dndSort = function(s) {
-  var arg = DebugJS.ctx.dndArg;
-  var desc = DebugJS.hasOpt(arg, 'desc');
-  var n = DebugJS.getOptVal(arg, 'csv');
-  if (n == null) {
-    var a = DebugJS.txt2arr(s).sort();
-    if (desc) a.reverse();
-  } else {
-    if (isNaN(n)) n = DebugJS.xlsCol(n);
-    a = DebugJS.csv2arr(s, (n | 0), desc);
-  }
-  var r = '';
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != '') r += a[i] + '\n';
   }
   DebugJS.cls();
   DebugJS._log.mlt(r);
@@ -12019,11 +12038,8 @@ DebugJS.dndTimediff = function(s) {
   DebugJS._log.mlt(r);
   return r;
 };
-DebugJS.dndTrim = function(s) {
-  s = DebugJS.crlf2lf(s).replace(/\s+\n/g, '\n\n');
-  if (DebugJS.hasOpt(DebugJS.ctx.dndArg, 'line')) {
-    s = DebugJS.crlf2lf(s).replace(/\n\n/g, '\n');
-  }
+DebugJS.dndTrimBlank = function(s) {
+  s = DebugJS.trimBlank(s);
   DebugJS.cls();
   DebugJS._log.mlt(s);
   return s;

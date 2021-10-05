@@ -4495,20 +4495,8 @@ Check the execution queue
       command
     </td>
     <td>
-      Drag and drop operation
+      Drag and drop operations
 <pre class="eg">
-$ dnd align [-n N]
-
-a<span class="cc">\t</span>bb<span class="cc">\t</span>ccc
-a123<span class="cc">\t</span>b<span class="cc">\t</span>c
-a12<span class="cc">\t</span>bbbb<span class="cc">\t</span>c
-
--&gt;
-a    bb   ccc
-a123 b    c
-a12  bbbb c
-
-
 $ dnd date [-s]
 
 $ dnd date
@@ -4527,30 +4515,30 @@ $ dnd date -s
 2020-06-30 09:30:00.300
 
 
-$ dnd unique [-count] [-sort asc|desc] [-blank]
-Extract unique values from the given array.
+$ dnd datesep [separator]
+*default separator = '/'
 
-foo
-bar
-foo
-foo
-baz
-foo
-bar
+20210101 20210228
+20210301 20210331
+20210501 99991231
 
-$ dnd unique
 -&gt;
-foo
-baz
-bar
+2021/01/01 2021/02/28
+2021/03/01 2021/03/31
+2021/05/01 9999/12/31
 
-$ dnd unique -count
+
+$ dnd lineagg
+AAAAA<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+<span class="cc">&#x21b5;</span>
+CCCCC<span class="cc">&#x21b5;</span>
+
 -&gt;
-IDX CNT VAL
----------------
- 1:   4 foo
- 2:   2 bar
- 3:   1 baz
+AAAAA<span class="cc">&#x21b5;</span>
+BBBBB<span class="cc">&#x21b5;</span>
+CCCCC<span class="cc">&#x21b5;</span>
 
 
 $ dnd sort [-desc]
@@ -4579,6 +4567,18 @@ $ dnd sort -csv A
 333,bbb,yyy
 
 
+$ dnd tabalign [-n N]
+
+a<span class="cc">\t</span>bb<span class="cc">\t</span>ccc
+a123<span class="cc">\t</span>b<span class="cc">\t</span>c
+a12<span class="cc">\t</span>bbbb<span class="cc">\t</span>c
+
+-&gt;
+a    bb   ccc
+a123 b    c
+a12  bbbb c
+
+
 $ dnd timediff
 
 2021-04-03 20:11:49.768
@@ -4591,7 +4591,7 @@ $ dnd timediff
 [T+00:00:03.449] 2021-04-03 20:11:53.217
 
 
-$ dnd trim
+$ dnd trimblank
 AAAAA<span class="cc">&#x21b5;</span>
 <span class="cc">&nbsp;&nbsp;&nbsp;&#x21b5;</span>
 BBBBB<span class="cc">&#x21b5;</span>
@@ -4601,17 +4601,31 @@ AAAAA<span class="cc">&#x21b5;</span>
 <span class="cc">&#x21b5;</span>
 BBBBB<span class="cc">&#x21b5;</span>
 
-$ dnd trim -line
-AAAAA<span class="cc">&#x21b5;</span>
-<span class="cc">&#x21b5;</span>
-BBBBB<span class="cc">&#x21b5;</span>
-<span class="cc">&#x21b5;</span>
-CCCCC<span class="cc">&#x21b5;</span>
 
+$ dnd unique [-count] [-sort asc|desc] [-blank]
+Extract unique values from the given array.
+
+foo
+bar
+foo
+foo
+baz
+foo
+bar
+
+$ dnd unique
 -&gt;
-AAAAA<span class="cc">&#x21b5;</span>
-BBBBB<span class="cc">&#x21b5;</span>
-CCCCC<span class="cc">&#x21b5;</span>
+foo
+baz
+bar
+
+$ dnd unique -count
+-&gt;
+IDX CNT VAL
+---------------
+ 1:   4 foo
+ 2:   2 bar
+ 3:   1 baz
 
 
 $ dnd func FUNCTION
