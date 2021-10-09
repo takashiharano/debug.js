@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110091750';
+  this.v = '202110100000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10759,7 +10759,7 @@ DebugJS.getDateTime = function(dt) {
   } else if (typeof dt == 'number') {
     dt = new Date(dt);
   } else if (typeof dt == 'string') {
-    var wk = DebugJS.serializeDateTimeString(dt);
+    var wk = DebugJS.serializeDateTime(dt);
     var _y = wk.substr(0, 4) | 0;
     var _m = wk.substr(4, 2) | 0;
     var _d = wk.substr(6, 2) | 0;
@@ -10789,9 +10789,9 @@ DebugJS.getDateTime = function(dt) {
   var dateTime = {time: time, offset: offset, yyyy: yyyy, mm: mm, dd: dd, hh: hh, mi: mi, ss: ss, sss: ms, wday: wd};
   return dateTime;
 };
-DebugJS.serializeDateTimeString = function(s) {
+DebugJS.serializeDateTime = function(s) {
   var w = s.trim().replace(/\s{2,}/g, ' ').replace(/T/, ' ').replace(/,/, '.');
-  if (!w.match(/[-/:]/)) return DebugJS._serializeDateTimeString(w);
+  if (!w.match(/[-/:]/)) return DebugJS._serializeDateTime(w);
   var prt = w.split(' ');
   var date = prt[0];
   var time = (prt[1] ? prt[1] : '');
@@ -10815,9 +10815,9 @@ DebugJS.serializeDateTimeString = function(s) {
   mi = DebugJS.lpad(mi, '0', 2);
   ss = DebugJS.lpad(ss, '0', 2);
   time = hh + mi + ss + ms;
-  return DebugJS._serializeDateTimeString(date + time);
+  return DebugJS._serializeDateTime(date + time);
 };
-DebugJS._serializeDateTimeString = function(s) {
+DebugJS._serializeDateTime = function(s) {
   s = s.replace(/-/g, '').replace(/\s/g, '').replace(/:/g, '').replace(/\./g, '');
   return (s + '000000000').substr(0, 17);
 };
