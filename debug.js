@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110060037';
+  this.v = '202110091750';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -387,7 +387,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'p', fn: this.cmdP, desc: 'Print value of expression EXP', help: 'p [-l&lt;n&gt;] [-json] EXP'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
-    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|#id|.class [idx]|tagName [idx]|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
+    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-tbl "ABC..."]'},
@@ -432,6 +432,8 @@ var DebugJS = DebugJS || function() {
     date: {fn: DebugJS.dndDate},
     datesep: {fn: DebugJS.dndDateSep},
     lineagg: {fn: DebugJS.dndLineAgg},
+    maxlen: {fn: DebugJS.dndMaxLen},
+    minlen: {fn: DebugJS.dndMinLen},
     sort: {fn: DebugJS.dndSort, help: DebugJS.dndSortHelp},
     tabalign: {fn: DebugJS.dndTabAlign},
     timediff: {fn: DebugJS.dndTimediff},
@@ -7825,7 +7827,7 @@ DebugJS.prototype = {
     }
   },
   execDndCmd: function(ctx, s) {
-    ctx.DND_FN_TBL[ctx.dndCmd].fn(s);
+    ctx.DND_FN_TBL[ctx.dndCmd].fn(s, ctx.dndArg);
     if (!ctx.dndRM) DebugJS.dndFnFin(ctx);
   },
 
@@ -11937,8 +11939,7 @@ DebugJS.arr2set = function(a, f) {
   return s;
 };
 
-DebugJS.dndDate = function(t) {
-  var arg = DebugJS.ctx.dndArg;
+DebugJS.dndDate = function(t, arg) {
   var a = DebugJS.txt2arr(t);
   var s = DebugJS.hasOpt(arg, 's');
   var r = '';
@@ -11955,8 +11956,8 @@ DebugJS.dndDate = function(t) {
   DebugJS._log.mlt(r);
   return r;
 };
-DebugJS.dndDateSep = function(s) {
-  var a = DebugJS.ctx.dndArg.trim();
+DebugJS.dndDateSep = function(s, arg) {
+  var a = arg.trim();
   if (!a) a = '/';
   s = s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3');
   DebugJS.cls();
@@ -11969,11 +11970,45 @@ DebugJS.dndLineAgg = function(s) {
   DebugJS._log.mlt(s);
   return s;
 };
+DebugJS.dndMaxLen = function(t, a) {
+  return DebugJS.lenMinMax(t, 1, a);
+};
+DebugJS.dndMinLen = function(t, a) {
+  return DebugJS.lenMinMax(t, 0, a);
+};
+DebugJS.lenMinMax = function(t, f, th) {
+  var a = DebugJS.txt2arr(t);
+  var c = 0;
+  var b = [];
+  th |= 0;
+  for (var i = 0; i < a.length; i++) {
+    var s = a[i];
+    if (s) {
+      var v = s.length;
+      if ((f && (c <= v)) || (!f && ((c == 0) || (c >= v)))) {
+        c = v;
+        b.push(s);
+      }
+    }
+  }
+  var m = [];
+  for (i = 0; i < b.length; i++) {
+    v = b[i].length;
+    if (th > 0) {
+      if ((f && v >= th) || (!f && v <= th)) m.push(b[i]);
+    } else if (v == c) {
+      m.push(b[i]);
+    }
+  }
+  m = DebugJS.arr2set(m);
+  DebugJS._log.p(m);
+  DebugJS._log.res(c);
+  return c;
+};
 DebugJS.dndSortHelp = function() {
   DebugJS.printUsage('dnd sort [-desc] [-csv COL]');
 };
-DebugJS.dndSort = function(s) {
-  var arg = DebugJS.ctx.dndArg;
+DebugJS.dndSort = function(s, arg) {
   var desc = DebugJS.hasOpt(arg, 'desc');
   var n = DebugJS.getOptVal(arg, 'csv');
   if (n == null) {
@@ -11991,8 +12026,7 @@ DebugJS.dndSort = function(s) {
   DebugJS._log.mlt(r);
   return r;
 };
-DebugJS.dndTabAlign = function(s) {
-  var arg = DebugJS.ctx.dndArg;
+DebugJS.dndTabAlign = function(s, arg) {
   var a = DebugJS.txt2arr(s);
   var n = DebugJS.getOptVal(arg, 'n') | 0;
   if (!n) n = 1;
@@ -12047,10 +12081,9 @@ DebugJS.dndTrimBlank = function(s) {
 DebugJS.dndUniqueHelp = function() {
   DebugJS.printUsage('dnd unique [-count] [-sort asc|desc]');
 };
-DebugJS.dndUnique = function(s) {
+DebugJS.dndUnique = function(s, arg) {
   var l = DebugJS.txt2arr(s);
   var o = DebugJS.cntByGrp(l);
-  var arg = DebugJS.ctx.dndArg;
   var v = [];
   for (var k in o) {
     v.push({key: k, cnt: o[k]});
