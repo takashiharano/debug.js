@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110100000';
+  this.v = '202110230105';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2786,6 +2786,7 @@ DebugJS.prototype = {
             if (ctx.status & DebugJS.ST_BAT_RUNNING) {
               DebugJS.bat.stop(DebugJS.EXIT_SIG + DebugJS.SIGINT);
             }
+            if (ctx.dndCmd) ctx.cancelDndCmd(ctx);
             ctx.startLogScrolling();
             ctx._cmdDelayCancel(ctx);
             DebugJS.point.move.stop();
@@ -7796,8 +7797,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var a0 = DebugJS.getArgVal(arg, 0);
     if (a0 == '-c') {
-      if (ctx.dndCmd) DebugJS._log('Canceled.');
-      DebugJS.dndFnFin(ctx);
+      if (ctx.dndCmd) ctx.cancelDndCmd(ctx);
       return;
     }
     var a = DebugJS.splitCmdLineInTwo(arg);
@@ -7829,6 +7829,10 @@ DebugJS.prototype = {
   execDndCmd: function(ctx, s) {
     ctx.DND_FN_TBL[ctx.dndCmd].fn(s, ctx.dndArg);
     if (!ctx.dndRM) DebugJS.dndFnFin(ctx);
+  },
+  cancelDndCmd: function(ctx) {
+    DebugJS._log('Canceled.');
+    DebugJS.dndFnFin(ctx);
   },
 
   cmdEcho: function(arg) {
@@ -12132,21 +12136,28 @@ DebugJS._dndUnique = function(w, a) {
 };
 DebugJS._dndUniqueCnt = function(v, w) {
   var mxD = 3;
+  var mxL = 0;
   for (var i = 0; i < v.length; i++) {
     var d = DebugJS.digits(v[i].cnt);
+    var l = DebugJS.lenW(v[i].key);
     if (d > mxD) mxD = d;
+    if (l > mxL) mxL = l;
   }
   var idxD = DebugJS.digits(w.length);
   if (idxD < 2) idxD = 2;
-  var h = DebugJS.rpad('IDX', ' ', idxD) + ' ' + DebugJS.rpad('CNT', ' ', mxD) + ' VAL\n---------------\n';
+  var h = DebugJS.rpad('IDX', ' ', idxD) + ' ' + DebugJS.rpad('VAL', ' ', mxL + 2) + ' CNT\n' + DebugJS.repeatCh('-', idxD + mxL + mxD + 5) + '\n';
   var r = h;
   var m = h;
+  mxL += 2;
   for (i = 0; i < w.length; i++) {
     var idx = DebugJS.lpad(i + 1, ' ', idxD);
     var c = DebugJS.lpad(w[i].cnt, ' ', mxD);
-    var p = idx + ': ' + c + ' ';
-    m += p + DebugJS.quoteStr(DebugJS.hlCtrlCh(w[i].key)) + '\n';
-    r += p + w[i].key + '\n';
+    var k = w[i].key;
+    var pd = mxL - (DebugJS.lenW(k) + 2);
+    var ky = DebugJS.quoteStr(DebugJS.hlCtrlCh(k)) + DebugJS.repeatCh(' ', pd);
+    var p = idx + ': ';
+    m += p + ky + ' ' + c + '\n';
+    r += p + w[i].key + ' ' + c + '\n';
   }
   DebugJS._log.mlt(m);
   return r;
