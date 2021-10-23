@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110231717';
+  this.v = '202110232124';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4230,6 +4230,7 @@ DebugJS.prototype = {
     ctx.updateTargetElm(el);
   },
   getPrevElm: function(ctx, node) {
+    if (!node) return null;
     var el = node.previousElementSibling;
     if (el && (el.id == ctx.id)) el = node.previousElementSibling;
     if (el) {
@@ -4247,6 +4248,7 @@ DebugJS.prototype = {
     return el;
   },
   getNextElm: function(ctx, node) {
+    if (!node) return null;
     var el = node.firstElementChild;
     if (!el || (el && (el.id == ctx.id))) {
       el = node.nextElementSibling;
@@ -8715,6 +8717,8 @@ DebugJS.prototype = {
       ctx._cmdPointByAttr(args, alignX, alignY);
     } else if (op == 'bytext') {
       ctx._cmdPointByText(args, alignX, alignY);
+    } else if (op.match(/^node/)) {
+      ctx._cmdPointNodeRel(ctx, point, args, alignX, alignY);
     } else if (op == 'scroll') {
       ctx._cmdPointScroll(args);
     } else if (op == 'selectoption') {
@@ -8808,6 +8812,8 @@ DebugJS.prototype = {
       idx = args[3] | 0;
       try {txt = eval(txt);} catch (e) {DebugJS._log.e(e);return;}
       point.moveToElByAttr('!txt', txt, idx, speed, step, alignX, alignY);
+    } else if (tgt.match(/^node/)) {
+      ctx._cmdPointMvNodeRel(ctx, point, tgt, speed, step, alignX, alignY);
     } else if (isNaN(tgt)) {
       idx = args[2];
       if (tgt.charAt(0) == '(') tgt = tgt.substr(1, tgt.length - 2);
@@ -8817,6 +8823,36 @@ DebugJS.prototype = {
       var y = args[2];
       point.move(x, y, speed, step);
     }
+  },
+  _cmdPointMvNodeRel: function(ctx, point, tgt, speed, step, alignX, alignY) {
+    var el = ctx._cmdPointGetTgtNodeRel(ctx, point, tgt);
+    if (el) {
+      point.moveToSelector(el, 0, speed, step, alignX, alignY);
+    } else {
+      DebugJS._log.e('Element not found');
+    }
+  },
+  _cmdPointGetTgtNodeRel: function(ctx, point, tgt) {
+    tgt = tgt.replace('node', '');
+    var f;
+    var op = tgt.charAt(0);
+    var c = tgt.substr(1) | 0;
+    if (!c) c = 1;
+    if (op == '+') {
+      f = ctx.getNextElm;
+    } else if (op == '-') {
+      f = ctx.getPrevElm;
+    } else {
+      DebugJS._log.e('Illegal operator: ' + op);
+      return null;
+    }
+    var el = point.getElementFromCurrentPos();
+    if (el) {
+      for (var i = 0; i < c; i++) {
+        el = f(ctx, el);
+      }
+    }
+    return el;
   },
   _cmdPointCalcPos: function(ctx, a1, a2) {
     var x = a1;
@@ -8939,6 +8975,15 @@ DebugJS.prototype = {
     try {txt = eval(txt);} catch (e) {DebugJS._log.e(e);return;}
     var idx = args[2] | 0;
     DebugJS.pointByAttr('!txt', txt, idx, alignX, alignY);
+  },
+  _cmdPointNodeRel: function(ctx, point, args, alignX, alignY) {
+    var tgt = args[0];
+    var el = ctx._cmdPointGetTgtNodeRel(ctx, point, tgt);
+    if (el) {
+      DebugJS.pointBySelector(el, 0, alignX, alignY);
+    } else {
+      DebugJS._log.e('Element not found');
+    }
   },
   _cmdPointScroll: function(args) {
     var x = args[1];

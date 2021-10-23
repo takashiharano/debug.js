@@ -5309,6 +5309,8 @@ $ point .className
 $ point .className index
 $ point tagName
 $ point tagName index
+$ point node+[N]
+$ point node-[N]
 $ point bytext "INNER_TEXT" index
 $ point byattr ATTR_NAME "VALUE" index
 -&gt; Point the specified element
@@ -5393,6 +5395,8 @@ $ point move #id
 $ point move .className 0<span class="annotation">index</span>
 $ point move <i>CSS-Selector</i>
 $ point move tagName 0<span class="annotation">index</span>
+$ point move node+[N]
+$ point move node-[N]
 $ point move bytext "INNER_TEXT" 0<span class="annotation">index</span>
 $ point move byattr ATTR_NAME "VALUE" 0<span class="annotation">index</span>
 $ point move center <span class="annotation">Center of the screen</span>
