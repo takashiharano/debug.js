@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110230105';
+  this.v = '202110231717';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -370,7 +370,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
-    {cmd: 'int', fn: this.cmdInt, desc: 'Radix conversion', help: 'int VAL [VAL] [-z]'},
+    {cmd: 'int', fn: this.cmdInt, desc: 'Radix conversion', help: 'int VAL'},
     {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] {JSON}'},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
@@ -383,6 +383,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
+    {cmd: 'num', fn: this.cmdNum, desc: 'Displays the numbers in order', help: 'num V1 V2 [ST] [-z]'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|sw1]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print value of expression EXP', help: 'p [-l&lt;n&gt;] [-json] EXP'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
@@ -8603,6 +8604,35 @@ DebugJS.prototype = {
     return t;
   },
 
+  cmdNum: function(arg, tbl) {
+    var v = DebugJS.getNonOptVals(arg, true);
+    var z = DebugJS.hasOpt(arg, 'z');
+    var s = '';
+    if (v.length == 0) {
+      DebugJS.printUsage(tbl.help);
+    } else {
+      var v1 = v[0] | 0;
+      var v2 = v1;
+      var st = 1;
+      if (v[1] != undefined) v2 = v[1] | 0;
+      if (v[2] != undefined) st = v[2] | 0;
+      if (st <= 0) st = 1;
+      if (v1 < v2) {
+        var mxD = DebugJS.digits(v2);
+        for (var i = v1; i <= v2; i += st) {
+          s += (z ? DebugJS.lpad(i, '0', mxD) : i) + '\n';
+        }
+      } else {
+        mxD = DebugJS.digits(v1);
+        for (i = v1; i >= v2; i -= st) {
+          s += (z ? DebugJS.lpad(i, '0', mxD) : i) + '\n';
+        }
+      }
+      DebugJS._log.mlt(s);
+    }
+    return s;
+  },
+
   cmdOpen: function(arg, tbl) {
     var a = DebugJS.splitArgs(arg);
     var fn = a[0];
@@ -9022,25 +9052,8 @@ DebugJS.prototype = {
 
   cmdInt: function(arg, tbl, echo) {
     var v = DebugJS.getNonOptVals(arg, true);
-    var z = DebugJS.hasOpt(arg, 'z');
     if (v.length == 0) {
       DebugJS.printUsage(tbl.help);
-    } else if (v.length > 1) {
-      var v1 = v[0] | 0;
-      var v2 = v[1] | 0;
-      var s = '';
-      if (v1 < v2) {
-        var mxD = DebugJS.digits(v2);
-        for (var i = v1; i <= v2; i++) {
-          s += (z ? DebugJS.lpad(i, '0', mxD) : i) + '\n';
-        }
-      } else {
-        mxD = DebugJS.digits(v1);
-        for (i = v1; i >= v2; i--) {
-          s += (z ? DebugJS.lpad(i, '0', mxD) : i) + '\n';
-        }
-      }
-      DebugJS._log.mlt(s);
     } else {
       return DebugJS.cmdInt(v[0], echo);
     }
