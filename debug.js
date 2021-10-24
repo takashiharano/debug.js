@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110232124';
+  this.v = '202110250000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -253,9 +253,7 @@ var DebugJS = DebugJS || function() {
   this.mousePosLabel = null;
   this.mousePos = {x: '-', y: '-'};
   this.mouseClickLabel = null;
-  this.mouseClick0 = DebugJS.COLOR_INACT;
-  this.mouseClick1 = DebugJS.COLOR_INACT;
-  this.mouseClick2 = DebugJS.COLOR_INACT;
+  this.mouseClick = [DebugJS.COLOR_INACT, DebugJS.COLOR_INACT, DebugJS.COLOR_INACT];
   this.winSizeLabel = null;
   this.clientSizeLabel = null;
   this.bodySizeLabel = null;
@@ -1391,7 +1389,6 @@ DebugJS.prototype = {
       ctx.swLabel.style.marginLeft = '1px';
       setStyle(ctx.swLabel, 'color', opt.fontColor);
       ctx.headPanel.appendChild(ctx.swLabel);
-
       ctx.swBtnPanel = document.createElement('span');
       ctx.swBtnPanel.style.float = 'right';
       ctx.swBtnPanel.style.marginLeft = '4px';
@@ -1827,9 +1824,9 @@ DebugJS.prototype = {
   },
 
   updateMouseClickLabel: function() {
-    var s = '<span style="color:' + this.mouseClick0 + ' !important;margin-right:2px;">0</span>' +
-    '<span style="color:' + this.mouseClick1 + ' !important;margin-right:2px;">1</span>' +
-    '<span style="color:' + this.mouseClick2 + ' !important">2</span>';
+    var s = '<span style="color:' + this.mouseClick[0] + ' !important;margin-right:2px;">0</span>' +
+    '<span style="color:' + this.mouseClick[1] + ' !important;margin-right:2px;">1</span>' +
+    '<span style="color:' + this.mouseClick[2] + ' !important">2</span>';
     this.mouseClickLabel.innerHTML = 'CLICK:' + s;
   },
 
@@ -2927,7 +2924,7 @@ DebugJS.prototype = {
     var posY = e.clientY;
     switch (e.button) {
       case 0:
-        ctx.mouseClick0 = DebugJS.COLOR_ACTIVE;
+        ctx.mouseClick[0] = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.ST_MEASURE) ctx.startMeasure(ctx, posX, posY);
         if (ctx.status & DebugJS.ST_STOPWATCH_LAPTIME) {
           DebugJS._log('<span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTmrStr(DebugJS.time.getCount(DebugJS.TMR_NM_SW_S)) + '</span>');
@@ -2936,10 +2933,10 @@ DebugJS.prototype = {
         if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD) DebugJS.bat._resume('cmd');
         break;
       case 1:
-        ctx.mouseClick1 = DebugJS.COLOR_ACTIVE;
+        ctx.mouseClick[1] = DebugJS.COLOR_ACTIVE;
         break;
       case 2:
-        ctx.mouseClick2 = DebugJS.COLOR_ACTIVE;
+        ctx.mouseClick[2] = DebugJS.COLOR_ACTIVE;
         if (ctx.status & DebugJS.ST_ELM_INFO) {
           if (ctx.isOnDbgWin(posX, posY)) {
             if (DebugJS.el && (DebugJS.el != ctx.tgtEl)) {
@@ -2991,14 +2988,14 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     switch (e.button) {
       case 0:
-        ctx.mouseClick0 = DebugJS.COLOR_INACT;
+        ctx.mouseClick[0] = DebugJS.COLOR_INACT;
         ctx._onPointerUp(ctx, e);
         break;
       case 1:
-        ctx.mouseClick1 = DebugJS.COLOR_INACT;
+        ctx.mouseClick[1] = DebugJS.COLOR_INACT;
         break;
       case 2:
-        ctx.mouseClick2 = DebugJS.COLOR_INACT;
+        ctx.mouseClick[2] = DebugJS.COLOR_INACT;
     }
     if (ctx.opt.useDeviceInfo) ctx.updateMouseClickLabel();
   },
@@ -3248,9 +3245,7 @@ DebugJS.prototype = {
     ctx.setDbgWinPos(t, l);
     ctx.scrollLogBtm(ctx);
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
-    if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) {
-      ctx.adjustDbgWinPos(ctx);
-    }
+    if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) ctx.adjustDbgWinPos(ctx);
   },
 
   resetDbgWinSizePos: function() {
@@ -3275,9 +3270,7 @@ DebugJS.prototype = {
 
   isOutOfWin: function(ctx) {
     var sp = ctx.getSelfSizePos();
-    if ((sp.x1 > document.documentElement.clientWidth) ||
-        (sp.y1 > document.documentElement.clientHeight) ||
-        (sp.x2 < 0) || (sp.y2 < 0)) {
+    if ((sp.x1 > document.documentElement.clientWidth) || (sp.y1 > document.documentElement.clientHeight) || (sp.x2 < 0) || (sp.y2 < 0)) {
       return true;
     }
     return false;
@@ -4589,11 +4582,8 @@ DebugJS.prototype = {
 
   toggleTools: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_TOOLS) {
-      ctx.closeTools(ctx);
-    } else {
-      ctx.openTools(ctx);
-    }
+    var f = ((ctx.status & DebugJS.ST_TOOLS) ? ctx.closeTools : ctx.openTools);
+    f(ctx);
   },
   openTools: function(ctx) {
     ctx.status |= DebugJS.ST_TOOLS;
@@ -6066,7 +6056,7 @@ DebugJS.prototype = {
     ctx.showB64Preview(ctx, file, b64cnt.scheme, b64cnt.data);
     var cType = DebugJS.getContentType(null, file, b64cnt.data);
     if (cType == 'text') {
-       var decoded = DebugJS.decodeB64(b64cnt.data);
+      var decoded = DebugJS.decodeB64(b64cnt.data);
       if (ctx.fileVwrSysCb) {
         ctx.fileVwrSysCb(ctx, file, decoded);
       } else {
@@ -6671,11 +6661,8 @@ DebugJS.prototype = {
 
   toggleExtPanel: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_EXT_PANEL) {
-      ctx.closeExtPanel(ctx);
-    } else {
-      ctx.openExtPanel(ctx);
-    }
+    var f = ((ctx.status & DebugJS.ST_EXT_PANEL) ? ctx.closeExtPanel : ctx.openExtPanel);
+    f(ctx);
   },
 
   openExtPanel: function(ctx) {
@@ -7315,7 +7302,7 @@ DebugJS.prototype = {
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     var n = DebugJS.getOptVal(arg, 'n');
     if (n == null) {
-       n = 1;
+      n = 1;
     } else {
       iIdx += 2;
     }
@@ -10725,7 +10712,7 @@ DebugJS.isStr = function(s) {
   return ((s.match(/^".*"$/) || s.match(/^'.*'$/)) ? true : false);
 };
 DebugJS.wBOM = function(s) {
- return s.charCodeAt(0) == 65279;
+  return s.charCodeAt(0) == 65279;
 };
 
 DebugJS.getContentType = function(mime, file, dturlData) {
@@ -11102,7 +11089,7 @@ DebugJS.ms2str = function(v, m) {
     }
   } else {
     o = DebugJS.ms2struct(v, true);
-     s = (o.sign ? '-' : '');
+    s = (o.sign ? '-' : '');
     if (o.d > 0) s += o.d + 'd ';
     s += o.hr + ':' + o.mi + ':' + o.ss + '.' + o.sss;
   }
@@ -11262,8 +11249,7 @@ DebugJS.calcNextTime = function(times) {
   var ret = {t: ts[0]};
   if (ts[0].match(/\*/)) return DebugJS.calcNextTime2(now, ts[0]);
   for (var i = 0; i < ts.length; i++) {
-    var t = ts[i];
-    t = t.replace(/T/, '');
+    var t = ts[i].replace(/T/, '');
     var tgt = DebugJS.getTimestampOfDay(t, now);
     if (i == 0) ret.time = tgt;
     if (now.time <= tgt) {
@@ -11280,9 +11266,7 @@ DebugJS.calcNextTime2 = function(now, t) {
   var h = t.substr(1, 2), m = t.substr(3, 2), s = t.substr(5, 2);
   var hh = ((h == '**') ? now.hh : h);
   var mi = m;
-  if (m == '**') {
-    mi = ((hh == now.hh) ? now.mi : 0);
-  }
+  if (m == '**') mi = ((hh == now.hh) ? now.mi : 0);
   var ss = s;
   if (s == '') {
     ss = 0;
@@ -14812,11 +14796,8 @@ DebugJS.cmd.hasFocus = function() {
   return document.activeElement == DebugJS.ctx.cmdLine;
 };
 DebugJS.cmd.toggleFocus = function() {
-  if (DebugJS.cmd.hasFocus()) {
-    DebugJS.cmd.blur();
-  } else {
-    DebugJS.cmd.focus();
-  }
+  var f = (DebugJS.cmd.hasFocus() ? DebugJS.cmd.blur : DebugJS.cmd.focus);
+  f();
 };
 DebugJS.cmd.setMode = function(m) {
   if (m != 'password') m = 'text';
