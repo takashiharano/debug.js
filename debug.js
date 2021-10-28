@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110250000';
+  this.v = '202110290016';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10288,16 +10288,38 @@ DebugJS.getElmHexColor = function(color) {
   return hex;
 };
 
-DebugJS.RingBuffer = function(len) {
-  this.buffer = new Array(len);
-  this.len = len;
+DebugJS.RingBuffer = function(size) {
+  this.buf = new Array(size);
+  this.len = size;
   this.cnt = 0;
 };
 DebugJS.RingBuffer.prototype = {
   add: function(data) {
     var i = this.cnt % this.len;
-    this.buffer[i] = data;
+    this.buf[i] = data;
     this.cnt++;
+  },
+  get: function(idx) {
+    if (this.len < this.cnt) {
+      idx += this.cnt;
+    }
+    idx %= this.len;
+    return this.buf[idx];
+  },
+  getAll: function() {
+    var bf = [];
+    var len = this.cnt;
+    var pos = 0;
+    if (this.cnt > this.len) {
+      len = this.len;
+      pos = (this.cnt % len);
+    }
+    for (var i = 0; i < len; i++) {
+      if (pos >= len) pos = 0;
+      bf[i] = this.buf[pos];
+      pos++;
+    }
+    return bf;
   },
   set: function(idx, data) {
     var ctx = this;
@@ -10317,37 +10339,10 @@ DebugJS.RingBuffer.prototype = {
       p += idx;
     }
     var i = p % ctx.len;
-    ctx.buffer[i] = data;
-  },
-  get: function(idx) {
-    if (this.len < this.cnt) {
-      idx += this.cnt;
-    }
-    idx %= this.len;
-    return this.buffer[idx];
-  },
-  getAll: function() {
-    var buf = [];
-    var len = this.len;
-    var pos = 0;
-    if (this.cnt > len) {
-      pos = (this.cnt % len);
-    }
-    for (var i = 0; i < len; i++) {
-      if (pos >= len) {
-        pos = 0;
-      }
-      if (this.buffer[pos] == undefined) {
-        break;
-      } else {
-        buf[i] = this.buffer[pos];
-        pos++;
-      }
-    }
-    return buf;
+    ctx.buf[i] = data;
   },
   clear: function() {
-    this.buffer = new Array(this.len);
+    this.buf = new Array(this.len);
     this.cnt = 0;
   },
   count: function() {
