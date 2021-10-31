@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202110290016';
+  this.v = '202111010000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6334,11 +6334,7 @@ DebugJS.prototype = {
         if (showAddr) b += DebugJS.dumpAddr(i + 1);
       }
     } else if (showSp) {
-      if ((i + 1) % 8 == 0) {
-        b += '  ';
-      } else {
-        b += ' ';
-      }
+      b += (((i + 1) % 8 == 0) ? '  ' : ' ');
     }
     return b;
   },
@@ -6710,9 +6706,7 @@ DebugJS.prototype = {
     if (ctx.extActPnlIdx != -1) {
       var p2 = ctx.extPanels[ctx.extActPnlIdx];
       if (p2) {
-        if (ctx.status & DebugJS.ST_EXT_PANEL) {
-          ctx.onExtPanelInActive(ctx, p2);
-        }
+        if (ctx.status & DebugJS.ST_EXT_PANEL) ctx.onExtPanelInActive(ctx, p2);
         ctx.extBodyPanel.removeChild(p2.base);
       }
     }
@@ -7122,11 +7116,7 @@ DebugJS.prototype = {
   _cmdAliasDisp: function(ctx, al) {
     var s = 'alias ' + al;
     var c = ctx.CMD_ALIAS[al];
-    if (c == undefined) {
-      s += ': not found';
-    } else {
-      s += "='" + c + "'";
-    }
+    s += ((c == undefined) ? ': not found' : "='" + c + "'");
     return s;
   },
 
@@ -7569,11 +7559,7 @@ DebugJS.prototype = {
     var t1 = DebugJS.getDateTime(d1).time;
     var t2 = (d2 | 0) * 86400000;
     var t;
-    if (op == '-') {
-      t = t1 - t2;
-    } else {
-      t = t1 + t2;
-    }
+    t = ((op == '-') ? t1 - t2 : t1 + t2);
     var d = DebugJS.getDateTime(t);
     if (isNaN(d.time)) return ret;
     ret = DebugJS.getDateStr(d, sp);
@@ -8390,11 +8376,7 @@ DebugJS.prototype = {
     var _n;
     try {
       var _a = DebugJS.getNonOptVal(arg);
-      if (DebugJS.hasOpt(arg, 'b')) {
-        _n = DebugJS.lenB(_a);
-      } else {
-        _n = _a.length;
-      }
+      _n = ((DebugJS.hasOpt(arg, 'b')) ? DebugJS.lenB(_a) : _a.length);
     } catch (e) {
       DebugJS._log.e(e);return;
     }
@@ -10119,11 +10101,7 @@ DebugJS.prototype = {
     }
     var i = DebugJS.getOptVal(arg, 'i');
     try {
-      if (i == null) {
-        i = DebugJS.getArgsFrom(arg, iIdx);
-      } else {
-        i = eval(i);
-      }
+      i = ((i == null) ? DebugJS.getArgsFrom(arg, iIdx) : eval(i));
       var ret = fn(i, a1);
       var r = (esc ? DebugJS.escHtml(ret) : ret);
       if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(r));
@@ -11223,11 +11201,7 @@ DebugJS.calcTargetTime = function(tgt) {
     mm = now.mm;
     dd = now.dd;
     tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
-    if (now.time > tgt.time) {
-      t1 = tgt.time + 86400000;
-    } else {
-      t1 = tgt.time;
-    }
+    t1 = ((now.time > tgt.time) ? tgt.time + 86400000 : tgt.time);
   } else {
     yyyy = date.substr(0, 4);
     mm = date.substr(4, 2);
@@ -12893,11 +12867,7 @@ DebugJS.decodeUnicode = function(arg) {
   for (var i = 0; i < a.length; i++) {
     if (a[i] == '') continue;
     var cdpt = a[i].replace(/^U\+/i, '');
-    if (cdpt == '20') {
-      s += ' ';
-    } else {
-      s += '&#x' + cdpt;
-    }
+    s += ((cdpt == '20') ? ' ' : '&#x' + cdpt);
   }
   return s;
 };
@@ -13142,11 +13112,7 @@ DebugJS.toFullTz = function(t) {
   if (t.length == 1) {
     t = '+0' + t + '00';
   } else if (t.length == 2) {
-    if (s.match(/\d/)) {
-      t = '+' + t + '00';
-    } else {
-      t = s + '0' + t.charAt(1) + '00';
-    }
+    t = ((s.match(/\d/)) ? '+' + t + '00' : s + '0' + t.charAt(1) + '00');
   } else if (t.length == 3) {
     t += '00';
   } else if (t.length == 4) {
@@ -15620,11 +15586,7 @@ DebugJS.bat.list = function(s, e) {
       }
     }
     if ((i >= s) && (i < e)) {
-      if (i == pc - 1) {
-        l += '>';
-      } else {
-        l += ' ';
-      }
+      l += ((i == pc - 1) ? '>' : ' ');
       l += ' ' + pdng + n + ': ' + cmd + '\n';
     }
     if (DebugJS.startsWith(DebugJS.delLeadingSP(cmd), DebugJS.BAT_TKN_JS)) {
@@ -16797,12 +16759,8 @@ DebugJS.point.hint.move = function() {
     }
   }
   var x = ptr.x;
-  if (x < 0) {
-    x = 0;
-  }
-  if ((y + ps.h) > ptr.y) {
-    x = ptr.x + ptr.w;
-  }
+  if (x < 0) x = 0;
+  if ((y + ps.h) > ptr.y) x = ptr.x + ptr.w;
   if ((x + ps.w) > clW) {
     if (ps.w < clW) {
       x = clW - ps.w;
@@ -16864,7 +16822,6 @@ DebugJS.scrollWinTo = function(x, y, speed, step) {
   }
   DebugJS.bat.lock();
   DebugJS._scrollWinTo();
-  return true;
 };
 DebugJS._scrollWinTo = function() {
   var d = DebugJS.scrollWinTo.data;
@@ -16957,14 +16914,12 @@ DebugJS.scrollWinToTarget = function(ps, speed, step, cb, arg, top) {
   return false;
 };
 DebugJS.scrollElTo = function(tgt, x, y) {
-  x += '';
-  y += '';
+  x += '';y += '';
   var el = DebugJS.getElement(tgt);
   if (!el) {
     DebugJS._log.e('Element not found: ' + tgt);
     return;
   }
-
   if ((x.charAt(0) == '+') || (x.charAt(0) == '-')) {
     x = el.scrollLeft + (x | 0);
   } else {
@@ -16974,8 +16929,7 @@ DebugJS.scrollElTo = function(tgt, x, y) {
         break;
       case 'center':
         el.scrollLeft = el.scrollWidth;
-        var wkX = el.scrollLeft;
-        x = wkX / 2;
+        x = el.scrollLeft / 2;
         break;
       case 'right':
         x = el.scrollWidth;
@@ -16984,7 +16938,6 @@ DebugJS.scrollElTo = function(tgt, x, y) {
         x = null;
     }
   }
-
   if ((y.charAt(0) == '+') || (y.charAt(0) == '-')) {
     y = el.scrollTop + (y | 0);
   } else {
@@ -16994,8 +16947,7 @@ DebugJS.scrollElTo = function(tgt, x, y) {
         break;
       case 'middle':
         el.scrollTop = el.scrollHeight;
-        var wkY = el.scrollTop;
-        y = wkY / 2;
+        y = el.scrollTop / 2;
         break;
       case 'bottom':
         y = el.scrollHeight;
@@ -17010,15 +16962,11 @@ DebugJS.scrollElTo = function(tgt, x, y) {
 
 DebugJS.calcDestPosAndStep = function(dest, step) {
   if (dest < 0) {
-    if (((dest * (-1)) < step) || (step == 0)) {
-      step = dest * (-1);
-    }
+    if (((dest * (-1)) < step) || (step == 0)) step = dest * (-1);
     dest += step;
     step *= (-1);
   } else {
-    if ((dest < step) || (step == 0)) {
-      step = dest;
-    }
+    if ((dest < step) || (step == 0)) step = dest;
     dest -= step;
   }
   return {dest: dest, step: step};
@@ -17221,8 +17169,8 @@ DebugJS.event.dispatch = function(el, idx) {
     return tgt.dispatchEvent(e);
   } else {
     DebugJS._log.e('Event is not created');
-    return false;
   }
+  return false;
 };
 DebugJS.event.clear = function() {
   DebugJS.event.evt = null;
@@ -17576,17 +17524,9 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
       got = got.replace(/\r?\n/g, '\n');
     }
     if (method == '==') {
-      if (got == exp) {
-        status = test.STATUS_OK;
-      } else {
-        status = test.STATUS_NG;
-      }
+      status = ((got == exp) ? test.STATUS_OK : test.STATUS_NG);
     } else if (method == '!=') {
-      if (got != exp) {
-        status = test.STATUS_OK;
-      } else {
-        status = test.STATUS_NG;
-      }
+      status = ((got != exp) ? test.STATUS_OK : test.STATUS_NG);
     } else if ((method == 'regexp') ||
         (method == '<') || (method == '<=') ||
         (method == '>') || (method == '>=')) {
@@ -17607,11 +17547,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
         test.onVrfyAftr(status);
         return status;
       }
-      if (r) {
-        status = test.STATUS_OK;
-      } else {
-        status = test.STATUS_NG;
-      }
+      status = (r ? test.STATUS_OK : test.STATUS_NG);
     } else {
       if (method == undefined) {
         DebugJS.printUsage('test|point verify [-label:text] got ==|!=|<|>|<=|>=|regexp exp');
