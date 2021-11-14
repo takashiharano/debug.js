@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202111010000';
+  this.v = '202111150000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -710,7 +710,7 @@ DebugJS.CHR_LF_S = '<span style="color:#0f0" class="dbg-cc">' + DebugJS.CHR_LF +
 DebugJS.CHR_CR_S = '<span style="color:#f00" class="dbg-cc">' + DebugJS.CHR_CR + '</span>';
 DebugJS.EOF = '<span style="color:#08f" class="dbg-cc">[EOF]</span>';
 DebugJS.CHR_WIN_FULL = '&#x25A1;';
-DebugJS.CHR_WIN_RST = '&#x2750;';
+DebugJS.CHR_WIN_RSTR = '&#x2750;';
 DebugJS.LOG_HEAD = '[LOG]';
 DebugJS.LOG_BOUNDARY_BUF = '-- ORIGINAL LOG BUFFER --';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
@@ -940,16 +940,6 @@ DebugJS.prototype = {
       'margin-right': '10px',
       'color': opt.sysInfoColor + ' !important'
     };
-    styles['.dbg-resize-corner'] = {
-      'position': 'absolute',
-      'width': '6px',
-      'height': '6px',
-      'background': 'rgba(0,0,0,0)'
-    };
-    styles['.dbg-resize-side'] = {
-      'position': 'absolute',
-      'background': 'rgba(0,0,0,0)'
-    };
     styles['.dbg-overlay-base-panel'] = {
       'position': 'relative',
       'top': '0',
@@ -1148,29 +1138,17 @@ DebugJS.prototype = {
     }
   },
 
-  createResizeSideArea: function(cursor, state, width, height) {
+  createResizeArea: function(cursor, state, width, height) {
     var ctx = DebugJS.ctx;
     var el = document.createElement('div');
-    el.className = 'dbg-resize-side';
+    el.style.position = 'absolute';
+    el.style.background = 'rgba(0,0,0,0)';
     el.style.width = width;
     el.style.height = height;
     el.style.cursor = cursor;
     el.onmousedown = function(e) {
       if (!(ctx.uiStatus & DebugJS.UI_ST_RESIZABLE)) return;
-      ctx.startResize(ctx, e);
-      ctx.uiStatus |= state;
-      ctx.cursor = ctx.bodyEl.style.cursor;
-      ctx.bodyEl.style.cursor = cursor;
-    };
-    return el;
-  },
-  createResizeCornerArea: function(cursor, state) {
-    var ctx = DebugJS.ctx;
-    var el = document.createElement('div');
-    el.className = 'dbg-resize-corner';
-    el.style.cursor = cursor;
-    el.onmousedown = function(e) {
-      if (!(ctx.uiStatus & DebugJS.UI_ST_RESIZABLE)) return;
+      if (e.button != 0) return;
       ctx.startResize(ctx, e);
       ctx.uiStatus |= state;
       ctx.cursor = ctx.bodyEl.style.cursor;
@@ -1491,47 +1469,47 @@ DebugJS.prototype = {
 
   initResize: function(ctx) {
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-      var resizeN = ctx.createResizeSideArea('ns-resize', DebugJS.UI_ST_RESIZING_N, '100%', '6px');
-      resizeN.style.top = '-3px';
-      resizeN.style.left = '0';
-      ctx.win.appendChild(resizeN);
+      var rsN = ctx.createResizeArea('ns-resize', DebugJS.UI_ST_RESIZING_N, '100%', '6px');
+      rsN.style.top = '-3px';
+      rsN.style.left = '0';
+      ctx.win.appendChild(rsN);
     }
 
-    var resizeE = ctx.createResizeSideArea('ew-resize', DebugJS.UI_ST_RESIZING_E, '6px', '100%');
-    resizeE.style.top = '0';
-    resizeE.style.right = '-3px';
-    ctx.win.appendChild(resizeE);
+    var rsE = ctx.createResizeArea('ew-resize', DebugJS.UI_ST_RESIZING_E, '6px', '100%');
+    rsE.style.top = '0';
+    rsE.style.right = '-3px';
+    ctx.win.appendChild(rsE);
 
-    var resizeS = ctx.createResizeSideArea('ns-resize', DebugJS.UI_ST_RESIZING_S, '100%', '6px');
-    resizeS.style.bottom = '-3px';
-    resizeS.style.left = '0';
-    ctx.win.appendChild(resizeS);
+    var rsS = ctx.createResizeArea('ns-resize', DebugJS.UI_ST_RESIZING_S, '100%', '6px');
+    rsS.style.bottom = '-3px';
+    rsS.style.left = '0';
+    ctx.win.appendChild(rsS);
 
-    var resizeSE = ctx.createResizeCornerArea('nwse-resize', DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_E);
-    resizeSE.style.bottom = '-3px';
-    resizeSE.style.right = '-3px';
-    ctx.win.appendChild(resizeSE);
+    var rsSE = ctx.createResizeArea('nwse-resize', DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_E, '6px', '6px');
+    rsSE.style.bottom = '-3px';
+    rsSE.style.right = '-3px';
+    ctx.win.appendChild(rsSE);
 
     if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-      var resizeW = ctx.createResizeSideArea('ew-resize', DebugJS.UI_ST_RESIZING_W, '6px', '100%');
-      resizeW.style.top = '0';
-      resizeW.style.left = '-3px';
-      ctx.win.appendChild(resizeW);
+      var rsW = ctx.createResizeArea('ew-resize', DebugJS.UI_ST_RESIZING_W, '6px', '100%');
+      rsW.style.top = '0';
+      rsW.style.left = '-3px';
+      ctx.win.appendChild(rsW);
 
-      var resizeNW = ctx.createResizeCornerArea('nwse-resize', DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_W);
-      resizeNW.style.top = '-3px';
-      resizeNW.style.left = '-3px';
-      ctx.win.appendChild(resizeNW);
+      var rsNW = ctx.createResizeArea('nwse-resize', DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_W, '6px', '6px');
+      rsNW.style.top = '-3px';
+      rsNW.style.left = '-3px';
+      ctx.win.appendChild(rsNW);
 
-      var resizeNE = ctx.createResizeCornerArea('nesw-resize', DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E);
-      resizeNE.style.top = '-3px';
-      resizeNE.style.right = '-3px';
-      ctx.win.appendChild(resizeNE);
+      var rsNE = ctx.createResizeArea('nesw-resize', DebugJS.UI_ST_RESIZING_N | DebugJS.UI_ST_RESIZING_E, '6px', '6px');
+      rsNE.style.top = '-3px';
+      rsNE.style.right = '-3px';
+      ctx.win.appendChild(rsNE);
 
-      var resizeSW = ctx.createResizeCornerArea('nesw-resize', DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W);
-      resizeSW.style.bottom = '-3px';
-      resizeSW.style.left = '-3px';
-      ctx.win.appendChild(resizeSW);
+      var rsSW = ctx.createResizeArea('nesw-resize', DebugJS.UI_ST_RESIZING_S | DebugJS.UI_ST_RESIZING_W, '6px', '6px');
+      rsSW.style.bottom = '-3px';
+      rsSW.style.left = '-3px';
+      ctx.win.appendChild(rsSW);
 
       ctx.winBody.ondblclick = ctx.onDbgWinDblClick;
     }
@@ -1558,7 +1536,7 @@ DebugJS.prototype = {
     if (ctx.preserveLogBtn) ctx.updatePreserveLogBtn(ctx);
     if (opt.useSuspendLogButton) ctx.updateSuspendLogBtn(ctx);
     if ((ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && opt.useWinCtrlButton) {
-      ctx.updateWinCtrlBtnPanel();
+      ctx.updateWinCtrlBtns();
     }
     if (opt.useDeviceInfo) {
       ctx.updateMousePosLabel();
@@ -1914,16 +1892,16 @@ DebugJS.prototype = {
     if (btn) DebugJS.setStyle(btn, 'color', (DebugJS.ctx.status & st) ? actvColor : DebugJS.COLOR_INACT);
   },
 
-  updateWinCtrlBtnPanel: function() {
+  updateWinCtrlBtns: function() {
     var ctx = DebugJS.ctx;
     if (!ctx.winCtrlBtnPanel) return;
     var fn = 'DebugJS.ctx.expandDbgWin(\'full\');';
     var btn = DebugJS.CHR_WIN_FULL;
     if (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH) {
       fn = 'DebugJS.ctx.restoreDbgWin();';
-      btn = DebugJS.CHR_WIN_RST;
+      btn = DebugJS.CHR_WIN_RSTR;
     }
-    fn += 'DebugJS.ctx.updateWinCtrlBtnPanel();DebugJS.ctx.focusCmdLine();';
+    fn += 'DebugJS.ctx.updateWinCtrlBtns();DebugJS.ctx.focusCmdLine();';
     var b = '<span class="dbg-btn dbg-nomove" style="float:right;position:relative;top:-1px;margin-right:' + (3 * ctx.zoom) + 'px;font-size:' + (16 * ctx.zoom) + 'px !important;color:#888 !important" onclick="' + fn + '" onmouseover="DebugJS.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">' + btn + '</span>' +
     '<span class="dbg-btn dbg-nomove" style="float:right;position:relative;top:-2px;margin-left:' + 2 * ctx.zoom + 'px;margin-right:' + ctx.zoom + 'px;font-size:' + (30 * ctx.zoom) + 'px !important;color:#888 !important" onclick="DebugJS.ctx.resetDbgWinSizePos();DebugJS.ctx.focusCmdLine();" onmouseover="DebugJS.setStyle(this, \'color\', \'#ddd\');" onmouseout="DebugJS.setStyle(this, \'color\', \'#888\');">-</span>';
     ctx.winCtrlBtnPanel.innerHTML = b;
@@ -2236,7 +2214,6 @@ DebugJS.prototype = {
   },
 
   moveDbgWin: function(ctx, x, y) {
-    if (!(ctx.uiStatus & DebugJS.UI_ST_DRAGGING)) return;
     ctx.ptOpTm = Date.now();
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJ;
     ctx.win.style.top = y - ctx.ptOfstY + 'px';
@@ -2274,13 +2251,12 @@ DebugJS.prototype = {
   },
 
   startResize: function(ctx, e) {
-    if (e.button != 0) return;
     ctx.uiStatus |= DebugJS.UI_ST_RESIZING;
     ctx.clickedPosX = e.clientX;
     ctx.clickedPosY = e.clientY;
     ctx.saveSizeAndPos(ctx);
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
-    ctx.updateWinCtrlBtnPanel();
+    ctx.updateWinCtrlBtns();
     ctx.disableTextSelect(ctx);
   },
 
@@ -2310,9 +2286,7 @@ DebugJS.prototype = {
         h = ctx.computedMinH;
       } else {
         t = ctx.orgSizePos.t - mvY;
-        ctx.win.style.top = t + 'px';
       }
-      ctx.win.style.height = h + 'px';
       if (ctx.logPanel.scrollTop != 0) {
         ctx.scrollLogBtm(ctx);
       }
@@ -2325,16 +2299,13 @@ DebugJS.prototype = {
         w = ctx.computedMinW;
       } else {
         l = ctx.orgSizePos.l - mvX;
-        ctx.win.style.left = l + 'px';
       }
-      ctx.win.style.width = w + 'px';
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_E) {
       mvX = currentX - ctx.clickedPosX;
       w = ctx.orgSizePos.w + mvX;
       if (w < ctx.computedMinW) w = ctx.computedMinW;
-      ctx.win.style.width = w + 'px';
     }
 
     if (ctx.uiStatus & DebugJS.UI_ST_RESIZING_S) {
@@ -2345,10 +2316,13 @@ DebugJS.prototype = {
       } else if (h < ctx.computedMinH) {
         h = ctx.computedMinH;
       }
-      ctx.win.style.height = h + 'px';
       if (ctx.logPanel.scrollTop != 0) ctx.scrollLogBtm(ctx);
     }
 
+    if (t != undefined) ctx.win.style.top = t + 'px';
+    if (l != undefined) ctx.win.style.left = l + 'px';
+    if (w != undefined) ctx.win.style.width = w + 'px';
+    if (h != undefined) ctx.win.style.height = h + 'px';
     ctx.adjLayout();
   },
 
@@ -2358,6 +2332,11 @@ DebugJS.prototype = {
     ctx.enableTextSelect(ctx);
   },
 
+  adjLayout: function() {
+    DebugJS.ctx.resizeMainHeight();
+    DebugJS.ctx.resizeImgPreview();
+  },
+
   resizeMainHeight: function() {
     var ctx = DebugJS.ctx;
     var headPanelH = (ctx.headPanel) ? ctx.headPanel.offsetHeight : 0;
@@ -2365,11 +2344,6 @@ DebugJS.prototype = {
     var cmdPanelH = (ctx.cmdPanel) ? ctx.cmdPanel.offsetHeight : 0;
     var mainPanelHeight = ctx.win.offsetHeight - headPanelH - infoPanelH - cmdPanelH - DebugJS.WIN_ADJUST;
     ctx.mainPanel.style.height = mainPanelHeight + 'px';
-  },
-
-  adjLayout: function() {
-    DebugJS.ctx.resizeMainHeight();
-    DebugJS.ctx.resizeImgPreview();
   },
 
   disableTextSelect: function(ctx) {
@@ -3056,7 +3030,7 @@ DebugJS.prototype = {
       default:
         ctx._expandDbgWinAuto(ctx, sp);
     }
-    ctx.updateWinCtrlBtnPanel();
+    ctx.updateWinCtrlBtns();
   },
 
   _expandDbgWin: function(ctx) {
@@ -3091,7 +3065,7 @@ DebugJS.prototype = {
     ctx.setDbgWinPos(t, l);
     ctx.setDbgWinSize(w, h);
     ctx.sizeStatus = DebugJS.SIZE_ST_EXPANDED;
-    ctx.updateWinCtrlBtnPanel();
+    ctx.updateWinCtrlBtns();
   },
 
   _expandDbgWinAuto: function(ctx, sp) {
@@ -3140,8 +3114,7 @@ DebugJS.prototype = {
   setDbgWinFull: function(ctx) {
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
-    var t = 0, l = 0;
-    ctx.setDbgWinPos(t, l);
+    ctx.setDbgWinPos(0, 0);
     ctx.setDbgWinSize(w, h);
     ctx.uiStatus &= ~DebugJS.UI_ST_POS_AUTO_ADJ;
     ctx.sizeStatus = DebugJS.SIZE_ST_FULL_WH;
@@ -3265,7 +3238,7 @@ DebugJS.prototype = {
       ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJ;
       ctx.adjustDbgWinPos(ctx);
     }
-    ctx.updateWinCtrlBtnPanel();
+    ctx.updateWinCtrlBtns();
   },
 
   isOutOfWin: function(ctx) {
@@ -3289,9 +3262,8 @@ DebugJS.prototype = {
     if ((ctx.win == null) || (ctx.uiStatus & DebugJS.UI_ST_PROTECTED)) return;
     ctx.win.style.display = 'block';
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
-    if ((ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) ||
-       ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.isOutOfWin(ctx)))) {
-      ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJ;
+    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && ctx.isOutOfWin(ctx)) ctx.uiStatus |= DebugJS.UI_ST_POS_AUTO_ADJ;
+    if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) {
       ctx.adjustDbgWinPos(ctx);
     } else {
       ctx.adjustWinMax(ctx);
@@ -7709,7 +7681,7 @@ DebugJS.prototype = {
   kioskQ: function(ctx) {
     DebugJS.zoom(ctx.orgSizePos2.zm);
     ctx.restoreDbgWin(ctx.orgSizePos2);
-    ctx.updateWinCtrlBtnPanel();
+    ctx.updateWinCtrlBtns();
   },
 
   cmdDelay: function(arg, tbl) {
@@ -9997,13 +9969,13 @@ DebugJS.prototype = {
         var h = (ctx.initHeight - (DebugJS.WIN_SHADOW / 2) + DebugJS.WIN_BORDER);
         ctx.setDbgWinSize(w, h);
         ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
-        ctx.updateWinCtrlBtnPanel();
+        ctx.updateWinCtrlBtns();
         ctx.scrollLogBtm(ctx);
         break;
       case 'restore':
         if (ctx.sizeStatus != DebugJS.SIZE_ST_NORMAL) {
           ctx.restoreDbgWin();
-          ctx.updateWinCtrlBtnPanel();
+          ctx.updateWinCtrlBtns();
         }
         break;
       case 'reset':
@@ -10012,7 +9984,7 @@ DebugJS.prototype = {
       case 'full':
       case 'expand':
         ctx.expandDbgWin(opt);
-        ctx.updateWinCtrlBtnPanel();
+        ctx.updateWinCtrlBtns();
     }
   },
 
