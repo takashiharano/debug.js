@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202111150000';
+  this.v = '202111152325';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2283,6 +2283,7 @@ DebugJS.prototype = {
       mvY = ctx.clickedPosY - currentY;
       h = ctx.orgSizePos.h + mvY;
       if (h < ctx.computedMinH) {
+        t = ctx.orgSizePos.t - (ctx.computedMinH - ctx.orgSizePos.h);
         h = ctx.computedMinH;
       } else {
         t = ctx.orgSizePos.t - mvY;
@@ -2296,6 +2297,7 @@ DebugJS.prototype = {
       mvX = ctx.clickedPosX - currentX;
       w = ctx.orgSizePos.w + mvX;
       if (w < ctx.computedMinW) {
+        l = ctx.orgSizePos.l - (ctx.computedMinW - ctx.orgSizePos.w);
         w = ctx.computedMinW;
       } else {
         l = ctx.orgSizePos.l - mvX;
