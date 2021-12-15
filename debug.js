@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202111152325';
+  this.v = '202112151215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -484,7 +484,7 @@ var DebugJS = DebugJS || function() {
     indent: 1,
     pointspeed: DebugJS.point.move.speed,
     pointstep: DebugJS.point.move.step,
-    pointmsgsize: '"12px"',
+    pointmsgsize: '12px',
     scrollspeed: DebugJS.scrollWinTo.data.speed,
     scrollstep: DebugJS.scrollWinTo.data.step,
     textspeed: 30,
@@ -16660,10 +16660,6 @@ DebugJS.point.hint.createArea = function() {
   var area = DebugJS.point.hint.getArea();
   var el = document.createElement('div');
   el.className = 'dbg-hint';
-  var sz = ctx.props.pointmsgsize;
-  try {
-    sz = eval(sz);
-  } catch (e) {DebugJS._log.e(e);}
   var style = {
     'width': 'auto',
     'height': 'auto',
@@ -16671,7 +16667,7 @@ DebugJS.point.hint.createArea = function() {
     'padding': 0,
     'line-height': '1.2',
     'color': ctx.opt.fontColor,
-    'font-size': sz,
+    'font-size': ctx.props.pointmsgsize,
     'font-family': ctx.opt.fontFamily
   };
   area.pre = DebugJS.ui.addElement(el, 'pre', style);
