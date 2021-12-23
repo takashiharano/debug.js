@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202112151215';
+  this.v = '202112232057';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16959,7 +16959,8 @@ DebugJS.setText = function(elm, txt, speed, step, start, end) {
     txt = eval(txt) + '';
   } catch (e) {DebugJS._log.e('setText(): ' + e);}
   txt = DebugJS.decCtrlCh(txt);
-  data.txt = txt;
+  data.text = txt;
+  data.txt = DebugJS.html2text(txt);
   if ((speed == undefined) || (speed == null) || (speed == '')) {
     speed = DebugJS.ctx.props.textspeed;
   }
@@ -16999,6 +17000,7 @@ DebugJS._setText = function() {
     speed = DebugJS.getSpeed(speed) | 0;
     data.tmid = setTimeout(DebugJS._setText, speed);
   } else {
+    data.el.innerHTML = data.text;
     DebugJS.setText.stop();
   }
 };
