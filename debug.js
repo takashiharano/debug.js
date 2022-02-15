@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202112232057';
+  this.v = '202202152305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11854,24 +11854,23 @@ DebugJS.digits = function(x) {
 
 DebugJS.parseInt = function(v) {
   var rdx = DebugJS.checkRadix(v);
-  if (rdx == 10) {
-    return parseInt(v, 10);
-  } else if (rdx == 16) {
-    return parseInt(v, 16);
+  if (rdx == 0) {
+    return 0;
   } else if (rdx == 2) {
     v = v.substr(2);
-    return parseInt(v, 2);
   }
-  return 0;
+  return parseInt(v, rdx);
 };
 
 DebugJS.checkRadix = function(v) {
-  if (v.match(/^-{0,1}[0-9,]+$/)) {
-    return 10;
-  } else if (v.match(/^-{0,1}0x[0-9A-Fa-f\s]+$/i)) {
+  if (v.match(/^-{0,1}0x[0-9A-Fa-f\s]+$/i)) {
     return 16;
+  } else if (v.match(/^-{0,1}0[\d\s]+$/i)) {
+    return 8;
   } else if (v.match(/^-{0,1}0b[01\s]+$/i)) {
     return 2;
+  } else if (v.match(/^-{0,1}[0-9,]+$/)) {
+    return 10;
   }
   return 0;
 };
@@ -12314,36 +12313,39 @@ DebugJS.rgb10to16 = function(r, g, b) {
 };
 
 DebugJS.cmdInt = function(v, echo) {
-  v = v.trim();
+  v = v.trim().replace(/\s/g, '');
   var rdx = DebugJS.checkRadix(v);
   if (rdx == 10) {
-    var val = parseInt(v.replace(/,/g, ''));
-  } else if (rdx == 16) {
-    val = parseInt(v.substr(2).replace(/\s/g, ''), 16);
-  } else if (rdx == 2) {
-    val = parseInt(v.substr(2).replace(/\s/g, ''), 2);
+    v = v.replace(/,/g, '');
+  } else if ((rdx == 16) || (rdx == 2)) {
+    v = v.substr(2);
+  } else if (rdx == 8) {
+    v = v.substr(1);
   } else {
     return null;
   }
+  var val = parseInt(v, rdx);
   if (echo) DebugJS.printRadixConv(val);
   return val;
 };
-DebugJS.printRadixConv = function(val) {
+DebugJS.printRadixConv = function(v) {
   var MAX = 0x20000000000000;
-  var fullDigits = DebugJS.DFLT_UNIT;
-  var v2 = DebugJS.cnvBin(val);
-  var digits = v2.length;
+  var flDgt = DebugJS.DFLT_UNIT;
+  var v2 = DebugJS.cnvBin(v);
+  var dgt = v2.length;
   var b = v2;
-  if (digits % fullDigits != 0) {
-    var pd = fullDigits - (digits % fullDigits);
+  if (dgt % flDgt != 0) {
+    var pd = flDgt - (dgt % flDgt);
     b = DebugJS.repeatCh('0', pd) + v2;
   }
-  var bin = DebugJS.formatBin(b, true, DebugJS.DISP_BIN_DIGITS_THR, digits);
+  var bin = DebugJS.formatBin(b, true, DebugJS.DISP_BIN_DIGITS_THR, dgt);
+  var v8 = v.toString(8);
+  if (v8.length >= 2) v8 = '0' + v8;
   var v16 = DebugJS.bin2hex(v2);
   var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) hex = '0x' + hex;
-  var s = 'DEC ' + DebugJS.formatDec(val) + '\nHEX ' + hex + '\nBIN ' + bin + '\n';
-  if (val > MAX) s += '<span style="color:' + DebugJS.ctx.opt.logColorE + '">unsafe</span>';
+  var s = 'HEX ' + hex + '\nDEC ' + DebugJS.formatDec(v) + '\nOCT ' + v8 + '\nBIN ' + bin + '\n';
+  if (v > MAX) s += '<span style="color:' + DebugJS.ctx.opt.logColorE + '">unsafe</span>';
   DebugJS._log.mlt(s);
 };
 DebugJS.toBin = function(v) {
