@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202202152305';
+  this.v = '202202152315';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11865,7 +11865,7 @@ DebugJS.parseInt = function(v) {
 DebugJS.checkRadix = function(v) {
   if (v.match(/^-{0,1}0x[0-9A-Fa-f\s]+$/i)) {
     return 16;
-  } else if (v.match(/^-{0,1}0[\d\s]+$/i)) {
+  } else if (v.match(/^-{0,1}0[0-7\s]+$/i)) {
     return 8;
   } else if (v.match(/^-{0,1}0b[01\s]+$/i)) {
     return 2;
