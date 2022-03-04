@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203040120';
+  this.v = '202203050000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12485,7 +12485,7 @@ DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   return bin;
 };
 DebugJS.formatDec = function(v, n) {
-  var U = [0x4E07, 0x5104, 0x5146, 0x4EAC, 0x5793, 0x79ED, 0x7A63, 0x6E9D, 0x6F97, 0x6B63, 0x8F09, 0x6975];
+  var U = ['\u4E07', '\u5104', '\u5146', '\u4EAC', '\u5793', '\u79ED', '\u7A63', '\u6E9D', '\u6F97', '\u6B63', '\u8F09', '\u6975', '\u6052\u6CB3\u6C99', '\u963F\u50E7\u7947', '\u90A3\u7531\u4ED6', '\u4E0D\u53EF\u601D\u8B70', '\u7121\u91CF\u5927\u6570'];
   if (n == undefined) n = 3;
   v = (v + '').replace(/,/g, '').replace(/^0*/, '');
   if (!v) v = '0';
@@ -12504,7 +12504,7 @@ DebugJS.formatDec = function(v, n) {
       if (!((i == 1) && (v0.charAt(0) == '-'))) {
         if (n == 4) {
           var j = (len - i) / 4;
-          r += String.fromCharCode(U[j - 1]);
+          if (j <= U.length) r += U[j - 1];
         } else {
           r += ',';
         }
