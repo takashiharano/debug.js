@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203050000';
+  this.v = '202203140002';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -418,6 +418,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'xlscol', fn: this.cmdXlsCol, desc: 'Excel column number <--> reference', help: 'xlscol COL [+|-|:] [COL]'},
+    {cmd: 'xlsdate', fn: this.cmdXlsDate, desc: 'days <--> Excel date', help: 'xlsdate DAYS|YYYY-MM-DD'},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -10050,6 +10051,46 @@ DebugJS.prototype = {
     return s;
   },
 
+  cmdXlsDate: function(arg, tbl) {
+    arg = arg.trim();
+    if (!arg) {
+      DebugJS.printUsage(tbl.help);return;
+    }
+    if (DebugJS.isNum(arg)) {
+      var r = DebugJS.ctx._xlsDate1(parseInt(arg));
+    } else {
+      r = DebugJS.ctx._xlsDate2(arg);
+    }
+    return r;
+  },
+  _xlsDate1: function(v) {
+    var o = (v < 60 ? 1 : 2);
+    var d = v - o;
+    if (v < 0) {
+      var r = '######';
+    } else if (v == 0) {
+      r = '1900-01-00';
+    } else if (v == 60) {
+      r = '1900-02-29';
+    } else {
+      r = DebugJS.ctx.cmdDateCalc('1900-01-01+' + d);
+    }
+    DebugJS._log.res(r);
+    return r;
+  },
+  _xlsDate2: function(v) {
+    var d = DebugJS.serializeDateTime(v).substr(0, 8);
+    var r = DebugJS.ctx.cmdDateDiff('1900-01-01 ' + v) + 1;
+    if (r >= 60) r++;
+    if (d == '19000100') {
+      r = 0;
+    } else if (d == '19000229') {
+      r = 60;
+    }
+    DebugJS._log.res(r);
+    return r;
+  },
+
   cmdZoom: function(arg, tbl) {
     var n = arg.trim();
     var zm = DebugJS.ctx.zoom;
@@ -10649,7 +10690,7 @@ DebugJS.isTypographic = function(ch) {
   return (DebugJS.isNumAlpha(ch) || DebugJS.isPunctuation(ch));
 };
 DebugJS.isNum = function(s) {
-  return (s.match(/^\d+$/) ? true : false);
+  return (s.match(/^-?\d+$/) ? true : false);
 };
 DebugJS.isInt = function(s) {
   return (s.match(/^-?[\d]+[\d,]*$/) ? true : false);

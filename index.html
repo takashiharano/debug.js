@@ -215,7 +215,7 @@ window.onload = function() {
   msgMessageText = document.getElementById('msg-message-text');
   consoleMessageText = document.getElementById('console-message-text');
 
-  setTimeout(displayDemoMessages, 1500);
+  setTimeout(displayDemoMessages, 100);
   //setTimeout(ledDemo, 1500);
   //setTimeout(msgDemo, 1500);
   //dbg.cmd('launch tool file bin');
@@ -227,19 +227,23 @@ function getVal(id) {
 };
 
 var demoDispCount = 0;
+var tmId = 0;
 function displayDemoMessages() {
   if (demoDispCount >= demoMessages.length) {
+    setTimeout(log.clear, 1000);
     return;
   }
   var msgData = demoMessages[demoDispCount];
   demoDispCount++;
   msgData.fnc(msgData.msg);
-  setTimeout(displayDemoMessages, msgData.delay);
+  tmId = setTimeout(displayDemoMessages, msgData.delay);
 }
 
 var demoMessages = [
-  {fnc: log, msg: 'This window is draggable.', delay: 250},
-  {fnc: log, msg: 'You can switch show/hide by F2 key.', delay: 250},
+  {fnc: log, msg: 'This window is draggable.', delay: 100},
+  {fnc: log, msg: 'You can switch show/hide by F2 key.', delay: 2000},
+  {fnc: log.clear, msg: null, delay: 0},
+  {fnc: log, msg: 'Enjoy!', delay: 0}
 ];
 
 var sampleDispCount = 0;
@@ -828,10 +832,19 @@ function onError() {
   //log('error');
 }
 
+function onClick() {
+  if (tmId > 0) {
+    clearTimeout(tmId);
+    tmId = 0;
+    log.clear();
+  }
+};
+
 window.addEventListener('DOMContentLoaded', onReady, true);
 window.addEventListener('load', onLoad, true);
 window.addEventListener('unload', onUnload, true);
 window.addEventListener('error', onError, true);
+window.addEventListener('click', onClick, true);
 
 //--------------------------------------------------
 var example = {};
@@ -6110,7 +6123,7 @@ option:
     <td class="name">xlscol</td>
     <td>ref</td>
     <td>
-      Excel column number &lt;--&gt; reference.<br><br>
+      Excel column number &lt;--&gt; reference<br><br>
 <pre class="eg">
 $ xlscol A
 -&gt; 1
@@ -6132,6 +6145,27 @@ $ xlscol A C
 A
 B
 C
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">xlsdate</td>
+    <td>days|YYYY-MM-DD</td>
+    <td>
+      days &lt;--&gt; Excel date<br><br>
+<pre class="eg">
+$ xlsdate 1
+-&gt; 1900-01-01
+
+$ xlsdate 1900-01-01
+-&gt; 1
+
+$ xlsdate 44633
+-&gt; 2022-03-13
+
+$ xlsdate 2022-03-13
+-&gt; 44633
 </pre>
     </td>
   </tr>
