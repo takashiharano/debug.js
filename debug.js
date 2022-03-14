@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203140002';
+  this.v = '202203150116';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12173,20 +12173,25 @@ DebugJS._dndUniqueCnt = function(v, w) {
   }
   var idxD = DebugJS.digits(w.length);
   if (idxD < 2) idxD = 2;
-  var h = DebugJS.rpad('IDX', ' ', idxD) + ' ' + DebugJS.rpad('VAL', ' ', mxL + 2) + ' CNT\n' + DebugJS.repeatCh('-', idxD + mxL + mxD + 5) + '\n';
+  var h = DebugJS.rpad('IDX', ' ', idxD) + ' ' + DebugJS.rpad('VAL', ' ', mxL) + ' CNT\n' + DebugJS.repeatCh('-', idxD + mxL + mxD + 3) + '\n';
   var r = h;
   var m = h;
-  mxL += 2;
   for (i = 0; i < w.length; i++) {
     var idx = DebugJS.lpad(i + 1, ' ', idxD);
     var c = DebugJS.lpad(w[i].cnt, ' ', mxD);
     var k = w[i].key;
-    var pd = mxL - (DebugJS.lenW(k) + 2);
-    var ky = DebugJS.quoteStr(DebugJS.hlCtrlCh(k)) + DebugJS.repeatCh(' ', pd);
+    var pd = mxL - DebugJS.lenW(k);
+    var ky = DebugJS.hlCtrlCh(k);
+    if (k.match(/\s$|&#x3000$/)) {
+      ky = DebugJS.quoteStr(ky);
+      pd -= 2;
+    }
+    ky += DebugJS.repeatCh(' ', pd);
     var p = idx + ': ';
     m += p + ky + ' ' + c + '\n';
     r += p + w[i].key + ' ' + c + '\n';
   }
+  DebugJS.cls();
   DebugJS._log.mlt(m);
   return r;
 };
