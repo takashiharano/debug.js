@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203150116';
+  this.v = '202203170126';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -345,7 +345,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
-    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] str'},
+    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] STR'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
@@ -403,22 +403,22 @@ var DebugJS = DebugJS || function() {
     {cmd: 'strp', fn: this.cmdStrP, desc: 'String permutation', help: 'strp [-total] "CHARS" INDEX|"STR" [INDEX]'},
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
-    {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text selector "data" [-speed speed(ms)] [-start seqStartPos] [-end seqEndPos]'},
+    {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text SELECTOR "TEXT" [-speed MILLIS] [-start SEQ_START_POS] [-end SEQ_END_POS]'},
     {cmd: 'time', fn: this.cmdTime, desc: 'String <--> millis', help: 'time ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'timer start|check|split|stop|list [TIMER_NAME]'},
     {cmd: 'tofull', fn: this.cmdToFull, desc: 'Convert half-width character(s) to full-width', help: 'tofull STR'},
     {cmd: 'tohalf', fn: this.cmdToHalf, desc: 'Convert full-width character(s) to half-width', help: 'tohalf STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
-    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|code-point'},
+    {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|CODE_POINT'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
-    {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', help: 'utf8 "str"'},
+    {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', help: 'utf8 "STR"'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'xlscol', fn: this.cmdXlsCol, desc: 'Excel column number <--> reference', help: 'xlscol COL [+|-|:] [COL]'},
-    {cmd: 'xlsdate', fn: this.cmdXlsDate, desc: 'days <--> Excel date', help: 'xlsdate DAYS|YYYY-MM-DD'},
+    {cmd: 'xlsdate', fn: this.cmdXlsDate, desc: 'Serial number <--> Date text', help: 'xlsdate NUMBER|YYYY/MM/DD'},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -9723,7 +9723,6 @@ DebugJS.prototype = {
     }
     return stopwatch.val(0, v);
   },
-
   _cmdStopwatch1: function(ctx, op, v) {
     if (!ctx.isAvailableTools(ctx)) return;
     var stopwatch = DebugJS.stopwatch;
@@ -10069,18 +10068,18 @@ DebugJS.prototype = {
     if (v < 0) {
       var r = '######';
     } else if (v == 0) {
-      r = '1900-01-00';
+      r = '1900/01/00';
     } else if (v == 60) {
-      r = '1900-02-29';
+      r = '1900/02/29';
     } else {
-      r = DebugJS.ctx.cmdDateCalc('1900-01-01+' + d);
+      r = DebugJS.ctx.cmdDateCalc('1900/01/01+' + d);
     }
     DebugJS._log.res(r);
     return r;
   },
   _xlsDate2: function(v) {
     var d = DebugJS.serializeDateTime(v).substr(0, 8);
-    var r = DebugJS.ctx.cmdDateDiff('1900-01-01 ' + v) + 1;
+    var r = DebugJS.ctx.cmdDateDiff('1900/01/01 ' + v) + 1;
     if (r >= 60) r++;
     if (d == '19000100') {
       r = 0;
@@ -12132,9 +12131,9 @@ DebugJS.dndUnique = function(s, arg) {
   for (var i = 0; i < v.length; i++) {
     if ((v[i].key != '') || DebugJS.hasOpt(arg, 'blank')) w.push(v[i]);
   }
-  var r;
+  DebugJS.cls();
   if (DebugJS.hasOpt(arg, 'count')) {
-    r = DebugJS._dndUniqueCnt(v, w);
+    var r = DebugJS._dndUniqueCnt(v, w);
   } else {
     r = DebugJS._dndUnique(w, arg);
   }
@@ -12158,7 +12157,6 @@ DebugJS._dndUnique = function(w, a) {
     m += DebugJS.hlCtrlCh(b[i]) + '\n';
     r += b[i] + '\n';
   }
-  DebugJS.cls();
   DebugJS._log.mlt(m);
   return r;
 };
@@ -12182,7 +12180,7 @@ DebugJS._dndUniqueCnt = function(v, w) {
     var k = w[i].key;
     var pd = mxL - DebugJS.lenW(k);
     var ky = DebugJS.hlCtrlCh(k);
-    if (k.match(/\s$|&#x3000$/)) {
+    if ((k == '') || k.match(/\s$|&#x3000$/)) {
       ky = DebugJS.quoteStr(ky);
       pd -= 2;
     }
@@ -12191,7 +12189,6 @@ DebugJS._dndUniqueCnt = function(v, w) {
     m += p + ky + ' ' + c + '\n';
     r += p + w[i].key + ' ' + c + '\n';
   }
-  DebugJS.cls();
   DebugJS._log.mlt(m);
   return r;
 };
