@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203192137';
+  this.v = '202203200046';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6990,7 +6990,11 @@ DebugJS.prototype = {
     var ret = ctx.cmdInt(cmdline, null, echo);
     if (ret != null) return ret;
 
-    if (DebugJS.isFloat(cmd)) return ctx.cmdFloat(cmd, null, echo);
+    if (DebugJS.isFloat(cmd)) {
+      ret = ctx.cmdFmtFloat(cmdline);
+      if (ret) return ret;
+      return ctx.cmdFloat(cmd, null, echo);
+    }
 
     ret = ctx.cmdFmtNum(cmdline);
     if (ret != null) return ret;
@@ -7576,12 +7580,25 @@ DebugJS.prototype = {
         r = DebugJS.formatDec(v, n);
       } else if (DebugJS.arr.has(u2, n)) {
         r = DebugJS.formatDecF(v, n);
+        var s = DebugJS.formatFloat(r);
+        DebugJS._log.mlt(s);
+        return parseFloat(r);
       }
     }
     if (r != null) {
       DebugJS._log.res(r);
       if (r.match(/^\d+$/)) r = parseInt(r);
     }
+    return r;
+  },
+  cmdFmtFloat: function(c) {
+    c = DebugJS.unifySP(c.trim());
+    var a = c.split(' ');
+    var v = a[0];
+    var n = a[1];
+    if (n != '3') return;
+    var r = DebugJS.formatFloat(v);
+    DebugJS._log.mlt(r);
     return r;
   },
 
@@ -12558,7 +12575,7 @@ DebugJS.formatDec = function(v, n) {
   r += v1;
   return r;
 };
-DebugJS.formatDecF = function(v, p) {
+DebugJS.formatDecF = function(v, p, f) {
   var t = {'m': 3, 'milli': 3, 'u': 6, 'micro': 6, 'n': 9, 'nano': 9, 'p': 12, 'pico': 12, 'f': 15, 'femto': 15, 'a': 18, 'atto': 18, 'z': 21, 'zepto': 21, 'y': 24, 'yocto': 24};
   var d = t[p];
   if (!d) return v;
@@ -12573,10 +12590,39 @@ DebugJS.formatDecF = function(v, p) {
   b = (DebugJS.repeatCh('0', d) + b).slice(d * -1);
   var w = '';
   for (var i = 0; i < d; i++) {
-    if ((i > 0) && (i % 3 == 0)) w += ' ';
+    if (f && (i > 0) && (i % 3 == 0)) w += ' ';
     w += b.charAt(i);
   }
   return a + '.' + w;
+};
+DebugJS.formatFloat = function(v) {
+  var U = ['m', 'u', 'n', 'p', 'f', 'a', 'z', 'y'];
+  var j = 0;
+  var a = v.split('.');
+  var d = a[0];
+  var f = a[1];
+  var s = d + '.';
+  var e = f.length;
+  if ((e % 3) != 0) e += (3 - (e % 3));
+  for (var i = 0; i < e; i++) {
+    if (i < f.length) {
+      if ((i > 0) && ((i % 3) == 0)) s += ' ';
+      s += f.substr(i, 1);
+    } else {
+      s += '0';
+    }
+  }
+  s += '\n';
+  s += DebugJS.repeatCh(' ', d.length + 1);
+  for (i = 0; i < e; i++) {
+    if ((i > 0) && ((i % 3) == 0)) s += ' ';
+    if ((i % 3 == 0) && (U[j])) {
+      s += U[j];j++;
+    } else {
+      s += ' ';
+    }
+  }
+  return s;
 };
 DebugJS.formatHex = function(hex, uc, pFix, d) {
   if (uc) hex = hex.toUpperCase();
