@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203170126';
+  this.v = '202203192137';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7566,7 +7566,7 @@ DebugJS.prototype = {
   cmdFmtNum: function(c) {
     c = DebugJS.unifySP(c.trim());
     var u1 = ['0', '3', '4'];
-    var u2 = ['m', 'milli', 'u', 'micro', 'n', 'nano', 'p', 'pico'];
+    var u2 = ['m', 'milli', 'u', 'micro', 'n', 'nano', 'p', 'pico', 'f', 'femto', 'a', 'atto', 'z', 'zepto', 'y', 'yocto'];
     var r = null;
     if (c.match(/^-?[\d,]+\.?\d*\s.+$/)) {
       var a = c.split(' ');
@@ -12559,7 +12559,7 @@ DebugJS.formatDec = function(v, n) {
   return r;
 };
 DebugJS.formatDecF = function(v, p) {
-  var t = {'m': 3, 'milli': 3, 'u': 6, 'micro': 6, 'n': 9, 'nano': 9, 'p': 12, 'pico': 12};
+  var t = {'m': 3, 'milli': 3, 'u': 6, 'micro': 6, 'n': 9, 'nano': 9, 'p': 12, 'pico': 12, 'f': 15, 'femto': 15, 'a': 18, 'atto': 18, 'z': 21, 'zepto': 21, 'y': 24, 'yocto': 24};
   var d = t[p];
   if (!d) return v;
   v = (v + '').replace(/,/g, '').replace(/^0*/, '');
