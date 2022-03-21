@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203200046';
+  this.v = '202203220051';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -369,7 +369,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
     {cmd: 'inject', fn: this.cmdInject, desc: 'Inject a given code into a given function', help: 'inject funcname code'},
     {cmd: 'int', fn: this.cmdInt, desc: 'Radix conversion', help: 'int VAL'},
-    {cmd: 'js', fn: this.cmdJs, desc: 'Operate JavaScript code in JS Editor', help: 'js exec'},
     {cmd: 'json', fn: this.cmdJson, desc: 'Parse one-line JSON', help: 'json [-l&lt;n&gt;] [-p] {JSON}'},
     {cmd: 'keypress', fn: this.cmdKeyPress, desc: 'Dispatch a key event to active element', help: 'keypress keycode [-shift] [-ctrl] [-alt] [-meta]'},
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
@@ -3531,7 +3530,9 @@ DebugJS.prototype = {
     var languages = DebugJS.getLanguages(INDENT);
     var browser = DebugJS.getBrowserType();
     var jq = '<span class="dbg-na">not loaded</span>';
+    var uv = jq;
     if (typeof jQuery != 'undefined') jq = 'v' + jQuery.fn.jquery;
+    if (window.util && window.util.v) uv = 'v' + window.util.v;
 
     var metaTags = document.getElementsByTagName('meta');
     var charset;
@@ -3625,6 +3626,7 @@ DebugJS.prototype = {
     html += addSysInfo('script ', loadedScripts);
     html += addPropSep();
     html += addSysInfo('jQuery ', jq);
+    html += addSysInfo('util   ', uv);
     html += addPropSep();
     html += addSysInfoPropH('window');
     html += addSysInfoPropH(' location');
@@ -8206,15 +8208,6 @@ DebugJS.prototype = {
         c = eval(c);
         DebugJS.inject(f, c);
       } catch (e) {DebugJS._log.e(e);}
-    } else {
-      DebugJS.printUsage(tbl.help);
-    }
-  },
-
-  cmdJs: function(arg, tbl) {
-    var a = DebugJS.splitArgs(arg);
-    if (a[0] == 'exec') {
-      DebugJS.ctx.execJavaScript();
     } else {
       DebugJS.printUsage(tbl.help);
     }
