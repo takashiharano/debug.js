@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202203220051';
+  this.v = '202204072051';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -381,7 +381,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'num', fn: this.cmdNum, desc: 'Displays the numbers in order', help: 'num V1 V2 [ST] [-z]'},
-    {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|sw1]|[b64|bin]'},
+    {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|sw]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print value of expression EXP', help: 'p [-l&lt;n&gt;] [-json] EXP'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
@@ -2541,7 +2541,7 @@ DebugJS.prototype = {
             kind = DebugJS.TOOLS_FNC_TIMER;
             if (opt == 'clock') {
               param = DebugJS.TOOL_TMR_MODE_CLOCK;
-            } else if (opt == 'sw1') {
+            } else if (opt == 'sw') {
               param = DebugJS.TOOL_TMR_MODE_SW;
             }
             break;
@@ -10010,16 +10010,14 @@ DebugJS.prototype = {
     }
     arg = DebugJS.unifySP(arg).trim();
     var op;
-    if (arg.match(/^[A-Za-z\d]+\s[A-Za-z\d]+$/)) {
-      r = DebugJS.ctx._cmdXlsCols(arg);
-      DebugJS._log.mlt(r);
-      return r;
-    } else if (arg.indexOf('+') >= 0) {
+    if (arg.indexOf('+') >= 0) {
       op = '+';
     } else if (arg.indexOf('-') >= 0) {
       op = '-';
     } else if (arg.indexOf(':') >= 0) {
       op = ':';
+    } else if (arg.indexOf(' ') >= 0) {
+      op = ' ';
     }
     var v = arg.split(op);
     var a = v[0];
@@ -10031,6 +10029,10 @@ DebugJS.prototype = {
       } else if (op == '-') {
         r = DebugJS.xlsCol(r - (b | 0));
       } else if (op == ':') {
+        r = DebugJS.ctx._cmdXlsCols(arg);
+        DebugJS._log.mlt(r);
+        return r;
+      } else if (op == ' ') {
         var c = DebugJS.xlsCol(b);
         r = c - r;
         r = (r < 0 ? (r * (-1)) : r) + 1;
@@ -10040,7 +10042,7 @@ DebugJS.prototype = {
     return r;
   },
   _cmdXlsCols: function(v) {
-    var a = v.split(' ');
+    var a = v.split(':');
     var b = a[0];
     var e = a[1];
     if (isNaN(b)) b = DebugJS.xlsColA2N(b);

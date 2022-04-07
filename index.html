@@ -5174,7 +5174,7 @@ sub function (for ext)
 option
   for timer: mode
     clock: Clock
-    sw1  : Stopwatch
+    sw   : Stopwatch
   for tools.file: load format
     b64: Base64
     bin: Binary
@@ -6125,10 +6125,10 @@ $ xlscol A + 1
 $ xlscol B - 1
 -&gt; A
 
-$ xlscol A:B
+$ xlscol A B
 -&gt; 2 <span class="annotation">(cells)</span>
 
-$ xlscol A C
+$ xlscol A:C
 -&gt;
 A
 B
