@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202204072051';
+  this.v = '202205280013';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12397,8 +12397,9 @@ DebugJS.printRadixConv = function(v) {
     b = DebugJS.repeatCh('0', pd) + v2;
   }
   var bin = DebugJS.formatBin(b, true, DebugJS.DISP_BIN_DIGITS_THR, dgt);
-  var v8 = v.toString(8);
+  var v8 = v.toString(8).replace(/-/, '');
   if (v8.length >= 2) v8 = '0' + v8;
+  if (v < 0) v8 = '-' + v8;
   var v16 = DebugJS.bin2hex(v2);
   var hex = DebugJS.formatHex(v16, true);
   if (hex.length >= 2) hex = '0x' + hex;
