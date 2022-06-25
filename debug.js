@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202205280013';
+  this.v = '202206251720';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -63,7 +63,6 @@ var DebugJS = DebugJS || function() {
     msgDisplayBackground: 'rgba(0,0,0,0.2)',
     useScreenMeasure: true,
     useSystemInfo: true,
-    useHtmlSrc: true,
     useElementInfo: true,
     useTools: true,
     useJsEditor: true,
@@ -94,16 +93,6 @@ var DebugJS = DebugJS || function() {
   this.measBox = null;
   this.sysInfoBtn = null;
   this.sysInfoPanel = null;
-  this.htmlSrcBtn = null;
-  this.htmlSrcPanel = null;
-  this.htmlSrcHdrPanel = null;
-  this.htmlSrcUpdInpLbl = null;
-  this.htmlSrcUpdInpLbl2 = null;
-  this.htmlSrcUpdBtn = null;
-  this.htmlSrcUpdInput = null;
-  this.htmlSrcBodyPanel = null;
-  this.htmlSrcUpdInterval = 0;
-  this.htmlSrcUpdTimerId = 0;
   this.elmInfoBtn = null;
   this.elmInfoPanel = null;
   this.elmInfoHdrPanel = null;
@@ -348,7 +337,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] STR'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
-    {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|html|dom|js|tool|ext]'},
+    {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock DATE_TIME|OFFSET|now|start|stop|on|off|-label TXT'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
@@ -381,7 +370,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
     {cmd: 'num', fn: this.cmdNum, desc: 'Displays the numbers in order', help: 'num V1 V2 [ST] [-z]'},
-    {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|html|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|sw]|[b64|bin]'},
+    {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|dom|js|tool|ext] [timer|text|file|html|bat]|[idx] [clock|sw]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print value of expression EXP', help: 'p [-l&lt;n&gt;] [-json] EXP'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
@@ -546,16 +535,15 @@ DebugJS.ST_LOG_SUSPEND = 1 << 11;
 DebugJS.ST_MEASURE = 1 << 12;
 DebugJS.ST_MEASURING = 1 << 13;
 DebugJS.ST_SYS_INFO = 1 << 14;
-DebugJS.ST_HTML_SRC = 1 << 15;
-DebugJS.ST_ELM_INFO = 1 << 16;
-DebugJS.ST_ELM_EDIT = 1 << 17;
-DebugJS.ST_JS = 1 << 18;
-DebugJS.ST_TOOLS = 1 << 19;
-DebugJS.ST_EXT_PANEL = 1 << 20;
-DebugJS.ST_WD = 1 << 21;
-DebugJS.ST_NO_HIST = 1 << 22;
-DebugJS.ST_SW = 1 << 23;
-DebugJS.ST_KIOSK = 1 << 24;
+DebugJS.ST_ELM_INFO = 1 << 17;
+DebugJS.ST_ELM_EDIT = 1 << 18;
+DebugJS.ST_JS = 1 << 19;
+DebugJS.ST_TOOLS = 1 << 20;
+DebugJS.ST_EXT_PANEL = 1 << 21;
+DebugJS.ST_WD = 1 << 22;
+DebugJS.ST_NO_HIST = 1 << 23;
+DebugJS.ST_SW = 1 << 24;
+DebugJS.ST_KIOSK = 1 << 25;
 DebugJS.UI_ST_VISIBLE = 1;
 DebugJS.UI_ST_DYNAMIC = 1 << 1;
 DebugJS.UI_ST_SHOW_CLOCK = 1 << 2;
@@ -640,7 +628,6 @@ DebugJS.SBPNL_COLOR_INACT = '#ccc';
 DebugJS.COLOR_INACT = '#999';
 DebugJS.MEAS_BTN_COLOR = '#6cf';
 DebugJS.SYS_BTN_COLOR = '#3cf';
-DebugJS.HTML_BTN_COLOR = '#8f8';
 DebugJS.DOM_BTN_COLOR = '#f63';
 DebugJS.JS_BTN_COLOR = '#6df';
 DebugJS.TOOLS_BTN_COLOR = '#ff0';
@@ -740,8 +727,7 @@ DebugJS.FEATURES = [
   'togglableShowHide', 'useClock', 'useClearButton', 'useSuspendLogButton',
   'usePinButton', 'useWinCtrlButton', 'useStopwatch', 'useDeviceInfo',
   'useLed', 'useMsgDisplay', 'useScreenMeasure', 'useSystemInfo',
-  'useElementInfo', 'useHtmlSrc', 'useTools', 'useJsEditor', 'useLogFilter',
-  'useCommandLine'
+  'useElementInfo', 'useTools', 'useJsEditor', 'useLogFilter', 'useCommandLine'
 ];
 DebugJS.TZ = {'HST': '-10', 'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
 DebugJS.fn = function() {};
@@ -1242,7 +1228,6 @@ DebugJS.prototype = {
     ctx.opt.usePinButton = false;
     ctx.opt.useWinCtrlButton = false;
     ctx.opt.useScreenMeasure = false;
-    ctx.opt.useHtmlSrc = false;
     ctx.opt.useElementInfo = false;
     ctx.status |= DebugJS.ST_KIOSK;
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
@@ -1385,9 +1370,6 @@ DebugJS.prototype = {
     if (opt.useElementInfo) {
       ctx.elmInfoBtn = ctx.createHdrBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'ST_ELM_INFO', 'DOM_BTN_COLOR', false);
     }
-    if (opt.useHtmlSrc) {
-      ctx.htmlSrcBtn = ctx.createHdrBtn('htmlSrcBtn', 'HTM', 3, null, ctx.toggleHtmlSrc, 'status', 'ST_HTML_SRC', 'HTML_BTN_COLOR', false);
-    }
     if (opt.useSystemInfo) {
       ctx.sysInfoBtn = ctx.createHdrBtn('sysInfoBtn', 'SYS', 3, null, ctx.toggleSystemInfo, 'status', 'ST_SYS_INFO', 'SYS_BTN_COLOR', false);
     }
@@ -1522,7 +1504,6 @@ DebugJS.prototype = {
     if (opt.useScreenMeasure) ctx.updateMeasBtn(ctx);
     if (opt.useSystemInfo) ctx.updateSysInfoBtn(ctx);
     if (opt.useElementInfo) ctx.updateElmInfoBtn(ctx);
-    if (opt.useHtmlSrc) ctx.updateHtmlSrcBtn(ctx);
     if (opt.useJsEditor) ctx.updateJsBtn(ctx);
     if (opt.useTools) ctx.updateToolsBtn(ctx);
     if (ctx.extPanel) ctx.updateExtBtn(ctx);
@@ -1850,10 +1831,6 @@ DebugJS.prototype = {
 
   updateElmInfoBtn: function(ctx) {
     ctx.updateBtnActive(ctx.elmInfoBtn, DebugJS.ST_ELM_INFO, DebugJS.DOM_BTN_COLOR);
-  },
-
-  updateHtmlSrcBtn: function(ctx) {
-    ctx.updateBtnActive(ctx.htmlSrcBtn, DebugJS.ST_HTML_SRC, DebugJS.HTML_BTN_COLOR);
   },
 
   updateJsBtn: function(ctx) {
@@ -2233,8 +2210,8 @@ DebugJS.prototype = {
     var ua = DebugJS.getBrowserType();
     if ((ua.family == 'IE') || (ua.name == 'Firefox')) {
       if ((el == ctx.logPanel) || (el == ctx.sysInfoPanel) ||
-          (el == ctx.elmInfoBodyPanel) || (el == ctx.htmlSrcBodyPanel) ||
-          (el == ctx.filePreviewWrapper) || (el == ctx.toolsPanel) ||
+          (el == ctx.elmInfoBodyPanel) || (el == ctx.filePreviewWrapper) ||
+          (el == ctx.toolsPanel) ||
           (el == ctx.extPanel) || (el == ctx.extBodyPanel)) {
         var scrollBarWH = 17;
         var rect = el.getBoundingClientRect();
@@ -2525,9 +2502,6 @@ DebugJS.prototype = {
       case DebugJS.ST_SYS_INFO:
         ctx.openSystemInfo(ctx);
         return true;
-      case DebugJS.ST_HTML_SRC:
-        ctx.openHtmlSrc(ctx);
-        return true;
       case DebugJS.ST_ELM_INFO:
         ctx.openElmInfo(ctx);
         return true;
@@ -2601,9 +2575,6 @@ DebugJS.prototype = {
       case DebugJS.ST_SYS_INFO:
         ctx.closeSystemInfo(ctx);
         break;
-      case DebugJS.ST_HTML_SRC:
-        ctx.closeHtmlSrc(ctx);
-        break;
       case DebugJS.ST_ELM_INFO:
         ctx.closeElmInfo(ctx);
         break;
@@ -2636,7 +2607,6 @@ DebugJS.prototype = {
     var st = ctx.status;
     if (st & DebugJS.ST_MEASURE) ctx.closeScreenMeasure(ctx, q);
     if (st & DebugJS.ST_SYS_INFO) ctx.closeSystemInfo(ctx);
-    if (st & DebugJS.ST_HTML_SRC) ctx.closeHtmlSrc(ctx);
     if (st & DebugJS.ST_ELM_INFO) ctx.closeElmInfo(ctx);
     if (st & DebugJS.ST_JS) ctx.closeJsEditor();
     if (st & DebugJS.ST_TOOLS) ctx.closeTools(ctx);
@@ -2646,7 +2616,6 @@ DebugJS.prototype = {
     var a = {
       measure: DebugJS.ST_MEASURE,
       sys: DebugJS.ST_SYS_INFO,
-      html: DebugJS.ST_HTML_SRC,
       dom: DebugJS.ST_ELM_INFO,
       js: DebugJS.ST_JS,
       tool: DebugJS.ST_TOOLS,
@@ -4371,110 +4340,6 @@ DebugJS.prototype = {
     }
     s = DebugJS.ctx.createFoldingText(s, name, DebugJS.OMIT_LAST, MAX_LEN, 'color:#888');
     return s;
-  },
-
-  toggleHtmlSrc: function() {
-    var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_HTML_SRC) {
-      ctx.closeHtmlSrc(ctx);
-    } else {
-      ctx.openHtmlSrc(ctx);
-    }
-  },
-  openHtmlSrc: function(ctx) {
-    ctx.status |= DebugJS.ST_HTML_SRC;
-    ctx.featStack.push(DebugJS.ST_HTML_SRC);
-    if (!ctx.htmlSrcPanel) ctx.createHtmlSrcPanel(ctx);
-    ctx.updateHtmlSrcBtn(ctx);
-    ctx.showHtmlSrc();
-  },
-  createHtmlSrcPanel: function(ctx) {
-    ctx.htmlSrcPanel = document.createElement('div');
-    if (DebugJS.HTML_SRC_FULL_OVERLAY) {
-      ctx.htmlSrcPanel.className = 'dbg-overlay-panel-full';
-      ctx.addOverlayPanelFull(ctx.htmlSrcPanel);
-    } else {
-      ctx.htmlSrcPanel.className = 'dbg-overlay-panel';
-      ctx.addOverlayPanel(ctx, ctx.htmlSrcPanel);
-    }
-    if (DebugJS.HTML_SRC_EXPAND_H) ctx.expandHightIfNeeded(ctx);
-    ctx.htmlSrcHdrPanel = document.createElement('div');
-    ctx.htmlSrcPanel.appendChild(ctx.htmlSrcHdrPanel);
-
-    ctx.htmlSrcTitle = document.createElement('span');
-    DebugJS.setStyle(ctx.htmlSrcTitle, 'color', DebugJS.HTML_BTN_COLOR);
-    ctx.htmlSrcTitle.innerText = 'HTML SOURCE';
-    ctx.htmlSrcHdrPanel.appendChild(ctx.htmlSrcTitle);
-
-    var UPDATE_COLOR = '#fff';
-    ctx.htmlSrcUpdInpLbl2 = document.createElement('span');
-    ctx.htmlSrcUpdInpLbl2.style.float = 'right';
-    ctx.htmlSrcUpdInpLbl2.style.marginLeft = '2px';
-    DebugJS.setStyle(ctx.htmlSrcUpdInpLbl2, 'color', UPDATE_COLOR);
-    ctx.htmlSrcUpdInpLbl2.innerText = 'ms';
-    ctx.htmlSrcHdrPanel.appendChild(ctx.htmlSrcUpdInpLbl2);
-
-    ctx.htmlSrcUpdInput = DebugJS.ui.addTextInput(ctx.htmlSrcHdrPanel, '50px', 'right', UPDATE_COLOR, ctx.htmlSrcUpdInterval, ctx.onchangeHtmlSrcUpdInterval);
-    ctx.htmlSrcUpdInput.style.float = 'right';
-
-    ctx.htmlSrcUpdInpLbl = document.createElement('span');
-    ctx.htmlSrcUpdInpLbl.style.float = 'right';
-    DebugJS.setStyle(ctx.htmlSrcUpdInpLbl, 'color', UPDATE_COLOR);
-    ctx.htmlSrcUpdInpLbl.innerText = ':';
-    ctx.htmlSrcHdrPanel.appendChild(ctx.htmlSrcUpdInpLbl);
-
-    ctx.htmlSrcUpdBtn = DebugJS.ui.addBtn(ctx.htmlSrcHdrPanel, 'UPDATE', ctx.showHtmlSrc);
-    ctx.htmlSrcUpdBtn.style.float = 'right';
-    ctx.htmlSrcUpdBtn.style.marginLeft = '4px';
-    DebugJS.setStyle(ctx.htmlSrcUpdBtn, 'color', ctx.opt.btnColor);
-
-    ctx.htmlSrcBodyPanel = document.createElement('div');
-    ctx.htmlSrcBodyPanel.style.width = '100%';
-    ctx.htmlSrcBodyPanel.style.height = 'calc(100% - 1.3em)';
-    ctx.htmlSrcBodyPanel.style.overflow = 'auto';
-    ctx.htmlSrcPanel.appendChild(ctx.htmlSrcBodyPanel);
-
-    ctx.htmlSrcBody = document.createElement('pre');
-    ctx.htmlSrcBodyPanel.appendChild(ctx.htmlSrcBody);
-  },
-  closeHtmlSrc: function(ctx) {
-    if (ctx.htmlSrcPanel) {
-      if (DebugJS.HTML_SRC_FULL_OVERLAY) {
-        ctx.removeOverlayPanelFull(ctx.htmlSrcPanel);
-      } else {
-        ctx.removeOverlayPanel(ctx, ctx.htmlSrcPanel);
-      }
-      if (DebugJS.HTML_SRC_EXPAND_H) ctx.resetExpandedHeightIfNeeded(ctx);
-      ctx.htmlSrcPanel = null;
-    }
-    ctx.status &= ~DebugJS.ST_HTML_SRC;
-    DebugJS.arr.del(ctx.featStack, DebugJS.ST_HTML_SRC);
-    ctx.updateHtmlSrcBtn(ctx);
-  },
-  showHtmlSrc: function() {
-    var ctx = DebugJS.ctx;
-    ctx.htmlSrcBodyPanel.removeChild(ctx.htmlSrcBody);
-    var html = document.getElementsByTagName('html')[0].outerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    ctx.htmlSrcBodyPanel.appendChild(ctx.htmlSrcBody);
-    ctx.htmlSrcBody.innerHTML = html;
-  },
-  onchangeHtmlSrcUpdInterval: function() {
-    var ctx = DebugJS.ctx;
-    var interval = ctx.htmlSrcUpdInput.value;
-    if (interval == '') interval = 0;
-    if (isFinite(interval)) {
-      ctx.htmlSrcUpdInterval = interval;
-      clearTimeout(ctx.htmlSrcUpdTimerId);
-      ctx.htmlSrcUpdTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdInterval);
-    }
-  },
-  updateHtmlSrcInterval: function() {
-    var ctx = DebugJS.ctx;
-    if (!(ctx.status & DebugJS.ST_HTML_SRC)) return;
-    ctx.showHtmlSrc();
-    if (ctx.htmlSrcUpdInterval > 0) {
-      ctx.elmUpdTimerId = setTimeout(ctx.updateHtmlSrcInterval, ctx.htmlSrcUpdInterval);
-    }
   },
 
   toggleJs: function() {
@@ -7323,7 +7188,6 @@ DebugJS.prototype = {
     var d = {
       'measure': DebugJS.ST_MEASURE,
       'sys': DebugJS.ST_SYS_INFO,
-      'html': DebugJS.ST_HTML_SRC,
       'dom': DebugJS.ST_ELM_INFO,
       'js': DebugJS.ST_JS,
       'tool': DebugJS.ST_TOOLS,
