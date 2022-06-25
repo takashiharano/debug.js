@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206251858';
+  this.v = '202206260050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -64,8 +64,8 @@ var DebugJS = DebugJS || function() {
     useScreenMeasure: true,
     useSystemInfo: true,
     useElementInfo: true,
-    useTools: true,
     useJsEditor: true,
+    useTools: true,
     useLogFilter: true,
     useCommandLine: true,
     cmdHistoryMax: 100,
@@ -727,7 +727,7 @@ DebugJS.FEATURES = [
   'togglableShowHide', 'useClock', 'useClearButton', 'useSuspendLogButton',
   'usePinButton', 'useWinCtrlButton', 'useStopwatch', 'useDeviceInfo',
   'useLed', 'useMsgDisplay', 'useScreenMeasure', 'useSystemInfo',
-  'useElementInfo', 'useTools', 'useJsEditor', 'useLogFilter', 'useCommandLine'
+  'useElementInfo', 'useJsEditor', 'useTools', 'useLogFilter', 'useCommandLine'
 ];
 DebugJS.TZ = {'HST': '-10', 'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
 DebugJS.fn = function() {};
@@ -3421,13 +3421,14 @@ DebugJS.prototype = {
     return document.getElementById(DebugJS.ctx.id + '-' + n);
   },
 
+  openClosePanel: function(ctx, st, oFn, cFn) {
+    var f = ((ctx.status & st) ? cFn : oFn);
+    f(ctx);
+  },
+
   toggleSystemInfo: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_SYS_INFO) {
-      ctx.closeSystemInfo(ctx);
-    } else {
-      ctx.openSystemInfo(ctx);
-    }
+    ctx.openClosePanel(ctx, DebugJS.ST_SYS_INFO, ctx.openSystemInfo, ctx.closeSystemInfo);
   },
   openSystemInfo: function(ctx) {
     ctx.status |= DebugJS.ST_SYS_INFO;
@@ -3832,11 +3833,7 @@ DebugJS.prototype = {
 
   toggleElmInfo: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_ELM_INFO) {
-      ctx.closeElmInfo(ctx);
-    } else {
-      ctx.openElmInfo(ctx);
-    }
+    ctx.openClosePanel(ctx, DebugJS.ST_ELM_INFO, ctx.openElmInfo, ctx.closeElmInfo);
   },
   openElmInfo: function(ctx) {
     ctx.status |= DebugJS.ST_ELM_INFO;
@@ -4344,11 +4341,7 @@ DebugJS.prototype = {
 
   toggleJs: function() {
     var ctx = DebugJS.ctx;
-    if (ctx.status & DebugJS.ST_JS) {
-      ctx.closeJsEditor();
-    } else {
-      ctx.openJsEditor(ctx);
-    }
+    ctx.openClosePanel(ctx, DebugJS.ST_JS, ctx.openJsEditor, ctx.closeJsEditor);
   },
   openJsEditor: function(ctx) {
     ctx.status |= DebugJS.ST_JS;
@@ -4424,8 +4417,7 @@ DebugJS.prototype = {
 
   toggleTools: function() {
     var ctx = DebugJS.ctx;
-    var f = ((ctx.status & DebugJS.ST_TOOLS) ? ctx.closeTools : ctx.openTools);
-    f(ctx);
+    ctx.openClosePanel(ctx, DebugJS.ST_TOOLS, ctx.openTools, ctx.closeTools);
   },
   openTools: function(ctx) {
     ctx.status |= DebugJS.ST_TOOLS;
@@ -6499,8 +6491,7 @@ DebugJS.prototype = {
 
   toggleExtPanel: function() {
     var ctx = DebugJS.ctx;
-    var f = ((ctx.status & DebugJS.ST_EXT_PANEL) ? ctx.closeExtPanel : ctx.openExtPanel);
-    f(ctx);
+    ctx.openClosePanel(ctx, DebugJS.ST_EXT_PANEL, ctx.openExtPanel, ctx.closeExtPanel);
   },
 
   openExtPanel: function(ctx) {
