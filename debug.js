@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206262342';
+  this.v = '202206270137';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -234,16 +234,16 @@ var DebugJS = DebugJS || function() {
   this.txtClrBtn = null;
   this.txtEdtExecBtn = null;
   this.txtEdtModes = {
-    unique: {lbl: 'UNIQUE'},
-    uniquecnt: {lbl: 'UNIQUE_CNT'},
-    sort: {lbl: 'SORT'},
-    lineagg: {lbl: 'LINEAGG'},
-    trimblank: {lbl: 'TRIM_BLANK'},
-    tabalign: {lbl: 'TAB_ALIGN'},
-    datesep: {lbl: 'DATE_SEP'},
-    elapsedtime: {lbl: 'ELAPSED_TIME'},
-    maxlen: {lbl: 'MAX_LEN'},
-    minlen: {lbl: 'MIX_LEN'}
+    unique: 'UNIQUE',
+    uniquecnt: 'UNIQUE_CNT',
+    sort: 'SORT',
+    lineagg: 'LINEAGG',
+    trimblank: 'TRIM_BLANK',
+    tabalign: 'TAB_ALIGN',
+    datesep: 'DATE_SEP',
+    elapsedtime: 'ELAPSED_TIME',
+    maxlen: 'MAX_LEN',
+    minlen: 'MIX_LEN'
   };
   this.txtEdtMdSlct = null;
   this.txtEdtSrtSlct = null;
@@ -1374,14 +1374,14 @@ DebugJS.prototype = {
       ctx.headPanel.appendChild(ctx.swBtnPanel);
     }
 
-    ctx.extBtn = ctx.createHdrBtn('extBtn', ctx.extBtnLabel, 2, null, ctx.toggleExtPanel, 'status', 'ST_EXT_PANEL', 'EXT_BTN_COLOR', false);
+    ctx.extBtn = ctx.createHdrBtn('extBtn', ctx.extBtnLabel, 3, null, ctx.toggleExtPanel, 'status', 'ST_EXT_PANEL', 'EXT_BTN_COLOR', false);
     DebugJS.showExtBtn(false);
 
     if (opt.useTools) {
-      ctx.toolsBtn = ctx.createHdrBtn('toolsBtn', 'TOOL', 2, null, ctx.toggleTools, 'status', 'ST_TOOLS', 'TOOLS_BTN_COLOR', false);
+      ctx.toolsBtn = ctx.createHdrBtn('toolsBtn', 'TOOL', 3, null, ctx.toggleTools, 'status', 'ST_TOOLS', 'TOOLS_BTN_COLOR', false);
     }
     if (opt.useJsEditor) {
-      ctx.jsBtn = ctx.createHdrBtn('jsBtn', 'JS', 2, null, ctx.toggleJs, 'status', 'ST_JS', 'JS_BTN_COLOR', false);
+      ctx.jsBtn = ctx.createHdrBtn('jsBtn', 'JS', 3, null, ctx.toggleJs, 'status', 'ST_JS', 'JS_BTN_COLOR', false);
     }
     if (opt.useElementInfo) {
       ctx.elmInfoBtn = ctx.createHdrBtn('elmInfoBtn', 'DOM', 3, null, ctx.toggleElmInfo, 'status', 'ST_ELM_INFO', 'DOM_BTN_COLOR', false);
@@ -6508,7 +6508,7 @@ DebugJS.prototype = {
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
     var o = '<option hidden></option>';
     for (var k in ctx.txtEdtModes) {
-      o += '<option value="' + k + '">' + ctx.txtEdtModes[k].lbl + '</option>';
+      o += '<option value="' + k + '">' + ctx.txtEdtModes[k] + '</option>';
     }
     ctx.txtEdtMdSlct.innerHTML = o;
 
@@ -6549,11 +6549,8 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var v = ctx.txtEdtEditor.value;
     var f = ctx.editTxtFn[ctx.txtEdtMdSlct.value];
-    if (f) {
-      var r = f(ctx, v);
-      ctx.txtEdtEditor.value = r;
-      ctx.onTxtEdtInput();
-    }
+    ctx.txtEdtEditor.value = f(ctx, v);
+    ctx.onTxtEdtInput();
   },
   editTxtFn: {
     unique: function(ctx, s) {
