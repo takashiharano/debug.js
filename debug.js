@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206270137';
+  this.v = '202206270209';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6506,7 +6506,7 @@ DebugJS.prototype = {
     DebugJS.ui.addLabel(basePanel, 'MODE: ');
     ctx.txtEdtMdSlct = DebugJS.ui.addElement(basePanel, 'select');
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
-    var o = '<option hidden></option>';
+    var o = '<option></option>';
     for (var k in ctx.txtEdtModes) {
       o += '<option value="' + k + '">' + ctx.txtEdtModes[k] + '</option>';
     }
@@ -6549,8 +6549,10 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var v = ctx.txtEdtEditor.value;
     var f = ctx.editTxtFn[ctx.txtEdtMdSlct.value];
-    ctx.txtEdtEditor.value = f(ctx, v);
-    ctx.onTxtEdtInput();
+    if (f) {
+      ctx.txtEdtEditor.value = f(ctx, v);
+      ctx.onTxtEdtInput();
+    }
   },
   editTxtFn: {
     unique: function(ctx, s) {
@@ -6615,6 +6617,7 @@ DebugJS.prototype = {
     var lenB = DebugJS.lenB(txt);
     var lfCnt = (txt.match(/\n/g) || []).length;
     var lenWoLf = len - lfCnt;
+    var ln = (len == 0 ? 0 : lfCnt + 1);
     var st = edt.selectionStart;
     var ed = edt.selectionEnd;
     var sl = ed - st;
@@ -6624,7 +6627,7 @@ DebugJS.prototype = {
     var cp = '';
     if (cd) cp = (cd == 10 ? 'LF' : ch) + ':' + cd16 + '(' + cd + ')';
     var slct = (sl ? 'Selected=' + sl : '');
-    txtSt.innerHTML = 'LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes ' + cp + ' ' + slct;
+    txtSt.innerHTML = 'LINES=' + ln + ' LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes ' + cp + ' ' + slct;
   },
 
   toggleExtPanel: function() {
