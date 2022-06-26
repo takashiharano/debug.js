@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206262311';
+  this.v = '202206262342';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -234,16 +234,16 @@ var DebugJS = DebugJS || function() {
   this.txtClrBtn = null;
   this.txtEdtExecBtn = null;
   this.txtEdtModes = {
-    unique: {btn: null, lbl: 'UNIQUE'},
-    uniquecnt: {btn: null, lbl: 'UNIQUE_CNT'},
-    sort: {btn: null, lbl: 'SORT'},
-    lineagg: {btn: null, lbl: 'LINEAGG'},
-    trimblank: {btn: null, lbl: 'TRIM_BLANK'},
-    datesep: {btn: null, lbl: 'DATE_SEP'},
-    tabalign: {btn: null, lbl: 'TAB_ALIGN'},
-    elapsedtime: {btn: null, lbl: 'ELAPSED_TIME'},
-    maxlen: {btn: null, lbl: 'MAX_LEN'},
-    minlen: {btn: null, lbl: 'MIX_LEN'},
+    unique: {lbl: 'UNIQUE'},
+    uniquecnt: {lbl: 'UNIQUE_CNT'},
+    sort: {lbl: 'SORT'},
+    lineagg: {lbl: 'LINEAGG'},
+    trimblank: {lbl: 'TRIM_BLANK'},
+    tabalign: {lbl: 'TAB_ALIGN'},
+    datesep: {lbl: 'DATE_SEP'},
+    elapsedtime: {lbl: 'ELAPSED_TIME'},
+    maxlen: {lbl: 'MAX_LEN'},
+    minlen: {lbl: 'MIX_LEN'}
   };
   this.txtEdtMdSlct = null;
   this.txtEdtSrtSlct = null;
@@ -1119,7 +1119,7 @@ DebugJS.prototype = {
     };
     styles['.dbg-select'] = {
       'height': '1.2em; !important',
-      'border': 'solid 1px #ccc; !important',
+      'border': 'solid 1px #aaa; !important',
       'border-radius': '0 !important',
       'padding': '0 !important',
       'background': '#000 !important',
@@ -6506,7 +6506,7 @@ DebugJS.prototype = {
     DebugJS.ui.addLabel(basePanel, 'MODE: ');
     ctx.txtEdtMdSlct = DebugJS.ui.addElement(basePanel, 'select');
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
-    var o = '';
+    var o = '<option hidden></option>';
     for (var k in ctx.txtEdtModes) {
       o += '<option value="' + k + '">' + ctx.txtEdtModes[k].lbl + '</option>';
     }
