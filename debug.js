@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206262230';
+  this.v = '202206262311';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -174,7 +174,6 @@ var DebugJS = DebugJS || function() {
   this.fileVwrRadioB64 = null;
   this.fileVwrLabelBin = null;
   this.fileVwrRadioBin = null;
-  this.fileCopyBtn = null;
   this.fileClrBtn = null;
   this.fileVwrFooter = null;
   this.fileLoadProgBar = null;
@@ -5335,6 +5334,7 @@ DebugJS.prototype = {
     ctx.fileInput = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style);
     ctx.fileInput.type = 'file';
     ctx.fileInput.addEventListener('change', ctx.onFileSelected);
+    ctx.fileInput.style.width = 'calc(100% - 180px)';
 
     style = {'margin-left': (ctx.computedFontSize * 0.8) + 'px'};
     ctx.fileVwrRadioB64 = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
@@ -5360,10 +5360,6 @@ DebugJS.prototype = {
     ctx.fileVwrLabelBin = DebugJS.ui.addElement(ctx.fileVwrPanel, 'label');
     ctx.fileVwrLabelBin.htmlFor = ctx.id + '-load-type-bin';
     ctx.fileVwrLabelBin.innerText = 'Binary';
-
-    ctx.fileCopyBtn = DebugJS.ui.addBtn(ctx.fileVwrPanel, 'Copy', ctx.copyFileCtt, {color: DebugJS.COLOR_INACT});
-    ctx.fileCopyBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
-    ctx.enableFileCopyBtn(ctx, false);
 
     ctx.fileClrBtn = DebugJS.ui.addBtn(ctx.fileVwrPanel, 'Clear', ctx.clearFile);
     ctx.fileClrBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
@@ -6057,7 +6053,6 @@ DebugJS.prototype = {
   },
   getTextPreview: function(decoded) {
     DebugJS.ctx.fileVwrCtt = decoded;
-    DebugJS.ctx.enableFileCopyBtn(DebugJS.ctx, true);
     if (decoded.length == 0) return '';
     var txt = DebugJS.escHtml(decoded);
     txt = txt.replace(/\r\n/g, DebugJS.CHR_CRLF_S + '\n');
@@ -6075,7 +6070,6 @@ DebugJS.prototype = {
     var ctxSizePos = ctx.getSelfSizePos();
     var img = DebugJS.buildDataUrl(scheme, data);
     DebugJS.ctx.fileVwrCtt = img;
-    DebugJS.ctx.enableFileCopyBtn(DebugJS.ctx, true);
     return '<img src="' + img + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
   },
   resizeImgPreview: function() {
@@ -6167,7 +6161,6 @@ DebugJS.prototype = {
     }
     dmp += '\n';
     ctx.fileVwrCtt = DebugJS.html2text(dmp);
-    ctx.enableFileCopyBtn(ctx, true);
     var html = '<pre style="white-space:pre !important">';
     html += DebugJS.ui.createBtnHtml('[' + mode.toUpperCase() + ']', 'DebugJS.ctx.toggleBinMode()') + ' ';
     html += DebugJS.ui.createBtnHtml('[ADDR]', 'DebugJS.ctx.toggleShowAddr()', (showAddr ? '' : 'color:' + DebugJS.COLOR_INACT)) + ' ';
@@ -6205,11 +6198,6 @@ DebugJS.prototype = {
   fileLoadFinalize: function() {
     DebugJS.removeClass(DebugJS.ctx.fileVwrFooter, 'dbg-loading');
   },
-  copyFileCtt: function() {
-    if (!DebugJS.ctx.fileCopyBtn.disabled) {
-      DebugJS.copy(DebugJS.ctx.fileVwrCtt);
-    }
-  },
   clearFile: function() {
     var ctx = DebugJS.ctx;
     ctx.fileVwrDataSrcType = null;
@@ -6221,17 +6209,10 @@ DebugJS.prototype = {
     ctx.fileVwrByteArray = null;
     ctx.fileReader = null;
     ctx.fileVwrCtt = null;
-    ctx.enableFileCopyBtn(ctx, false);
     if (ctx.fileVwrPanel) {
       ctx.filePreview.innerText = 'Drop a file here';
       ctx.setDtSchmTxt();
       ctx.fileVwrDtTxtArea.value = '';
-    }
-  },
-  enableFileCopyBtn: function(ctx, f) {
-    if (ctx.fileCopyBtn) {
-      ctx.fileCopyBtn.disabled = !f;
-      DebugJS.setStyle(ctx.fileCopyBtn, 'color', (f ? '' : DebugJS.COLOR_INACT));
     }
   },
   dataSrcType: function() {
@@ -6520,7 +6501,7 @@ DebugJS.prototype = {
     ctx.txtClrBtn.style.float = 'right';
     ctx.txtEdtExecBtn = DebugJS.ui.addBtn(basePanel, '[EXEC]', ctx.execTxtEdit);
     ctx.txtEdtExecBtn.style.float = 'right';
-    ctx.txtEdtExecBtn.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
+    ctx.txtEdtExecBtn.style.marginRight = (ctx.computedFontSize * 0.4) + 'px';
 
     DebugJS.ui.addLabel(basePanel, 'MODE: ');
     ctx.txtEdtMdSlct = DebugJS.ui.addElement(basePanel, 'select');
