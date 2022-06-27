@@ -17,6 +17,7 @@
     "no-cond-assign": "off",
     "no-constant-condition": "off",
     "no-fallthrough": "off",
-    "no-irregular-whitespace": "off"
+    "no-irregular-whitespace": "off",
+    "no-control-regex": "off"
   }
 }

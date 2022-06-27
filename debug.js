@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206272303';
+  this.v = '202206280009';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13530,15 +13530,15 @@ DebugJS.plural = function(s, n) {
   return (n == 1 ? s : (s + 's'));
 };
 DebugJS.toHalfWidth = function(s) {
-  var h = s.replace(/　/g, ' ').replace(/”/g, '"').replace(/’/g, '\'').replace(/‘/g, '`').replace(/￥/g, '\\');
-  h = h.replace(/[！-～]/g, DebugJS.shift2half);
+  var h = s.replace(/\u3000/g, ' ').replace(/\u201D/g, '"').replace(/\u2019/g, '\'').replace(/\u2018/g, '`').replace(/\uFFE5/g, '\\');
+  h = h.replace(/[\uFF01-\uFF5E]/g, DebugJS.shift2half);
   return h;
 };
 DebugJS.shift2half = function(w) {
   return String.fromCharCode(w.charCodeAt(0) - 65248);
 };
 DebugJS.toFullWidth = function(s) {
-  var f = s.replace(/ /g, '　').replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '‘').replace(/\\/g, '￥');
+  var f = s.replace(/ /g, '\u3000').replace(/"/g, '\u201D').replace(/'/g, '\u2019').replace(/`/g, '\u2018').replace(/\\/g, '\uFFE5');
   f = f.replace(/[!-~]/g, DebugJS.shift2full);
   return f;
 };
@@ -13558,7 +13558,7 @@ DebugJS.lenW = function(s) {
   return n;
 };
 DebugJS.isAscii = function(s) {
-  return (s.match(/^[\x0-\x7f]*$/) ? true : false);
+  return (s.match(/^[\x00-\x7F]*$/) ? true : false);
 };
 DebugJS.txt2arr = function(s) {
   var a = DebugJS.crlf2lf(s).split('\n');
