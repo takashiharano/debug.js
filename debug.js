@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206270209';
+  this.v = '202206272303';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -243,7 +243,7 @@ var DebugJS = DebugJS || function() {
     datesep: 'DATE_SEP',
     elapsedtime: 'ELAPSED_TIME',
     maxlen: 'MAX_LEN',
-    minlen: 'MIX_LEN'
+    minlen: 'MIN_LEN'
   };
   this.txtEdtMdSlct = null;
   this.txtEdtSrtSlct = null;
