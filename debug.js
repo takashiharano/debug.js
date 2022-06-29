@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206280009';
+  this.v = '202206292040';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -240,6 +240,8 @@ var DebugJS = DebugJS || function() {
     lineagg: 'LINEAGG',
     trimblank: 'TRIM_BLANK',
     tabalign: 'TAB_ALIGN',
+    hor2ver: 'HOR_TO_VER',
+    ver2hor: 'VER_TO_HOR',
     datesep: 'DATE_SEP',
     elapsedtime: 'ELAPSED_TIME',
     maxlen: 'MAX_LEN',
@@ -6589,6 +6591,12 @@ DebugJS.prototype = {
     tabalign: function(ctx, s) {
       var n = ctx.txtEdtOpt.value | 0;
       return DebugJS.alignByTab(s, n);
+    },
+    hor2ver: function(ctx, s) {
+      return s.replace(/\t/g, '\n');
+    },
+    ver2hor: function(ctx, s) {
+      return s.replace(/\n/g, '\t');
     },
     elapsedtime: function(ctx, s) {
       return DebugJS.cnvElapsedTime(s);
