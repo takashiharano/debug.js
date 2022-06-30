@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202206292040';
+  this.v = '202207010115';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -240,8 +240,8 @@ var DebugJS = DebugJS || function() {
     lineagg: 'LINEAGG',
     trimblank: 'TRIM_BLANK',
     tabalign: 'TAB_ALIGN',
-    hor2ver: 'HOR_TO_VER',
-    ver2hor: 'VER_TO_HOR',
+    h2v: 'HORIZ_TO_VERT',
+    v2h: 'VERT_TO_HORIZ',
     datesep: 'DATE_SEP',
     elapsedtime: 'ELAPSED_TIME',
     maxlen: 'MAX_LEN',
@@ -6508,6 +6508,7 @@ DebugJS.prototype = {
     DebugJS.ui.addLabel(basePanel, 'MODE: ');
     ctx.txtEdtMdSlct = DebugJS.ui.addElement(basePanel, 'select');
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
+    DebugJS.setStyle(ctx.txtEdtMdSlct, 'width', '9em');
     var o = '<option></option>';
     for (var k in ctx.txtEdtModes) {
       o += '<option value="' + k + '">' + ctx.txtEdtModes[k] + '</option>';
@@ -6550,32 +6551,33 @@ DebugJS.prototype = {
   execTxtEdit: function() {
     var ctx = DebugJS.ctx;
     var v = ctx.txtEdtEditor.value;
+    var srt = ctx.txtEdtSrtSlct.value | 0;
+    var o = ctx.txtEdtOpt.value;
     var f = ctx.editTxtFn[ctx.txtEdtMdSlct.value];
     if (f) {
-      ctx.txtEdtEditor.value = f(ctx, v);
+      ctx.txtEdtEditor.value = f(ctx, v, srt, o);
       ctx.onTxtEdtInput();
     }
   },
   editTxtFn: {
-    unique: function(ctx, s) {
+    unique: function(ctx, s, srt) {
       var opt = {
-        sort: ctx.txtEdtSrtSlct.value | 0,
+        sort: srt,
         count: 0,
         blank: ctx.txtEdtBlnkFlg
       };
       return DebugJS.toUnique(s, opt).r;
     },
-    uniquecnt: function(ctx, s) {
+    uniquecnt: function(ctx, s, srt) {
       var opt = {
-        sort: ctx.txtEdtSrtSlct.value | 0,
+        sort: srt,
         count: 1,
         blank: ctx.txtEdtBlnkFlg
       };
       return DebugJS.toUnique(s, opt).r;
     },
-    sort: function(ctx, s) {
-      var d = (ctx.txtEdtSrtSlct.value == '2' ? 1 : 0);
-      var n = ctx.txtEdtOpt.value;
+    sort: function(ctx, s, srt, n) {
+      var d = (srt == 2 ? 1 : 0);
       return DebugJS.sort(s, d, n);
     },
     lineagg: function(ctx, s) {
@@ -6584,18 +6586,16 @@ DebugJS.prototype = {
     trimblank: function(ctx, s) {
       return DebugJS.trimBlank(s);
     },
-    datesep: function(ctx, s) {
-      var a = ctx.txtEdtOpt.value.trim();
+    datesep: function(ctx, s, srt, a) {
       return DebugJS.dateSep(s, a);
     },
-    tabalign: function(ctx, s) {
-      var n = ctx.txtEdtOpt.value | 0;
+    tabalign: function(ctx, s, srt, n) {
       return DebugJS.alignByTab(s, n);
     },
-    hor2ver: function(ctx, s) {
+    h2v: function(ctx, s) {
       return s.replace(/\t/g, '\n');
     },
-    ver2hor: function(ctx, s) {
+    v2h: function(ctx, s) {
       return s.replace(/\n/g, '\t');
     },
     elapsedtime: function(ctx, s) {
@@ -6604,12 +6604,11 @@ DebugJS.prototype = {
     maxlen: function(ctx, s) {
       return ctx.minMaxLen(ctx, s, 1);
     },
-    minlen: function(ctx, s) {
-      return ctx.minMaxLen(ctx, s, 0);
+    minlen: function(ctx, s, srt, n) {
+      return ctx.minMaxLen(ctx, s, 0, n);
     },
   },
-  minMaxLen: function(ctx, s, f) {
-    var n = ctx.txtEdtOpt.value | 0;
+  minMaxLen: function(ctx, s, f, n) {
     var x = DebugJS.lenMinMax(s, f, n);
     var r = 'len=' + x.c + '\n';
     for (var i = 0; i < x.m.length; i++) {
