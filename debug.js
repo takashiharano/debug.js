@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207010115';
+  this.v = '202207022251';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6622,19 +6622,35 @@ DebugJS.prototype = {
     var txt = edt.value;
     var len = txt.length;
     var lenB = DebugJS.lenB(txt);
-    var lfCnt = (txt.match(/\n/g) || []).length;
+    var lfCnt = DebugJS.countLineBreak(txt);
     var lenWoLf = len - lfCnt;
     var ln = (len == 0 ? 0 : lfCnt + 1);
     var st = edt.selectionStart;
     var ed = edt.selectionEnd;
     var sl = ed - st;
     var ch = DebugJS.str2arr(txt)[st] || '';
-    var cd = DebugJS.getCodePoint(ch);
-    var cd16 = DebugJS.getUnicodePoints(ch, true);
-    var cp = '';
-    if (cd) cp = (cd == 10 ? 'LF' : ch) + ':' + cd16 + '(' + cd + ')';
-    var slct = (sl ? 'Selected=' + sl : '');
-    txtSt.innerHTML = 'LINES=' + ln + ' LEN=' + lenWoLf + ' (w/RET=' + len + ') ' + lenB + ' bytes ' + cp + ' ' + slct;
+    var u10 = DebugJS.getCodePoint(ch);
+    var u16 = DebugJS.getUnicodePoints(ch, true);
+    var CTCH = {9: 'TAB', 10: 'LF', 11: 'ESC', 32: 'SP', '12288': 'emSP'};
+    var co = '8cc';
+    if (u10) {
+      if (CTCH[u10]) {
+        ch = CTCH[u10];
+        co = 'c88';
+      }
+    } else {
+      ch = '&nbsp;';
+      u16 = 'U+----';
+    }
+    var cp = '<span style="color:#' + co + '">' + ch + '</span>&nbsp;' + u16 + (u10 ? '(' + u10 + ')' : '');
+    var t = txt.substr(0, st);
+    var l = (t.match(/\n/g) || []).length + 1;
+    var c = t.replace(/.*\n/g, '').length + 1;
+    var cl = DebugJS.clipCurrentLine(txt, st).length;
+    var slT = txt.substring(st, ed);
+    var slL = DebugJS.countLineBreak(slT) + 1;
+    var slct = (sl ? ' SEL:' + ('LEN=' + sl + '/L=' + slL) : '');
+    txtSt.innerHTML = l + ':' + c + ' ' + cp + ' LEN=' + len + ' (w/o LF=' + lenWoLf + ') ' + lenB + ' bytes L=' + ln + ' C=' + cl + slct;
   },
 
   toggleExtPanel: function() {
@@ -13432,6 +13448,14 @@ DebugJS.substr = function(txt, len) {
     str = txt.substr(i);
   }
   return str;
+};
+DebugJS.countLineBreak = function(s) {
+  return (s.match(/\n/g) || []).length;
+};
+DebugJS.clipCurrentLine = function(s, p) {
+  var n = s.indexOf('\n', p);
+  if (n > 0) s = s.substr(0, n);
+  return s.replace(/.*\n/g, '');
 };
 DebugJS.capitalize = function(s) {
   return ((s && (typeof s == 'string')) ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
