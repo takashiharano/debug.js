@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207022251';
+  this.v = '202207022323';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6646,7 +6646,7 @@ DebugJS.prototype = {
     var t = txt.substr(0, st);
     var l = (t.match(/\n/g) || []).length + 1;
     var c = t.replace(/.*\n/g, '').length + 1;
-    var cl = DebugJS.clipCurrentLine(txt, st).length;
+    var cl = DebugJS.clipTextLine(txt, st).length;
     var slT = txt.substring(st, ed);
     var slL = DebugJS.countLineBreak(slT) + 1;
     var slct = (sl ? ' SEL:' + ('LEN=' + sl + '/L=' + slL) : '');
@@ -13452,7 +13452,7 @@ DebugJS.substr = function(txt, len) {
 DebugJS.countLineBreak = function(s) {
   return (s.match(/\n/g) || []).length;
 };
-DebugJS.clipCurrentLine = function(s, p) {
+DebugJS.clipTextLine = function(s, p) {
   var n = s.indexOf('\n', p);
   if (n > 0) s = s.substr(0, n);
   return s.replace(/.*\n/g, '');
