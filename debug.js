@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207022323';
+  this.v = '202207072156';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -237,7 +237,8 @@ var DebugJS = DebugJS || function() {
     unique: 'UNIQUE',
     uniquecnt: 'UNIQUE_CNT',
     sort: 'SORT',
-    lineagg: 'LINEAGG',
+    lflf2lf: 'LFLF_TO_LF',
+    lf2lflf: 'LF_TO_LFLF',
     trimblank: 'TRIM_BLANK',
     tabalign: 'TAB_ALIGN',
     h2v: 'HORIZ_TO_VERT',
@@ -6580,8 +6581,11 @@ DebugJS.prototype = {
       var d = (srt == 2 ? 1 : 0);
       return DebugJS.sort(s, d, n);
     },
-    lineagg: function(ctx, s) {
-      return DebugJS.lineAgg(s);
+    lflf2lf: function(ctx, s) {
+      return DebugJS.lflf2lf(s);
+    },
+    lf2lflf: function(ctx, s) {
+      return DebugJS.lf2lflf(s);
     },
     trimblank: function(ctx, s) {
       return DebugJS.trimBlank(s);
@@ -11961,8 +11965,11 @@ DebugJS.dateSep = function(s, a) {
   if (!a) a = '/';
   return s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3');
 };
-DebugJS.lineAgg = function(s) {
+DebugJS.lflf2lf = function(s) {
   return DebugJS.trimBlank(s).replace(/\n\n/g, '\n');
+};
+DebugJS.lf2lflf = function(s) {
+  return s.replace(/\n/g, '\n\n');
 };
 DebugJS.lenMinMax = function(t, f, th) {
   var a = DebugJS.txt2arr(t);
