@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207072156';
+  this.v = '202207090051';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -233,21 +233,6 @@ var DebugJS = DebugJS || function() {
   this.txtTxtSt = null;
   this.txtClrBtn = null;
   this.txtEdtExecBtn = null;
-  this.txtEdtModes = {
-    unique: 'UNIQUE',
-    uniquecnt: 'UNIQUE_CNT',
-    sort: 'SORT',
-    lflf2lf: 'LFLF_TO_LF',
-    lf2lflf: 'LF_TO_LFLF',
-    trimblank: 'TRIM_BLANK',
-    tabalign: 'TAB_ALIGN',
-    h2v: 'HORIZ_TO_VERT',
-    v2h: 'VERT_TO_HORIZ',
-    datesep: 'DATE_SEP',
-    elapsedtime: 'ELAPSED_TIME',
-    maxlen: 'MAX_LEN',
-    minlen: 'MIN_LEN'
-  };
   this.txtEdtMdSlct = null;
   this.txtEdtSrtSlct = null;
   this.txtEdtOpt = null;
@@ -6511,8 +6496,8 @@ DebugJS.prototype = {
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
     DebugJS.setStyle(ctx.txtEdtMdSlct, 'width', '9em');
     var o = '<option></option>';
-    for (var k in ctx.txtEdtModes) {
-      o += '<option value="' + k + '">' + ctx.txtEdtModes[k] + '</option>';
+    for (var k in ctx.editTxtFn) {
+      o += '<option value="' + k + '">' + ctx.editTxtFn[k].lbl + '</option>';
     }
     ctx.txtEdtMdSlct.innerHTML = o;
 
@@ -6554,63 +6539,115 @@ DebugJS.prototype = {
     var v = ctx.txtEdtEditor.value;
     var srt = ctx.txtEdtSrtSlct.value | 0;
     var o = ctx.txtEdtOpt.value;
-    var f = ctx.editTxtFn[ctx.txtEdtMdSlct.value];
+    var f = ctx.editTxtFn[ctx.txtEdtMdSlct.value].fn;
     if (f) {
       ctx.txtEdtEditor.value = f(ctx, v, srt, o);
       ctx.onTxtEdtInput();
     }
   },
   editTxtFn: {
-    unique: function(ctx, s, srt) {
-      var opt = {
-        sort: srt,
-        count: 0,
-        blank: ctx.txtEdtBlnkFlg
-      };
-      return DebugJS.toUnique(s, opt).r;
+    unique: {
+      lbl: 'UNIQUE',
+      fn: function(ctx, s, srt) {
+        var opt = {
+          sort: srt,
+          count: 0,
+          blank: ctx.txtEdtBlnkFlg
+        };
+        return DebugJS.toUnique(s, opt).r;
+      }
     },
-    uniquecnt: function(ctx, s, srt) {
-      var opt = {
-        sort: srt,
-        count: 1,
-        blank: ctx.txtEdtBlnkFlg
-      };
-      return DebugJS.toUnique(s, opt).r;
+    uniquecnt: {
+      lbl: 'UNIQUE_CNT',
+      fn: function(ctx, s, srt) {
+        var opt = {
+          sort: srt,
+          count: 1,
+          blank: ctx.txtEdtBlnkFlg
+        };
+        return DebugJS.toUnique(s, opt).r;
+      }
     },
-    sort: function(ctx, s, srt, n) {
-      var d = (srt == 2 ? 1 : 0);
-      return DebugJS.sort(s, d, n);
+    sort: {
+      lbl: 'SORT',
+      fn: function(ctx, s, srt, n) {
+        var d = (srt == 2 ? 1 : 0);
+        return DebugJS.sort(s, d, n);
+      }
     },
-    lflf2lf: function(ctx, s) {
-      return DebugJS.lflf2lf(s);
+    lflf2lf: {
+      lbl: 'LFLF_TO_LF',
+      fn: function(ctx, s) {
+        return DebugJS.lflf2lf(s);
+      }
     },
-    lf2lflf: function(ctx, s) {
-      return DebugJS.lf2lflf(s);
+    lf2lflf: {
+      lbl: 'LF_TO_LFLF',
+      fn: function(ctx, s) {
+        return DebugJS.lf2lflf(s);
+      }
     },
-    trimblank: function(ctx, s) {
-      return DebugJS.trimBlank(s);
+    trimblank: {
+      lbl: 'TRIM_BLANK',
+      fn: function(ctx, s) {
+        return DebugJS.trimBlank(s);
+      }
     },
-    datesep: function(ctx, s, srt, a) {
-      return DebugJS.dateSep(s, a);
+    tabalign: {
+      lbl: 'TAB_ALIGN',
+      fn: function(ctx, s, srt, n) {
+        return DebugJS.alignByTab(s, n);
+      }
     },
-    tabalign: function(ctx, s, srt, n) {
-      return DebugJS.alignByTab(s, n);
+    h2v: {
+      lbl: 'HORIZ_TO_VERT',
+      fn: function(ctx, s) {
+        return s.replace(/\t/g, '\n');
+      }
     },
-    h2v: function(ctx, s) {
-      return s.replace(/\t/g, '\n');
+    v2h: {
+      lbl: 'VERT_TO_HORIZ',
+      fn: function(ctx, s) {
+        return s.replace(/\n/g, '\t');
+      }
     },
-    v2h: function(ctx, s) {
-      return s.replace(/\n/g, '\t');
+
+    uc: {
+      lbl: 'UPPERCASE',
+      fn: function(ctx, s) {
+        return s.toUpperCase();
+      }
     },
-    elapsedtime: function(ctx, s) {
-      return DebugJS.cnvElapsedTime(s);
+    lc: {
+      lbl: 'lowercase',
+      fn: function(ctx, s) {
+        return s.toLowerCase();
+      }
     },
-    maxlen: function(ctx, s) {
-      return ctx.minMaxLen(ctx, s, 1);
+    datesep: {
+      lbl: 'DATE_SEP',
+      fn: function(ctx, s, srt, a) {
+        return DebugJS.dateSep(s, a);
+      }
     },
-    minlen: function(ctx, s, srt, n) {
-      return ctx.minMaxLen(ctx, s, 0, n);
+    elapsedtime: {
+      lbl: 'ELAPSED_TIME',
+      fn: function(ctx, s) {
+        return DebugJS.cnvElapsedTime(s);
+      }
     },
+    maxlen: {
+      lbl: 'MAX_LEN',
+      fn: function(ctx, s) {
+        return ctx.minMaxLen(ctx, s, 1);
+      }
+    },
+    minlen: {
+      lbl: 'MIN_LEN',
+      fn: function(ctx, s, srt, n) {
+        return ctx.minMaxLen(ctx, s, 0, n);
+      }
+    }
   },
   minMaxLen: function(ctx, s, f, n) {
     var x = DebugJS.lenMinMax(s, f, n);
