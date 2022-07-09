@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207090051';
+  this.v = '202207091637';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6611,7 +6611,6 @@ DebugJS.prototype = {
         return s.replace(/\n/g, '\t');
       }
     },
-
     uc: {
       lbl: 'UPPERCASE',
       fn: function(ctx, s) {
@@ -6624,16 +6623,28 @@ DebugJS.prototype = {
         return s.toLowerCase();
       }
     },
+    tofull: {
+      lbl: 'TO_FULL_WIDTH',
+      fn: function(ctx, s) {
+        return DebugJS.toFullWidth(s);
+      }
+    },
+    tohalf: {
+      lbl: 'TO_HALF_WIDTH',
+      fn: function(ctx, s) {
+        return DebugJS.toHalfWidth(s);
+      }
+    },
     datesep: {
       lbl: 'DATE_SEP',
       fn: function(ctx, s, srt, a) {
         return DebugJS.dateSep(s, a);
       }
     },
-    elapsedtime: {
-      lbl: 'ELAPSED_TIME',
-      fn: function(ctx, s) {
-        return DebugJS.cnvElapsedTime(s);
+    padseq: {
+      lbl: 'PAD_SEQ',
+      fn: function(ctx, s, x, a) {
+        return DebugJS.padSeq(s, a);
       }
     },
     maxlen: {
@@ -12071,25 +12082,6 @@ DebugJS.alignByTab = function(s, n) {
   }
   return r;
 };
-DebugJS.cnvElapsedTime = function(s) {
-  var a = DebugJS.txt2arr(s);
-  var r = '';
-  var t0 = null;
-  var t;
-  for (var i = 0; i < a.length; i++) {
-    var b = a[i];
-    if (DebugJS.isDateTimeStr(b)) {
-      var t1 = DebugJS.cnv2ms(b);
-      if (t0 == null) t0 = t1;
-      var d = t1 - t0;
-      t = '[T' + (d >= 0 ? '+' : '') + DebugJS.ms2str(d, 0) + ']';
-    } else {
-      t = DebugJS.repeatCh(' ', 16);
-    }
-    r += t + ' ' + b + '\n';
-  }
-  return r;
-};
 DebugJS.toUnique = function(s, opt) {
   var l = DebugJS.txt2arr(s);
   var o = DebugJS.cntByGrp(l);
@@ -12253,6 +12245,12 @@ DebugJS._sortCsv = function(a, b, n) {
   if (y == undefined) y = '';
   if (DebugJS.isNum(x) && DebugJS.isNum(y)) return x - y;
   return x.localeCompare(y);
+};
+DebugJS.padSeq = function(s, n) {
+  for (var i = (s.length + 1); i <= n; i++) {
+    s += (i % 10);
+  }
+  return s;
 };
 
 DebugJS.printUsage = function(m) {
