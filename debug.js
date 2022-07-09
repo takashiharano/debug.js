@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207091637';
+  this.v = '202207100018';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -235,8 +235,8 @@ var DebugJS = DebugJS || function() {
   this.txtEdtExecBtn = null;
   this.txtEdtMdSlct = null;
   this.txtEdtSrtSlct = null;
+  this.txtEdtOptLbl = null;
   this.txtEdtOpt = null;
-  this.txtEdtBlnkFlg = 0;
   this.swBtnPanel = null;
   this.swLabel = null;
   this.clearBtn = null;
@@ -6495,21 +6495,22 @@ DebugJS.prototype = {
     ctx.txtEdtMdSlct = DebugJS.ui.addElement(basePanel, 'select');
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
     DebugJS.setStyle(ctx.txtEdtMdSlct, 'width', '9em');
-    var o = '<option></option>';
+    var o = '';
     for (var k in ctx.editTxtFn) {
       o += '<option value="' + k + '">' + ctx.editTxtFn[k].lbl + '</option>';
     }
     ctx.txtEdtMdSlct.innerHTML = o;
+    ctx.txtEdtMdSlct.addEventListener('change', ctx.onTxtEdtMdChg);
 
     DebugJS.ui.addLabel(basePanel, 'SORT: ', {'margin-left': ctx.computedFontSize + 'px'});
     ctx.txtEdtSrtSlct = DebugJS.ui.addElement(basePanel, 'select');
     ctx.txtEdtSrtSlct.className = 'dbg-select dbg-nomove';
     ctx.txtEdtSrtSlct.innerHTML = '<option value="0"></option><option value="1">asc</option><option value="2">desc</option>';
 
-    DebugJS.ui.addLabel(basePanel, 'OPT:', {'margin-left': ctx.computedFontSize + 'px'});
+    ctx.txtEdtOptLbl = DebugJS.ui.addLabel(basePanel, 'OPT:', {'margin-left': ctx.computedFontSize + 'px'});
     ctx.txtEdtOpt = DebugJS.ui.addTextInput(basePanel, '45px', 'left', ctx.opt.fontColor, '', null);
 
-    var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
+    var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)', 'white-space': 'nowrap'};
     ctx.txtEdtEditor = DebugJS.ui.addElement(basePanel, 'textarea', style);
     ctx.txtEdtEditor.className = 'dbg-editor';
     ctx.txtEdtEditor.spellcheck = false;
@@ -6534,42 +6535,47 @@ DebugJS.prototype = {
   clearTxt: function() {
     DebugJS.ctx.txtEdtEditor.value = '';
   },
+  onTxtEdtMdChg: function() {
+    var ctx = DebugJS.ctx;
+    var v = ctx.txtEdtMdSlct.value;
+    var d = ctx.editTxtFn[v];
+    var slct = ctx.txtEdtSrtSlct;
+    if (d.srt) {
+      slct.disabled = false;
+    } else {
+      slct.disabled = true;
+      slct.value = '';
+    }
+    var s = (d.opt ? d.opt : 'OPT');
+    ctx.txtEdtOptLbl.innerText = s + ':';
+  },
   execTxtEdit: function() {
     var ctx = DebugJS.ctx;
+    var d = ctx.editTxtFn[ctx.txtEdtMdSlct.value];
+    var f = d.fn;
+    if (!f) return;
     var v = ctx.txtEdtEditor.value;
     var srt = ctx.txtEdtSrtSlct.value | 0;
     var o = ctx.txtEdtOpt.value;
-    var f = ctx.editTxtFn[ctx.txtEdtMdSlct.value].fn;
-    if (f) {
-      ctx.txtEdtEditor.value = f(ctx, v, srt, o);
-      ctx.onTxtEdtInput();
-    }
+    ctx.txtEdtEditor.value = f(ctx, v, srt, o);
+    ctx.onTxtEdtInput();
   },
   editTxtFn: {
+    nop: {lbl: ''},
     unique: {
       lbl: 'UNIQUE',
-      fn: function(ctx, s, srt) {
-        var opt = {
-          sort: srt,
-          count: 0,
-          blank: ctx.txtEdtBlnkFlg
-        };
-        return DebugJS.toUnique(s, opt).r;
-      }
-    },
-    uniquecnt: {
-      lbl: 'UNIQUE_CNT',
-      fn: function(ctx, s, srt) {
-        var opt = {
-          sort: srt,
-          count: 1,
-          blank: ctx.txtEdtBlnkFlg
-        };
+      srt: 1,
+      opt: 'CNT?',
+      fn: function(ctx, s, srt, o) {
+        var opt = {sort: srt, count: 0, blank: 0};
+        if (o) opt.count = 1;
         return DebugJS.toUnique(s, opt).r;
       }
     },
     sort: {
       lbl: 'SORT',
+      srt: 1,
+      opt: 'INDEX',
       fn: function(ctx, s, srt, n) {
         var d = (srt == 2 ? 1 : 0);
         return DebugJS.sort(s, d, n);
@@ -6577,90 +6583,65 @@ DebugJS.prototype = {
     },
     lflf2lf: {
       lbl: 'LFLF_TO_LF',
-      fn: function(ctx, s) {
-        return DebugJS.lflf2lf(s);
-      }
+      fn: function(ctx, s) {return DebugJS.lflf2lf(s);}
     },
     lf2lflf: {
       lbl: 'LF_TO_LFLF',
-      fn: function(ctx, s) {
-        return DebugJS.lf2lflf(s);
-      }
+      fn: function(ctx, s) {return DebugJS.lf2lflf(s);}
     },
     trimblank: {
       lbl: 'TRIM_BLANK',
-      fn: function(ctx, s) {
-        return DebugJS.trimBlank(s);
-      }
+      fn: function(ctx, s) {return DebugJS.trimBlank(s);}
     },
     tabalign: {
       lbl: 'TAB_ALIGN',
-      fn: function(ctx, s, srt, n) {
-        return DebugJS.alignByTab(s, n);
-      }
-    },
-    h2v: {
-      lbl: 'HORIZ_TO_VERT',
-      fn: function(ctx, s) {
-        return s.replace(/\t/g, '\n');
-      }
-    },
-    v2h: {
-      lbl: 'VERT_TO_HORIZ',
-      fn: function(ctx, s) {
-        return s.replace(/\n/g, '\t');
-      }
+      opt: 'N',
+      fn: function(ctx, s, x, n) {return DebugJS.alignByTab(s, n | 0);}
     },
     uc: {
       lbl: 'UPPERCASE',
-      fn: function(ctx, s) {
-        return s.toUpperCase();
-      }
+      fn: function(ctx, s) {return s.toUpperCase();}
     },
     lc: {
       lbl: 'lowercase',
-      fn: function(ctx, s) {
-        return s.toLowerCase();
-      }
+      fn: function(ctx, s) {return s.toLowerCase();}
     },
     tofull: {
       lbl: 'TO_FULL_WIDTH',
-      fn: function(ctx, s) {
-        return DebugJS.toFullWidth(s);
-      }
+      fn: function(ctx, s) {return DebugJS.toFullWidth(s);}
     },
     tohalf: {
       lbl: 'TO_HALF_WIDTH',
-      fn: function(ctx, s) {
-        return DebugJS.toHalfWidth(s);
-      }
-    },
-    datesep: {
-      lbl: 'DATE_SEP',
-      fn: function(ctx, s, srt, a) {
-        return DebugJS.dateSep(s, a);
-      }
+      fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}
     },
     padseq: {
       lbl: 'PAD_SEQ',
-      fn: function(ctx, s, x, a) {
-        return DebugJS.padSeq(s, a);
-      }
+      opt: 'LEN',
+      fn: function(ctx, s, x, n) {return DebugJS.padSeq(s, n | 0);}
+    },
+    datesep: {
+      lbl: 'DATE_SEP',
+      opt: 'SEP',
+      fn: function(ctx, s, x, a) {return DebugJS.dateSep(s, a);}
+    },
+    h2v: {
+      lbl: 'HORIZ_TO_VERT',
+      fn: function(ctx, s) {return s.replace(/\t/g, '\n');}
+    },
+    v2h: {
+      lbl: 'VERT_TO_HORIZ',
+      fn: function(ctx, s) {return s.replace(/\n/g, '\t');}
     },
     maxlen: {
       lbl: 'MAX_LEN',
-      fn: function(ctx, s) {
-        return ctx.minMaxLen(ctx, s, 1);
-      }
+      fn: function(ctx, s, x, n) {return ctx.minMaxLen(s, 1, n);}
     },
     minlen: {
       lbl: 'MIN_LEN',
-      fn: function(ctx, s, srt, n) {
-        return ctx.minMaxLen(ctx, s, 0, n);
-      }
+      fn: function(ctx, s, x, n) {return ctx.minMaxLen(s, 0, n);}
     }
   },
-  minMaxLen: function(ctx, s, f, n) {
+  minMaxLen: function(s, f, n) {
     var x = DebugJS.lenMinMax(s, f, n);
     var r = 'len=' + x.c + '\n';
     for (var i = 0; i < x.m.length; i++) {
@@ -12011,7 +11992,7 @@ DebugJS.arr2set = function(a, f) {
 
 DebugJS.dateSep = function(s, a) {
   if (!a) a = '/';
-  return s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3');
+  return s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3').replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1');
 };
 DebugJS.lflf2lf = function(s) {
   return DebugJS.trimBlank(s).replace(/\n\n/g, '\n');
@@ -12247,10 +12228,13 @@ DebugJS._sortCsv = function(a, b, n) {
   return x.localeCompare(y);
 };
 DebugJS.padSeq = function(s, n) {
+  var f = (DebugJS.isAscii(s) ? 0 : 1);
+  var p = '';
   for (var i = (s.length + 1); i <= n; i++) {
-    s += (i % 10);
+    p += (i % 10);
   }
-  return s;
+  if (f) p = DebugJS.toFullWidth(p);
+  return s + p;
 };
 
 DebugJS.printUsage = function(m) {
