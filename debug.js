@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207101451';
+  this.v = '202207101526';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5643,10 +5643,10 @@ DebugJS.prototype = {
     DebugJS.bat.set(ctt);
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_BAT);
   },
-  onDropOnTxt: function(e) {
-    DebugJS.ctx._onDropOnFeat(DebugJS.ctx, e, DebugJS.ctx.onTxtLoaded);
+  onDropOnTxtEdt: function(e) {
+    DebugJS.ctx._onDropOnFeat(DebugJS.ctx, e, DebugJS.ctx.onTxtEdtLoaded);
   },
-  onTxtLoaded: function(ctx, file, ctt) {
+  onTxtEdtLoaded: function(ctx, file, ctt) {
     ctx.txtEdtTxt.value = ctt;
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_TEXT);
   },
@@ -5898,15 +5898,12 @@ DebugJS.prototype = {
     DebugJS.file.onLoaded(file, dturl);
     ctx.setDataUrl(ctx, b64cnt.scheme, b64cnt.data);
     ctx.showB64Preview(ctx, file, b64cnt.scheme, b64cnt.data);
-    var cType = DebugJS.getContentType(null, file, b64cnt.data);
-    if (cType == 'text') {
-      var decoded = DebugJS.decodeB64(b64cnt.data);
-      if (ctx.fileVwrSysCb) {
-        ctx.fileVwrSysCb(ctx, file, decoded);
-      } else {
-        if (ctx.decMode == 'bsb64') {
-          ctx.decodeFileVwrData();
-        }
+    var decoded = DebugJS.decodeB64(b64cnt.data);
+    if (ctx.fileVwrSysCb) {
+      ctx.fileVwrSysCb(ctx, file, decoded);
+    } else {
+      if (ctx.decMode == 'bsb64') {
+        ctx.decodeFileVwrData();
       }
     }
   },
@@ -6519,7 +6516,7 @@ DebugJS.prototype = {
       ctx.txtEdtTxt.addEventListener(ev[i], ctx.onTxtEdtInput);
     }
     ctx.txtTxtSt = DebugJS.ui.addLabel(basePanel, '', {color: '#ccc'});
-    ctx.enableDnDFileLoad(ctx.txtEdtTxt, ctx.onDropOnTxt);
+    ctx.enableDnDFileLoad(ctx.txtEdtTxt, ctx.onDropOnTxtEdt);
     ctx.txtBasePanel = basePanel;
     ctx.onTxtEdtInput();
   },
