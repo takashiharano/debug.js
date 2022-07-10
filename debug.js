@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207102038';
+  this.v = '202207102050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6658,7 +6658,7 @@ DebugJS.prototype = {
     var u16 = DebugJS.getUnicodePoints(ch, true);
     var CTCH = {0: 'NUL', 9: 'TAB', 10: 'LF', 11: 'ESC', 32: 'SP', 127: 'DEL', 12288: 'emSP'};
     var co = '8cc';
-    if (u10 == undefined) {
+    if (isNaN(u10)) {
       ch = '[END]';
       u16 = 'U+----';
       co = '8aa';
