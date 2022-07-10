@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207101348';
+  this.v = '202207101451';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -229,7 +229,7 @@ var DebugJS = DebugJS || function() {
   this.batNestLv = null;
   this.txtBtn = null;
   this.txtBasePanel = null;
-  this.txtEdtEditor = null;
+  this.txtEdtTxt = null;
   this.txtTxtSt = null;
   this.txtClrBtn = null;
   this.txtEdtExecBtn = null;
@@ -5647,7 +5647,7 @@ DebugJS.prototype = {
     DebugJS.ctx._onDropOnFeat(DebugJS.ctx, e, DebugJS.ctx.onTxtLoaded);
   },
   onTxtLoaded: function(ctx, file, ctt) {
-    ctx.txtEdtEditor.value = ctt;
+    ctx.txtEdtTxt.value = ctt;
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_TEXT);
   },
   loadFile: function(file, fmt) {
@@ -6475,7 +6475,7 @@ DebugJS.prototype = {
     } else {
       ctx.toolsBodyPanel.appendChild(ctx.txtBasePanel);
     }
-    ctx.txtEdtEditor.focus();
+    ctx.txtEdtTxt.focus();
   },
   closeTxtEditor: function() {
     var ctx = DebugJS.ctx;
@@ -6511,15 +6511,15 @@ DebugJS.prototype = {
     ctx.txtEdtOpt = DebugJS.ui.addTextInput(basePanel, '45px', 'left', ctx.opt.fontColor, '', null);
 
     var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)', 'white-space': 'nowrap'};
-    ctx.txtEdtEditor = DebugJS.ui.addElement(basePanel, 'textarea', style);
-    ctx.txtEdtEditor.className = 'dbg-editor';
-    ctx.txtEdtEditor.spellcheck = false;
+    ctx.txtEdtTxt = DebugJS.ui.addElement(basePanel, 'textarea', style);
+    ctx.txtEdtTxt.className = 'dbg-editor';
+    ctx.txtEdtTxt.spellcheck = false;
     var ev = ['input', 'change', 'keydown', 'keyup', 'click'];
     for (var i = 0; i < ev.length; i++) {
-      ctx.txtEdtEditor.addEventListener(ev[i], ctx.onTxtEdtInput);
+      ctx.txtEdtTxt.addEventListener(ev[i], ctx.onTxtEdtInput);
     }
     ctx.txtTxtSt = DebugJS.ui.addLabel(basePanel, '', {color: '#ccc'});
-    ctx.enableDnDFileLoad(ctx.txtEdtEditor, ctx.onDropOnTxt);
+    ctx.enableDnDFileLoad(ctx.txtEdtTxt, ctx.onDropOnTxt);
     ctx.txtBasePanel = basePanel;
     ctx.onTxtEdtInput();
   },
@@ -6530,10 +6530,10 @@ DebugJS.prototype = {
     return b;
   },
   onTxtEdtInput: function() {
-    DebugJS.ctx.onTextInput(DebugJS.ctx.txtTxtSt, DebugJS.ctx.txtEdtEditor);
+    DebugJS.ctx.onTextInput(DebugJS.ctx.txtTxtSt, DebugJS.ctx.txtEdtTxt);
   },
   clearTxt: function() {
-    DebugJS.ctx.txtEdtEditor.value = '';
+    DebugJS.ctx.txtEdtTxt.value = '';
   },
   onTxtEdtMdChg: function() {
     var ctx = DebugJS.ctx;
@@ -6552,20 +6552,17 @@ DebugJS.prototype = {
   execTxtEdit: function() {
     var ctx = DebugJS.ctx;
     var d = ctx.editTxtFn[ctx.txtEdtMdSlct.value];
-    var f = d.fn;
-    if (!f) return;
-    var v = ctx.txtEdtEditor.value;
+    if (!d.fn) return;
+    var v = ctx.txtEdtTxt.value;
     var srt = ctx.txtEdtSrtSlct.value | 0;
     var o = ctx.txtEdtOpt.value;
-    ctx.txtEdtEditor.value = f(ctx, v, srt, o);
+    ctx.txtEdtTxt.value = d.fn(ctx, v, srt, o);
     ctx.onTxtEdtInput();
   },
   editTxtFn: {
     nop: {lbl: ''},
     unique: {
-      lbl: 'UNIQUE',
-      srt: 1,
-      opt: 'CNT?',
+      lbl: 'UNIQUE', srt: 1, opt: 'CNT?',
       fn: function(ctx, s, srt, o) {
         var opt = {sort: srt, count: 0, blank: 0};
         if (o) opt.count = 1;
@@ -6573,9 +6570,7 @@ DebugJS.prototype = {
       }
     },
     sort: {
-      lbl: 'SORT',
-      srt: 1,
-      opt: 'INDEX',
+      lbl: 'SORT', srt: 1, opt: 'INDEX',
       fn: function(ctx, s, srt, n) {
         var d = (srt == 2 ? 1 : 0);
         return DebugJS.sort(s, d, n);
@@ -14816,7 +14811,7 @@ DebugJS.copyContent = function() {
   var ctx = DebugJS.ctx;
   if (ctx.status & DebugJS.ST_TOOLS) {
     if (ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TEXT) {
-      DebugJS.copy(ctx.txtEdtEditor.value);
+      DebugJS.copy(ctx.txtEdtTxt.value);
     } else if (ctx.toolsActvFnc & DebugJS.TOOLS_FNC_FILE) {
       DebugJS.copy(ctx.fileVwrCtt);
     }
@@ -15707,12 +15702,10 @@ DebugJS.bat._stop = function(st) {
   bat.setRunningSt(false);
   ctx.status &= ~DebugJS.ST_BAT_PAUSE;
   ctx.updateBatRunBtn();
-  delete ctx.CMDVALS['%%ARG%%'];
-  delete ctx.CMDVALS['%ARG%'];
-  delete ctx.CMDVALS['%RET%'];
-  delete ctx.CMDVALS['%LABEL%'];
-  delete ctx.CMDVALS['%FUNCNAME%'];
-  delete ctx.CMDVALS['%TEXT%'];
+  var NM = ['%ARG%', 'ARG', 'RET', 'LABEL', 'FUNCNAME', 'TEXT'];
+  for (var i = 0; i < NM.length; i++) {
+    delete ctx.CMDVALS['%' + NM[i] + '%'];
+  }
   bat.setExitStatus(st);
   DebugJS.callEvtListeners('batstop', ctx.CMDVALS['?']);
 };
