@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207100018';
+  this.v = '202207101348';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11992,7 +11992,7 @@ DebugJS.arr2set = function(a, f) {
 
 DebugJS.dateSep = function(s, a) {
   if (!a) a = '/';
-  return s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3').replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1');
+  return s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3').replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1').replace(/[^\d\n\s]/g, a);
 };
 DebugJS.lflf2lf = function(s) {
   return DebugJS.trimBlank(s).replace(/\n\n/g, '\n');
