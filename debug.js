@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207101526';
+  this.v = '202207102016';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6507,7 +6507,7 @@ DebugJS.prototype = {
     ctx.txtEdtOptLbl = DebugJS.ui.addLabel(basePanel, 'OPT:', {'margin-left': ctx.computedFontSize + 'px'});
     ctx.txtEdtOpt = DebugJS.ui.addTextInput(basePanel, '45px', 'left', ctx.opt.fontColor, '', null);
 
-    var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)', 'white-space': 'nowrap'};
+    var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
     ctx.txtEdtTxt = DebugJS.ui.addElement(basePanel, 'textarea', style);
     ctx.txtEdtTxt.className = 'dbg-editor';
     ctx.txtEdtTxt.spellcheck = false;
@@ -6649,33 +6649,40 @@ DebugJS.prototype = {
     var lenB = DebugJS.lenB(txt);
     var lfCnt = DebugJS.countLineBreak(txt);
     var lenWoLf = len - lfCnt;
-    var ln = (len == 0 ? 0 : lfCnt + 1);
+    var tl = (len == 0 ? 0 : lfCnt + 1);
     var st = edt.selectionStart;
     var ed = edt.selectionEnd;
     var sl = ed - st;
     var ch = DebugJS.str2arr(txt)[st] || '';
     var u10 = DebugJS.getCodePoint(ch);
     var u16 = DebugJS.getUnicodePoints(ch, true);
-    var CTCH = {9: 'TAB', 10: 'LF', 11: 'ESC', 32: 'SP', '12288': 'emSP'};
+    var CTCH = {0: 'NUL', 9: 'TAB', 10: 'LF', 11: 'ESC', 32: 'SP', 127: 'DEL', 12288: 'emSP'};
     var co = '8cc';
-    if (u10) {
+    if (u10 != undefined) {
       if (CTCH[u10]) {
         ch = CTCH[u10];
-        co = 'c88';
+        co = '8aa';
       }
     } else {
-      ch = '&nbsp;';
+      ch = '[END]';
       u16 = 'U+----';
+      co = '8aa';
     }
     var cp = '<span style="color:#' + co + '">' + ch + '</span>&nbsp;' + u16 + (u10 ? '(' + u10 + ')' : '');
     var t = txt.substr(0, st);
     var l = (t.match(/\n/g) || []).length + 1;
     var c = t.replace(/.*\n/g, '').length + 1;
-    var cl = DebugJS.clipTextLine(txt, st).length;
+    var tc = DebugJS.clipTextLine(txt, st).length;
     var slT = txt.substring(st, ed);
     var slL = DebugJS.countLineBreak(slT) + 1;
     var slct = (sl ? ' SEL:' + ('LEN=' + sl + '/L=' + slL) : '');
-    txtSt.innerHTML = l + ':' + c + ' ' + cp + ' LEN=' + len + ' (w/o LF=' + lenWoLf + ') ' + lenB + ' bytes L=' + ln + ' C=' + cl + slct;
+    var s = cp;
+    s += ' ' + l + ':' + c + ' ';
+    s += ' C=' + tc + ' L=' + tl;
+    s += ' LEN=' + len;
+    s += ' (w/o LF=' + lenWoLf + ')';
+    s += ' bytes=' + lenB;
+    txtSt.innerHTML = s + slct;
   },
 
   toggleExtPanel: function() {
