@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207102016';
+  this.v = '202207102038';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6658,14 +6658,12 @@ DebugJS.prototype = {
     var u16 = DebugJS.getUnicodePoints(ch, true);
     var CTCH = {0: 'NUL', 9: 'TAB', 10: 'LF', 11: 'ESC', 32: 'SP', 127: 'DEL', 12288: 'emSP'};
     var co = '8cc';
-    if (u10 != undefined) {
-      if (CTCH[u10]) {
-        ch = CTCH[u10];
-        co = '8aa';
-      }
-    } else {
+    if (u10 == undefined) {
       ch = '[END]';
       u16 = 'U+----';
+      co = '8aa';
+    } else if (CTCH[u10]) {
+      ch = CTCH[u10];
       co = '8aa';
     }
     var cp = '<span style="color:#' + co + '">' + ch + '</span>&nbsp;' + u16 + (u10 ? '(' + u10 + ')' : '');
