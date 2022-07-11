@@ -5987,6 +5987,27 @@ $ xlsdate 2022/03/13
   </tr>
 
   <tr>
+    <td class="name">xlstime</td>
+    <td>time|hh:mm:ss.000</td>
+    <td>
+      Serial number &lt;--&gt; Time text<br><br>
+<pre class="eg">
+$ xlstime 0.5
+-&gt; 12:00:00.000
+
+$ xlstime 12:00
+-&gt; 0.5
+
+$ xlstime 0.05816756944444444
+-&gt; 01:23:45.678
+
+$ xlstime 01:23:45.678
+-&gt; 0.05816756944444444
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">zoom</td>
     <td>ratio</td>
     <td>

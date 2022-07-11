@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207102050';
+  this.v = '202207120057';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -411,7 +411,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
     {cmd: 'xlscol', fn: this.cmdXlsCol, desc: 'Excel column number <--> reference', help: 'xlscol COL [+|-|:] [COL]'},
-    {cmd: 'xlsdate', fn: this.cmdXlsDate, desc: 'Serial number <--> Date text', help: 'xlsdate NUMBER|YYYY/MM/DD'},
+    {cmd: 'xlsdate', fn: this.cmdXlsDate, desc: 'Serial number <--> Date', help: 'xlsdate NUM|YYYY/MM/DD'},
+    {cmd: 'xlstime', fn: this.cmdXlsTime, desc: 'Serial number <--> Time', help: 'xlstime NUM|hh:mm:ss.000'},
     {cmd: 'zoom', fn: this.cmdZoom, desc: 'Zoom the debugger window', help: 'zoom ratio', attr: DebugJS.CMD_ATTR_DYNAMIC},
     {cmd: 'call', fn: this.cmdCall, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
     {cmd: 'goto', fn: this.cmdGoto, attr: DebugJS.CMD_ATTR_SYSTEM | DebugJS.CMD_ATTR_HIDDEN},
@@ -10073,35 +10074,23 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);return;
     }
     if (DebugJS.isNum(arg)) {
-      var r = DebugJS.ctx._xlsDate1(parseInt(arg));
+      var r = DebugJS.xlsDate1(parseInt(arg));
     } else {
-      r = DebugJS.ctx._xlsDate2(arg);
-    }
-    return r;
-  },
-  _xlsDate1: function(v) {
-    var o = (v < 60 ? 1 : 2);
-    var d = v - o;
-    if (v < 0) {
-      var r = '######';
-    } else if (v == 0) {
-      r = '1900/01/00';
-    } else if (v == 60) {
-      r = '1900/02/29';
-    } else {
-      r = DebugJS.ctx.cmdDateCalc('1900/01/01+' + d);
+      r = DebugJS.xlsDate2(arg);
     }
     DebugJS._log.res(r);
     return r;
   },
-  _xlsDate2: function(v) {
-    var d = DebugJS.serializeDateTime(v).substr(0, 8);
-    var r = DebugJS.ctx.cmdDateDiff('1900/01/01 ' + v) + 1;
-    if (r >= 60) r++;
-    if (d == '19000100') {
-      r = 0;
-    } else if (d == '19000229') {
-      r = 60;
+
+  cmdXlsTime: function(arg, tbl) {
+    arg = arg.trim();
+    if (!arg) {
+      DebugJS.printUsage(tbl.help);return;
+    }
+    if (isNaN(arg)) {
+      var r = DebugJS.clock2ms(arg) / 86400000;
+    } else {
+      r = DebugJS.ms2str(86400000 * parseFloat(arg));
     }
     DebugJS._log.res(r);
     return r;
@@ -17780,6 +17769,32 @@ DebugJS.xlsColN2A = function(n) {
   var a = DebugJS.strp(DebugJS.A2Z, n);
   if (n <= 0) a = '';
   return a;
+};
+
+DebugJS.xlsDate1 = function(v) {
+  var o = (v < 60 ? 1 : 2);
+  var d = v - o;
+  if (v < 0) {
+    var r = '######';
+  } else if (v == 0) {
+    r = '1900/01/00';
+  } else if (v == 60) {
+    r = '1900/02/29';
+  } else {
+    r = DebugJS.ctx.cmdDateCalc('1900/01/01+' + d);
+  }
+  return r;
+};
+DebugJS.xlsDate2 = function(v) {
+  var d = DebugJS.serializeDateTime(v).substr(0, 8);
+  var r = DebugJS.ctx.cmdDateDiff('1900/01/01 ' + v) + 1;
+  if (r >= 60) r++;
+  if (d == '19000100') {
+    r = 0;
+  } else if (d == '19000229') {
+    r = 60;
+  }
+  return r;
 };
 
 DebugJS.strp = function(tbl, idx) {
