@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207120057';
+  this.v = '202207122331';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10073,10 +10073,10 @@ DebugJS.prototype = {
     if (!arg) {
       DebugJS.printUsage(tbl.help);return;
     }
-    if (DebugJS.isNum(arg)) {
-      var r = DebugJS.xlsDate1(parseInt(arg));
+    if (isNaN(arg)) {
+      var r = DebugJS.xlsDateA2N(arg);
     } else {
-      r = DebugJS.xlsDate2(arg);
+      r = DebugJS.xlsDateN2A(arg);
     }
     DebugJS._log.res(r);
     return r;
@@ -10088,9 +10088,9 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);return;
     }
     if (isNaN(arg)) {
-      var r = DebugJS.clock2ms(arg) / 86400000;
+      var r = DebugJS.xlsTimeA2N(arg);
     } else {
-      r = DebugJS.ms2str(86400000 * parseFloat(arg));
+      r = DebugJS.xlsTimeN2A(arg);
     }
     DebugJS._log.res(r);
     return r;
@@ -10868,6 +10868,9 @@ DebugJS._serializeDateTime = function(s) {
 };
 DebugJS.getClockVal = function() {
   return DebugJS.getDateTime(Date.now() + (+DebugJS.ctx.props.clockoffset));
+};
+DebugJS.serializedN2clock = function(s) {
+  return s.substr(0, 2) + ':' + s.substr(2, 2) + ':' + s.substr(4, 2) + '.' + s.substr(6, 3);
 };
 DebugJS.getDateWithTimestamp = function(val, iso) {
   var o = DebugJS.getDateTimeAndTimestamp(val, iso);
@@ -17770,8 +17773,27 @@ DebugJS.xlsColN2A = function(n) {
   if (n <= 0) a = '';
   return a;
 };
-
-DebugJS.xlsDate1 = function(v) {
+DebugJS.xlsDateA2N = function(v) {
+  v = DebugJS.serializeDateTime(v);
+  var d = v.substr(0, 8);
+  var t = v.substr(8);
+  var r = DebugJS.diffDate('1900/01/01 ', d) + 1;
+  if (r >= 60) r++;
+  if (d == '19000100') {
+    r = 0;
+  } else if (d == '19000229') {
+    r = 60;
+  }
+  if (t | 0 > 0) {
+    t = DebugJS.serializedN2clock(t);
+    r += DebugJS.xlsTimeA2N(t);
+  }
+  return r;
+};
+DebugJS.xlsDateN2A = function(v) {
+  var w = v.split('.');
+  v = w[0] | 0;
+  var t = (w[1] == undefined ? 0 : parseFloat('0.' + w[1]));
   var o = (v < 60 ? 1 : 2);
   var d = v - o;
   if (v < 0) {
@@ -17783,18 +17805,14 @@ DebugJS.xlsDate1 = function(v) {
   } else {
     r = DebugJS.ctx.cmdDateCalc('1900/01/01+' + d);
   }
+  if (t > 0) r += ' ' + DebugJS.xlsTimeN2A(t);
   return r;
 };
-DebugJS.xlsDate2 = function(v) {
-  var d = DebugJS.serializeDateTime(v).substr(0, 8);
-  var r = DebugJS.ctx.cmdDateDiff('1900/01/01 ' + v) + 1;
-  if (r >= 60) r++;
-  if (d == '19000100') {
-    r = 0;
-  } else if (d == '19000229') {
-    r = 60;
-  }
-  return r;
+DebugJS.xlsTimeA2N = function(v) {
+  return DebugJS.clock2ms(v) / 86400000;
+};
+DebugJS.xlsTimeN2A = function(v) {
+  return DebugJS.ms2str(86400000 * parseFloat(v));
 };
 
 DebugJS.strp = function(tbl, idx) {
