@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207122331';
+  this.v = '202207130007';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7568,11 +7568,10 @@ DebugJS.prototype = {
   },
   cmdDateCalc: function(arg, echo) {
     var ret = null;
-    arg = arg.trim();
+    arg = DebugJS.delAllSP(arg);
     if (!DebugJS.isBasicDateFormat(arg, true) && !DebugJS.isDateFormat(arg, true) && !DebugJS.startsWith(arg, 'today')) {
       return ret;
     }
-    arg = DebugJS.delAllSP(arg);
     var sp = arg.charAt(4);
     if ((sp != '-') && (sp != '/')) sp = '-';
     arg = arg.replace(/(\d{4})-(\d{1,})-(\d{1,})/g, '$1/$2/$3');
@@ -7584,7 +7583,7 @@ DebugJS.prototype = {
     }
     var v = arg.split(op);
     if (v.length < 2) return ret;
-    var d1 = DebugJS.ctx._cmdFmtDate(v[0]);
+    var d1 = DebugJS._cmdFmtDate(v[0]);
     if (!DebugJS.isDateFormat(d1)) return ret;
     var d2 = v[1];
     var t1 = DebugJS.getDateTime(d1).time;
@@ -7601,22 +7600,14 @@ DebugJS.prototype = {
     var ret = NaN;
     var a = DebugJS.splitArgs(arg);
     if (a.length < 2) return ret;
-    var d1 = DebugJS.ctx._cmdFmtDate(a[0]);
-    var d2 = DebugJS.ctx._cmdFmtDate(a[1]);
+    var d1 = DebugJS._cmdFmtDate(a[0]);
+    var d2 = DebugJS._cmdFmtDate(a[1]);
     if (!DebugJS.isDateFormat(d1) || !DebugJS.isDateFormat(d2)) return ret;
     d1 = d1.replace(/-/g, '/');
     d2 = d2.replace(/-/g, '/');
     ret = DebugJS.diffDate(d1, d2);
     if (echo && !isNaN(ret)) DebugJS._log.res(ret);
     return ret;
-  },
-  _cmdFmtDate: function(d) {
-    if ((d.length == 8) && !isNaN(d)) {
-      d = DebugJS.num2date(d);
-    } else if (d == 'today') {
-      d = DebugJS.today('/');
-    }
-    return d;
   },
 
   cmdFmtNum: function(c) {
@@ -10073,11 +10064,8 @@ DebugJS.prototype = {
     if (!arg) {
       DebugJS.printUsage(tbl.help);return;
     }
-    if (isNaN(arg)) {
-      var r = DebugJS.xlsDateA2N(arg);
-    } else {
-      r = DebugJS.xlsDateN2A(arg);
-    }
+    var f = (isNaN(arg) ? DebugJS.xlsDateA2N : DebugJS.xlsDateN2A);
+    var r = f(arg);
     DebugJS._log.res(r);
     return r;
   },
@@ -10087,11 +10075,8 @@ DebugJS.prototype = {
     if (!arg) {
       DebugJS.printUsage(tbl.help);return;
     }
-    if (isNaN(arg)) {
-      var r = DebugJS.xlsTimeA2N(arg);
-    } else {
-      r = DebugJS.xlsTimeN2A(arg);
-    }
+    var f = (isNaN(arg) ? DebugJS.xlsTimeA2N : DebugJS.xlsTimeN2A);
+    var r = f(arg);
     DebugJS._log.res(r);
     return r;
   },
@@ -11037,6 +11022,15 @@ DebugJS.num2date = function(s) {
 DebugJS.today = function(s) {
   return DebugJS.getDateStr(DebugJS.getDateTime(), (s === undefined ? '-' : s));
 };
+DebugJS._cmdFmtDate = function(d) {
+  if ((d.length == 8) && !isNaN(d)) {
+    d = DebugJS.num2date(d);
+  } else if (d == 'today') {
+    d = DebugJS.today('/');
+  }
+  return d;
+};
+
 DebugJS.getDateTimeStr = function(t, w, iso, tz) {
   var d = DebugJS.getDateTime(t);
   var s;
