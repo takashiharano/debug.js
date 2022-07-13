@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207130007';
+  this.v = '202207132238';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11358,7 +11358,7 @@ DebugJS.parseToMillis = function(v) {
   if (a.length > 1) {
     s = a[0];
   }
-  return (d * 86400000 + h * 3600000 + m * 60000 + s * 1000) | 0;
+  return +(d * 86400000 + h * 3600000 + m * 60000 + s * 1000);
 };
 
 DebugJS.nan2zero = function(v) {
@@ -12946,38 +12946,37 @@ DebugJS.clock2ms = function(t) {
   var s = '0';
   var times = t.split(':');
   if (times.length == 3) {
-    hour = times[0] | 0;
-    min = times[1] | 0;
+    hour = +times[0];
+    min = +times[1];
     s = times[2];
   } else if (times.length == 2) {
-    hour = times[0] | 0;
-    min = times[1] | 0;
+    hour = +times[0];
+    min = +times[1];
   } else {
     return NaN;
   }
   var ss = s.split('.');
-  sec = ss[0] | 0;
+  sec = +ss[0];
   if (ss.length >= 2) {
-    msec = (ss[1] + '00').substr(0, 3) | 0;
+    msec = +(ss[1] + '00').substr(0, 3);
   }
-  var time = (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
-  return time;
+  return (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
 };
 DebugJS.str2ms = function(t) {
   var d = 0, h = 0, m = 0, s = 0, ms = 0;
   var i = t.indexOf('d');
   if (i > 0) {
-    d = t.substr(0, i) | 0;
+    d = +t.substr(0, i);
     t = t.substr(i + 1);
   }
   i = t.indexOf('h');
   if (i > 0) {
-    h = t.substr(0, i) | 0;
+    h = +t.substr(0, i);
     t = t.substr(i + 1);
   }
   i = t.indexOf('m');
   if (i > 0) {
-    m = t.substr(0, i) | 0;
+    m = +t.substr(0, i);
     t = t.substr(i + 1);
   }
   i = t.indexOf('s');
@@ -12990,10 +12989,10 @@ DebugJS.str2ms = function(t) {
       ms = t.substr(i + 1, t.length - i - 2);
       ms = ms + DebugJS.repeatCh('0', 3 - ms.length);
     }
-    s = s | 0;
+    s = +s;
   }
   if ((ms == 0) && (!isNaN(t))) ms = t;
-  ms = ms | 0;
+  ms = +ms;
   return d * 86400000 + h * 3600000 + m * 60000 + s * 1000 + ms;
 };
 DebugJS.isTmStr = function(s) {
