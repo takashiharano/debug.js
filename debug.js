@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207132238';
+  this.v = '202207140008';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6649,7 +6649,7 @@ DebugJS.prototype = {
     var len = txt.length;
     var lenB = DebugJS.lenB(txt);
     var lfCnt = DebugJS.countLineBreak(txt);
-    var lenWoLf = len - lfCnt;
+    var chrs = len - lfCnt;
     var tl = (len == 0 ? 0 : lfCnt + 1);
     var st = edt.selectionStart;
     var ed = edt.selectionEnd;
@@ -6678,8 +6678,8 @@ DebugJS.prototype = {
     var s = cp;
     s += ' ' + l + ':' + c + ' ';
     s += ' C=' + tc + ' L=' + tl;
+    s += ' CHARS=' + chrs;
     s += ' LEN=' + len;
-    s += ' (w/o LF=' + lenWoLf + ')';
     s += ' bytes=' + lenB;
     txtSt.innerHTML = s + slct;
   },
