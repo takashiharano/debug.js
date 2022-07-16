@@ -5404,29 +5404,29 @@ $ rgb 255 255 255
 
   <tr>
     <td class="name">rot</td>
-    <td>5|13|47<br>string</td>
+    <td>5|13|18|47<br>N<br>string</td>
     <td>
-      Encrypt/Decrypt string by ROT5, ROT13, ROT47.<br><br>
+      Replaces a letter with ROT5, ROT13, ROT18(ROT13.5), ROT47.<br><br>
 <pre class="eg">
-operation: -e encode<span class="annotation">(default option)</span>
-           -d decode
+-n Number of shift<span class="annotation">(opt)</span>
 
--i Iput string
--n Number of shift
+$ rot 5 123
+-&gt; 678
 
-$ rot 13 -e -i "abc"
+$ rot 13 abc
 -&gt; nop
 
-$ rot 13 -e -n 1 -i "abc"
+$ rot 18 123ABCabc
+-&gt; 678NOPnop
+
+$ rot 47 !"#123@ABC_abc~
+-&gt; PQR`abopqr0234O
+
+$ rot 13 -n 1 abc
 -&gt; bcd
 
-$ rot 13 -e -n (-1) -i "abc"
+$ rot 13 -n (-1) abc
 -&gt; zab
-
-$ rot 13 -d -i "nop"
-$ rot 13 -d -n 1 -i "bcd"
-$ rot 13 -d -n (-1) -i "zab"
--&gt; abc
 </pre>
     </td>
   </tr>

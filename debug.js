@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207170018';
+  this.v = '202207170123';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -385,7 +385,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-tbl "ABC..."]'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', help: 'rot 5|13|47 -e|-d -i "STR" [-n N]'},
+    {cmd: 'rot', fn: this.cmdROT, desc: 'Replaces a letter with ROTx', help: 'rot 5|13|18|47 [-n N] STR'},
     {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', help: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
     {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', help: 'select selectors get|set text|texts|value|values val'},
     {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', help: 'set property-name value'},
@@ -6629,7 +6629,7 @@ DebugJS.prototype = {
     },
     rot18: {
       lbl: 'ROT18', opt: 'SHIFT',
-      fn: function(ctx, s, x, n) {return DebugJS.rot(5, DebugJS.rot(13, s, n), n);}
+      fn: function(ctx, s, x, n) {return DebugJS.rot(18, s, n);}
     },
     rot47: {
       lbl: 'ROT47', opt: 'SHIFT',
@@ -9121,36 +9121,20 @@ DebugJS.prototype = {
   cmdROT: function(arg, tbl, echo) {
     var x = DebugJS.splitArgs(arg)[0];
     var a = DebugJS.getArgsFrom(arg, 1);
-    var fnE, fnD;
-    switch (x) {
-      case '5':
-        fnE = DebugJS.rot5;
-        fnD = DebugJS.revROT5;
-        break;
-      case '13':
-        fnE = DebugJS.rot13;
-        fnD = DebugJS.revROT13;
-        break;
-      case '47':
-        fnE = DebugJS.rot47;
-        fnD = DebugJS.revROT47;
-        break;
-      default:
-        DebugJS.printUsage(tbl.help);
-        return;
-    }
-    var iIdx = 0;
-    if (DebugJS.hasOpt(a, 'd') || DebugJS.hasOpt(a, 'e')) {
-      iIdx++;
+    var f = DebugJS['rot' + x];
+    if (!f) {
+      DebugJS.printUsage(tbl.help);return;
     }
     var n = DebugJS.getOptVal(a, 'n');
     if (n == null) {
-      n = x | 0;
+      var s = a;
     } else {
-      n = n.replace(/\(|\)/g, '') | 0;
-      iIdx += 2;
+      n = +n.replace(/[()]/g, '');
+      s = DebugJS.getArgsFrom(a, 2);
     }
-    return DebugJS.ctx.execEncAndDec(a, tbl, echo, true, fnE, fnD, iIdx, n);
+    var r = f(s, n);
+    if (echo) DebugJS._log.res(r);
+    return r;
   },
 
   cmdScrollTo: function(arg, tbl) {
@@ -12752,11 +12736,11 @@ DebugJS.BSB64.decode = function(s, n) {
 };
 
 DebugJS.rot = function(x, s, n) {
-  n = (n == '' ? undefined : n | 0);
+  n = (n == '' ? null : n | 0);
   return DebugJS['rot' + x](s, n);
 };
 DebugJS.rot5 = function(s, n) {
-  if (n == undefined) n = 5;
+  if (n == null) n = 5;
   if ((n < -9) || (n > 9)) n = n % 10;
   var r = '';
   for (var i = 0; i < s.length; i++) {
@@ -12774,11 +12758,8 @@ DebugJS.rot5 = function(s, n) {
   }
   return r;
 };
-DebugJS.revROT5 = function(s, n) {
-  return DebugJS.rot5(s, ((n | 0) * (-1)));
-};
 DebugJS.rot13 = function(s, n) {
-  if (n == undefined) n = 13;
+  if (n == null) n = 13;
   if ((n < -25) || (n > 25)) n = n % 26;
   var r = '';
   for (var i = 0; i < s.length; i++) {
@@ -12804,11 +12785,11 @@ DebugJS.rot13 = function(s, n) {
   }
   return r;
 };
-DebugJS.revROT13 = function(s, n) {
-  return DebugJS.rot13(s, ((n | 0) * (-1)));
+DebugJS.rot18 = function(s, n) {
+  return DebugJS.rot5(DebugJS.rot13(s, n), n);
 };
 DebugJS.rot47 = function(s, n) {
-  if (n == undefined) n = 47;
+  if (n == null) n = 47;
   if ((n < -93) || (n > 93)) n = n % 94;
   var r = '';
   for (var i = 0; i < s.length; i++) {
@@ -12824,9 +12805,6 @@ DebugJS.rot47 = function(s, n) {
     r += String.fromCharCode(cc);
   }
   return r;
-};
-DebugJS.revROT47 = function(s, n) {
-  return DebugJS.rot47(s, ((n | 0) * (-1)));
 };
 
 DebugJS.buildDataUrl = function(scheme, data) {
