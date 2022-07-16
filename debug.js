@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207140008';
+  this.v = '202207170018';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -340,7 +340,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
-    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n &lt;n&gt] STR'},
+    {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n N] STR'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|dom|js|tool|ext]'},
@@ -385,7 +385,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-tbl "ABC..."]'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
-    {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', help: 'rot 5|13|47 -e|-d -i "&lt;str&gt;" [-n &lt;n&gt]'},
+    {cmd: 'rot', fn: this.cmdROT, desc: 'Encodes/Decodes ROTx', help: 'rot 5|13|47 -e|-d -i "STR" [-n N]'},
     {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', help: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
     {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', help: 'select selectors get|set text|texts|value|values val'},
     {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', help: 'set property-name value'},
@@ -6608,13 +6608,11 @@ DebugJS.prototype = {
       fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}
     },
     padseq: {
-      lbl: 'PAD_SEQ',
-      opt: 'LEN',
+      lbl: 'PAD_SEQ', opt: 'LEN',
       fn: function(ctx, s, x, n) {return DebugJS.padSeq(s, n | 0);}
     },
     datesep: {
-      lbl: 'DATE_SEP',
-      opt: 'SEP',
+      lbl: 'DATE_SEP', opt: 'SEP',
       fn: function(ctx, s, x, a) {return DebugJS.dateSep(s, a);}
     },
     h2v: {
@@ -6629,9 +6627,13 @@ DebugJS.prototype = {
       lbl: 'MAX_LEN',
       fn: function(ctx, s, x, n) {return ctx.minMaxLen(s, 1, n);}
     },
-    minlen: {
-      lbl: 'MIN_LEN',
-      fn: function(ctx, s, x, n) {return ctx.minMaxLen(s, 0, n);}
+    rot18: {
+      lbl: 'ROT18', opt: 'SHIFT',
+      fn: function(ctx, s, x, n) {return DebugJS.rot(5, DebugJS.rot(13, s, n), n);}
+    },
+    rot47: {
+      lbl: 'ROT47', opt: 'SHIFT',
+      fn: function(ctx, s, x, n) {return DebugJS.rot(47, s, n);}
     }
   },
   minMaxLen: function(s, f, n) {
@@ -9122,16 +9124,16 @@ DebugJS.prototype = {
     var fnE, fnD;
     switch (x) {
       case '5':
-        fnE = DebugJS.encodeROT5;
-        fnD = DebugJS.decodeROT5;
+        fnE = DebugJS.rot5;
+        fnD = DebugJS.revROT5;
         break;
       case '13':
-        fnE = DebugJS.encodeROT13;
-        fnD = DebugJS.decodeROT13;
+        fnE = DebugJS.rot13;
+        fnD = DebugJS.revROT13;
         break;
       case '47':
-        fnE = DebugJS.encodeROT47;
-        fnD = DebugJS.decodeROT47;
+        fnE = DebugJS.rot47;
+        fnD = DebugJS.revROT47;
         break;
       default:
         DebugJS.printUsage(tbl.help);
@@ -12749,7 +12751,12 @@ DebugJS.BSB64.decode = function(s, n) {
   return a;
 };
 
-DebugJS.encodeROT5 = function(s, n) {
+DebugJS.rot = function(x, s, n) {
+  n = (n == '' ? undefined : n | 0);
+  return DebugJS['rot' + x](s, n);
+};
+DebugJS.rot5 = function(s, n) {
+  if (n == undefined) n = 5;
   if ((n < -9) || (n > 9)) n = n % 10;
   var r = '';
   for (var i = 0; i < s.length; i++) {
@@ -12762,17 +12769,16 @@ DebugJS.encodeROT5 = function(s, n) {
       } else if (cc < 0x30) {
         cc = 0x3A - (0x30 - cc);
       }
-      r += String.fromCharCode(cc);
-    } else {
-      r += c;
     }
+    r += String.fromCharCode(cc);
   }
   return r;
 };
-DebugJS.decodeROT5 = function(s, n) {
-  return DebugJS.encodeROT5(s, ((n | 0) * (-1)));
+DebugJS.revROT5 = function(s, n) {
+  return DebugJS.rot5(s, ((n | 0) * (-1)));
 };
-DebugJS.encodeROT13 = function(s, n) {
+DebugJS.rot13 = function(s, n) {
+  if (n == undefined) n = 13;
   if ((n < -25) || (n > 25)) n = n % 26;
   var r = '';
   for (var i = 0; i < s.length; i++) {
@@ -12793,22 +12799,20 @@ DebugJS.encodeROT13 = function(s, n) {
           cc = 0x7B - (0x61 - cc);
         }
       }
-      r += String.fromCharCode(cc);
-    } else {
-      r += c;
     }
+    r += String.fromCharCode(cc);
   }
   return r;
 };
-DebugJS.decodeROT13 = function(s, n) {
-  return DebugJS.encodeROT13(s, ((n | 0) * (-1)));
+DebugJS.revROT13 = function(s, n) {
+  return DebugJS.rot13(s, ((n | 0) * (-1)));
 };
-DebugJS.encodeROT47 = function(s, n) {
+DebugJS.rot47 = function(s, n) {
+  if (n == undefined) n = 47;
   if ((n < -93) || (n > 93)) n = n % 94;
   var r = '';
   for (var i = 0; i < s.length; i++) {
-    var c = s.charAt(i);
-    var cc = c.charCodeAt(0);
+    var cc = s.charCodeAt(i);
     if ((cc >= 0x21) && (cc <= 0x7E)) {
       if (n < 0) {
         cc += n;
@@ -12816,15 +12820,13 @@ DebugJS.encodeROT47 = function(s, n) {
       } else {
         cc = ((cc - 0x21 + n) % 94) + 0x21;
       }
-      r += String.fromCharCode(cc);
-    } else {
-      r += c;
     }
+    r += String.fromCharCode(cc);
   }
   return r;
 };
-DebugJS.decodeROT47 = function(s, n) {
-  return DebugJS.encodeROT47(s, ((n | 0) * (-1)));
+DebugJS.revROT47 = function(s, n) {
+  return DebugJS.rot47(s, ((n | 0) * (-1)));
 };
 
 DebugJS.buildDataUrl = function(scheme, data) {
