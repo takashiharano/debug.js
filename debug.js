@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207170123';
+  this.v = '202207171713';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10635,11 +10635,11 @@ DebugJS.decodeEsc = function(s) {
   return s.replace(/\\\\/g, '\\');
 };
 
-DebugJS.isNumeric = function(ch) {
+DebugJS.isNumber = function(ch) {
   var c = ch.charCodeAt(0);
   return ((c >= 0x30) && (c <= 0x39));
 };
-DebugJS.isAlphabetic = function(ch) {
+DebugJS.isAlphabet = function(ch) {
   var c = ch.charCodeAt(0);
   return (((c >= 0x41) && (c <= 0x5A)) || ((c >= 0x61) && (c <= 0x7A)));
 };
@@ -10660,7 +10660,7 @@ DebugJS.isPunctuation = function(ch) {
   return false;
 };
 DebugJS.isNumAlpha = function(ch) {
-  return (DebugJS.isNumeric(ch) || DebugJS.isAlphabetic(ch));
+  return (DebugJS.isNumber(ch) || DebugJS.isAlphabet(ch));
 };
 DebugJS.isTypographic = function(ch) {
   return (DebugJS.isNumAlpha(ch) || DebugJS.isPunctuation(ch));
@@ -12746,7 +12746,7 @@ DebugJS.rot5 = function(s, n) {
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     var cc = c.charCodeAt(0);
-    if (DebugJS.isNumeric(c)) {
+    if (DebugJS.isNumber(c)) {
       cc += n;
       if (cc > 0x39) {
         cc = 0x2F + (cc - 0x39);
@@ -12765,7 +12765,7 @@ DebugJS.rot13 = function(s, n) {
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     var cc = c.charCodeAt(0);
-    if (DebugJS.isAlphabetic(c)) {
+    if (DebugJS.isAlphabet(c)) {
       cc += n;
       if (DebugJS.isUpperCase(c)) {
         if (cc > 0x5A) {
