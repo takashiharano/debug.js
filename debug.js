@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202207171713';
+  this.v = '202209012250';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3678,7 +3678,7 @@ DebugJS.prototype = {
     html += addPropSep();
     html += addSysInfoPropH('localStorage');
     if (DebugJS.LS_AVAILABLE) {
-      html += ' <span class="dbg-btn" onclick="DebugJS.ctx.clearLocalStrage();">clear()</span>\n<span id="' + ctx.id + '-sys-ls"></span>\n';
+      html += ' <span class="dbg-btn" onclick="DebugJS.ctx.clearLocalStorage();">clear()</span>\n<span id="' + ctx.id + '-sys-ls"></span>\n';
       html += DebugJS.ctx.createStorageEditor(ctx, 0);
     } else {
       html += ' <span class="dbg-na">undefined</span>';
@@ -3686,7 +3686,7 @@ DebugJS.prototype = {
     html += addPropSep();
     html += addSysInfoPropH('sessionStorage');
     if (DebugJS.SS_AVAILABLE) {
-      html += ' <span class="dbg-btn" onclick="DebugJS.ctx.clearSessionStrage();">clear()</span>\n<span id="' + ctx.id + '-sys-ss"></span>\n';
+      html += ' <span class="dbg-btn" onclick="DebugJS.ctx.clearSessionStorage();">clear()</span>\n<span id="' + ctx.id + '-sys-ss"></span>\n';
       html += DebugJS.ctx.createStorageEditor(ctx, 1);
     } else {
       html += ' <span class="dbg-na">undefined</span>';
@@ -3695,8 +3695,8 @@ DebugJS.prototype = {
     html += '\n</pre>';
     ctx.sysInfoPanelBody.innerHTML = html;
     ctx.updateCookieInfo();
-    if (DebugJS.LS_AVAILABLE) ctx.updateStrageInfo(0);
-    if (DebugJS.SS_AVAILABLE) ctx.updateStrageInfo(1);
+    if (DebugJS.LS_AVAILABLE) ctx.updateStorageInfo(0);
+    if (DebugJS.SS_AVAILABLE) ctx.updateStorageInfo(1);
   },
   updateCookieInfo: function() {
     var ctx = DebugJS.ctx;
@@ -3726,34 +3726,34 @@ DebugJS.prototype = {
     DebugJS.deleteCookie(k);
     DebugJS.ctx.updateCookieInfo();
   },
-  clearLocalStrage: function() {
+  clearLocalStorage: function() {
     localStorage.clear();
-    DebugJS.ctx.updateStrageInfo(0);
+    DebugJS.ctx.updateStorageInfo(0);
   },
-  removeLocalStrage: function(k) {
+  removeLocalStorage: function(k) {
     localStorage.removeItem(k);
-    DebugJS.ctx.updateStrageInfo(0);
+    DebugJS.ctx.updateStorageInfo(0);
   },
-  clearSessionStrage: function() {
+  clearSessionStorage: function() {
     sessionStorage.clear();
-    DebugJS.ctx.updateStrageInfo(1);
+    DebugJS.ctx.updateStorageInfo(1);
   },
-  removeSessionStrage: function(k) {
+  removeSessionStorage: function(k) {
     sessionStorage.removeItem(k);
-    DebugJS.ctx.updateStrageInfo(1);
+    DebugJS.ctx.updateStorageInfo(1);
   },
-  updateStrageInfo: function(type) {
+  updateStorageInfo: function(type) {
     var ctx = DebugJS.ctx;
     var strg, nm, rmvFn, id;
     if (type == 0) {
       strg = localStorage;
       nm = 'localStorage';
-      rmvFn = 'removeLocalStrage';
+      rmvFn = 'removeLocalStorage';
       id = 'ls';
     } else {
       strg = sessionStorage;
       nm = 'sessionStorage';
-      rmvFn = 'removeSessionStrage';
+      rmvFn = 'removeSessionStorage';
       id = 'ss';
     }
     var html = ' <span style="color:' + DebugJS.ITEM_NM_COLOR + '">length</span> = ' + strg.length + '\n' + ' <span style="color:' + DebugJS.ITEM_NM_COLOR + '">key</span>';
@@ -3783,7 +3783,7 @@ DebugJS.prototype = {
     var strg = localStorage;
     if (type == 1) strg = sessionStorage;
     strg.setItem(k, v);
-    DebugJS.ctx.updateStrageInfo(type);
+    DebugJS.ctx.updateStorageInfo(type);
   },
 
   showHideByName: function(name) {
