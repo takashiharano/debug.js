@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202209012250';
+  this.v = '202209122320';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4335,10 +4335,7 @@ DebugJS.prototype = {
     var s = '';
     if (handler) {
       s = handler.toString();
-      s = s.replace(/\n/g, '');
-      s = s.replace(/[^.]{1,}\{/, '');
-      s = s.replace(/\}$/, '');
-      s = s.replace(/^\s{1,}/, '');
+      s = s.replace(/\n/g, '').replace(/[^.]{1,}\{/, '').replace(/\}$/, '').replace(/^\s{1,}/, '');
     } else {
       s = '<span style="color:#aaa">null</span>';
     }
@@ -11961,7 +11958,14 @@ DebugJS.arr2set = function(a, f) {
 
 DebugJS.dateSep = function(s, a) {
   if (!a) a = '/';
-  return s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1' + a + '$2' + a + '$3').replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1').replace(/[^\d\n\s]/g, a);
+  s = s.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})/g, '$1/$2/$3 $4:$5:$6.$7');
+  s = s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1/$2/$3');
+  s = s.replace(/(\d{2})(\d{2})(\d{2})/g, '$1 $2:$3');
+  s = s.replace(/(:\d{2})(\d{2})/g, '$1:$2');
+  s = s.replace(/[^\d\n\s:.]/g, '/');
+  s = s.replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1');
+  if (a != '/') s = s.replace(/\//g, a);
+  return s;
 };
 DebugJS.lflf2lf = function(s) {
   return DebugJS.trimBlank(s).replace(/\n\n/g, '\n');
@@ -13367,9 +13371,7 @@ DebugJS.getBrowserType = function() {
     return brws;
   }
   if (ua.indexOf('Trident/7.') >= 1) {
-    brws.name = 'IE11';
-    brws.family = 'IE';
-    return brws;
+    brws.name = 'IE11';brws.family = 'IE';return brws;
   }
   if ((ua.indexOf('Safari/') >= 1) && (ua.indexOf('Version/') >= 1)) {
     brws.name = 'Safari';
@@ -13833,9 +13835,7 @@ DebugJS.getBinType = function(b) {
   var H = {exe: 0x4D5A, java: 0xCAFEBABE};
   var t = '';
   for (var k in H) {
-    if (DebugJS.chkBinHdr(b, H[k])) {
-      t = k;break;
-    }
+    if (DebugJS.chkBinHdr(b, H[k])) {t = k;break;}
   }
   return t;
 };
