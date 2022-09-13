@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202209122320';
+  this.v = '202209140047';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11958,12 +11958,12 @@ DebugJS.arr2set = function(a, f) {
 
 DebugJS.dateSep = function(s, a) {
   if (!a) a = '/';
-  s = s.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})/g, '$1/$2/$3 $4:$5:$6.$7');
+  s = s.replace(/[^A-Za-z\d\n\s:.]/g, '/');
+  s = s.replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1');
+  s = s.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d+)/g, '$1/$2/$3 $4:$5:$6.$7');
   s = s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1/$2/$3');
   s = s.replace(/(\d{2})(\d{2})(\d{2})/g, '$1 $2:$3');
   s = s.replace(/(:\d{2})(\d{2})/g, '$1:$2');
-  s = s.replace(/[^\d\n\s:.]/g, '/');
-  s = s.replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1');
   if (a != '/') s = s.replace(/\//g, a);
   return s;
 };
