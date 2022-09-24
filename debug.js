@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202209140047';
+  this.v = '202209250043';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3582,8 +3582,8 @@ DebugJS.prototype = {
     var docOncontextmenu = foldingTxt(document.oncontextmenu, 'documentOncontextmenu', OMIT_LAST);
     var offset = (new Date()).getTimezoneOffset();
     var html = '<pre>';
-    html += '              .getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset, true) + ')';
-    var tznm = DebugJS.getTzName();
+    html += '              .getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset * (-1), true) + ')';
+    var tznm = DebugJS.getLocalTzName();
     if (tznm) html += ' ' + tznm;
     html += '\n';
     html += addSysInfo('screen.     ', screenInfo);
@@ -7555,7 +7555,7 @@ DebugJS.prototype = {
       d = d.substr(0, idx);
       tz = tz[0].trim();
     } else {
-      tz = DebugJS.getTZ();
+      tz = DebugJS.getLocalTZ();
     }
     if (!DebugJS.isDateTimeStr(d) && (d != 'today')) return null;
     if (d == 'today') v = DebugJS.today('/');
@@ -10854,7 +10854,7 @@ DebugJS.getDateTimeAndTimestamp = function(val, iso) {
     f = 1;
   }
   var dt = val;
-  var tz = DebugJS.getTZ();
+  var tz = DebugJS.getLocalTZ();
   if (val === '') {
     dt = Date.now();
   } else {
@@ -11160,19 +11160,35 @@ DebugJS.cnv2ms = function(t) {
   return s;
 };
 DebugJS.formatTZ = function(v, e) {
-  var s = '-';
-  if (v <= 0) {
-    v *= (-1);
-    s = '+';
+  var s = '+';
+  v = parseFloat(v);
+  if (v < 0) {
+    s = '-';
+    v *= -1;
   }
-  var h = (v / 60) | 0;
-  var m = v - h * 60;
-  var str = s + ('0' + h).slice(-2) + ('0' + m).slice(-2);
+  var f = ((v <= 24) ? DebugJS.formatTzH : DebugJS.formatTzM);
+  var str = s + f(v);
   if (e) str = DebugJS.nnnn2clock(str);
   return str;
 };
-DebugJS.getTZ = function() {
-  return DebugJS.formatTZ(new Date().getTimezoneOffset());
+DebugJS.formatTzH = function(v) {
+  var w = ('' + v).split('.');
+  var h = +w[0];
+  var m = +('0.' + (w[1] | 0)) * 60;
+  return ('0' + h).slice(-2) + ('0' + m).slice(-2);
+};
+DebugJS.formatTzM = function(v) {
+  var h = (v / 60) | 0;
+  var m = v - h * 60;
+  return ('0' + h).slice(-2) + ('0' + m).slice(-2);
+};
+DebugJS.getLocalTZ = function() {
+  return DebugJS.formatTZ(new Date().getTimezoneOffset() * (-1));
+};
+DebugJS.getLocalTzName = function() {
+  var n = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (!n) n = '';
+  return n;
 };
 DebugJS.getTimestampOfDay = function(t, d) {
   if (!d) d = DebugJS.getDateTime();
@@ -12916,12 +12932,6 @@ DebugJS.str2hex = function(s) {
   return h;
 };
 
-DebugJS.getTzName = function() {
-  var n = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  if (!n) n = '';
-  return n;
-};
-
 DebugJS.clock2ms = function(t) {
   var hour = 0;
   var min = 0;
@@ -14027,7 +14037,7 @@ DebugJS.buildLogData = function(extInfo, flg) {
 DebugJS.buildLogHeader = function() {
   var dt = DebugJS.getDateTime();
   var brw = DebugJS.getBrowserType();
-  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.formatTZ(dt.offset, true) + ' (' + DebugJS.getTzName() + ')\n';
+  var s = 'Sending Time : ' + DebugJS.getDateTimeStr(dt.time) + ' ' + DebugJS.formatTZ(dt.offset, true) + ' (' + DebugJS.getLocalTzName() + ')\n';
   s += 'Timestamp    : ' + dt.time + '\n';
   s += 'Browser      : ' + brw.name + (brw.version == '' ? '' : ' ' + brw.version) + '\n';
   s += 'User Agent   : ' + navigator.userAgent + '\n';
