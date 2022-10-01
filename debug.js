@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210011953';
+  this.v = '202210012134';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6305,7 +6305,7 @@ DebugJS.prototype = {
 
   openBatEditor: function() {
     var ctx = DebugJS.ctx;
-    if (!ctx.batBasePanel) {
+    if (ctx.batBasePanel) {
       ctx.toolsBodyPanel.appendChild(ctx.batBasePanel);
     } else {
       ctx.createBatBasePanel(ctx);
@@ -6486,7 +6486,8 @@ DebugJS.prototype = {
     DebugJS.ui.addLabel(basePanel, 'MODE: ');
     ctx.txtEdtMdSlct = DebugJS.ui.addElement(basePanel, 'select');
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
-    DebugJS.setStyle(ctx.txtEdtMdSlct, 'width', '9em');
+    var styl = {width: '9em', height: '1.1em'};
+    DebugJS.setStyle(ctx.txtEdtMdSlct, styl);
     var o = '';
     for (var i = 0; i < ctx.editTxtFn.length; i++) {
       o += '<option value="' + i + '">' + ctx.editTxtFn[i].lbl + '</option>';
