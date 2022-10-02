@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210012134';
+  this.v = '202210022310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6533,7 +6533,7 @@ DebugJS.prototype = {
       DebugJS.hideEl(optEl[i].lbl);
       DebugJS.hideEl(optEl[i].txt);
       if (d.opt && d.opt[i]) {
-        optEl[i].lbl.innerText = d.opt[i].lbl + ':';
+        optEl[i].lbl.innerText = d.opt[i].lbl + ': ';
         optEl[i].txt.value = (d.opt[i].v ? d.opt[i].v : '');
         DebugJS.showEl(optEl[i].lbl);
         DebugJS.showEl(optEl[i].txt);
@@ -6553,21 +6553,21 @@ DebugJS.prototype = {
   editTxtFn: [
     {lbl: ''},
     {
-      lbl: 'UNIQUE', opt: [{lbl: 'ORDER(A=asc/D=desc)'}, {lbl: 'CNT?(y/n)'}],
+      lbl: 'UNIQUE', opt: [{lbl: 'A=asc/D=desc'}, {lbl: 'w/ CNT(y/n)'}],
       fn: function(ctx, s, o1, o2) {
         var opt = {sort: o1.toUpperCase(), count: (o2.toLowerCase() == 'y' ? 1 : 0), blank: 0};
         return DebugJS.toUnique(s, opt).r;
       }
     },
     {
-      lbl: 'SORT', opt: [{lbl: 'ORDER(A=asc/D=desc)', v: 'A'}, {lbl: 'COL'}],
+      lbl: 'SORT', opt: [{lbl: 'A=asc/D=desc', v: 'A'}, {lbl: 'COL'}],
       fn: function(ctx, s, o1, o2) {
         var d = (o1.toUpperCase() == 'D' ? 1 : 0);
         return DebugJS.sort(s, d, o2);
       }
     },
     {
-      lbl: 'NEWLINE', opt: [{lbl: 'MODE(0=DEL/1=AGG/2=DBL/3=INS)', v: '1'}, {lbl: 'POS', v: '76'}],
+      lbl: 'NEWLINE', opt: [{lbl: '0=DEL/1=AGG/2=DBL/3=INS', v: '1'}, {lbl: 'POS', v: '76'}],
       fn: function(ctx, s, o1, o2) {
         var f = DebugJS.lflf2lf;
         if (o1 == 0) {
@@ -6584,8 +6584,7 @@ DebugJS.prototype = {
       lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}
     },
     {
-      lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '1'}],
-      fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}
+      lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}
     },
     {
       lbl: 'UPPERCASE', fn: function(ctx, s) {return s.toUpperCase();}
@@ -6600,12 +6599,10 @@ DebugJS.prototype = {
       lbl: 'TO_HALF_WIDTH', fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}
     },
     {
-      lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}],
-      fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}
+      lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}
     },
     {
-      lbl: 'DATE_SEP', opt: [{lbl: 'SEP', v: '/'}],
-      fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}
+      lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}
     },
     {
       lbl: 'HORIZ_TO_VERT', fn: function(ctx, s) {return s.replace(/\t/g, '\n');}
@@ -6617,8 +6614,7 @@ DebugJS.prototype = {
       lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}
     },
     {
-      lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}],
-      fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}
+      lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}
     }
   ],
   minMaxLen: function(s, f, n) {
