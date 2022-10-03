@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210022310';
+  this.v = '202210032130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6049,8 +6049,8 @@ DebugJS.prototype = {
   getImgPreview: function(ctx, scheme, data) {
     var ctxSizePos = ctx.getSelfSizePos();
     var img = DebugJS.buildDataUrl(scheme, data);
-    DebugJS.ctx.fileVwrCtt = img;
-    return '<img src="' + img + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px">\n';
+    ctx.fileVwrCtt = img;
+    return '<img src="' + img + '" id="' + ctx.id + '-img-preview" style="max-width:' + (ctxSizePos.w - 32) + 'px;max-height:' + (ctxSizePos.h - (ctx.computedFontSize * 13) - 8) + 'px" onmousedown="return false;">\n';
   },
   resizeImgPreview: function() {
     var ctx = DebugJS.ctx;
