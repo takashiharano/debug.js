@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210032130';
+  this.v = '202210052123';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -231,6 +231,7 @@ var DebugJS = DebugJS || function() {
   this.txtBasePanel = null;
   this.txtEdtTxt = null;
   this.txtTxtSt = null;
+  this.txtCpBtn = null;
   this.txtClrBtn = null;
   this.txtEdtExecBtn = null;
   this.txtEdtMdSlct = null;
@@ -5410,11 +5411,11 @@ DebugJS.prototype = {
     b.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
 
     b = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span');
-    b.innerText = 'RET=';
+    b.innerText = 'LF=';
     b.style.marginLeft = (ctx.computedFontSize * 0.4) + 'px';
     b.style.color = '#ccc';
 
-    ctx.fileVwrRet = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.5em', 'right', '#ccc', '0', null);
+    ctx.fileVwrRet = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.5em', 'left', '#ccc', '0', null);
     ctx.fileVwrRet.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
 
     ctx.addFileVwrBtn(ctx, 'Decode', 8, ctx.decodeFileVwrData);
@@ -6478,15 +6479,17 @@ DebugJS.prototype = {
   createTxtBasePanel: function(ctx) {
     var basePanel = DebugJS.addSubPanel(ctx.toolsBodyPanel);
     ctx.txtClrBtn = DebugJS.ui.addBtn(basePanel, '[CLEAR]', ctx.clearTxt);
-    ctx.txtClrBtn.style.float = 'right';
+    ctx.txtCpBtn = DebugJS.ui.addBtn(basePanel, '[COPY]', ctx.cpTxt);
     ctx.txtEdtExecBtn = DebugJS.ui.addBtn(basePanel, '[EXEC]', ctx.execTxtEdit);
-    ctx.txtEdtExecBtn.style.float = 'right';
-    ctx.txtEdtExecBtn.style.marginRight = (ctx.computedFontSize * 0.4) + 'px';
+    var styl = {'margin-left': (ctx.computedFontSize * 0.4) + 'px', float: 'right'};
+    DebugJS.setStyle(ctx.txtClrBtn, styl);
+    DebugJS.setStyle(ctx.txtCpBtn, styl);
+    DebugJS.setStyle(ctx.txtEdtExecBtn, styl);
 
     DebugJS.ui.addLabel(basePanel, 'MODE: ');
     ctx.txtEdtMdSlct = DebugJS.ui.addElement(basePanel, 'select');
     ctx.txtEdtMdSlct.className = 'dbg-select dbg-nomove';
-    var styl = {width: '9em', height: '1.1em'};
+    styl = {width: '9em', height: '1.1em'};
     DebugJS.setStyle(ctx.txtEdtMdSlct, styl);
     var o = '';
     for (var i = 0; i < ctx.editTxtFn.length; i++) {
@@ -6496,10 +6499,10 @@ DebugJS.prototype = {
     ctx.txtEdtMdSlct.addEventListener('change', ctx.onTxtEdtMdChg);
     for (i = 0; i < 2; i++) {
       ctx.txtEdtOptEl[i].lbl = DebugJS.ui.addLabel(basePanel, '', {'margin-left': ctx.computedFontSize + 'px'});
-      ctx.txtEdtOptEl[i].txt = DebugJS.ui.addTextInput(basePanel, '45px', 'left', ctx.opt.fontColor, '', null);
+      ctx.txtEdtOptEl[i].txt = DebugJS.ui.addTextInput(basePanel, '25px', 'left', ctx.opt.fontColor, '', null);
     }
-    var style = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
-    ctx.txtEdtTxt = DebugJS.ui.addElement(basePanel, 'textarea', style);
+    styl = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
+    ctx.txtEdtTxt = DebugJS.ui.addElement(basePanel, 'textarea', styl);
     ctx.txtEdtTxt.className = 'dbg-editor';
     ctx.txtEdtTxt.spellcheck = false;
     var ev = ['input', 'change', 'keydown', 'keyup', 'click'];
@@ -6520,6 +6523,9 @@ DebugJS.prototype = {
   },
   onTxtEdtInput: function() {
     DebugJS.ctx.onTextInput(DebugJS.ctx.txtTxtSt, DebugJS.ctx.txtEdtTxt);
+  },
+  cpTxt: function() {
+    DebugJS.copy(DebugJS.ctx.txtEdtTxt.value);
   },
   clearTxt: function() {
     DebugJS.ctx.txtEdtTxt.value = '';
