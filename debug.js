@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210052123';
+  this.v = '202210100101';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6586,42 +6586,19 @@ DebugJS.prototype = {
         return f(s);
       }
     },
-    {
-      lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}
-    },
-    {
-      lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}
-    },
-    {
-      lbl: 'UPPERCASE', fn: function(ctx, s) {return s.toUpperCase();}
-    },
-    {
-      lbl: 'lowercase', fn: function(ctx, s) {return s.toLowerCase();}
-    },
-    {
-      lbl: 'TO_FULL_WIDTH', fn: function(ctx, s) {return DebugJS.toFullWidth(s);}
-    },
-    {
-      lbl: 'TO_HALF_WIDTH', fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}
-    },
-    {
-      lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}
-    },
-    {
-      lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}
-    },
-    {
-      lbl: 'HORIZ_TO_VERT', fn: function(ctx, s) {return s.replace(/\t/g, '\n');}
-    },
-    {
-      lbl: 'VERT_TO_HORIZ', fn: function(ctx, s) {return s.replace(/\n/g, '\t');}
-    },
-    {
-      lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}
-    },
-    {
-      lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}
-    }
+    {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
+    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}},
+    {lbl: 'UPPERCASE', fn: function(ctx, s) {return s.toUpperCase();}},
+    {lbl: 'lowercase', fn: function(ctx, s) {return s.toLowerCase();}},
+    {lbl: 'TO_FULL_WIDTH', fn: function(ctx, s) {return DebugJS.toFullWidth(s);}},
+    {lbl: 'TO_HALF_WIDTH', fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}},
+    {lbl: 'URI', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}},
+    {lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}},
+    {lbl: 'HORIZ_TO_VERT', fn: function(ctx, s) {return s.replace(/\t/g, '\n');}},
+    {lbl: 'VERT_TO_HORIZ', fn: function(ctx, s) {return s.replace(/\n/g, '\t');}},
+    {lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}},
+    {lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}}
   ],
   minMaxLen: function(s, f, n) {
     var x = DebugJS.lenMinMax(s, f, n);
@@ -11310,14 +11287,7 @@ DebugJS.calcNextTime2 = function(now, t) {
   return ret;
 };
 DebugJS.getTimestamp = function(y, m, d, h, mi, s, ms) {
-  y |= 0;
-  m |= 0;
-  d |= 0;
-  h |= 0;
-  mi |= 0;
-  s |= 0;
-  m |= 0;
-  ms |= 0;
+  y |= 0;m |= 0;d |= 0;h |= 0;mi |= 0;s |= 0;ms |= 0;
   return (new Date(y, m - 1, d, h, mi, s)).getTime() + ms;
 };
 DebugJS.parseToMillis = function(v) {
