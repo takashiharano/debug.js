@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210161432';
+  this.v = '202210162211';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -145,25 +145,14 @@ var DebugJS = DebugJS || function() {
   this.fontChkBtn = null;
   this.fontChkPanel = null;
   this.fontChkTxt = null;
-  this.fontChkFontSizeRange = null;
-  this.fontChkFontSizeInput = null;
-  this.fontChkFontSizeUnitInput = null;
-  this.fontChkFontWeightRange = null;
-  this.fontChkFontWeightLabel = null;
+  this.fontChkFontSize = {range: null, input: null, unit: null};
+  this.fontChkFontWeight = {range: null, label: null};
   this.fontChkInputFgRGB = null;
-  this.fontChkRangeFgR = null;
-  this.fontChkRangeFgG = null;
-  this.fontChkRangeFgB = null;
-  this.fontChkLabelFgR = null;
-  this.fontChkLabelFgG = null;
-  this.fontChkLabelFgB = null;
+  this.fontChkRangeFg = {r: null, g: null, b: null};
+  this.fontChkLabelFg = {r: null, g: null, b: null};
   this.fontChkInputBgRGB = null;
-  this.fontChkRangeBgR = null;
-  this.fontChkRangeBgG = null;
-  this.fontChkRangeBgB = null;
-  this.fontChkLabelBgR = null;
-  this.fontChkLabelBgG = null;
-  this.fontChkLabelBgB = null;
+  this.fontChkRangeBg = {r: null, g: null, b: null};
+  this.fontChkLabelBg = {r: null, g: null, b: null};
   this.fontChkTargetEl = null;
   this.fontChkItalic = false;
   this.fileVwrMode = 'b64';
@@ -272,14 +261,7 @@ var DebugJS = DebugJS || function() {
   this.overlayBasePanel = null;
   this.overlayPanels = [];
   this.logHdrPanel = null;
-  this.fltrBtnAll = null;
-  this.fltrBtnStd = null;
-  this.fltrBtnVrb = null;
-  this.fltrBtnDbg = null;
-  this.fltrBtnInf = null;
-  this.fltrBtnWrn = null;
-  this.fltrBtnErr = null;
-  this.fltrBtnFtl = null;
+  this.logLvBtn = {all: null, std: null, vrb: null, dbg: null, inf: null, wrn: null, err: null, ftl: null};
   this.logTimeBtn = null;
   this.fltrInputLabel = null;
   this.fltrInput = null;
@@ -1563,14 +1545,14 @@ DebugJS.prototype = {
   createLogFilter: function(ctx) {
     ctx.logTimeBtn = ctx.createLogFltBtn2(ctx, '', 'logTimeBtn', 1, '', ctx.toggleLogTimestamp);
     ctx.updateLogTimestampBtn(ctx, ctx.opt.showTimestamp);
-    ctx.fltrBtnAll = ctx.createLogFltBtn('ALL', 'ALL', 'fltrBtnAll', 'btnColor');
-    ctx.fltrBtnStd = ctx.createLogFltBtn('L', 'LOG', 'fltrBtnStd', 'fontColor');
-    ctx.fltrBtnVrb = ctx.createLogFltBtn('V', 'VRB', 'fltrBtnVrb', 'logColorV');
-    ctx.fltrBtnDbg = ctx.createLogFltBtn('D', 'DBG', 'fltrBtnDbg', 'logColorD');
-    ctx.fltrBtnInf = ctx.createLogFltBtn('I', 'INF', 'fltrBtnInf', 'logColorI');
-    ctx.fltrBtnWrn = ctx.createLogFltBtn('W', 'WRN', 'fltrBtnWrn', 'logColorW');
-    ctx.fltrBtnErr = ctx.createLogFltBtn('E', 'ERR', 'fltrBtnErr', 'logColorE');
-    ctx.fltrBtnFtl = ctx.createLogFltBtn('F', 'FTL', 'fltrBtnFtl', 'logColorF');
+    ctx.logLvBtn.all = ctx.createLogFltBtn('ALL', 'ALL', 'all', 'btnColor');
+    ctx.logLvBtn.std = ctx.createLogFltBtn('L', 'LOG', 'std', 'fontColor');
+    ctx.logLvBtn.vrb = ctx.createLogFltBtn('V', 'VRB', 'vrb', 'logColorV');
+    ctx.logLvBtn.dbg = ctx.createLogFltBtn('D', 'DBG', 'dbg', 'logColorD');
+    ctx.logLvBtn.inf = ctx.createLogFltBtn('I', 'INF', 'inf', 'logColorI');
+    ctx.logLvBtn.wrn = ctx.createLogFltBtn('W', 'WRN', 'wrn', 'logColorW');
+    ctx.logLvBtn.err = ctx.createLogFltBtn('E', 'ERR', 'err', 'logColorE');
+    ctx.logLvBtn.ftl = ctx.createLogFltBtn('F', 'FTL', 'ftl', 'logColorF');
 
     var style = {'margin-left': '4px', 'color': ctx.opt.sysInfoColor};
     ctx.fltrInputLabel = DebugJS.ui.addElement(ctx.logHdrPanel, 'span', style, true);
@@ -1592,7 +1574,7 @@ DebugJS.prototype = {
     var fn = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FLTR_' + type + ');');
     var btn = DebugJS.ui.addBtn(ctx.logHdrPanel, '[' + lbl + ']', fn);
     btn.style.marginLeft = '2px';
-    btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
+    btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.logLvBtn.' + btnObj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
     btn.onmouseout = ctx.updateLogFilterBtns;
     return btn;
   },
@@ -2076,14 +2058,14 @@ DebugJS.prototype = {
     var opt = ctx.opt;
     var fltr = ctx.logFilter;
     var setStyle = DebugJS.setStyle;
-    setStyle(ctx.fltrBtnAll, 'color', ((fltr & ~DebugJS.LOG_FLTR_VRB) == DebugJS.LOG_FLTR_ALL) ? opt.btnColor : DebugJS.COLOR_INACT);
-    setStyle(ctx.fltrBtnStd, 'color', (fltr & DebugJS.LOG_FLTR_LOG) ? opt.fontColor : DebugJS.COLOR_INACT);
-    setStyle(ctx.fltrBtnFtl, 'color', (fltr & DebugJS.LOG_FLTR_FTL) ? opt.logColorF : DebugJS.COLOR_INACT);
-    setStyle(ctx.fltrBtnErr, 'color', (fltr & DebugJS.LOG_FLTR_ERR) ? opt.logColorE : DebugJS.COLOR_INACT);
-    setStyle(ctx.fltrBtnWrn, 'color', (fltr & DebugJS.LOG_FLTR_WRN) ? opt.logColorW : DebugJS.COLOR_INACT);
-    setStyle(ctx.fltrBtnInf, 'color', (fltr & DebugJS.LOG_FLTR_INF) ? opt.logColorI : DebugJS.COLOR_INACT);
-    setStyle(ctx.fltrBtnDbg, 'color', (fltr & DebugJS.LOG_FLTR_DBG) ? opt.logColorD : DebugJS.COLOR_INACT);
-    setStyle(ctx.fltrBtnVrb, 'color', (fltr & DebugJS.LOG_FLTR_VRB) ? opt.logColorV : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.all, 'color', ((fltr & ~DebugJS.LOG_FLTR_VRB) == DebugJS.LOG_FLTR_ALL) ? opt.btnColor : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.std, 'color', (fltr & DebugJS.LOG_FLTR_LOG) ? opt.fontColor : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.ftl, 'color', (fltr & DebugJS.LOG_FLTR_FTL) ? opt.logColorF : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.err, 'color', (fltr & DebugJS.LOG_FLTR_ERR) ? opt.logColorE : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.wrn, 'color', (fltr & DebugJS.LOG_FLTR_WRN) ? opt.logColorW : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.inf, 'color', (fltr & DebugJS.LOG_FLTR_INF) ? opt.logColorI : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.dbg, 'color', (fltr & DebugJS.LOG_FLTR_DBG) ? opt.logColorD : DebugJS.COLOR_INACT);
+    setStyle(ctx.logLvBtn.vrb, 'color', (fltr & DebugJS.LOG_FLTR_VRB) ? opt.logColorV : DebugJS.COLOR_INACT);
   },
 
   onchangeLogFilter: function() {
@@ -2186,7 +2168,7 @@ DebugJS.prototype = {
     ctx.uiStatus |= DebugJS.UI_ST_DRAGGING;
     ctx.ptOpTm = Date.now();
     ctx.winBody.style.cursor = 'move';
-    ctx.disableTextSelect(ctx);
+    ctx.disableTextSelect();
     ctx.ptOfstY = y - ctx.win.offsetTop;
     ctx.ptOfstX = x - ctx.win.offsetLeft;
     if (!document.all) {
@@ -2238,7 +2220,7 @@ DebugJS.prototype = {
     ctx.saveSizeAndPos(ctx);
     ctx.sizeStatus = DebugJS.SIZE_ST_NORMAL;
     ctx.updateWinCtrlBtns();
-    ctx.disableTextSelect(ctx);
+    ctx.disableTextSelect();
   },
 
   resizeDbgWin: function(ctx, x, y) {
@@ -3268,7 +3250,6 @@ DebugJS.prototype = {
     if (!ctx.opt.togglableShowHide || !ctx.win) return;
     ctx.stopUdtClock(ctx);
     ctx.errStatus = DebugJS.ERR_ST_NONE;
-    ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
     ctx.uiStatus &= ~DebugJS.UI_ST_VISIBLE;
     ctx.win.style.display = 'none';
   },
@@ -3277,6 +3258,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.status & DebugJS.ST_MEASURE) ctx.closeScreenMeasure(ctx);
     if (ctx.status & DebugJS.ST_ELM_INFO) ctx.closeElmInfo(ctx);
+    if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) ctx.endMove(ctx);
     ctx.hideDbgWin(ctx);
   },
 
@@ -5132,42 +5114,48 @@ DebugJS.prototype = {
     'font-family: <input value="' + dfltFontFamily + '" class="dbg-txtbox" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + dfltFontWeight + '" id="' + ctx.id + '-fontweight-range" class="dbg-txt-range" style="width:80px !important" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
     '<table class="dbg-txt-tbl">' +
-    '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="dbg-txtbox" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>' +
-    '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-r" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-r"></span></td></tr>' +
-    '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-g" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-g"></span></td></tr>' +
-    '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-b" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-b"></span></td></tr>' +
-    '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="dbg-txtbox" value="' + dfltBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>' +
-    '<tr><td><span style="color:' + DebugJS.COLOR_R + '">R</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-r" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-r"></span></td></tr>' +
-    '<tr><td><span style="color:' + DebugJS.COLOR_G + '">G</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-g" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-g"></span></td></tr>' +
-    '<tr><td><span style="color:' + DebugJS.COLOR_B + '">B</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-b" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-b"></span></td></tr>' +
-    '</tbale>';
+    '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="dbg-txtbox" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>';
+    html += ctx.buildRangeFg(ctx, DebugJS.COLOR_R, 'R', 'r');
+    html += ctx.buildRangeFg(ctx, DebugJS.COLOR_G, 'G', 'g');
+    html += ctx.buildRangeFg(ctx, DebugJS.COLOR_B, 'B', 'b');
+    html += '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="dbg-txtbox" value="' + dfltBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>';
+    html += ctx.buildRangeBg(ctx, DebugJS.COLOR_R, 'R', 'r');
+    html += ctx.buildRangeBg(ctx, DebugJS.COLOR_G, 'G', 'g');
+    html += ctx.buildRangeBg(ctx, DebugJS.COLOR_B, 'B', 'b');
+    html += '</tbale>';
     ctx.fontChkCtrl = DebugJS.ui.addElement(ctx.fontChkPanel, 'div');
     ctx.fontChkCtrl.innerHTML = html;
 
-    ctx.fontChkFontSizeRange = ctx.getDbgWinElm('fontsize-range');
-    ctx.fontChkFontSizeInput = ctx.getDbgWinElm('font-size');
-    ctx.fontChkFontSizeUnitInput = ctx.getDbgWinElm('font-size-unit');
-    ctx.fontChkFontWeightRange = ctx.getDbgWinElm('fontweight-range');
-    ctx.fontChkFontWeightLabel = ctx.getDbgWinElm('font-weight');
+    ctx.fontChkFontSize.range = ctx.getDbgWinElm('fontsize-range');
+    ctx.fontChkFontSize.input = ctx.getDbgWinElm('font-size');
+    ctx.fontChkFontSize.unit = ctx.getDbgWinElm('font-size-unit');
+    ctx.fontChkFontWeight.range = ctx.getDbgWinElm('fontweight-range');
+    ctx.fontChkFontWeight.label = ctx.getDbgWinElm('font-weight');
     ctx.fontChkInputFgRGB = ctx.getDbgWinElm('fg-rgb');
-    ctx.fontChkRangeFgR = ctx.getDbgWinElm('fg-range-r');
-    ctx.fontChkRangeFgG = ctx.getDbgWinElm('fg-range-g');
-    ctx.fontChkRangeFgB = ctx.getDbgWinElm('fg-range-b');
-    ctx.fontChkLabelFgR = ctx.getDbgWinElm('fg-r');
-    ctx.fontChkLabelFgG = ctx.getDbgWinElm('fg-g');
-    ctx.fontChkLabelFgB = ctx.getDbgWinElm('fg-b');
+    ctx.fontChkRangeFg.r = ctx.getDbgWinElm('fg-range-r');
+    ctx.fontChkRangeFg.g = ctx.getDbgWinElm('fg-range-g');
+    ctx.fontChkRangeFg.b = ctx.getDbgWinElm('fg-range-b');
+    ctx.fontChkLabelFg.r = ctx.getDbgWinElm('fg-r');
+    ctx.fontChkLabelFg.g = ctx.getDbgWinElm('fg-g');
+    ctx.fontChkLabelFg.b = ctx.getDbgWinElm('fg-b');
     ctx.fontChkInputBgRGB = ctx.getDbgWinElm('bg-rgb');
-    ctx.fontChkRangeBgR = ctx.getDbgWinElm('bg-range-r');
-    ctx.fontChkRangeBgG = ctx.getDbgWinElm('bg-range-g');
-    ctx.fontChkRangeBgB = ctx.getDbgWinElm('bg-range-b');
-    ctx.fontChkLabelBgR = ctx.getDbgWinElm('bg-r');
-    ctx.fontChkLabelBgG = ctx.getDbgWinElm('bg-g');
-    ctx.fontChkLabelBgB = ctx.getDbgWinElm('bg-b');
+    ctx.fontChkRangeBg.r = ctx.getDbgWinElm('bg-range-r');
+    ctx.fontChkRangeBg.g = ctx.getDbgWinElm('bg-range-g');
+    ctx.fontChkRangeBg.b = ctx.getDbgWinElm('bg-range-b');
+    ctx.fontChkLabelBg.r = ctx.getDbgWinElm('bg-r');
+    ctx.fontChkLabelBg.g = ctx.getDbgWinElm('bg-g');
+    ctx.fontChkLabelBg.b = ctx.getDbgWinElm('bg-b');
 
     ctx.onChangeFontSizeTxt();
     ctx.onChangeFontWeight();
     ctx.onChangeFgRGB();
     ctx.onChangeBgRGB();
+  },
+  buildRangeFg: function(ctx, color, cU, cL) {
+    return '<tr><td><span style="color:' + color + '">' + cU + '</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-' + cL + '" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeFgColor(true);" onchange="DebugJS.ctx.onChangeFgColor(true);"></td><td><span id="' + ctx.id + '-fg-' + cL + '"></span></td></tr>';
+  },
+  buildRangeBg: function(ctx, color, cU, cL) {
+    return '<tr><td><span style="color:' + color + '">' + cU + '</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-' + cL + '" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeBgColor(true);" onchange="DebugJS.ctx.onChangeBgColor(true);"></td><td><span id="' + ctx.id + '-bg-' + cL + '"></span></td></tr>';
   },
   toggleTxtItalic: function(btn) {
     var ctx = DebugJS.ctx;
@@ -5206,9 +5194,9 @@ DebugJS.prototype = {
     var rgb16 = '#' + ctx.fontChkInputFgRGB.value;
     var rgb10 = DebugJS.rgb16to10(rgb16);
     if (!rgb10) return;
-    ctx.fontChkRangeFgR.value = rgb10.r;
-    ctx.fontChkRangeFgG.value = rgb10.g;
-    ctx.fontChkRangeFgB.value = rgb10.b;
+    ctx.fontChkRangeFg.r.value = rgb10.r;
+    ctx.fontChkRangeFg.g.value = rgb10.g;
+    ctx.fontChkRangeFg.b.value = rgb10.b;
     ctx.onChangeFgColor(null);
     DebugJS.setStyle(ctx.fontChkTargetEl, 'color', rgb16);
   },
@@ -5220,21 +5208,21 @@ DebugJS.prototype = {
     }
     var rgb10 = DebugJS.rgb16to10(rgb16);
     if (!rgb10) return;
-    ctx.fontChkRangeBgR.value = rgb10.r;
-    ctx.fontChkRangeBgG.value = rgb10.g;
-    ctx.fontChkRangeBgB.value = rgb10.b;
+    ctx.fontChkRangeBg.r.value = rgb10.r;
+    ctx.fontChkRangeBg.g.value = rgb10.g;
+    ctx.fontChkRangeBg.b.value = rgb10.b;
     ctx.onChangeBgColor(null);
     DebugJS.setStyle(ctx.fontChkTargetEl, 'background', rgb16);
   },
   onChangeFgColor: function(callFromRange) {
     var ctx = DebugJS.ctx;
-    var fgR = ctx.fontChkRangeFgR.value;
-    var fgG = ctx.fontChkRangeFgG.value;
-    var fgB = ctx.fontChkRangeFgB.value;
+    var fgR = ctx.fontChkRangeFg.r.value;
+    var fgG = ctx.fontChkRangeFg.g.value;
+    var fgB = ctx.fontChkRangeFg.b.value;
     var rgb16 = DebugJS.rgb10to16(fgR, fgG, fgB);
-    ctx.fontChkLabelFgR.innerText = fgR;
-    ctx.fontChkLabelFgG.innerText = fgG;
-    ctx.fontChkLabelFgB.innerText = fgB;
+    ctx.fontChkLabelFg.r.innerText = fgR;
+    ctx.fontChkLabelFg.g.innerText = fgG;
+    ctx.fontChkLabelFg.b.innerText = fgB;
     if (callFromRange) {
       ctx.fontChkInputFgRGB.value = rgb16.r + rgb16.g + rgb16.b;
       DebugJS.setStyle(ctx.fontChkTargetEl, 'color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')');
@@ -5242,13 +5230,13 @@ DebugJS.prototype = {
   },
   onChangeBgColor: function(callFromRange) {
     var ctx = DebugJS.ctx;
-    var bgR = ctx.fontChkRangeBgR.value;
-    var bgG = ctx.fontChkRangeBgG.value;
-    var bgB = ctx.fontChkRangeBgB.value;
+    var bgR = ctx.fontChkRangeBg.r.value;
+    var bgG = ctx.fontChkRangeBg.g.value;
+    var bgB = ctx.fontChkRangeBg.b.value;
     var rgb16 = DebugJS.rgb10to16(bgR, bgG, bgB);
-    ctx.fontChkLabelBgR.innerText = bgR;
-    ctx.fontChkLabelBgG.innerText = bgG;
-    ctx.fontChkLabelBgB.innerText = bgB;
+    ctx.fontChkLabelBg.r.innerText = bgR;
+    ctx.fontChkLabelBg.g.innerText = bgG;
+    ctx.fontChkLabelBg.b.innerText = bgB;
     if (callFromRange) {
       ctx.fontChkInputBgRGB.value = rgb16.r + rgb16.g + rgb16.b;
       DebugJS.setStyle(ctx.fontChkTargetEl, 'background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')');
@@ -5256,30 +5244,30 @@ DebugJS.prototype = {
   },
   onChangeFontSizeTxt: function() {
     var ctx = DebugJS.ctx;
-    var fontSize = ctx.fontChkFontSizeInput.value;
-    var unit = ctx.fontChkFontSizeUnitInput.value;
-    ctx.fontChkFontSizeRange.value = fontSize;
+    var fontSize = ctx.fontChkFontSize.input.value;
+    var unit = ctx.fontChkFontSize.unit.value;
+    ctx.fontChkFontSize.range.value = fontSize;
     ctx.onChangeFontSize(null);
     DebugJS.setStyle(ctx.fontChkTargetEl, 'font-size', fontSize + unit);
   },
   onChangeFontSize: function(callFromRange) {
     var ctx = DebugJS.ctx;
-    var fontSize = ctx.fontChkFontSizeRange.value;
-    var unit = ctx.fontChkFontSizeUnitInput.value;
+    var fontSize = ctx.fontChkFontSize.range.value;
+    var unit = ctx.fontChkFontSize.unit.value;
     if (callFromRange) {
-      ctx.fontChkFontSizeInput.value = fontSize;
+      ctx.fontChkFontSize.input.value = fontSize;
       DebugJS.setStyle(ctx.fontChkTargetEl, 'font-size', fontSize + unit);
     }
   },
   onChangeFontWeight: function() {
-    var fontWeight = DebugJS.ctx.fontChkFontWeightRange.value;
+    var fontWeight = DebugJS.ctx.fontChkFontWeight.range.value;
     DebugJS.setStyle(DebugJS.ctx.fontChkTargetEl, 'font-weight', fontWeight);
     if (fontWeight == 400) {
       fontWeight += '(normal)';
     } else if (fontWeight == 700) {
       fontWeight += '(bold)';
     }
-    DebugJS.ctx.fontChkFontWeightLabel.innerText = fontWeight;
+    DebugJS.ctx.fontChkFontWeight.label.innerText = fontWeight;
   },
   onChangeFontFamily: function(font) {
     DebugJS.setStyle(DebugJS.ctx.fontChkTargetEl, 'font-family', font.value);
@@ -6593,7 +6581,7 @@ DebugJS.prototype = {
     {lbl: 'TO_FULL_WIDTH', fn: function(ctx, s) {return DebugJS.toFullWidth(s);}},
     {lbl: 'TO_HALF_WIDTH', fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}},
     {lbl: '%XX', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
-    {lbl: '&#nnnn;', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
+    {lbl: '&#n;', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
     {lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}},
     {lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}},
     {lbl: 'HORIZ_TO_VERT', fn: function(ctx, s) {return s.replace(/\t/g, '\n');}},
