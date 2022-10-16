@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210100101';
+  this.v = '202210161432';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -314,7 +314,6 @@ var DebugJS = DebugJS || function() {
   this.clickedPosY = 0;
   this.ptOfstY = 0;
   this.ptOfstX = 0;
-  this.savedFunc = null;
   this.computedFontSize = this.DEFAULT_OPTIONS.fontSize;
   this.computedWidth = this.DEFAULT_OPTIONS.width;
   this.computedMinW = DebugJS.DBGWIN_MIN_W;
@@ -725,7 +724,9 @@ DebugJS.FEATURES = [
 ];
 DebugJS.TZ = {'HST': '-10', 'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
 DebugJS.fn = function() {};
+DebugJS.fnX = function() {return false;};
 DebugJS.rdy = false;
+DebugJS.onselectstart = document.onselectstart;
 DebugJS.prototype = {
   init: function(opt, rstrOpt) {
     if (!DebugJS.ENABLE) return false;
@@ -2202,7 +2203,7 @@ DebugJS.prototype = {
 
   endMove: function(ctx) {
     ctx.uiStatus &= ~DebugJS.UI_ST_DRAGGING;
-    ctx.enableTextSelect(ctx);
+    ctx.enableTextSelect();
     ctx.winBody.style.cursor = 'default';
   },
 
@@ -2311,7 +2312,7 @@ DebugJS.prototype = {
   endResize: function(ctx) {
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZING_ALL;
     ctx.bodyEl.style.cursor = ctx.cursor;
-    ctx.enableTextSelect(ctx);
+    ctx.enableTextSelect();
   },
 
   adjLayout: function() {
@@ -2328,12 +2329,11 @@ DebugJS.prototype = {
     ctx.mainPanel.style.height = mainPanelHeight + 'px';
   },
 
-  disableTextSelect: function(ctx) {
-    ctx.savedFunc = document.onselectstart;
-    document.onselectstart = function() {return false;};
+  disableTextSelect: function() {
+    document.onselectstart = DebugJS.fnX;
   },
-  enableTextSelect: function(ctx) {
-    document.onselectstart = ctx.savedFunc;
+  enableTextSelect: function() {
+    document.onselectstart = DebugJS.onselectstart;
   },
 
   toggleLogSuspend: function() {
@@ -3329,7 +3329,7 @@ DebugJS.prototype = {
       ctx.measBox = el;
       ctx.bodyEl.appendChild(el);
     }
-    ctx.disableTextSelect(ctx);
+    ctx.disableTextSelect();
   },
 
   doMeasure: function(ctx, posX, posY) {
@@ -3384,7 +3384,7 @@ DebugJS.prototype = {
       ctx.bodyEl.removeChild(ctx.measBox);
       ctx.measBox = null;
     }
-    ctx.enableTextSelect(ctx);
+    ctx.enableTextSelect();
     ctx.status &= ~DebugJS.ST_MEASURING;
   },
 
@@ -6592,7 +6592,8 @@ DebugJS.prototype = {
     {lbl: 'lowercase', fn: function(ctx, s) {return s.toLowerCase();}},
     {lbl: 'TO_FULL_WIDTH', fn: function(ctx, s) {return DebugJS.toFullWidth(s);}},
     {lbl: 'TO_HALF_WIDTH', fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}},
-    {lbl: 'URI', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: '%XX', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: '&#nnnn;', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
     {lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}},
     {lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}},
     {lbl: 'HORIZ_TO_VERT', fn: function(ctx, s) {return s.replace(/\t/g, '\n');}},
@@ -12877,6 +12878,22 @@ DebugJS.decodeUri = function(s) {
 };
 DebugJS.encodeUri = function(s) {
   return encodeURIComponent(s);
+};
+DebugJS.decodeChrEntRefs = function(s) {
+  return s.replace(/&.+?;/g, DebugJS.decodeChrEntRef);
+};
+DebugJS.decodeChrEntRef = function(s) {
+  var p = document.createElement('p');
+  p.innerHTML = s;
+  return p.textContent;
+};
+DebugJS.encodeChrEntRefs = function(s) {
+  return DebugJS.escHtml(s).replace(/[\u0080-\uFFFF]/g, DebugJS.encodeChrEntRef);
+};
+DebugJS.encodeChrEntRef = function(c) {
+  var n = (String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0));
+  var h = DebugJS.toHex(n, 1);
+  return '&#x' + h + ';';
 };
 
 DebugJS.hex2base64 = function(h) {
