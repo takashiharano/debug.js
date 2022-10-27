@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210162211';
+  this.v = '202210272000';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5403,7 +5403,7 @@ DebugJS.prototype = {
     b.style.marginLeft = (ctx.computedFontSize * 0.4) + 'px';
     b.style.color = '#ccc';
 
-    ctx.fileVwrRet = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.5em', 'left', '#ccc', '0', null);
+    ctx.fileVwrRet = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.5em', 'left', '#ccc', '76', null);
     ctx.fileVwrRet.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
 
     ctx.addFileVwrBtn(ctx, 'Decode', 8, ctx.decodeFileVwrData);
@@ -6575,7 +6575,7 @@ DebugJS.prototype = {
       }
     },
     {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
-    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}},
+    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}},
     {lbl: 'UPPERCASE', fn: function(ctx, s) {return s.toUpperCase();}},
     {lbl: 'lowercase', fn: function(ctx, s) {return s.toLowerCase();}},
     {lbl: 'TO_FULL_WIDTH', fn: function(ctx, s) {return DebugJS.toFullWidth(s);}},
