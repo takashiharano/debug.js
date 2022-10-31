@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202210272000';
+  this.v = '202211010032';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10796,8 +10796,8 @@ DebugJS.getClockVal = function() {
 DebugJS.serializedN2clock = function(s) {
   return s.substr(0, 2) + ':' + s.substr(2, 2) + ':' + s.substr(4, 2) + '.' + s.substr(6, 3);
 };
-DebugJS.getDateWithTimestamp = function(val, iso) {
-  var o = DebugJS.getDateTimeAndTimestamp(val, iso);
+DebugJS.getDateWithTimestamp = function(v, iso) {
+  var o = DebugJS.getDateTimeAndTimestamp(v, iso);
   var s = o.datetime;
   if (o.f) s += ' (' + o.timestamp + ')';
   return s;
@@ -10906,7 +10906,7 @@ DebugJS.tzPos = function(s) {
   var p = -1;
   if ((s.match(/[+-]\d{1,2}\.?\d{0,2}$/)) || (s.match(/[+-]\d{2}:\d{2}$/))) {
     p = s.lastIndexOf('+');
-    if (p == -1) p = s.lastIndexOf('-');
+    if ((p == -1) && (DebugJS.countstr(s, '-') > 2)) p = s.lastIndexOf('-');
   } else if (s.match(/Z$/)) {
     p = s.lastIndexOf('Z');
   }
@@ -13463,14 +13463,8 @@ DebugJS.needNL = function(s, n) {
   if (n > 1) nl = DebugJS.repeatCh(nl, n);
   return ((s != '') && (!DebugJS.endsWith(s, nl)));
 };
-DebugJS.strcount = function(s, p) {
-  var i = 0;
-  var pos = s.indexOf(p);
-  while ((p != '') && (pos != -1)) {
-    i++;
-    pos = s.indexOf(p, pos + p.length);
-  }
-  return i;
+DebugJS.countstr = function(s, p) {
+  return (s.match(new RegExp(p, 'g')) || []).length;
 };
 DebugJS.strcmpWOsp = function(s1, s2) {
   return (s1.trim() == s2.trim());
