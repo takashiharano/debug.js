@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202211010032';
+  this.v = '202211141926';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12591,13 +12591,7 @@ DebugJS.decodeB64 = function(s, q) {
   return r;
 };
 DebugJS.encodeBase64 = function(s) {
-  var r;
-  try {
-    r = btoa(s);
-  } catch (e) {
-    r = btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, function(match, p1) {return String.fromCharCode('0x' + p1);}));
-  }
-  return r;
+  return btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, function(match, p1) {return String.fromCharCode('0x' + p1);}));
 };
 DebugJS.decodeBase64 = function(s) {
   var r = '';
