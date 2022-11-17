@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202211172236';
+  this.v = '202211172304';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5562,7 +5562,7 @@ DebugJS.prototype = {
     var j = t.substr(pos.open, pos.close - (pos.open - 1));
     var o = {j: j, r: '', e: null};
     try {
-      o.r = DebugJS.formatJSON(j);
+      o.r = DebugJS.formatJSON(j, 1);
     } catch (e) {o.e = e;}
     return o;
   },
@@ -6585,6 +6585,7 @@ DebugJS.prototype = {
     {lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}},
     {lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}},
     {lbl: 'HORIZ_VERT', opt: [{lbl: '0=H2V/1=V2H', v: '0'}], fn: function(ctx, s, o1) {return (+o1 ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
+    {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.formatJSON(s, +o1);}},
     {lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}},
     {lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}}
   ],
@@ -11743,8 +11744,15 @@ DebugJS.getHTML = function(inB64) {
   return html;
 };
 
-DebugJS.formatJSON = function(s) {
-  return DebugJS.fmtJSON(s, true, 0, 0, 0);
+DebugJS.formatJSON = function(s, i) {
+  if (i <= 0) {
+    var j = DebugJS.toJSON(DebugJS.fromJSON(s));
+  } else {
+    DebugJS.INDENT_SP = DebugJS.repeatCh(' ', i);
+    j = DebugJS.fmtJSON(s, true, 0, 0, 0);
+    DebugJS.INDENT_SP = ' ';
+  }
+  return j;
 };
 DebugJS.fmtJSON = function(s, f, lv, lmt, vlen) {
   if (s) s = s.replace(/\\r\\n|\\r|\\n$/g, '');
