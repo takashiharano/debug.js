@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202211141926';
+  this.v = '202211172236';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6584,8 +6584,7 @@ DebugJS.prototype = {
     {lbl: '&#n;', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
     {lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}},
     {lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}},
-    {lbl: 'HORIZ_TO_VERT', fn: function(ctx, s) {return s.replace(/\t/g, '\n');}},
-    {lbl: 'VERT_TO_HORIZ', fn: function(ctx, s) {return s.replace(/\n/g, '\t');}},
+    {lbl: 'HORIZ_VERT', opt: [{lbl: '0=H2V/1=V2H', v: '0'}], fn: function(ctx, s, o1) {return (+o1 ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
     {lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}},
     {lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}}
   ],
