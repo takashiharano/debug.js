@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202211172304';
+  this.v = '202211202328';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5824,7 +5824,7 @@ DebugJS.prototype = {
       case 'txt':
         var nl = ctx.fileVwrRet.value | 0;
         r = DebugJS.encodeBSB64(src, n);
-        r = ctx.fileVwrDtTxtArea.value = DebugJS.retTxtByN(r, nl);
+        r = ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(r, '\n', nl);
         data = src;
         break;
       default:
@@ -6004,7 +6004,7 @@ DebugJS.prototype = {
     scheme = scheme.replace(/,$/, '');
     ctx.fileVwrDtUrlScheme.value = scheme + ',';
     var n = ctx.fileVwrRet.value | 0;
-    ctx.fileVwrDtTxtArea.value = DebugJS.retTxtByN(data, n);
+    ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(data, '\n', n);
   },
   getFileInfo: function(ctx, file) {
     var fInfo = ctx.fileVwrFileInfo;
@@ -10703,14 +10703,6 @@ DebugJS.escEncString = function(s) {
   s = DebugJS.quoteStr(s);
   return s;
 };
-DebugJS.retTxtByN = function(s, n) {
-  if (n == 0) return s;
-  var r = '';
-  for (var i = 0; i < s.length; i += n) {
-    r += s.substr(i, n) + '\n';
-  }
-  return r;
-};
 
 DebugJS.styleVal = function(v) {
   var s = v;
@@ -11949,6 +11941,7 @@ DebugJS.deleteLF = function(s) {
   return s.replace(/\n/g, '');
 };
 DebugJS.insertCh = function(s, ch, n) {
+  if (n == 0) return s;
   var w = '';
   var p = 0;
   while (p < s.length) {
