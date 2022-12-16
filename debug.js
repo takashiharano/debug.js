@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202211202328';
+  this.v = '202212170024';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6587,7 +6587,8 @@ DebugJS.prototype = {
     {lbl: 'HORIZ_VERT', opt: [{lbl: '0=H2V/1=V2H', v: '0'}], fn: function(ctx, s, o1) {return (+o1 ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
     {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.formatJSON(s, +o1);}},
     {lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}},
-    {lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}}
+    {lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}},
+    {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}}
   ],
   minMaxLen: function(s, f, n) {
     var x = DebugJS.lenMinMax(s, f, n);
@@ -12531,6 +12532,16 @@ DebugJS.n2rwx = function(n) {
   var s = ((n & 4) ? 'r' : '-');
   s += ((n & 2) ? 'w' : '-');
   s += ((n & 1) ? 'x' : '-');
+  return s;
+};
+DebugJS.sum = function(s) {
+  var a = DebugJS.txt2arr(s);
+  var n = 0;
+  for (var i = 0; i < a.length; i++) {
+    var v = +(a[i].replace(/,/g, ''));
+    if (!isNaN(v)) n += +v;
+  }
+  s += '\n----\n' + n;
   return s;
 };
 
