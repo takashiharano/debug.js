@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202212182053';
+  this.v = '202212182112';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3551,15 +3551,6 @@ DebugJS.prototype = {
     try {
       var winOnerror = foldingTxt(window.onerror, 'winOnerror', OMIT_LAST);
     } catch (e) {winOnerror = e;}
-    var docOnclick = foldingTxt(document.onclick, 'documentOnclick', OMIT_LAST);
-    var docOnmousedown = foldingTxt(document.onmousedown, 'documentOnmousedown', OMIT_LAST);
-    var docOnmousemove = foldingTxt(document.onmousemove, 'documentOnmousemove', OMIT_LAST);
-    var docOnmouseup = foldingTxt(document.onmousedown, 'documentOnmouseup', OMIT_LAST);
-    var docOnkeydown = foldingTxt(document.onkeydown, 'documentOnkeydown', OMIT_LAST);
-    var docOnkeypress = foldingTxt(document.onkeypress, 'documentOnkeypress', OMIT_LAST);
-    var docOnkeyup = foldingTxt(document.onkeyup, 'documentOnkeyup', OMIT_LAST);
-    var docOnselectstart = foldingTxt(document.onselectstart, 'documentOnselectstart', OMIT_LAST);
-    var docOncontextmenu = foldingTxt(document.oncontextmenu, 'documentOncontextmenu', OMIT_LAST);
     var offset = (new Date()).getTimezoneOffset();
     var html = '<pre>';
     html += '              .getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset * (-1), true) + ')';
@@ -3641,15 +3632,6 @@ DebugJS.prototype = {
     html += addSysInfoProp(' clientHeight', document.documentElement.clientHeight, 'sys-cli-h');
     html += addSysInfoProp(' scrollLeft  ', document.documentElement.scrollLeft, 'sys-cli-scroll-x');
     html += addSysInfoProp(' scrollTop   ', document.documentElement.scrollTop, 'sys-cli-scroll-y');
-    html += addSysInfoProp('onclick      ', docOnclick);
-    html += addSysInfoProp('onmousedown  ', docOnmousedown);
-    html += addSysInfoProp('onmousemove  ', docOnmousemove);
-    html += addSysInfoProp('onmouseup    ', docOnmouseup);
-    html += addSysInfoProp('onkeydown    ', docOnkeydown);
-    html += addSysInfoProp('onkeypress   ', docOnkeypress);
-    html += addSysInfoProp('onkeyup      ', docOnkeyup);
-    html += addSysInfoProp('onselectstart', docOnselectstart);
-    html += addSysInfoProp('oncontextmenu', docOncontextmenu);
     html += addSysInfoProp('baseURI ', foldingTxt(document.baseURI, 'docBaseURL', OMIT_MID));
     html += addSysInfoProp('referrer', foldingTxt(document.referrer, 'docRef', OMIT_MID));
     html += addSysInfoProp('cookie  ', '<span id="' + ctx.id + '-sys-cookie"></span>');
@@ -4204,9 +4186,9 @@ DebugJS.prototype = {
       DebugJS.setStyle(ctx.elmDelBtn, 'color', '#a88');
     }
   },
-  hlElm: function(removeTarget, setTarget) {
-    if (removeTarget && (typeof removeTarget.className == 'string')) {
-      DebugJS.removeClass(removeTarget, DebugJS.ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
+  hlElm: function(rmvTarget, setTarget) {
+    if (rmvTarget && (typeof rmvTarget.className == 'string')) {
+      DebugJS.removeClass(rmvTarget, DebugJS.ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
     }
     if (setTarget && (typeof setTarget.className == 'string')) {
       DebugJS.addClass(setTarget, DebugJS.ctx.id + DebugJS.ELM_HL_CLASS_SUFFIX);
