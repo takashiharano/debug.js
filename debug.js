@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202212170024';
+  this.v = '202212182053';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10786,7 +10786,7 @@ DebugJS._serializeDateTime = function(s) {
 DebugJS.getClockVal = function() {
   return DebugJS.getDateTime(Date.now() + (+DebugJS.ctx.props.clockoffset));
 };
-DebugJS.serializedN2clock = function(s) {
+DebugJS.hhmmssf2clock = function(s) {
   return s.substr(0, 2) + ':' + s.substr(2, 2) + ':' + s.substr(4, 2) + '.' + s.substr(6, 3);
 };
 DebugJS.getDateWithTimestamp = function(v, iso) {
@@ -12535,14 +12535,28 @@ DebugJS.n2rwx = function(n) {
   return s;
 };
 DebugJS.sum = function(s) {
+  var f = (s.match(/:/) ? DebugJS.sumT : DebugJS.sumN);
+  s += '\n----\n' + f(s);
+  return s;
+};
+DebugJS.sumN = function(s) {
   var a = DebugJS.txt2arr(s);
   var n = 0;
   for (var i = 0; i < a.length; i++) {
     var v = +(a[i].replace(/,/g, ''));
     if (!isNaN(v)) n += +v;
   }
-  s += '\n----\n' + n;
-  return s;
+  return n;
+};
+DebugJS.sumT = function(s) {
+  var a = DebugJS.txt2arr(s);
+  var r = '00:00';
+  for (var i = 0; i < a.length; i++) {
+    var t = a[i].trim();
+    if (!t.match(/:/)) t = DebugJS.hrs2clock(t);
+    if (t) r = DebugJS.addTime(r, t);
+  }
+  return DebugJS.fmtCalcTime(r);
 };
 
 DebugJS.bit8 = {};
@@ -13089,6 +13103,23 @@ DebugJS.toFullTz = function(t) {
 };
 DebugJS.nnnn2clock = function(s) {
   return s.substr(0, 3) + ':' + s.substr(3, 2);
+};
+DebugJS.hrs2clock = function(s, sep) {
+  if (sep == undefined) sep = ':';
+  s += '';
+  var sign = '';
+  if (s.match(/^[+-]/)) {
+    sign = s.substr(0, 1);
+    s = s.substr(1);
+  }
+  var w = s.split('.');
+  var h = w[0] | 0;
+  var fM = 0;
+  if (w.length >= 2) fM = parseFloat('0.' + w[1]);
+  var m = (60 * fM) | 0;
+  var hh = ((h < 10) ? '0' + h : h);
+  var mm = ((m < 10) ? '0' + m : m);
+  return (sign + hh + sep + mm);
 };
 DebugJS.isSTN = function(s) {
   s = s.toUpperCase();
@@ -17757,7 +17788,7 @@ DebugJS.xlsDateA2N = function(v) {
     r = 60;
   }
   if (t | 0 > 0) {
-    t = DebugJS.serializedN2clock(t);
+    t = DebugJS.hhmmssf2clock(t);
     r += DebugJS.xlsTimeA2N(t);
   }
   return r;
