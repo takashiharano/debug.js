@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202212182112';
+  this.v = '202301050010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12166,7 +12166,7 @@ DebugJS.padSeq = function(s, n) {
   var f = (DebugJS.isAscii(s) ? 0 : 1);
   var p = '';
   for (var i = (s.length + 1); i <= n; i++) {
-    p += (i % 10);
+    p += ((i == n) ? '#' : (i % 10));
   }
   if (f) p = DebugJS.toFullWidth(p);
   return s + p;
