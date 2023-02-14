@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202301050010';
+  this.v = '202302150020';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -696,7 +696,7 @@ DebugJS.HTML_SNIPPET = [
 '<button onclick=""></button>',
 '<video src="" controls autoplay>',
 '',
-'<!DOCTYPE html>\n<html>\n<head>\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<meta charset="utf-8">\n<meta name="robots" content="none">\n<meta name="referrer" content="no-referrer">\n<meta name="referrer" content="never">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\nonReady = function() {\n};\nonLoad = function() {\n};\nwindow.addEventListener(\'DOMContentLoaded\', onReady, true);\nwindow.addEventListener(\'load\', onLoad, true);\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
+'<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="robots" content="none">\n<meta name="referrer" content="no-referrer">\n<meta name="referrer" content="never">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\nonReady = function() {\n};\nonLoad = function() {\n};\nwindow.addEventListener(\'DOMContentLoaded\', onReady, true);\nwindow.addEventListener(\'load\', onLoad, true);\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
   'togglableShowHide', 'useClock', 'useClearButton', 'useSuspendLogButton',
