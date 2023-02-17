@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202302150020';
+  this.v = '202302180012';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9275,17 +9275,10 @@ DebugJS.prototype = {
     DebugJS.INDENT_SP = DebugJS.repeatCh(' ', v);
   },
   setPropPointMsgSizeCb: function(ctx, v) {
-    var s;
-    try {
-      s = eval(v);
-    } catch (e) {
-      DebugJS._log.e(e);
-      return ctx.props.pointmsgsize;
-    }
-    ctx.props.pointmsgsize = s;
+    ctx.props.pointmsgsize = v;
     var area = DebugJS.point.hint.getArea();
     var el = area.pre;
-    if (el) DebugJS.setStyle(el, 'font-size', s);
+    if (el) DebugJS.setStyle(el, 'font-size', v);
   },
   setPropTimerCb: function(ctx, v) {
     var tm = DebugJS.timerstr2struct(v);
@@ -16026,7 +16019,7 @@ DebugJS.point.init = function(all) {
     point._init();
   }
   var k = 'pointmsgsize';
-  var v = '\'' + DebugJS.ctx.PROPS_DFLT_VALS[k] + '\'';
+  var v = DebugJS.ctx.PROPS_DFLT_VALS[k];
   DebugJS.ctx._cmdSet(DebugJS.ctx, k, v, false);
 };
 DebugJS.point._init = function() {
