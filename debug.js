@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202302180012';
+  this.v = '202305190044';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -159,10 +159,8 @@ var DebugJS = DebugJS || function() {
   this.fileVwrBtn = null;
   this.fileVwrPanel = null;
   this.fileInput = null;
-  this.fileVwrLabelB64 = null;
-  this.fileVwrRadioB64 = null;
-  this.fileVwrLabelBin = null;
-  this.fileVwrRadioBin = null;
+  this.fileVwrBtnB64 = null;
+  this.fileVwrBtnBin = null;
   this.fileClrBtn = null;
   this.fileVwrFooter = null;
   this.fileLoadProgBar = null;
@@ -5290,33 +5288,18 @@ DebugJS.prototype = {
     ctx.fileInput.addEventListener('change', ctx.onFileSelected);
     ctx.fileInput.style.width = 'calc(100% - 180px)';
 
-    style = {'margin-left': (ctx.computedFontSize * 0.8) + 'px'};
-    ctx.fileVwrRadioB64 = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
-    ctx.fileVwrRadioB64.type = 'radio';
-    ctx.fileVwrRadioB64.id = ctx.id + '-load-type-b64';
-    ctx.fileVwrRadioB64.name = ctx.id + '-load-type';
-    ctx.fileVwrRadioB64.value = 'base64';
-    ctx.fileVwrRadioB64.checked = true;
-    ctx.fileVwrRadioB64.onchange = ctx.openViewerB64;
+    ctx.fileClrBtn = DebugJS.ui.addBtn(ctx.fileVwrPanel, 'CLEAR', ctx.clearFile);
+    ctx.fileClrBtn.style.float = 'right';
+    ctx.fileClrBtn.style.marginRight = '4px';
 
-    ctx.fileVwrLabelB64 = DebugJS.ui.addElement(ctx.fileVwrPanel, 'label');
-    ctx.fileVwrLabelB64.htmlFor = ctx.id + '-load-type-b64';
-    ctx.fileVwrLabelB64.innerText = 'Base64';
+    ctx.fileVwrBtnBin = DebugJS.ui.addBtn(ctx.fileVwrPanel, '[BIN]', ctx.openViewerBin);
+    ctx.fileVwrBtnBin.style.float = 'right';
+    ctx.fileVwrBtnBin.style.marginRight = (ctx.computedFontSize * 1.2) + 'px';
+    DebugJS.setStyle(ctx.fileVwrBtnBin, 'color', DebugJS.COLOR_INACT);
 
-    style = {'margin-left': (ctx.computedFontSize * 0.8) + 'px'};
-    ctx.fileVwrRadioBin = DebugJS.ui.addElement(ctx.fileVwrPanel, 'input', style, true);
-    ctx.fileVwrRadioBin.type = 'radio';
-    ctx.fileVwrRadioBin.id = ctx.id + '-load-type-bin';
-    ctx.fileVwrRadioBin.name = ctx.id + '-load-type';
-    ctx.fileVwrRadioBin.value = 'binary';
-    ctx.fileVwrRadioBin.onchange = ctx.openViewerBin;
-
-    ctx.fileVwrLabelBin = DebugJS.ui.addElement(ctx.fileVwrPanel, 'label');
-    ctx.fileVwrLabelBin.htmlFor = ctx.id + '-load-type-bin';
-    ctx.fileVwrLabelBin.innerText = 'Binary';
-
-    ctx.fileClrBtn = DebugJS.ui.addBtn(ctx.fileVwrPanel, 'Clear', ctx.clearFile);
-    ctx.fileClrBtn.style.marginLeft = (ctx.computedFontSize * 0.8) + 'px';
+    ctx.fileVwrBtnB64 = DebugJS.ui.addBtn(ctx.fileVwrPanel, '[B64]', ctx.openViewerB64);
+    ctx.fileVwrBtnB64.style.float = 'right';
+    ctx.fileVwrBtnB64.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
 
     style = {
       'width': 'calc(100% - ' + (DebugJS.WIN_ADJUST + 2) + 'px)',
@@ -5374,7 +5357,7 @@ DebugJS.prototype = {
 
     style = {height: 'calc(50% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'};
     ctx.fileVwrDtUrlWrp = DebugJS.ui.addElement(ctx.filePreviewWrapper, 'div', style);
-    ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 31em)', null, ctx.opt.fontColor, '', null);
+    ctx.fileVwrDtUrlScheme = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, 'calc(100% - 32em)', null, ctx.opt.fontColor, '', null);
     var b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[text]', ctx.setDtSchmTxt);
     b.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
     b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, '[image]', ctx.setDtSchmImg);
@@ -5388,8 +5371,16 @@ DebugJS.prototype = {
     ctx.fileVwrRet = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.5em', 'left', '#ccc', '76', null);
     ctx.fileVwrRet.style.marginLeft = (ctx.computedFontSize * 0.2) + 'px';
 
-    ctx.addFileVwrBtn(ctx, 'Decode', 8, ctx.decodeFileVwrData);
+    ctx.addFileVwrBtn(ctx, 'DECODE', 2, ctx.decodeFileVwrData);
     ctx.fileVwrDecModeBtn = ctx.addFileVwrBtn(ctx, '[B64]', (ctx.computedFontSize * 0.5), ctx.toggleDecMode);
+
+    b = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span');
+    b.innerText = 'as';
+    b.style.marginLeft = (ctx.computedFontSize * 0.4) + 'px';
+    b.style.marginRight = (ctx.computedFontSize * 0.2) + 'px';
+    b.style.color = '#ccc';
+    b.style.float = 'right';
+
     ctx.fileVwrBSB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1em', 'center', '#ccc', '1', null);
     ctx.fileVwrBSB64n.style.float = 'right';
     ctx.fileVwrBSB64n.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
@@ -5710,12 +5701,14 @@ DebugJS.prototype = {
   openViewerB64: function() {
     var ctx = DebugJS.ctx;
     ctx.fileVwrMode = 'b64';
+    DebugJS.setStyle(ctx.fileVwrBtnB64, 'color', '');
+    DebugJS.setStyle(ctx.fileVwrBtnBin, 'color', DebugJS.COLOR_INACT);
     ctx.filePreviewWrapper.appendChild(ctx.fileVwrDtUrlWrp);
     var dtSrc = ctx.dataSrcType();
     switch (dtSrc) {
       case 'file':
         if (ctx.fileVwrByteArray) {
-          ctx.viewBinAsB64(ctx);
+          ctx.viewBinAsB64(ctx, 1);
         } else {
           ctx.loadFile(ctx.fileVwrFile, 'b64');
         }
@@ -5731,6 +5724,8 @@ DebugJS.prototype = {
   openViewerBin: function() {
     var ctx = DebugJS.ctx;
     ctx.fileVwrMode = 'bin';
+    DebugJS.setStyle(ctx.fileVwrBtnB64, 'color', DebugJS.COLOR_INACT);
+    DebugJS.setStyle(ctx.fileVwrBtnBin, 'color', '');
     if (DebugJS.isChild(ctx.filePreviewWrapper, ctx.fileVwrDtUrlWrp)) {
       ctx.filePreviewWrapper.removeChild(ctx.fileVwrDtUrlWrp);
     }
@@ -5758,16 +5753,14 @@ DebugJS.prototype = {
     var scheme = ctx.fileVwrDtUrlScheme.value;
     var data = ctx.fileVwrDtTxtArea.value;
     ctx.clearFile();
-    if (mode != 'txt') {
-      data = DebugJS.delAllNL(DebugJS.delAllSP(data));
-    }
     if ((mode == 'b64') && (data.match(/,/))) {
       var w = data.split(',');
       scheme = w[0] + ',';
       data = w[1];
     }
+    ctx.setDataUrl(ctx, scheme, data, (mode != 'b64'));
+    if (mode != 'txt') data = DebugJS.delAllNL(DebugJS.delAllSP(data));
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
-    ctx.setDataUrl(ctx, scheme, data);
     try {
       if (ctx.decMode == 'bsb64') {
         ctx.decodeFileVwrDataBSB64(ctx, data, mode, scheme);
@@ -5789,7 +5782,9 @@ DebugJS.prototype = {
         break;
       case 'txt':
         data = DebugJS.encodeBase64(src);
-        ctx.fileVwrDtTxtArea.value = ctx.fileVwrDataSrc.data = data;
+        ctx.fileVwrDataSrc.data = data;
+        var nl = ctx.fileVwrRet.value | 0;
+        ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(data, '\n', nl);
         ctx.fileVwrDataSrcType = 'b64';
         ctx.showB64Preview(ctx, null, scheme, data);
         break;
@@ -5830,7 +5825,7 @@ DebugJS.prototype = {
     DebugJS.ctx.fileVwrByteArray = a;
     DebugJS.ctx.showBinDump(DebugJS.ctx, a);
   },
-  viewBinAsB64: function(ctx) {
+  viewBinAsB64: function(ctx, setDtUrl) {
     var file = ctx.fileVwrFile;
     var scheme;
     if (file) {
@@ -5844,7 +5839,7 @@ DebugJS.prototype = {
     } else {
       var data = DebugJS.Base64.encode(ctx.fileVwrByteArray);
       ctx.fileVwrDataSrc = {scheme: scheme, data: data};
-      ctx.setDataUrl(ctx, scheme, data);
+      if (setDtUrl) ctx.setDataUrl(ctx, scheme, data);
       ctx.showB64Preview(ctx, file, scheme, data);
     }
   },
@@ -5882,10 +5877,8 @@ DebugJS.prototype = {
   switchFileScreen: function() {
     var ctx = DebugJS.ctx;
     if (ctx.fileVwrMode == 'b64') {
-      ctx.fileVwrRadioBin.checked = true;
       ctx.openViewerBin();
     } else {
-      ctx.fileVwrRadioB64.checked = true;
       ctx.openViewerB64();
     }
   },
@@ -5982,11 +5975,11 @@ DebugJS.prototype = {
     html += data;
     ctx.updateFilePreview(html);
   },
-  setDataUrl: function(ctx, scheme, data) {
+  setDataUrl: function(ctx, scheme, data, kpLF) {
     scheme = scheme.replace(/,$/, '');
     ctx.fileVwrDtUrlScheme.value = scheme + ',';
     var n = ctx.fileVwrRet.value | 0;
-    ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(data, '\n', n);
+    ctx.fileVwrDtTxtArea.value = (kpLF ? data : DebugJS.insertCh(DebugJS.delAllNL(data), '\n', n));
   },
   getFileInfo: function(ctx, file) {
     var fInfo = ctx.fileVwrFileInfo;
@@ -6195,10 +6188,6 @@ DebugJS.prototype = {
     setStyle(ctx.fileVwrB64Btn, 'color', '');
     setStyle(ctx.fileVwrBSB64nL, 'color', '#888');
     setStyle(ctx.fileVwrBSB64n, 'color', '#888');
-    ctx.fileVwrRadioB64.disabled = false;
-    ctx.fileVwrRadioBin.disabled = false;
-    setStyle(ctx.fileVwrLabelB64, 'color', '#fff');
-    setStyle(ctx.fileVwrLabelBin, 'color', '#fff');
   },
   setModeBSB64: function() {
     var ctx = DebugJS.ctx;
@@ -6210,10 +6199,6 @@ DebugJS.prototype = {
     if ((m == 'hex') || (m == 'bin')) ctx.setDecMode(ctx, 'b64');
     setStyle(ctx.fileVwrBSB64nL, 'color', '#ccc');
     setStyle(ctx.fileVwrBSB64n, 'color', '#ccc');
-    ctx.fileVwrRadioB64.disabled = true;
-    ctx.fileVwrRadioBin.disabled = true;
-    setStyle(ctx.fileVwrLabelB64, 'color', '#888');
-    setStyle(ctx.fileVwrLabelBin, 'color', '#888');
   },
 
   openHtmlEditor: function() {
