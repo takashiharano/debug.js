@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305250050';
+  this.v = '202305262226';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11970,7 +11970,7 @@ DebugJS.alignByTab = function(s, n) {
   for (i = 0; i < a.length; i++) {
     l = a[i].split('\t');
     for (j = 0; j < l.length - 1; j++) {
-      r += DebugJS.rpad(l[j], d, c[j] + n);
+      r += DebugJS.rpad(l[j], d, c[j] + n, 1);
     }
     r += l[j] + '\n';
   }
@@ -12031,7 +12031,7 @@ DebugJS.toUniqueCnt = function(v, w) {
   }
   var idxD = DebugJS.digits(w.length);
   if (idxD < 2) idxD = 2;
-  var h = DebugJS.rpad('IDX', ' ', idxD) + ' ' + DebugJS.rpad('VAL', ' ', mxL) + ' CNT\n' + DebugJS.repeatCh('-', idxD + mxL + mxD + 3) + '\n';
+  var h = DebugJS.rpad('IDX', ' ', idxD, 1) + ' ' + DebugJS.rpad('VAL', ' ', mxL, 1) + ' CNT\n' + DebugJS.repeatCh('-', idxD + mxL + mxD + 3) + '\n';
   var r = h;
   var m = h;
   for (i = 0; i < w.length; i++) {
@@ -13470,19 +13470,25 @@ DebugJS.strcatWnl = function(s1, s2) {
   if (!DebugJS.endsWith(s2, '\n')) s1 += '\n';
   return s1;
 };
-DebugJS.lpad = function(s, c, l) {
+DebugJS.lpad = function(s, c, l, w) {
   s += '';
-  var d = l - DebugJS.lenW(s);
+  var n = (w ? DebugJS.lenW(s) : s.length);
+  var d = l - n;
   if (d <= 0) return s;
   var p = DebugJS.repeatCh(c, d);
-  return (p + s);
+  var i = l - n;
+  if (i < 0) i = 0;
+  return p.substr(0, i) + s;
 };
-DebugJS.rpad = function(s, c, l) {
+DebugJS.rpad = function(s, c, l, w) {
   s += '';
-  var d = l - DebugJS.lenW(s);
+  var n = (w ? DebugJS.lenW(s) : s.length);
+  var d = l - n;
   if (d <= 0) return s;
   var p = DebugJS.repeatCh(c, d);
-  return (s += p);
+  var i = l - n;
+  if (i < 0) i = 0;
+  return s + p.substr(0, i);
 };
 DebugJS.repeatCh = function(c, n) {
   var s = '';
@@ -17457,7 +17463,7 @@ DebugJS.test.getDetails = function(results) {
     for (i = 0; i < results[id].results.length; i++) {
       var result = results[id].results[i];
       var info = test.getStyledInfoStr(result);
-      details += ' ' + DebugJS.rpad(result.label, ' ', n) + ' ' + test.getStyledResultStr(result.status, info) + '\n';
+      details += ' ' + DebugJS.rpad(result.label, ' ', n, 1) + ' ' + test.getStyledResultStr(result.status, info) + '\n';
     }
     details += '\n';
   }
