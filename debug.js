@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305262226';
+  this.v = '202305272125';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -222,7 +222,7 @@ var DebugJS = DebugJS || function() {
   this.txtClrBtn = null;
   this.txtEdtExecBtn = null;
   this.txtEdtMdSlct = null;
-  this.txtEdtOptEl = [{lbl: null, txt: null}, {lbl: null, txt: null}],
+  this.txtEdtOptEl = [{lbl: null, txt: null, sel: null}, {lbl: null, txt: null, sel: null}, {lbl: null, txt: null, sel: null}],
   this.swBtnPanel = null;
   this.swLabel = null;
   this.clearBtn = null;
@@ -6452,9 +6452,11 @@ DebugJS.prototype = {
     }
     ctx.txtEdtMdSlct.innerHTML = o;
     ctx.txtEdtMdSlct.addEventListener('change', ctx.onTxtEdtMdChg);
-    for (i = 0; i < 2; i++) {
+    for (i = 0; i < 3; i++) {
       ctx.txtEdtOptEl[i].lbl = DebugJS.ui.addLabel(basePanel, '', {'margin-left': ctx.computedFontSize + 'px'});
-      ctx.txtEdtOptEl[i].txt = DebugJS.ui.addTextInput(basePanel, '25px', 'left', ctx.opt.fontColor, '', null);
+      ctx.txtEdtOptEl[i].txt = DebugJS.ui.addTextInput(basePanel, '3em', 'left', ctx.opt.fontColor, '', null);
+      ctx.txtEdtOptEl[i].sel = DebugJS.ui.addElement(basePanel, 'select');
+      ctx.txtEdtOptEl[i].sel.className = 'dbg-select dbg-nomove';
     }
     styl = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
     ctx.txtEdtTxt = DebugJS.ui.addElement(basePanel, 'textarea', styl);
@@ -6489,15 +6491,32 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var v = ctx.txtEdtMdSlct.value | 0;
     var d = ctx.editTxtFn[v];
-    for (var i = 0; i < 2; i++) {
+    for (var i = 0; i < 3; i++) {
       var optEl = ctx.txtEdtOptEl;
       DebugJS.hideEl(optEl[i].lbl);
       DebugJS.hideEl(optEl[i].txt);
+      DebugJS.hideEl(optEl[i].sel);
+      optEl[i].sel.active = false;
       if (d.opt && d.opt[i]) {
-        optEl[i].lbl.innerText = d.opt[i].lbl + ': ';
-        optEl[i].txt.value = (d.opt[i].v ? d.opt[i].v : '');
+        var oDef = d.opt[i];
+        optEl[i].lbl.innerText = oDef.lbl + ': ';
+        optEl[i].txt.value = (oDef.v ? oDef.v : '');
         DebugJS.showEl(optEl[i].lbl);
         DebugJS.showEl(optEl[i].txt);
+        if (oDef.optvals) {
+          var sel = optEl[i].sel;
+          DebugJS.hideEl(optEl[i].txt);
+          DebugJS.showEl(sel);
+          sel.active = true;
+          var o = '';
+          for (var j = 0; j < oDef.optvals.length; j++) {
+            var ov = oDef.optvals[j];
+            o += '<option value="' + ov.v + '"';
+            if (ov.s) o += ' selected';
+            o += '>' + ((ov.t == undefined) ? ov.v : ov.t) + '</option>';
+          }
+          sel.innerHTML = o;
+        }
       }
     }
   },
@@ -6508,27 +6527,31 @@ DebugJS.prototype = {
     var v = ctx.txtEdtTxt.value;
     var o1 = ctx.txtEdtOptEl[0].txt.value;
     var o2 = ctx.txtEdtOptEl[1].txt.value;
-    ctx.txtEdtTxt.value = d.fn(ctx, v, o1, o2);
+    var o3 = ctx.txtEdtOptEl[2].txt.value;
+    if (ctx.txtEdtOptEl[0].sel.active) o1 = ctx.txtEdtOptEl[0].sel.value;
+    if (ctx.txtEdtOptEl[1].sel.active) o2 = ctx.txtEdtOptEl[1].sel.value;
+    if (ctx.txtEdtOptEl[2].sel.active) o2 = ctx.txtEdtOptEl[2].sel.value;
+    ctx.txtEdtTxt.value = d.fn(ctx, v, o1, o2, o3);
     ctx.onTxtEdtInput();
   },
   editTxtFn: [
     {lbl: ''},
     {
-      lbl: 'UNIQUE', opt: [{lbl: 'A=asc/D=desc'}, {lbl: 'w/ CNT(y/n)'}],
+      lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{t: 'Y', v: 'y'}, {t: 'N', v: 'n', s: 1}]}],
       fn: function(ctx, s, o1, o2) {
         var opt = {sort: o1.toUpperCase(), count: (o2.toLowerCase() == 'y' ? 1 : 0), blank: 0};
         return DebugJS.toUnique(s, opt).r;
       }
     },
     {
-      lbl: 'SORT', opt: [{lbl: 'A=asc/D=desc', v: 'A'}, {lbl: 'COL'}],
+      lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}],
       fn: function(ctx, s, o1, o2) {
         var d = (o1.toUpperCase() == 'D' ? 1 : 0);
         return DebugJS.sort(s, d, o2);
       }
     },
     {
-      lbl: 'NEWLINE', opt: [{lbl: '0=DEL/1=AGG/2=DBL/3=INS', v: '1'}, {lbl: 'POS', v: '76'}],
+      lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
       fn: function(ctx, s, o1, o2) {
         var f = DebugJS.lflf2lf;
         if (o1 == 0) {
@@ -6543,18 +6566,59 @@ DebugJS.prototype = {
     },
     {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
     {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}},
-    {lbl: 'UPPERCASE', fn: function(ctx, s) {return s.toUpperCase();}},
-    {lbl: 'lowercase', fn: function(ctx, s) {return s.toLowerCase();}},
-    {lbl: 'TO_FULL_WIDTH', fn: function(ctx, s) {return DebugJS.toFullWidth(s);}},
-    {lbl: 'TO_HALF_WIDTH', fn: function(ctx, s) {return DebugJS.toHalfWidth(s);}},
-    {lbl: '%XX', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
-    {lbl: '&#n;', opt: [{lbl: 'E=encode/D=decode', v: 'D'}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
-    {lbl: 'PAD_SEQ', opt: [{lbl: 'LEN'}], fn: function(ctx, s, o1) {return DebugJS.padSeq(s, o1 | 0);}},
+    {
+      lbl: 'UPPER/lower', opt: [{lbl: '', optvals: [{t: 'UPPER', v: 'U'}, {t: 'lower', v: 'L'}]}],
+      fn: function(ctx, s, o1) {
+        return (o1 == 'U' ? s.toUpperCase() : s.toLowerCase());
+      }
+    },
+    {
+      lbl: 'FULL/HALF', opt: [{lbl: '', optvals: [{t: 'FULL', v: 'F'}, {t: 'HALF', v: 'H'}]}],
+      fn: function(ctx, s, o1) {
+        return (o1 == 'F' ? DebugJS.toFullWidth(s) : DebugJS.toHalfWidth(s));
+      }
+    },
+    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
+    {
+      lbl: 'PADDING', opt: [{lbl: 'TO', optvals: [{t: 'LEFT', v: 'L'}, {t: 'RIGHT', v: 'R'}]}, {lbl: 'CHAR', v: '0'}, {lbl: 'LEN'}],
+      fn: function(ctx, s, o1, o2, o3) {
+        var f = ((o1 == 'L') ? DebugJS.lpad : DebugJS.rpad);
+        var a = DebugJS.txt2arr(s);
+        var r = '';
+        for (var i = 0; i < a.length; i++) {
+          if (i > 0) r += '\n';
+          var b = a[i].split('\t');
+          for (var j = 0; j < b.length; j++) {
+            if (j > 0) r += '\t';
+            r += f(b[j], o2, o3);
+          }
+        }
+        return r;
+      }
+    },
+    {
+      lbl: 'PADDING_SEQ', opt: [{lbl: 'LEN'}],
+      fn: function(ctx, s, o1) {
+        var a = DebugJS.txt2arr(s);
+        var r = '';
+        if (a.length == 0) return DebugJS.padSeq(s, o1 | 0);
+        for (var i = 0; i < a.length; i++) {
+          if (i > 0) r += '\n';
+          var b = a[i].split('\t');
+          for (var j = 0; j < b.length; j++) {
+            if (j > 0) r += '\t';
+            r += DebugJS.padSeq(b[j], o1 | 0);
+          }
+        }
+        return r;
+       }
+    },
     {lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}},
-    {lbl: 'HORIZ_VERT', opt: [{lbl: '0=H2V/1=V2H', v: '0'}], fn: function(ctx, s, o1) {return (+o1 ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
+    {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o1) {return (+o1 ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
     {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.formatJSON(s, +o1);}},
     {lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}},
-    {lbl: 'ROT', opt: [{lbl: 'X(5/13/18/47)', v: '18'}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}},
+    {lbl: 'ROT', opt: [{lbl: 'X', optvals: [{v: '5'}, {v: '13'}, {v: '18', s: 1}, {v: '47'}]}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}},
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}}
   ],
   minMaxLen: function(s, f, n) {
