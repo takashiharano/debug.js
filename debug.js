@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305281527';
+  this.v = '202305281614';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -259,7 +259,7 @@ var DebugJS = DebugJS || function() {
   this.overlayBasePanel = null;
   this.overlayPanels = [];
   this.logHdrPanel = null;
-  this.logLvBtn = {all: null, std: null, vrb: null, dbg: null, inf: null, wrn: null, err: null, ftl: null};
+  this.logLvBtn = null;
   this.logTimeBtn = null;
   this.fltrInputLabel = null;
   this.fltrInput = null;
@@ -1544,15 +1544,16 @@ DebugJS.prototype = {
   createLogFilter: function(ctx) {
     ctx.logTimeBtn = ctx.createLogFltBtn2(ctx, '', 'logTimeBtn', 1, '', ctx.toggleLogTimestamp);
     ctx.updateLogTimestampBtn(ctx, ctx.opt.showTimestamp);
-    ctx.logLvBtn.all = ctx.createLogFltBtn('ALL', 'ALL', 'all', 'btnColor');
-    ctx.logLvBtn.std = ctx.createLogFltBtn('L', 'LOG', 'std', 'fontColor');
-    ctx.logLvBtn.vrb = ctx.createLogFltBtn('V', 'VRB', 'vrb', 'logColorV');
-    ctx.logLvBtn.dbg = ctx.createLogFltBtn('D', 'DBG', 'dbg', 'logColorD');
-    ctx.logLvBtn.inf = ctx.createLogFltBtn('I', 'INF', 'inf', 'logColorI');
-    ctx.logLvBtn.wrn = ctx.createLogFltBtn('W', 'WRN', 'wrn', 'logColorW');
-    ctx.logLvBtn.err = ctx.createLogFltBtn('E', 'ERR', 'err', 'logColorE');
-    ctx.logLvBtn.ftl = ctx.createLogFltBtn('F', 'FTL', 'ftl', 'logColorF');
-
+    ctx.logLvBtn = {
+      all: ctx.createLogFltBtn('ALL', 'ALL', 'all', 'btnColor'),
+      std: ctx.createLogFltBtn('L', 'LOG', 'std', 'fontColor'),
+      vrb: ctx.createLogFltBtn('V', 'VRB', 'vrb', 'logColorV'),
+      dbg: ctx.createLogFltBtn('D', 'DBG', 'dbg', 'logColorD'),
+      inf: ctx.createLogFltBtn('I', 'INF', 'inf', 'logColorI'),
+      wrn: ctx.createLogFltBtn('W', 'WRN', 'wrn', 'logColorW'),
+      err: ctx.createLogFltBtn('E', 'ERR', 'err', 'logColorE'),
+      ftl: ctx.createLogFltBtn('F', 'FTL', 'ftl', 'logColorF')
+    };
     var style = {'margin-left': '4px', 'color': ctx.opt.sysInfoColor};
     ctx.fltrInputLabel = DebugJS.ui.addElement(ctx.logHdrPanel, 'span', style, true);
     ctx.fltrInputLabel.innerText = 'Search:';
@@ -5818,6 +5819,7 @@ DebugJS.prototype = {
     ctx.viewBinAsB64(ctx);
   },
   decodeHex: function(ctx, hex) {
+    hex = hex.replace(/%/g, '');
     ctx.fileVwrByteArray = DebugJS.str2binArr(hex, 2, '0x');
     ctx.viewBinAsB64(ctx);
   },
