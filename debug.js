@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305272125';
+  this.v = '202305281343';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5963,8 +5963,12 @@ DebugJS.prototype = {
     if (cType == 'image') {
       data = ctx.getImgPreview(ctx, scheme, b64);
     } else {
-      var decoded = DebugJS.decodeB64(b64);
-      data = ctx.getTextPreview(decoded);
+      try {
+        var d = DebugJS._decodeB64(b64);
+      } catch (e) {
+        d = '[ERROR]Invalid Base64 characters';
+      }
+      data = ctx.getTextPreview(d);
     }
     ctx.showFilePreview(ctx, file, scheme, data);
     return data;
@@ -6525,73 +6529,71 @@ DebugJS.prototype = {
     var d = ctx.editTxtFn[ctx.txtEdtMdSlct.value];
     if (!d.fn) return;
     var v = ctx.txtEdtTxt.value;
-    var o1 = ctx.txtEdtOptEl[0].txt.value;
-    var o2 = ctx.txtEdtOptEl[1].txt.value;
-    var o3 = ctx.txtEdtOptEl[2].txt.value;
-    if (ctx.txtEdtOptEl[0].sel.active) o1 = ctx.txtEdtOptEl[0].sel.value;
-    if (ctx.txtEdtOptEl[1].sel.active) o2 = ctx.txtEdtOptEl[1].sel.value;
-    if (ctx.txtEdtOptEl[2].sel.active) o2 = ctx.txtEdtOptEl[2].sel.value;
-    ctx.txtEdtTxt.value = d.fn(ctx, v, o1, o2, o3);
+    var o = [];
+    for (var i = 0; i < 3; i++) {
+      o[i] = ctx.txtEdtOptEl[i].txt.value;
+      if (ctx.txtEdtOptEl[i].sel.active) o[i] = ctx.txtEdtOptEl[i].sel.value;
+    }
+    ctx.txtEdtTxt.value = d.fn(ctx, v, o);
     ctx.onTxtEdtInput();
   },
   editTxtFn: [
     {lbl: ''},
     {
       lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{t: 'Y', v: 'y'}, {t: 'N', v: 'n', s: 1}]}],
-      fn: function(ctx, s, o1, o2) {
-        var opt = {sort: o1.toUpperCase(), count: (o2.toLowerCase() == 'y' ? 1 : 0), blank: 0};
+      fn: function(ctx, s, o) {
+        var opt = {sort: o[0].toUpperCase(), count: (o[1].toLowerCase() == 'y' ? 1 : 0), blank: 0};
         return DebugJS.toUnique(s, opt).r;
       }
     },
     {
       lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}],
-      fn: function(ctx, s, o1, o2) {
-        var d = (o1.toUpperCase() == 'D' ? 1 : 0);
-        return DebugJS.sort(s, d, o2);
+      fn: function(ctx, s, o) {
+        var d = (o[0].toUpperCase() == 'D' ? 1 : 0);
+        return DebugJS.sort(s, d, o[1]);
       }
     },
     {
       lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
-      fn: function(ctx, s, o1, o2) {
+      fn: function(ctx, s, o) {
         var f = DebugJS.lflf2lf;
-        if (o1 == 0) {
+        if (o[0] == 0) {
           f = DebugJS.deleteLF;
-        } else if (o1 == 2) {
+        } else if (o[0] == 2) {
           f = DebugJS.lf2lflf;
-        } else if (o1 == 3) {
-          return DebugJS.insertCh(s, '\n', o2 | 0);
+        } else if (o[0] == 3) {
+          return DebugJS.insertCh(s, '\n', o[1] | 0);
         }
         return f(s);
       }
     },
     {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
-    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o1) {return DebugJS.alignByTab(s, o1 | 0);}},
+    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
     {
-      lbl: 'UPPER/lower', opt: [{lbl: '', optvals: [{t: 'UPPER', v: 'U'}, {t: 'lower', v: 'L'}]}],
-      fn: function(ctx, s, o1) {
-        return (o1 == 'U' ? s.toUpperCase() : s.toLowerCase());
+      lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
+      fn: function(ctx, s, o) {
+        return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());
       }
     },
     {
-      lbl: 'FULL/HALF', opt: [{lbl: '', optvals: [{t: 'FULL', v: 'F'}, {t: 'HALF', v: 'H'}]}],
-      fn: function(ctx, s, o1) {
-        return (o1 == 'F' ? DebugJS.toFullWidth(s) : DebugJS.toHalfWidth(s));
+      lbl: 'HALF/FULL', opt: [{lbl: '', optvals: [{t: 'HALF', v: 'H'}, {t: 'FULL', v: 'F'}]}],
+      fn: function(ctx, s, o) {
+        return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));
       }
     },
-    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
-    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o1) {var f = o1.toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
     {
       lbl: 'PADDING', opt: [{lbl: 'TO', optvals: [{t: 'LEFT', v: 'L'}, {t: 'RIGHT', v: 'R'}]}, {lbl: 'CHAR', v: '0'}, {lbl: 'LEN'}],
-      fn: function(ctx, s, o1, o2, o3) {
-        var f = ((o1 == 'L') ? DebugJS.lpad : DebugJS.rpad);
+      fn: function(ctx, s, o) {
+        var f = ((o[0] == 'L') ? DebugJS.lpad : DebugJS.rpad);
         var a = DebugJS.txt2arr(s);
+        if (a.length == 0) return f('', o[1], o[2]);
         var r = '';
         for (var i = 0; i < a.length; i++) {
           if (i > 0) r += '\n';
           var b = a[i].split('\t');
           for (var j = 0; j < b.length; j++) {
             if (j > 0) r += '\t';
-            r += f(b[j], o2, o3);
+            r += f(b[j], o[1], o[2]);
           }
         }
         return r;
@@ -6599,35 +6601,61 @@ DebugJS.prototype = {
     },
     {
       lbl: 'PADDING_SEQ', opt: [{lbl: 'LEN'}],
-      fn: function(ctx, s, o1) {
+      fn: function(ctx, s, o) {
         var a = DebugJS.txt2arr(s);
         var r = '';
-        if (a.length == 0) return DebugJS.padSeq(s, o1 | 0);
+        if (a.length == 0) return DebugJS.padSeq(s, o[0] | 0);
         for (var i = 0; i < a.length; i++) {
           if (i > 0) r += '\n';
           var b = a[i].split('\t');
           for (var j = 0; j < b.length; j++) {
             if (j > 0) r += '\t';
-            r += DebugJS.padSeq(b[j], o1 | 0);
+            r += DebugJS.padSeq(b[j], o[0] | 0);
           }
         }
         return r;
-       }
+      }
     },
-    {lbl: 'DATE_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o1) {return DebugJS.dateSep(s, o1);}},
-    {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o1) {return (+o1 ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
-    {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}], fn: function(ctx, s, o1) {return DebugJS.formatJSON(s, +o1);}},
-    {lbl: 'MAX_LEN', fn: function(ctx, s, o1) {return ctx.minMaxLen(s, 1, o1);}},
-    {lbl: 'ROT', opt: [{lbl: 'X', optvals: [{v: '5'}, {v: '13'}, {v: '18', s: 1}, {v: '47'}]}, {lbl: 'SHIFT'}], fn: function(ctx, s, o1, o2) {return DebugJS.rot(o1, s, o2);}},
+    {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
+    {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o) {return (+o[0] ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
+    {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return ctx.minMaxLen(s, o[0]);}},
+    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o) {var f = o[0].toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o) {var f = o[0].toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
+    {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}],
+      fn: function(ctx, s, o) {
+        try {
+          var j = DebugJS.formatJSON(s, +o[0]);
+        } catch (e) {
+          j = '[ERROR]' + e + '\n' + s;
+        }
+        return j;
+      }
+    },
+    {lbl: 'ROT', opt: [{lbl: 'X', optvals: [{v: '5'}, {v: '13'}, {v: '18', s: 1}, {v: '47'}]}, {lbl: 'SHIFT'}], fn: function(ctx, s, o) {return DebugJS.rot(o[0], s, o[1]);}},
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}}
   ],
-  minMaxLen: function(s, f, n) {
-    var x = DebugJS.lenMinMax(s, f, n);
-    var r = 'len=' + x.c + '\n';
-    for (var i = 0; i < x.m.length; i++) {
-      r += x.m[i] + '\n';
+  minMaxLen: function(s, th) {
+    var t = DebugJS.arr2set(DebugJS.txt2arr(s));
+    th |= 0;
+    if (t.length == 0) return '';
+    t.sort(function(a, b) {return b.length - a.length;});
+    var iMx = 0;
+    var iMn = 0;
+    var f = 1;
+    var v = '';
+    for (var i = 0; i < t.length; i++) {
+      var ln = t[i].length;
+      if (ln > iMx) iMx = ln;
+      if ((iMn == 0) || ((ln > 0) && (ln < iMn))) iMn = ln;
+      if (f && (ln <= th)) {
+        f = 0;
+        v += '\n^^^ > ' + th + '\n\n';
+      }
+      v += t[i] + '\n';
     }
-    return r;
+    if (iMn == 0) iMn = iMx;
+    var c = 'max=' + iMx + '\n' + 'min=' + iMn + '\n\n';
+    return c + v;
   },
 
   onTextInput: function(txtSt, edt) {
@@ -11977,33 +12005,6 @@ DebugJS.insertCh = function(s, ch, n) {
   }
   return w;
 };
-DebugJS.lenMinMax = function(t, f, th) {
-  var a = DebugJS.txt2arr(t);
-  var c = 0;
-  var b = [];
-  th |= 0;
-  for (var i = 0; i < a.length; i++) {
-    var s = a[i];
-    if (s) {
-      var v = s.length;
-      if ((f && (c <= v)) || (!f && ((c == 0) || (c >= v)))) {
-        c = v;
-        b.push(s);
-      }
-    }
-  }
-  var m = [];
-  for (i = 0; i < b.length; i++) {
-    v = b[i].length;
-    if (th > 0) {
-      if ((f && v >= th) || (!f && v <= th)) m.push(b[i]);
-    } else if (v == c) {
-      m.push(b[i]);
-    }
-  }
-  m = DebugJS.arr2set(m);
-  return {m: m, c: c};
-};
 DebugJS.sort = function(s, d, n) {
   if (n > 0) {
     if (isNaN(n)) n = DebugJS.xlsCol(n);
@@ -12630,14 +12631,16 @@ DebugJS.encodeB64 = function(s) {
   return DebugJS.encodeBase64(s);
 };
 DebugJS.decodeB64 = function(s, q) {
-  var r = '';
-  if (!window.atob) return r;
   try {
-    r = DebugJS.decodeBase64(s);
+    var r = DebugJS._decodeB64(s);
   } catch (e) {
     if (!q) DebugJS._log.e('decodeB64(): ' + e);
   }
   return r;
+};
+DebugJS._decodeB64 = function(s) {
+  if (!window.atob) return '';
+  return DebugJS.decodeBase64(s);
 };
 DebugJS.encodeBase64 = function(s) {
   return btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, function(match, p1) {return String.fromCharCode('0x' + p1);}));
