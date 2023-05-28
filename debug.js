@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305281425';
+  this.v = '202305281457';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -222,7 +222,7 @@ var DebugJS = DebugJS || function() {
   this.txtClrBtn = null;
   this.txtEdtExecBtn = null;
   this.txtEdtMdSlct = null;
-  this.txtEdtOptEl = [{lbl: null, txt: null, sel: null}, {lbl: null, txt: null, sel: null}, {lbl: null, txt: null, sel: null}],
+  this.txtEdtOptEl = [],
   this.swBtnPanel = null;
   this.swLabel = null;
   this.clearBtn = null;
@@ -6458,9 +6458,11 @@ DebugJS.prototype = {
     ctx.txtEdtMdSlct.innerHTML = o;
     ctx.txtEdtMdSlct.addEventListener('change', ctx.onTxtEdtMdChg);
     for (i = 0; i < 3; i++) {
-      ctx.txtEdtOptEl[i].lbl = DebugJS.ui.addLabel(basePanel, '', {'margin-left': ctx.computedFontSize + 'px'});
-      ctx.txtEdtOptEl[i].txt = DebugJS.ui.addTextInput(basePanel, '3em', 'left', ctx.opt.fontColor, '', null);
-      ctx.txtEdtOptEl[i].sel = DebugJS.ui.addElement(basePanel, 'select');
+      ctx.txtEdtOptEl[i] = {
+        lbl: DebugJS.ui.addLabel(basePanel, '', {'margin-left': ctx.computedFontSize + 'px'}),
+        txt: DebugJS.ui.addTextInput(basePanel, '3em', 'left', ctx.opt.fontColor, '', null),
+        sel: DebugJS.ui.addElement(basePanel, 'select')
+      };
       ctx.txtEdtOptEl[i].sel.className = 'dbg-select dbg-nomove';
     }
     styl = {'height': 'calc(100% - ' + (ctx.computedFontSize * 3) + 'px)'};
@@ -6549,17 +6551,11 @@ DebugJS.prototype = {
     },
     {
       lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}],
-      fn: function(ctx, s, o) {
-        var d = (o[0].toUpperCase() == 'D' ? 1 : 0);
-        return DebugJS.sort(s, d, o[1]);
-      }
+      fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1]);}
     },
     {
       lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'FLAGS', v: 'gi'}],
-      fn: function(ctx, s, o) {
-        var re = new RegExp(o[0], o[2]);
-        return s.replace(re, o[1]);
-      }
+      fn: function(ctx, s, o) {var re = new RegExp(o[0], o[2]);return s.replace(re, o[1]);}
     },
     {
       lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
@@ -6579,15 +6575,11 @@ DebugJS.prototype = {
     {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
     {
       lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
-      fn: function(ctx, s, o) {
-        return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());
-      }
+      fn: function(ctx, s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
     },
     {
       lbl: 'HALF/FULL', opt: [{lbl: '', optvals: [{t: 'HALF', v: 'H'}, {t: 'FULL', v: 'F'}]}],
-      fn: function(ctx, s, o) {
-        return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));
-      }
+      fn: function(ctx, s, o) {return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));}
     },
     {
       lbl: 'PADDING', opt: [{lbl: 'TO', optvals: [{t: 'LEFT', v: 'L'}, {t: 'RIGHT', v: 'R'}]}, {lbl: 'CHAR', v: '0'}, {lbl: 'LEN'}],
@@ -6611,8 +6603,8 @@ DebugJS.prototype = {
       lbl: 'PADDING_SEQ', opt: [{lbl: 'LEN'}],
       fn: function(ctx, s, o) {
         var a = DebugJS.txt2arr(s);
-        var r = '';
         if (a.length == 0) return DebugJS.padSeq(s, o[0] | 0);
+        var r = '';
         for (var i = 0; i < a.length; i++) {
           if (i > 0) r += '\n';
           var b = a[i].split('\t');
