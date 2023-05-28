@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305281457';
+  this.v = '202305281527';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6600,17 +6600,17 @@ DebugJS.prototype = {
       }
     },
     {
-      lbl: 'PADDING_SEQ', opt: [{lbl: 'LEN'}],
+      lbl: 'PADDING_SEQ', opt: [{lbl: 'LEN'}, {lbl: 'H/F', optvals: [{t: 'AUTO', v: '0'}, {t: 'HALF', v: '1'}, {t: 'FULL', v: '2'}]}],
       fn: function(ctx, s, o) {
         var a = DebugJS.txt2arr(s);
-        if (a.length == 0) return DebugJS.padSeq(s, o[0] | 0);
+        if (a.length == 0) return DebugJS.padSeq(s, o[0] | 0, o[1] | 0);
         var r = '';
         for (var i = 0; i < a.length; i++) {
           if (i > 0) r += '\n';
           var b = a[i].split('\t');
           for (var j = 0; j < b.length; j++) {
             if (j > 0) r += '\t';
-            r += DebugJS.padSeq(b[j], o[0] | 0);
+            r += DebugJS.padSeq(b[j], o[0] | 0, o[1] | 0);
           }
         }
         return r;
@@ -12207,13 +12207,13 @@ DebugJS._sortCsv = function(a, b, n) {
   if (DebugJS.isNum(x) && DebugJS.isNum(y)) return x - y;
   return x.localeCompare(y);
 };
-DebugJS.padSeq = function(s, n) {
-  var f = (DebugJS.isAscii(s) ? 0 : 1);
+DebugJS.padSeq = function(s, n, f) {
+  if (!f) f = (DebugJS.isAscii(s) ? 1 : 2);
   var p = '';
   for (var i = (s.length + 1); i <= n; i++) {
     p += ((i == n) ? '#' : (i % 10));
   }
-  if (f) p = DebugJS.toFullWidth(p);
+  if (f == 2) p = DebugJS.toFullWidth(p);
   return s + p;
 };
 
