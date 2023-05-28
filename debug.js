@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305281614';
+  this.v = '202305290125';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6459,7 +6459,7 @@ DebugJS.prototype = {
     }
     ctx.txtEdtMdSlct.innerHTML = o;
     ctx.txtEdtMdSlct.addEventListener('change', ctx.onTxtEdtMdChg);
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 4; i++) {
       ctx.txtEdtOptEl[i] = {
         lbl: DebugJS.ui.addLabel(basePanel, '', {'margin-left': ctx.computedFontSize + 'px'}),
         txt: DebugJS.ui.addTextInput(basePanel, '3em', 'left', ctx.opt.fontColor, '', null),
@@ -6500,7 +6500,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var v = ctx.txtEdtMdSlct.value | 0;
     var d = ctx.editTxtFn[v];
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 4; i++) {
       var optEl = ctx.txtEdtOptEl;
       DebugJS.hideEl(optEl[i].lbl);
       DebugJS.hideEl(optEl[i].txt);
@@ -6535,7 +6535,7 @@ DebugJS.prototype = {
     if (!d.fn) return;
     var v = ctx.txtEdtTxt.value;
     var o = [];
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 4; i++) {
       o[i] = ctx.txtEdtOptEl[i].txt.value;
       if (ctx.txtEdtOptEl[i].sel.active) o[i] = ctx.txtEdtOptEl[i].sel.value;
     }
@@ -6545,9 +6545,9 @@ DebugJS.prototype = {
   editTxtFn: [
     {lbl: ''},
     {
-      lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{t: 'Y', v: 'y'}, {t: 'N', v: 'n', s: 1}]}],
+      lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}],
       fn: function(ctx, s, o) {
-        var opt = {sort: o[0].toUpperCase(), count: (o[1].toLowerCase() == 'y' ? 1 : 0), blank: 0};
+        var opt = {sort: o[0], count: (o[1] == 'Y' ? 1 : 0), blank: 0};
         return DebugJS.toUnique(s, opt).r;
       }
     },
@@ -6556,8 +6556,16 @@ DebugJS.prototype = {
       fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1]);}
     },
     {
-      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'FLAGS', v: 'gi'}],
-      fn: function(ctx, s, o) {var re = new RegExp(o[0], o[2]);return s.replace(re, o[1]);}
+      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'FLAGS', v: 'gi'}],
+      fn: function(ctx, s, o) {
+        try {
+          var fm = ((o[2] == 'Y') ? new RegExp(o[0], o[3]) : o[0]);
+          s = s.replace(fm, o[1]);
+        } catch (e) {
+          s = '[ERROR]' + e + '\n' + s;
+        }
+        return s;
+      }
     },
     {
       lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
@@ -6621,8 +6629,8 @@ DebugJS.prototype = {
     {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
     {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o) {return (+o[0] ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
     {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return ctx.minMaxLen(s, o[0]);}},
-    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o) {var f = o[0].toUpperCase() == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
-    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D', s: 1}]}], fn: function(ctx, s, o) {var f = o[0].toUpperCase() == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
+    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
     {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}],
       fn: function(ctx, s, o) {
         try {
@@ -13470,7 +13478,7 @@ DebugJS.browserColoring = function(n) {
 };
 
 DebugJS.echo = function(s) {
-  DebugJS._log(s);
+  DebugJS._log.res2(s);
   return s;
 };
 
@@ -14435,6 +14443,10 @@ DebugJS._log.p = function(o, l, m, j) {
 };
 DebugJS._log.res = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_RES);
+};
+DebugJS._log.res2 = function(m) {
+  m = '<span style="color:' + DebugJS.ctx.opt.promptColor + '">&gt;</span> ' + m;
+  DebugJS._log.out(m, DebugJS.LOG_TYPE_LOG);
 };
 DebugJS._log.res.err = function(m) {
   DebugJS._log.out(m, DebugJS.LOG_TYPE_ERES);
