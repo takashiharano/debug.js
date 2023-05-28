@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305281411';
+  this.v = '202305281425';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -355,6 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'num', fn: this.cmdNum, desc: 'Displays the numbers in order', help: 'num V1 V2 [ST] [-z]'},
     {cmd: 'open', fn: this.cmdOpen, desc: 'Launch a function', help: 'open [measure|sys|dom|js|tool|ext] [timer|font|file|html|bat]|[idx] [clock|sw]|[b64|bin]'},
     {cmd: 'p', fn: this.cmdP, desc: 'Print value of expression EXP', help: 'p [-l&lt;n&gt;] [-json] EXP'},
+    {cmd: 'pangram', fn: this.cmdPangram, desc: 'Displays a pangram'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
@@ -7193,9 +7194,7 @@ DebugJS.prototype = {
   },
 
   cmdAscii: function() {
-    var s = DebugJS.chars(32, 126);
-    DebugJS._log(s);
-    return s;
+    return DebugJS.echo(DebugJS.chars(32, 126));
   },
 
   cmdBase64: function(arg, tbl, echo) {
@@ -8625,6 +8624,10 @@ DebugJS.prototype = {
 
   cmdP: function(arg, tbl) {
     return DebugJS._cmdP(arg, tbl);
+  },
+
+  cmdPangram: function() {
+    return DebugJS.echo('The quick brown fox jumps over the lazy dog. 1234567890');
   },
 
   cmdPause: function(arg, tbl) {
@@ -13469,6 +13472,11 @@ DebugJS.browserColoring = function(n) {
     case 'Safari':
       s = '<span style="color:#86c8e8">Safa</span><span style="color:#dd5651">r</span><span style="color:#ececec">i</span>';
   }
+  return s;
+};
+
+DebugJS.echo = function(s) {
+  DebugJS._log(s);
   return s;
 };
 
