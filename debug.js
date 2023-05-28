@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305281343';
+  this.v = '202305281411';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6551,6 +6551,13 @@ DebugJS.prototype = {
       fn: function(ctx, s, o) {
         var d = (o[0].toUpperCase() == 'D' ? 1 : 0);
         return DebugJS.sort(s, d, o[1]);
+      }
+    },
+    {
+      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'FLAGS', v: 'gi'}],
+      fn: function(ctx, s, o) {
+        var re = new RegExp(o[0], o[2]);
+        return s.replace(re, o[1]);
       }
     },
     {
