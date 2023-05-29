@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305290125';
+  this.v = '202305300110';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1088,6 +1088,7 @@ DebugJS.prototype = {
       'background': 'linear-gradient(rgba(16,8,8,0.6),rgba(68,0,0,0.6)) !important'
     };
     styles['.dbg-select'] = {
+      'width': 'fit-content',
       'height': '1.2em; !important',
       'border': 'solid 1px #aaa; !important',
       'border-radius': '0 !important',
@@ -6556,7 +6557,7 @@ DebugJS.prototype = {
       fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1]);}
     },
     {
-      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'FLAGS', v: 'gi'}],
+      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'FLG', v: 'gi'}],
       fn: function(ctx, s, o) {
         try {
           var fm = ((o[2] == 'Y') ? new RegExp(o[0], o[3]) : o[0]);
