@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305300110';
+  this.v = '202305302356';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6628,6 +6628,12 @@ DebugJS.prototype = {
       }
     },
     {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
+    {lbl: 'DELIMITER', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
+      fn: function(ctx, s, o) {
+        var pos = o[0].replace(/\s{2,}/g, ' ').replace(/,/g, ' ').split(' ');
+        return DebugJS.delimit(s, pos, o[1] | 0, '\t', (o[2] == 'Y'));
+      }
+    },
     {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o) {return (+o[0] ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
     {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return ctx.minMaxLen(s, o[0]);}},
     {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
@@ -12226,6 +12232,25 @@ DebugJS.padSeq = function(s, n, f) {
   }
   if (f == 2) p = DebugJS.toFullWidth(p);
   return s + p;
+};
+DebugJS.delimit = function(s, pos, o, sp, t) {
+  var a = DebugJS.txt2arr(s);
+  if (a.length == 0) return '';
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    if (i > 0) r += '\n';
+    var b = a[i];
+    for (var j = 0; j < pos.length; j++) {
+      var p0 = pos[j] - o;
+      var p1 = pos[j + 1];
+      if (p1) p1 = p1 - o;
+      if (j > 0) r += sp;
+      var v = b.substring(p0, p1);
+      if (t) v = v.trim();
+      r += v;
+    }
+  }
+  return r;
 };
 
 DebugJS.printUsage = function(m) {
