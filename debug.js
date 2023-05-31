@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305302356';
+  this.v = '202305312340';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6664,7 +6664,7 @@ DebugJS.prototype = {
       var ln = t[i].length;
       if (ln > iMx) iMx = ln;
       if ((iMn == 0) || ((ln > 0) && (ln < iMn))) iMn = ln;
-      if (f && (ln <= th)) {
+      if (f && (th > 0) && (ln <= th)) {
         f = 0;
         v += '\n^^^ > ' + th + '\n\n';
       }
