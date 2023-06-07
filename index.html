@@ -5032,7 +5032,7 @@ $ num 1 10
 9
 10
 
-$ num 1 10 -z
+$ num -z 1 10
 01
 02
 03
@@ -5790,39 +5790,6 @@ $ timediff "20190209T120000.000" "20190210T130203.456"
 $ timediff "2020-01-01 00:00:00.000" now
 $ timediff now "2100-01-01 00:00:00.000"
 -&gt; Xd HH:MI:SS.sss
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">timer</td>
-    <td>
-      arg1: start / check / split / stop / list<br>
-      arg2: timer name<span class="annotation">(opt)</span>
-    </td>
-    <td>Manipulate the timer.</td>
-  </tr>
-
-  <tr>
-    <td class="name">tofull</td>
-    <td>string</td>
-    <td>
-     Convert half-width character(s) to full-width
-<pre class="eg">
-$ tofull ABC
--&gt; ＡＢＣ
-</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td class="name">tohalf</td>
-    <td>string</td>
-    <td>
-     Convert full-width character(s) to half-width
-<pre class="eg">
-$ tohalf ＡＢＣ
--&gt; ABC
 </pre>
     </td>
   </tr>

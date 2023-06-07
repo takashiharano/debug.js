@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306072248';
+  this.v = '202306072258';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -378,9 +378,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text SELECTOR "TEXT" [-speed MILLIS] [-start SEQ_START_POS] [-end SEQ_END_POS]'},
     {cmd: 'time', fn: this.cmdTime, desc: 'String <--> millis', help: 'time ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
-    {cmd: 'timer', fn: this.cmdTimer, desc: 'Manipulate the timer', help: 'timer start|check|split|stop|list [TIMER_NAME]'},
-    {cmd: 'tofull', fn: this.cmdToFull, desc: 'Convert half-width character(s) to full-width', help: 'tofull STR'},
-    {cmd: 'tohalf', fn: this.cmdToHalf, desc: 'Convert full-width character(s) to half-width', help: 'tohalf STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|CODE_POINT'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
@@ -9631,44 +9628,6 @@ DebugJS.prototype = {
       if (echo) DebugJS._log.res(s);
       return s;
     } catch (e) {DebugJS.printUsage(tbl.help);}
-  },
-
-  cmdTimer: function(arg, tbl) {
-    var time = DebugJS.time;
-    var a = DebugJS.splitArgs(arg);
-    var op = a[0];
-    var nm = a[1];
-    if (nm == undefined) nm = DebugJS.DFLT_TMR_NM;
-    switch (op) {
-      case 'start':
-        time.start(nm);
-        break;
-      case 'check':
-        time.check(nm, true);
-        break;
-      case 'split':
-        time.split(nm, '', false);
-        break;
-      case 'stop':
-        time.end(nm);
-        break;
-      case 'list':
-        time.list();
-        break;
-      default:
-        DebugJS.printUsage(tbl.help);
-    }
-  },
-
-  cmdToFull: function(arg) {
-    var s = DebugJS.toFullWidth(arg);
-    DebugJS._log.res(s);
-    return s;
-  },
-  cmdToHalf: function(arg) {
-    var s = DebugJS.toHalfWidth(arg);
-    DebugJS._log.res(s);
-    return s;
   },
 
   cmdStack: function(arg, tbl) {
