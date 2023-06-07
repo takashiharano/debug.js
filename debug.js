@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306072258';
+  this.v = '202306072310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -320,7 +320,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n N] STR'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
-    {cmd: 'char', fn: this.cmdChar, desc: 'Print Unicode characters that consists of consecutive code points', help: 'char CH(U+xxxx) [CH(U+xxxx)]'},
+    {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars CH1|U+xxxx CH2|U+xxxx'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|dom|js|tool|ext]'},
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock DATE_TIME|OFFSET|now|start|stop|on|off|-label TXT'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
@@ -7370,14 +7370,14 @@ DebugJS.prototype = {
     }
   },
 
-  cmdChar: function(arg, tbl) {
+  cmdChars: function(arg, tbl) {
     if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
       arg = arg.substr(0, 1) + ' ' + arg.substr(2);
     }
     var a = DebugJS.splitArgs(arg);
     var c1 = a[0];
     var c2 = a[1];
-    if (!c1) {
+    if (!c1 || !c2) {
       DebugJS.printUsage(tbl.help);
       return;
     }
