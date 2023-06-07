@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306072310';
+  this.v = '202306080001';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6624,6 +6624,7 @@ DebugJS.prototype = {
         return r;
       }
     },
+    {lbl: 'NUMBERING', opt: [{lbl: 'ST', v: '1'}, {lbl: 'ED'}, {lbl: 'LEN'}], fn: function(ctx, s, o) {return DebugJS.numbering(s, o[0], o[1], o[2]);}},
     {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
     {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
@@ -12574,6 +12575,36 @@ DebugJS.sumT = function(s) {
     if (t) r = DebugJS.addTime(r, t);
   }
   return DebugJS.fmtCalcTime(r);
+};
+DebugJS.numbering = function(s, st, ed, ln) {
+  if (ed == '') ed = st;
+  st |= 0;ed |= 0;ln |= 0;
+  s = s.replace(/\n/g, '');
+  var r = '';
+  if (st > ed) {
+    for (var i = st; i >= ed; i--) {
+      r += DebugJS._numbering(s, i, ln) + '\n';
+    }
+  } else {
+    for (i = st; i <= ed; i++) {
+      r += DebugJS._numbering(s, i, ln) + '\n';
+    }
+  }
+  return r;
+};
+DebugJS._numbering = function(s, n, ln) {
+  if (ln > 0) {
+    var w = s.length + (n + '').length;
+    var d = ln - w;
+    if (d > 0) {
+      var r = s + DebugJS.repeatCh('0', d) + n;
+    } else {
+      r = s + n;
+    }
+  } else {
+    r = s + n;
+  }
+  return r;
 };
 
 DebugJS.bit8 = {};
