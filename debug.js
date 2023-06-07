@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202305312340';
+  this.v = '202306072248';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6628,7 +6628,7 @@ DebugJS.prototype = {
       }
     },
     {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
-    {lbl: 'DELIMITER', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
+    {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
         var pos = o[0].replace(/\s{2,}/g, ' ').replace(/,/g, ' ').split(' ');
         return DebugJS.delimit(s, pos, o[1] | 0, '\t', (o[2] == 'Y'));
@@ -6640,11 +6640,7 @@ DebugJS.prototype = {
     {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
     {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}],
       fn: function(ctx, s, o) {
-        try {
-          var j = DebugJS.formatJSON(s, +o[0]);
-        } catch (e) {
-          j = '[ERROR]' + e + '\n' + s;
-        }
+        try {var j = DebugJS.formatJSON(s, +o[0]);} catch (e) {j = '[ERROR]' + e + '\n' + s;}
         return j;
       }
     },
@@ -6656,8 +6652,7 @@ DebugJS.prototype = {
     th |= 0;
     if (t.length == 0) return '';
     t.sort(function(a, b) {return b.length - a.length;});
-    var iMx = 0;
-    var iMn = 0;
+    var iMx = 0, iMn = 0;
     var f = 1;
     var v = '';
     for (var i = 0; i < t.length; i++) {
@@ -12606,7 +12601,7 @@ DebugJS.sumN = function(s) {
   var a = DebugJS.txt2arr(s);
   var n = 0;
   for (var i = 0; i < a.length; i++) {
-    var v = +(a[i].replace(/,/g, ''));
+    var v = +(a[i].replace(/[,h$\\]/gi, ''));
     if (!isNaN(v)) n += +v;
   }
   return n;
