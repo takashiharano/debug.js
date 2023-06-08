@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306082022';
+  this.v = '202306082059';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9090,34 +9090,55 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     v = DebugJS.delAllSP(v);
     var o = v.split('=');
-    var r = null;
     if (o.length != 2) return null;
     var mL = o[0].split(':');
     if (mL.length != 2) return null;
     var mR = o[1].split(':');
-    if (mR.length != 2) return null;
+    var d = '';
+    if (o[1] == '') {
+      var r = ctx._cmdRatio1(mL[0], mL[1]);
+    } else if (mR.length == 2) {
+      r = ctx._cmdRatio2(mL, mR);
+      d = 'x=';
+    } else {
+      return null;
+    }
+    if (echo) DebugJS._log.res(d + r);
+    return r;
+  },
+  _cmdRatio1: function(v1, v2) {
+    var s = v1;
+    var l = v2;
+    if (v1 > v2) {s = v2;l = v1;}
+    if ((l % s) == 0) {
+      var r = ((v1 > v2) ? ('1:' + v2) : (v1 + ':1'));
+    } else {
+      var d = DebugJS.gcd(v1, v2);
+      var r1 = v1 / d;
+      var r2 = v2 / d;
+      r = r1 + ':' + r2;
+    }
+    return r;
+  },
+  _cmdRatio2: function(mL, mR) {
     if (mL[0] == 'x') {
-      if (!ctx._isNaN(mL[1], mR[0], mR[1])) {
-        r = mL[1] * mR[0] / mR[1];
+      if (!DebugJS._isNaN(mL[1], mR[0], mR[1])) {
+        var r = mL[1] * mR[0] / mR[1];
       }
     } else if (mL[1] == 'x') {
-      if (!ctx._isNaN(mL[0], mR[0], mR[1])) {
+      if (!DebugJS._isNaN(mL[0], mR[0], mR[1])) {
         r = mL[0] * mR[1] / mR[0];
       }
     } else if (mR[0] == 'x') {
-      if (!ctx._isNaN(mL[0], mL[1], mR[1])) {
+      if (!DebugJS._isNaN(mL[0], mL[1], mR[1])) {
         r = mL[0] * mR[1] / mL[1];
       }
     } else if (mR[1] == 'x') {
-      if (!ctx._isNaN(mL[0], mL[1], mR[0])) {
+      if (!DebugJS._isNaN(mL[0], mL[1], mR[0])) {
         r = mL[1] * mR[0] / mL[0];
       }
     }
-    if (echo) DebugJS._log.res('x=' + r);
     return r;
-  },
-  _isNaN: function(a, b, c) {
-    return (isNaN(a) || isNaN(b) || isNaN(c));
   },
 
   cmdResume: function(arg, tbl) {
@@ -12606,6 +12627,13 @@ DebugJS._numbering = function(s, n, ln) {
     r = s + n;
   }
   return r;
+};
+
+DebugJS._isNaN = function(a, b, c) {
+  return (isNaN(a) || isNaN(b) || isNaN(c));
+};
+DebugJS.gcd = function(v1, v2) {
+  return ((v2 == 0) ? v1 : DebugJS.gcd(v2, v1 % v2));
 };
 
 DebugJS.bit8 = {};
