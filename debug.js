@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306080001';
+  this.v = '202306082022';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7462,8 +7462,9 @@ DebugJS.prototype = {
     }
     var s = '';
     if (DebugJS.isNum(a.charAt(0))) {
+      var c = ['f77', '6f6', '6bf'];
       for (var i = 0; i < a.length; i++) {
-        s += DebugJS.n2rwx(+a[i]);
+        s += '<span style="color:#' + c[i] + '">' + DebugJS.n2rwx(+a[i]) + '</span>';
       }
     } else {
       for (i = 0; i < 3; i++) {
