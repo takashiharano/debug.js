@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306082059';
+  this.v = '202306092310';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3313,30 +3313,30 @@ DebugJS.prototype = {
   },
 
   doMeasure: function(ctx, posX, posY) {
-    var deltaX = posX - ctx.clickedPosX;
-    var deltaY = posY - ctx.clickedPosY;
+    var dX = posX - ctx.clickedPosX;
+    var dY = posY - ctx.clickedPosY;
     var clW = document.documentElement.clientWidth;
-    if (deltaX < 0) {
+    if (dX < 0) {
       ctx.measBox.style.left = posX + 'px';
-      deltaX *= -1;
+      dX *= -1;
     }
-    if (deltaY < 0) {
+    if (dY < 0) {
       ctx.measBox.style.top = posY + 'px';
-      deltaY *= -1;
+      dY *= -1;
     }
-    ctx.measBox.style.width = deltaX + 'px';
-    ctx.measBox.style.height = deltaY + 'px';
+    ctx.measBox.style.width = dX + 'px';
+    ctx.measBox.style.height = dY + 'px';
     var sizeLabelW = 210;
     var sizeLabelH = 40;
-    var sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
-    var sizeLabelX = (deltaX / 2) - (sizeLabelW / 2);
-    var originY = 'top';
-    var originX = 'left';
-    if (deltaX < sizeLabelW) {
+    var sizeLabelY = (dY / 2) - (sizeLabelH / 2);
+    var sizeLabelX = (dX / 2) - (sizeLabelW / 2);
+    var y0 = 'top';
+    var x0 = 'left';
+    if (dX < sizeLabelW) {
       sizeLabelX = 0;
-      if ((deltaY < sizeLabelH) || (deltaY > ctx.clickedPosY)) {
+      if ((dY < sizeLabelH) || (dY > ctx.clickedPosY)) {
         if (ctx.clickedPosY < sizeLabelH) {
-          sizeLabelY = deltaY;
+          sizeLabelY = dY;
         } else {
           sizeLabelY = sizeLabelH * (-1);
         }
@@ -3346,16 +3346,16 @@ DebugJS.prototype = {
     }
     if (posY < sizeLabelH) {
       if (ctx.clickedPosY > sizeLabelH) {
-        sizeLabelY = (deltaY / 2) - (sizeLabelH / 2);
+        sizeLabelY = (dY / 2) - (sizeLabelH / 2);
       }
     }
     if (((ctx.clickedPosX + sizeLabelW) > clW) && ((posX + sizeLabelW) > clW)) {
       sizeLabelX = (sizeLabelW - (clW - ctx.clickedPosX)) * (-1);
     }
-    if (posX < ctx.clickedPosX) originX = 'right';
-    if (posY < ctx.clickedPosY) originY = 'bottom';
-    var size = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + (deltaX | 0) + ' H=' + (deltaY | 0) + '</span>';
-    var origin = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + originY + ':1px;' + originX + ':1px;padding:1px">x=' + ctx.clickedPosX + ',y=' + ctx.clickedPosY + '</span>';
+    if (posX < ctx.clickedPosX) x0 = 'right';
+    if (posY < ctx.clickedPosY) y0 = 'bottom';
+    var size = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:32px;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;white-space:pre;position:relative;top:' + sizeLabelY + 'px;left:' + sizeLabelX + 'px">W=' + (dX | 0) + ' H=' + (dY | 0) + '</span>';
+    var origin = '<span style="font-family:' + ctx.opt.fontFamily + ';font-size:12px;color:#fff;background:rgba(0,0,0,0.3);white-space:pre;position:absolute;' + y0 + ':1px;' + x0 + ':1px;padding:1px">x=' + ctx.clickedPosX + ',y=' + ctx.clickedPosY + '</span>';
     ctx.measBox.innerHTML = origin + size;
   },
 
@@ -3379,19 +3379,18 @@ DebugJS.prototype = {
     ctx.overlayPanels.push(pnl);
   },
   removeOverlayPanel: function(ctx, pnl) {
-    if (ctx.overlayBasePanel) {
-      for (var i = 0; i < ctx.overlayPanels.length; i++) {
-        if (ctx.overlayPanels[i] == pnl) {
-          ctx.overlayPanels.splice(i, 1);
-          ctx.overlayBasePanel.removeChild(pnl);
-          break;
-        }
+    if (!ctx.overlayBasePanel) return;
+    for (var i = 0; i < ctx.overlayPanels.length; i++) {
+      if (ctx.overlayPanels[i] == pnl) {
+        ctx.overlayPanels.splice(i, 1);
+        ctx.overlayBasePanel.removeChild(pnl);
+        break;
       }
-      if (ctx.overlayPanels.length == 0) {
-        ctx.mainPanel.removeChild(ctx.overlayBasePanel);
-        ctx.overlayBasePanel = null;
-        ctx.expandLogPanel(ctx);
-      }
+    }
+    if (ctx.overlayPanels.length == 0) {
+      ctx.mainPanel.removeChild(ctx.overlayBasePanel);
+      ctx.overlayBasePanel = null;
+      ctx.expandLogPanel(ctx);
     }
   },
 
@@ -6093,18 +6092,18 @@ DebugJS.prototype = {
       }
       if (lastRows > 0) {
         var rem = (bLen % 0x10);
-        var start = (rem == 0 ? (bLen - lastLen) : ((bLen - rem) - (0x10 * (lastRows - 1))));
-        if (start < len) {
-          rem = ((len - start) % 0x10);
-          start = len + rem;
+        var st = (rem == 0 ? (bLen - lastLen) : ((bLen - rem) - (0x10 * (lastRows - 1))));
+        if (st < len) {
+          rem = ((len - st) % 0x10);
+          st = len + rem;
         }
-        var end = bLen + (rem == 0 ? 0 : (0x10 - rem));
+        var ed = bLen + (rem == 0 ? 0 : (0x10 - rem));
         dmp += '\n';
         if (showAddr) {
-          dmp += DebugJS.dumpAddr(start);
+          dmp += DebugJS.dumpAddr(st);
         }
-        for (i = start; i < end; i++) {
-          dmp += ctx.getDump(mode, i, buf, end, showSp, showAddr, showAscii);
+        for (i = st; i < ed; i++) {
+          dmp += ctx.getDump(mode, i, buf, ed, showSp, showAddr, showAscii);
         }
       }
     }
@@ -6232,12 +6231,12 @@ DebugJS.prototype = {
     ctx.htmlPrevEditorPanel.innerHTML = html;
 
     style = {height: 'calc(50% - ' + (ctx.computedFontSize + 10) + 'px)'};
-    var editor = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', style);
-    editor.className = 'dbg-editor';
-    editor.spellcheck = false;
-    editor.onblur = ctx.saveHtmlBuf;
-    editor.value = ctx.htmlPrevBuf;
-    ctx.htmlPrevEditor = editor;
+    var edt = DebugJS.ui.addElement(ctx.htmlPrevBasePanel, 'textarea', style);
+    edt.className = 'dbg-editor';
+    edt.spellcheck = false;
+    edt.onblur = ctx.saveHtmlBuf;
+    edt.value = ctx.htmlPrevBuf;
+    ctx.htmlPrevEditor = edt;
   },
   createHtmlSnippetBtn: function(ctx, i) {
     return DebugJS.ui.createBtnHtml('&lt;CODE' + (i + 1) + '&gt;', 'DebugJS.ctx.insertHtmlSnippet(' + i + ');', 'margin-left:4px');
@@ -6811,20 +6810,20 @@ DebugJS.prototype = {
   },
 
   createSubBasePanel: function(ctx) {
-    var base = document.createElement('div');
-    base.className = 'dbg-overlay-panel-full';
+    var bs = document.createElement('div');
+    bs.className = 'dbg-overlay-panel-full';
 
-    var head = document.createElement('div');
-    head.style.position = 'relative';
-    head.style.height = ctx.computedFontSize + 'px';
-    base.appendChild(head);
+    var hd = document.createElement('div');
+    hd.style.position = 'relative';
+    hd.style.height = ctx.computedFontSize + 'px';
+    bs.appendChild(hd);
 
-    var body = document.createElement('div');
-    body.style.position = 'relative';
-    body.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
-    base.appendChild(body);
+    var bd = document.createElement('div');
+    bd.style.position = 'relative';
+    bd.style.height = 'calc(100% - ' + ctx.computedFontSize + 'px)';
+    bs.appendChild(bd);
 
-    return {base: base, head: head, body: body};
+    return {base: bs, head: hd, body: bd};
   },
 
   isOnDbgWin: function(x, y) {
@@ -6835,14 +6834,14 @@ DebugJS.prototype = {
   getSelfSizePos: function() {
     var ctx = DebugJS.ctx;
     var rect = ctx.win.getBoundingClientRect();
-    var resizeBoxSize = 6;
+    var rszBoxPx = 6;
     var sp = {};
     sp.w = ctx.win.clientWidth;
     sp.h = ctx.win.clientHeight;
-    sp.x1 = rect.left - resizeBoxSize / 2;
-    sp.y1 = rect.top - resizeBoxSize / 2;
-    sp.x2 = sp.x1 + ctx.win.clientWidth + resizeBoxSize + DebugJS.WIN_BORDER;
-    sp.y2 = sp.y1 + ctx.win.clientHeight + resizeBoxSize + DebugJS.WIN_BORDER;
+    sp.x1 = rect.left - rszBoxPx / 2;
+    sp.y1 = rect.top - rszBoxPx / 2;
+    sp.x2 = sp.x1 + ctx.win.clientWidth + rszBoxPx + DebugJS.WIN_BORDER;
+    sp.y2 = sp.y1 + ctx.win.clientHeight + rszBoxPx + DebugJS.WIN_BORDER;
     return sp;
   },
 
@@ -6905,11 +6904,11 @@ DebugJS.prototype = {
   },
 
   saveExpandModeOrgSizeAndPos: function(ctx) {
-    var shadow = (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
+    var shdw = (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) ? (DebugJS.WIN_SHADOW / 2) : 0;
     var o = ctx.expandModeOrg;
     var w = ctx.win;
-    o.w = (w.offsetWidth + DebugJS.WIN_BORDER - shadow);
-    o.h = (w.offsetHeight + DebugJS.WIN_BORDER - shadow);
+    o.w = (w.offsetWidth + DebugJS.WIN_BORDER - shdw);
+    o.h = (w.offsetHeight + DebugJS.WIN_BORDER - shdw);
     o.t = w.offsetTop;
     o.l = w.offsetLeft;
   },
