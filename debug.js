@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306092310';
+  this.v = '202306101608';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3531,20 +3531,6 @@ DebugJS.prototype = {
 
     var navUserAgent = foldingTxt(navigator.userAgent, 'navUserAgent', OMIT_LAST);
     var navAppVersion = foldingTxt(navigator.appVersion, 'navAppVersion', OMIT_LAST);
-    var winOnload = foldingTxt(window.onload, 'winOnload', OMIT_LAST);
-    var winOnunload = foldingTxt(window.onunload, 'winOnunload', OMIT_LAST);
-    var winOnclick = foldingTxt(window.onclick, 'winOnclick', OMIT_LAST);
-    var winOnmousedown = foldingTxt(window.onmousedown, 'winOnmousedown', OMIT_LAST);
-    var winOnmousemove = foldingTxt(window.onmousemove, 'winOnmousemove', OMIT_LAST);
-    var winOnmouseup = foldingTxt(window.onmousedown, 'winOnmouseup', OMIT_LAST);
-    var winOnkeydown = foldingTxt(window.onkeydown, 'winOnkeydown', OMIT_LAST);
-    var winOnkeypress = foldingTxt(window.onkeypress, 'winOnkeypress', OMIT_LAST);
-    var winOnkeyup = foldingTxt(window.onkeyup, 'winOnkeyup', OMIT_LAST);
-    var winOncontextmenu = foldingTxt(window.oncontextmenu, 'winOncontextmenu', OMIT_LAST);
-    var winOnresize = foldingTxt(window.oncontextmenu, 'winOnresize', OMIT_LAST);
-    var winOnscroll = foldingTxt(window.oncontextmenu, 'winOnscroll', OMIT_LAST);
-    var winOnselect = foldingTxt(window.oncontextmenu, 'winOnselect', OMIT_LAST);
-    var winOnselectstart = foldingTxt(window.oncontextmenu, 'winOnselectstart', OMIT_LAST);
     try {
       var winOnerror = foldingTxt(window.onerror, 'winOnerror', OMIT_LAST);
     } catch (e) {winOnerror = e;}
@@ -3592,20 +3578,20 @@ DebugJS.prototype = {
     html += addSysInfoProp('pageYOffset  ', window.pageYOffset, 'sys-pgoffset-y');
     html += addSysInfoProp('scrollX      ', setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
     html += addSysInfoProp('scrollY      ', setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
-    html += addSysInfoProp('onload       ', winOnload);
-    html += addSysInfoProp('onunload     ', winOnunload);
-    html += addSysInfoProp('onclick      ', winOnclick);
-    html += addSysInfoProp('onmousedown  ', winOnmousedown);
-    html += addSysInfoProp('onmousemove  ', winOnmousemove);
-    html += addSysInfoProp('onmouseup    ', winOnmouseup);
-    html += addSysInfoProp('onkeydown    ', winOnkeydown);
-    html += addSysInfoProp('onkeypress   ', winOnkeypress);
-    html += addSysInfoProp('onkeyup      ', winOnkeyup);
-    html += addSysInfoProp('onresize     ', winOnresize);
-    html += addSysInfoProp('onscroll     ', winOnscroll);
-    html += addSysInfoProp('onselect     ', winOnselect);
-    html += addSysInfoProp('onselectstart', winOnselectstart);
-    html += addSysInfoProp('oncontextmenu', winOncontextmenu);
+    html += addSysInfoProp('onload       ', foldingTxt(window.onload, 'winOnload', OMIT_LAST));
+    html += addSysInfoProp('onunload     ', foldingTxt(window.onunload, 'winOnunload', OMIT_LAST));
+    html += addSysInfoProp('onclick      ', foldingTxt(window.onclick, 'winOnclick', OMIT_LAST));
+    html += addSysInfoProp('onmousedown  ', foldingTxt(window.onmousedown, 'winOnmousedown', OMIT_LAST));
+    html += addSysInfoProp('onmousemove  ', foldingTxt(window.onmousemove, 'winOnmousemove', OMIT_LAST));
+    html += addSysInfoProp('onmouseup    ', foldingTxt(window.onmousedown, 'winOnmouseup', OMIT_LAST));
+    html += addSysInfoProp('onkeydown    ', foldingTxt(window.onkeydown, 'winOnkeydown', OMIT_LAST));
+    html += addSysInfoProp('onkeypress   ', foldingTxt(window.onkeypress, 'winOnkeypress', OMIT_LAST));
+    html += addSysInfoProp('onkeyup      ', foldingTxt(window.onkeyup, 'winOnkeyup', OMIT_LAST));
+    html += addSysInfoProp('onresize     ', foldingTxt(window.oncontextmenu, 'winOnresize', OMIT_LAST));
+    html += addSysInfoProp('onscroll     ', foldingTxt(window.oncontextmenu, 'winOnscroll', OMIT_LAST));
+    html += addSysInfoProp('onselect     ', foldingTxt(window.oncontextmenu, 'winOnselect', OMIT_LAST));
+    html += addSysInfoProp('onselectstart', foldingTxt(window.oncontextmenu, 'winOnselectstart', OMIT_LAST));
+    html += addSysInfoProp('oncontextmenu', foldingTxt(window.oncontextmenu, 'winOncontextmenu', OMIT_LAST));
     html += addSysInfoProp('onerror      ', winOnerror);
     html += addPropSep();
     html += addSysInfoPropH('navigator');
