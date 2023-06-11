@@ -6,7 +6,7 @@
 <title>debug.js</title>
 <meta name="description" content="debug.js is an embeddable JavaScript debugger for web development. It allows you to debug easily without the F12 Tools. The library has useful features such as Logger, DOM element inspector, Screen measure, Command-line interpreter, etc.">
 <meta name="viewport" content="width=1096, initial-scale=1">
-<!--<script src="../../sha.js"></script>-->
+<script src="./libs/sha.js"></script>
 <script src="debug.js"></script>
 <!--
 <script src="extension-sample/debug-x-cmd.js"></script>
@@ -5520,6 +5520,22 @@ e.g.,<br>
 <pre class="eg">
 $ setattr #id disabled true
 $ setattr .className 1 disabled true
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">sha</td>
+    <td>
+      arg1: algorithm<br>arg2: input
+    </td>
+    <td>
+      Calculates and displays hash value.<br>
+      * <a href="https://github.com/Caligatio/jsSHA" target="_blank">jsSHA</a> is required.<br><br>
+e.g.,<br>
+<pre class="eg">
+$ sha 256 "abc"
+&gt; ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
 </pre>
     </td>
   </tr>

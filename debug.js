@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306101608';
+  this.v = '202306111406';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -369,6 +369,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', help: 'select selectors get|set text|texts|value|values val'},
     {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', help: 'set property-name value'},
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
+    {cmd: 'sha', fn: this.cmdSha, desc: 'Calculates and displays hash value', help: 'sha [1|224|3-224|256|3-256|384|3-384|512|3-512] "STR"'},
     {cmd: 'sleep', fn: this.cmdSleep, desc: 'Causes the currently executing thread to sleep', help: 'sleep ms'},
     {cmd: 'stack', fn: this.cmdStack, desc: 'Inject print stack trace code into a given function', help: 'stack funcname'},
     {cmd: 'stopwatch', fn: this.cmdStopwatch, desc: 'Manipulate the stopwatch', help: 'stopwatch [0|1] start|stop|reset|split|end|time|value|t0 V'},
@@ -5916,9 +5917,9 @@ DebugJS.prototype = {
     if (hash == null) {
       hash = '';
       if (DebugJS.shaAvailable()) {
-        hash = 'SHA-1   : ' + DebugJS.getSHA('SHA-1', buf) + '\n';
-        hash += 'SHA-256 : ' + DebugJS.getSHA('SHA-256', buf) + '\n';
-        hash += 'SHA-512 : ' + DebugJS.getSHA('SHA-512', buf) + '\n';
+        hash = 'SHA-1   : ' + DebugJS.getSHA('SHA-1', buf, 1) + '\n';
+        hash += 'SHA-256 : ' + DebugJS.getSHA('SHA-256', buf, 1) + '\n';
+        hash += 'SHA-512 : ' + DebugJS.getSHA('SHA-512', buf, 1) + '\n';
         ctx.fileVwrHash = hash;
       }
     }
@@ -9414,6 +9415,52 @@ DebugJS.prototype = {
     }
     el.setAttribute(nm, vl);
   },
+
+  cmdSha: function(arg, tbl, echo) {
+    if (!DebugJS.shaAvailable()) {log.e('jsSHA is required');return;}
+    var ALGOS = ['1', '224', '256', '384', '512', '3-224', '3-256', '3-384', '3-512'];
+    var v = DebugJS.getOptVal(arg, '')[0];
+    if (v == '') {DebugJS.printUsage(tbl.help);return;}
+    var all = 0;
+    var noOptLn = DebugJS.getOptVal(arg, '').length;
+    if (noOptLn == 0) {
+      all = 1;
+      var s = DebugJS.getOptVal(arg, '')[0];
+    } else if (noOptLn == 1) {
+      if (!DebugJS.arr.has(ALGOS, v)) all = 1;
+      s = DebugJS.getOptVal(arg, '')[0];
+    } else {
+      if (DebugJS.arr.has(ALGOS, v)) {
+        s = DebugJS.getOptVal(arg, '')[1];
+      } else {
+        DebugJS.printUsage(tbl.help);return;
+      }
+    }
+    var inp = DebugJS.getOptVal(arg, 'i');
+    if (inp) s = inp;
+    try {
+      s = eval(s);
+    } catch (e) {
+      log.e(e);return;
+    }
+    if (all) {
+      var r = {};
+      for (var i = 0; i < ALGOS.length; i++) {
+        if ((i > 0) && (echo)) log('');
+        var a = DebugJS.ctx._getAlgoName(ALGOS[i]);
+        var h = DebugJS.getSHA(a, s);
+        if (echo) {log(a);log.res(h);}
+        r[a] = h;
+      }
+    } else {
+      a = DebugJS.ctx._getAlgoName(v);
+      h = DebugJS.getSHA(a, s);
+      if (echo) log.res(h);
+      r = h;
+    }
+    return r;
+  },
+  _getAlgoName: function(v) {return 'SHA' + (v.match('-') ? v : '-' + v);},
 
   cmdSleep: function(arg, tbl) {
     var ms = DebugJS.splitArgs(arg)[0];
@@ -13796,9 +13843,9 @@ DebugJS.dumpAscii = function(pos, buf) {
 DebugJS.shaAvailable = function() {
   return window.jsSHA ? true : false;
 };
-DebugJS.getSHA = function(a, b) {
+DebugJS.getSHA = function(a, b, f) {
   if (!DebugJS.shaAvailable()) return '';
-  var s = new window.jsSHA(a, 'UINT8ARRAY');
+  var s = new window.jsSHA(a, (f ? 'UINT8ARRAY' : 'TEXT'));
   s.update(b);
   return s.getHash('HEX');
 };
