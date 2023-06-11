@@ -1,3 +1,5 @@
+libs
+_copy_dbg.bat
 _lint.bat
 _lint.txt
 _linter-dbg.bat
