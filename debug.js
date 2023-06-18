@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306111406';
+  this.v = '202306181127';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7625,10 +7625,10 @@ DebugJS.prototype = {
     var u1 = ['0', '3', '4'];
     var u2 = ['m', 'milli', 'u', 'micro', 'n', 'nano', 'p', 'pico', 'f', 'femto', 'a', 'atto', 'z', 'zepto', 'y', 'yocto'];
     var r = null;
+    var a = c.split(' ');
+    var v = a[0];
+    var n = a[1];
     if (c.match(/^-?[\d,]+\.?\d*\s.+$/)) {
-      var a = c.split(' ');
-      var v = a[0];
-      var n = a[1];
       if (DebugJS.arr.has(u1, n)) {
         r = DebugJS.formatDec(v, n);
       } else if (DebugJS.arr.has(u2, n)) {
@@ -7637,6 +7637,8 @@ DebugJS.prototype = {
         DebugJS._log.mlt(s);
         return parseFloat(r);
       }
+    } else {
+      try {r = DebugJS.formatDec4(v);} catch (e) {}
     }
     if (r != null) {
       DebugJS._log.res(r);
@@ -12503,8 +12505,9 @@ DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   }
   return bin;
 };
+DebugJS.NUM_U = ['\u4E07', '\u5104', '\u5146', '\u4EAC', '\u5793', '\u79ED', '\u7A63', '\u6E9D', '\u6F97', '\u6B63', '\u8F09', '\u6975', '\u6052\u6CB3\u6C99', '\u963F\u50E7\u7947', '\u90A3\u7531\u4ED6', '\u4E0D\u53EF\u601D\u8B70', '\u7121\u91CF\u5927\u6570'];
 DebugJS.formatDec = function(v, n) {
-  var U = ['\u4E07', '\u5104', '\u5146', '\u4EAC', '\u5793', '\u79ED', '\u7A63', '\u6E9D', '\u6F97', '\u6B63', '\u8F09', '\u6975', '\u6052\u6CB3\u6C99', '\u963F\u50E7\u7947', '\u90A3\u7531\u4ED6', '\u4E0D\u53EF\u601D\u8B70', '\u7121\u91CF\u5927\u6570'];
+  var U = DebugJS.NUM_U;
   if (n == undefined) n = 3;
   v = (v + '').replace(/,/g, '').replace(/^0*/, '');
   if (!v) v = '0';
@@ -12533,6 +12536,26 @@ DebugJS.formatDec = function(v, n) {
   }
   r += v1;
   return r;
+};
+DebugJS.formatDec4 = function(s) {
+  var U = DebugJS.NUM_U;
+  var r = '([0-9]*)([';
+  for (var i = 0; i < U.length; i++) {
+    r += U[i];
+  }
+  r += '])';
+  var m = s.match(new RegExp(r, 'g'));
+  var v = 0;
+  for (i = 0; i < m.length; i++) {
+    var w = m[i].match(/([0-9]*)(.+)/);
+    var p = DebugJS.arr.pos(U, w[2]) + 1;
+    var n = w[1] | 0;
+    if (!n) n = 1;
+    v += n * Math.pow(10000, p);
+  }
+  m = s.match(/[0-9]*$/);
+  if (m) v += m | 0;
+  return '' + v;
 };
 DebugJS.formatDecF = function(v, p, f) {
   var t = {'m': 3, 'milli': 3, 'u': 6, 'micro': 6, 'n': 9, 'nano': 9, 'p': 12, 'pico': 12, 'f': 15, 'femto': 15, 'a': 18, 'atto': 18, 'z': 21, 'zepto': 21, 'y': 24, 'yocto': 24};
