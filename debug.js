@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306181127';
+  this.v = '202306212129';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12539,19 +12539,41 @@ DebugJS.formatDec = function(v, n) {
 };
 DebugJS.formatDec4 = function(s) {
   var U = DebugJS.NUM_U;
-  var r = '([0-9]*)([';
-  for (var i = 0; i < U.length; i++) {
-    r += U[i];
+  var U2 = ['\u5341', '\u767E', '\u5343'];
+  var u = '';
+  for (var i = 0; i < U2.length; i++) {
+    u += U2[i];
   }
-  r += '])';
+  for (i = 0; i < U.length; i++) {
+    u += U[i];
+  }
+  if (!s.match(new RegExp('^[' + u + '0-9]+$', 'g'))) return null;
+  var r = '([0-9]*)([' + u + ']{0,2})';
   var m = s.match(new RegExp(r, 'g'));
   var v = 0;
   for (i = 0; i < m.length; i++) {
-    var w = m[i].match(/([0-9]*)(.+)/);
-    var p = DebugJS.arr.pos(U, w[2]) + 1;
+    var w = m[i].match(/([0-9]*)([^0-9]+)/);
+    if (!w) break;
     var n = w[1] | 0;
     if (!n) n = 1;
-    v += n * Math.pow(10000, p);
+    var a = w[2].split('');
+    var b = a[0];
+    if (a.length == 2) {
+      var p = DebugJS.arr.pos(U2, b) + 1;
+      n = n * Math.pow(10, p);
+      b = a[1];
+    }
+    p = DebugJS.arr.pos(U, b) + 1;
+    if (p) {
+      v += n * Math.pow(10000, p);
+    } else {
+      p = DebugJS.arr.pos(U2, b) + 1;
+      if (a.length == 2) {
+        v += n + Math.pow(10, p);
+      } else {
+        v += n * Math.pow(10, p);
+      }
+    }
   }
   m = s.match(/[0-9]*$/);
   if (m) v += m | 0;
