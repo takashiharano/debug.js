@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306212129';
+  this.v = '202306232157';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6528,29 +6528,29 @@ DebugJS.prototype = {
   },
   editTxtFn: [
     {lbl: ''},
-    {
-      lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}],
+    {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
+    {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
-        var opt = {sort: o[0], count: (o[1] == 'Y' ? 1 : 0), blank: 0};
-        return DebugJS.toUnique(s, opt).r;
+        var pos = o[0].replace(/\s{2,}/g, ' ').replace(/,/g, ' ').split(' ');
+        return DebugJS.delimit(s, pos, o[1] | 0, '\t', (o[2] == 'Y'));
       }
     },
     {
-      lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}],
-      fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1]);}
+      lbl: 'HALF/FULL', opt: [{lbl: '', optvals: [{t: 'HALF', v: 'H'}, {t: 'FULL', v: 'F'}]}],
+      fn: function(ctx, s, o) {return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));}
     },
-    {
-      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'FLG', v: 'gi'}],
+    {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o) {return (+o[0] ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
+    {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}],
       fn: function(ctx, s, o) {
-        try {
-          var fm = ((o[2] == 'Y') ? new RegExp(o[0], o[3]) : o[0]);
-          s = s.replace(fm, o[1]);
-        } catch (e) {
-          s = '[ERROR]' + e + '\n' + s;
-        }
-        return s;
+        try {var j = DebugJS.formatJSON(s, +o[0]);} catch (e) {j = '[ERROR]' + e + '\n' + s;}
+        return j;
       }
     },
+    {
+      lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
+      fn: function(ctx, s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
+    },
+    {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return ctx.minMaxLen(s, o[0]);}},
     {
       lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
       fn: function(ctx, s, o) {
@@ -6565,16 +6565,7 @@ DebugJS.prototype = {
         return f(s);
       }
     },
-    {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
-    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
-    {
-      lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
-      fn: function(ctx, s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
-    },
-    {
-      lbl: 'HALF/FULL', opt: [{lbl: '', optvals: [{t: 'HALF', v: 'H'}, {t: 'FULL', v: 'F'}]}],
-      fn: function(ctx, s, o) {return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));}
-    },
+    {lbl: 'NUMBERING', opt: [{lbl: 'ST', v: '1'}, {lbl: 'ED'}, {lbl: 'LEN'}], fn: function(ctx, s, o) {return DebugJS.numbering(s, o[0], o[1], o[2]);}},
     {
       lbl: 'PADDING', opt: [{lbl: 'TO', optvals: [{t: 'LEFT', v: 'L'}, {t: 'RIGHT', v: 'R'}]}, {lbl: 'CHAR', v: '0'}, {lbl: 'LEN'}],
       fn: function(ctx, s, o) {
@@ -6610,26 +6601,37 @@ DebugJS.prototype = {
         return r;
       }
     },
-    {lbl: 'NUMBERING', opt: [{lbl: 'ST', v: '1'}, {lbl: 'ED'}, {lbl: 'LEN'}], fn: function(ctx, s, o) {return DebugJS.numbering(s, o[0], o[1], o[2]);}},
-    {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
-    {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
+    {
+      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'FLG', v: 'gi'}],
       fn: function(ctx, s, o) {
-        var pos = o[0].replace(/\s{2,}/g, ' ').replace(/,/g, ' ').split(' ');
-        return DebugJS.delimit(s, pos, o[1] | 0, '\t', (o[2] == 'Y'));
-      }
-    },
-    {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o) {return (+o[0] ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
-    {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return ctx.minMaxLen(s, o[0]);}},
-    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
-    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}},
-    {lbl: 'JSON', opt: [{lbl: 'INDENT', v: '1'}],
-      fn: function(ctx, s, o) {
-        try {var j = DebugJS.formatJSON(s, +o[0]);} catch (e) {j = '[ERROR]' + e + '\n' + s;}
-        return j;
+        try {
+          var fm = o[0];
+          if (o[2] != 'Y') fm = fm.replace(/([()/[\].+*?^$-])/g, '\\$1');
+          fm = new RegExp(fm, o[3]);
+          s = s.replace(fm, o[1]);
+        } catch (e) {
+          s = '[ERROR]' + e + '\n' + s;
+        }
+        return s;
       }
     },
     {lbl: 'ROT', opt: [{lbl: 'X', optvals: [{v: '5'}, {v: '13'}, {v: '18', s: 1}, {v: '47'}]}, {lbl: 'SHIFT'}], fn: function(ctx, s, o) {return DebugJS.rot(o[0], s, o[1]);}},
-    {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}}
+    {
+      lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}],
+      fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1]);}
+    },
+    {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
+    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
+    {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
+    {
+      lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}],
+      fn: function(ctx, s, o) {
+        var opt = {sort: o[0], count: (o[1] == 'Y' ? 1 : 0), blank: 0};
+        return DebugJS.toUnique(s, opt).r;
+      }
+    },
+    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}}
   ],
   minMaxLen: function(s, th) {
     var t = DebugJS.arr2set(DebugJS.txt2arr(s));
