@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202306232157';
+  this.v = '202307021949';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -315,7 +315,8 @@ var DebugJS = DebugJS || function() {
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] Array'},
     {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print all ASCII characters'},
-    {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] str'},
+    {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] STR'},
+    {cmd: 'base64s', fn: this.cmdBase64s, desc: 'Encodes/Decodes Base64S', help: 'base64s [-e|-d] -k &lt;0-255&gt; STR'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n N] STR'},
@@ -7193,6 +7194,18 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeB64, DebugJS.decodeB64, iIdx);
   },
 
+  cmdBase64s: function(arg, tbl, echo) {
+    var iIdx = 0;
+    if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
+    var k = DebugJS.getOptVal(arg, 'k');
+    if (k == null) {
+      k = 0;
+    } else {
+      iIdx += 2;
+    }
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBase64S, DebugJS.decodeBase64S, iIdx, k | 0);
+  },
+
   cmdBat: function(arg, tbl, echo) {
     var ctx = DebugJS.ctx;
     var a = DebugJS.splitArgs(arg);
@@ -12858,6 +12871,30 @@ DebugJS.Base64.getMimeType = function(s) {
   return r;
 };
 
+DebugJS.encodeBase64S = function(s, k) {
+  var a = DebugJS.UTF8.toByteArray(s);
+  var b = DebugJS.xor(a, k);
+  return DebugJS.Base64.encode(b);
+};
+DebugJS.decodeBase64S = function(s, k) {
+  if (s.match(/\$\d+$/)) {
+    var w = s.split('$');
+    s = w[0];
+    k = w[1] | 0;
+  }
+  var b = DebugJS.Base64.decode(s);
+  var a = DebugJS.xor(b, k);
+  return DebugJS.UTF8.fromByteArray(a);
+};
+DebugJS.xor = function(a, n) {
+  n = n % 256;
+  var b = [];
+  for (var i = 0; i < a.length; i++) {
+    b.push(a[i] ^ n);
+  }
+  return b;
+};
+
 DebugJS.isBase64 = function(s) {
   return (s && s.match(/^[A-Za-z0-9/+]*=*$/) ? true : false);
 };
@@ -12867,9 +12904,9 @@ DebugJS.encodeBSB64 = function(s, n) {
 };
 DebugJS.decodeBSB64 = function(s, n) {
   if (s.match(/\$\d+$/)) {
-    var v = s.split('$');
-    s = v[0];
-    n = v[1];
+    var w = s.split('$');
+    s = w[0];
+    n = w[1];
   }
   var a = DebugJS.BSB64.decode(s, n);
   return DebugJS.UTF8.fromByteArray(a);

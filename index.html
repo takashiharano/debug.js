@@ -4089,6 +4089,30 @@ $ base64 -d YWJjZGVmZw==
   </tr>
 
   <tr>
+    <td class="name">base64s</td>
+    <td>
+      arg1: operation<br>
+      arg2: key<br>
+      arg3: string
+    </td>
+    <td>
+     Base64 with XOR encryption by the specified key.
+<pre class="eg">
+operation: -e encode<span class="annotation">(default option)</span>
+           -d decode
+
+key      : -k &lt;0-255&gt;
+
+$ base64s -e -k 1 abcdefg
+-&gt; YGNiZWRnZg==
+
+$ base64s -d -k 1 YGNiZWRnZg==
+-&gt; abcdefg
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">bat</td>
     <td>
       arg1: run|pause|stop|list|status|pc|clear|exec|set<br>
