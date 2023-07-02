@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202307022138';
+  this.v = '202307030004';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -174,10 +174,9 @@ var DebugJS = DebugJS || function() {
   this.fileVwrDecMode = 'b64';
   this.fileVwrDecModeBtn = null;
   this.fileVwrRet = null;
-  this.fileVwrBSB64n = null;
-  this.fileVwrBSB64nL = null;
+  this.fileVwrB64n = null;
+  this.fileVwrB64nLbl = null;
   this.fileVwrB64Btn = null;
-  this.fileVwrBsbBtn = null;
   this.fileVwrDataSrcType = null;
   this.fileVwrFile = null;
   this.fileVwrFileInfo = null;
@@ -189,7 +188,6 @@ var DebugJS = DebugJS || function() {
   this.fileVwrBinViewOpt = {mode: 'hex', addr: true, space: true, ascii: true};
   this.fileVwrSysCb = null;
   this.fileReader = null;
-  this.decMode = 'b64';
   this.jsBtn = null;
   this.jsPanel = null;
   this.jsEditor = null;
@@ -5368,20 +5366,27 @@ DebugJS.prototype = {
     b.style.color = '#ccc';
     b.style.float = 'right';
 
-    ctx.fileVwrBSB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1em', 'center', '#ccc', '1', null);
-    ctx.fileVwrBSB64n.style.float = 'right';
-    ctx.fileVwrBSB64n.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
-    ctx.fileVwrBSB64nL = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span', {float: 'right'}, true);
-    ctx.fileVwrBSB64nL.innerText = 'n=';
-    ctx.fileVwrBsbBtn = ctx.addFileVwrBtn(ctx, '<BSB64>', (ctx.computedFontSize * 0.2), ctx.setModeBSB64);
-    ctx.fileVwrB64Btn = ctx.addFileVwrBtn(ctx, '<Base64>', (ctx.computedFontSize * 0.2), ctx.setModeB64);
+    ctx.fileVwrB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.8em', 'center', '#ccc', '1', null);
+    ctx.fileVwrB64n.style.float = 'right';
+    ctx.fileVwrB64n.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
+    ctx.fileVwrB64nLbl = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span', {float: 'right'}, true);
+    ctx.fileVwrB64nLbl.innerText = 'n=';
+
+    ctx.fileVwrB64Slct = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'select');
+    ctx.fileVwrB64Slct.className = 'dbg-select dbg-nomove';
+    ctx.fileVwrB64Slct.addEventListener('change', ctx.onB64SlctChg);
+    DebugJS.setStyle(ctx.fileVwrB64Slct, {width: '6em', height: '1.1em', 'margin-right': '.5em', float: 'right'});
+    var o = '<option value="b64">Base64</option>';
+    o += '<option value="b64s">Base64S</option>';
+    o += '<option value="bsb64">BSB64</option>';
+    ctx.fileVwrB64Slct.innerHTML = o;
 
     style = {height: 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'};
     ctx.fileVwrDtTxtArea = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'textarea', style);
     ctx.fileVwrDtTxtArea.className = 'dbg-editor';
     ctx.fileVwrDtTxtArea.spellcheck = false;
     ctx.enableDnDFileLoad(ctx.fileVwrDtTxtArea, ctx.onDropOnFileVwrTxtArea);
-    ctx.setModeB64();
+    ctx.onB64SlctChg();
   },
   addFileVwrBtn: function(ctx, lbl, mgn, fn) {
     var b = DebugJS.ui.addBtn(ctx.fileVwrDtUrlWrp, lbl, fn);
@@ -5749,11 +5754,10 @@ DebugJS.prototype = {
     if (mode != 'txt') data = DebugJS.delAllNL(DebugJS.delAllSP(data));
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     try {
-      if (ctx.decMode == 'bsb64') {
-        ctx.decodeFileVwrDataBSB64(ctx, data, mode, scheme);
-      } else {
-        ctx.decodeFileVwrDataB64(ctx, data, mode, scheme);
-      }
+      var FN = {b64s: ctx.decodeFileVwrDataB64Ext, bsb64: ctx.decodeFileVwrDataB64Ext};
+      var f = FN[ctx.fileVwrB64Slct.value];
+      if (!f) f = ctx.decodeFileVwrDataB64;
+      f(ctx, data, mode, scheme);
     } catch (e) {ctx.showFilePreview(ctx, null, scheme, 'DECODE ERROOR');}
   },
   decodeFileVwrDataB64: function(ctx, src, mode, scheme) {
@@ -5781,19 +5785,22 @@ DebugJS.prototype = {
     }
     return data;
   },
-  decodeFileVwrDataBSB64: function(ctx, src, mode, scheme) {
+  decodeFileVwrDataB64Ext: function(ctx, src, mode, scheme) {
+    var b64type = ctx.fileVwrB64Slct.value;
+    var encFn = (b64type == 'b64s' ? DebugJS.encodeBase64S : DebugJS.encodeBSB64);
+    var toB64Fn = (b64type == 'b64s' ? ctx.b64StoB64 : ctx.bsb64toB64);
     var r, data;
-    var n = ctx.fileVwrBSB64n.value;
+    var n = ctx.fileVwrB64n.value;
     switch (mode) {
       case 'txt':
         var nl = ctx.fileVwrRet.value | 0;
-        r = DebugJS.encodeBSB64(src, n);
+        r = encFn(src, n);
         ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(r, '\n', nl);
         data = src;
         ctx.showFilePreview(ctx, null, scheme, data);
         break;
       default:
-        var b64 = ctx.bsb64toB64(src, n);
+        var b64 = toB64Fn(src, n);
         ctx.fileVwrDataSrcType = 'b64';
         ctx.showB64Preview(ctx, null, scheme, b64);
     }
@@ -5850,20 +5857,28 @@ DebugJS.prototype = {
     if (ctx.fileVwrSysCb) {
       ctx.fileVwrSysCb(ctx, file, decoded);
     } else {
-      if (ctx.decMode == 'bsb64') {
-        ctx.setBSB64data(ctx, b64cnt.data);
-      }
+      var FN = {b64s: ctx.b64toB64S, bsb64: ctx.b64toBSB64};
+      var f = FN[ctx.fileVwrB64Slct.value];
+      if (f) ctx.setBSB64data(ctx, b64cnt.data, f);
     }
   },
-  setBSB64data: function(ctx, b64) {
+  setBSB64data: function(ctx, b64, f) {
     var nl = ctx.fileVwrRet.value | 0;
-    var n = ctx.fileVwrBSB64n.value;
-    var s = ctx.b64toBSB64(b64, n);
+    var n = ctx.fileVwrB64n.value;
+    var s = f(b64, n);
     ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(s, '\n', nl);
+  },
+  b64toB64S: function(b64, n) {
+    var b = DebugJS.Base64.decode(b64);
+    return DebugJS.encodeBase64S(b, n);
   },
   b64toBSB64: function(b64, n) {
     var b = DebugJS.Base64.decode(b64);
     return DebugJS.BSB64.encode(b, n);
+  },
+  b64StoB64: function(b64, n) {
+    var b = DebugJS.decodeBase64S(b64, n, 1);
+    return DebugJS.Base64.encode(b);
   },
   bsb64toB64: function(b64, n) {
     var b = DebugJS.BSB64.decode(b64, n);
@@ -5885,7 +5900,7 @@ DebugJS.prototype = {
   },
   toggleDecMode: function() {
     var ctx = DebugJS.ctx;
-    var a = (ctx.decMode == 'bsb64' ? ['b64', 'txt'] : ['b64', 'hex', 'bin', 'txt']);
+    var a = (ctx.fileVwrB64Slct.value == 'b64' ? ['b64', 'hex', 'bin', 'txt'] : ['b64', 'txt']);
     var mode = DebugJS.arr.next(a, ctx.fileVwrDecMode);
     ctx.setDecMode(ctx, mode);
   },
@@ -6185,25 +6200,27 @@ DebugJS.prototype = {
     ctx.setDecMode(ctx, 'b64');
     ctx.decodeFileVwrData();
   },
-  setModeB64: function() {
+  onB64SlctChg: function() {
     var ctx = DebugJS.ctx;
+    var v = ctx.fileVwrB64Slct.value;
+    if (v == 'b64') {
+      ctx.setModeB64(ctx);
+    } else {
+      ctx.setModeBSB64(ctx);
+    }
+  },
+  setModeB64: function(ctx) {
     var setStyle = DebugJS.setStyle;
-    ctx.decMode = 'b64';
-    setStyle(ctx.fileVwrBsbBtn, 'color', DebugJS.COLOR_INACT);
-    setStyle(ctx.fileVwrB64Btn, 'color', '');
-    setStyle(ctx.fileVwrBSB64nL, 'color', '#888');
-    setStyle(ctx.fileVwrBSB64n, 'color', '#888');
+    setStyle(ctx.fileVwrB64nLbl, 'color', '#888');
+    setStyle(ctx.fileVwrB64n, 'color', '#888');
   },
   setModeBSB64: function() {
     var ctx = DebugJS.ctx;
     var setStyle = DebugJS.setStyle;
-    ctx.decMode = 'bsb64';
-    setStyle(ctx.fileVwrB64Btn, 'color', DebugJS.COLOR_INACT);
-    setStyle(ctx.fileVwrBsbBtn, 'color', '');
     var m = ctx.fileVwrDecMode;
     if ((m == 'hex') || (m == 'bin')) ctx.setDecMode(ctx, 'b64');
-    setStyle(ctx.fileVwrBSB64nL, 'color', '#ccc');
-    setStyle(ctx.fileVwrBSB64n, 'color', '#ccc');
+    setStyle(ctx.fileVwrB64nLbl, 'color', '#ccc');
+    setStyle(ctx.fileVwrB64n, 'color', '#ccc');
   },
 
   openHtmlEditor: function() {
@@ -12885,11 +12902,11 @@ DebugJS.Base64.getMimeType = function(s) {
 };
 
 DebugJS.encodeBase64S = function(s, k) {
-  var a = DebugJS.UTF8.toByteArray(s);
+  var a = ((typeof s == 'string') ? DebugJS.UTF8.toByteArray(s) : s);
   var b = DebugJS.xor(a, k);
   return DebugJS.Base64.encode(b);
 };
-DebugJS.decodeBase64S = function(s, k) {
+DebugJS.decodeBase64S = function(s, k, byB) {
   if (s.match(/\$\d+$/)) {
     var w = s.split('$');
     s = w[0];
@@ -12897,7 +12914,8 @@ DebugJS.decodeBase64S = function(s, k) {
   }
   var b = DebugJS.Base64.decode(s);
   var a = DebugJS.xor(b, k);
-  return DebugJS.UTF8.fromByteArray(a);
+  if (!byB) a = DebugJS.UTF8.fromByteArray(a);
+  return a;
 };
 DebugJS.xor = function(a, n) {
   n = n % 256;
