@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202307021949';
+  this.v = '202307022138';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5788,16 +5788,15 @@ DebugJS.prototype = {
       case 'txt':
         var nl = ctx.fileVwrRet.value | 0;
         r = DebugJS.encodeBSB64(src, n);
-        r = ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(r, '\n', nl);
+        ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(r, '\n', nl);
         data = src;
+        ctx.showFilePreview(ctx, null, scheme, data);
         break;
       default:
-        r = DebugJS.decodeBSB64(src, n);
-        data = ctx.getTextPreview(r);
+        var b64 = ctx.bsb64toB64(src, n);
         ctx.fileVwrDataSrcType = 'b64';
+        ctx.showB64Preview(ctx, null, scheme, b64);
     }
-    ctx.showFilePreview(ctx, null, scheme, data);
-    return r;
   },
   decodeBin: function(ctx, bin) {
     ctx.fileVwrByteArray = DebugJS.str2binArr(bin, 8, '0b');
@@ -5852,9 +5851,23 @@ DebugJS.prototype = {
       ctx.fileVwrSysCb(ctx, file, decoded);
     } else {
       if (ctx.decMode == 'bsb64') {
-        ctx.decodeFileVwrData();
+        ctx.setBSB64data(ctx, b64cnt.data);
       }
     }
+  },
+  setBSB64data: function(ctx, b64) {
+    var nl = ctx.fileVwrRet.value | 0;
+    var n = ctx.fileVwrBSB64n.value;
+    var s = ctx.b64toBSB64(b64, n);
+    ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(s, '\n', nl);
+  },
+  b64toBSB64: function(b64, n) {
+    var b = DebugJS.Base64.decode(b64);
+    return DebugJS.BSB64.encode(b, n);
+  },
+  bsb64toB64: function(b64, n) {
+    var b = DebugJS.BSB64.decode(b64, n);
+    return DebugJS.Base64.encode(b);
   },
   onFileLoadedBin: function(ctx, file, ctt) {
     var buf = new Uint8Array(ctt);
