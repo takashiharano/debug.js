@@ -4101,12 +4101,12 @@ $ base64 -d YWJjZGVmZw==
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
 
-key      : -k &lt;0-255&gt;
+key      : -k KEY
 
-$ base64s -e -k 1 abcdefg
--&gt; YGNiZWRnZg==
+$ base64s -e -k xyz abcdefg
+-&gt; ABkbGRwcHB8=
 
-$ base64s -d -k 1 YGNiZWRnZg==
+$ base64s -d -k xyz ABkbGRwcHB8=
 -&gt; abcdefg
 </pre>
     </td>

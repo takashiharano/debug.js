@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202307030004';
+  this.v = '202309142221';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -314,7 +314,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] Array'},
     {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print all ASCII characters'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] STR'},
-    {cmd: 'base64s', fn: this.cmdBase64s, desc: 'Encodes/Decodes Base64S', help: 'base64s [-e|-d] -k &lt;0-255&gt; STR'},
+    {cmd: 'base64s', fn: this.cmdBase64s, desc: 'Encodes/Decodes Base64S', help: 'base64s [-e|-d] -k KEY STR'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n N] STR'},
@@ -5366,11 +5366,11 @@ DebugJS.prototype = {
     b.style.color = '#ccc';
     b.style.float = 'right';
 
-    ctx.fileVwrB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.8em', 'center', '#ccc', '1', null);
+    ctx.fileVwrB64n = DebugJS.ui.addTextInput(ctx.fileVwrDtUrlWrp, '1.8em', 'left', '#ccc', '1', null);
     ctx.fileVwrB64n.style.float = 'right';
     ctx.fileVwrB64n.style.marginRight = (ctx.computedFontSize * 0.5) + 'px';
     ctx.fileVwrB64nLbl = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'span', {float: 'right'}, true);
-    ctx.fileVwrB64nLbl.innerText = 'n=';
+    ctx.fileVwrB64nLbl.innerText = 'k=';
 
     ctx.fileVwrB64Slct = DebugJS.ui.addElement(ctx.fileVwrDtUrlWrp, 'select');
     ctx.fileVwrB64Slct.className = 'dbg-select dbg-nomove';
@@ -5868,16 +5868,16 @@ DebugJS.prototype = {
     var s = f(b64, n);
     ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(s, '\n', nl);
   },
-  b64toB64S: function(b64, n) {
+  b64toB64S: function(b64, k) {
     var b = DebugJS.Base64.decode(b64);
-    return DebugJS.encodeBase64S(b, n);
+    return DebugJS.encodeBase64S(b, k);
   },
   b64toBSB64: function(b64, n) {
     var b = DebugJS.Base64.decode(b64);
     return DebugJS.BSB64.encode(b, n);
   },
-  b64StoB64: function(b64, n) {
-    var b = DebugJS.decodeBase64S(b64, n, 1);
+  b64StoB64: function(b64, k) {
+    var b = DebugJS.decodeBase64S(b64, k, 1);
     return DebugJS.Base64.encode(b);
   },
   bsb64toB64: function(b64, n) {
@@ -7229,11 +7229,11 @@ DebugJS.prototype = {
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     var k = DebugJS.getOptVal(arg, 'k');
     if (k == null) {
-      k = 0;
+      k = '';
     } else {
       iIdx += 2;
     }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBase64S, DebugJS.decodeBase64S, iIdx, k | 0);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBase64S, DebugJS.decodeBase64S, iIdx, k);
   },
 
   cmdBat: function(arg, tbl, echo) {
@@ -12903,27 +12903,45 @@ DebugJS.Base64.getMimeType = function(s) {
 
 DebugJS.encodeBase64S = function(s, k) {
   var a = ((typeof s == 'string') ? DebugJS.UTF8.toByteArray(s) : s);
-  var b = DebugJS.xor(a, k);
+  var x = DebugJS.UTF8.toByteArray(k);
+  var b = DebugJS._encodeBase64S(a, x);
   return DebugJS.Base64.encode(b);
 };
-DebugJS.decodeBase64S = function(s, k, byB) {
-  if (s.match(/\$\d+$/)) {
-    var w = s.split('$');
-    s = w[0];
-    k = w[1] | 0;
+DebugJS._encodeBase64S = function(a, k) {
+  var al = a.length;
+  var kl = k.length;
+  if ((al == 0) || (kl == 0)) return a;
+  var p = kl - al;
+  if (p < 0) p = 0;
+  var b = [];
+  b.push(p);
+  for (var i = 0; i < al; i++) {
+    b.push(a[i] ^ k[i % kl]);
   }
+  var n = i;
+  for (i = 0; i < p; i++) {
+    b.push(255 ^ k[(n + i) % kl]);
+  }
+  return b;
+};
+DebugJS.decodeBase64S = function(s, k, byB) {
   var b = DebugJS.Base64.decode(s);
-  var a = DebugJS.xor(b, k);
+  var x = DebugJS.UTF8.toByteArray(k);
+  var a = DebugJS._decodeBase64S(b, x);
   if (!byB) a = DebugJS.UTF8.fromByteArray(a);
   return a;
 };
-DebugJS.xor = function(a, n) {
-  n = n % 256;
-  var b = [];
-  for (var i = 0; i < a.length; i++) {
-    b.push(a[i] ^ n);
+DebugJS._decodeBase64S = function(b, k) {
+  var bl = b.length;
+  var kl = k.length;
+  if ((bl == 0) || (kl == 0)) return b;
+  var p = b[0];
+  var al = bl - p;
+  var a = [];
+  for (var i = 1; i < al; i++) {
+    a.push(b[i] ^ k[(i - 1) % kl]);
   }
-  return b;
+  return a;
 };
 
 DebugJS.isBase64 = function(s) {
