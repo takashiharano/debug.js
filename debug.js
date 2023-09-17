@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202309152137';
+  this.v = '202309171539';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12562,6 +12562,7 @@ DebugJS.formatDec = function(v, n) {
   if (v.match(/\./)) {
     var a = v.split('.');
     v0 = a[0];
+    if (!v0) v0 = '0';
     v1 = '.' + a[1];
   }
   var len = v0.length;
@@ -13391,8 +13392,8 @@ DebugJS._cmdByte = function(v, echo) {
   var b = '';
   for (var i = 5; i >= 1; i--) {
     var c = Math.pow(1024, i);
-    if (v >= c) {
-      var w = v / c;
+    var w = v / c;
+    if ((v >= c) || (w > 0.9756)) {
       b += DebugJS.formatDec(DebugJS.round(w, 2)) + ' ' + U[i] + 'B\n';
     }
   }
