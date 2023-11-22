@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311212203';
+  this.v = '202311230053';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -335,6 +335,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float [-b|-h] VAL'},
+    {cmd: 'gtin', fn: this.cmdGTIN, desc: 'Calculate check digit of GTIN code', help: 'gtin N CODE'},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
@@ -401,7 +402,7 @@ var DebugJS = DebugJS || function() {
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
   this.CMD_ALIAS = {};
-  this.CMD_ALIAS_BI = {b64: 'base64', d: 'date', t: 'time'};
+  this.CMD_ALIAS_BI = {b64: 'base64', d: 'date', jan: 'gtin 13', t: 'time', upc: 'gtin 12'};
   this.CMDVALS = {};
   this.opt = null;
   this.errStatus = DebugJS.ERR_ST_NONE;
@@ -8269,6 +8270,35 @@ DebugJS.prototype = {
     }
   },
 
+  cmdGTIN: function(arg, tbl) {
+    var a = DebugJS.splitArgs(arg);
+    if (a.length < 2) {
+      DebugJS.printUsage(tbl.help);
+      return -1;
+    }
+    var n = a[0] | 0;
+    var s = a[1];
+    var x;
+    if ((s.length < n - 1) || (s.length > n)) {
+      DebugJS.printUsage(tbl.help);
+      return -1;
+    }
+    if (s.length == n) {
+      var v = s.substr(0, n - 1);
+      x = s.substr(n - 1);
+      var c = DebugJS.calcGTINcd(n, v);
+      var r = ((x == c) ? 'OK' : 'NG');
+    } else {
+      r = DebugJS.calcGTINcd(n, s);
+    }
+    if (r == 'NG') {
+      log.res.err(r);
+    } else {
+      log.res(r);
+    }
+    return r;
+  },
+
   cmdJson: function(arg, tbl) {
     if (arg == '') {
       DebugJS.printUsage(tbl.help);
@@ -11959,6 +11989,25 @@ DebugJS.saveobj = function(k, o) {
 };
 DebugJS.clearobj = function(k) {
   if (DebugJS.LS_AVAILABLE) localStorage.removeItem(k);
+};
+
+DebugJS.calcGTINcd = function(n, s) {
+  var a = s.split('');
+  var s0 = 0;var s1 = 0;
+  for (var i = 0; i < n - 1; i++) {
+    var v = a[i] | 0;
+    if (i % 2 == 0) {
+      s0 += v;
+    } else {
+      s1 += v;
+    }
+  }
+  if (n % 2 != 0) {
+    var w = s0;s0 = s1;s1 = w;
+  }
+  var b = s0 * 3 + s1;
+  var c = b % 10;
+  return ((c == 0) ? 0 : (10 - c));
 };
 
 DebugJS.digits = function(x) {
