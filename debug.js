@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311231822';
+  this.v = '202311240045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7406,9 +7406,6 @@ DebugJS.prototype = {
   },
 
   cmdChars: function(arg, tbl) {
-    if ((arg.length > 2) && arg.substr(1, 1).match(/　/)) {
-      arg = arg.substr(0, 1) + ' ' + arg.substr(2);
-    }
     var a = DebugJS.splitArgs(arg);
     var c1 = a[0];
     var c2 = a[1];
