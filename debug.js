@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311230053';
+  this.v = '202311231822';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -377,6 +377,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'sw', fn: this.cmdSw, desc: 'Launch the stopwatch in the full-screen mode'},
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text SELECTOR "TEXT" [-speed MILLIS] [-start SEQ_START_POS] [-end SEQ_END_POS]'},
+    {cmd: 'textedit', fn: this.cmdTextEdit, desc: 'Manipulate text editor', help: 'textedit clear|get|exec|set|setoptval [IDX] "VAL"'},
     {cmd: 'time', fn: this.cmdTime, desc: 'String <--> millis', help: 'time ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
@@ -6552,8 +6553,9 @@ DebugJS.prototype = {
     var v = ctx.txtEdtTxt.value;
     var o = [];
     for (var i = 0; i < 4; i++) {
-      o[i] = ctx.txtEdtOptEl[i].txt.value;
-      if (ctx.txtEdtOptEl[i].sel.active) o[i] = ctx.txtEdtOptEl[i].sel.value;
+      var oEls = ctx.txtEdtOptEl[i];
+      o[i] = oEls.txt.value;
+      if (oEls.sel.active) o[i] = oEls.sel.value;
     }
     ctx.txtEdtTxt.value = d.fn(ctx, v, o);
     ctx.onTxtEdtInput();
@@ -8270,7 +8272,7 @@ DebugJS.prototype = {
     }
   },
 
-  cmdGTIN: function(arg, tbl) {
+  cmdGTIN: function(arg, tbl, echo) {
     var a = DebugJS.splitArgs(arg);
     if (a.length < 2) {
       DebugJS.printUsage(tbl.help);
@@ -8292,9 +8294,9 @@ DebugJS.prototype = {
       r = DebugJS.calcGTINcd(n, s);
     }
     if (r == 'NG') {
-      log.res.err(r);
+      if (echo) log.res.err(r);
     } else {
-      log.res(r);
+      if (echo) log.res(r);
     }
     return r;
   },
@@ -9548,220 +9550,6 @@ DebugJS.prototype = {
     DebugJS.sleep(ms);
   },
 
-  cmdTimeCalc: function(arg, echo) {
-    var r = null;
-    arg = DebugJS.delAllSP(arg);
-    if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]\d{1,}/)) return r;
-    var byDays = false;
-    if (arg.match(/d$/i)) {
-      byDays = true;
-      arg = arg.substr(0, arg.length - 1);
-    }
-    var ops = arg.match(/[+\-*/]/g);
-    var n = ops.length;
-    var op = ops[0];
-    var opp = arg.indexOf(op);
-    var vL = arg.substr(0, opp);
-    var p = opp + 1;
-    for (var i = 0; i < n; i++) {
-      var nOp = ops[i + 1];
-      var nOpp = arg.indexOf(nOp, p);
-      if (nOp) {
-        var ln = nOpp - p;
-        var vR = arg.substr(p, ln);
-      } else {
-        vR = arg.substr(p);
-      }
-      var fn;
-      if (op == '+') {
-        fn = DebugJS.addTime;
-      } else if (op == '-') {
-        fn = DebugJS.subTime;
-      } else if (op == '*') {
-        fn = DebugJS.mltTime;
-      } else {
-        fn = DebugJS.divTime;
-      }
-      if (vR != '') {
-        r = fn(vL, vR);
-        if (isNaN(r)) {
-          r = 'Invalid time format';
-          DebugJS._log.e(r);
-          return r;
-        }
-      }
-      op = nOp;
-      opp = nOpp;
-      p = opp + 1;
-      vL = r;
-    }
-    r = DebugJS.fmtCalcTime(r, byDays);
-    if (echo) DebugJS._log.res(r);
-    return r;
-  },
-
-  cmdTest: function(arg, tbl) {
-    var args = DebugJS.splitCmdLine(arg, 4);
-    var op = args[0];
-    var test = DebugJS.test;
-    var st;
-    switch (op) {
-      case 'init':
-        var nm = DebugJS.getOptVal(arg, 'name');
-        try {
-          nm = eval(nm);
-          test.init(nm);
-          DebugJS._log('Test has been initialized.' + (nm == undefined ? '' : ' (' + nm + ')'));
-        } catch (e) {DebugJS._log.e(e);}
-        break;
-      case 'set':
-        DebugJS.ctx._cmdTestSet(arg);
-        break;
-      case 'count':
-        var c = test.data.cnt;
-        if (args[1] != '-d') c = test.getSumCount();
-        DebugJS._log(test.getCountStr(c));
-        break;
-      case 'last':
-        st = test.getLastResult();
-        DebugJS._log(test.getStyledStStr(st));
-        return st;
-      case 'result':
-        DebugJS._log(test.result());
-        break;
-      case 'ttlresult':
-        st = test.getTotalResult();
-        DebugJS._log(test.getStyledStStr(st));
-        return st;
-      case 'status':
-        DebugJS._log.p(test.getStatus(), 0, null, false);
-        break;
-      case 'verify':
-        return DebugJS.ctx._CmdTestVerify(arg);
-      case 'end':
-        test.end();
-        DebugJS._log('The test has been completed.');
-        break;
-      default:
-        DebugJS.printUsage(tbl.help);
-    }
-  },
-  _cmdTestSet: function(arg) {
-    var test = DebugJS.test;
-    var args = DebugJS.splitCmdLine(arg, 3);
-    var tgt = args[1];
-    var fn;
-    switch (tgt) {
-      case 'name':
-        fn = test.setName;
-        break;
-      case 'desc':
-        fn = test.setDesc;
-        break;
-      case 'id':
-        fn = test.setId;
-        break;
-      case 'comment':
-        fn = test.setCmnt;
-        break;
-      case 'result':
-        DebugJS.ctx._cmdTestSetRslt(DebugJS.getArgsFrom(arg, 2));
-        return;
-      case 'seq':
-        fn = test.setSeq;
-        break;
-      default:
-        DebugJS.printUsage('test set name|desc|id|comment|result|seq val');
-        return;
-    }
-    try {
-      var v = eval(args[2]);
-      if (v == undefined) v = '';
-      fn(v + '');
-    } catch (e) {DebugJS._log.e(e);}
-  },
-  _CmdTestVerify: function(arg) {
-    var a = DebugJS.splitCmdLine(arg);
-    var got = a[1];
-    var method = a[2];
-    var exp = DebugJS.getArgsFrom(arg, 3);
-    var label = DebugJS.getOptVal(a, 'label');
-    if (label != null) {
-      got = a[3];
-      method = a[4];
-      exp = DebugJS.getArgsFrom(arg, 5);
-    }
-    return DebugJS.test.verify(got, method, exp, true, label);
-  },
-  _cmdTestSetRslt: function(a) {
-    var st = DebugJS.getArgVal(a, 0);
-    var label = DebugJS.getOptVal(a, 'label');
-    var info = DebugJS.getOptVal(a, 'info');
-    try {
-      var inf = eval(info);
-    } catch (e) {
-      DebugJS._log.e('Illegal info opt: ' + info);return;
-    }
-    DebugJS.test.setResult(st, label, inf);
-  },
-
-  cmdText: function(arg, tbl) {
-    var a = DebugJS.splitCmdLine(arg);
-    var slctr = a[0];
-    var txt = a[1];
-    if (txt == undefined) {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var speed = DebugJS.getOptVal(arg, 'speed');
-    var step = DebugJS.getOptVal(arg, 'step');
-    var start = DebugJS.getOptVal(arg, 'start');
-    var end = DebugJS.getOptVal(arg, 'end');
-    DebugJS.setText(slctr, txt, speed, step, start, end);
-  },
-
-  cmdTime: function(arg, tbl) {
-    if (DebugJS.countArgs(arg) == 0) {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var t = arg.trim();
-    var ms, s;
-    if (DebugJS.isTmStr(t)) {
-      ms = DebugJS.str2ms(t);
-    } else if (DebugJS.isTimerFormat(t)) {
-      ms = DebugJS.clock2ms(t);
-    } else if (DebugJS.isFloat(t)) {
-      ms = DebugJS.float2ms(t);
-    } else {
-      ms = +t;
-    }
-    s = DebugJS.ms2str(ms, 1) + ' (' + ms + ' ms)';
-    DebugJS._log.res(s);
-    return s;
-  },
-
-  cmdTimeDiff: function(arg, tbl, echo) {
-    var a = DebugJS.splitCmdLine(arg);
-    var t1 = a[0];
-    var t2 = a[1];
-    var s1, s2;
-    if ((t1 == '') || (t2 == undefined)) {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var now = Date.now() + '';
-    if (t1 == 'now') t1 = now;
-    if (t2 == 'now') t2 = now;
-    try {
-      s1 = DebugJS.cnv2ms(t1);
-      s2 = DebugJS.cnv2ms(t2);
-      var s = DebugJS.ms2str(s2 - s1, 0).replace('-', '');
-      if (echo) DebugJS._log.res(s);
-      return s;
-    } catch (e) {DebugJS.printUsage(tbl.help);}
-  },
-
   cmdStack: function(arg, tbl) {
     var f = arg.trim();
     if (f) {
@@ -9929,6 +9717,289 @@ DebugJS.prototype = {
     ctx.closeTools(ctx);
     ctx._cmdKioskQ(ctx);
     ctx.status &= ~DebugJS.ST_SW;
+  },
+
+  cmdTest: function(arg, tbl) {
+    var args = DebugJS.splitCmdLine(arg, 4);
+    var op = args[0];
+    var test = DebugJS.test;
+    var st;
+    switch (op) {
+      case 'init':
+        var nm = DebugJS.getOptVal(arg, 'name');
+        try {
+          nm = eval(nm);
+          test.init(nm);
+          DebugJS._log('Test has been initialized.' + (nm == undefined ? '' : ' (' + nm + ')'));
+        } catch (e) {DebugJS._log.e(e);}
+        break;
+      case 'set':
+        DebugJS.ctx._cmdTestSet(arg);
+        break;
+      case 'count':
+        var c = test.data.cnt;
+        if (args[1] != '-d') c = test.getSumCount();
+        DebugJS._log(test.getCountStr(c));
+        break;
+      case 'last':
+        st = test.getLastResult();
+        DebugJS._log(test.getStyledStStr(st));
+        return st;
+      case 'result':
+        DebugJS._log(test.result());
+        break;
+      case 'ttlresult':
+        st = test.getTotalResult();
+        DebugJS._log(test.getStyledStStr(st));
+        return st;
+      case 'status':
+        DebugJS._log.p(test.getStatus(), 0, null, false);
+        break;
+      case 'verify':
+        return DebugJS.ctx._CmdTestVerify(arg);
+      case 'end':
+        test.end();
+        DebugJS._log('The test has been completed.');
+        break;
+      default:
+        DebugJS.printUsage(tbl.help);
+    }
+  },
+  _cmdTestSet: function(arg) {
+    var test = DebugJS.test;
+    var args = DebugJS.splitCmdLine(arg, 3);
+    var tgt = args[1];
+    var fn;
+    switch (tgt) {
+      case 'name':
+        fn = test.setName;
+        break;
+      case 'desc':
+        fn = test.setDesc;
+        break;
+      case 'id':
+        fn = test.setId;
+        break;
+      case 'comment':
+        fn = test.setCmnt;
+        break;
+      case 'result':
+        DebugJS.ctx._cmdTestSetRslt(DebugJS.getArgsFrom(arg, 2));
+        return;
+      case 'seq':
+        fn = test.setSeq;
+        break;
+      default:
+        DebugJS.printUsage('test set name|desc|id|comment|result|seq val');
+        return;
+    }
+    try {
+      var v = eval(args[2]);
+      if (v == undefined) v = '';
+      fn(v + '');
+    } catch (e) {DebugJS._log.e(e);}
+  },
+  _CmdTestVerify: function(arg) {
+    var a = DebugJS.splitCmdLine(arg);
+    var got = a[1];
+    var method = a[2];
+    var exp = DebugJS.getArgsFrom(arg, 3);
+    var label = DebugJS.getOptVal(a, 'label');
+    if (label != null) {
+      got = a[3];
+      method = a[4];
+      exp = DebugJS.getArgsFrom(arg, 5);
+    }
+    return DebugJS.test.verify(got, method, exp, true, label);
+  },
+  _cmdTestSetRslt: function(a) {
+    var st = DebugJS.getArgVal(a, 0);
+    var label = DebugJS.getOptVal(a, 'label');
+    var info = DebugJS.getOptVal(a, 'info');
+    try {
+      var inf = eval(info);
+    } catch (e) {
+      DebugJS._log.e('Illegal info opt: ' + info);return;
+    }
+    DebugJS.test.setResult(st, label, inf);
+  },
+
+  cmdText: function(arg, tbl) {
+    var a = DebugJS.splitCmdLine(arg);
+    var slctr = a[0];
+    var txt = a[1];
+    if (txt == undefined) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var speed = DebugJS.getOptVal(arg, 'speed');
+    var step = DebugJS.getOptVal(arg, 'step');
+    var start = DebugJS.getOptVal(arg, 'start');
+    var end = DebugJS.getOptVal(arg, 'end');
+    DebugJS.setText(slctr, txt, speed, step, start, end);
+  },
+
+  cmdTextEdit: function(arg, tbl, echo) {
+    var ctx = DebugJS.ctx;
+    var a = DebugJS.splitCmdLine(arg);
+    var op = a[0];
+    if (!DebugJS.isTxtEdtMode()) {
+      ctx.openFeature(ctx, DebugJS.ST_TOOLS, 'text');
+    }
+    switch (op) {
+      case 'clear':
+        ctx.txtEdtTxt.value = '';
+        break;
+      case 'get':
+        var r = ctx.cmdTextEditGet(ctx, echo);
+        break;
+      case 'mode':
+        var m = a[1];
+        ctx.cmdTextEditMode(ctx, m);
+        break;
+      case 'set':
+        var s = a[1];
+        ctx.cmdTextEditSet(ctx, tbl, echo, s);
+        break;
+      case 'setoptval':
+        var i = a[1];
+        s = a[2];
+        ctx.cmdTextEditSetOptVal(ctx, tbl, echo, i, s);
+        break;
+      case 'exec':
+        ctx.execTxtEdit();
+        break;
+      default:
+        DebugJS.printUsage(tbl.help);
+    }
+    return r;
+  },
+  cmdTextEditGet: function(ctx, echo) {
+    var r = (ctx.txtEdtTxt ? ctx.txtEdtTxt.value : '');
+    if (echo) DebugJS._log(r);
+    return r;
+  },
+  cmdTextEditMode: function(ctx, m) {
+    ctx.txtEdtMdSlct.value = m;
+    ctx.onTxtEdtMdChg();
+  },
+  cmdTextEditSet: function(ctx, tbl, echo, s) {
+    if (s == undefined) {
+      DebugJS.printUsage(tbl.help);return;
+    }
+    try {
+      s = eval(s);
+      ctx.txtEdtTxt.value = s;
+    } catch (e) {}
+  },
+  cmdTextEditSetOptVal: function(ctx, tbl, echo, i, s) {
+    var H = 'textedit setoptval IDX "VAL"';
+    if (s == undefined) {
+      DebugJS.printUsage(H);return;
+    }
+    try {
+      s = eval(s);
+      var o = ctx.txtEdtOptEl[i];
+      var el = o.txt;
+      if (o.sel.active) el = o.sel;
+      el.value = s;
+    } catch (e) {
+      DebugJS.printUsage(H);
+    }
+  },
+
+  cmdTime: function(arg, tbl) {
+    if (DebugJS.countArgs(arg) == 0) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var t = arg.trim();
+    var ms, s;
+    if (DebugJS.isTmStr(t)) {
+      ms = DebugJS.str2ms(t);
+    } else if (DebugJS.isTimerFormat(t)) {
+      ms = DebugJS.clock2ms(t);
+    } else if (DebugJS.isFloat(t)) {
+      ms = DebugJS.float2ms(t);
+    } else {
+      ms = +t;
+    }
+    s = DebugJS.ms2str(ms, 1) + ' (' + ms + ' ms)';
+    DebugJS._log.res(s);
+    return s;
+  },
+
+  cmdTimeCalc: function(arg, echo) {
+    var r = null;
+    arg = DebugJS.delAllSP(arg);
+    if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]\d{1,}/)) return r;
+    var byDays = false;
+    if (arg.match(/d$/i)) {
+      byDays = true;
+      arg = arg.substr(0, arg.length - 1);
+    }
+    var ops = arg.match(/[+\-*/]/g);
+    var n = ops.length;
+    var op = ops[0];
+    var opp = arg.indexOf(op);
+    var vL = arg.substr(0, opp);
+    var p = opp + 1;
+    for (var i = 0; i < n; i++) {
+      var nOp = ops[i + 1];
+      var nOpp = arg.indexOf(nOp, p);
+      if (nOp) {
+        var ln = nOpp - p;
+        var vR = arg.substr(p, ln);
+      } else {
+        vR = arg.substr(p);
+      }
+      var fn;
+      if (op == '+') {
+        fn = DebugJS.addTime;
+      } else if (op == '-') {
+        fn = DebugJS.subTime;
+      } else if (op == '*') {
+        fn = DebugJS.mltTime;
+      } else {
+        fn = DebugJS.divTime;
+      }
+      if (vR != '') {
+        r = fn(vL, vR);
+        if (isNaN(r)) {
+          r = 'Invalid time format';
+          DebugJS._log.e(r);
+          return r;
+        }
+      }
+      op = nOp;
+      opp = nOpp;
+      p = opp + 1;
+      vL = r;
+    }
+    r = DebugJS.fmtCalcTime(r, byDays);
+    if (echo) DebugJS._log.res(r);
+    return r;
+  },
+
+  cmdTimeDiff: function(arg, tbl, echo) {
+    var a = DebugJS.splitCmdLine(arg);
+    var t1 = a[0];
+    var t2 = a[1];
+    var s1, s2;
+    if ((t1 == '') || (t2 == undefined)) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var now = Date.now() + '';
+    if (t1 == 'now') t1 = now;
+    if (t2 == 'now') t2 = now;
+    try {
+      s1 = DebugJS.cnv2ms(t1);
+      s2 = DebugJS.cnv2ms(t2);
+      var s = DebugJS.ms2str(s2 - s1, 0).replace('-', '');
+      if (echo) DebugJS._log.res(s);
+      return s;
+    } catch (e) {DebugJS.printUsage(tbl.help);}
   },
 
   cmdUnAlias: function(arg, tbl) {
@@ -14626,6 +14697,9 @@ DebugJS.showHeaderInfo = function(f) {
 };
 DebugJS.isTmrMode = function() {
   return ((DebugJS.ctx.status & DebugJS.ST_TOOLS) && (DebugJS.ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TIMER));
+};
+DebugJS.isTxtEdtMode = function() {
+  return ((DebugJS.ctx.status & DebugJS.ST_TOOLS) && (DebugJS.ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TEXT));
 };
 
 DebugJS._log = function(m) {

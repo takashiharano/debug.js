@@ -5808,6 +5808,35 @@ $ text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
   </tr>
 
   <tr>
+    <td class="name">textedit</td>
+    <td>
+      arg1: oeration<br>arg2: value
+    </td>
+    <td>
+     Manipulate text editor
+<pre class="eg">
+$ textedit get
+-&gt; Get text
+
+$ textedit set "Text"
+-&gt; Set text
+
+$ textedit clear
+-&gt; Clear text
+
+$ textedit mode 1
+-&gt; Switch edit mode
+
+$ textedit setoptval 0 "abc"
+-&gt; Set option value (Set "abc" to the first option)
+
+$ textedit exec
+-&gt; Execute edit
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">time</td>
     <td>
       ms|time-string
