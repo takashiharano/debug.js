@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311272321';
+  this.v = '202311280013';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8289,10 +8289,10 @@ DebugJS.prototype = {
     if (s.length == n) {
       var v = s.substr(0, n - 1);
       x = s.substr(n - 1);
-      var c = DebugJS.calcGTINcd(n, v);
+      var c = DebugJS.calcGTINcd(v, n);
       var r = ((x == c) ? 'OK' : 'NG');
     } else {
-      r = DebugJS.calcGTINcd(n, s);
+      r = DebugJS.calcGTINcd(s, n);
     }
     if (r == 'NG') {
       if (echo) log.res.err(r);
@@ -12063,23 +12063,14 @@ DebugJS.clearobj = function(k) {
   if (DebugJS.LS_AVAILABLE) localStorage.removeItem(k);
 };
 
-DebugJS.calcGTINcd = function(n, s) {
+DebugJS.calcGTINcd = function(s, d) {
   var a = s.split('');
-  var s0 = 0;var s1 = 0;
-  for (var i = 0; i < n - 1; i++) {
-    var v = a[i] | 0;
-    if (i % 2 == 0) {
-      s0 += v;
-    } else {
-      s1 += v;
-    }
+  var cs = [0, 0];
+  for (var i = 0; i < d - 1; i++) {
+    cs[(d - i) % 2] += a[i] | 0;
   }
-  if (n % 2 != 0) {
-    var w = s0;s0 = s1;s1 = w;
-  }
-  var b = s0 * 3 + s1;
-  var c = b % 10;
-  return ((c == 0) ? 0 : (10 - c));
+  var c = cs[0] * 3 + cs[1];
+  return ((10 - (c % 10)) % 10);
 };
 
 DebugJS.digits = function(x) {
