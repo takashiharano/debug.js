@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311240054';
+  this.v = '202311272321';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6102,7 +6102,9 @@ DebugJS.prototype = {
       dmp += DebugJS.dumpAddr(0);
     }
     for (var i = 0; i < len; i++) {
-      dmp += ctx.getDump(mode, i, buf, len, showSp, showAddr, showAscii);
+      if (i < buf.length || showAscii) {
+        dmp += ctx.getDump(mode, i, buf, len, showSp, showAddr, showAscii);
+      }
     }
     if (bLen > lm) {
       if (bLen - lm > (0x10 * lastRows)) {
@@ -6121,7 +6123,9 @@ DebugJS.prototype = {
           dmp += DebugJS.dumpAddr(st);
         }
         for (i = st; i < ed; i++) {
-          dmp += ctx.getDump(mode, i, buf, ed, showSp, showAddr, showAscii);
+          if (i < buf.length || showAscii) {
+            dmp += ctx.getDump(mode, i, buf, ed, showSp, showAddr, showAscii);
+          }
         }
       }
     }
