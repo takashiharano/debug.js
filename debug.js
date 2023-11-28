@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311280013';
+  this.v = '202311282210';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4352,6 +4352,7 @@ DebugJS.prototype = {
       var res = r;
       if (typeof r == 'string') res = DebugJS.quoteStr(r);
       if (echo) DebugJS._log.res(res);
+      if (Number.isInteger(r)) DebugJS.cmdInt('' + r, echo);
     } catch (e) {DebugJS._log.e(e);}
     return r;
   },
