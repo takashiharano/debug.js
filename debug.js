@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311282210';
+  this.v = '202311292150';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -318,6 +318,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n N] STR'},
+    {cmd: 'bswap', fn: this.cmdBswap, desc: 'Swaps the byte ordering', help: 'bswap HEX'},
     {cmd: 'byte', fn: this.cmdByte, desc: 'Displays the number of bytes', help: 'byte [-k|m|g|t|p] V'},
     {cmd: 'chars', fn: this.cmdChars, desc: 'Print Unicode characters that consists of consecutive code points', help: 'chars CH1|U+xxxx CH2|U+xxxx'},
     {cmd: 'close', fn: this.cmdClose, desc: 'Close a function', help: 'close [measure|sys|dom|js|tool|ext]'},
@@ -7404,6 +7405,23 @@ DebugJS.prototype = {
     return DebugJS.cmdByte(v, echo);
   },
 
+  cmdBswap: function(arg, tbl, echo) {
+    var s = arg.trim().replace(/^0x/, '').replace(/\s/g, '');
+    if (!s) {DebugJS.printUsage(tbl.help);return;}
+    if (s.length % 2 != 0) s = '0' + s;
+    var a = s.match(/.{2}/g);
+    var v = '0x';
+    for (var i = a.length - 1; i >= 0; i--) {
+      v += a[i];
+    }
+    var h = parseInt(v, 16);
+    if (echo) {
+      DebugJS._log.res(v);
+      DebugJS._log.mlt(DebugJS.buildRadixConvStr(h));
+    }
+    return h;
+  },
+
   cmdCall: function(arg) {
     if (DebugJS.bat.isCmdExecutable()) {
       DebugJS.ctx._cmdJump(DebugJS.ctx, arg, true, 'func');
@@ -12506,10 +12524,10 @@ DebugJS.cmdInt = function(v, echo) {
     return null;
   }
   var val = parseInt(v, rdx);
-  if (echo) DebugJS.printRadixConv(val);
+  if (echo) DebugJS._log.mlt(DebugJS.buildRadixConvStr(val));
   return val;
 };
-DebugJS.printRadixConv = function(v) {
+DebugJS.buildRadixConvStr = function(v) {
   var MAX = 0x20000000000000;
   var flDgt = DebugJS.DFLT_UNIT;
   var v2 = DebugJS.cnvBin(v);
@@ -12528,7 +12546,7 @@ DebugJS.printRadixConv = function(v) {
   if (hex.length >= 2) hex = '0x' + hex;
   var s = 'HEX ' + hex + '\nDEC ' + DebugJS.formatDec(v) + '\nOCT ' + v8 + '\nBIN ' + bin + '\n';
   if (v > MAX) s += '<span style="color:' + DebugJS.ctx.opt.logColorE + '">unsafe</span>';
-  DebugJS._log.mlt(s);
+  return s;
 };
 DebugJS.toBin = function(v) {
   return ('0000000' + v.toString(2)).slice(-8);

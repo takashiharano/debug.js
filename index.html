@@ -4168,13 +4168,15 @@ $ bat set pc 1
      Displays the value of the given bit position.<br><br>
 <pre class="eg">
 $ bit 8
-DEC 128
 HEX 0x80
+DEC 128
+OCT 0200
 BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
 
 $ bit -a 8
-DEC 255
 HEX 0xFF
+DEC 255
+OCT 0377
 BIN 0000 0000 0000 0000 0000 0000 1111 1111 (8 bits)
 </pre>
     </td>
@@ -4205,6 +4207,22 @@ $ bsb64 abc
 $ bsb64 -e abc
 $ bsb64 -d wsTG
 $ bsb64 -d wsTG$N <span class="annotation">(equal to bsb64 -d -i "wsTG" -n N)</span>
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">bswap</td>
+    <td>hex</td>
+    <td>
+     Swaps the byte ordering.<br><br>
+<pre class="eg">
+$ bswap 1234
+&gt; 0x3412
+HEX 0x3412
+DEC 13,330
+OCT 032022
+BIN 0000 0000 0000 0000 0011 0100 0001 0010 (14 bits)
 </pre>
     </td>
   </tr>
@@ -4782,20 +4800,23 @@ $ inject func1 "log('func1 was called');"</pre>
 <pre class="eg">
 $ int 128
 -&gt;
-DEC 128
 HEX 0x80
+DEC 128
+OCT 0200
 BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
 
 $ int 0x20
 -&gt;
-DEC 32
 HEX 0x20
+DEC 32
+OCT 040
 BIN 0000 0000 0000 0000 0000 0000 0010 0000 (6 bits)
 
 $ int 0b1010
 -&gt;
-DEC 10
 HEX A
+DEC 10
+OCT 012
 BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
 </pre>
     </td>
@@ -6111,20 +6132,23 @@ The debugger can perform the following calculation/conversion on the command-lin
 <pre class="eg">
 $ 128
 -&gt;
-DEC 128
 HEX 0x80
+DEC 128
+OCT 0200
 BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
 
 $ 0x20
 -&gt;
-DEC 32
 HEX 0x20
+DEC 32
+OCT 040
 BIN 0000 0000 0000 0000 0000 0000 0010 0000 (6 bits)
 
 $ 0b1010
 -&gt;
-DEC 10
 HEX A
+DEC 10
+OCT 012
 BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
 </pre>
 <span class="annotation">This is an alias of int command.</span>
@@ -6142,8 +6166,9 @@ BIN 0000 0000 0000 0000 0000 0000 0000 1010 (4 bits)
 
 $ 8bit
 -&gt;
-DEC 128
 HEX 0x80
+DEC 128
+OCT 0200
 BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
 </pre>
     </td>
@@ -6160,8 +6185,9 @@ BIN 0000 0000 0000 0000 0000 0000 1000 0000 (8 bits)
 
 $ 8bits
 -&gt;
-DEC 255
 HEX 0xFF
+DEC 255
+OCT 0377
 BIN 0000 0000 0000 0000 0000 0000 1111 1111 (8 bits)
 </pre>
     </td>
