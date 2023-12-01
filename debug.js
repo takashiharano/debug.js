@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202311292150';
+  this.v = '202312012136';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6707,7 +6707,7 @@ DebugJS.prototype = {
     var st = edt.selectionStart;
     var ed = edt.selectionEnd;
     var sl = ed - st;
-    var ch = DebugJS.str2arr(txt)[st] || '';
+    var ch = DebugJS.str2chars(txt)[st] || '';
     var u10 = DebugJS.getCodePoint(ch);
     var u16 = DebugJS.getUnicodePoints(ch, true);
     var CTCH = {0: 'NUL', 9: 'TAB', 10: 'LF', 11: 'ESC', 32: 'SP', 127: 'DEL', 12288: 'emSP'};
@@ -10072,7 +10072,7 @@ DebugJS.prototype = {
   _dumpByteSeq: function(str, len) {
     var s = '';
     var cnt = 0;
-    var chs = DebugJS.str2arr(str);
+    var chs = DebugJS.str2chars(str);
     for (var i = 0; i < chs.length; i++) {
       var ch = chs[i];
       var a = DebugJS.UTF8.toByteArray(ch);
@@ -12907,7 +12907,7 @@ DebugJS.UTF8 = {};
 DebugJS.UTF8.toByteArray = function(s) {
   var a = [];
   if (!s) return a;
-  var chs = DebugJS.str2arr(s);
+  var chs = DebugJS.str2chars(s);
   for (var i = 0; i < chs.length; i++) {
     var ch = chs[i];
     var c = ch.charCodeAt(0);
@@ -13221,7 +13221,7 @@ DebugJS.decodeUnicode = function(arg) {
 };
 DebugJS.getUnicodePoints = function(s) {
   var cd = '';
-  var chs = DebugJS.str2arr(s);
+  var chs = DebugJS.str2chars(s);
   for (var i = 0; i < chs.length; i++) {
     var p = DebugJS.getCodePoint(chs[i], true);
     if (i > 0) cd += ' ';
@@ -13248,7 +13248,7 @@ DebugJS.getUnicodeEscSeq = function(s) {
   }
   if (typeof s != 'string') return;
   var r = '';
-  var chs = DebugJS.str2arr(s);
+  var chs = DebugJS.str2chars(s);
   for (var i = 0; i < chs.length; i++) {
     var p = DebugJS.getCodePoint(chs[i], false);
     r += '\\u' + DebugJS.toHex(p, false, '', 4);
@@ -13861,7 +13861,7 @@ DebugJS.clipTextLine = function(s, p) {
 DebugJS.capitalize = function(s) {
   return ((s && (typeof s == 'string')) ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
 };
-DebugJS.str2arr = function(s) {
+DebugJS.str2chars = function(s) {
   return s.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\s\S]/g) || [];
 };
 DebugJS.startsWith = function(s, p, o) {
