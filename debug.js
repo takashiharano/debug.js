@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202312082354';
+  this.v = '202312090010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -336,7 +336,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float [-b|-h] VAL'},
-    {cmd: 'gtin', fn: this.cmdGTIN, desc: 'Calculate check digit of GTIN code', help: 'gtin DIGIT CODE'},
+    {cmd: 'gtin', fn: this.cmdGTIN, desc: 'Calculate check digit of GTIN code', help: 'gtin [DIGIT] CODE'},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
@@ -8294,7 +8294,7 @@ DebugJS.prototype = {
 
   cmdGTIN: function(arg, tbl, echo) {
     var a = DebugJS.splitArgs(arg);
-    if (a.length == 1) {
+    if ((a.length == 1) && a[0] != '') {
       var s = a[0];
     } else if (a.length >= 2) {
       var n = a[0];
