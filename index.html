@@ -4701,14 +4701,14 @@ C   2   E   D   4   0   0   0
 
   <tr>
     <td class="name">gtin</td>
-    <td>arg1: digit<br>arg2: code</td>
+    <td>arg1: digit<span class="annotation">(opt)</span><br>arg2: code</td>
     <td>
       Calculate check digit of GTIN code.<br><br>
 <pre class="eg">
 e.g.,
 
 # JAN-13
-gtin 13 456995111617
+gtin 456995111617
 &gt; 9
 
 gtin 13 4569951116179
@@ -4718,7 +4718,7 @@ gtin 13 4569951116178
 &gt; NG
 
 # UPC-A
-gtin 12 01234567890
+gtin 01234567890
 &gt; 5
 
 gtin 12 012345678905
@@ -4726,8 +4726,7 @@ gtin 12 012345678905
 
 gtin 12 012345678906
 &gt; NG
-</pre><br>
-Alias: jan, upc
+</pre>
     </td>
   </tr>
 

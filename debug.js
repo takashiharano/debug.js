@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202312012136';
+  this.v = '202312082354';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -404,7 +404,7 @@ var DebugJS = DebugJS || function() {
   this.CMD_TBL = [];
   this.EXT_CMD_TBL = [];
   this.CMD_ALIAS = {};
-  this.CMD_ALIAS_BI = {b64: 'base64', d: 'date', jan: 'gtin 13', t: 'time', upc: 'gtin 12'};
+  this.CMD_ALIAS_BI = {b64: 'base64', d: 'date', t: 'time'};
   this.CMDVALS = {};
   this.opt = null;
   this.errStatus = DebugJS.ERR_ST_NONE;
@@ -8294,24 +8294,26 @@ DebugJS.prototype = {
 
   cmdGTIN: function(arg, tbl, echo) {
     var a = DebugJS.splitArgs(arg);
-    if (a.length < 2) {
+    if (a.length == 1) {
+      var s = a[0];
+    } else if (a.length >= 2) {
+      var n = a[0];
+      s = a[1];
+    } else {
       DebugJS.printUsage(tbl.help);
       return -1;
     }
-    var n = a[0] | 0;
-    var s = a[1];
-    var x;
-    if ((s.length < n - 1) || (s.length > n)) {
+    if (n && (s.length != n)) {
       DebugJS.printUsage(tbl.help);
       return -1;
     }
-    if (s.length == n) {
+    if (n) {
       var v = s.substr(0, n - 1);
-      x = s.substr(n - 1);
-      var c = DebugJS.calcGTINcd(v, n);
+      var x = s.substr(n - 1);
+      var c = DebugJS.calcGtinCd(v);
       var r = ((x == c) ? 'OK' : 'NG');
     } else {
-      r = DebugJS.calcGTINcd(s, n);
+      r = DebugJS.calcGtinCd(s);
     }
     if (r == 'NG') {
       if (echo) log.res.err(r);
@@ -12082,8 +12084,9 @@ DebugJS.clearobj = function(k) {
   if (DebugJS.LS_AVAILABLE) localStorage.removeItem(k);
 };
 
-DebugJS.calcGTINcd = function(s, d) {
+DebugJS.calcGtinCd = function(s) {
   var a = s.split('');
+  var d = a.length + 1;
   var cs = [0, 0];
   for (var i = 0; i < d - 1; i++) {
     cs[(d - i) % 2] += a[i] | 0;
