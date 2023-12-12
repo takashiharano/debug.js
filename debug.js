@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202312090010';
+  this.v = '202312130010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -336,7 +336,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float [-b|-h] VAL'},
-    {cmd: 'gtin', fn: this.cmdGTIN, desc: 'Calculate check digit of GTIN code', help: 'gtin [DIGIT] CODE'},
     {cmd: 'help', fn: this.cmdHelp, desc: 'Displays available command list', help: 'help command', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'history', fn: this.cmdHistory, desc: 'Displays command history', help: 'history [-c] [-d offset]', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'http', fn: this.cmdHttp, desc: 'Send an HTTP request', help: 'http [method] [-u user:pass] url [data]'},
@@ -350,6 +349,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|dump|filter|html|load|preserve|suspend|time|lv'},
+    {cmd: 'mod10', fn: this.cmdMod10, desc: 'Calculate check digit by modulus 10', help: 'mod10 [-w WEIGHT] [DIGIT] CODE'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -8292,37 +8292,6 @@ DebugJS.prototype = {
     }
   },
 
-  cmdGTIN: function(arg, tbl, echo) {
-    var a = DebugJS.splitArgs(arg);
-    if ((a.length == 1) && a[0] != '') {
-      var s = a[0];
-    } else if (a.length >= 2) {
-      var n = a[0];
-      s = a[1];
-    } else {
-      DebugJS.printUsage(tbl.help);
-      return -1;
-    }
-    if (n && (s.length != n)) {
-      DebugJS.printUsage(tbl.help);
-      return -1;
-    }
-    if (n) {
-      var v = s.substr(0, n - 1);
-      var x = s.substr(n - 1);
-      var c = DebugJS.calcGtinCd(v);
-      var r = ((x == c) ? 'OK' : 'NG');
-    } else {
-      r = DebugJS.calcGtinCd(s);
-    }
-    if (r == 'NG') {
-      if (echo) log.res.err(r);
-    } else {
-      if (echo) log.res(r);
-    }
-    return r;
-  },
-
   cmdJson: function(arg, tbl) {
     if (arg == '') {
       DebugJS.printUsage(tbl.help);
@@ -8628,6 +8597,39 @@ DebugJS.prototype = {
     }
     ctx.updateLogFilterBtns();
     ctx.printLogs();
+  },
+
+  cmdMod10: function(arg, tbl, echo) {
+    var w = DebugJS.getOptVal(arg, 'w');
+    var a = DebugJS.getOptVal(arg, '');
+    if (w == null) w = 3;
+    if ((a.length == 1) && a[0] != '') {
+      var s = a[0];
+    } else if (a.length >= 2) {
+      var n = a[0];
+      s = a[1];
+    } else {
+      DebugJS.printUsage(tbl.help);
+      return -1;
+    }
+    if (n && (s.length != n)) {
+      DebugJS.printUsage(tbl.help);
+      return -1;
+    }
+    if (n) {
+      var v = s.substr(0, n - 1);
+      var x = s.substr(n - 1);
+      var c = DebugJS.calcMod10(v, w);
+      var r = ((x == c) ? 'OK' : 'NG');
+    } else {
+      r = DebugJS.calcMod10(s, w);
+    }
+    if (r == 'NG') {
+      if (echo) log.res.err(r);
+    } else {
+      if (echo) log.res(r);
+    }
+    return r;
   },
 
   cmdMsg: function(arg, tbl) {
@@ -12084,14 +12086,15 @@ DebugJS.clearobj = function(k) {
   if (DebugJS.LS_AVAILABLE) localStorage.removeItem(k);
 };
 
-DebugJS.calcGtinCd = function(s) {
+DebugJS.calcMod10 = function(s, w) {
   var a = s.split('');
-  var d = a.length + 1;
-  var cs = [0, 0];
-  for (var i = 0; i < d - 1; i++) {
-    cs[(d - i) % 2] += a[i] | 0;
+  var v = [0, 0];
+  var d = 0;
+  for (var i = a.length - 1; i >= 0; i--) {
+    v[d % 2] += a[i] | 0;
+    d++;
   }
-  var c = cs[0] * 3 + cs[1];
+  var c = v[0] * w + v[1];
   return ((10 - (c % 10)) % 10);
 };
 
