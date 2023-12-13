@@ -4967,59 +4967,54 @@ $ log lv NONE
   </tr>
 
   <tr>
-    <td class="name">mod10</td>
+    <td class="name">mod</td>
     <td>arg1: digit<span class="annotation">(opt)</span><br>arg2: code</td>
     <td>
-      Calculate check digit by modulus 10.<br><br>
+      Calculate check digit by modulus N.<br><br>
 <pre class="eg">
-$ mod10 [-w WEIGHT] [DIGIT] CODE
+$ mod 10|11|43 [-w WEIGHT] [DIGIT] CODE
 
 e.g.,
 
 # JAN-13
-$ mod10 456995111617
+$ mod 10 456995111617
 &gt; 9
 
 $ mod10 13 4569951116179
 &gt; OK
 
-$ mod10 13 4569951116178
+$ mod 10 13 4569951116178
 &gt; NG
 
 # UPC-A
-$ mod10 01234567890
+$ mod 10 01234567890
 &gt; 5
 
-$ mod10 12 012345678905
+$ mod 10 12 012345678905
 &gt; OK
 
-$ mod10 12 012345678906
+$ mod 10 12 012345678906
 &gt; NG
 
-$ mod10 -w 2 123456789012
+$ mod 10 -w 2 123456789012
 &gt; 0
-</pre>
-    </td>
-  </tr>
 
-  <tr>
-    <td class="name">mod11</td>
-    <td>arg1: digit<span class="annotation">(opt)</span><br>arg2: code</td>
-    <td>
-      Calculate check digit by modulus 11.<br><br>
-<pre class="eg">
-$ mod11 [DIGIT] CODE
 
-e.g.,
-
-$ mod11 12345678901
+$ mod 11 12345678901
 &gt; 8
 
-$ mod11 12 123456789018
+$ mod 11 12 123456789018
 &gt; OK
 
-$ mod11 12 123456789019
+$ mod 11 12 123456789019
 &gt; NG
+
+
+$ mod 43 ABC123
+&gt; $
+
+$ mod 43 6 ABC123$
+&gt; OK
 </pre>
     </td>
   </tr>

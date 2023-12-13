@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202312132018';
+  this.v = '202312140030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -349,8 +349,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|dump|filter|html|load|preserve|suspend|time|lv'},
-    {cmd: 'mod10', fn: this.cmdMod10, desc: 'Calculate check digit by modulus 10', help: 'mod10 [-w WEIGHT] [DIGIT] CODE'},
-    {cmd: 'mod11', fn: this.cmdMod11, desc: 'Calculate check digit by modulus 11', help: 'mod11 [DIGIT] CODE'},
+    {cmd: 'mod', fn: this.cmdMod, desc: 'Calculate check digit by modulus N', help: 'mod 10|11|43 [-w WEIGHT] [DIGIT] CODE'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -705,6 +704,7 @@ DebugJS.FEATURES = [
   'useElementInfo', 'useJsEditor', 'useTools', 'useLogFilter', 'useCommandLine'
 ];
 DebugJS.TZ = {'HST': '-10', 'PST': '-8', 'PDT': '-7', 'MST': '-7', 'MDT': '-6', 'CST': '-6', 'CDT': '-5', 'EST': '-5', 'EDT': '-4', 'UTC': '+0', 'GMT': '+0', 'CET': '+1', 'CEST': '+2', 'IST': '+0530', 'CTT': '+8', 'JST': '+9'};
+DebugJS.MOD43TBL = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%';
 DebugJS.fn = function() {};
 DebugJS.fnX = function() {return false;};
 DebugJS.rdy = false;
@@ -8600,32 +8600,32 @@ DebugJS.prototype = {
     ctx.printLogs();
   },
 
-  cmdMod10: function(arg, tbl, echo) {
-    return DebugJS.ctx._cmdMod(arg, tbl, echo, DebugJS.calcMod10);
-  },
-  cmdMod11: function(arg, tbl, echo) {
-    return DebugJS.ctx._cmdMod(arg, tbl, echo, DebugJS.calcMod11);
-  },
-  _cmdMod: function(arg, tbl, echo, fn) {
+  cmdMod: function(arg, tbl, echo) {
     var w = DebugJS.getOptVal(arg, 'w');
     var a = DebugJS.getOptVal(arg, '');
     if (w == null) w = 3;
-    if ((a.length == 1) && a[0] != '') {
-      var s = a[0];
-    } else if (a.length >= 2) {
-      var n = a[0];
-      s = a[1];
+    var n = a[0];
+    if (a.length == 2) {
+      var s = a[1];
+    } else if (a.length >= 3) {
+      var m = a[1];
+      s = a[2];
     } else {
       DebugJS.printUsage(tbl.help);
       return -1;
     }
-    if (n && (s.length != n)) {
+    var fn = DebugJS['calcMod' + n];
+    if (!fn) {
       DebugJS.printUsage(tbl.help);
       return -1;
     }
-    if (n) {
-      var v = s.substr(0, n - 1);
-      var x = s.substr(n - 1);
+    if (m && (s.length != m)) {
+      DebugJS.printUsage(tbl.help);
+      return -1;
+    }
+    if (m) {
+      var v = s.substr(0, m - 1);
+      var x = s.substr(m - 1);
       var c = fn(v, w);
       var r = ((x == c) ? 'OK' : 'NG');
     } else {
@@ -12115,6 +12115,30 @@ DebugJS.calcMod11 = function(s) {
   }
   var c = n % 11;
   return (((c == 0) || (c == 1)) ? 0 : 11 - c);
+};
+
+DebugJS.calcMod43 = function(s) {
+  if (s.match(/^".+"$/)) {
+    try {
+      s = eval(s);
+    } catch (e) {return '';}
+  }
+  var a = s.split('');
+  var n = 0;
+  for (var i = 0; i < a.length; i++) {
+    var v = a[i];
+    if (v == '*') {
+      if ((i == 0) || (i == a.length - 1)) {
+        continue;
+      } else {
+        return '';
+      }
+    }
+    var b = DebugJS.MOD43TBL.indexOf(v);
+    if (b == -1) return '';
+    n += b;
+  }
+  return DebugJS.MOD43TBL.charAt(n % 43);
 };
 
 DebugJS.digits = function(x) {
