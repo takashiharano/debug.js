@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202312130010';
+  this.v = '202312132018';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -350,6 +350,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|dump|filter|html|load|preserve|suspend|time|lv'},
     {cmd: 'mod10', fn: this.cmdMod10, desc: 'Calculate check digit by modulus 10', help: 'mod10 [-w WEIGHT] [DIGIT] CODE'},
+    {cmd: 'mod11', fn: this.cmdMod11, desc: 'Calculate check digit by modulus 11', help: 'mod11 [DIGIT] CODE'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -8600,6 +8601,12 @@ DebugJS.prototype = {
   },
 
   cmdMod10: function(arg, tbl, echo) {
+    return DebugJS.ctx._cmdMod(arg, tbl, echo, DebugJS.calcMod10);
+  },
+  cmdMod11: function(arg, tbl, echo) {
+    return DebugJS.ctx._cmdMod(arg, tbl, echo, DebugJS.calcMod11);
+  },
+  _cmdMod: function(arg, tbl, echo, fn) {
     var w = DebugJS.getOptVal(arg, 'w');
     var a = DebugJS.getOptVal(arg, '');
     if (w == null) w = 3;
@@ -8619,10 +8626,10 @@ DebugJS.prototype = {
     if (n) {
       var v = s.substr(0, n - 1);
       var x = s.substr(n - 1);
-      var c = DebugJS.calcMod10(v, w);
+      var c = fn(v, w);
       var r = ((x == c) ? 'OK' : 'NG');
     } else {
-      r = DebugJS.calcMod10(s, w);
+      r = fn(s, w);
     }
     if (r == 'NG') {
       if (echo) log.res.err(r);
@@ -12096,6 +12103,18 @@ DebugJS.calcMod10 = function(s, w) {
   }
   var c = v[0] * w + v[1];
   return ((10 - (c % 10)) % 10);
+};
+DebugJS.calcMod11 = function(s) {
+  var a = s.split('');
+  var n = 0;
+  var d = 0;
+  for (var i = a.length - 1; i >= 0; i--) {
+    var v = a[i] | 0;
+    n += v * ((d % 6) + 2);
+    d++;
+  }
+  var c = n % 11;
+  return (((c == 0) || (c == 1)) ? 0 : 11 - c);
 };
 
 DebugJS.digits = function(x) {

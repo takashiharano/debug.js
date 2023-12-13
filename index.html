@@ -5003,6 +5003,28 @@ $ mod10 -w 2 123456789012
   </tr>
 
   <tr>
+    <td class="name">mod11</td>
+    <td>arg1: digit<span class="annotation">(opt)</span><br>arg2: code</td>
+    <td>
+      Calculate check digit by modulus 11.<br><br>
+<pre class="eg">
+$ mod11 [DIGIT] CODE
+
+e.g.,
+
+$ mod11 12345678901
+&gt; 8
+
+$ mod11 12 123456789018
+&gt; OK
+
+$ mod11 12 123456789019
+&gt; NG
+</pre>
+    </td>
+  </tr>
+
+  <tr>
     <td class="name">msg</td>
     <td>message</td>
     <td>
