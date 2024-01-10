@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202312140030';
+  this.v = '202401102217';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6663,6 +6663,7 @@ DebugJS.prototype = {
     },
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
     {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
+    {lbl: 'TIME_CONV', fn: function(ctx, s) {return DebugJS.timecnv(s);}},
     {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
     {
       lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}],
@@ -11560,6 +11561,42 @@ DebugJS.parseToMillis = function(v) {
   }
   return +(d * 86400000 + h * 3600000 + m * 60000 + s * 1000);
 };
+DebugJS.clock2hrs = function(s) {
+  s = s.replace(/:/, '');
+  var p = s.length - 2;
+  var h = s.substr(0, p) | 0;
+  var m = s.substr(p, 2) | 0;
+  return h + (m / 60);
+};
+DebugJS.hrs2clock = function(s, sep) {
+  if (sep == undefined) sep = ':';
+  s += '';
+  var sign = '';
+  if (s.match(/^[+-]/)) {
+    sign = s.substr(0, 1);
+    s = s.substr(1);
+  }
+  var w = s.split('.');
+  var h = w[0] | 0;
+  var fM = 0;
+  if (w.length >= 2) fM = parseFloat('0.' + w[1]);
+  var m = (60 * fM) | 0;
+  var hh = ((h < 10) ? '0' + h : h);
+  var mm = ((m < 10) ? '0' + m : m);
+  return (sign + hh + sep + mm);
+};
+DebugJS.timecnv = function(s) {
+  var a = DebugJS.txt2arr(s);
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    var v = a[i];
+    var f = (s.match(/:/) ? DebugJS.clock2hrs : DebugJS.hrs2clock);
+    var w = (v.trim() ? f(v) : '');
+    if ((w + '').match(/^\d+$/)) w += '.0';
+    r += w + '\n';
+  }
+  return r;
+};
 
 DebugJS.nan2zero = function(v) {
   return (isNaN(v) ? 0 : v);
@@ -13528,23 +13565,6 @@ DebugJS.toFullTz = function(t) {
 };
 DebugJS.nnnn2clock = function(s) {
   return s.substr(0, 3) + ':' + s.substr(3, 2);
-};
-DebugJS.hrs2clock = function(s, sep) {
-  if (sep == undefined) sep = ':';
-  s += '';
-  var sign = '';
-  if (s.match(/^[+-]/)) {
-    sign = s.substr(0, 1);
-    s = s.substr(1);
-  }
-  var w = s.split('.');
-  var h = w[0] | 0;
-  var fM = 0;
-  if (w.length >= 2) fM = parseFloat('0.' + w[1]);
-  var m = (60 * fM) | 0;
-  var hh = ((h < 10) ? '0' + h : h);
-  var mm = ((m < 10) ? '0' + m : m);
-  return (sign + hh + sep + mm);
 };
 DebugJS.isSTN = function(s) {
   s = s.toUpperCase();
