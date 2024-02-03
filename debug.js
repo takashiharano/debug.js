@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202402032233';
+  this.v = '202402032242';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2732,7 +2732,7 @@ DebugJS.prototype = {
         }
         break;
 
-     case 49: // 0
+     case 48: // 0
      case 96:
         if (e.altKey) DebugJS.zoom(ctx.opt.zoom);
         break;
