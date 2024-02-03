@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202401102217';
+  this.v = '202402032233';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2732,6 +2732,19 @@ DebugJS.prototype = {
         }
         break;
 
+     case 49: // 0
+     case 96:
+        if (e.altKey) DebugJS.zoom(ctx.opt.zoom);
+        break;
+     case 107: // +
+     case 187:
+        if (e.altKey) ctx.zoomInOut(ctx, 1);
+        break;
+     case 109: // -
+     case 189:
+        if (e.altKey) ctx.zoomInOut(ctx, 0);
+        break;
+
       case 112: // F1
         if (e.ctrlKey && (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC)) {
           ctx.win.style.top = 0;
@@ -2764,6 +2777,11 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     if (ctx.opt.useDeviceInfo) ctx.updateStatusInfoOnKeyUp(ctx, e);
     if (e.keyCode == 18) ctx.enableDraggable(ctx);
+  },
+
+  zoomInOut: function(ctx, m) {
+    var v = (m ? (ctx.zoom + 0.1) : (ctx.zoom - 0.1));
+    DebugJS.zoom(v);
   },
 
   procOnProtectedD: function(ctx, e) {
