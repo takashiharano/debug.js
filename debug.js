@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202402171642';
+  this.v = '202402171653';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3602,15 +3602,6 @@ DebugJS.prototype = {
     html += addSysInfoProp('scrollY      ', setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
     html += addSysInfoProp('onload       ', foldingTxt(window.onload, 'winOnload', OMIT_LAST));
     html += addSysInfoProp('onunload     ', foldingTxt(window.onunload, 'winOnunload', OMIT_LAST));
-    html += addSysInfoProp('onclick      ', foldingTxt(window.onclick, 'winOnclick', OMIT_LAST));
-    html += addSysInfoProp('onmousedown  ', foldingTxt(window.onmousedown, 'winOnmousedown', OMIT_LAST));
-    html += addSysInfoProp('onmousemove  ', foldingTxt(window.onmousemove, 'winOnmousemove', OMIT_LAST));
-    html += addSysInfoProp('onmouseup    ', foldingTxt(window.onmousedown, 'winOnmouseup', OMIT_LAST));
-    html += addSysInfoProp('onkeydown    ', foldingTxt(window.onkeydown, 'winOnkeydown', OMIT_LAST));
-    html += addSysInfoProp('onkeypress   ', foldingTxt(window.onkeypress, 'winOnkeypress', OMIT_LAST));
-    html += addSysInfoProp('onkeyup      ', foldingTxt(window.onkeyup, 'winOnkeyup', OMIT_LAST));
-    html += addSysInfoProp('onresize     ', foldingTxt(window.oncontextmenu, 'winOnresize', OMIT_LAST));
-    html += addSysInfoProp('onscroll     ', foldingTxt(window.oncontextmenu, 'winOnscroll', OMIT_LAST));
     html += addSysInfoProp('onselect     ', foldingTxt(window.oncontextmenu, 'winOnselect', OMIT_LAST));
     html += addSysInfoProp('onselectstart', foldingTxt(window.oncontextmenu, 'winOnselectstart', OMIT_LAST));
     html += addSysInfoProp('oncontextmenu', foldingTxt(window.oncontextmenu, 'winOncontextmenu', OMIT_LAST));
