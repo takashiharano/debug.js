@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202402032242';
+  this.v = '202402171642';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2781,7 +2781,7 @@ DebugJS.prototype = {
 
   zoomInOut: function(ctx, m) {
     var v = (m ? (ctx.zoom + 0.1) : (ctx.zoom - 0.1));
-    DebugJS.zoom(v);
+    DebugJS.zoom(DebugJS.round(v, 1));
   },
 
   procOnProtectedD: function(ctx, e) {
@@ -12229,6 +12229,22 @@ DebugJS.checkRadix = function(v) {
     return 10;
   }
   return 0;
+};
+
+DebugJS.round = function(v, scale) {
+  return DebugJS._shift(Math.round(DebugJS._shift(v, scale, false)), scale, true);
+};
+DebugJS.floor = function(v, scale) {
+  return DebugJS._shift(Math.floor(DebugJS._shift(v, scale, false)), scale, true);
+};
+DebugJS.ceil = function(v, scale) {
+  return DebugJS._shift(Math.ceil(DebugJS._shift(v, scale, false)), scale, true);
+};
+DebugJS._shift = function(v, scale, rvs) {
+  if (scale == undefined) scale = 0;
+  if (rvs) scale = -scale;
+  var a = ('' + v).split('e');
+  return +(a[0] + 'e' + (a[1] ? (+a[1] + scale) : scale));
 };
 
 DebugJS.arr = {};
