@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202402171653';
+  this.v = '202402200018';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -428,6 +428,7 @@ var DebugJS = DebugJS || function() {
     textstep: /^[0-9-]+$/,
     testvallimit: /^[0-9-]+$/,
     wait: /^[0-9]+$/,
+    t0: /^[0-9]+T?[0-9]*$/,
     timer: /.*/,
     wdt: /^[0-9]+$/,
     mousemovesim: /^true$|^false$/,
@@ -453,6 +454,7 @@ var DebugJS = DebugJS || function() {
     textstep: 1,
     testvallimit: 4096,
     wait: 500,
+    t0: '--------T------',
     timer: '-00:00:00.000',
     wdt: 500,
     mousemovesim: 'false',
@@ -462,6 +464,7 @@ var DebugJS = DebugJS || function() {
     batcont: this.setPropBatContCb,
     indent: this.setPropIndentCb,
     pointmsgsize: this.setPropPointMsgSizeCb,
+    t0: this.setT0Cb,
     timer: this.setPropTimerCb,
     consolelog: this.setPropConsoleLogCb
   };
@@ -9496,6 +9499,10 @@ DebugJS.prototype = {
     var area = DebugJS.point.hint.getArea();
     var el = area.pre;
     if (el) DebugJS.setStyle(el, 'font-size', v);
+  },
+  setT0Cb: function(ctx, v) {
+    DebugJS.stopwatch.t0(1, v);
+    return v;
   },
   setPropTimerCb: function(ctx, v) {
     var tm = DebugJS.timerstr2struct(v);
