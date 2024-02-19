@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202402200018';
+  this.v = '202402200035';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -428,7 +428,6 @@ var DebugJS = DebugJS || function() {
     textstep: /^[0-9-]+$/,
     testvallimit: /^[0-9-]+$/,
     wait: /^[0-9]+$/,
-    t0: /^[0-9]+T?[0-9]*$/,
     timer: /.*/,
     wdt: /^[0-9]+$/,
     mousemovesim: /^true$|^false$/,
@@ -4895,6 +4894,7 @@ DebugJS.prototype = {
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_TPLUS;
     ctx.toolStatus &= ~DebugJS.TOOL_ST_SW_END;
     ctx.timerT0 = 0;
+    ctx.props.t0 = '--------T------';
     var timerV = ctx.calcTimerInitVal(ctx);
     ctx.timerSwT0 = Date.now() - timerV;
     ctx.timerSwVal = timerV;
