@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202402200035';
+  this.v = '202403022221';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -583,7 +583,7 @@ DebugJS.CMD_ATTR_DISABLED = 0x10;
 DebugJS.CMD_ECHO_MAX_LEN = 256;
 DebugJS.DBGWIN_MIN_W = 292;
 DebugJS.DBGWIN_MIN_H = 155;
-DebugJS.DBGWIN_EXPAND_W = 900;
+DebugJS.DBGWIN_EXPAND_W = 1200;
 DebugJS.DBGWIN_EXPAND_H = 600;
 DebugJS.DBGWIN_EXPAND_H2 = 640;
 DebugJS.SIZE_ST_NORMAL = 0;
