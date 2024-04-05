@@ -1,11 +1,11 @@
 /*!
  * debug.js
  * Copyright 2015 Takashi Harano
- * Released under the MIT license
+ * License: MIT
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202403082322';
+  this.v = '202404052227';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2782,7 +2782,7 @@ DebugJS.prototype = {
   },
 
   zoomInOut: function(ctx, m) {
-    var v = (m ? (ctx.zoom + 0.1) : (ctx.zoom - 0.1));
+    var v = (m ? (ctx.zoom * 1.4) : (ctx.zoom / 1.4));
     DebugJS.zoom(DebugJS.round(v, 1));
   },
 
