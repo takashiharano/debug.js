@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404052227';
+  this.v = '202404062240';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -227,6 +227,8 @@ var DebugJS = DebugJS || function() {
   this.wdBtn = null;
   this.preserveLogBtn = null;
   this.suspendLogBtn = null;
+  this.zoomInBtn = null;
+  this.zoomOutBtn = null;
   this.pinBtn = null;
   this.clpBtn = null;
   this.hdrInfBtn = null;
@@ -1320,14 +1322,16 @@ DebugJS.prototype = {
       ctx.winCtrlBtnPanel = document.createElement('span');
       ctx.headPanel.appendChild(ctx.winCtrlBtnPanel);
     }
+    ctx.zoomInBtn = ctx.createHdrBtn('zoomInBtn', '+', 3, fontSize, ctx.zoomIn, null, null, 'HDRINF_BTN_COLOR', false, 'Zoom in');
+    ctx.zoomOutBtn = ctx.createHdrBtn('zoomOutBtn', '-', 3, fontSize, ctx.zoomOut, null, null, 'HDRINF_BTN_COLOR', false, 'Zoom out');
     if (ctx.logHdrPanel || ctx.infoPanel) {
       ctx.hdrInfBtn = ctx.createHdrBtn('hdrInfBtn', '=', 3, fontSize, ctx.toggleHeaderInfo, null, null, 'HDRINF_BTN_COLOR', false, 'Show header info');
     }
+    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.usePinButton) {
+      ctx.pinBtn = ctx.createHdrBtn('pinBtn', 'P', 3, fontSize, ctx.toggleDraggable, 'uiStatus', 'UI_ST_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window position');
+    }
     if (opt.useCommandLine) {
       ctx.clpBtn = ctx.createHdrBtn('clpBtn', 'C', 3, fontSize, DebugJS.copyContent, null, null, 'CLP_BTN_COLOR', false, 'Copy to clipboard');
-    }
-    if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && opt.usePinButton) {
-      ctx.pinBtn = ctx.createHdrBtn('pinBtn', 'P', 3, fontSize, ctx.toggleDraggable, 'uiStatus', 'UI_ST_DRAGGABLE', 'PIN_BTN_COLOR', true, 'Fix the window in its position');
     }
     if (opt.useSuspendLogButton) {
       ctx.suspendLogBtn = ctx.createHdrBtn('suspendLogBtn', '/', 3, fontSize, ctx.toggleLogSuspend, 'status', 'ST_LOG_SUSPEND', 'LOG_SUSPEND_BTN_COLOR', false, 'Suspend log');
@@ -2781,6 +2785,12 @@ DebugJS.prototype = {
     if (e.keyCode == 18) ctx.enableDraggable(ctx);
   },
 
+  zoomIn: function() {
+    DebugJS.ctx.zoomInOut(DebugJS.ctx, 1);
+  },
+  zoomOut: function() {
+    DebugJS.ctx.zoomInOut(DebugJS.ctx, 0);
+  },
   zoomInOut: function(ctx, m) {
     var v = (m ? (ctx.zoom * 1.4) : (ctx.zoom / 1.4));
     DebugJS.zoom(DebugJS.round(v, 1));
