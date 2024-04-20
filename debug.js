@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404070026';
+  this.v = '202404210050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6719,6 +6719,7 @@ DebugJS.prototype = {
         return DebugJS.toUnique(s, opt).r;
       }
     },
+    {lbl: 'XML', opt: [{lbl: 'INDENT', v: '2'}, {lbl: 'COMMENT', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.formatXml(s, o[0], (o[1] == 'Y' ? 0 : 1));}},
     {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
     {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}}
   ],
@@ -15027,6 +15028,137 @@ DebugJS.inject = function(fn, cd) {
 };
 DebugJS.stk = function(fn) {
   DebugJS.inject(fn, 'DebugJS.stack();');
+};
+
+DebugJS.XML_TKN_NUL = 0;
+DebugJS.XML_TKN_OPN = 1;
+DebugJS.XML_TKN_CLS = 2;
+DebugJS.XML_TKN_CTT = 3;
+DebugJS.XML_TKN_EMP = 4;
+DebugJS.XML_TKN_CMT = 5;
+DebugJS.XML_TKN_CDT = 8;
+DebugJS.XML_TKN_XML = 9;
+DebugJS.formatXml = function(s, indt, rmvCmnt) {
+  if (indt == undefined) indt = 2;
+  var tkns = DebugJS.listXmlTokens(s);
+  return DebugJS.fmtXml(tkns, indt, rmvCmnt);
+};
+DebugJS.listXmlTokens = function(s) {
+  var f = 0;
+  var cmnt = 0;
+  var cdata = 0;
+  var w = '';
+  var tkns = [];
+  for (var i = 0; i < s.length; i++) {
+    var p = s.codePointAt(i);
+    if (p == 0x3C) {
+      if (!cmnt && !cdata) {
+        f = 1;
+        var d = s.substr(i, 9);
+        if (d.match(/^<!--/)) {
+          if (!cdata) cmnt = 1;
+        } else if (d == '<![CDATA[') {
+          if (!cmnt) cdata = 1;
+        }
+      }
+    } else if (p == 0x3E) {
+      if (!cmnt && !cdata) f = 1;
+    } else {
+      f = 0;
+      if (cmnt) {
+        d = s.substr(i, 3);
+        if (d == '-->') cmnt = 0;
+      } else if (cdata) {
+        d = s.substr(i, 2);
+        if (d == ']]') cdata = 0;
+      }
+    }
+    if (f) {
+      if (w != '') {
+        if (p == 0x3E) {
+          w += '>';
+        }
+        tkns.push(w);
+        w = '';
+      }
+      f = 0;
+      if (p == 0x3E) continue;
+    }
+    w += String.fromCodePoint(p);
+  }
+  return tkns;
+};
+DebugJS.fmtXml = function(tkns, indt, rmvCmnt) {
+  var tp0 = DebugJS.XML_TKN_NUL;
+  var tp1 = DebugJS.XML_TKN_NUL;
+  var lv = 0;
+  var x = '';
+  for (var i = 0; i < tkns.length; i++) {
+    var tkn = tkns[i];
+    var tkn1 = tkns[i + 1];
+    var tp = DebugJS.getXmlTknType(tkn, tp0);
+    if (rmvCmnt && (tp == DebugJS.XML_TKN_CMT)) continue;
+    tp1 = (tkn1 ? DebugJS.getXmlTknType(tkn1, tp0) : DebugJS.XML_TKN_NUL);
+    if (tp == DebugJS.XML_TKN_CLS) {
+      if ((tp0 == DebugJS.XML_TKN_CLS) || (tp0 == DebugJS.XML_TKN_EMP) || (tp0 == DebugJS.XML_TKN_CMT)) {
+        lv--;
+        if (lv < 0) lv = 0;
+      }
+    } else if ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT)) {
+      if (tp0 == DebugJS.XML_TKN_OPN) lv++;
+    } else if (tp == DebugJS.XML_TKN_CTT) {
+      if (tp1 == DebugJS.XML_TKN_OPN) {
+        tp = DebugJS.XML_TKN_NUL;
+      }
+    }
+    if (tp == DebugJS.XML_TKN_NUL) {
+      x += tkn.trim().replace(/(\r?\n|\r)/g, '');
+      continue;
+    }
+    if (indt >= 0) {
+      if ((x != '') && ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN)))) {
+          x += '\n';
+      }
+      if ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN))) {
+          x += DebugJS.repeatCh(' ', indt * lv);
+      }
+    }
+    if (DebugJS.isXmlTagPart(tp)) {
+      tkn = tkn.replace(/(\r?\n|\r)/g, ' ');
+    } else if (tp == DebugJS.XML_TKN_CMT) {
+      tkn = tkn.replace(/^<!--(\r?\n|\r)/, '<!-- ').replace(/(\r?\n|\r)-->$/g, ' -->');
+    }
+    x += tkn;
+    tp0 = tp;
+  }
+  return x;
+};
+DebugJS.isXmlTagPart = function(tp) {
+  return [DebugJS.XML_TKN_XML, DebugJS.XML_TKN_OPN, DebugJS.XML_TKN_CLS, DebugJS.XML_TKN_EMP].includes(tp);
+};
+DebugJS.isXmlPrvClose = function(tp0) {
+  return ((tp0 == DebugJS.XML_TKN_CLS) || (tp0 == DebugJS.XML_TKN_EMP) || (tp0 == DebugJS.XML_TKN_CMT));
+};
+DebugJS.getXmlTknType = function(s, tp0) {
+  var t = DebugJS.XML_TKN_NUL;
+  if (s.match(/<\?/)) {
+    t = DebugJS.XML_TKN_XML;
+  } else if (s.match(/<!\[CDATA/)) {
+    t = DebugJS.XML_TKN_CDT;
+  } else if (s.match(/<!--/)) {
+    t = DebugJS.XML_TKN_CMT;
+  } else if (s.match(/<\/.+/)) {
+    t = DebugJS.XML_TKN_CLS;
+  } else if (s.match(/.+\/>/)) {
+    t = DebugJS.XML_TKN_EMP;
+  } else if (s.match(/<./)) {
+    t = DebugJS.XML_TKN_OPN;
+  } else if (tp0 == DebugJS.XML_TKN_OPN) {
+    if (!s.match(/^[\r\n\s]+$/)) {
+      t = DebugJS.XML_TKN_CTT;
+    }
+  }
+  return t;
 };
 
 DebugJS.time = {};
