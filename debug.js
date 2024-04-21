@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404210050';
+  this.v = '202404211418';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15073,6 +15073,7 @@ DebugJS.listXmlTokens = function(s) {
         if (d == ']]') cdata = 0;
       }
     }
+    if (p >= 0x10000) i++;
     if (f) {
       if (w != '') {
         if (p == 0x3E) {
