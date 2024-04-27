@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404271815';
+  this.v = '202404272138';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12571,51 +12571,61 @@ DebugJS.csv2arr = function(s, d) {
   var c = DebugJS.txt2arr(s);
   var a = [];
   for (var i = 0; i < c.length; i++) {
-    a.push(DebugJS.splitCsvFields(c[i], d, true));
+    a.push(DebugJS.splitCsvCols(c[i], d));
   }
   return a;
 };
-DebugJS.splitCsvFields = function(s, d, inclDq) {
-  if ((d == '\t') || (!s.match(/"/))) return s.split(d);
+DebugJS.splitCsvCols = function(s, d) {
+  if (!s.match(/"/)) return s.split(d);
   var a = [];
-  var p, q;
-  var srch = 1;
+  var p = 0;
+  var ln = 0;
+  var q = 0;
+  var qF = 0;
+  var f = 0;
   for (var i = 0; i < s.length; i++) {
+    ln++;
     var ch = s.charAt(i);
-    if (srch) {
-      srch = 0;
-      q = 0;
-      p = ((!inclDq && (ch == '"')) ? (i + 1) : i);
-    } else {
-      if (ch == '"') {
-        q++;
-      } else if (ch == d) {
-        if (inclDq || (q == 0)) {
-          DebugJS._pushCsvCol(s, p, i - p, a, inclDq);
-          srch = 1;
-        } else if ((q % 2) == 1) {
-          DebugJS._pushCsvCol(s, p, i - p - 1, a, inclDq);
-          srch = 1;
+    if (ch == '"') {
+      if (ln == 1) {
+        q = 1;
+        f = 1;
+      } else if (q) {
+        if (qF) {
+          qF = 0;
+        } else {
+          f = 0;
+          qF = 1;
         }
       }
+    } else if (ch == d) {
+      if (!f) {
+        ln--;
+        DebugJS._pushCsvCol(a, s, p, ln);
+        p = i + 1;
+        ln = 0;
+        continue;
+      }
     }
+    qF = 0;
   }
-  if (ch != d) {
-    var j = ((inclDq || (ch != '"')) ? 0 : 1);
-    DebugJS._pushCsvCol(s, p, i - p - j, a, inclDq);
-  }
+  DebugJS._pushCsvCol(a, s, p, ln);
   return a;
 };
-DebugJS._pushCsvCol = function(s, p, len, a, inclDq) {
+DebugJS._pushCsvCol = function(a, s, p, len) {
   var w = s.substr(p, len);
-  if (!inclDq) w = w.replace(/""/g, '"');
   a.push(w);
 };
 DebugJS.sortCsv = function(c, n, d, asNum) {
   n--;
   if (n < 0) n = 0;
-  c.sort(function(a, b) {return DebugJS._cmp(a[n], b[n], d, asNum);});
+  c.sort(function(a, b) {return DebugJS._sortCsv(a[n], b[n], d, asNum);});
   return c;
+};
+DebugJS._sortCsv = function(a, b, d, asNum) {
+  a = a.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
+  b = b.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
+  return DebugJS._cmp(a, b, d, asNum);
 };
 
 DebugJS.padSeq = function(s, n, f) {
