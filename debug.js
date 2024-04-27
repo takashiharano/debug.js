@@ -1,11 +1,11 @@
 /*!
  * debug.js
  * Copyright 2015 Takashi Harano
- * License: MIT
+ * Released under the MIT license
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404211418';
+  this.v = '202404271815';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6705,8 +6705,8 @@ DebugJS.prototype = {
     },
     {lbl: 'ROT', opt: [{lbl: 'X', optvals: [{v: '5'}, {v: '13'}, {v: '18', s: 1}, {v: '47'}]}, {lbl: 'SHIFT'}], fn: function(ctx, s, o) {return DebugJS.rot(o[0], s, o[1]);}},
     {
-      lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}],
-      fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1]);}
+      lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}, {lbl: 'ASNUM', optvals: [{v: 'Y'}, {v: 'N'}]}],
+      fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1] | 0, (o[2] == 'Y' ? 1 : 0));}
     },
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
     {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
@@ -10940,6 +10940,9 @@ DebugJS.isInt = function(s) {
 DebugJS.isFloat = function(s) {
   return (s.match(/^[+-]?\d*\.\d*$/) ? true : false);
 };
+DebugJS.isNumeric = function(s) {
+  return (DebugJS.isInt(s) || DebugJS.isFloat(s));
+};
 DebugJS.isStr = function(s) {
   s = s.trim();
   return ((s.match(/^".*"$/) || s.match(/^'.*'$/)) ? true : false);
@@ -12365,13 +12368,12 @@ DebugJS.insertCh = function(s, ch, n) {
   }
   return w;
 };
-DebugJS.sort = function(s, d, n) {
+
+DebugJS.sort = function(s, d, n, f) {
   if (n > 0) {
-    if (isNaN(n)) n = DebugJS.xlsCol(n);
-    var a = DebugJS.csv2arr(s, (n | 0), d);
+    var a = DebugJS.sortAsCsv(s, n, d, f);
   } else {
-    a = DebugJS.txt2arr(s).sort();
-    if (d) a.reverse();
+    a = DebugJS.sortText(s, d, f);
   }
   var r = '';
   for (var i = 0; i < a.length; i++) {
@@ -12379,6 +12381,69 @@ DebugJS.sort = function(s, d, n) {
   }
   return r;
 };
+DebugJS.sortText = function(s, d, asNum) {
+  var l = DebugJS.txt2arr(s);
+  l.sort(function(a, b) {return DebugJS._cmp(a, b, d, asNum);});
+  return l;
+};
+DebugJS._cmp = function(a, b, desc, asNum) {
+  if (asNum == undefined) asNum = 1;
+  if (a == undefined) a = '';
+  if (b == undefined) b = '';
+  if (a === true) a = 1;
+  if (b === true) b = 1;
+  if (a === false) a = 0;
+  if (b === false) b = 0;
+  if (asNum) {
+    if (DebugJS.isNumeric(a) && DebugJS.isNumeric(b)) {
+      a = parseFloat(a);
+      b = parseFloat(b);
+    } else if (DebugJS._cmpPfx(a, b)) {
+      a = DebugJS._toNumE(a);
+      b = DebugJS._toNumE(b);
+    } else if (DebugJS._cmpSfx(a, b)) {
+      a = DebugJS._toNumS(a);
+      b = DebugJS._toNumS(b);
+    }
+  }
+  if (a == b) return 0;
+  return (desc ? (a < b ? 1 : -1) : (a > b ? 1 : -1));
+};
+DebugJS._cmpPfx = function(a, b) {
+  if ((typeof a != 'string') || (typeof b != 'string')) return false;
+  if (!DebugJS._isAN(a) || !DebugJS._isAN(b)) return false;
+  var p1 = DebugJS._pfx(a);
+  var p2 = DebugJS._pfx(b);
+  return (p1 == p2);
+};
+DebugJS._cmpSfx = function(a, b) {
+  if ((typeof a != 'string') || (typeof b != 'string')) return false;
+  if (!DebugJS._isNA(a) || !DebugJS._isNA(b)) return false;
+  var p1 = DebugJS._sfx(a);
+  var p2 = DebugJS._sfx(b);
+  return (p1 == p2);
+};
+DebugJS._isAN = function(a) {
+  return (a.match(/[^\d]?(\d+)(\.\d+)?$/) ? true : false);
+};
+DebugJS._isNA = function(a) {
+  return (a.match(/^(\d+)(\.\d+)?[^\d]/) ? true : false);
+};
+DebugJS._pfx = function(a) {
+  return a.replace(/([^\d]+)?(\d+)(\.\d+)?$/, '$1');
+};
+DebugJS._sfx = function(a) {
+  return a.replace(/^(\d+)(\.\d+)?([^\d]+)?/, '$3');
+};
+DebugJS._toNumE = function(a) {
+  var n = a.replace(/[^\d]+?(\d+)(\.\d+)?$/, '$1$2');
+  return parseFloat(n);
+};
+DebugJS._toNumS = function(a) {
+  var n = a.replace(/^(\d+)(\.\d+)?[^\d]+?/, '$1$2');
+  return parseFloat(n);
+};
+
 DebugJS.alignByTab = function(s, n) {
   var a = DebugJS.txt2arr(s);
   if (!n) n = 1;
@@ -12486,11 +12551,11 @@ DebugJS.cntByGrp = function(a) {
   return o;
 };
 
-DebugJS.csv2arr = function(s, n, desc) {
+DebugJS.sortAsCsv = function(s, n, desc, asNum) {
   var d = ',';
   if (s.match(/\t/)) d = '\t';
-  var c = DebugJS._csv2arr(s, d);
-  if (n > 0) c = DebugJS.sortCsv(c, n, desc);
+  var c = DebugJS.csv2arr(s, d);
+  if (n > 0) c = DebugJS.sortCsv(c, n, desc, asNum);
   var a = [];
   for (var i = 0; i < c.length; i++) {
     var w = '';
@@ -12502,7 +12567,7 @@ DebugJS.csv2arr = function(s, n, desc) {
   }
   return a;
 };
-DebugJS._csv2arr = function(s, d) {
+DebugJS.csv2arr = function(s, d) {
   var c = DebugJS.txt2arr(s);
   var a = [];
   for (var i = 0; i < c.length; i++) {
@@ -12546,25 +12611,13 @@ DebugJS._pushCsvCol = function(s, p, len, a, inclDq) {
   if (!inclDq) w = w.replace(/""/g, '"');
   a.push(w);
 };
-DebugJS.sortCsv = function(c, n, desc) {
-  var f = DebugJS._sortCsv;
+DebugJS.sortCsv = function(c, n, d, asNum) {
   n--;
   if (n < 0) n = 0;
-  if (desc) {
-    c.sort(function(a, b) {return f(b, a, n);});
-  } else {
-    c.sort(function(a, b) {return f(a, b, n);});
-  }
+  c.sort(function(a, b) {return DebugJS._cmp(a[n], b[n], d, asNum);});
   return c;
 };
-DebugJS._sortCsv = function(a, b, n) {
-  var x = a[n];
-  var y = b[n];
-  if (x == undefined) x = '';
-  if (y == undefined) y = '';
-  if (DebugJS.isNum(x) && DebugJS.isNum(y)) return x - y;
-  return x.localeCompare(y);
-};
+
 DebugJS.padSeq = function(s, n, f) {
   if (!f) f = (DebugJS.isAscii(s) ? 1 : 2);
   var p = '';
