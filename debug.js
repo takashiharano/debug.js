@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404272138';
+  this.v = '202404272222';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12623,8 +12623,8 @@ DebugJS.sortCsv = function(c, n, d, asNum) {
   return c;
 };
 DebugJS._sortCsv = function(a, b, d, asNum) {
-  a = a.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
-  b = b.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
+  if (a) a = a.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
+  if (b) b = b.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
   return DebugJS._cmp(a, b, d, asNum);
 };
 
