@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404272222';
+  this.v = '202404302145';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -381,7 +381,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'test', fn: this.cmdTest, desc: 'Manage unit test', help: 'test init|set|count|result|last|ttlresult|status|verify GOT method EXP|end'},
     {cmd: 'text', fn: this.cmdText, desc: 'Set text value into an element', help: 'text SELECTOR "TEXT" [-speed MILLIS] [-start SEQ_START_POS] [-end SEQ_END_POS]'},
     {cmd: 'textedit', fn: this.cmdTextEdit, desc: 'Manipulate text editor', help: 'textedit clear|get|exec|set|setoptval [IDX] "VAL"'},
-    {cmd: 'time', fn: this.cmdTime, desc: 'String <--> millis', help: 'time ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
+    {cmd: 'time', fn: this.cmdTime, desc: 'String <--> millis', help: 'time [-d] ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|CODE_POINT'},
@@ -4751,7 +4751,7 @@ DebugJS.prototype = {
   },
   updateTimerInitValInp: function(v) {
     var ctx = DebugJS.ctx;
-    var tm = DebugJS.ms2struct(v, true);
+    var tm = DebugJS.ms2struct(v, 1);
     ctx.timerTxtHH.value = tm.hh;
     ctx.timerTxtMI.value = tm.mi;
     ctx.timerTxtSS.value = tm.ss;
@@ -4978,7 +4978,7 @@ DebugJS.prototype = {
     setTimeout(ctx.updateTimerStopwatch, DebugJS.UPDATE_INTERVAL_H);
   },
   drawStopwatch: function() {
-    var tm = DebugJS.ms2struct(DebugJS.ctx.timerSwVal, true);
+    var tm = DebugJS.ms2struct(DebugJS.ctx.timerSwVal, 1);
     DebugJS.ctx.timerSwLabel.innerHTML = DebugJS.ctx.buildTmrStr(tm);
   },
   updateTimerSwBtns: function() {
@@ -7184,7 +7184,7 @@ DebugJS.prototype = {
     }
 
     if (DebugJS.isTimerFormat(cmdln)) {
-      return DebugJS.ctx.cmdTime(cmdln);
+      return DebugJS.ctx.cmdTime(cmdln, null, echo, 1);
     }
 
     if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
@@ -9992,12 +9992,16 @@ DebugJS.prototype = {
     }
   },
 
-  cmdTime: function(arg, tbl) {
+  cmdTime: function(arg, tbl, ec, d) {
     if (DebugJS.countArgs(arg) == 0) {
       DebugJS.printUsage(tbl.help);
       return;
     }
-    var t = arg.trim();
+    var w = DebugJS.getNonOptVals(arg, 1);
+    var t = '';
+    for (var i = 0; i < w.length; i++) {
+      t += w[i];
+    }
     var ms, s;
     if (DebugJS.isTmStr(t)) {
       ms = DebugJS.str2ms(t);
@@ -10008,7 +10012,8 @@ DebugJS.prototype = {
     } else {
       ms = +t;
     }
-    s = DebugJS.ms2str(ms, 1) + ' (' + ms + ' ms)';
+    d = d || DebugJS.hasOpt(arg, 'd');
+    s = DebugJS.ms2str(ms, d, 1) + ' (' + ms + ' ms)';
     DebugJS._log.res(s);
     return s;
   },
@@ -10080,7 +10085,7 @@ DebugJS.prototype = {
     try {
       s1 = DebugJS.cnv2ms(t1);
       s2 = DebugJS.cnv2ms(t2);
-      var s = DebugJS.ms2str(s2 - s1, 0).replace('-', '');
+      var s = DebugJS.ms2str(s2 - s1, 1, 0).replace('-', '');
       if (echo) DebugJS._log.res(s);
       return s;
     } catch (e) {DebugJS.printUsage(tbl.help);}
@@ -11214,7 +11219,10 @@ DebugJS.tzPos = function(s) {
   var p = -1;
   if ((s.match(/[+-]\d{1,2}\.?\d{0,2}$/)) || (s.match(/[+-]\d{2}:\d{2}$/))) {
     p = s.lastIndexOf('+');
-    if ((p == -1) && (DebugJS.countstr(s, '-') > 2)) p = s.lastIndexOf('-');
+    if (p == -1) {
+      var n = DebugJS.countstr(s, '-');
+      if ((n == 1) || (n > 2)) p = s.lastIndexOf('-');
+    }
   } else if (s.match(/Z$/)) {
     p = s.lastIndexOf('Z');
   }
@@ -11302,21 +11310,22 @@ DebugJS.getTimeStr = function(d) {
   return d.hh + ':' + d.mi + ':' + d.ss + '.' + d.sss;
 };
 DebugJS.getTmrStr = function(ms) {
-  var t = DebugJS.ms2struct(ms, true);
+  var t = DebugJS.ms2struct(ms, 1);
   var pfx = 'T' + (t.sign ? '-' : '+');
   var s = pfx;
   if (t.d) s += t.d + 'd';
   s += t.hr + ':' + t.mi + ':' + t.ss + '.' + t.sss;
   return s;
 };
-DebugJS.ms2str = function(v, m) {
+DebugJS.ms2str = function(v, dy, m) {
+  var o = DebugJS.ms2struct(v, !m);
+  var hr = (dy ? o.hr : o.hh);
   if (m == 1) {
-    var o = DebugJS.ms2struct(v);
     var s = (o.sign ? '-' : '');
-    if (o.d) s += o.d + 'd ';
-    if (o.d || o.hr) s += o.hr + 'h ';
-    if (o.d || o.hr || o.mi) s += o.mi + 'm ';
-    if (o.d || o.hr || o.mi || o.ss) {
+    if (dy && o.d) s += o.d + 'd ';
+    if (o.d || hr) s += hr + 'h ';
+    if (o.d || hr || o.mi) s += o.mi + 'm ';
+    if (o.d || hr || o.mi || o.ss) {
       s += o.ss + 's';
       if (o.sss) s += ' ' + o.sss;
     } else {
@@ -11328,14 +11337,13 @@ DebugJS.ms2str = function(v, m) {
       s += 's';
     }
   } else {
-    o = DebugJS.ms2struct(v, true);
     s = (o.sign ? '-' : '');
-    if (o.d > 0) s += o.d + 'd ';
-    s += o.hr + ':' + o.mi + ':' + o.ss + '.' + o.sss;
+    if (dy && o.d) s += o.d + 'd ';
+    s += hr + ':' + o.mi + ':' + o.ss + '.' + o.sss;
   }
   return s;
 };
-DebugJS.ms2struct = function(ms, fmt) {
+DebugJS.ms2struct = function(ms, zero) {
   var wk = ms;
   var sign = false;
   if (ms < 0) {
@@ -11364,7 +11372,7 @@ DebugJS.ms2struct = function(ms, fmt) {
     ss: ss,
     sss: sss
   };
-  if (fmt) {
+  if (zero) {
     if (tm.hr < 10) tm.hr = '0' + tm.hr;
     if (tm.hh < 10) tm.hh = '0' + tm.hh;
     if (tm.mi < 10) tm.mi = '0' + tm.mi;
@@ -18541,7 +18549,7 @@ DebugJS.xlsTimeA2N = function(v) {
   return DebugJS.clock2ms(v) / 86400000;
 };
 DebugJS.xlsTimeN2A = function(v) {
-  return DebugJS.ms2str(86400000 * parseFloat(v));
+  return DebugJS.ms2str(86400000 * parseFloat(v), 1);
 };
 
 DebugJS.strp = function(tbl, idx) {
