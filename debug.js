@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202404302145';
+  this.v = '202405152113';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6638,7 +6638,7 @@ DebugJS.prototype = {
       lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
       fn: function(ctx, s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
     },
-    {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return ctx.minMaxLen(s, o[0]);}},
+    {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return DebugJS.minMaxLen(s, o[0]);}},
     {
       lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
       fn: function(ctx, s, o) {
@@ -6723,28 +6723,6 @@ DebugJS.prototype = {
     {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
     {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}}
   ],
-  minMaxLen: function(s, th) {
-    var t = DebugJS.arr2set(DebugJS.txt2arr(s));
-    th |= 0;
-    if (t.length == 0) return '';
-    t.sort(function(a, b) {return b.length - a.length;});
-    var iMx = 0, iMn = 0;
-    var f = 1;
-    var v = '';
-    for (var i = 0; i < t.length; i++) {
-      var ln = t[i].length;
-      if (ln > iMx) iMx = ln;
-      if ((iMn == 0) || ((ln > 0) && (ln < iMn))) iMn = ln;
-      if (f && (th > 0) && (ln <= th)) {
-        f = 0;
-        v += '\n^^^ > ' + th + '\n\n';
-      }
-      v += t[i] + '\n';
-    }
-    if (iMn == 0) iMn = iMx;
-    var c = 'max=' + iMx + '\n' + 'min=' + iMn + '\n\n';
-    return c + v;
-  },
 
   onTextInput: function(txtSt, edt) {
     if (!txtSt) return;
@@ -12663,6 +12641,28 @@ DebugJS.delimit = function(s, pos, o, sp, t) {
     }
   }
   return r;
+};
+DebugJS.minMaxLen = function(s, th) {
+  var t = DebugJS.arr2set(DebugJS.txt2arr(s));
+  th |= 0;
+  if (t.length == 0) return '';
+  t.sort(function(a, b) {return b.length - a.length;});
+  var iMx = 0, iMn = 0;
+  var f = 1;
+  var v = '';
+  for (var i = 0; i < t.length; i++) {
+    var ln = t[i].length;
+    if (ln > iMx) iMx = ln;
+    if ((iMn == 0) || ((ln > 0) && (ln < iMn))) iMn = ln;
+    if (f && (th > 0) && (ln <= th)) {
+      f = 0;
+      v += '\n^^^ > ' + th + '\n\n';
+    }
+    v += t[i] + '\n';
+  }
+  if (iMn == 0) iMn = iMx;
+  var c = 'max=' + iMx + '\n' + 'min=' + iMn + '\n\n';
+  return c + v;
 };
 
 DebugJS.printUsage = function(m) {
