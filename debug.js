@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202405152113';
+  this.v = '202405172222';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7127,7 +7127,9 @@ DebugJS.prototype = {
     if (DebugJS.isFloat(cmd)) {
       ret = ctx.cmdFmtFloat(cmdline);
       if (ret) return ret;
-      return ctx.cmdFloat(cmd, null, echo);
+    }
+    if (DebugJS.isFloat(cmdln)) {
+      return ctx.cmdFloat(cmdln, null, echo);
     }
 
     ret = ctx.cmdFmtNum(cmdline);
@@ -7151,7 +7153,7 @@ DebugJS.prototype = {
     ret = ctx.cmdDateConv(cmdline);
     if (ret != null) return ret;
 
-    if (DebugJS.isUnixTm(cmd)) {
+    if (DebugJS.isUnixTm(cmdln)) {
       return ctx.cmdDate(cmdline, null);
     }
 
