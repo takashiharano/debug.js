@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202405172222';
+  this.v = '202405202132';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15199,8 +15199,6 @@ DebugJS.fmtXml = function(tkns, indt, rmvCmnt) {
     }
     if (DebugJS.isXmlTagPart(tp)) {
       tkn = tkn.replace(/(\r?\n|\r)/g, ' ');
-    } else if (tp == DebugJS.XML_TKN_CMT) {
-      tkn = tkn.replace(/^<!--(\r?\n|\r)/, '<!-- ').replace(/(\r?\n|\r)-->$/g, ' -->');
     }
     x += tkn;
     tp0 = tp;
