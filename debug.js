@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202406191945';
+  this.v = '202406192022';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1940,7 +1940,7 @@ DebugJS.prototype = {
         try {
           var pos = (fltCase ? msg.indexOf(filter) : msg.toLowerCase().indexOf(filter));
           if (pos != -1) {
-            var key = msg.substr(pos, filter.length);
+            var key = msg.slice(pos, pos + filter.length);
             var hl = '<span class="dbg-txt-hl">' + key + '</span>';
             msg = msg.replace(key, hl, 'ig');
           } else if (ctx.fltr) {
@@ -4897,7 +4897,7 @@ DebugJS.prototype = {
   _splitTimerStopwatch: function(ctx) {
     ctx._updateTimerStopwatch(ctx);
     var t = ctx.timerSwVal;
-    var dt = DebugJS.getDiffTimeStr(ctx.timerSwPrevSplit, t).substr(2);
+    var dt = DebugJS.getDiffTimeStr(ctx.timerSwPrevSplit, t).slice(2);
     var m = DebugJS.TMR_NM_SW_L + ': <span style="color:' + ctx.opt.timerColor + '">' + DebugJS.getTmrStr(ctx.timerSwVal) + '</span> (' + DebugJS.CHR_DELTA + '<span style="color:' + ctx.opt.timerColor + '">' + dt + '</span>)';
     ctx.timerSwPrevSplit = t;
     DebugJS._log(m);
@@ -5571,12 +5571,12 @@ DebugJS.prototype = {
     }
     var r = DebugJS.html2text(s);
     r = DebugJS.crlf2lf(r);
-    r = r.substr(61);
+    r = r.slice(61);
     return r;
   },
   _fmtJson: function(ctx, t, pos) {
     if (pos.open == -1) return '';
-    var j = t.substr(pos.open, pos.close - (pos.open - 1));
+    var j = t.slice(pos.open, pos.open + (pos.close - (pos.open - 1)));
     var o = {j: j, r: '', e: null};
     try {
       o.r = DebugJS.formatJSON(j, 1);
@@ -5610,7 +5610,7 @@ DebugJS.prototype = {
   },
   onFileLoadedAuto: function(ctx, file, ctt) {
     if (!file) return;
-    if (DebugJS.wBOM(ctt)) ctt = ctt.substr(1);
+    if (DebugJS.wBOM(ctt)) ctt = ctt.slice(1);
     if (DebugJS.isBat(ctt) || DebugJS.isB64Bat(ctt)) {
       ctx.onBatLoaded(ctx, file, ctt);
     } else if (file.name.match(/\.json$/)) {
@@ -6749,7 +6749,7 @@ DebugJS.prototype = {
       co = '8aa';
     }
     var cp = '<span style="color:#' + co + '">' + ch + '</span>&nbsp;' + u16 + (u10 ? '(' + u10 + ')' : '');
-    var t = txt.substr(0, st);
+    var t = txt.slice(0, st);
     var l = (t.match(/\n/g) || []).length + 1;
     var c = t.replace(/.*\n/g, '').length + 1;
     var tc = DebugJS.clipTextLine(txt, st).length;
@@ -7001,15 +7001,15 @@ DebugJS.prototype = {
       }
       return;
     }
-    if (cl.substr(0, 2) == '!!') {
+    if (cl.slice(0, 2) == '!!') {
       var ev = ctx.getLastHistory();
       if (ev == '') {
         DebugJS._log.w('!!: event not found');
         return;
       }
-      cl = ev + cl.substr(2);
-    } else if (cl.substr(0, 1) == '!') {
-      var s = cl.substr(1).match(/(\d*)(.*)/);
+      cl = ev + cl.slice(2);
+    } else if (cl.slice(0, 1) == '!') {
+      var s = cl.slice(1).match(/(\d*)(.*)/);
       var num = s[1];
       var arg = s[2];
       if (num != '') {
@@ -7034,10 +7034,10 @@ DebugJS.prototype = {
     var cl = str;
     if (str.match(/^\s*@/)) {
       echo = false;
-      cl = str.substr(str.indexOf('@') + 1);
+      cl = str.slice(str.indexOf('@') + 1);
     }
     if (cl.match(/^\s*#/)) {
-      DebugJS._log(cl.substr(cl.indexOf('#') + 1));
+      DebugJS._log(cl.slice(cl.indexOf('#') + 1));
       return;
     }
     var cmds = DebugJS.splitCmdLineInTwo(cl);
@@ -7056,10 +7056,10 @@ DebugJS.prototype = {
     var valName = DebugJS.getCmdValName(cmd, '\\$', true);
     if (valName != null) {
       var vStartPos = cl.indexOf(valName);
-      var restCmd = cl.substr(vStartPos + valName.length + 1);
+      var restCmd = cl.slice(vStartPos + valName.length + 1);
       if (restCmd.match(/^\s*=/)) {
         setValName = valName;
-        cl = restCmd.substr(restCmd.indexOf('=') + 1);
+        cl = restCmd.slice(restCmd.indexOf('=') + 1);
       }
     }
     var ret;
@@ -7160,7 +7160,7 @@ DebugJS.prototype = {
     if (DebugJS.isSTN(cmd)) {
       return DebugJS.cmdTZedNow(cmd, arg);
     } else if (cmdln.match(/^UTC[+-]\d+/i)) {
-      return DebugJS.cmdTZedNow('UTC', cmdln.substr(3));
+      return DebugJS.cmdTZedNow('UTC', cmdln.slice(3));
     }
 
     if (DebugJS.isTimerFormat(cmdln)) {
@@ -7212,7 +7212,7 @@ DebugJS.prototype = {
     if (p == -1) {
       return ctx._cmdAliasList(ctx, DebugJS.splitCmdLine(arg));
     }
-    var al = arg.substr(0, p).trim();
+    var al = arg.slice(0, p).trim();
     var v = arg.substring(p + 1, arg.length).trim();
     var c = DebugJS.getQuotedStr(v);
     if (c == null) {
@@ -7552,7 +7552,8 @@ DebugJS.prototype = {
       }
     } else {
       for (i = 0; i < 3; i++) {
-        var p = a.substr(i * 3, 3);
+        var st = i * 3;
+        var p = a.slice(st, st + 3);
         if (p) s += DebugJS.rwx2n(p);
       }
     }
@@ -7645,7 +7646,7 @@ DebugJS.prototype = {
     var idx = DebugJS.indexOfOptVal(arg, '-iso');
     if (idx >= 0) {
       iso = true;
-      v = arg.substr(idx);
+      v = arg.slice(idx);
     }
     var d = DebugJS.getDateWithTimestamp(v, iso);
     if (d == null) {
@@ -7661,7 +7662,7 @@ DebugJS.prototype = {
     var tz = d.match(/ [+-]\d{1,4}$/);
     if (tz) {
       var idx = d.indexOf(tz);
-      d = d.substr(0, idx);
+      d = d.slice(0, idx);
       tz = tz[0].trim();
     } else {
       tz = DebugJS.getLocalTZ();
@@ -7970,7 +7971,7 @@ DebugJS.prototype = {
         var tgt = a[1];
         if (tgt) {
           if (tgt.charAt(0) == '(') {
-            tgt = tgt.substr(1, tgt.length - 2);
+            tgt = tgt.slice(1, tgt.length - 1);
           }
           DebugJS.event.dispatch(tgt, a[2]);
           return;
@@ -8189,10 +8190,10 @@ DebugJS.prototype = {
       vl = vl.replace(/^0x/i, '');
     } else if (arg.match(/^0b/i)) {
       fn = ctx._cmdFloatB;
-      vl = arg.substr(2);
+      vl = arg.slice(2);
     } else if (arg.match(/^0x/i)) {
       fn = ctx._cmdFloatH;
-      vl = arg.substr(2);
+      vl = arg.slice(2);
     } else {
       vl = arg;
     }
@@ -8249,9 +8250,9 @@ DebugJS.prototype = {
       return null;
     }
     var b = {
-      s: bin.substr(0, 1),
-      e: bin.substr(1, de),
-      f: bin.substr(de + 1, df)
+      s: bin.slice(0, 1),
+      e: bin.slice(1, 1 + de),
+      f: bin.slice(de + 1, de + 1 + df)
     };
     var o = DebugJS.ctx._cmdFloat(b, de, df, eb);
     var s = 'binary' + len + ': ' + o.s + '\n\n';
@@ -8287,8 +8288,8 @@ DebugJS.prototype = {
       } else if (e < 0) {
         b2 = '0.' + DebugJS.repeatCh('0', (e * (-1) - 1)) + b2;
       } else {
-        var bI = b2.substr(0, e + 1);
-        var bF = b2.substr(e + 1);
+        var bI = b2.slice(0, e + 1);
+        var bF = b2.slice(e + 1);
         b2 = bI + '.' + ((bF == '') ? '0' : bF);
       }
     }
@@ -8653,8 +8654,8 @@ DebugJS.prototype = {
       return -1;
     }
     if (m) {
-      var v = s.substr(0, m - 1);
-      var x = s.substr(m - 1);
+      var v = s.slice(0, m - 1);
+      var x = s.slice(m - 1);
       var c = fn(v, w);
       var r = ((x == c) ? 'OK' : 'NG');
     } else {
@@ -8686,7 +8687,7 @@ DebugJS.prototype = {
     var idx = DebugJS.indexOfOptVal(arg, '-q');
     if (idx >= 0) {
       p = false;
-      v = arg.substr(idx);
+      v = arg.slice(idx);
     }
     v = v.trim();
     if ((v.match(/^T.{4,6}/))) {
@@ -8887,7 +8888,7 @@ DebugJS.prototype = {
       var tgt = args[0];
       var idx = args[1];
       if (tgt.charAt(0) == '(') {
-        tgt = tgt.substr(1, tgt.length - 2);
+        tgt = tgt.slice(1, tgt.length - 1);
       }
       var alignX = DebugJS.getOptVal(arg, 'alignX');
       var alignY = DebugJS.getOptVal(arg, 'alignY');
@@ -8925,7 +8926,7 @@ DebugJS.prototype = {
       ctx._cmdPointMvNodeRel(ctx, point, tgt, speed, step, alignX, alignY);
     } else if (isNaN(tgt)) {
       idx = args[2];
-      if (tgt.charAt(0) == '(') tgt = tgt.substr(1, tgt.length - 2);
+      if (tgt.charAt(0) == '(') tgt = tgt.slice(1, tgt.length - 1);
       point.moveToSelector(tgt, idx, speed, step, alignX, alignY);
     } else {
       var x = args[1];
@@ -8945,7 +8946,7 @@ DebugJS.prototype = {
     tgt = tgt.replace('node', '');
     var f;
     var op = tgt.charAt(0);
-    var c = tgt.substr(1) | 0;
+    var c = tgt.slice(1) | 0;
     if (!c) c = 1;
     if (op == '+') {
       f = ctx.getNextElm;
@@ -9405,9 +9406,9 @@ DebugJS.prototype = {
     } else if (posX == 'current') {
       x = scrollX;
     } else if (posX.charAt(0) == '+') {
-      x = scrollX + (posX.substr(1) | 0);
+      x = scrollX + (posX.slice(1) | 0);
     } else if (posX.charAt(0) == '-') {
-      x = scrollX - (posX.substr(1) | 0);
+      x = scrollX - (posX.slice(1) | 0);
     } else if ((posX == '') || isNaN(posX)) {
       x = undefined;
     } else {
@@ -9427,9 +9428,9 @@ DebugJS.prototype = {
     } else if (posY == 'current') {
       y = scrollY;
     } else if (posY.charAt(0) == '+') {
-      y = scrollY + (posY.substr(1) | 0);
+      y = scrollY + (posY.slice(1) | 0);
     } else if (posY.charAt(0) == '-') {
-      y = scrollY - (posY.substr(1) | 0);
+      y = scrollY - (posY.slice(1) | 0);
     } else if ((posY == '') || isNaN(posY)) {
       y = undefined;
     } else {
@@ -10005,22 +10006,22 @@ DebugJS.prototype = {
     var byDays = false;
     if (arg.match(/d$/i)) {
       byDays = true;
-      arg = arg.substr(0, arg.length - 1);
+      arg = arg.slice(0, arg.length - 1);
     }
     var ops = arg.match(/[+\-*/]/g);
     var n = ops.length;
     var op = ops[0];
     var opp = arg.indexOf(op);
-    var vL = arg.substr(0, opp);
+    var vL = arg.slice(0, opp);
     var p = opp + 1;
     for (var i = 0; i < n; i++) {
       var nOp = ops[i + 1];
       var nOpp = arg.indexOf(nOp, p);
       if (nOp) {
         var ln = nOpp - p;
-        var vR = arg.substr(p, ln);
+        var vR = arg.slice(p, p + ln);
       } else {
-        vR = arg.substr(p);
+        vR = arg.slice(p);
       }
       var fn;
       if (op == '+') {
@@ -10654,13 +10655,13 @@ DebugJS.splitCmdLine = function(arg, limit) {
           continue;
         } else {
           srch = true;
-          str = arg.substr(start, len);
+          str = arg.slice(start, start + len);
           args.push(str);
           if (args.length + 1 == limit) {
             if (i < arg.length - 1) {
               start = i + 1;
               len = arg.length - start;
-              str = arg.substr(start, len);
+              str = arg.slice(start, start + len);
               args.push(str);
               i = arg.length;
             }
@@ -10715,7 +10716,7 @@ DebugJS.splitCmdLine = function(arg, limit) {
   }
   len++;
   if (!srch) {
-    str = arg.substr(start, len);
+    str = arg.slice(start, start + len);
     args.push(str);
   }
   if (args.length == 0) {
@@ -10733,7 +10734,7 @@ DebugJS.splitCmdLineInTwo = function(s) {
     r[1] = '';
   } else {
     r[0] = two[0];
-    r[1] = s.substr(two[0].length + 1);
+    r[1] = s.slice(two[0].length + 1);
   }
   return r;
 };
@@ -10765,7 +10766,7 @@ DebugJS.getOptVals = function(args) {
     args = DebugJS.splitCmdLine(args);
   }
   for (i = 0; i < args.length; i++) {
-    k = args[i].substr(1);
+    k = args[i].slice(1);
     if (DebugJS.isOptTkn(args[i])) {
       nv = args[i + 1];
       if ((nv == undefined) || DebugJS.isOptTkn(nv)) {
@@ -10852,7 +10853,8 @@ DebugJS.getQuotedStr = function(str) {
         if ((i > 0) && (str.charAt(i - 1) == '\\')) {
           continue;
         }
-        r = str.substr(start + 1, len - 1);
+        var st = start + 1;
+        r = str.slice(st, st + (len - 1));
         break;
       }
     }
@@ -11022,13 +11024,13 @@ DebugJS.getDateTime = function(dt) {
     dt = new Date(dt);
   } else if (typeof dt == 'string') {
     var wk = DebugJS.serializeDateTime(dt);
-    var _y = wk.substr(0, 4) | 0;
-    var _m = wk.substr(4, 2) | 0;
-    var _d = wk.substr(6, 2) | 0;
-    var _h = wk.substr(8, 2) | 0;
-    var _mi = wk.substr(10, 2) | 0;
-    var _s = wk.substr(12, 2) | 0;
-    var _ms = wk.substr(14, 3);
+    var _y = wk.slice(0, 4) | 0;
+    var _m = wk.slice(4, 6) | 0;
+    var _d = wk.slice(6, 8) | 0;
+    var _h = wk.slice(8, 10) | 0;
+    var _mi = wk.slice(10, 12) | 0;
+    var _s = wk.slice(12, 14) | 0;
+    var _ms = wk.slice(14, 17);
     dt = new Date(_y, _m - 1, _d, _h, _mi, _s, _ms);
     dt.setFullYear(_y);
   }
@@ -11081,13 +11083,13 @@ DebugJS.serializeDateTime = function(s) {
 };
 DebugJS._serializeDateTime = function(s) {
   s = s.replace(/-/g, '').replace(/\s/g, '').replace(/:/g, '').replace(/\./g, '');
-  return (s + '000000000').substr(0, 17);
+  return (s + '000000000').slice(0, 17);
 };
 DebugJS.getClockVal = function() {
   return DebugJS.getDateTime(Date.now() + (+DebugJS.ctx.props.clockoffset));
 };
 DebugJS.hhmmssf2clock = function(s) {
-  return s.substr(0, 2) + ':' + s.substr(2, 2) + ':' + s.substr(4, 2) + '.' + s.substr(6, 3);
+  return s.slice(0, 2) + ':' + s.slice(2, 4) + ':' + s.slice(4, 6) + '.' + s.slice(6, 9);
 };
 DebugJS.getDateWithTimestamp = function(v, iso) {
   var o = DebugJS.getDateTimeAndTimestamp(v, iso);
@@ -11109,9 +11111,9 @@ DebugJS.getDateTimeAndTimestamp = function(val, iso) {
   } else {
     var p = DebugJS.tzPos(val);
     if (p != -1) {
-      tz = val.substr(p).replace(/:/, '');
+      tz = val.slice(p).replace(/:/, '');
       if (tz == 'Z') tz = '+0000';
-      dt = val.substr(0, p).trim();
+      dt = val.slice(0, p).trim();
     }
   }
   if (isNaN(dt)) {
@@ -11164,7 +11166,7 @@ DebugJS.int2DateStr = function(v, tz, iso) {
 };
 DebugJS.float2ms = function(t) {
   var v = t.split('.');
-  return v[0] + (v[1] + '000').substr(0, 3);
+  return v[0] + (v[1] + '000').slice(0, 3);
 };
 DebugJS.diffDate = function(d1, d2) {
   var dt1 = DebugJS.getDateTime(d1);
@@ -11244,13 +11246,13 @@ DebugJS.isTTimeFormat = function(s) {
 };
 DebugJS.isDateTimeStr = function(s) {
   var z = DebugJS.tzPos(s);
-  if (z != -1) s = s.substr(0, z).trim();
+  if (z != -1) s = s.slice(0, z).trim();
   return (DebugJS.isDateFormat(s) || DebugJS.isDateTimeFormat(s) || DebugJS.isDateTimeFormatIso(s));
 };
 DebugJS.num2date = function(s) {
   var d = null;
   if (DebugJS.isBasicDateFormat(s)) {
-    d = s.substr(0, 4) + '/' + s.substr(4, 2) + '/' + s.substr(6, 2);
+    d = s.slice(0, 4) + '/' + s.slice(4, 6) + '/' + s.slice(6, 8);
   }
   return d;
 };
@@ -11371,9 +11373,9 @@ DebugJS.timerstr2struct = function(str) {
   var sign = false;
   if (sn == '-') {
     sign = true;
-    wk = wk.substr(1);
+    wk = wk.slice(1);
   } else if (sn == '+') {
-    wk = wk.substr(1);
+    wk = wk.slice(1);
   }
   wk = wk.split(':');
   var h = wk[0];
@@ -11446,10 +11448,10 @@ DebugJS.getTimestampOfDay = function(t, d) {
   if (!d) d = DebugJS.getDateTime();
   if (t.indexOf(':') == 1) t = '0' + t;
   t = t.replace(/:/g, '').replace(/\./g, '');
-  var hh = t.substr(0, 2);
-  var mi = t.substr(2, 2);
-  var ss = t.substr(4, 2);
-  var sss = t.substr(6, 3);
+  var hh = t.slice(0, 2);
+  var mi = t.slice(2, 4);
+  var ss = t.slice(4, 6);
+  var sss = t.slice(6, 9);
   if (ss == '') ss = '00';
   if (sss == '') sss = '000';
   return DebugJS.getTimestamp(d.yyyy, d.mm, d.dd, hh, mi, ss, sss);
@@ -11463,9 +11465,9 @@ DebugJS.calcTargetTime = function(tgt) {
   if (t.match(/\*/)) {
     return DebugJS.calcNextTime2(now, tgt).time - now.time;
   }
-  var hh = t.substr(0, 2);
-  var mi = t.substr(2, 2);
-  var ss = t.substr(4, 2);
+  var hh = t.slice(0, 2);
+  var mi = t.slice(2, 4);
+  var ss = t.slice(4, 6);
   if (ss == '') ss = '00';
   if (date == '') {
     yyyy = now.yyyy;
@@ -11474,9 +11476,9 @@ DebugJS.calcTargetTime = function(tgt) {
     tgt = DebugJS.getDateTime(now.yyyy + '/' + now.mm + '/' + now.dd + ' ' + hh + ':' + mi + ':' + ss);
     t1 = ((now.time > tgt.time) ? tgt.time + 86400000 : tgt.time);
   } else {
-    yyyy = date.substr(0, 4);
-    mm = date.substr(4, 2);
-    dd = date.substr(6, 2);
+    yyyy = date.slice(0, 4);
+    mm = date.slice(4, 6);
+    dd = date.slice(6, 8);
     var sd = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + mi + ':' + ss;
     t1 = (new Date(sd)).getTime();
   }
@@ -11503,7 +11505,7 @@ DebugJS.calcNextTime = function(times) {
   return ret;
 };
 DebugJS.calcNextTime2 = function(now, t) {
-  var h = t.substr(1, 2), m = t.substr(3, 2), s = t.substr(5, 2);
+  var h = t.slice(1, 3), m = t.slice(3, 5), s = t.slice(5, 7);
   var hh = ((h == '**') ? now.hh : h);
   var mi = m;
   if (m == '**') mi = ((hh == now.hh) ? now.mi : 0);
@@ -11607,8 +11609,8 @@ DebugJS.parseToMillis = function(v) {
 DebugJS.clock2hrs = function(s) {
   s = s.replace(/:/, '');
   var p = s.length - 2;
-  var h = s.substr(0, p) | 0;
-  var m = s.substr(p, 2) | 0;
+  var h = s.slice(0, p) | 0;
+  var m = s.slice(p, p + 2) | 0;
   return h + (m / 60);
 };
 DebugJS.hrs2clock = function(s, sep) {
@@ -11616,8 +11618,8 @@ DebugJS.hrs2clock = function(s, sep) {
   s += '';
   var sign = '';
   if (s.match(/^[+-]/)) {
-    sign = s.substr(0, 1);
-    s = s.substr(1);
+    sign = s.slice(0, 1);
+    s = s.slice(1);
   }
   var w = s.split('.');
   var h = w[0] | 0;
@@ -11911,7 +11913,7 @@ DebugJS._objDump = function(obj, arg, toJson, levelLimit, limit, valLenLimit) {
     } else if (typeof obj == 'string') {
       var str;
       if ((valLenLimit > 0) && (obj.length > valLenLimit)) {
-        str = obj.substr(0, valLenLimit);
+        str = obj.slice(0, valLenLimit);
         if (toJson) {
           str += '...';
         } else {
@@ -11993,9 +11995,9 @@ DebugJS.countElements = function(selector, filter, q) {
   var els = [];
   var total = 0;
   if (selector.charAt(0) == '#') {
-    el = document.getElementById(selector.substr(1));
+    el = document.getElementById(selector.slice(1));
   } else {
-    if (selector.charAt(0) == '(') selector = selector.substr(1, selector.length - 2);
+    if (selector.charAt(0) == '(') selector = selector.slice(1, selector.length - 1);
     els = document.querySelectorAll(selector);
   }
   if (el) DebugJS.getChildElements(el, els);
@@ -12238,7 +12240,7 @@ DebugJS.parseInt = function(v) {
   if (rdx == 0) {
     return 0;
   } else if (rdx == 2) {
-    v = v.substr(2);
+    v = v.slice(2);
   }
   return parseInt(v, rdx);
 };
@@ -12349,7 +12351,7 @@ DebugJS.insertCh = function(s, ch, n) {
   var w = '';
   var p = 0;
   while (p < s.length) {
-    var a = s.substr(p, n);
+    var a = s.slice(p, p + n);
     w += a;
     p += n;
     if (p < s.length) w += ch;
@@ -12601,7 +12603,7 @@ DebugJS.splitCsvCols = function(s, d) {
   return a;
 };
 DebugJS._pushCsvCol = function(a, s, p, len) {
-  var w = s.substr(p, len);
+  var w = s.slice(p, p + len);
   a.push(w);
 };
 DebugJS.sortCsv = function(c, n, d, asNum) {
@@ -12702,13 +12704,13 @@ DebugJS.rgb16to10 = function(rgb16) {
   var r16, g16, b16, r10, g10, b10;
   rgb16 = rgb16.replace(/#/, '').replace(/\s/g, '');
   if (rgb16.length == 6) {
-    r16 = rgb16.substr(0, 2);
-    g16 = rgb16.substr(2, 2);
-    b16 = rgb16.substr(4, 2);
+    r16 = rgb16.slice(0, 2);
+    g16 = rgb16.slice(2, 4);
+    b16 = rgb16.slice(4, 6);
   } else if (rgb16.length == 3) {
-    r16 = rgb16.substr(0, 1);
-    g16 = rgb16.substr(1, 1);
-    b16 = rgb16.substr(2, 1);
+    r16 = rgb16.slice(0, 1);
+    g16 = rgb16.slice(1, 2);
+    b16 = rgb16.slice(2, 3);
     r16 += r16;
     g16 += g16;
     b16 += b16;
@@ -12744,9 +12746,9 @@ DebugJS.cmdInt = function(v, echo) {
   if (rdx == 10) {
     v = v.replace(/,/g, '');
   } else if ((rdx == 16) || (rdx == 2)) {
-    v = v.substr(2);
+    v = v.slice(2);
   } else if (rdx == 8) {
-    v = v.substr(1);
+    v = v.slice(1);
   } else {
     return null;
   }
@@ -12814,7 +12816,7 @@ DebugJS.bin2hex = function(b) {
   }
   var h = '';
   for (var i = 0; i < b.length; i += 4) {
-    var v = b.substr(i, 4);
+    var v = b.slice(i, i + 4);
     var n = parseInt(v, 2);
     h += (isNaN(n) ? ' ' : n.toString(16));
   }
@@ -12843,7 +12845,7 @@ DebugJS.toIEEE754Bin = function(v, fmt) {
   }
   var b = v.toString(2);
   var a = b.replace(/-/, '');
-  var f = a.replace(/\./, '').replace(/^0+/, '').substr(1, DIGITS);
+  var f = a.replace(/\./, '').replace(/^0+/, '').slice(1, 1 + DIGITS);
   var p1 = a.indexOf('1');
   var p2 = a.indexOf('.');
   if (p2 == -1) {
@@ -12863,8 +12865,8 @@ DebugJS.fBin2Dec = function(bin, e) {
   if (e < 0) {
     bF = DebugJS.repeatCh('0', (e * (-1) - 1)) + bin;
   } else {
-    bI = bin.substr(0, e + 1);
-    bF = bin.substr(e + 1);
+    bI = bin.slice(0, e + 1);
+    bF = bin.slice(e + 1);
   }
   return DebugJS._fBin2Dec(bI, bF);
 };
@@ -12888,7 +12890,7 @@ DebugJS.suppressR = function(v, c) {
   for (var i = v.length - 1; i >= 0; i--) {
     if (v.charAt(i) != c) break;
   }
-  return v.substr(0, i + 1);
+  return v.slice(0, i + 1);
 };
 DebugJS.formatBin = function(v2, grouping, n, hlDigits) {
   var len = v2.length;
@@ -12992,8 +12994,8 @@ DebugJS.formatDecF = function(v, p, f) {
   var a = '0';
   var b = v;
   if (v.length > d) {
-    a = v.substr(0, v.length - d);
-    b = v.substr(v.length - d);
+    a = v.slice(0, v.length - d);
+    b = v.slice(v.length - d);
   }
   b = (DebugJS.repeatCh('0', d) + b).slice(d * -1);
   var w = '';
@@ -13015,7 +13017,7 @@ DebugJS.formatFloat = function(v) {
   for (var i = 0; i < e; i++) {
     if (i < f.length) {
       if ((i > 0) && ((i % 3) == 0)) s += ' ';
-      s += f.substr(i, 1);
+      s += f.slice(i, i + 1);
     } else {
       s += '0';
     }
@@ -13428,7 +13430,7 @@ DebugJS.splitDataUrl = function(url) {
 DebugJS.str2binArr = function(str, blkSize, pFix) {
   var a = [];
   for (var i = 0; i < str.length; i += blkSize) {
-    var v = str.substr(i, blkSize);
+    var v = str.slice(i, i + blkSize);
     if (v.length == blkSize) {
       a.push(DebugJS.parseInt(pFix + v));
     }
@@ -13558,7 +13560,7 @@ DebugJS.clock2ms = function(t) {
   var ss = s.split('.');
   sec = +ss[0];
   if (ss.length >= 2) {
-    msec = +(ss[1] + '00').substr(0, 3);
+    msec = +(ss[1] + '00').slice(0, 3);
   }
   return (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
 };
@@ -13566,27 +13568,27 @@ DebugJS.str2ms = function(t) {
   var d = 0, h = 0, m = 0, s = 0, ms = 0;
   var i = t.indexOf('d');
   if (i > 0) {
-    d = +t.substr(0, i);
-    t = t.substr(i + 1);
+    d = +t.slice(0, i);
+    t = t.slice(i + 1);
   }
   i = t.indexOf('h');
   if (i > 0) {
-    h = +t.substr(0, i);
-    t = t.substr(i + 1);
+    h = +t.slice(0, i);
+    t = t.slice(i + 1);
   }
   i = t.indexOf('m');
   if (i > 0) {
-    m = +t.substr(0, i);
-    t = t.substr(i + 1);
+    m = +t.slice(0, i);
+    t = t.slice(i + 1);
   }
   i = t.indexOf('s');
   if (i > 0) {
-    s = t.substr(0, i);
-    ms = t.substr(i + 1);
+    s = t.slice(0, i);
+    ms = t.slice(i + 1);
     i = s.indexOf('.');
     if (i > 0) {
-      s = s.substr(0, i);
-      ms = t.substr(i + 1, t.length - i - 2);
+      s = s.slice(0, i);
+      ms = t.slice(i + 1, (i + 1) + (t.length - i - 2));
       ms = ms + DebugJS.repeatCh('0', 3 - ms.length);
     }
     s = +s;
@@ -13663,8 +13665,8 @@ DebugJS.getDiffTimeStr = function(t1, t2) {
 DebugJS.tzOffset2ms = function(t) {
   t = DebugJS.toFullTz(t);
   var s = (t.charAt(0) == '-' ? -1 : 1);
-  var h = t.substr(1, 2);
-  var m = t.substr(3, 2);
+  var h = t.slice(1, 3);
+  var m = t.slice(3, 5);
   return (h * 3600000 + m * 60000) * s;
 };
 DebugJS.jsTzOffset2ms = function(t) {
@@ -13679,7 +13681,7 @@ DebugJS.cmdTZedNow = function(t, o) {
     o = o.replace(/:/, '');
     os = DebugJS.toFullTz(o);
     o = DebugJS.tzOffset2ms(os) | 0;
-    os = os.substr(0, 3) + ':' + os.substr(3);
+    os = os.slice(0, 3) + ':' + os.slice(3);
     ts += o;
   }
   var r = DebugJS.int2DateStr(ts, tz, false);
@@ -13700,12 +13702,12 @@ DebugJS.toFullTz = function(t) {
   } else if (t.length == 3) {
     t += '00';
   } else if (t.length == 4) {
-    t = s + '0' + t.charAt(1) + t.substr(2);
+    t = s + '0' + t.charAt(1) + t.slice(2);
   }
   return t;
 };
 DebugJS.nnnn2clock = function(s) {
-  return s.substr(0, 3) + ':' + s.substr(3, 2);
+  return s.slice(0, 3) + ':' + s.slice(3, 5);
 };
 DebugJS.isSTN = function(s) {
   s = s.toUpperCase();
@@ -13871,7 +13873,7 @@ DebugJS.http = function(req) {
           if (m.length > DebugJS.http.LOG_LIMIT) {
             m = '(size=' + m.length + ')';
           } else if (m.length > DebugJS.http.maxLogLen) {
-            m = m.substr(0, DebugJS.http.maxLogLen) + '...';
+            m = m.slice(0, DebugJS.http.maxLogLen) + '...';
           }
         }
         m = DebugJS.escHtml(m);
@@ -13893,7 +13895,7 @@ DebugJS.http = function(req) {
   if (req.withCredentials) xhr.withCredentials = true;
   if (DebugJS.http.logging && !req.sys) {
     DebugJS.log.v('=> ' + url);
-    if (data) DebugJS.log.v('[DATA] ' + data.substr(0, DebugJS.http.maxLogLen));
+    if (data) DebugJS.log.v('[DATA] ' + data.slice(0, DebugJS.http.maxLogLen));
   }
   xhr.send(data);
   return xhr;
@@ -14056,7 +14058,7 @@ DebugJS.substr = function(txt, len) {
       }
       if (cnt >= len) break;
     }
-    str = txt.substr(i);
+    str = txt.slice(i);
   }
   return str;
 };
@@ -14065,7 +14067,7 @@ DebugJS.countLineBreak = function(s) {
 };
 DebugJS.clipTextLine = function(s, p) {
   var n = s.indexOf('\n', p);
-  if (n > 0) s = s.substr(0, n);
+  if (n > 0) s = s.slice(0, n);
   return s.replace(/.*\n/g, '');
 };
 DebugJS.capitalize = function(s) {
@@ -14075,15 +14077,15 @@ DebugJS.str2chars = function(s) {
   return s.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\s\S]/g) || [];
 };
 DebugJS.startsWith = function(s, p, o) {
-  if (o) s = s.substr(o);
+  if (o) s = s.slice(o);
   if ((s == '') && (p == '')) return true;
   if (p == '') return false;
-  return (s.substr(0, p.length) == p);
+  return (s.slice(0, p.length) == p);
 };
 DebugJS.endsWith = function(s, p) {
   if ((s == '') && (p == '')) return true;
   if (p == '') return false;
-  return (s.substr(s.length - p.length) == p);
+  return (s.slice(s.length - p.length) == p);
 };
 DebugJS.needNL = function(s, n) {
   var nl = '\n';
@@ -14109,7 +14111,7 @@ DebugJS.lpad = function(s, c, l, w) {
   var p = DebugJS.repeatCh(c, d);
   var i = l - n;
   if (i < 0) i = 0;
-  return p.substr(0, i) + s;
+  return p.slice(0, i) + s;
 };
 DebugJS.rpad = function(s, c, l, w) {
   s += '';
@@ -14119,7 +14121,7 @@ DebugJS.rpad = function(s, c, l, w) {
   var p = DebugJS.repeatCh(c, d);
   var i = l - n;
   if (i < 0) i = 0;
-  return s + p.substr(0, i);
+  return s + p.slice(0, i);
 };
 DebugJS.repeatCh = function(c, n) {
   var s = '';
@@ -14372,7 +14374,7 @@ DebugJS.getType = function(o) {
   if (o instanceof Set) return 'Set';
   t = Object.prototype.toString.call(o);
   if ((t != '[object Object]') && DebugJS.startsWith(t, '[object ')) {
-    return t.substr(8, t.length - 9);
+    return t.slice(8, t.length - 1);
   }
   return 'object';
 };
@@ -14408,8 +14410,8 @@ DebugJS.setStyle = function(e, s, v) {
 DebugJS.insertText = function(el, s) {
   var v = el.value;
   var p = el.selectionStart;
-  var vL = v.substr(0, p);
-  var vR = v.substr(p, v.length);
+  var vL = v.slice(0, p);
+  var vR = v.slice(p, p + v.length);
   el.focus();
   el.value = vL + s + vR;
   el.selectionStart = el.selectionEnd = p + s.length;
@@ -14976,7 +14978,7 @@ DebugJS._log.t = function(m, t) {
     tmr.split = v;
   }
   var elps = DebugJS.getDiffTimeStr(tmr.start, now);
-  var dlta = DebugJS.getDiffTimeStr(tmr.split, now).substr(2);
+  var dlta = DebugJS.getDiffTimeStr(tmr.split, now).slice(2);
   tmr.split = now;
 
   var tm = '<span style="color:' + ctx.opt.timerColor + '">' + elps + '</span>';
@@ -15094,7 +15096,7 @@ DebugJS.inject = function(fn, cd) {
     var f = eval(fn + '+\'\'');
     var p = f.indexOf('{') + 1;
     if (p > 0) {
-      var fnc = f.substr(0, p) + cd + f.substr(p);
+      var fnc = f.slice(0, p) + cd + f.slice(p);
       eval(fn + '=' + fnc);
     }
   } catch (e) {DebugJS._log.e(e);}
@@ -15127,7 +15129,7 @@ DebugJS.listXmlTokens = function(s) {
     if (p == 0x3C) {
       if (!cmnt && !cdata) {
         f = 1;
-        var d = s.substr(i, 9);
+        var d = s.slice(i, i + 9);
         if (d.match(/^<!--/)) {
           if (!cdata) cmnt = 1;
         } else if (d == '<![CDATA[') {
@@ -15139,10 +15141,10 @@ DebugJS.listXmlTokens = function(s) {
     } else {
       f = 0;
       if (cmnt) {
-        d = s.substr(i, 3);
+        d = s.slice(i, i + 3);
         if (d == '-->') cmnt = 0;
       } else if (cdata) {
-        d = s.substr(i, 2);
+        d = s.slice(i, i + 2);
         if (d == ']]') cdata = 0;
       }
     }
@@ -15271,7 +15273,7 @@ DebugJS.time.split = function(nm, msg, isEnd) {
   var tm = '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + t + '</span>';
   var lap = DebugJS.getDiffTimeStr(tmr[nm].split, now);
   tmr[nm].split = now;
-  var dt = '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + lap.substr(2) + '</span>';
+  var dt = '<span style="color:' + DebugJS.ctx.opt.timerColor + '">' + lap.slice(2) + '</span>';
   var s;
   if (msg) {
     s = msg.replace(/%n/g, nm).replace(/%dt/g, dt).replace(/%t/g, tm);
@@ -15645,7 +15647,7 @@ DebugJS.bat.parseLabelFncs = function() {
   bat.fncs = {};
   for (var i = 0; i < bat.cmds.length; i++) {
     var c = DebugJS.delLeadingSP(bat.cmds[i]);
-    if (c.substr(0, 2) == '/*') {
+    if (c.slice(0, 2) == '/*') {
       cmnt++;
       continue;
     }
@@ -15655,7 +15657,7 @@ DebugJS.bat.parseLabelFncs = function() {
     }
     if (cmnt > 0) continue;
     if ((c.charAt(0) == DebugJS.BAT_TKN_LABEL) && (c.length >= 2)) {
-      var label = c.substr(1);
+      var label = c.slice(1);
       bat.labels[label] = i;
     } else if (DebugJS.startsWith(c, DebugJS.BAT_TKN_FNC)) {
       var fn = DebugJS.splitArgs(c)[1];
@@ -15684,7 +15686,7 @@ DebugJS.bat._run = function() {
   if ((s == undefined) || (s == '*')) {
     sl = 0;
   } else if (isNaN(s)) {
-    if (s.charAt(0) == DebugJS.BAT_TKN_LABEL) s = s.substr(1);
+    if (s.charAt(0) == DebugJS.BAT_TKN_LABEL) s = s.slice(1);
     sl = bat.labels[s];
     if (sl == undefined) {
       DebugJS._log.e('No such label: ' + s);
@@ -15700,7 +15702,7 @@ DebugJS.bat._run = function() {
   if ((e == undefined) || (e == '*')) {
     el = bat.cmds.length - 1;
   } else if (isNaN(e)) {
-    if (e.charAt(0) == DebugJS.BAT_TKN_LABEL) e = e.substr(1);
+    if (e.charAt(0) == DebugJS.BAT_TKN_LABEL) e = e.slice(1);
     el = bat.labels[e];
     if (el == undefined) {
       DebugJS._log.e('No such label: ' + e);
@@ -15842,10 +15844,10 @@ DebugJS.bat.restart = function() {
 DebugJS.bat.isPpTkn = function(cmd) {
   var c = DebugJS.splitCmdLineInTwo(cmd)[0];
   if (c.match(/^\s*@/)) {
-    c = c.substr(c.indexOf('@') + 1);
+    c = c.slice(c.indexOf('@') + 1);
   }
-  if (((c.charAt(0) == '#') || (c.substr(0, 2) == '//')) ||
-      (DebugJS.delLeadingSP(cmd).substr(0, 2) == '/*') ||
+  if (((c.charAt(0) == '#') || (c.slice(0, 2) == '//')) ||
+      (DebugJS.delLeadingSP(cmd).slice(0, 2) == '/*') ||
       (DebugJS.delTrailingSP(cmd).slice(-2) == '*/') ||
       (c.charAt(0) == DebugJS.BAT_TKN_LABEL)) {
     return 1;
@@ -15905,7 +15907,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
   var ctrl = bat.ctrl;
   if (cmd.match(/^\s*@/)) {
     ctrl.tmpEchoOff = true;
-    cmd = cmd.substr(cmd.indexOf('@') + 1);
+    cmd = cmd.slice(cmd.indexOf('@') + 1);
   }
   cmd = DebugJS.replaceCmdVals(cmd);
   var cmds = DebugJS.splitCmdLineInTwo(cmd);
@@ -15935,7 +15937,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
     return 1;
   }
   if (c.charAt(0) == DebugJS.BAT_TKN_LABEL) {
-    bat.setLabel(c.substr(1));
+    bat.setLabel(c.slice(1));
     return 1;
   }
   switch (c) {
@@ -16093,10 +16095,10 @@ DebugJS.bat.nextELOC = function(pc) {
     pc++;
     var cmds = DebugJS.splitCmdLineInTwo(cmd);
     var c = cmds[0];
-    if ((c == '') || (c.charAt(0) == '#') || (c.substr(0, 2) == '//')) {
+    if ((c == '') || (c.charAt(0) == '#') || (c.slice(0, 2) == '//')) {
       continue;
     }
-    if (DebugJS.delLeadingSP(cmd).substr(0, 2) == '/*') {
+    if (DebugJS.delLeadingSP(cmd).slice(0, 2) == '/*') {
       cmnt++;
       continue;
     }
@@ -16119,7 +16121,7 @@ DebugJS.bat.ppIf = function(t, cnd, cmd) {
   var r = {cond: false, err: true};
   var v = cnd.trim();
   if (DebugJS.endsWith(v, DebugJS.BAT_TKN_BLOCK_START)) {
-    v = v.substr(0, v.length - 1);
+    v = v.slice(0, v.length - 1);
     if ((t == DebugJS.BAT_TKN_LOOP) && (v == '')) {
       r.cond = true;r.err = false;
       return r;
@@ -16705,16 +16707,16 @@ DebugJS.point = function(x, y) {
   var ptr = point.getPtr();
   if (!ptr.el) point.createPtr();
   if (x.charAt(0) == '+') {
-    ptr.x += (x.substr(1) | 0);
+    ptr.x += (x.slice(1) | 0);
   } else if (x.charAt(0) == '-') {
-    ptr.x -= (x.substr(1) | 0);
+    ptr.x -= (x.slice(1) | 0);
   } else {
     ptr.x = x | 0;
   }
   if (y.charAt(0) == '+') {
-    ptr.y += (y.substr(1) | 0);
+    ptr.y += (y.slice(1) | 0);
   } else if (y.charAt(0) == '-') {
-    ptr.y -= (y.substr(1) | 0);
+    ptr.y -= (y.slice(1) | 0);
   } else {
     ptr.y = y | 0;
   }
@@ -17141,16 +17143,16 @@ DebugJS.point.move = function(x, y, speed, step) {
   var ptr = point.getPtr();
   var dst = point.move.dstPos;
   if (x.charAt(0) == '+') {
-    dst.x = ptr.x + (x.substr(1) | 0);
+    dst.x = ptr.x + (x.slice(1) | 0);
   } else if (x.charAt(0) == '-') {
-    dst.x = ptr.x - (x.substr(1) | 0);
+    dst.x = ptr.x - (x.slice(1) | 0);
   } else {
     dst.x = x | 0;
   }
   if (y.charAt(0) == '+') {
-    dst.y = ptr.y + (y.substr(1) | 0);
+    dst.y = ptr.y + (y.slice(1) | 0);
   } else if (y.charAt(0) == '-') {
-    dst.y = ptr.y - (y.substr(1) | 0);
+    dst.y = ptr.y - (y.slice(1) | 0);
   } else {
     dst.y = y | 0;
   }
@@ -17760,7 +17762,7 @@ DebugJS._setText = function() {
     data.i += step;
   }
   data.tmid = 0;
-  var txt = data.txt.substr(0, data.i);
+  var txt = data.txt.slice(0, data.i);
   if (data.isInp) {
     data.el.value = txt;
     var e = DebugJS.event.create('input');
@@ -18476,7 +18478,7 @@ DebugJS.getParentPath = function() {
   return location.href.replace(/(.*\/).*/, '$1');
 };
 DebugJS.getQuery = function(k) {
-  var s = window.location.search.substr(1);
+  var s = window.location.search.slice(1);
   if (!k) return s;
   var q = s.split('&');
   var a = [];
@@ -18494,7 +18496,7 @@ DebugJS.getQuery = function(k) {
 };
 DebugJS.getUrlHash = function() {
   var s = window.location.hash;
-  if (s) s = s.substr(1);
+  if (s) s = s.slice(1);
   return s;
 };
 
@@ -18512,8 +18514,8 @@ DebugJS.xlsColN2A = function(n) {
 };
 DebugJS.xlsDateA2N = function(v) {
   v = DebugJS.serializeDateTime(v);
-  var d = v.substr(0, 8);
-  var t = v.substr(8);
+  var d = v.slice(0, 8);
+  var t = v.slice(8);
   var r = DebugJS.diffDate('1900/01/01 ', d) + 1;
   if (r >= 60) r++;
   if (d == '19000100') {
@@ -18586,7 +18588,7 @@ DebugJS.strpIndex = function(tbl, ptn) {
   var idx = 0;
   for (var i = 0; i < len; i++) {
     var d = len - i - 1;
-    var c = ptn.substr(d, 1);
+    var c = ptn.slice(d, d + 1);
     var v = tbl.indexOf(c);
     if (v == -1) return 0;
     v++;
