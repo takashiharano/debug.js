@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202406192022';
+  this.v = '202407201714';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3675,8 +3675,8 @@ DebugJS.prototype = {
     if (DebugJS.LS_AVAILABLE) {
       for (var i = 0; i < ks.length; i++) {
         var k = ks[i];
-        html += '  ' + '<span class="dbg-btn dbg-btn-wh" onclick="DebugJS.ctx.setCookieEdit(\'' + k + '\');">' + (k == '' ? ' ' : k) + '</span>' +
-        ' <span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.delCookie(\'' + k + '\');">x</span>\n';
+        html += '  <span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.delCookie(\'' + k + '\');">x</span> ';
+        html += '<span class="dbg-btn dbg-btn-wh" onclick="DebugJS.ctx.setCookieEdit(\'' + k + '\');">' + (k == '' ? ' ' : k) + '</span>\n';
       }
     }
     DebugJS.writeHTML(ctx.id + '-sys-cookie', ctx.createFoldingText(document.cookie, 'cookie', DebugJS.OMIT_MID));
@@ -3733,8 +3733,9 @@ DebugJS.prototype = {
         if (i != 0) html += '\n    ';
         var getCode = nm + '.getItem(\'' + key + '\')';
         var rmvCode = nm + '.removeItem(\'' + key + '\')';
-        html += '(' + i + ') = ' + '<span class="dbg-btn dbg-btn-wh" onclick="DebugJS.ctx.setStrgEdit(' + type + ', ' + getCode + ', \'' + key + '\');" title="' + getCode + '">' + (key == '' ? ' ' : key) + '</span>' +
-        ' <span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');" title="' + rmvCode + '">x</span>';
+        html += '(' + i + ') = ';
+        html += '<span class="dbg-btn dbg-btn-red" onclick="DebugJS.ctx.' + rmvFn + '(\'' + key + '\');" title="' + rmvCode + '">x</span> ';
+        html += '<span class="dbg-btn dbg-btn-wh" onclick="DebugJS.ctx.setStrgEdit(' + type + ', ' + getCode + ', \'' + key + '\');" title="' + getCode + '">' + (key == '' ? ' ' : key) + '</span>';
       }
     }
     DebugJS.writeHTML(ctx.id + '-sys-' + id, html);
