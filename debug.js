@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202407201714';
+  this.v = '202409182130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -348,6 +348,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'keys', fn: this.cmdKeys, desc: 'Displays all enumerable property keys of an object', help: 'keys object'},
     {cmd: 'kiosk', fn: this.cmdKiosk, desc: 'Make the debugger window go full screen', help: 'kiosk [zoom]'},
     {cmd: 'laptime', fn: this.cmdLaptime, desc: 'Lap time test'},
+    {cmd: 'lc', fn: this.cmdLc, desc: 'To lower case', help: 'lc STR'},
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|dump|filter|html|load|preserve|suspend|time|lv'},
@@ -383,6 +384,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'textedit', fn: this.cmdTextEdit, desc: 'Manipulate text editor', help: 'textedit clear|get|exec|set|setoptval [IDX] "VAL"'},
     {cmd: 'time', fn: this.cmdTime, desc: 'String <--> millis', help: 'time [-d] ms|sec.ms|1d 2h 3m 4s 567|01:23:45.678'},
     {cmd: 'timediff', fn: this.cmdTimeDiff, desc: 'Time duration calculator', help: '\ntimediff ms|HH:MI:SS.sss|"DATE_TIME" ms|HH:MI:SS.sss|"DATE_TIME"\nDATE_TIME: YYYY-MM-DD HH:MI:SS.sss|YYYYMMDDTHHMISS.sss'},
+    {cmd: 'uc', fn: this.cmdUc, desc: 'To upper case', help: 'uc STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|CODE_POINT'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
@@ -8455,6 +8457,12 @@ DebugJS.prototype = {
     }
   },
 
+  cmdLc: function(arg, tbl, echo) {
+    var s = arg.toLowerCase();
+    if (echo) DebugJS._log.res(s);
+    return s;
+  },
+
   cmdLed: function(arg, tbl) {
     if (arg == '') {
       var v = DebugJS.ctx.led;
@@ -10071,6 +10079,12 @@ DebugJS.prototype = {
       if (echo) DebugJS._log.res(s);
       return s;
     } catch (e) {DebugJS.printUsage(tbl.help);}
+  },
+
+  cmdUc: function(arg, tbl, echo) {
+    var s = arg.toUpperCase();
+    if (echo) DebugJS._log.res(s);
+    return s;
   },
 
   cmdUnAlias: function(arg, tbl) {
