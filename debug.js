@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202409182130';
+  this.v = '202410032057';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6714,7 +6714,7 @@ DebugJS.prototype = {
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
     {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
     {lbl: 'TIME_CONV', fn: function(ctx, s) {return DebugJS.timecnv(s);}},
-    {lbl: 'TRIM_BLANK', fn: function(ctx, s) {return DebugJS.trimBlank(s);}},
+    {lbl: 'TRIM_TEXT', fn: function(ctx, s) {return DebugJS.trimText(s);}},
     {
       lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}],
       fn: function(ctx, s, o) {
@@ -11003,7 +11003,7 @@ DebugJS.delTrailingSP = function(s) {
 DebugJS.delAllNL = function(s) {
   return s.replace(/\r/g, '').replace(/\n/g, '');
 };
-DebugJS.trimBlank = function(s) {
+DebugJS.trimText = function(s) {
   return DebugJS.crlf2lf(s).replace(/[ \t\u3000]+\n/g, '\n');
 };
 DebugJS.quoteStr = function(s) {
@@ -12353,7 +12353,7 @@ DebugJS.dateSep = function(s, a) {
   return s;
 };
 DebugJS.lflf2lf = function(s) {
-  return DebugJS.trimBlank(s).replace(/\n\n/g, '\n');
+  return DebugJS.trimText(s).replace(/\n\n/g, '\n');
 };
 DebugJS.lf2lflf = function(s) {
   return s.replace(/\n/g, '\n\n');
