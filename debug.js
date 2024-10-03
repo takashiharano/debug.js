@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202410032057';
+  this.v = '202410040007';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11004,7 +11004,7 @@ DebugJS.delAllNL = function(s) {
   return s.replace(/\r/g, '').replace(/\n/g, '');
 };
 DebugJS.trimText = function(s) {
-  return DebugJS.crlf2lf(s).replace(/[ \t\u3000]+\n/g, '\n');
+  return DebugJS.crlf2lf(s).replace(/[ \t\u3000]+\n/g, '\n').replace(/[ \t\u3000]+$/g, '');
 };
 DebugJS.quoteStr = function(s) {
   return '<span style="color:#0ff">"</span>' + s + '<span style="color:#0ff">"</span>';
