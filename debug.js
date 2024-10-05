@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202410051636';
+  this.v = '202410051725';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6619,7 +6619,7 @@ DebugJS.prototype = {
   },
   editTxtFn: [
     {lbl: ''},
-    {lbl: 'CLEANSE_TEXT', fn: function(ctx, s) {return DebugJS.cleanseText(s);}},
+    {lbl: 'CLEANSE_TEXT', opt: [{lbl: 'NBSP', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'ZWSP', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.cleanseText(s, (o[0] == 'Y'), (o[1] == 'Y'));}},
     {lbl: 'DATE_TIME_SEP', opt: [{lbl: 'SEPARATOR', v: '/'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
     {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
@@ -11003,8 +11003,11 @@ DebugJS.delTrailingSP = function(s) {
 DebugJS.delAllNL = function(s) {
   return s.replace(/\r/g, '').replace(/\n/g, '');
 };
-DebugJS.cleanseText = function(s) {
-  return DebugJS.crlf2lf(s).replace(/[ \t\u3000]+\n/g, '\n').replace(/[ \t\u3000]+$/g, '');
+DebugJS.cleanseText = function(s, n, z) {
+  s = DebugJS.crlf2lf(s).replace(/[ \t\u3000]+\n/g, '\n').replace(/[ \t\u3000]+$/g, '');
+  if (n) s = s.replace(/\u00A0/g, ' ');
+  if (z) s = s.replace(/\u200B/g, '');
+  return s;
 };
 DebugJS.quoteStr = function(s) {
   return '<span style="color:#0ff">"</span>' + s + '<span style="color:#0ff">"</span>';
