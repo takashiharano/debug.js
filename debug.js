@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202410240017';
+  this.v = '202410242148';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6626,7 +6626,7 @@ DebugJS.prototype = {
         return DebugJS.delimit(s, pos, o[1] | 0, '\t', (o[2] == 'Y'));
       }
     },
-    {lbl: 'FORMAT_DATE_TIME', opt: [{lbl: 'SEPARATOR', v: '-'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
+    {lbl: 'FORMAT_DATETIME', opt: [{lbl: 'SEPARATOR', v: '-'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
     {lbl: 'FORMAT_JSON', opt: [{lbl: 'INDENT', v: '1'}],
       fn: function(ctx, s, o) {
         try {var j = DebugJS.formatJSON(s, +o[0]);} catch (e) {j = '[ERROR]' + e + '\n' + s;}
@@ -6717,10 +6717,10 @@ DebugJS.prototype = {
     {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
     {lbl: 'TIME_CONV', fn: function(ctx, s) {return DebugJS.timecnv(s);}},
     {
-      lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}],
+      lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'BLANK', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
-        var opt = {sort: o[0], count: (o[1] == 'Y' ? 1 : 0), blank: 1};
-        return DebugJS.toUnique(s, opt).r;
+        var opt = {sort: o[0], count: (o[1] == 'Y' ? 1 : 0), blank: (o[2] == 'Y' ? 1 : 0)};
+        return DebugJS.toUnique(s, opt);
       }
     },
     {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
@@ -12511,12 +12511,10 @@ DebugJS._toUnique = function(w, srt) {
     b.sort();
   }
   var r = '';
-  var m = '';
   for (i = 0; i < b.length; i++) {
-    m += DebugJS.hlCtrlCh(b[i]) + '\n';
     r += b[i] + '\n';
   }
-  return {r: r, m: m};
+  return r;
 };
 DebugJS.toUniqueCnt = function(v, w) {
   var mxD = 3;
@@ -12531,23 +12529,17 @@ DebugJS.toUniqueCnt = function(v, w) {
   if (idxD < 2) idxD = 2;
   var h = DebugJS.rpad('IDX', ' ', idxD, 1) + ' ' + DebugJS.rpad('VAL', ' ', mxL, 1) + ' CNT\n' + DebugJS.repeatCh('-', idxD + mxL + mxD + 3) + '\n';
   var r = h;
-  var m = h;
   for (i = 0; i < w.length; i++) {
     var idx = DebugJS.lpad(i + 1, ' ', idxD);
     var c = DebugJS.lpad(w[i].cnt, ' ', mxD);
     var k = w[i].key;
     var pdLn = mxL - DebugJS.lenW(k);
-    var ky = DebugJS.hlCtrlCh(k);
-    if ((k == '') || k.match(/\s$|&#x3000$/)) {
-      ky = DebugJS.quoteStr(ky);
-      pdLn -= 2;
-    }
     var pd = DebugJS.repeatCh(' ', pdLn);
     var p = idx + ': ';
-    m += p + ky + pd + ' ' + c + '\n';
-    r += p + w[i].key + pd + ' ' + c + '\n';
+    if (k == '') c += ' (blank)';
+    r += p + k + pd + ' ' + c + '\n';
   }
-  return {r: r, m: m};
+  return r;
 };
 DebugJS.cntByGrp = function(a) {
   var o = {};
