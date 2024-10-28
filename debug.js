@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202410242148';
+  this.v = '202410281227';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6627,7 +6627,7 @@ DebugJS.prototype = {
       }
     },
     {lbl: 'FORMAT_DATETIME', opt: [{lbl: 'SEPARATOR', v: '-'}], fn: function(ctx, s, o) {return DebugJS.dateSep(s, o[0]);}},
-    {lbl: 'FORMAT_JSON', opt: [{lbl: 'INDENT', v: '1'}],
+    {lbl: 'FORMAT_JSON', opt: [{lbl: 'INDENT', v: '2'}],
       fn: function(ctx, s, o) {
         try {var j = DebugJS.formatJSON(s, +o[0]);} catch (e) {j = '[ERROR]' + e + '\n' + s;}
         return j;
