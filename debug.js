@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202412172337';
+  this.v = '202503120003';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6713,6 +6713,7 @@ DebugJS.prototype = {
       lbl: 'SORT', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}, {lbl: 'ASNUM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1] | 0, (o[2] == 'Y' ? 1 : 0));}
     },
+    {lbl: 'SplitCamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(ctx, s, o) {return DebugJS.splitCamelCase(s, eval('"' + o[0] + '"'));}},
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
     {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
     {lbl: 'TIME_CONV', fn: function(ctx, s) {return DebugJS.timecnv(s);}},
@@ -14219,6 +14220,34 @@ DebugJS.txt2arr = function(s) {
   var i = a.length - 1;
   if (a[i] == '') a.splice(i, 1);
   return a;
+};
+
+DebugJS.splitCamelCase = function(s, d) {
+  if (d === undefined) d = ' ';
+  var w = '';
+  var f = 0;
+  var p = 0;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.substring(i, i + 1);
+    if (DebugJS.isUpperCase(c)) {
+      if (f) {
+        var i1 = i + 1;
+        var c1 = s.substring(i1, i1 + 1);
+        if (DebugJS.isLowerCase(c1)) {
+          w += d;
+          f = 0;
+        }
+      } else {
+        if (p) w += d;
+        f = 1;
+      }
+    } else {
+      f = 0;
+    }
+    w += c;
+    if (!c.match(/\s/)) p = 1;
+  }
+  return w;
 };
 
 DebugJS.trimDownText = function(txt, maxLen, style) {
