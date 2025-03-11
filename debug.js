@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503120003';
+  this.v = '202503120016';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14245,7 +14245,11 @@ DebugJS.splitCamelCase = function(s, d) {
       f = 0;
     }
     w += c;
-    if (!c.match(/\s/)) p = 1;
+    if (c.match(/\n/) || c.match(/\s/)) {
+      p = 0;
+    } else {
+      p = 1;
+    }
   }
   return w;
 };
