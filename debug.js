@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503201816';
+  this.v = '202503201852';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6619,14 +6619,15 @@ DebugJS.prototype = {
   },
   editTxtFn: [
     {lbl: ''},
-    {lbl: 'CSV', opt: [{lbl: 'MODE', optvals: [{v: 'TO_TSV'}, {v: 'EXTRACT_COL'}, {v: 'ALIGN'}]}, {lbl: 'N', v: '1'}],
+    {lbl: 'CLEANSE_TEXT', opt: [{lbl: 'NBSP', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'ZWSP', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.cleanseText(s, (o[0] == 'Y'), (o[1] == 'Y'));}},
+    {lbl: 'CSV', opt: [{lbl: 'MODE', optvals: [{v: 'TO_TSV'}, {v: 'EXTRACT_COL'}, {v: 'ALIGN'}]}, {lbl: 'QUOTE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'N', v: '1'}],
       fn: function(ctx, s, o) {
         var f = {'TO_TSV': 'csv2tsv', 'EXTRACT_COL': 'extractCsvCol', 'ALIGN': 'alignCsv'};
-        var n = o[1] | 0;
-        return DebugJS[f[o[0]]](s, n);
+        var q = (o[1] == 'Y');
+        var n = o[2] | 0;
+        return DebugJS[f[o[0]]](s, q, n);
       }
     },
-    {lbl: 'CLEANSE_TEXT', opt: [{lbl: 'NBSP', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'ZWSP', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.cleanseText(s, (o[0] == 'Y'), (o[1] == 'Y'));}},
     {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
         var pos = o[0].replace(/\s{2,}/g, ' ').replace(/,/g, ' ').split(' ');
@@ -12459,11 +12460,11 @@ DebugJS._toNumS = function(a) {
   return parseFloat(n);
 };
 
-DebugJS.alignCsv = function(s, n) {
+DebugJS.alignCsv = function(s, n, wQ) {
   if (!n) n = 1;
   var d = ',';
   if (s.match(/\t/)) d = '\t';
-  var a = DebugJS.csv2arr(s, d, 1);
+  var a = DebugJS.csv2arr(s, d, wQ);
   var c = [];
   for (var i = 0; i < a.length; i++) {
     var l = a[i];
@@ -12559,7 +12560,7 @@ DebugJS.cntByGrp = function(a) {
   return o;
 };
 
-DebugJS.csv2arr = function(s, d, woQ) {
+DebugJS.csv2arr = function(s, d, wQ) {
   var rows = [];
   var cols = [];
   var sp = 0;
@@ -12594,13 +12595,13 @@ DebugJS.csv2arr = function(s, d, woQ) {
       cQ = 0;
       if (q) {
         if ((pC == '"') && !cQ) {
-          DebugJS._pushCsvCol(cols, s, sp, i, woQ);
+          DebugJS._pushCsvCol(cols, s, sp, i, wQ);
           nF = 1;
           rows.push(cols);
           cols = [];
         }
       } else {
-        DebugJS._pushCsvCol(cols, s, sp, i, woQ);
+        DebugJS._pushCsvCol(cols, s, sp, i, wQ);
         nF = 1;
         rows.push(cols);
         cols = [];
@@ -12609,11 +12610,11 @@ DebugJS.csv2arr = function(s, d, woQ) {
       cQ = 0;
       if (q) {
         if (pC == '"') {
-          DebugJS._pushCsvCol(cols, s, sp, i, woQ);
+          DebugJS._pushCsvCol(cols, s, sp, i, wQ);
           nF = 1;
         }
       } else {
-        DebugJS._pushCsvCol(cols, s, sp, i, woQ);
+        DebugJS._pushCsvCol(cols, s, sp, i, wQ);
         nF = 1;
       }
     } else {
@@ -12624,14 +12625,14 @@ DebugJS.csv2arr = function(s, d, woQ) {
   }
   if (!nF) {
     q = (q && !cQ && (c == '"'));
-    DebugJS._pushCsvCol(cols, s, sp, i, woQ);
+    DebugJS._pushCsvCol(cols, s, sp, i, wQ);
     rows.push(cols);
   }
   return rows;
 };
-DebugJS._pushCsvCol = function(a, s, sp, ep, woQ) {
+DebugJS._pushCsvCol = function(a, s, sp, ep, wQ) {
   var v = s.substring(sp, ep);
-  if (woQ) v = DebugJS.dequote(v, '"');
+  if (!wQ && !v.match(/\n/)) v = DebugJS.dequote(v, '"');
   a.push(v);
 };
 DebugJS.isQuoted = function(s, q) {
@@ -12647,9 +12648,11 @@ DebugJS.dequote = function(s, q) {
   return s;
 };
 
-DebugJS.csv2tsv = function(t) {
+DebugJS.csv2tsv = function(t, wQ) {
+  var d = ',';
+  if (t.match(/\t/)) d = '\t';
   var s = '';
-  var r = DebugJS.csv2arr(t, ',', 0);
+  var r = DebugJS.csv2arr(t, d, wQ);
   for (var i = 0; i < r.length; i++) {
     var c = r[i];
     for (var j = 0; j < c.length; j++) {
@@ -12662,10 +12665,12 @@ DebugJS.csv2tsv = function(t) {
   return s;
 };
 
-DebugJS.extractCsvCol = function(t, n) {
+DebugJS.extractCsvCol = function(t, wQ, n) {
   n--;
+  var d = ',';
+  if (t.match(/\t/)) d = '\t';
   var s = '';
-  var r = DebugJS.csv2arr(t, ',', 1);
+  var r = DebugJS.csv2arr(t, d, wQ);
   for (var i = 0; i < r.length; i++) {
     var c = r[i];
     if (c.length > n) {
@@ -12679,7 +12684,7 @@ DebugJS.extractCsvCol = function(t, n) {
 DebugJS.sortAsCsv = function(s, n, desc, asNum) {
   var d = ',';
   if (s.match(/\t/)) d = '\t';
-  var c = DebugJS.csv2arr(s, d, 0);
+  var c = DebugJS.csv2arr(s, d, 1);
   if (n > 0) c = DebugJS.sortCsv(c, n, desc, asNum);
   var a = [];
   for (var i = 0; i < c.length; i++) {
