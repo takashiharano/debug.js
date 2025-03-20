@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503201852';
+  this.v = '202503201858';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12460,7 +12460,7 @@ DebugJS._toNumS = function(a) {
   return parseFloat(n);
 };
 
-DebugJS.alignCsv = function(s, n, wQ) {
+DebugJS.alignCsv = function(s, wQ, n) {
   if (!n) n = 1;
   var d = ',';
   if (s.match(/\t/)) d = '\t';
