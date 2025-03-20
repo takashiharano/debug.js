@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503201858';
+  this.v = '202503201931';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6620,9 +6620,9 @@ DebugJS.prototype = {
   editTxtFn: [
     {lbl: ''},
     {lbl: 'CLEANSE_TEXT', opt: [{lbl: 'NBSP', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'ZWSP', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.cleanseText(s, (o[0] == 'Y'), (o[1] == 'Y'));}},
-    {lbl: 'CSV', opt: [{lbl: 'MODE', optvals: [{v: 'TO_TSV'}, {v: 'EXTRACT_COL'}, {v: 'ALIGN'}]}, {lbl: 'QUOTE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'N', v: '1'}],
+    {lbl: 'CSV', opt: [{lbl: 'MODE', optvals: [{v: 'TO_TSV'}, {v: 'TO_CSV'}, {v: 'EXTRACT_COL'}, {v: 'ALIGN'}]}, {lbl: 'QUOTE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'N', v: '1'}],
       fn: function(ctx, s, o) {
-        var f = {'TO_TSV': 'csv2tsv', 'EXTRACT_COL': 'extractCsvCol', 'ALIGN': 'alignCsv'};
+        var f = {'TO_TSV': 'toTsv', 'TO_CSV': 'toCsv', 'EXTRACT_COL': 'extractCsvCol', 'ALIGN': 'alignCsv'};
         var q = (o[1] == 'Y');
         var n = o[2] | 0;
         return DebugJS[f[o[0]]](s, q, n);
@@ -12632,12 +12632,24 @@ DebugJS.csv2arr = function(s, d, wQ) {
 };
 DebugJS._pushCsvCol = function(a, s, sp, ep, wQ) {
   var v = s.substring(sp, ep);
-  if (!wQ && !v.match(/\n/)) v = DebugJS.dequote(v, '"');
+  if (wQ) {
+    v = DebugJS.quote(v, '"');
+  } else {
+    if (!v.match(/\n/)) v = DebugJS.dequote(v, '"');
+  }
   a.push(v);
 };
 DebugJS.isQuoted = function(s, q) {
   if (s.length < 2) return 0;
   return ((s.charAt(0) == q) && (s.charAt(s.length - 1) == q));
+};
+DebugJS.quote = function(s, q) {
+  if (!DebugJS.isQuoted(s, q)) {
+    var re = new RegExp(q, 'g');
+    s = s.replace(re, q + q);
+    s = q + s + q;
+  }
+  return s;
 };
 DebugJS.dequote = function(s, q) {
   if (DebugJS.isQuoted(s, q)) {
@@ -12647,17 +12659,22 @@ DebugJS.dequote = function(s, q) {
   }
   return s;
 };
-
-DebugJS.csv2tsv = function(t, wQ) {
-  var d = ',';
-  if (t.match(/\t/)) d = '\t';
+DebugJS.toTsv = function(t, wQ) {
+  return DebugJS.csv2tsv(t, '\t', wQ);
+};
+DebugJS.toCsv = function(t, wQ) {
+  return DebugJS.csv2tsv(t, ',', wQ);
+};
+DebugJS.csv2tsv = function(t, d, wQ) {
+  var d0 = ',';
+  if (t.match(/\t/)) d0 = '\t';
   var s = '';
-  var r = DebugJS.csv2arr(t, d, wQ);
+  var r = DebugJS.csv2arr(t, d0, wQ);
   for (var i = 0; i < r.length; i++) {
     var c = r[i];
     for (var j = 0; j < c.length; j++) {
       var v = c[j];
-      if (j > 0) s += '\t';
+      if (j > 0) s += d;
        s += v;
     }
     s += '\n';
