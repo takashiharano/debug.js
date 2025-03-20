@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503201627';
+  this.v = '202503201816';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6619,7 +6619,13 @@ DebugJS.prototype = {
   },
   editTxtFn: [
     {lbl: ''},
-    {lbl: 'CSV2TSV', fn: function(ctx, s) {return DebugJS.csv2tsv(s);}},
+    {lbl: 'CSV', opt: [{lbl: 'MODE', optvals: [{v: 'TO_TSV'}, {v: 'EXTRACT_COL'}, {v: 'ALIGN'}]}, {lbl: 'N', v: '1'}],
+      fn: function(ctx, s, o) {
+        var f = {'TO_TSV': 'csv2tsv', 'EXTRACT_COL': 'extractCsvCol', 'ALIGN': 'alignCsv'};
+        var n = o[1] | 0;
+        return DebugJS[f[o[0]]](s, n);
+      }
+    },
     {lbl: 'CLEANSE_TEXT', opt: [{lbl: 'NBSP', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'ZWSP', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.cleanseText(s, (o[0] == 'Y'), (o[1] == 'Y'));}},
     {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
@@ -6716,7 +6722,6 @@ DebugJS.prototype = {
     },
     {lbl: 'SplitCamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(ctx, s, o) {return DebugJS.splitCamelCase(s, eval('"' + o[0] + '"'));}},
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
-    {lbl: 'TAB_ALIGN', opt: [{lbl: 'SPACE', v: '2'}], fn: function(ctx, s, o) {return DebugJS.alignByTab(s, o[0] | 0);}},
     {lbl: 'TIME_CONV', fn: function(ctx, s) {return DebugJS.timecnv(s);}},
     {
       lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'BLANK', optvals: [{v: 'Y'}, {v: 'N'}]}],
@@ -12454,13 +12459,14 @@ DebugJS._toNumS = function(a) {
   return parseFloat(n);
 };
 
-DebugJS.alignByTab = function(s, n) {
-  var a = DebugJS.txt2arr(s);
+DebugJS.alignCsv = function(s, n) {
   if (!n) n = 1;
-  var d = ' ';
+  var d = ',';
+  if (s.match(/\t/)) d = '\t';
+  var a = DebugJS.csv2arr(s, d, 1);
   var c = [];
   for (var i = 0; i < a.length; i++) {
-    var l = a[i].split('\t');
+    var l = a[i];
     for (var j = 0; j < l.length; j++) {
       var b = DebugJS.lenW(l[j]);
       if ((c[j] | 0) < b) c[j] = b;
@@ -12468,9 +12474,9 @@ DebugJS.alignByTab = function(s, n) {
   }
   var r = '';
   for (i = 0; i < a.length; i++) {
-    l = a[i].split('\t');
+    l = a[i];
     for (j = 0; j < l.length - 1; j++) {
-      r += DebugJS.rpad(l[j], d, c[j] + n, 1);
+      r += DebugJS.rpad(l[j], ' ', c[j] + n, 1);
     }
     r += l[j] + '\n';
   }
@@ -12553,7 +12559,7 @@ DebugJS.cntByGrp = function(a) {
   return o;
 };
 
-DebugJS.csv2arr = function(s, d) {
+DebugJS.csv2arr = function(s, d, woQ) {
   var rows = [];
   var cols = [];
   var sp = 0;
@@ -12566,6 +12572,8 @@ DebugJS.csv2arr = function(s, d) {
     if (nF) {
       sp = i;
       nF = 0;
+      cPos = 0;
+      q = 0;
     }
     var c = s.substring(i, i + 1);
     if (c == '"') {
@@ -12586,19 +12594,13 @@ DebugJS.csv2arr = function(s, d) {
       cQ = 0;
       if (q) {
         if ((pC == '"') && !cQ) {
-          DebugJS._pushCsvCol(cols, s, sp, i);
-          cPos = 0;
+          DebugJS._pushCsvCol(cols, s, sp, i, woQ);
           nF = 1;
           rows.push(cols);
           cols = [];
-        } else {
-          pC = c;
-          cPos++;
-          continue;
         }
       } else {
-        DebugJS._pushCsvCol(cols, s, sp, i);
-        cPos = 0;
+        DebugJS._pushCsvCol(cols, s, sp, i, woQ);
         nF = 1;
         rows.push(cols);
         cols = [];
@@ -12607,13 +12609,11 @@ DebugJS.csv2arr = function(s, d) {
       cQ = 0;
       if (q) {
         if (pC == '"') {
-          DebugJS._pushCsvCol(cols, s, sp, i);
-          cPos = 0;
+          DebugJS._pushCsvCol(cols, s, sp, i, woQ);
           nF = 1;
         }
       } else {
-        DebugJS._pushCsvCol(cols, s, sp, i);
-        cPos = 0;
+        DebugJS._pushCsvCol(cols, s, sp, i, woQ);
         nF = 1;
       }
     } else {
@@ -12624,18 +12624,32 @@ DebugJS.csv2arr = function(s, d) {
   }
   if (!nF) {
     q = (q && !cQ && (c == '"'));
-    DebugJS._pushCsvCol(cols, s, sp, i);
+    DebugJS._pushCsvCol(cols, s, sp, i, woQ);
     rows.push(cols);
   }
   return rows;
 };
-DebugJS._pushCsvCol = function(a, s, sp, ep) {
-  a.push(s.substring(sp, ep));
+DebugJS._pushCsvCol = function(a, s, sp, ep, woQ) {
+  var v = s.substring(sp, ep);
+  if (woQ) v = DebugJS.dequote(v, '"');
+  a.push(v);
+};
+DebugJS.isQuoted = function(s, q) {
+  if (s.length < 2) return 0;
+  return ((s.charAt(0) == q) && (s.charAt(s.length - 1) == q));
+};
+DebugJS.dequote = function(s, q) {
+  if (DebugJS.isQuoted(s, q)) {
+    s = s.substring(1, s.length - 1);
+    var re = new RegExp(q + q, 'g');
+    s = s.replace(re, q);
+  }
+  return s;
 };
 
 DebugJS.csv2tsv = function(t) {
   var s = '';
-  var r = DebugJS.csv2arr(t, ',');
+  var r = DebugJS.csv2arr(t, ',', 0);
   for (var i = 0; i < r.length; i++) {
     var c = r[i];
     for (var j = 0; j < c.length; j++) {
@@ -12648,10 +12662,24 @@ DebugJS.csv2tsv = function(t) {
   return s;
 };
 
+DebugJS.extractCsvCol = function(t, n) {
+  n--;
+  var s = '';
+  var r = DebugJS.csv2arr(t, ',', 1);
+  for (var i = 0; i < r.length; i++) {
+    var c = r[i];
+    if (c.length > n) {
+        s += c[n];
+    }
+    s += '\n';
+  }
+  return s;
+};
+
 DebugJS.sortAsCsv = function(s, n, desc, asNum) {
   var d = ',';
   if (s.match(/\t/)) d = '\t';
-  var c = DebugJS.csv2arr(s, d);
+  var c = DebugJS.csv2arr(s, d, 0);
   if (n > 0) c = DebugJS.sortCsv(c, n, desc, asNum);
   var a = [];
   for (var i = 0; i < c.length; i++) {
