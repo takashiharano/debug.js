@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503120016';
+  this.v = '202503201627';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6619,6 +6619,7 @@ DebugJS.prototype = {
   },
   editTxtFn: [
     {lbl: ''},
+    {lbl: 'CSV2TSV', fn: function(ctx, s) {return DebugJS.csv2tsv(s);}},
     {lbl: 'CLEANSE_TEXT', opt: [{lbl: 'NBSP', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'ZWSP', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.cleanseText(s, (o[0] == 'Y'), (o[1] == 'Y'));}},
     {lbl: 'DELIMIT', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
@@ -12552,6 +12553,101 @@ DebugJS.cntByGrp = function(a) {
   return o;
 };
 
+DebugJS.csv2arr = function(s, d) {
+  var rows = [];
+  var cols = [];
+  var sp = 0;
+  var q = 0;
+  var cQ = 0;
+  var cPos = 0;
+  var pC = '';
+  var nF = 0;
+  for (var i = 0; i < s.length; i++) {
+    if (nF) {
+      sp = i;
+      nF = 0;
+    }
+    var c = s.substring(i, i + 1);
+    if (c == '"') {
+      if (cPos == 0) {
+        q = 1;
+      } else if (q) {
+        if (cPos > 0) {
+          if (pC == '"') {
+            if (cQ) {
+              cQ = 0;
+            } else {
+              cQ = 1;
+            }
+          }
+        }
+      }
+    } else if (c == '\n') {
+      cQ = 0;
+      if (q) {
+        if ((pC == '"') && !cQ) {
+          DebugJS._pushCsvCol(cols, s, sp, i);
+          cPos = 0;
+          nF = 1;
+          rows.push(cols);
+          cols = [];
+        } else {
+          pC = c;
+          cPos++;
+          continue;
+        }
+      } else {
+        DebugJS._pushCsvCol(cols, s, sp, i);
+        cPos = 0;
+        nF = 1;
+        rows.push(cols);
+        cols = [];
+      }
+    } else if (c == d) {
+      cQ = 0;
+      if (q) {
+        if (pC == '"') {
+          DebugJS._pushCsvCol(cols, s, sp, i);
+          cPos = 0;
+          nF = 1;
+        }
+      } else {
+        DebugJS._pushCsvCol(cols, s, sp, i);
+        cPos = 0;
+        nF = 1;
+      }
+    } else {
+      cQ = 0;
+    }
+    pC = c;
+    cPos++;
+  }
+  if (!nF) {
+    q = (q && !cQ && (c == '"'));
+    DebugJS._pushCsvCol(cols, s, sp, i);
+    rows.push(cols);
+  }
+  return rows;
+};
+DebugJS._pushCsvCol = function(a, s, sp, ep) {
+  a.push(s.substring(sp, ep));
+};
+
+DebugJS.csv2tsv = function(t) {
+  var s = '';
+  var r = DebugJS.csv2arr(t, ',');
+  for (var i = 0; i < r.length; i++) {
+    var c = r[i];
+    for (var j = 0; j < c.length; j++) {
+      var v = c[j];
+      if (j > 0) s += '\t';
+       s += v;
+    }
+    s += '\n';
+  }
+  return s;
+};
+
 DebugJS.sortAsCsv = function(s, n, desc, asNum) {
   var d = ',';
   if (s.match(/\t/)) d = '\t';
@@ -12567,55 +12663,6 @@ DebugJS.sortAsCsv = function(s, n, desc, asNum) {
     a.push(w);
   }
   return a;
-};
-DebugJS.csv2arr = function(s, d) {
-  var c = DebugJS.txt2arr(s);
-  var a = [];
-  for (var i = 0; i < c.length; i++) {
-    a.push(DebugJS.splitCsvCols(c[i], d));
-  }
-  return a;
-};
-DebugJS.splitCsvCols = function(s, d) {
-  if (!s.match(/"/)) return s.split(d);
-  var a = [];
-  var p = 0;
-  var ln = 0;
-  var q = 0;
-  var qF = 0;
-  var f = 0;
-  for (var i = 0; i < s.length; i++) {
-    ln++;
-    var ch = s.charAt(i);
-    if (ch == '"') {
-      if (ln == 1) {
-        q = 1;
-        f = 1;
-      } else if (q) {
-        if (qF) {
-          qF = 0;
-        } else {
-          f = 0;
-          qF = 1;
-        }
-      }
-    } else if (ch == d) {
-      if (!f) {
-        ln--;
-        DebugJS._pushCsvCol(a, s, p, ln);
-        p = i + 1;
-        ln = 0;
-        continue;
-      }
-    }
-    qF = 0;
-  }
-  DebugJS._pushCsvCol(a, s, p, ln);
-  return a;
-};
-DebugJS._pushCsvCol = function(a, s, p, len) {
-  var w = s.slice(p, p + len);
-  a.push(w);
 };
 DebugJS.sortCsv = function(c, n, d, asNum) {
   n--;
