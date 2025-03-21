@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503201931';
+  this.v = '202503212330';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12582,13 +12582,7 @@ DebugJS.csv2arr = function(s, d, wQ) {
         q = 1;
       } else if (q) {
         if (cPos > 0) {
-          if (pC == '"') {
-            if (cQ) {
-              cQ = 0;
-            } else {
-              cQ = 1;
-            }
-          }
+          if (pC == '"') cQ = (cQ ? 0 : 1);
         }
       }
     } else if (c == '\n') {
