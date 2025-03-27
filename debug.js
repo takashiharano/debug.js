@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503212330';
+  this.v = '202503272143';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6620,6 +6620,7 @@ DebugJS.prototype = {
   editTxtFn: [
     {lbl: ''},
     {lbl: 'CLEANSE_TEXT', opt: [{lbl: 'NBSP', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'ZWSP', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.cleanseText(s, (o[0] == 'Y'), (o[1] == 'Y'));}},
+    {lbl: 'CLOCK2HOURS', fn: function(ctx, s) {return DebugJS.timecnv(s);}},
     {lbl: 'CSV', opt: [{lbl: 'MODE', optvals: [{v: 'TO_TSV'}, {v: 'TO_CSV'}, {v: 'EXTRACT_COL'}, {v: 'ALIGN'}]}, {lbl: 'QUOTE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'N', v: '1'}],
       fn: function(ctx, s, o) {
         var f = {'TO_TSV': 'toTsv', 'TO_CSV': 'toCsv', 'EXTRACT_COL': 'extractCsvCol', 'ALIGN': 'alignCsv'};
@@ -6723,7 +6724,6 @@ DebugJS.prototype = {
     },
     {lbl: 'SplitCamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(ctx, s, o) {return DebugJS.splitCamelCase(s, eval('"' + o[0] + '"'));}},
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
-    {lbl: 'TIME_CONV', fn: function(ctx, s) {return DebugJS.timecnv(s);}},
     {
       lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'BLANK', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
@@ -12628,8 +12628,8 @@ DebugJS._pushCsvCol = function(a, s, sp, ep, wQ) {
   var v = s.substring(sp, ep);
   if (wQ) {
     v = DebugJS.quote(v, '"');
-  } else {
-    if (!v.match(/\n/)) v = DebugJS.dequote(v, '"');
+  } else if (!v.match(/\n/)) {
+    v = DebugJS.dequote(v, '"');
   }
   a.push(v);
 };
@@ -12675,7 +12675,6 @@ DebugJS.csv2tsv = function(t, d, wQ) {
   }
   return s;
 };
-
 DebugJS.extractCsvCol = function(t, wQ, n) {
   n--;
   var d = ',';
@@ -12691,7 +12690,6 @@ DebugJS.extractCsvCol = function(t, wQ, n) {
   }
   return s;
 };
-
 DebugJS.sortAsCsv = function(s, n, desc, asNum) {
   var d = ',';
   if (s.match(/\t/)) d = '\t';
