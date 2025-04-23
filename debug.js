@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202504232345';
+  this.v = '202504240015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -3567,9 +3567,6 @@ DebugJS.prototype = {
 
     var navUserAgent = foldingTxt(navigator.userAgent, 'navUserAgent', OMIT_LAST);
     var navAppVersion = foldingTxt(navigator.appVersion, 'navAppVersion', OMIT_LAST);
-    try {
-      var winOnerror = foldingTxt(window.onerror, 'winOnerror', OMIT_LAST);
-    } catch (e) {winOnerror = e;}
     var offset = (new Date()).getTimezoneOffset();
     var html = '<pre>';
     html += '              .getTimezoneOffset() = ' + offset + ' (UTC' + DebugJS.formatTZ(offset * (-1), true) + ')';
@@ -3582,8 +3579,6 @@ DebugJS.prototype = {
     html += addSysInfoPropH('navigator');
     html += addSysInfoProp('userAgent  ', navUserAgent);
     html += addSysInfoProp('language       ', setStyleIfObjNA(navigator.language));
-    html += addSysInfoProp('browserLanguage', setStyleIfObjNA(navigator.browserLanguage));
-    html += addSysInfoProp('userLanguage   ', setStyleIfObjNA(navigator.userLanguage));
     html += addSysInfoProp('languages      ', languages);
     html += addPropSep();
     html += addSysInfo('charset', charset);
@@ -3615,11 +3610,6 @@ DebugJS.prototype = {
     html += addSysInfoProp('scrollX      ', setStyleIfObjNA(window.scrollX), 'sys-scroll-x');
     html += addSysInfoProp('scrollY      ', setStyleIfObjNA(window.scrollY), 'sys-scroll-y');
     html += addSysInfoProp('onload       ', foldingTxt(window.onload, 'winOnload', OMIT_LAST));
-    html += addSysInfoProp('onunload     ', foldingTxt(window.onunload, 'winOnunload', OMIT_LAST));
-    html += addSysInfoProp('onselect     ', foldingTxt(window.oncontextmenu, 'winOnselect', OMIT_LAST));
-    html += addSysInfoProp('onselectstart', foldingTxt(window.oncontextmenu, 'winOnselectstart', OMIT_LAST));
-    html += addSysInfoProp('oncontextmenu', foldingTxt(window.oncontextmenu, 'winOncontextmenu', OMIT_LAST));
-    html += addSysInfoProp('onerror      ', winOnerror);
     html += addPropSep();
     html += addSysInfoPropH('navigator');
     html += addSysInfoProp('appCodeName  ', setStyleIfObjNA(navigator.appCodeName));
