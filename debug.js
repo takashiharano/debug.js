@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202503272143';
+  this.v = '202504232345';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6724,6 +6724,7 @@ DebugJS.prototype = {
     },
     {lbl: 'SplitCamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(ctx, s, o) {return DebugJS.splitCamelCase(s, eval('"' + o[0] + '"'));}},
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
+    {lbl: 'Unicode', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'getUnicodeEscape' : 'decodeUnicodeEscape';return DebugJS[f](s);}},
     {
       lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'BLANK', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
@@ -10118,7 +10119,7 @@ DebugJS.prototype = {
   cmdUnicode: function(arg, tbl) {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
-    return DebugJS.ctx.execEncAndDec(arg, tbl, true, false, DebugJS.getUnicodeEscSeq, DebugJS.decodeUnicode, iIdx);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, true, false, DebugJS.getUnicodeEscape, DebugJS.decodeUnicode, iIdx);
   },
 
   cmdUri: function(arg, tbl, echo) {
@@ -13539,12 +13540,12 @@ DebugJS.str2binArr = function(str, blkSize, pFix) {
 };
 
 DebugJS.decodeUnicode = function(arg) {
+  var w = arg.toUpperCase().replace(/\s/g, '');
+  var a = w.split('U+');
   var s = '';
-  var a = arg.split(' ');
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] == '') continue;
-    var cdpt = a[i].replace(/^U\+/i, '');
-    s += ((cdpt == '20') ? ' ' : '&#x' + cdpt);
+  for (var i = 1; i < a.length; i++) {
+    var p = a[i];
+    s += ((p == '20') ? ' ' : '&#x' + p);
   }
   return s;
 };
@@ -13568,22 +13569,6 @@ DebugJS.getCodePoint = function(c, hex) {
   if (hex) p = DebugJS.toHex(p, true, '', 0);
   return p;
 };
-DebugJS.getUnicodeEscSeq = function(s) {
-  try {
-    s = eval(s);
-  } catch (e) {
-    DebugJS._log.e(e);
-    return;
-  }
-  if (typeof s != 'string') return;
-  var r = '';
-  var chs = DebugJS.str2chars(s);
-  for (var i = 0; i < chs.length; i++) {
-    var p = DebugJS.getCodePoint(chs[i], false);
-    r += '\\u' + DebugJS.toHex(p, false, '', 4);
-  }
-  return r;
-};
 
 DebugJS.decodeUri = function(s) {
   return decodeURIComponent(s);
@@ -13606,6 +13591,77 @@ DebugJS.encodeChrEntRef = function(c) {
   var n = (String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0));
   var h = DebugJS.toHex(n, 1);
   return '&#x' + h + ';';
+};
+
+DebugJS.dumpUTF16Bytes = function(p, le) {
+  var a = DebugJS._dumpUTF16Bytes(p, le);
+  var b = '';
+  for (var i = 0; i < a.length; i++) {
+    if (i > 0) b += ' ';
+    b += a[i];
+  }
+  return b;
+};
+DebugJS._dumpUTF16Bytes = function(p, le) {
+  var c = String.fromCodePoint(p);
+  var b = escape(c).replace(/[%u]/g, '');
+  if (b.length == 1) {
+    b = ('0' + b.charCodeAt(0).toString(16).toUpperCase()).slice(-2);
+  }
+  if (b.length == 2) b = '00' + b;
+  var a = DebugJS.divideString(b, 2);
+  if (le) {
+    var d = [];
+    for (var i = 0; i < a.length; i += 2) {
+      d.push(a[i + 1]);
+      d.push(a[i]);
+    }
+    a = d;
+  }
+  return a;
+};
+DebugJS.divideString = function(s, n) {
+  if ((s == undefined) || (s == null)) return s;
+  if ((n <= 0) || (s == '')) return [s];
+  var a = [];
+  for (var i = 0; i < s.length / n; i++) {
+    var st = i * n;
+    a.push(s.slice(st, st + n));
+  }
+  return a;
+};
+
+DebugJS.getUnicodeEscape = function(s) {
+  var u = '';
+  for (var i = 0; i < s.length; i++) {
+    var c = s.substring(i, i + 1);
+    var p = String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0);
+    if (p <= 127) {
+      u += c;
+    } else {
+      u += DebugJS._getUnicodeEscape(p);
+    }
+  }
+  return u;
+};
+DebugJS._getUnicodeEscape = function(p) {
+  var b = DebugJS.dumpUTF16Bytes(p);
+  b = b.replace(/ /g, '');
+  if (b.length == 8) {
+    var u = '\\u' + b.substring(0, 2) + '\\u' + b.substring(2, 4);
+  } else {
+    u = '\\u' + b;
+  }
+  return u;
+};
+DebugJS.decodeUnicodeEscape = function(u) {
+  try {
+    u = u.replace(/"/g, '\\"');
+    var s = eval('"' + u + '"');
+  } catch (e) {
+    s = '';
+  }
+  return s;
 };
 
 DebugJS.hex2base64 = function(h) {
