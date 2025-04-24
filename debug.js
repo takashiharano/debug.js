@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202504240015';
+  this.v = '202504250045';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1751,7 +1751,7 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
-    ctx.clientSizeLabel.innerText = 'CLI:w=' + w + ',h=' + h;
+    ctx.clientSizeLabel.innerText = 'CLT:w=' + w + ',h=' + h;
     if (ctx.status & DebugJS.ST_SYS_INFO) {
       DebugJS.writeHTML(ctx.id + '-sys-cli-w', w);
       DebugJS.writeHTML(ctx.id + '-sys-cli-h', h);
@@ -10022,6 +10022,7 @@ DebugJS.prototype = {
     var opp = arg.indexOf(op);
     var vL = arg.slice(0, opp);
     var p = opp + 1;
+    var FNC = {'-': 'subTime', '*': 'mltTime', '/': 'divTime'};
     for (var i = 0; i < n; i++) {
       var nOp = ops[i + 1];
       var nOpp = arg.indexOf(nOp, p);
@@ -10031,18 +10032,10 @@ DebugJS.prototype = {
       } else {
         vR = arg.slice(p);
       }
-      var fn;
-      if (op == '+') {
-        fn = DebugJS.addTime;
-      } else if (op == '-') {
-        fn = DebugJS.subTime;
-      } else if (op == '*') {
-        fn = DebugJS.mltTime;
-      } else {
-        fn = DebugJS.divTime;
-      }
+      var fn = FNC[op];
+      if (!fn) fn = 'addTime';
       if (vR != '') {
-        r = fn(vL, vR);
+        r = DebugJS[fn](vL, vR);
         if (isNaN(r)) {
           r = 'Invalid time format';
           DebugJS._log.e(r);
@@ -11975,11 +11968,11 @@ DebugJS._objDmp1 = function(arg, key, toJson, indent, v) {
 };
 
 DebugJS.getKeys = function(o) {
-  var keys = [];
+  var a = [];
   for (var k in o) {
-    keys.push(k);
+    a.push(k);
   }
-  return keys;
+  return a;
 };
 DebugJS.getKeysStr = function(o) {
   var keys = '';
@@ -13550,12 +13543,7 @@ DebugJS.getUnicodePoints = function(s) {
   return cd;
 };
 DebugJS.getCodePoint = function(c, hex) {
-  var p;
-  if (String.prototype.codePointAt) {
-    p = c.codePointAt(0);
-  } else {
-    p = c.charCodeAt(0);
-  }
+  var p = (String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0));
   if (hex) p = DebugJS.toHex(p, true, '', 0);
   return p;
 };
@@ -18580,9 +18568,8 @@ DebugJS._getElByAttr = function(attr, v, idx) {
     if (el[attr] == v) {
       if (idx == n) {
         break;
-      } else {
-        n++;
       }
+      n++;
     }
     el = DebugJS.ctx.getNextElm(DebugJS.ctx, el);
   }
@@ -18805,10 +18792,9 @@ DebugJS.ui.addLabel = function(base, label, style) {
   return el;
 };
 DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, oninput) {
-  var ctx = DebugJS.ctx;
   var s = {
     'width': width,
-    'min-height': ctx.computedFontSize + 'px',
+    'min-height': DebugJS.ctx.computedFontSize + 'px',
     'margin': '0',
     'padding': '0',
     'color': color
