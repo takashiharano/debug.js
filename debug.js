@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202504250045';
+  this.v = '202504261740';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1812,8 +1812,7 @@ DebugJS.prototype = {
     var s = ctx.msgStr;
     if (ctx.msgLabel) {
       ctx.msgLabel.innerHTML = '<pre>' + s + '</pre>';
-      var o = (s == '' ? 0 : 1);
-      ctx.msgLabel.style.opacity = o;
+      ctx.msgLabel.style.opacity = (s == '' ? 0 : 1);
     }
   },
 
@@ -2151,10 +2150,9 @@ DebugJS.prototype = {
     var y = e.clientY;
     var el = e.target;
     if (e.button != 0) return;
-    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, el, x, y)) {
-      return;
+    if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) && ctx.isMovable(ctx, el, x, y)) {
+      ctx.startMove(ctx, x, y);
     }
-    ctx.startMove(ctx, x, y);
   },
   onDbgWinTouchStart: function(e) {
     var ctx = DebugJS.ctx;
@@ -3132,11 +3130,12 @@ DebugJS.prototype = {
   },
 
   adjustWinMax: function(ctx) {
+    var de = document.documentElement;
     if ((ctx.sizeStatus == DebugJS.SIZE_ST_FULL_W) || (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH)) {
-      ctx.win.style.width = document.documentElement.clientWidth + 'px';
+      ctx.win.style.width = de.clientWidth + 'px';
     }
     if ((ctx.sizeStatus == DebugJS.SIZE_ST_FULL_H) || (ctx.sizeStatus == DebugJS.SIZE_ST_FULL_WH)) {
-      ctx.win.style.height = document.documentElement.clientHeight + 'px';
+      ctx.win.style.height = de.clientHeight + 'px';
     }
     ctx.adjLayout();
   },
@@ -3165,8 +3164,9 @@ DebugJS.prototype = {
   restoreDbgWin: function(org) {
     var ctx = DebugJS.ctx;
     if (!org) org = ctx.orgSizePos;
-    var clW = document.documentElement.clientWidth;
-    var clH = document.documentElement.clientHeight;
+    var de = document.documentElement;
+    var clW = de.clientWidth;
+    var clH = de.clientHeight;
     var w = org.w;
     var h = org.h;
     var t = org.t;
@@ -3235,7 +3235,8 @@ DebugJS.prototype = {
 
   isOutOfWin: function(ctx) {
     var sp = ctx.getSelfSizePos();
-    if ((sp.x1 > document.documentElement.clientWidth) || (sp.y1 > document.documentElement.clientHeight) || (sp.x2 < 0) || (sp.y2 < 0)) {
+    var de = document.documentElement;
+    if ((sp.x1 > de.clientWidth) || (sp.y1 > de.clientHeight) || (sp.x2 < 0) || (sp.y2 < 0)) {
       return true;
     }
     return false;
@@ -3754,7 +3755,7 @@ DebugJS.prototype = {
     var btn = ctx.getDbgWinElm(name + '__button');
     var prtBdy = ctx.getDbgWinElm(name + '__prt-body');
     var body = ctx.getDbgWinElm(name + '__body');
-    if ((body) && ((!body.style.display) || (body.style.display == 'none'))) {
+    if (body && !body.style.display || (body.style.display == 'none')) {
       btn.innerHTML = DebugJS.CLOSEBTN;
       prtBdy.style.display = 'none';
       body.style.display = 'block';
@@ -3961,8 +3962,8 @@ DebugJS.prototype = {
     if ((el.tagName != 'HTML') && (el.tagName != 'BODY')) {
       if (el.tagName == 'META') {
         text = DebugJS.escHtml(el.outerHTML);
-      } else {
-        if (el.innerText != undefined) text = DebugJS.escHtml(el.innerText);
+      } else if (el.innerText != undefined) {
+        text = DebugJS.escHtml(el.innerText);
       }
     }
     var txt = foldingTxt(text, 'text', OMIT_LAST, MAX_LEN, OMIT_STYLE, foldingSt.text);
@@ -4718,11 +4719,7 @@ DebugJS.prototype = {
     var val = ctx.calcTimerInitVal(ctx);
     var ms = {'hh': 3600000, 'mi': 60000, 'ss': 1000, 'sss': 1};
     var v = (ms[part] === undefined ? 0 : ms[part]);
-    if (up) {
-      val += v;
-    } else {
-      val -= v;
-    }
+    val += up ? v : -v;
     ctx.timerSign = (val <= 0);
     ctx.updatePlusMinusBtn(ctx);
     ctx.updateTimerInitValInp(val);
@@ -5583,9 +5580,8 @@ DebugJS.prototype = {
       if (b) {
         ctx.openBat(ctx, b);
         return 1;
-      } else {
-        return 0;
       }
+      return 0;
     }
     var tp = DebugJS.Base64.getMimeType(s);
     var mime = (tp.type == '' ? 'text/plain' : tp.type + '/' + tp.subtype);
@@ -5717,22 +5713,15 @@ DebugJS.prototype = {
     DebugJS.file.finalize();
     var te = e.target.error;
     var err;
-    switch (te.code) {
-      case te.NOT_FOUND_ERR:
-        err = 'NOT_FOUND_ERR';
+    var E = ['NOT_FOUND_ERR', 'SECURITY_ERR', 'NOT_READABLE_ERR', 'ABORT_ERR'];
+    for (var i = 0; i < E.length; i++) {
+      var er = E[i];
+      if (te.code == te[er]) {
+        err = er;
         break;
-      case te.SECURITY_ERR:
-        err = 'SECURITY_ERR';
-        break;
-      case te.NOT_READABLE_ERR:
-        err = 'NOT_READABLE_ERR';
-        break;
-      case te.ABORT_ERR:
-        err = 'ABORT_ERR';
-        break;
-      default:
-        err = 'FILE_READ_ERROR (' + te.code + ')';
+      }
     }
+    if (!err) err = 'FILE_READ_ERROR (' + te.code + ')';
     DebugJS.ctx.updateFilePreview(err);
   },
   openViewerB64: function() {
@@ -6634,14 +6623,14 @@ DebugJS.prototype = {
     },
     {lbl: 'FORMAT_XML', opt: [{lbl: 'INDENT', v: '2'}, {lbl: 'COMMENT', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(ctx, s, o) {return DebugJS.formatXml(s, o[0], (o[1] == 'Y' ? 0 : 1));}},
     {
-      lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
-      fn: function(ctx, s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
-    },
-    {
       lbl: 'HALF/FULL', opt: [{lbl: '', optvals: [{t: 'HALF', v: 'H'}, {t: 'FULL', v: 'F'}]}],
       fn: function(ctx, s, o) {return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));}
     },
     {lbl: 'HORIZ_VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(ctx, s, o) {return (+o[0] ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
+    {
+      lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
+      fn: function(ctx, s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
+    },
     {lbl: 'MAX_MIN_LEN', opt: [{lbl: 'THRESHOLD'}], fn: function(ctx, s, o) {return DebugJS.minMaxLen(s, o[0]);}},
     {
       lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
@@ -6946,14 +6935,13 @@ DebugJS.prototype = {
   },
 
   resetExpandedHeight: function(ctx) {
-    if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
-      ctx.win.style.width = ctx.expandModeOrg.w + 'px';
-      ctx.win.style.height = ctx.expandModeOrg.h + 'px';
-      ctx.adjLayout();
-      ctx.scrollLogBtm(ctx);
-      if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) {
-        ctx.adjustDbgWinPos(ctx);
-      }
+    if (!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC)) return;
+    ctx.win.style.width = ctx.expandModeOrg.w + 'px';
+    ctx.win.style.height = ctx.expandModeOrg.h + 'px';
+    ctx.adjLayout();
+    ctx.scrollLogBtm(ctx);
+    if (ctx.uiStatus & DebugJS.UI_ST_POS_AUTO_ADJ) {
+      ctx.adjustDbgWinPos(ctx);
     }
   },
 
@@ -7405,11 +7393,7 @@ DebugJS.prototype = {
     n |= 0;
     var v = 0;
     if (n != 0) {
-      if (DebugJS.hasOpt(arg, 'a')) {
-        v = Math.pow(2, n) - 1;
-      } else {
-        v = Math.pow(2, n - 1);
-      }
+      v = DebugJS.hasOpt(arg, 'a') ? Math.pow(2, n) - 1 : Math.pow(2, n - 1);
     }
     return DebugJS.cmdInt(v + '', echo);
   },
@@ -8463,15 +8447,15 @@ DebugJS.prototype = {
   },
 
   cmdLed: function(arg, tbl) {
+    var v = DebugJS.ctx.led;
     if (arg == '') {
-      var v = DebugJS.ctx.led;
       var h = DebugJS.formatHex(DebugJS.toHex(v), true, '0x');
       DebugJS._log.res(v + '(' + h + ')');
       DebugJS.printUsage(tbl.help);
     } else {
       DebugJS.ctx.setLed(arg);
     }
-    return DebugJS.ctx.led;
+    return v;
   },
 
   cmdLen: function(arg, tbl, echo) {
@@ -10874,12 +10858,9 @@ DebugJS.getJsonPos = function(s) {
   var closeCh = '';
   for (var i = 0; i < s.length; i++) {
     if (pos.open == -1) {
-      if (s[i] == '{') {
+      if ((s[i] == '{') || (s[i] == '[')) {
         pos.open = i;
-        closeCh = '}';
-      } else if (s[i] == '[') {
-        pos.open = i;
-        closeCh = ']';
+        closeCh = ((s[i] == '{') ? '}' : ']');
       }
     } else {
       if (s[i] == closeCh) pos.close = i;
@@ -12233,14 +12214,10 @@ DebugJS.calcMod43 = function(s) {
   return DebugJS.MOD43TBL.charAt(n % 43);
 };
 
-DebugJS.digits = function(x) {
-  var d = 0;
-  if (x == 0) {
-    d = 1;
-  } else {
-    while (x != 0) {
-      x = (x / 10) | 0; d++;
-    }
+DebugJS.digits = function(n) {
+  var d = (n == 0) ? 1 : 0;
+  while (n != 0) {
+    n = (n / 10) | 0; d++;
   }
   return d;
 };
@@ -13185,11 +13162,7 @@ DebugJS._numbering = function(s, n, ln) {
   if (ln > 0) {
     var w = s.length + (n + '').length;
     var d = ln - w;
-    if (d > 0) {
-      var r = s + DebugJS.repeatCh('0', d) + n;
-    } else {
-      r = s + n;
-    }
+    var r = ((d > 0) ? s + DebugJS.repeatCh('0', d) + n : s + n);
   } else {
     r = s + n;
   }
@@ -13429,11 +13402,7 @@ DebugJS.BSB64.decode = function(s, n) {
 DebugJS.rot = function(x, s, n) {
   n = (n == '' ? null : n | 0);
   var f = DebugJS['rot' + x];
-  if (f) {
-    return f(s, n);
-  } else {
-    return s;
-  }
+  return (f ? f(s, n) : s);
 };
 DebugJS.rot5 = function(s, n) {
   if (n == null) n = 5;
@@ -13463,18 +13432,11 @@ DebugJS.rot13 = function(s, n) {
     var cc = c.charCodeAt(0);
     if (DebugJS.isAlphabet(c)) {
       cc += n;
-      if (DebugJS.isUpperCase(c)) {
-        if (cc > 0x5A) {
-          cc = 0x40 + (cc - 0x5A);
-        } else if (cc < 0x41) {
-          cc = 0x5B - (0x41 - cc);
-        }
-      } else if (DebugJS.isLowerCase(c)) {
-        if (cc > 0x7A) {
-          cc = 0x60 + (cc - 0x7A);
-        } else if (cc < 0x61) {
-          cc = 0x7B - (0x61 - cc);
-        }
+      var b = (DebugJS.isUpperCase(c) ? 0 : 0x20);
+      if (cc > (0x5A + b)) {
+        cc = 0x40 + (cc - (0x5A + b));
+      } else if (cc < (0x41 + b)) {
+        cc = (0x5B + b) - ((0x41 + b) - cc);
       }
     }
     r += String.fromCharCode(cc);
@@ -13614,11 +13576,7 @@ DebugJS.getUnicodeEscape = function(s) {
   for (var i = 0; i < s.length; i++) {
     var c = s.substring(i, i + 1);
     var p = String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0);
-    if (p <= 127) {
-      u += c;
-    } else {
-      u += DebugJS._getUnicodeEscape(p);
-    }
+    u += ((p <= 127) ? c : DebugJS._getUnicodeEscape(p));
   }
   return u;
 };
@@ -14981,12 +14939,11 @@ DebugJS.file.onLoaded = function(file, ctt) {
   DebugJS.file.callCb(loader, ctt, file);
 };
 DebugJS.file.callCb = function(loader, ctt, file) {
-  if (loader.cb) {
-    if (loader.txtOnly) {
-      loader.cb(ctt);
-    } else {
-      loader.cb(file, ctt);
-    }
+  if (!loader.cb) return;
+  if (loader.txtOnly) {
+    loader.cb(ctt);
+  } else {
+    loader.cb(file, ctt);
   }
 };
 DebugJS.file.finalize = function() {
@@ -15526,8 +15483,8 @@ DebugJS.stopwatch.start = function(n, m) {
 DebugJS.stopwatch.stop = function(n) {
   if (n == 0) {
     DebugJS.ctx.stopStopwatch();
-  } else {
-    if (DebugJS.stopwatch()) DebugJS.ctx.stopTimerStopwatch();
+  } else if (DebugJS.stopwatch()) {
+    DebugJS.ctx.stopTimerStopwatch();
   }
 };
 DebugJS.stopwatch.end = function(n, m) {
@@ -15544,15 +15501,15 @@ DebugJS.stopwatch.split = function(n) {
   var ctx = DebugJS.ctx;
   if (n == 0) {
     ctx.splitStopwatch();
-  } else {
-    if (ctx.isAvailableTools(ctx)) ctx.splitTimerStopwatch();
+  } else if (ctx.isAvailableTools(ctx)) {
+    ctx.splitTimerStopwatch();
   }
 };
 DebugJS.stopwatch.reset = function(n) {
   if (n == 0) {
     DebugJS.ctx.resetStopwatch();
-  } else {
-    if (DebugJS.stopwatch()) DebugJS.ctx.resetTimerStopwatch();
+  } else if (DebugJS.stopwatch()) {
+    DebugJS.ctx.resetTimerStopwatch();
   }
 };
 DebugJS.stopwatch.t0 = function(n, v) {
@@ -15631,9 +15588,7 @@ DebugJS.callEvtListeners = function(type, a1, a2, a3) {
 DebugJS.callListeners = function(fns, a1, a2, a3) {
   for (var i = fns.length - 1; i >= 0; i--) {
     var fn = fns[i];
-    if (fn) {
-      if (fn(a1, a2, a3) === false) return false;
-    }
+    if (fn && fn(a1, a2, a3) === false) return false;
   }
   return true;
 };
@@ -18542,9 +18497,10 @@ DebugJS.getElPosSize = function(el, idx) {
 };
 
 DebugJS.getScreenCenter = function() {
+  var de = document.documentElement;
   var p = {
-    x: (document.documentElement.clientWidth / 2),
-    y: (document.documentElement.clientHeight / 2)
+    x: (de.clientWidth / 2),
+    y: (de.clientHeight / 2)
   };
   return p;
 };
@@ -18590,19 +18546,9 @@ DebugJS.isFocusable = function(el) {
 };
 DebugJS.isTxtInp = function(el) {
   if (el.tagName == 'TEXTAREA') return true;
-  if (el.tagName == 'INPUT') {
-    switch (el.type) {
-      case 'text':
-      case 'password':
-      case 'email':
-      case 'number':
-      case 'search':
-      case 'tel':
-      case 'url':
-        return true;
-    }
-  }
-  return false;
+  if (el.tagName != 'INPUT') return false;
+  var T = ['text', 'password', 'email', 'number', 'search', 'tel', 'url'];
+  return T.includes(el.type);
 };
 
 DebugJS.toggleElShowHide = function(el) {
@@ -19156,8 +19102,8 @@ DebugJS.onLoad = function() {
   window.addEventListener('beforeunload', DebugJS.onB4Unload, true);
   window.addEventListener('unload', DebugJS.onUnload, true);
   if (DebugJS.LS_AVAILABLE) DebugJS.test.load();
-  if (DebugJS.ctx.status & DebugJS.ST_BAT_CONT) {
-    if (DebugJS.LS_AVAILABLE) DebugJS.bat.load();
+  if (DebugJS.ctx.status & DebugJS.ST_BAT_CONT && DebugJS.LS_AVAILABLE) {
+    DebugJS.bat.load();
   } else if (DebugJS.bat.q) {
     DebugJS.bat.lazyExec();
   }
@@ -19220,16 +19166,12 @@ DebugJS.boot = function() {
   window.addEventListener('error', DebugJS.onError, true);
   window.addEventListener('DOMContentLoaded', DebugJS.onReady, true);
   window.addEventListener('load', DebugJS.onLoad, true);
-  if (window.el === undefined) DebugJS.G_EL_AVAILABLE = true;
+  DebugJS.G_EL_AVAILABLE = (window.el === undefined);
   try {
-    if (typeof window.localStorage != 'undefined') {
-      DebugJS.LS_AVAILABLE = true;
-    }
+    DebugJS.LS_AVAILABLE = (typeof window.localStorage != 'undefined');
   } catch (e) {}
   try {
-    if (typeof window.sessionStorage != 'undefined') {
-      DebugJS.SS_AVAILABLE = true;
-    }
+    DebugJS.SS_AVAILABLE = (typeof window.sessionStorage != 'undefined');
   } catch (e) {}
   if (window.console) {
     DebugJS.bak = {
