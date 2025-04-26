@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202504261759';
+  this.v = '202504261802';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6703,7 +6703,7 @@ DebugJS.prototype = {
     },
     {lbl: 'SplitCamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(ctx, s, o) {return DebugJS.splitCamelCase(s, eval('"' + o[0] + '"'));}},
     {lbl: 'SUM', fn: function(ctx, s) {return DebugJS.sum(s);}},
-    {lbl: 'Unicode escape seq.', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'getUnicodeEscape' : 'decodeUnicodeEscape';return DebugJS[f](s);}},
+    {lbl: 'Unicode escape seq', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(ctx, s, o) {var f = o[0] == 'E' ? 'getUnicodeEscape' : 'decodeUnicodeEscape';return DebugJS[f](s);}},
     {
       lbl: 'UNIQUE', opt: [{lbl: 'SORT', optvals: [{t: '', v: ''}, {t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COUNT', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'BLANK', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(ctx, s, o) {
