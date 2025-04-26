@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202504270000';
+  this.v = '202504270033';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6707,8 +6707,8 @@ DebugJS.prototype = {
         return DebugJS.toUnique(s, opt);
       }
     },
-    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
-    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Decode', v: 'D'}, {t: 'Encode', v: 'E'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}}
+    {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
+    {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}}
   ],
 
   onTextInput: function(txtSt, edt) {
@@ -13519,12 +13519,19 @@ DebugJS.decodeChrEntRef = function(s) {
   return p.textContent;
 };
 DebugJS.encodeChrEntRefs = function(s) {
-  return DebugJS.escHtml(s).replace(/[\u0080-\uFFFF]/g, DebugJS.encodeChrEntRef);
-};
-DebugJS.encodeChrEntRef = function(c) {
-  var n = (String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0));
-  var h = DebugJS.toHex(n, 1);
-  return '&#x' + h + ';';
+  var a = DebugJS.str2chars(s);
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    var c = a[i];
+    var p = (String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0));
+    if (p <= 127) {
+      r += c;
+    } else {
+      var h = DebugJS.toHex(p, 1);
+      r += '&#x' + h + ';';
+    }
+  }
+  return r;
 };
 
 DebugJS.dumpUTF16Bytes = function(p, le) {
