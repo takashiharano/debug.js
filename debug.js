@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202504261802';
+  this.v = '202504262355';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1263,11 +1263,7 @@ DebugJS.prototype = {
     }
 
     ctx.mainPanel = document.createElement('div');
-    if (opt.useLogFilter) {
-      ctx.mainPanel.style.height = (opt.lines + 1) + '.1em';
-    } else {
-      ctx.mainPanel.style.height = opt.lines + '.1em';
-    }
+    ctx.mainPanel.style.height = opt.lines + (opt.useLogFilter ? 1 : 0) + '.1em';
     ctx.mainPanel.style.clear = 'both';
     ctx.winBody.appendChild(ctx.mainPanel);
 
@@ -8653,10 +8649,9 @@ DebugJS.prototype = {
     } else {
       r = fn(s, w);
     }
-    if (r == 'NG') {
-      if (echo) log.res.err(r);
-    } else {
-      if (echo) log.res(r);
+    if (echo) {
+      var f = (r == 'NG') ? log.res.err : log.res;
+      f(r);
     }
     return r;
   },
@@ -12579,7 +12574,6 @@ DebugJS.csv2arr = function(s, d, wQ) {
     cPos++;
   }
   if (!nF) {
-    q = (q && !cQ && (c == '"'));
     DebugJS._pushCsvCol(cols, s, sp, i, wQ);
     rows.push(cols);
   }
@@ -14619,12 +14613,7 @@ DebugJS._getBinInfo = {
   },
   java: function(b) {
     var v = b[7];
-    var j;
-    if (v <= 48) {
-      j = '1.' + v - 44;
-    } else {
-      j = v - 44;
-    }
+    var j = ((v <= 48) ? '1.' : '') + v - 44;
     var r = '';
     if (j) r += 'Java ver: Java SE ' + j + ' = ' + v + ' (' + DebugJS.toHex(v, true, '0x', 2) + ')';
     return r;
@@ -17291,16 +17280,8 @@ DebugJS.point.move = function(x, y, speed, step) {
   }
   step |= 0;
   point.move.speed = speed;
-  if (dst.x >= ptr.x) {
-    point.move.mvX = step;
-  } else {
-    point.move.mvX = step * (-1);
-  }
-  if (dst.y >= ptr.y) {
-    point.move.mvY = step;
-  } else {
-    point.move.mvY = step * (-1);
-  }
+  point.move.mvX = ((dst.x >= ptr.x) ? step : step * (-1));
+  point.move.mvY = ((dst.y >= ptr.y) ? step : step * (-1));
   if (point.move.tmid > 0) {
     DebugJS.bat.unlock();
     clearTimeout(point.move.tmid);
@@ -17617,28 +17598,16 @@ DebugJS.point.hint.move = function() {
   var ps = DebugJS.getElPosSize(el);
   var y = (ptr.y - ps.h - 2);
   if (y < 0) {
-    if (ps.h > ptr.y) {
-      y = ptr.y + ptr.h;
-    } else {
-      y = 0;
-    }
+    y = ((ps.h > ptr.y) ? (ptr.y + ptr.h) : 0);
   }
   var x = ptr.x;
   if (x < 0) x = 0;
   if ((y + ps.h) > ptr.y) x = ptr.x + ptr.w;
   if ((x + ps.w) > clW) {
-    if (ps.w < clW) {
-      x = clW - ps.w;
-    } else {
-      x = 0;
-    }
+    x = ((ps.w < clW) ? (clW - ps.w) : 0);
   }
   if ((y + ps.h) > clH) {
-    if (ps.h < clH) {
-      y = clH - ps.h;
-    } else {
-      y = 0;
-    }
+    y = ((ps.h < clH) ? (clH - ps.h) : 0);
   }
   el.style.top = y + 'px';
   el.style.left = x + 'px';
