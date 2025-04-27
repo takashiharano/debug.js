@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202504270033';
+  this.v = '202504272056';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6099,25 +6099,17 @@ DebugJS.prototype = {
     if (showAddr) {
       hd += 'Address    ';
     }
-    if (mode == 'bin') {
-      if (showSp) {
-        hd += '+0       +1       +2       +3       +4       +5       +6       +7        +8       +9       +A       +B       +C       +D       +E       +F      ';
-      } else {
-        hd += '+0      +1      +2      +3      +4      +5      +6      +7      +8      +9      +A      +B      +C      +D      +E      +F      ';
-      }
-    } else if (mode == 'dec') {
-      if (showSp) {
-        hd += ' +0  +1  +2  +3  +4  +5  +6  +7   +8  +9  +A  +B  +C  +D  +E  +F';
-      } else {
-        hd += ' +0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F';
-      }
-    } else {
-      if (showSp) {
-        hd += '+0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F';
-      } else {
-        hd += '+0+1+2+3+4+5+6+7+8+9+A+B+C+D+E+F';
-      }
-    }
+    var SPN = {bin: 6, dec: 1, hex: 0};
+    var sp1n = SPN[mode];
+    var sp0 = (mode == 'dec') ? ' ' : '';
+    var sp1 = DebugJS.repeatCh(' ', sp1n);
+    var sp2 = (mode == 'bin') ? DebugJS.repeatCh(' ', SPN[mode]) : '';
+    var sp = (showSp ? ' ' : '');
+    hd += sp0;
+    hd += '+0' + sp1 + sp + '+1' + sp1 + sp + '+2' + sp1 + sp + '+3' + sp1 + sp;
+    hd += '+4' + sp1 + sp + '+5' + sp1 + sp + '+6' + sp1 + sp + '+7' + sp1 + sp + sp;
+    hd += '+8' + sp1 + sp + '+9' + sp1 + sp + '+A' + sp1 + sp + '+B' + sp1 + sp;
+    hd += '+C' + sp1 + sp + '+D' + sp1 + sp + '+E' + sp1 + sp + '+F' + sp2;
     if (showAscii) {
       hd += '  ASCII           ';
     }
