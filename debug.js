@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505111804';
+  this.v = '202505111829';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18898,8 +18898,8 @@ DebugJS.cls = function() {
   DebugJS.ctx.clearLog();
 };
 
+DebugJS.consoleLogKeys = ['log', 'info', 'warn', 'error', 'time', 'timeEnd'];
 DebugJS.setConsoleLogOut = function(f) {
-  if (!window.console) return;
   if (f) {
     console.log = function(x) {log(x);};
     console.info = function(x) {log.i(x);};
@@ -18908,12 +18908,10 @@ DebugJS.setConsoleLogOut = function(f) {
     console.time = function(x) {DebugJS.time.start(x);};
     console.timeEnd = function(x) {DebugJS.time.end(x);};
   } else {
-    console.log = DebugJS.bak.console.log;
-    console.info = DebugJS.bak.console.info;
-    console.warn = DebugJS.bak.console.warn;
-    console.error = DebugJS.bak.console.error;
-    console.time = DebugJS.bak.console.time;
-    console.timeEnd = DebugJS.bak.console.timeEnd;
+    for (var i = 0; i < DebugJS.consoleLogKeys.length; i++) {
+      var k = DebugJS.consoleLogKeys[i];
+      console[k] = DebugJS.bak.console[k];
+    }
   }
 };
 
@@ -19170,17 +19168,10 @@ DebugJS.boot = function() {
   try {
     DebugJS.SS_AVAILABLE = (typeof window.sessionStorage != 'undefined');
   } catch (e) {}
-  if (window.console) {
-    DebugJS.bak = {
-      console: {
-        log: console.log,
-        info: console.info,
-        warn: console.warn,
-        error: console.error,
-        time: console.time,
-        timeEnd: console.timeEnd
-      }
-    };
+  DebugJS.bak = {console: {}};
+  for (var i = 0; i < DebugJS.consoleLogKeys.length; i++) {
+    var k = DebugJS.consoleLogKeys[i];
+    DebugJS.bak.console[k] = console[k];
   }
   if (DebugJS.LS_AVAILABLE) {
     DebugJS.restoreStatus(DebugJS.ctx);
