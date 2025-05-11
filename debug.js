@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505111603';
+  this.v = '202505111804';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6332,7 +6332,7 @@ DebugJS.prototype = {
     ctx.batStartTxt = DebugJS.ui.addTextInput(basePanel, '45px', 'left', ctx.opt.fontColor, '', null);
     DebugJS.ui.addLabel(basePanel, ' TO:');
     ctx.batEndTxt = DebugJS.ui.addTextInput(basePanel, '45px', 'left', ctx.opt.fontColor, '', null);
-    DebugJS.ui.addLabel(basePanel, ' Arg:');
+    DebugJS.ui.addLabel(basePanel, ' Args:');
     ctx.batArgTxt = DebugJS.ui.addTextInput(basePanel, '80px', 'left', ctx.opt.fontColor, '', null);
     DebugJS.ui.addLabel(basePanel, ' L:');
     ctx.batCurPc = DebugJS.ui.addLabel(basePanel, '0');
@@ -6376,7 +6376,7 @@ DebugJS.prototype = {
     bat.store(ctx.batTextEditor.value);
     var a = ctx.batArgTxt.value;
     try {
-      bat.setExecArg(eval(a));
+      bat.setExecArgs(a);
     } catch (e) {
       DebugJS._log.e('BAT ARG ERROR (' + e + ')');return;
     }
@@ -6433,9 +6433,9 @@ DebugJS.prototype = {
   },
   setBatArgTxt: function(ctx) {
     if (ctx.batArgTxt) {
-      var a = DebugJS.bat.ctrl.execArg;
-      if ((typeof a == 'string') && (a != '')) {a = '"' + a + '"';}
-      ctx.batArgTxt.value = a + '';
+      var a = DebugJS.bat.ctrl.execArgs;
+      var ag = (a ? a[0] : '');
+      ctx.batArgTxt.value = ag;
     }
   },
   updateCurPc: function(b) {
@@ -7266,8 +7266,8 @@ DebugJS.prototype = {
           if (ctx.batTextEditor) bat.store(ctx.batTextEditor.value);
           s = DebugJS.getOptVal(arg, 's');
           var e = DebugJS.getOptVal(arg, 'e');
-          ag = DebugJS.getOptVal(arg, 'arg');
-          if ((s == null) && (e == null) && (a[1] != '-arg')) {
+          ag = DebugJS.getOptVal(arg, 'args');
+          if ((s == null) && (e == null) && (a[1] != '-args')) {
             s = a[1];
             if ((s != undefined) && (!isNaN(s))) {
               return bat.exec1(s);
@@ -7335,7 +7335,7 @@ DebugJS.prototype = {
           if (b != '') {
             ag = DebugJS.getArgsFrom(arg, 2);
             try {
-              bat(b, eval(ag));
+              bat(b, ag);
             } catch (e) {
               DebugJS._log.e('BAT ERROR: Illegal argument (' + e + ')');
             }
@@ -8319,7 +8319,6 @@ DebugJS.prototype = {
   _cmdJump: function(ctx, arg, lnk, type) {
     var bat = DebugJS.bat;
     var ctrl = bat.ctrl;
-    var fnArg;
     var a = DebugJS.splitCmdLineInTwo(arg);
     var lbl = a[0];
     if (lbl.match(/^".+?"$/)) {
@@ -8337,23 +8336,28 @@ DebugJS.prototype = {
       return;
     }
     if (lnk) {
-      try {
-        fnArg = eval(a[1]);
-      } catch (e) {
-        DebugJS._log.e('L' + ctrl.pc + ': Illegal argument (' + e + ')');
-        return;
+      var args = DebugJS.splitCmdLine(a[1]);
+      var fnArgs = [a[1]];
+      for (var i = 0; i < args.length; i++) {
+        try {
+          var ag = args[i];
+          fnArgs.push(eval(ag));
+        } catch (e) {
+          DebugJS._log.e('L' + ctrl.pc + ': Illegal argument: ' + ag + ' (' + e + ')');
+          return;
+        }
       }
       delete ctx.CMDVALS['%RET%'];
       var fnCtx = {
         lr: ctrl.pc,
-        fnArg: ctrl.fnArg,
+        fnArgs: ctrl.fnArgs,
         block: ctrl.block,
         label: ctrl.label,
         fnnm: ctrl.fnnm
       };
       ctrl.stack.push(fnCtx);
-      ctrl.fnArg = fnArg;
-      ctx.CMDVALS['%ARG%'] = fnArg;
+      ctrl.fnArgs = fnArgs;
+      ctx.CMDVALS['%ARGS%'] = fnArgs;
       ctrl.lr = ctrl.pc;
     }
     ctrl.startPc = 0;
@@ -10606,6 +10610,7 @@ DebugJS.splitArgs = function(a) {
 // ' 1 "abc" "d ef"  "g\"hi" 2 ("jkl" + 3) 4 '
 // -> [0]=1 [1]="abc" [2]="d ef" [3]="g\"hi" [4]=2 [5]=("jkl" + 3) [6]=4
 DebugJS.splitCmdLine = function(arg, limit) {
+  if (!arg) arg = '';
   var args = [];
   var start = 0;
   var len = 0;
@@ -15688,7 +15693,7 @@ DebugJS.bat = function(b, a, sl, el) {
   }
   if (DebugJS.ctx.status & DebugJS.ST_BAT_RUNNING) bat.stCtx();
   bat.set(b);
-  bat.setExecArg(a);
+  bat.setExecArgs(a);
   bat.run.arg.s = sl;
   bat.run.arg.e = el;
   bat.setRunningSt(true);
@@ -15709,14 +15714,14 @@ DebugJS.bat.ctrl = {
   tmid: 0,
   lock: 0,
   block: [],
-  fnArg: undefined,
+  fnArgs: undefined,
   condKey: null,
   pauseKey: null,
   pauseTimeout: 0,
   pauseTmId: 0,
   cont: false,
   stopReq: false,
-  execArg: '',
+  execArgs: null,
   label: '',
   fnnm: '',
   stack: []
@@ -15790,7 +15795,7 @@ DebugJS.bat.run = function(s, e, a) {
   var bat = DebugJS.bat;
   bat.run.arg.s = s;
   bat.run.arg.e = e;
-  if (a != undefined) bat.setExecArg(a);
+  if (a != undefined) bat.setExecArgs(a);
   bat._run();
 };
 DebugJS.bat._run = function() {
@@ -15847,7 +15852,7 @@ DebugJS.bat._run = function() {
   DebugJS.ctx.updateCurPc();
   ctrl.startPc = sl;
   ctrl.endPc = el;
-  bat.setExecArg(ctrl.execArg);
+  bat.setExecArgs(ctrl.execArgs);
   bat.stopNext();
   if (bat.nestLv() == 0) DebugJS.callEvtListeners('batstart');
   bat.exec();
@@ -15993,10 +15998,22 @@ DebugJS.bat._exit = function(st) {
   bat.setExitStatus(st);
   if (!bat.ldCtx()) bat._stop(st);
 };
-DebugJS.bat.setExecArg = function(a) {
+DebugJS.bat.setExecArgs = function(a) {
+  if (DebugJS.bat.ctrl.execArgs) return;
   a = ((a === undefined) ? '' : a);
-  DebugJS.ctx.CMDVALS['%%ARG%%'] = a;
-  DebugJS.bat.ctrl.execArg = a;
+  var args = DebugJS.splitCmdLine(a);
+  var batArgs = [a];
+  for (var i = 0; i < args.length; i++) {
+    try {
+      var ag = args[i];
+      batArgs.push(eval(ag));
+    } catch (e) {
+      DebugJS._log.e('Illegal BAT argument: ' + ag + ' (' + e + ')');
+      throw e;
+    }
+  }
+  DebugJS.ctx.CMDVALS['%%ARGS%%'] = batArgs;
+  DebugJS.bat.ctrl.execArgs = batArgs;
   DebugJS.ctx.setBatArgTxt(DebugJS.ctx);
 };
 DebugJS.bat.setLabel = function(s) {
@@ -16396,8 +16413,8 @@ DebugJS.bat.ret = function(arg) {
     } catch (e) {
       DebugJS._log.e(e);return;
     }
-    DebugJS.ctx.CMDVALS['%ARG%'] = fnCtx.fnArg;
-    ctrl.fnArg = fnCtx.fnArg;
+    DebugJS.ctx.CMDVALS['%ARGS%'] = fnCtx.fnArgs;
+    ctrl.fnArgs = fnCtx.fnArgs;
     ctrl.block = fnCtx.block;
     ctrl.lr = fnCtx.lr;
     ctrl.pc = ctrl.lr;
@@ -16556,7 +16573,7 @@ DebugJS.bat._stop = function(st) {
   bat.setRunningSt(false);
   ctx.status &= ~DebugJS.ST_BAT_PAUSE;
   ctx.updateBatRunBtn();
-  var NM = ['%ARG%', 'ARG', 'RET', 'LABEL', 'FUNCNAME', 'TEXT'];
+  var NM = ['%ARGS%', 'ARGS', 'RET', 'LABEL', 'FUNCNAME', 'TEXT'];
   for (var i = 0; i < NM.length; i++) {
     delete ctx.CMDVALS['%' + NM[i] + '%'];
   }
@@ -16596,7 +16613,7 @@ DebugJS.bat.initCtrl = function(all) {
   var ctrl = DebugJS.bat.ctrl;
   ctrl.pc = 0;
   ctrl.lr = 0;
-  ctrl.fnArg = undefined;
+  ctrl.fnArgs = undefined;
   ctrl.startPc = 0;
   ctrl.endPc = 0;
   ctrl.tmpEchoOff = false;
@@ -16611,7 +16628,7 @@ DebugJS.bat.initCtrl = function(all) {
   ctrl.stack = [];
   if (all) {
     ctrl.echo = true;
-    ctrl.execArg = '';
+    ctrl.execArgs = null;
     DebugJS.ctx.status &= ~DebugJS.ST_BAT_CONT;
   }
   if (ctrl.tmid > 0) {
@@ -16641,7 +16658,7 @@ DebugJS.bat.ldCtx = function() {
   var batCtx = bat.ctx.pop();
   if (!batCtx) return false;
   DebugJS.copyProp(batCtx.ctrl, bat.ctrl);
-  bat.setExecArg(bat.ctrl.execArg);
+  bat.setExecArgs(bat.ctrl.execArgs);
   bat.setLabel(bat.ctrl.label);
   bat.setFnNm(bat.ctrl.fnnm);
   bat.cmds = batCtx.cmds;
@@ -16674,7 +16691,7 @@ DebugJS.bat.load = function() {
   bat.cmds = bt.cmds;
   bat.ctx = bt.ctx;
   DebugJS.ctx.CMDVALS = bt.vals;
-  bat.setExecArg(bat.ctrl.execArg);
+  bat.setExecArgs(bat.ctrl.execArgs);
   bat.parseLabelFncs();
   bat.setRunningSt(true);
   if (bat.q) {

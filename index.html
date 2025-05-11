@@ -4122,13 +4122,13 @@ $ base64s -d -k xyz GRsZHBwcHwA=
     <td>
       Operate BAT Script
 <pre class="eg">
-$ bat run -s START-LINE<span class="annotation">(opt)</span> -e END-LINE<span class="annotation">(opt)</span> -arg ARGUMENT<span class="annotation">(opt)</span> 
+$ bat run -s START-LINE<span class="annotation">(opt)</span> -e END-LINE<span class="annotation">(opt)</span> -args ARGUMENTS<span class="annotation">(opt)</span> 
 $ bat pause
 $ bat stop
 $ bat list start-line<span class="annotation">(opt)</span> end-line<span class="annotation">(opt)</span>
 $ bat status key<span class="annotation">(opt)</span>
 $ bat clear
-$ bat exec b64-encoded-bat
+$ bat exec b64-encoded-bat "arg1"<span class="annotation">(opt)</span> "arg2"<span class="annotation">(opt)</span> ...
 
 $ bat run 1
 -&gt; Execute only line 1
@@ -6602,11 +6602,13 @@ JavaScript Code;
 :label</span>
 goto label
 
-<span class="emphasis">call func1 ${val}<span class="annotation">(argument is optional)</span>
+<span class="emphasis">call func1 "abc" "xyz"<span class="annotation">(argument is optional)</span>
 ${val} = ${%RET%}
 
 FUNCTION func1
-  ${val} = ${%ARG%}</span>
+  ${args} = ${%ARGS%}[0] # whole arguments: '"abc" "xyz"'
+  ${val1} = ${%ARGS%}[1] # 'abc'
+  ${val2} = ${%ARGS%}[2] # 'xyz'</span>
   command
   <span class="emphasis">${ret} = </span>command
   <span class="emphasis">return ${ret}<span class="annotation">(return value is optional)</span>
@@ -6739,16 +6741,16 @@ wait 1.5s
   </tr>
 
   <tr>
-    <td class="name">${%%ARG%%}</td>
+    <td class="name">${%%ARGS%%}</td>
     <td>
-      BAT execution argument string
+      BAT execution argument array
     </td>
   </tr>
 
   <tr>
-    <td class="name">${%ARG%}</td>
+    <td class="name">${%ARGS%}</td>
     <td>
-      Argument string of call/jump instruction
+      Argument array of call/jump instruction
     </td>
   </tr>
 
@@ -7757,7 +7759,7 @@ test result
 
 point move center
 point move -250 +0
-point hint msg "<span style=\"font-size:24px;\">AUTO TESTING HAS BEEN COMPLETED!</span>\nTest Result: !TEST_COUNT! !RESUME!!STOP!"
+point hint msg "<span style=\"font-size:24px;\">AUTOMATED TEST HAS BEEN COMPLETED!</span>\nTest Result: !TEST_COUNT! !RESUME!!STOP!"
 pause -key -timeout 5s
 
 point init
