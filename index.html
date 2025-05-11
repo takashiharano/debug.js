@@ -2806,7 +2806,7 @@ test set comment "Comment2"
 test verify -label "label2" c == "abc"
 
 test set id "Test03"
-test set result ERR -label "label3" -info "Something went wrong"
+test set result Error -label "label3" -info "Something went wrong"
 
 test end</pre>dbg.test.getResult(true);
 <pre class="code textfmt" style="width:500px">
@@ -2834,7 +2834,7 @@ test end</pre>dbg.test.getResult(true);
    "results": [
     {
      "label": "",
-     "status": "OK",
+     "status": "Pass",
      "method": "==",
      "exp": 1,
      "got": 1,
@@ -2842,7 +2842,7 @@ test end</pre>dbg.test.getResult(true);
     },
     {
      "label": "label1",
-     "status": "NG",
+     "status": "Fail",
      "method": "==",
      "exp": 2,
      "got": 3,
@@ -2857,7 +2857,7 @@ test end</pre>dbg.test.getResult(true);
    "results": [
     {
      "label": "label2",
-     "status": "OK",
+     "status": "Pass",
      "method": "==",
      "exp": "abc",
      "got": "abc",
@@ -2870,7 +2870,7 @@ test end</pre>dbg.test.getResult(true);
    "results": [
     {
      "label": "label3",
-     "status": "ERR",
+     "status": "Error",
      "method": null,
      "exp": null,
      "got": null,
@@ -5405,8 +5405,8 @@ $ point verify <i>propertyName</i> <i>operand</i> <i>value</i>
 -&gt; Verify a property value of the element at the current pointed position
   e.g.,
   $ point verify value == "123"
-  [<span style="color:#0c0">OK</span>] Got="123" == Exp="123"
-  [<span style="color:#f00">NG</span>] Got="456" == Exp="123"
+  [<span style="color:#0c0">Pass</span>] Got="123" == Exp="123"
+  [<span style="color:#f00">Fail</span>] Got="456" == Exp="123"
 
   $ point verify value == "123"
   $ point verify value != "123"
@@ -5780,8 +5780,8 @@ to close the stopwatch.
       verify: Evaluate a value<br>
       count: Displays the test count.<br>
       result: Displays the test result.<br>
-      last: Last result of test/point verify command. (OK / NG / ERR / NT)<br>
-      status: Displays the total test result. (OK / NG / ERR / NT)<br>
+      last: Last result of test/point verify command. (Pass / Fail / Error / NotTested)<br>
+      status: Displays the total test result. (Pass / Fail / Error / NotTested)<br>
       end: Finalize the test execution. (The running status will be set to false and finished time will be set)<br><br>
 
 <pre class="eg">
@@ -5798,10 +5798,10 @@ $ test verify a == 1
 
 $ test verify -label "text" b == 2
 
-$ test set result OK -label "result1" -info "ok test"
-$ test set result NG -label "result2" -info "ng test"
-$ test set result ERR -label "result3" -info "err test"
-$ test set result NT -label "result4" -info "nt test"
+$ test set result Pass -label "result1" -info "remark1"
+$ test set result Fail -label "result2" -info "remark2"
+$ test set result Error -label "result3" -info "remark3"
+$ test set result NotTested -label "result4" -info "remark4"
 
 $ test set seq 10 <span class="annotation">Explicitly set number for "%SEQ%".</span>
 
@@ -5812,27 +5812,27 @@ $ test result
 </pre>
 <pre class="eg eg-s">
 Test Result:
-[TEST NAME]
+[Test Name]
 TestName
 
-[DESCRIPTION]
+[Description]
 Description
 
-[RESULTS]
+[Result]
 ---------
-[ERR] Test01
+[Error] Test01
  # Comment
-         [NG] Got=[object Object] == Exp=1
- text    [NG] Got=1,2,3 == Exp=2
- result1 [OK] ok test
- result2 [NG] ng test
- result3 [ERR] err test
- result4 [NT] nt test
+         [Fail] Got=[object Object] == Exp=1
+ text    [Fail] Got=1,2,3 == Exp=2
+ result1 [Pass] remark1
+ result2 [Fail] remark2
+ result3 [Error] remark3
+ result4 [NotTested] remark4
 
-[SUMMARY]
-OK:0/1 NG:0 ERR:1 NT:0 (OK:1/6 NG:3 ERR:1 NT:1)
+[Summary]
+Pass:0/1 Fail:0 Error:1 NotTested:0 (Pass:1/6 Fail:3 Error:1 NotTested:1)
 -----
-[ERR]
+[Error]
 </pre>
     </td>
   </tr>

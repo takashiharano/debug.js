@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505111829';
+  this.v = '202505112215';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17250,7 +17250,7 @@ DebugJS.point.setProp = function(prop, val, echo) {
 DebugJS.point.verify = function(prop, method, exp, label) {
   var ptr = DebugJS.point.getPtr();
   var test = DebugJS.test;
-  var st = test.STATUS_ERR;
+  var st = test.ST_ERR;
   var info;
   var errPfix = 'Verify error: ';
   if (prop == undefined) {
@@ -18070,14 +18070,14 @@ DebugJS.keyPress.end = function() {
 };
 
 DebugJS.test = {
-  STATUS_OK: 'OK',
-  STATUS_NG: 'NG',
-  STATUS_ERR: 'ERR',
-  STATUS_NT: 'NT',
-  COLOR_OK: '#0f0',
-  COLOR_NG: '#f66',
+  ST_PASS: 'Pass',
+  ST_FAIL: 'Fail',
+  ST_ERR: 'Error',
+  ST_NT: 'NotTested',
+  COLOR_PASS: '#0f0',
+  COLOR_FAIL: '#f66',
   COLOR_ERR: '#fa0',
-  STATUS_NT_COLOR: '#fff',
+  COLOR_NT: '#eee',
   data: {}
 };
 DebugJS.test.initData = function() {
@@ -18089,17 +18089,17 @@ DebugJS.test.initData = function() {
   data.endTime = 0;
   data.seq = 0;
   data.executingTestId = '';
-  data.lastRslt = DebugJS.test.STATUS_NT;
-  data.ttlRslt = DebugJS.test.STATUS_NT;
-  data.cnt = {ok: 0, ng: 0, err: 0, nt: 0};
+  data.lastRslt = DebugJS.test.ST_NT;
+  data.ttlRslt = DebugJS.test.ST_NT;
+  data.cnt = {pass: 0, fail: 0, err: 0, nt: 0};
   data.results = {};
 };
 DebugJS.test.initData();
 DebugJS.test.init = function(name) {
   var test = DebugJS.test;
   test.initData();
-  DebugJS.ctx.CMDVALS['%TEST_TOTAL_RESULT%'] = test.STATUS_NT;
-  DebugJS.ctx.CMDVALS['%TEST_LAST_RESULT%'] = test.STATUS_NT;
+  DebugJS.ctx.CMDVALS['%TEST_TOTAL_RESULT%'] = test.ST_NT;
+  DebugJS.ctx.CMDVALS['%TEST_LAST_RESULT%'] = test.ST_NT;
   var data = test.data;
   data.name = ((name == undefined) ? '' : name);
   data.running = true;
@@ -18130,13 +18130,13 @@ DebugJS.test.end = function() {
 DebugJS.test.setResult = function(st, label, info) {
   var test = DebugJS.test;
   switch (st) {
-    case test.STATUS_OK:
-    case test.STATUS_NG:
-    case test.STATUS_ERR:
-    case test.STATUS_NT:
+    case test.ST_PASS:
+    case test.ST_FAIL:
+    case test.ST_ERR:
+    case test.ST_NT:
       break;
     default:
-      DebugJS._log.e('Test status must be OK|NG|ERR|NT: ' + st);
+      DebugJS._log.e('Invalid status: ' + st + ' / Test status must be Pass|Fail|Error|NotTested');
       return;
   }
   test.addResult(st, label, null, null, null, info);
@@ -18146,16 +18146,16 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
   var data = test.data;
   var lm = DebugJS.ctx.props.testvallimit;
   switch (st) {
-    case test.STATUS_OK:
-      data.cnt.ok++;
+    case test.ST_PASS:
+      data.cnt.pass++;
       break;
-    case test.STATUS_NG:
-      data.cnt.ng++;
+    case test.ST_FAIL:
+      data.cnt.fail++;
       break;
-    case test.STATUS_ERR:
+    case test.ST_ERR:
       data.cnt.err++;
       break;
-    case test.STATUS_NT:
+    case test.ST_NT:
       data.cnt.nt++;
   }
   test.setRsltStatus(st);
@@ -18182,13 +18182,13 @@ DebugJS.test.setRsltStatus = function(st) {
   var test = DebugJS.test;
   var data = test.data;
   switch (st) {
-    case test.STATUS_NT:
+    case test.ST_NT:
       return;
-    case test.STATUS_OK:
-      if (data.ttlRslt != test.STATUS_NT) return;
+    case test.ST_PASS:
+      if (data.ttlRslt != test.ST_NT) return;
       break;
-    case test.STATUS_NG:
-      if (data.ttlRslt == test.STATUS_ERR) return;
+    case test.ST_FAIL:
+      if (data.ttlRslt == test.ST_ERR) return;
   }
   data.ttlRslt = st;
   DebugJS.ctx.CMDVALS['%TEST_TOTAL_RESULT%'] = st;
@@ -18227,15 +18227,15 @@ DebugJS.test.setCmnt = function(c) {
 };
 DebugJS.test.chkResult = function(results) {
   var test = DebugJS.test;
-  var r = test.STATUS_NT;
+  var r = test.ST_NT;
   for (var i = 0; i < results.length; i++) {
     var st = results[i].status;
-    if (st == test.STATUS_ERR) {
-      return test.STATUS_ERR;
-    } else if (st == test.STATUS_NG) {
-      r = test.STATUS_NG;
-    } else if ((st == test.STATUS_OK) && (r == test.STATUS_NT)) {
-      r = test.STATUS_OK;
+    if (st == test.ST_ERR) {
+      return test.ST_ERR;
+    } else if (st == test.ST_FAIL) {
+      r = test.ST_FAIL;
+    } else if ((st == test.ST_PASS) && (r == test.ST_NT)) {
+      r = test.ST_PASS;
     }
   }
   return r;
@@ -18249,13 +18249,13 @@ DebugJS.test.getStyledStStr = function(st) {
   var test = DebugJS.test;
   var c;
   switch (st) {
-    case test.STATUS_OK:
-      c = test.COLOR_OK;
+    case test.ST_PASS:
+      c = test.COLOR_PASS;
       break;
-    case test.STATUS_NG:
-      c = test.COLOR_NG;
+    case test.ST_FAIL:
+      c = test.COLOR_FAIL;
       break;
-    case test.STATUS_ERR:
+    case test.ST_ERR:
       c = test.COLOR_ERR;
       break;
     default:
@@ -18288,31 +18288,25 @@ DebugJS.test.getStyledInfoStr = function(result) {
 DebugJS.test.getCountStr = function(cnt) {
   var test = DebugJS.test;
   var total = test.countTotal(cnt);
-  return '<span style="color:' + test.COLOR_OK + '">OK</span>:' + cnt.ok + '/' + total + ' <span style="color:' + test.COLOR_NG + '">NG</span>:' + cnt.ng + ' <span style="color:' + test.COLOR_ERR + '">ERR</span>:' + cnt.err + ' <span style="color:' + test.COLOR_NT + '">NT</span>:' + cnt.nt;
+  return '<span style="color:' + test.COLOR_PASS + '">Pass</span>:' + cnt.pass + '/' + total + ' <span style="color:' + test.COLOR_FAIL + '">Fail</span>:' + cnt.fail + ' <span style="color:' + test.COLOR_ERR + '">Error</span>:' + cnt.err + ' <span style="color:' + test.COLOR_NT + '">NotTested</span>:' + cnt.nt;
 };
 DebugJS.test.getSumCount = function() {
   var test = DebugJS.test;
-  var cnt = {ok: 0, ng: 0, err: 0, nt: 0};
+  var cnt = {pass: 0, fail: 0, err: 0, nt: 0};
+  var keys = {};
+  keys[test.ST_PASS] = 'pass';
+  keys[test.ST_FAIL] = 'fail';
+  keys[test.ST_ERR] = 'err';
+  keys[test.ST_NT] = 'nt';
   for (var id in test.data.results) {
     var st = test.chkResult(test.data.results[id].results);
-    switch (st) {
-      case test.STATUS_OK:
-        cnt.ok++;
-        break;
-      case test.STATUS_NG:
-        cnt.ng++;
-        break;
-      case test.STATUS_ERR:
-        cnt.err++;
-        break;
-      case test.STATUS_NT:
-        cnt.nt++;
-    }
+    var k = keys[st];
+    if (k) cnt[k]++;
   }
   return cnt;
 };
 DebugJS.test.countTotal = function(cnt) {
-  return (cnt.ok + cnt.ng + cnt.err + cnt.nt);
+  return (cnt.pass + cnt.fail + cnt.err + cnt.nt);
 };
 DebugJS.test.result = function() {
   var test = DebugJS.test;
@@ -18321,15 +18315,15 @@ DebugJS.test.result = function() {
   var ttl = test.getTotalResult();
   var cnt = test.getSumCount();
   var s = 'Test Result:\n';
-  if (nm != '') s += '[TEST NAME]\n' + nm + '\n\n';
-  if (data.desc.length > 0) s += '[DESCRIPTION]\n';
+  if (nm != '') s += '[Test Name]\n' + nm + '\n\n';
+  if (data.desc.length > 0) s += '[Description]\n';
   for (var i = 0; i < data.desc.length; i++) {
     s += data.desc[i] + '\n';
   }
   if (data.desc.length > 0) s += '\n';
-  if (test.countTotal(cnt) > 0) s += '[RESULTS]\n---------\n';
+  if (test.countTotal(cnt) > 0) s += '[Results]\n---------\n';
   s += test.getDetails(data.results);
-  s += '[SUMMARY]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n';
+  s += '[Summary]\n' + test.getCountStr(cnt) + ' (' + test.getCountStr(data.cnt) + ')\n';
   s += DebugJS.repeatCh('-', ttl.length + 2) + '\n' + test.getStyledStStr(ttl);
   return s;
 };
@@ -18374,7 +18368,7 @@ DebugJS.test.getResult = function(j) {
 DebugJS.test.verify = function(got, method, exp, reqEval, label) {
   var r;
   var test = DebugJS.test;
-  var status = test.STATUS_ERR;
+  var status = test.ST_ERR;
   var info = '';
   try {
     if (method != 'regexp') {
@@ -18388,9 +18382,9 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
       got = got.replace(/\r?\n/g, '\n');
     }
     if (method == '==') {
-      status = ((got == exp) ? test.STATUS_OK : test.STATUS_NG);
+      status = ((got == exp) ? test.ST_PASS : test.ST_FAIL);
     } else if (method == '!=') {
-      status = ((got != exp) ? test.STATUS_OK : test.STATUS_NG);
+      status = ((got != exp) ? test.ST_PASS : test.ST_FAIL);
     } else if ((method == 'regexp') ||
         (method == '<') || (method == '<=') ||
         (method == '>') || (method == '>=')) {
@@ -18411,7 +18405,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
         test.onVrfyAftr(status);
         return status;
       }
-      status = (r ? test.STATUS_OK : test.STATUS_NG);
+      status = (r ? test.ST_PASS : test.ST_FAIL);
     } else {
       if (method == undefined) {
         DebugJS.printUsage('test|point verify [-label:text] got ==|!=|<|>|<=|>=|regexp exp');
@@ -18434,7 +18428,7 @@ DebugJS.test.verify = function(got, method, exp, reqEval, label) {
 };
 DebugJS.test.onVrfyAftr = function(st) {
   if (DebugJS.bat.isRunning() && DebugJS.bat.hasBatStopCond('test')) {
-    if (st != DebugJS.test.STATUS_OK) {
+    if (st != DebugJS.test.ST_PASS) {
       DebugJS.bat.ctrl.stopReq = true;
     }
   }
