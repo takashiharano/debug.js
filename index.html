@@ -5780,8 +5780,8 @@ to close the stopwatch.
       verify: Evaluate a value<br>
       count: Displays the test count.<br>
       result: Displays the test result.<br>
-      last: Last result of test/point verify command. (Pass / Fail / Error / NotTested)<br>
-      status: Displays the total test result. (Pass / Fail / Error / NotTested)<br>
+      last: Last result of test/point verify command. (Pass / Fail / Error / Skip)<br>
+      status: Displays the total test result. (Pass / Fail / Error / Skip)<br>
       end: Finalize the test execution. (The running status will be set to false and finished time will be set)<br><br>
 
 <pre class="eg">
@@ -5801,7 +5801,7 @@ $ test verify -label "text" b == 2
 $ test set result Pass -label "result1" -info "remark1"
 $ test set result Fail -label "result2" -info "remark2"
 $ test set result Error -label "result3" -info "remark3"
-$ test set result NotTested -label "result4" -info "remark4"
+$ test set result Skip -label "result4" -info "remark4"
 
 $ test set seq 10 <span class="annotation">Explicitly set number for "%SEQ%".</span>
 
@@ -5827,10 +5827,10 @@ Description
  result1 [Pass] remark1
  result2 [Fail] remark2
  result3 [Error] remark3
- result4 [NotTested] remark4
+ result4 [Skip] remark4
 
 [Summary]
-Pass:0/1 Fail:0 Error:1 NotTested:0 (Pass:1/6 Fail:3 Error:1 NotTested:1)
+Pass:0/1 Fail:0 Error:1 Skip:0 (Pass:1/6 Fail:3 Error:1 Skip:1)
 -----
 [Error]
 </pre>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505112215';
+  this.v = '202505120229';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18073,11 +18073,11 @@ DebugJS.test = {
   ST_PASS: 'Pass',
   ST_FAIL: 'Fail',
   ST_ERR: 'Error',
-  ST_NT: 'NotTested',
+  ST_SKIP: 'Skip',
   COLOR_PASS: '#0f0',
-  COLOR_FAIL: '#f66',
+  COLOR_FAIL: '#f88',
   COLOR_ERR: '#fa0',
-  COLOR_NT: '#eee',
+  COLOR_SKIP: '#aef',
   data: {}
 };
 DebugJS.test.initData = function() {
@@ -18089,17 +18089,17 @@ DebugJS.test.initData = function() {
   data.endTime = 0;
   data.seq = 0;
   data.executingTestId = '';
-  data.lastRslt = DebugJS.test.ST_NT;
-  data.ttlRslt = DebugJS.test.ST_NT;
-  data.cnt = {pass: 0, fail: 0, err: 0, nt: 0};
+  data.lastRslt = DebugJS.test.ST_SKIP;
+  data.ttlRslt = DebugJS.test.ST_SKIP;
+  data.cnt = {pass: 0, fail: 0, err: 0, skip: 0};
   data.results = {};
 };
 DebugJS.test.initData();
 DebugJS.test.init = function(name) {
   var test = DebugJS.test;
   test.initData();
-  DebugJS.ctx.CMDVALS['%TEST_TOTAL_RESULT%'] = test.ST_NT;
-  DebugJS.ctx.CMDVALS['%TEST_LAST_RESULT%'] = test.ST_NT;
+  DebugJS.ctx.CMDVALS['%TEST_TOTAL_RESULT%'] = test.ST_SKIP;
+  DebugJS.ctx.CMDVALS['%TEST_LAST_RESULT%'] = test.ST_SKIP;
   var data = test.data;
   data.name = ((name == undefined) ? '' : name);
   data.running = true;
@@ -18133,10 +18133,10 @@ DebugJS.test.setResult = function(st, label, info) {
     case test.ST_PASS:
     case test.ST_FAIL:
     case test.ST_ERR:
-    case test.ST_NT:
+    case test.ST_SKIP:
       break;
     default:
-      DebugJS._log.e('Invalid status: ' + st + ' / Test status must be Pass|Fail|Error|NotTested');
+      DebugJS._log.e('Invalid status: ' + st + ' / Test status must be Pass|Fail|Error|Skip');
       return;
   }
   test.addResult(st, label, null, null, null, info);
@@ -18155,8 +18155,8 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
     case test.ST_ERR:
       data.cnt.err++;
       break;
-    case test.ST_NT:
-      data.cnt.nt++;
+    case test.ST_SKIP:
+      data.cnt.skip++;
   }
   test.setRsltStatus(st);
   test.setLastResult(st);
@@ -18182,10 +18182,10 @@ DebugJS.test.setRsltStatus = function(st) {
   var test = DebugJS.test;
   var data = test.data;
   switch (st) {
-    case test.ST_NT:
+    case test.ST_SKIP:
       return;
     case test.ST_PASS:
-      if (data.ttlRslt != test.ST_NT) return;
+      if (data.ttlRslt != test.ST_SKIP) return;
       break;
     case test.ST_FAIL:
       if (data.ttlRslt == test.ST_ERR) return;
@@ -18227,14 +18227,14 @@ DebugJS.test.setCmnt = function(c) {
 };
 DebugJS.test.chkResult = function(results) {
   var test = DebugJS.test;
-  var r = test.ST_NT;
+  var r = test.ST_SKIP;
   for (var i = 0; i < results.length; i++) {
     var st = results[i].status;
     if (st == test.ST_ERR) {
       return test.ST_ERR;
     } else if (st == test.ST_FAIL) {
       r = test.ST_FAIL;
-    } else if ((st == test.ST_PASS) && (r == test.ST_NT)) {
+    } else if ((st == test.ST_PASS) && (r == test.ST_SKIP)) {
       r = test.ST_PASS;
     }
   }
@@ -18259,7 +18259,7 @@ DebugJS.test.getStyledStStr = function(st) {
       c = test.COLOR_ERR;
       break;
     default:
-      c = test.COLOR_NT;
+      c = test.COLOR_SKIP;
   }
   return '[<span style="color:' + c + '">' + st + '</span>]';
 };
@@ -18288,16 +18288,16 @@ DebugJS.test.getStyledInfoStr = function(result) {
 DebugJS.test.getCountStr = function(cnt) {
   var test = DebugJS.test;
   var total = test.countTotal(cnt);
-  return '<span style="color:' + test.COLOR_PASS + '">Pass</span>:' + cnt.pass + '/' + total + ' <span style="color:' + test.COLOR_FAIL + '">Fail</span>:' + cnt.fail + ' <span style="color:' + test.COLOR_ERR + '">Error</span>:' + cnt.err + ' <span style="color:' + test.COLOR_NT + '">NotTested</span>:' + cnt.nt;
+  return '<span style="color:' + test.COLOR_PASS + '">Pass</span>:' + cnt.pass + '/' + total + ' <span style="color:' + test.COLOR_FAIL + '">Fail</span>:' + cnt.fail + ' <span style="color:' + test.COLOR_ERR + '">Error</span>:' + cnt.err + ' <span style="color:' + test.COLOR_SKIP + '">Skip</span>:' + cnt.skip;
 };
 DebugJS.test.getSumCount = function() {
   var test = DebugJS.test;
-  var cnt = {pass: 0, fail: 0, err: 0, nt: 0};
+  var cnt = {pass: 0, fail: 0, err: 0, skip: 0};
   var keys = {};
   keys[test.ST_PASS] = 'pass';
   keys[test.ST_FAIL] = 'fail';
   keys[test.ST_ERR] = 'err';
-  keys[test.ST_NT] = 'nt';
+  keys[test.ST_SKIP] = 'skip';
   for (var id in test.data.results) {
     var st = test.chkResult(test.data.results[id].results);
     var k = keys[st];
@@ -18306,7 +18306,7 @@ DebugJS.test.getSumCount = function() {
   return cnt;
 };
 DebugJS.test.countTotal = function(cnt) {
-  return (cnt.pass + cnt.fail + cnt.err + cnt.nt);
+  return (cnt.pass + cnt.fail + cnt.err + cnt.skip);
 };
 DebugJS.test.result = function() {
   var test = DebugJS.test;
