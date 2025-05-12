@@ -2820,10 +2820,10 @@ test end</pre>dbg.test.getResult(true);
  "endTime": 1545229050434,
  "totalResult": "ERR",
  "count": {
-  "ok": 2,
-  "ng": 1,
-  "err": 1,
-  "nt": 0
+  "pass": 2,
+  "fail": 1,
+  "error": 1,
+  "skip": 0
  },
  "results": {
   "Test01": {
@@ -2831,7 +2831,7 @@ test end</pre>dbg.test.getResult(true);
     "Comment1-1",
     "Comment1-2"
    ],
-   "results": [
+   "details": [
     {
      "label": "",
      "status": "Pass",
@@ -2854,7 +2854,7 @@ test end</pre>dbg.test.getResult(true);
    "comment": [
     "Comment2"
    ],
-   "results": [
+   "details": [
     {
      "label": "label2",
      "status": "Pass",
@@ -2867,7 +2867,7 @@ test end</pre>dbg.test.getResult(true);
   },
   "Test03": {
    "comment": [],
-   "results": [
+   "details": [
     {
      "label": "label3",
      "status": "Error",
@@ -5833,6 +5833,11 @@ Description
 Pass:0/1 Fail:0 Error:1 Skip:0 (Pass:1/6 Fail:3 Error:1 Skip:1)
 -----
 [Error]
+</pre>
+<pre class="eg">
+
+$ test result -json
+Returns the result object as JSON format.
 </pre>
     </td>
   </tr>
