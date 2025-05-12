@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505120229';
+  this.v = '2025052153';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18176,7 +18176,7 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
   var rslt = {
     label: label, status: st, method: method, exp: exp, got: got, info: info
   };
-  data.results[id].results.push(rslt);
+  data.results[id].details.push(rslt);
 };
 DebugJS.test.setRsltStatus = function(st) {
   var test = DebugJS.test;
@@ -18210,7 +18210,7 @@ DebugJS.test.setId = function(id) {
   if (id.match(/%SEQ%/)) id = id.replace(/%SEQ%/, DebugJS.test.nextSeq());
   var data = DebugJS.test.data;
   if (!data.results[id]) {
-    data.results[id] = {comment: [], results: []};
+    data.results[id] = {comment: [], details: []};
   }
   data.executingTestId = id;
 };
@@ -18225,11 +18225,11 @@ DebugJS.test.setCmnt = function(c) {
   DebugJS.test.data.results[DebugJS.test.data.executingTestId].comment.push(c);
   DebugJS._log('# ' + c);
 };
-DebugJS.test.chkResult = function(results) {
+DebugJS.test.chkResult = function(a) {
   var test = DebugJS.test;
   var r = test.ST_SKIP;
-  for (var i = 0; i < results.length; i++) {
-    var st = results[i].status;
+  for (var i = 0; i < a.length; i++) {
+    var st = a[i].status;
     if (st == test.ST_ERR) {
       return test.ST_ERR;
     } else if (st == test.ST_FAIL) {
@@ -18299,7 +18299,7 @@ DebugJS.test.getSumCount = function() {
   keys[test.ST_ERR] = 'err';
   keys[test.ST_SKIP] = 'skip';
   for (var id in test.data.results) {
-    var st = test.chkResult(test.data.results[id].results);
+    var st = test.chkResult(test.data.results[id].details);
     var k = keys[st];
     if (k) cnt[k]++;
   }
@@ -18332,24 +18332,25 @@ DebugJS.test.getDetails = function(results) {
   var M = 16;
   var n = test.countLongestLabel();
   if (n > M) n = M;
-  var details = '';
+  var s = '';
   for (var id in results) {
+    var rslt = results[id];
     var testId = (id == '' ? '<span style="color:#ccc">&lt;No Test ID&gt;</span>' : id);
-    var st = test.chkResult(results[id].results);
+    var st = test.chkResult(rslt.details);
     var rs = test.getStyledStStr(st);
-    details += rs + ' ' + testId + '\n';
-    for (var i = 0; i < results[id].comment.length; i++) {
-      var comment = results[id].comment[i];
-      details += ' # ' + comment + '\n';
+    s += rs + ' ' + testId + '\n';
+    for (var i = 0; i < rslt.comment.length; i++) {
+      var comment = rslt.comment[i];
+      s += ' # ' + comment + '\n';
     }
-    for (i = 0; i < results[id].results.length; i++) {
-      var result = results[id].results[i];
-      var info = test.getStyledInfoStr(result);
-      details += ' ' + DebugJS.rpad(result.label, ' ', n, 1) + ' ' + test.getStyledResultStr(result.status, info) + '\n';
+    for (i = 0; i < rslt.details.length; i++) {
+      var d = rslt.details[i];
+      var info = test.getStyledInfoStr(d);
+      s += ' ' + DebugJS.rpad(d.label, ' ', n, 1) + ' ' + test.getStyledResultStr(d.status, info) + '\n';
     }
-    details += '\n';
+    s += '\n';
   }
-  return details;
+  return s;
 };
 DebugJS.test.getResult = function(j) {
   var data = DebugJS.test.data;
@@ -18437,8 +18438,8 @@ DebugJS.test.countLongestLabel = function() {
   var results = DebugJS.test.data.results;
   var l = 0;
   for (var id in results) {
-    for (var i = 0; i < results[id].results.length; i++) {
-      var r = results[id].results[i];
+    for (var i = 0; i < results[id].details.length; i++) {
+      var r = results[id].details[i];
       if (r.label.length > l) l = r.label.length;
     }
   }
