@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505122255';
+  this.v = '202505132254';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -362,7 +362,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'pangram', fn: this.cmdPangram, desc: 'Displays a pangram'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
-    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|hint|cursor src [w] [h]|ch [n]'},
+    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|msg|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-tbl "ABC..."]'},
@@ -1048,7 +1048,7 @@ DebugJS.prototype = {
       'background': 'transparent !important',
       'color': '#fff !important'
     };
-    styles['.dbg-hint'] = {
+    styles['.dbg-ptmsg'] = {
       'position': 'fixed !important',
       'display': 'inline-block !important',
       'max-width': 'calc(100vw - 35px) !important',
@@ -8825,8 +8825,8 @@ DebugJS.prototype = {
       point.show();
     } else if (op == 'hide') {
       point.hide();
-    } else if (op == 'hint') {
-      ctx._cmdPointHint(ctx, arg, point, args[1]);
+    } else if (op == 'msg') {
+      ctx._cmdPointMsg(ctx, arg, point, args[1]);
     } else if (op == 'drag') {
       point.drag(DebugJS.getArgsFrom(arg, 1));
     } else if ((op == 'click') || (op == 'cclick') || (op == 'rclick') || (op == 'dblclick')) {
@@ -8967,27 +8967,25 @@ DebugJS.prototype = {
     }
     return {x: x, y: y};
   },
-  _cmdPointHint: function(ctx, arg, point, op) {
-    var a = DebugJS.getArgsFrom(arg, 2);
-    if (op == 'msg') {
-      if (!a) {
-        DebugJS.printUsage('point hint msg "str"');
-      } else {
-        point.hint(a, 0, 0);
-      }
-    } else if (op == 'msgseq') {
-      ctx._cmdPointHintMsgSeq(ctx, arg, point);
+  _cmdPointMsg: function(ctx, arg, point, op) {
+    if (op == 'seq') {
+      ctx._cmdPointMsgSeq(ctx, arg, point);
     } else if (op == 'hide') {
-      point.hint.hide();
+      point.msg.hide();
     } else if (op == 'show') {
-      point.hint.show();
+      point.msg.show();
     } else if (op == 'clear') {
-      point.hint.clear();
+      point.msg.clear();
     } else {
-      DebugJS.printUsage('point hint msg|msgseq "str"|show|hide|clear');
+      var a = DebugJS.getArgsFrom(arg, 1);
+      if (a) {
+        point.msg(a, 0, 0);
+      } else {
+        DebugJS.printUsage('point msg "str"');
+      }
     }
   },
-  _cmdPointHintMsgSeq: function(ctx, arg, point) {
+  _cmdPointMsgSeq: function(ctx, arg, point) {
     var a = DebugJS.splitCmdLine(arg);
     var m = a[2];
     var speed = DebugJS.getOptVal(arg, 'speed');
@@ -8996,10 +8994,10 @@ DebugJS.prototype = {
     var end = DebugJS.getOptVal(arg, 'end');
     if (speed == null) speed = ctx.props.textspeed;
     if (step == null) step = ctx.props.textstep;
-    if (!m) {
-      DebugJS.printUsage('point hint msgseq "str"');
+    if (m) {
+      point.msg(m, speed, step, start, end);
     } else {
-      point.hint(m, speed, step, start, end);
+      DebugJS.printUsage('point msg seq "str"');
     }
   },
   _cmdPointCursor: function(args, tbl) {
@@ -9487,7 +9485,7 @@ DebugJS.prototype = {
   },
   setPropPointMsgSizeCb: function(ctx, v) {
     ctx.props.pointmsgsize = v;
-    var area = DebugJS.point.hint.getArea();
+    var area = DebugJS.point.msg.getArea();
     var el = area.pre;
     if (el) DebugJS.setStyle(el, 'font-size', v);
   },
@@ -16868,7 +16866,7 @@ DebugJS.point = function(x, y) {
   ptr.el.style.top = ptr.y + 'px';
   ptr.el.style.left = ptr.x + 'px';
   document.body.appendChild(ptr.el);
-  point.hint.move();
+  point.msg.move();
   if (DebugJS.ctx.props.mousemovesim == 'true') {
     var e = point.createMouseEvt('mousemove', 0);
     var el = point.getElementFromCurrentPos();
@@ -16932,7 +16930,7 @@ DebugJS.point._init = function() {
   var point = DebugJS.point;
   point(0, 0);
   point.cursor();
-  point.hint.clear();
+  point.msg.clear();
   point.hide();
 };
 DebugJS.point.show = function() {
@@ -16943,13 +16941,13 @@ DebugJS.point.show = function() {
   } else {
     point.createPtr();
   }
-  var area = point.hint.getArea();
-  if (area.visible) point.hint.show();
+  var area = point.msg.getArea();
+  if (area.visible) point.msg.show();
 };
 DebugJS.point.hide = function() {
   var ptr = DebugJS.point.getPtr();
   if (ptr.el && ptr.el.parentNode) document.body.removeChild(ptr.el);
-  DebugJS.point.hint.hide(true);
+  DebugJS.point.msg.hide(true);
 };
 DebugJS.point.cursor = function(src, w, h) {
   var point = DebugJS.point;
@@ -17199,12 +17197,12 @@ DebugJS.point.getElementFromCurrentPos = function() {
   if (!ptr.el || !ptr.el.parentNode) {
     return null;
   }
-  var area = DebugJS.point.hint.getArea();
-  var hint = area.el;
-  var hintFlg = false;
-  if (hint && (hint.parentNode)) {
-    hintFlg = true;
-    ctx.bodyEl.removeChild(hint);
+  var area = DebugJS.point.msg.getArea();
+  var msg = area.el;
+  var msgFlg = false;
+  if (msg && (msg.parentNode)) {
+    msgFlg = true;
+    ctx.bodyEl.removeChild(msg);
   }
   ctx.bodyEl.removeChild(ptr.el);
   if (ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) {
@@ -17222,8 +17220,8 @@ DebugJS.point.getElementFromCurrentPos = function() {
     }
   }
   ctx.bodyEl.appendChild(ptr.el);
-  if (hintFlg) {
-    ctx.bodyEl.appendChild(hint);
+  if (msgFlg) {
+    ctx.bodyEl.appendChild(msg);
   }
   return el;
 };
@@ -17541,36 +17539,36 @@ DebugJS.point.moveToElement = function(ps, speed, step, alignX, alignY) {
     if (p) DebugJS.point.move(p.x, p.y, speed, step);
   }
 };
-DebugJS.point.hint = function(msg, speed, step, start, end) {
-  var hint = DebugJS.point.hint;
-  var area = hint.getArea();
-  if (!area.el) hint.createArea();
+DebugJS.point.msg = function(txt, speed, step, start, end) {
+  var msg = DebugJS.point.msg;
+  var area = msg.getArea();
+  if (!area.el) msg.createArea();
   document.body.appendChild(area.el);
   try {
-    var m = eval(msg) + '';
+    var m = eval(txt) + '';
   } catch (e) {m = e + '';}
   if (speed && step) {
-    hint.msgseq(msg, m, speed, step, start, end);
+    msg.seq(txt, m, speed, step, start, end);
   } else {
-    DebugJS.point.hint.setMsg(DebugJS.point.hint.replaceMsg(m));
+    msg.setTxt(msg.replaceMsg(m));
   }
-  area.hasMsg = true;
-  hint.show();
+  area.hasTxt = true;
+  msg.show();
 };
-DebugJS.point.hint.areas = [];
-DebugJS.point.hint.getArea = function() {
-  var areas = DebugJS.point.hint.areas;
+DebugJS.point.msg.areas = [];
+DebugJS.point.msg.getArea = function() {
+  var areas = DebugJS.point.msg.areas;
   var ch = DebugJS.point.ch;
   if (!areas[ch]) {
-    areas[ch] = {el: null, pre: null, visible: false, hasMsg: false};
+    areas[ch] = {el: null, pre: null, visible: false, hasTxt: false};
   }
   return areas[ch];
 };
-DebugJS.point.hint.createArea = function() {
+DebugJS.point.msg.createArea = function() {
   var ctx = DebugJS.ctx;
-  var area = DebugJS.point.hint.getArea();
+  var area = DebugJS.point.msg.getArea();
   var el = document.createElement('div');
-  el.className = 'dbg-hint';
+  el.className = 'dbg-ptmsg';
   var style = {
     'width': 'auto',
     'height': 'auto',
@@ -17585,31 +17583,31 @@ DebugJS.point.hint.createArea = function() {
   document.body.appendChild(el);
   area.el = el;
 };
-DebugJS.point.hint.setMsg = function(m) {
-  var area = DebugJS.point.hint.getArea();
+DebugJS.point.msg.setTxt = function(m) {
+  var area = DebugJS.point.msg.getArea();
   var el = area.pre;
   DebugJS.setStyle(el, 'width', 'auto');
   DebugJS.setStyle(el, 'height', 'auto');
   el.innerHTML = m;
 };
-DebugJS.point.hint.msgseq = function(msg, m, speed, step, start, end) {
-  var area = DebugJS.point.hint.getArea();
+DebugJS.point.msg.seq = function(txt, m, speed, step, start, end) {
+  var area = DebugJS.point.msg.getArea();
   var el = area.pre;
-  DebugJS.point.hint.setMsg(m);
+  DebugJS.point.msg.setTxt(m);
   var s = window.getComputedStyle(el);
   DebugJS.setStyle(el, 'width', s.width);
   DebugJS.setStyle(el, 'height', s.height);
   el.innerHTML = '';
-  DebugJS.setText(el, msg, speed, step, start, end);
+  DebugJS.setText(el, txt, speed, step, start, end);
 };
-DebugJS.point.hint.replaceMsg = function(s) {
+DebugJS.point.msg.replaceMsg = function(s) {
   s = s.replace(/\\n/g, '\n');
-  s = DebugJS.point.hint.rplcBtn(s);
+  s = DebugJS.point.msg.rplcBtn(s);
   if (s.match(/!TEST_COUNT!/)) s = s.replace(/!TEST_COUNT!/g, DebugJS.test.getCountStr(DebugJS.test.getSumCount()));
   if (s.match(/!TEST_RESULT!/)) s = s.replace(/!TEST_RESULT!/g, DebugJS.test.result());
   return s;
 };
-DebugJS.point.hint.rplcBtn = function(s) {
+DebugJS.point.msg.rplcBtn = function(s) {
   var PREFIX = '<span class="dbg-btn dbg-nomove" onclick="DebugJS.';
   var SUFFIX = '</span>';
   var d = {RESUME: 'ctx.batResume', STOP: 'bat.cancel', CLOSE: 'point.hide'};
@@ -17623,9 +17621,9 @@ DebugJS.point.hint.rplcBtn = function(s) {
   return s;
 };
 
-DebugJS.point.hint.move = function() {
+DebugJS.point.msg.move = function() {
   var ptr = DebugJS.point.getPtr();
-  var area = DebugJS.point.hint.getArea();
+  var area = DebugJS.point.msg.getArea();
   var el = area.el;
   if (!el) return;
   var clW = document.documentElement.clientWidth;
@@ -17647,30 +17645,30 @@ DebugJS.point.hint.move = function() {
   el.style.top = y + 'px';
   el.style.left = x + 'px';
 };
-DebugJS.point.hint.show = function() {
-  var hint = DebugJS.point.hint;
-  var area = hint.getArea();
-  if (!area.hasMsg) return;
+DebugJS.point.msg.show = function() {
+  var msg = DebugJS.point.msg;
+  var area = msg.getArea();
+  if (!area.hasTxt) return;
   if (!area.el) {
-    hint.createArea();
+    msg.createArea();
   } else {
     document.body.appendChild(area.el);
   }
   area.visible = true;
-  hint.move();
+  msg.move();
 };
-DebugJS.point.hint.hide = function(hold) {
-  var area = DebugJS.point.hint.getArea();
+DebugJS.point.msg.hide = function(hold) {
+  var area = DebugJS.point.msg.getArea();
   if (area.el && area.el.parentNode) document.body.removeChild(area.el);
   if (!hold) area.visible = false;
 };
-DebugJS.point.hint.clear = function() {
-  var area = DebugJS.point.hint.getArea();
+DebugJS.point.msg.clear = function() {
+  var area = DebugJS.point.msg.getArea();
   if (area.el) {
     area.pre.innerHTML = '';
-    DebugJS.point.hint.hide();
+    DebugJS.point.msg.hide();
   }
-  area.hasMsg = false;
+  area.hasTxt = false;
 };
 
 DebugJS.scrollWinTo = function(x, y, speed, step) {

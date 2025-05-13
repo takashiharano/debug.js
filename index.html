@@ -2087,15 +2087,15 @@ dbg.setCmdVal('<input type="text" id="setcmdval-name-text" class="demo-text" sty
 var commands = '
 <textarea id="bat-demo-text" class="demo-textarea2">
 point move #p1
-point hint msg "Hi!"
+point msg "Hi!"
 wait 1s
-point hint clear
+point msg clear
 :label1
 point move #p2
 point move #p4
 :label2
 point move #p3
-point hint msg "Bye!"
+point msg "Bye!"
 wait 1s
 point init
 </textarea>
@@ -2335,45 +2335,45 @@ var ret = dbg.isB64Bat('<input type="text" id="is-b64bat-txt" class="demo-text" 
   </tr>
 
   <tr>
-    <td class="name">dbg.point.hint</td>
+    <td class="name">dbg.point.msg</td>
     <td>message</td>
     <td>
       Show/Update a message at the pointer position.
 <pre class="eg">
-dbg.point.hint('<input type="text" id="point-hint-text" class="demo-text" style="width:200px;" value="Hello, World!">'); <button class="demo-button2" onclick="dbg.point.hint('document.getElementById(\'point-hint-text\').value');">DEMO</button>
+dbg.point.msg('<input type="text" id="point-msg-text" class="demo-text" style="width:200px;" value="Hello, World!">'); <button class="demo-button2" onclick="dbg.point.msg('document.getElementById(\'point-msg-text\').value');">DEMO</button>
 </pre>
     </td>
   </tr>
 
   <tr>
-    <td class="name">dbg.point.hint.show</td>
+    <td class="name">dbg.point.msg.show</td>
     <td></td>
     <td>
       Show a message at the pointer position.
 <pre class="eg">
-dbg.point.hint.show(); <button class="demo-button2" onclick="dbg.point.hint.show();">DEMO</button>
+dbg.point.msg.show(); <button class="demo-button2" onclick="dbg.point.msg.show();">DEMO</button>
 </pre>
     </td>
   </tr>
 
   <tr>
-    <td class="name">dbg.point.hint.hide</td>
+    <td class="name">dbg.point.msg.hide</td>
     <td></td>
     <td>
       Hide the message at the pointer position.
 <pre class="eg">
-dbg.point.hint.hide(); <button class="demo-button2" onclick="dbg.point.hint.hide();">DEMO</button>
+dbg.point.msg.hide(); <button class="demo-button2" onclick="dbg.point.msg.hide();">DEMO</button>
 </pre>
     </td>
   </tr>
 
   <tr>
-    <td class="name">dbg.point.hint.clear</td>
+    <td class="name">dbg.point.msg.clear</td>
     <td></td>
     <td>
       Clear the message at the pointer position.
 <pre class="eg">
-dbg.point.hint.clear(); <button class="demo-button2" onclick="dbg.point.hint.clear();">DEMO</button>
+dbg.point.msg.clear(); <button class="demo-button2" onclick="dbg.point.msg.clear();">DEMO</button>
 </pre>
     </td>
   </tr>
@@ -5357,20 +5357,20 @@ $ point drag &lt;The rest of the arguments are the same as <i>point move</i> com
 $ point event eventType -prop1 val1 -prop2 val2
 -&gt; Send a event to the pointer position
 
-$ point hint msg "hello!"
+$ point msg "hello!"
 -&gt; Show a message at the pointer position
 
-$ point hint msgseq "hello!"
-$ point hint msgseq "hello!" -speed 500<span class="annotation">(opt)</span> -step 2<span class="annotation">(opt)</span> -start 3<span class="annotation">(opt)</span> -end 5<span class="annotation">(opt)</span>
+$ point msg seq "hello!"
+$ point msg seq "hello!" -speed 500<span class="annotation">(opt)</span> -step 2<span class="annotation">(opt)</span> -start 3<span class="annotation">(opt)</span> -end 5<span class="annotation">(opt)</span>
 -&gt; Show a message at the pointer position with sequence animation.
 
-$ point hint hide
+$ point msg hide
 -&gt; Hide a message
 
-$ point hint show
+$ point msg show
 -&gt; Show a message again
 
-$ point hint clear
+$ point msg clear
 -&gt; Hide and clear a message
 
 $ point cursor data:image/png;base64,&lt;base64-encoded-image-data&gt; 20<span class="annotation">width(opt)</span> 10<span class="annotation">height(opt)</span>
@@ -7764,7 +7764,7 @@ test result
 
 point move center
 point move -250 +0
-point hint msg "<span style=\"font-size:24px;\">AUTOMATED TEST HAS BEEN COMPLETED!</span>\nTest Result: !TEST_COUNT! !RESUME!!STOP!"
+point msg "<span style=\"font-size:24px;\">AUTOMATED TEST HAS BEEN COMPLETED!</span>\nTest Result: !TEST_COUNT! !RESUME!!STOP!"
 pause -key -timeout 5s
 
 point init
