@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505132254';
+  this.v = '202505141240';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6621,17 +6621,12 @@ DebugJS.prototype = {
     },
     {lbl: 'Max/Min Len', opt: [{lbl: 'THRESHOLD'}], fn: function(s, o) {return DebugJS.minMaxLen(s, o[0]);}},
     {
-      lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'DEL', v: '0'}, {t: 'AGG', v: '1', s: 1}, {t: 'DBL', v: '2'}, {t: 'INS', v: '3'}]}, {lbl: 'POS', v: '76'}],
+      lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'INS', v: '0'}, {t: 'DEL', v: '1'}, {t: 'AGG', v: '2'}, {t: 'DBL', v: '3'}]}, {lbl: 'POS', v: '76'}],
       fn: function(s, o) {
-        var f = DebugJS.lflf2lf;
-        if (o[0] == 0) {
-          f = DebugJS.deleteLF;
-        } else if (o[0] == 2) {
-          f = DebugJS.lf2lflf;
-        } else if (o[0] == 3) {
-          return DebugJS.insertCh(s, '\n', o[1] | 0);
-        }
-        return f(s);
+        var m = o[0] | 0;
+        var fn = ['insertCh', 'deleteLF', 'lflf2lf', 'lf2lflf'];
+        var f = DebugJS[fn[m]];
+        return (m ? f(s) : f(s, '\n', o[1] | 0));
       }
     },
     {lbl: 'NUMBERING', opt: [{lbl: 'ST', v: '1'}, {lbl: 'ED'}, {lbl: 'LEN'}], fn: function(s, o) {return DebugJS.numbering(s, o[0], o[1], o[2]);}},
