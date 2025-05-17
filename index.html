@@ -5197,7 +5197,7 @@ $ point tagName
 $ point tagName index
 $ point node+[N]
 $ point node-[N]
-$ point bytext "INNER_TEXT" index
+$ point totext "INNER_TEXT" index
 $ point byattr ATTR_NAME "VALUE" index
 -&gt; Point the specified element
 
@@ -5283,7 +5283,7 @@ $ point move <i>CSS-Selector</i>
 $ point move tagName 0<span class="annotation">index</span>
 $ point move node+[N]
 $ point move node-[N]
-$ point move bytext "INNER_TEXT" 0<span class="annotation">index</span>
+$ point move totext "INNER_TEXT" 0<span class="annotation">index</span>
 $ point move byattr ATTR_NAME "VALUE" 0<span class="annotation">index</span>
 $ point move center <span class="annotation">Center of the screen</span>
 $ point move center 100
@@ -7615,7 +7615,7 @@ With a pseudo mouse pointer, the library can perform automated web page manipula
 #!BAT!
 point init
 
-point move bytext "UI Sandbox"
+point move totext "UI Sandbox"
 wait 500
 point msg seq "Hello, world!"
 wait 1s
@@ -7650,7 +7650,7 @@ wait 500
 point click
 wait 500
 
-point move bytext "r3"
+point move totext "r3"
 wait 500
 point click
 wait 500

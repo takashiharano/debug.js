@@ -8784,8 +8784,8 @@ DebugJS.prototype = {
       ctx._cmdPointMove(ctx, arg, tbl, args);
     } else if (op == 'byattr') {
       ctx._cmdPointByAttr(args, alignX, alignY);
-    } else if (op == 'bytext') {
-      ctx._cmdPointByText(args, alignX, alignY);
+    } else if (op == 'totext') {
+      ctx._cmdPointToText(args, alignX, alignY);
     } else if (op.match(/^node/)) {
       ctx._cmdPointNodeRel(ctx, point, args, alignX, alignY);
     } else if (op == 'scroll') {
@@ -8876,7 +8876,7 @@ DebugJS.prototype = {
       idx = args[4] | 0;
       try {v = eval(v);} catch (e) {DebugJS._log.e(e);return;}
       point.moveToElByAttr(attr, v, idx, speed, step, alignX, alignY);
-    } else if (tgt == 'bytext') {
+    } else if (tgt == 'totext') {
       var txt = args[2];
       idx = args[3] | 0;
       try {txt = eval(txt);} catch (e) {DebugJS._log.e(e);return;}
@@ -9037,7 +9037,7 @@ DebugJS.prototype = {
     var idx = args[3] | 0;
     DebugJS.pointByAttr(attr, v, idx, alignX, alignY);
   },
-  _cmdPointByText: function(args, alignX, alignY) {
+  _cmdPointToText: function(args, alignX, alignY) {
     var txt = args[1];
     try {txt = eval(txt);} catch (e) {DebugJS._log.e(e);return;}
     var idx = args[2] | 0;
@@ -17119,21 +17119,15 @@ DebugJS.point.clickUp = function(n) {
   DebugJS.point.mouseevt('mouseup', n, target);
   switch (n) {
     case 0:
-      if (!click.invalid) {
-        target.click();
-      }
+      if (!click.invalid) target.click();
       click.invalid = false;
       break;
     case 1:
-      if (click.tmid[0] > 0) {
-        click.invalid = true;
-      }
+      if (click.tmid[0] > 0) click.invalid = true;
       break;
     case 2:
       DebugJS.point.contextmenu(target);
-      if (click.tmid[0] > 0) {
-        click.invalid = true;
-      }
+      if (click.tmid[0] > 0) click.invalid = true;
   }
   click.target[n] = null;
   DebugJS.bat.unlock();
