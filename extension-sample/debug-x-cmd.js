@@ -16,6 +16,7 @@ extsample.cmdAbc = function(arg, tbl) {
 };
 
 extsample.CMD_TBL = [
+  {'cmd': 'date', 'fn': extsample.cmdHello, 'desc': 'extention command example1'},
   {'cmd': 'hello', 'fn': extsample.cmdHello, 'desc': 'extention command example1'},
   {'cmd': 'abc', 'fn': extsample.cmdAbc, 'desc': 'extention command example2', 'help': 'abc args...'}
 ];

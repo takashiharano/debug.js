@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505141240';
+  this.v = '202505171101';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7075,8 +7075,10 @@ DebugJS.prototype = {
     }
 
     for (i = 0; i < ctx.CMD_TBL.length; i++) {
-      if (cmd == ctx.CMD_TBL[i].cmd) {
-        return ctx.CMD_TBL[i].fn(arg, ctx.CMD_TBL[i], echo);
+      var c = ctx.CMD_TBL[i];
+      if (cmd == c.cmd) {
+        if (c.attr & DebugJS.CMD_ATTR_DISABLED) break;
+        return c.fn(arg, c, echo);
       }
     }
 
@@ -10432,14 +10434,14 @@ DebugJS.prototype = {
       p.panel = p.base;
     }
     if (p.onCreate) p.onCreate(p.panel);
-  },
-
-  existsCmd: function(cmd, tbl) {
-    for (var i = 0; i < tbl.length; i++) {
-      if (tbl[i].cmd == cmd) return true;
-    }
-    return false;
   }
+};
+
+DebugJS.getCmd = function(tbl, cmd) {
+  for (var i = 0; i < tbl.length; i++) {
+    if (tbl[i].cmd == cmd) return tbl[i];
+  }
+  return null;
 };
 
 DebugJS.addSubPanel = function(base) {
@@ -18954,9 +18956,8 @@ DebugJS.x.addCmdTbl = function(table) {
   var ctx = DebugJS.ctx;
   for (var i = 0; i < table.length; i++) {
     var c = table[i];
-    if (ctx.existsCmd(c.cmd, ctx.INT_CMD_TBL) || ctx.existsCmd(c.cmd, ctx.EXT_CMD_TBL)) {
-      c.attr |= DebugJS.CMD_ATTR_DISABLED;
-    }
+    var cmd = DebugJS.getCmd(ctx.INT_CMD_TBL, c.cmd);
+    if (cmd && (cmd.cmd == c.cmd)) cmd.attr |= DebugJS.CMD_ATTR_DISABLED;
     ctx.EXT_CMD_TBL.push(c);
   }
 };
