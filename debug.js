@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505171657';
+  this.v = '202505171934';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9974,47 +9974,10 @@ DebugJS.prototype = {
   },
 
   cmdTimeCalc: function(arg, echo) {
-    var r = null;
-    arg = DebugJS.delAllSP(arg);
-    if (!arg.match(/^\d{1,}:{1}\d{2}.*[+\-*/]\d{1,}/)) return r;
-    var byDays = false;
-    if (arg.match(/d$/i)) {
-      byDays = true;
-      arg = arg.slice(0, arg.length - 1);
-    }
-    var ops = arg.match(/[+\-*/]/g);
-    var n = ops.length;
-    var op = ops[0];
-    var opp = arg.indexOf(op);
-    var vL = arg.slice(0, opp);
-    var p = opp + 1;
-    var FNC = {'-': 'subTime', '*': 'mltTime', '/': 'divTime'};
-    for (var i = 0; i < n; i++) {
-      var nOp = ops[i + 1];
-      var nOpp = arg.indexOf(nOp, p);
-      if (nOp) {
-        var ln = nOpp - p;
-        var vR = arg.slice(p, p + ln);
-      } else {
-        vR = arg.slice(p);
-      }
-      var fn = FNC[op];
-      if (!fn) fn = 'addTime';
-      if (vR != '') {
-        r = DebugJS[fn](vL, vR);
-        if (isNaN(r)) {
-          r = 'Invalid time format';
-          DebugJS._log.e(r);
-          return r;
-        }
-      }
-      op = nOp;
-      opp = nOpp;
-      p = opp + 1;
-      vL = r;
-    }
-    r = DebugJS.fmtCalcTime(r, byDays);
-    if (echo) DebugJS._log.res(r);
+    var r;
+    try {
+      r = DebugJS._cmdTimeCalc(arg, echo);
+    } catch (e) {}
     return r;
   },
 
@@ -13139,12 +13102,17 @@ DebugJS.sumN = function(s) {
 DebugJS.sumT = function(s) {
   var a = DebugJS.txt2arr(s);
   var r = '00:00';
+  var fmtFlg = 0;
   for (var i = 0; i < a.length; i++) {
     var t = a[i].trim();
     if (!t.match(/:/)) t = DebugJS.hrs2clock(t);
-    if (t) r = DebugJS.addTime(r, t);
+    if (t) {
+      if (DebugJS.countStr(t, ':') == 2) fmtFlg |= 1;
+      if (t.match(/\./)) fmtFlg |= 2;
+      r = DebugJS.addTime(r, t);
+    }
   }
-  return DebugJS.fmtCalcTime(r);
+  return DebugJS.ms2Clock(r, fmtFlg);
 };
 DebugJS.numbering = function(s, st, ed, ln) {
   if (ed == '') ed = st;
@@ -13734,7 +13702,7 @@ DebugJS.divTime = function(t, v) {
   if (isNaN(s)) return NaN;
   return s / v;
 };
-DebugJS.fmtCalcTime = function(ms, byDays) {
+DebugJS.ms2Clock = function(ms, fmtFlg, byDays) {
   var A_DAY = 86400000;
   var s = ms < 0;
   var days = 0;
@@ -13755,7 +13723,9 @@ DebugJS.fmtCalcTime = function(ms, byDays) {
   var t = DebugJS.ms2struct(ms);
   var hh = (byDays ? t.hr : t.hh);
   if (hh < 10) hh = '0' + hh;
-  var r = (t.sign ? '-' : '') + hh + ':' + ('0' + t.mi).slice(-2) + ':' + ('0' + t.ss).slice(-2) + '.' + ('00' + t.sss).slice(-3);
+  var r = (t.sign ? '-' : '') + hh + ':' + ('0' + t.mi).slice(-2);
+  if (fmtFlg & 1) r += ':' + ('0' + t.ss).slice(-2);
+  if (fmtFlg & 2) r += '.' + ('00' + t.sss).slice(-3);
   if (days > 0) {
     r += ' (' + (s ? '-' : '+') + days + ' ' + DebugJS.plural('Day', days) + ')';
   }
@@ -13856,6 +13826,58 @@ DebugJS._cmdByte = function(v, echo) {
   if (a) s += '<span style="display:inline-block;"> ' + a + '</span>';
   if (echo) DebugJS._log.mlt(s);
   return v;
+};
+DebugJS._cmdTimeCalc = function(arg, echo) {
+  var now = DebugJS.getDateTimeString(null, '%HH:%mm');
+  var r = null;
+  arg = DebugJS.delAllSP(arg);
+  if (arg == 'now') return r;
+  var byDays = (arg.match(/now/) ? true : false);
+  arg = arg.replace(/now/g, now);
+  if (!arg.match(/^\d+:{1}\d{2}.*[+\-*/]\d+/)) return r;
+  if (arg.match(/d$/i)) {
+    byDays = true;
+    arg = arg.slice(0, arg.length - 1);
+  }
+  var ops = arg.match(/[+\-*/]/g);
+  var n = ops.length;
+  var op = ops[0];
+  var opp = arg.indexOf(op);
+  var vL = arg.slice(0, opp);
+  var p = opp + 1;
+  var FNC = {'-': 'subTime', '*': 'mltTime', '/': 'divTime'};
+  var fmtFlg = 0;
+  if (DebugJS.countStr(vL, ':') == 2) fmtFlg |= 1;
+  if (vL.match(/\./)) fmtFlg |= 2;
+  for (var i = 0; i < n; i++) {
+    var nOp = ops[i + 1];
+    var nOpp = arg.indexOf(nOp, p);
+    if (nOp) {
+      var ln = nOpp - p;
+      var vR = arg.slice(p, p + ln);
+    } else {
+      vR = arg.slice(p);
+    }
+    if (DebugJS.countStr(vR, ':') == 2) fmtFlg |= 1;
+    if (vR.match(/\./)) fmtFlg |= 2;
+    var fn = FNC[op];
+    if (!fn) fn = 'addTime';
+    if (vR != '') {
+      r = DebugJS[fn](vL, vR);
+      if (isNaN(r)) {
+        r = 'Invalid time format';
+        DebugJS._log.e(r);
+        return r;
+      }
+    }
+    op = nOp;
+    opp = nOpp;
+    p = opp + 1;
+    vL = r;
+  }
+  r = DebugJS.ms2Clock(r, fmtFlg, byDays);
+  if (echo) DebugJS._log.res(r);
+  return r;
 };
 DebugJS.cmdFactorial = function(n, echo) {
   var v = DebugJS.factorial(n);
@@ -14302,6 +14324,15 @@ DebugJS.lenW = function(s) {
     if (p >= 0x10000) i++;
   }
   return n;
+};
+DebugJS.countStr = function(s, p) {
+  var i = 0;
+  var pos = s.indexOf(p);
+  while ((p != '') && (pos != -1)) {
+    i++;
+    pos = s.indexOf(p, pos + p.length);
+  }
+  return i;
 };
 DebugJS.isAscii = function(s) {
   return (s.match(/^[\x00-\x7F]*$/) ? true : false);
