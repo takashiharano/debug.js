@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505171101';
+  this.v = '202505171657';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -70,7 +70,6 @@ var DebugJS = DebugJS || function() {
     useCommandLine: true,
     cmdHistoryMax: 100,
     timerLineColor: '#0cf',
-    disableAllCommands: false,
     disableAllFeatures: false,
     mode: '',
     lockCode: null,
@@ -492,7 +491,6 @@ var DebugJS = DebugJS || function() {
     watchdog: []
   };
   this.unlockCode = null;
-  this.$mF = 0;
   this.$m = undefined;
   this.setupDefaultOptions();
   DebugJS.copyProp(this.PROPS_DFLT_VALS, this.props);
@@ -1610,15 +1608,9 @@ DebugJS.prototype = {
   initCmdTbl: function(ctx) {
     ctx.CMD_TBL = [];
     for (var i = 0; i < ctx.INT_CMD_TBL.length; i++) {
-      if (ctx.opt.disableAllCommands) {
-        if (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_SYSTEM) {
-          ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
-        }
-      } else {
-        if (!(!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
-            (!((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.opt.mode == 'kiosk') && (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_NO_KIOSK)))) {
-          ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
-        }
+      if (!(!(ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_DYNAMIC)) &&
+          (!((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.opt.mode == 'kiosk') && (ctx.INT_CMD_TBL[i].attr & DebugJS.CMD_ATTR_NO_KIOSK)))) {
+        ctx.CMD_TBL.push(ctx.INT_CMD_TBL[i]);
       }
     }
   },
@@ -6997,7 +6989,7 @@ DebugJS.prototype = {
       }
     }
     var r = ctx._execCmd(cl, ctx.cmdEchoFlg, false, true);
-    ctx.$m = ((ctx.$mF || (typeof r == 'number')) ? r : undefined);
+    ctx.$m = (((typeof r == 'number') || (typeof r == 'string')) ? r : undefined);
   },
   _execCmd: function(str, echo, recho, sv) {
     var ctx = DebugJS.ctx;
@@ -7048,7 +7040,6 @@ DebugJS.prototype = {
     return ret;
   },
   __execCmd: function(ctx, cmdline, echo, aliased) {
-    ctx.$mF = 0;
     cmdline = DebugJS.escCtrlCh(cmdline);
     var cmds = DebugJS.splitCmdLineInTwo(cmdline);
     var cmd = cmds[0];
@@ -7066,13 +7057,17 @@ DebugJS.prototype = {
       }
     }
     var cmdln = cmdline.trim();
-    if (cmdln.match(/^\d+bit$/)) {
-      cmd = 'bit';
-      arg = cmdln.replace(/bit/, '');
-    } else if (cmdln.match(/^\d+bits$/)) {
-      cmd = 'bit';
-      arg = '-a ' + cmdln.replace(/bits/, '');
-    }
+
+    var r = ctx.execBuiltInCmd(ctx, cmdline, cmdln, cmd, arg, echo);
+    if (r.f) return r.r;
+
+   if (cmdln.match(/^\d+bit$/)) {
+     cmd = 'bit';
+     arg = cmdln.replace(/bit/, '');
+   } else if (cmdln.match(/^\d+bits$/)) {
+     cmd = 'bit';
+     arg = '-a ' + cmdln.replace(/bits/, '');
+   }
 
     for (i = 0; i < ctx.CMD_TBL.length; i++) {
       var c = ctx.CMD_TBL[i];
@@ -7081,8 +7076,6 @@ DebugJS.prototype = {
         return c.fn(arg, c, echo);
       }
     }
-
-    if (ctx.opt.disableAllCommands) return;
 
     for (i = 0; i < ctx.EXT_CMD_TBL.length; i++) {
       var extcmd = ctx.EXT_CMD_TBL[i];
@@ -7096,85 +7089,92 @@ DebugJS.prototype = {
       }
     }
 
-    var ret = ctx.cmdInt(cmdline, null, echo);
-    if (ret != null) return ret;
-
-    if (DebugJS.isFloat(cmd)) {
-      ret = ctx.cmdFmtFloat(cmdline);
-      if (ret) return ret;
-    }
-    if (DebugJS.isFloat(cmdln)) {
-      return ctx.cmdFloat(cmdln, null, echo);
-    }
-
-    ret = ctx.cmdFmtNum(cmdline);
-    if (ret != null) return ret;
-
-    ret = ctx.cmdRatio(cmdline, echo);
-    if (ret != null) return ret;
-
-    ret = ctx.cmdTimeCalc(cmdline, echo);
-    if (ret != null) {
-      ctx.$mF = 1;
-      return ret;
-    }
-
-    ret = ctx.cmdDateCalc(cmdline, echo);
-    if (ret != null) return ret;
-
-    ret = ctx.cmdDateDiff(cmdline, echo);
-    if (!isNaN(ret)) return ret;
-
-    ret = ctx.cmdDateConv(cmdline);
-    if (ret != null) return ret;
-
-    if (DebugJS.isUnixTm(cmdln)) {
-      return ctx.cmdDate(cmdline, null);
-    }
-
-    if (DebugJS.isSTN(cmd)) {
-      return DebugJS.cmdTZedNow(cmd, arg);
-    } else if (cmdln.match(/^UTC[+-]\d+/i)) {
-      return DebugJS.cmdTZedNow('UTC', cmdln.slice(3));
-    }
-
-    if (DebugJS.isTimerFormat(cmdln)) {
-      return DebugJS.ctx.cmdTime(cmdln, null, echo, 1);
-    }
-
-    if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
-      return DebugJS.cmdByte(cmdln, echo);
-    }
-
-    if (cmdln.match(/^\d+!$/i)) {
-      return DebugJS.cmdFactorial(cmdln.replace(/!/, ''), echo);
-    }
-
-    if (cmdln.match(/^\d+p\d+$/i)) {
-      return DebugJS.cmdPerm(cmdln, echo);
-    }
-
-    if (cmdln.match(/^\d+c\d+$/i)) {
-      return DebugJS.cmdCombi(cmdln, echo);
-    }
-
-    if (cmdln.match(/^\d+h\d+$/i)) {
-      return DebugJS.cmdMultiChoose(cmdln, echo);
-    }
-
-    if (cmdline.match(/^\s*U\+/i)) {
-      return ctx.cmdUnicode('-d ' + cmdline, null, echo);
-    }
-
-    if (DebugJS.isURIencoding(cmdln)) {
-      return ctx.cmdUri('-d ' + cmdln, null, echo);
-    }
-
-    if (cmdline.match(/^\s*http/)) {
-      return DebugJS.ctx.doHttpRequest('GET', cmdline, echo);
-    }
-
     return ctx.execCode(cmdline, echo);
+  },
+  execBuiltInCmd: function(ctx, cmdline, cmdln, cmd, arg, echo) {
+    var f = 1;
+    while (1) {
+      var r = ctx.cmdInt(cmdline, null, echo);
+      if (r != null) break;
+
+      if (DebugJS.isFloat(cmd)) {
+        r = ctx.cmdFmtFloat(cmdline);
+        if (r != null) break;
+      }
+      if (DebugJS.isFloat(cmdln)) {
+        r = ctx.cmdFloat(cmdln, null, echo);
+        break;
+      }
+
+      r = ctx.cmdFmtNum(cmdline);
+      if (r != null) break;
+
+      r = ctx.cmdRatio(cmdline, echo);
+      if (r != null) break;
+
+      r = ctx.cmdTimeCalc(cmdline, echo);
+      if (r != null) break;
+
+      r = ctx.cmdDateCalc(cmdline, echo);
+      if (r != null) break;
+
+      r = ctx.cmdDateDiff(cmdline, echo);
+      if (!isNaN(r)) break;
+
+      r = ctx.cmdDateConv(cmdline);
+      if (r != null) break;
+
+      if (DebugJS.isSTN(cmd)) {
+        r = DebugJS.cmdTZedNow(cmd, arg);
+        break;
+      } else if (cmdln.match(/^UTC[+-]\d+/i)) {
+        r = DebugJS.cmdTZedNow('UTC', cmdln.slice(3));
+        break;
+      }
+
+      if (DebugJS.isTimerFormat(cmdln)) {
+        r = DebugJS.ctx.cmdTime(cmdln, null, echo, 1);
+        break;
+      }
+
+      if (cmdln.match(/^[\d,]+\.?\d*\s*[KMGTP]?B$/i)) {
+        r = DebugJS.cmdByte(cmdln, echo);
+        break;
+      }
+
+      if (cmdln.match(/^\d+!$/i)) {
+        r = DebugJS.cmdFactorial(cmdln.replace(/!/, ''), echo);
+        break;
+      }
+
+      if (cmdln.match(/^\d+p\d+$/i)) {
+        r = DebugJS.cmdPerm(cmdln, echo);
+        break;
+      }
+
+      if (cmdln.match(/^\d+c\d+$/i)) {
+        r = DebugJS.cmdCombi(cmdln, echo);
+        break;
+      }
+
+      if (cmdln.match(/^\d+h\d+$/i)) {
+        r = DebugJS.cmdMultiChoose(cmdln, echo);
+        break;
+      }
+
+      if (cmdline.match(/^\s*U\+/i)) {
+        r = ctx.cmdUnicode('-d ' + cmdline, null, echo);
+        break;
+      }
+
+      if (DebugJS.isURIencoding(cmdln)) {
+        r = ctx.cmdUri('-d ' + cmdln, null, echo);
+        break;
+      }
+      f = 0;
+      break;
+    }
+    return {f: f, r: r};
   },
 
   cmdAlias: function(arg) {
@@ -7996,10 +7996,8 @@ DebugJS.prototype = {
       return;
     }
     var s = 'Available Commands:\n<table>' + ctx._cmdHelpList(t1);
-    if (!ctx.opt.disableAllCommands) {
-      if (t2.length > 0) s += '<tr><td colspan="2">' + '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
-      s += ctx._cmdHelpList(t2);
-    }
+    if (t2.length > 0) s += '<tr><td colspan="2">' + '---- ---- ---- ---- ---- ---- ---- ----</td></tr>';
+    s += ctx._cmdHelpList(t2);
     s += '</table>';
     DebugJS._log.mlt(s);
   },
