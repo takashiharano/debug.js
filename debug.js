@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505172006';
+  this.v = '202505172300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
