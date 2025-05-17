@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505171934';
+  this.v = '202505172006';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -70,7 +70,6 @@ var DebugJS = DebugJS || function() {
     useCommandLine: true,
     cmdHistoryMax: 100,
     timerLineColor: '#0cf',
-    disableAllFeatures: false,
     mode: '',
     lockCode: null,
     elmId: null
@@ -744,9 +743,6 @@ DebugJS.prototype = {
         for (var key2 in ctx.opt) {
           if (key1 == key2) {
             ctx.opt[key1] = opt[key1];
-            if ((key1 == 'disableAllFeatures') && (opt[key1])) {
-              ctx.disableAllFeatures(ctx);
-            }
             break;
           }
         }
@@ -1224,12 +1220,6 @@ DebugJS.prototype = {
     ctx.status |= DebugJS.ST_KIOSK;
     ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     ctx.uiStatus &= ~DebugJS.UI_ST_RESIZABLE;
-  },
-
-  disableAllFeatures: function(ctx) {
-    for (var i = 0; i < DebugJS.FEATURES.length; i++) {
-      ctx.opt[DebugJS.FEATURES[i]] = false;
-    }
   },
 
   isAllFeaturesDisabled: function(ctx) {
