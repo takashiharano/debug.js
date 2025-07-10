@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202505172300';
+  this.v = '202507102131';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -9753,7 +9753,7 @@ DebugJS.prototype = {
         try {
           nm = eval(nm);
           test.init(nm);
-          DebugJS._log('Test has been initialized.' + (nm == undefined ? '' : ' (' + nm + ')'));
+          DebugJS._log('The test has been initialized.' + (nm == undefined ? '' : ' (' + nm + ')'));
         } catch (e) {DebugJS._log.e(e);}
         break;
       case 'set':
