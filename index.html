@@ -5517,9 +5517,9 @@ $ scrollto window 100 5000 -speed 20 -step 10
 $ scrollto window 100 5000 -speed 0 -step 0
 -> Scroll to the specified position directly
 
-$ scrollto window #id -adjX 0<span class="annotation">(opt:px)</span> -adjY (-100)<span class="annotation">(opt:px)</span>
-$ scrollto window .className 0<span class="annotation">(opt:index)</span> -adjX 0<span class="annotation">(opt:px)</span> -adjY (-100)<span class="annotation">(opt:px)</span>
-$ scrollto window tagName 0<span class="annotation">(opt:index)</span> -adjX 0<span class="annotation">(opt:px)</span> -adjY (-100)<span class="annotation">(opt:px)</span>
+$ scrollto #id -adjX 0<span class="annotation">(opt:px)</span> -adjY (-100)<span class="annotation">(opt:px)</span>
+$ scrollto .className[0]<span class="annotation">(opt:index)</span> -adjX 0<span class="annotation">(opt:px)</span> -adjY (-100)<span class="annotation">(opt:px)</span>
+$ scrollto tagName[0]<span class="annotation">(opt:index)</span> -adjX 0<span class="annotation">(opt:px)</span> -adjY (-100)<span class="annotation">(opt:px)</span>
 -> Scroll to the specified selector
 
 <b>target = log:</b>

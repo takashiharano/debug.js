@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202507102131';
+  this.v = '202507112106';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -367,7 +367,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'rot', fn: this.cmdROT, desc: 'Replaces a letter with ROTx', help: 'rot 5|13|18|47 [-n N] STR'},
-    {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', help: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]'},
+    {cmd: 'scrollto', fn: this.cmdScrollTo, desc: 'Set scroll position', help: '\nscrollto log top|px|bottom [+|-]px(x)|left|center|right|current\nscrollto window [+|-]px(y)|top|middle|bottom|current [-speed speed(ms)] [-step step(px)]\nscrollto selector[n] x y'},
     {cmd: 'select', fn: this.cmdSelect, desc: 'Select an option of select element', help: 'select selectors get|set text|texts|value|values val'},
     {cmd: 'set', fn: this.cmdSet, desc: 'Set a property value', help: 'set property-name value'},
     {cmd: 'setattr', fn: this.cmdSetAttr, desc: 'Set the value of an attribute on the specified element', help: 'setattr selector [idx] name value'},
@@ -18473,12 +18473,16 @@ DebugJS.test.isRunning = function() {
   return DebugJS.test.data.running;
 };
 
-DebugJS.getElement = function(selector, idx) {
-  if (typeof selector != 'string') return selector;
+DebugJS.getElement = function(sel, idx) {
+  if (typeof sel != 'string') return sel;
+  if (sel.match(/\[\d+\]$/)) {
+    idx = sel.replace(/.+\[(\d+)\]$/, '$1');
+    sel = sel.replace(/(.+)\[\d+\]$/, '$1');
+  }
   idx |= 0;
   var el = null;
   try {
-    el = document.querySelectorAll(selector).item(idx);
+    el = document.querySelectorAll(sel).item(idx);
   } catch (e) {}
   return el;
 };
