@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202507112106';
+  this.v = '202507122213';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -387,6 +387,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|CODE_POINT'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
     {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', help: 'utf8 "STR"'},
+    {cmd: 'uuid', fn: this.cmdUUID, desc: 'Generate a v4 UUID'},
     {cmd: 'v', fn: this.cmdV, desc: 'Displays version info', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
@@ -10070,6 +10071,12 @@ DebugJS.prototype = {
       }
     }
     DebugJS._log.mlt(s);
+  },
+
+  cmdUUID: function() {
+    var u = crypto.randomUUID();
+    DebugJS._log.res(u);
+    return u;
   },
 
   cmdV: function() {
