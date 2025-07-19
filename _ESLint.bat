@@ -1,4 +1,4 @@
 @echo off
 cd /d %~dp0
-call eslint *.js
+call npx eslint . --config eslint.config.mjs
 pause
