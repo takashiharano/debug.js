@@ -1,11 +1,11 @@
 /*!
  * debug.js
  * Copyright 2015 Takashi Harano
- * Released under the MIT license
+ * Released under the MIT License
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202507122213';
+  this.v = '202507210133';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7675,7 +7675,7 @@ DebugJS.prototype = {
   cmdFmtNum: function(c) {
     c = DebugJS.unifySP(c.trim());
     var u1 = ['0', '3', '4'];
-    var u2 = ['m', 'milli', 'u', 'micro', 'n', 'nano', 'p', 'pico', 'f', 'femto', 'a', 'atto', 'z', 'zepto', 'y', 'yocto'];
+    var u2 = ['m', 'milli', 'u', 'micro', 'n', 'nano', 'p', 'pico', 'f', 'femto', 'a', 'atto', 'z', 'zepto', 'y', 'yocto', 'r', 'ronto', 'q', 'quecto'];
     var r = null;
     var a = c.split(' ');
     var v = a[0];
@@ -13011,7 +13011,7 @@ DebugJS.formatDec4 = function(s) {
   return '' + v;
 };
 DebugJS.formatDecF = function(v, p, f) {
-  var t = {'m': 3, 'milli': 3, 'u': 6, 'micro': 6, 'n': 9, 'nano': 9, 'p': 12, 'pico': 12, 'f': 15, 'femto': 15, 'a': 18, 'atto': 18, 'z': 21, 'zepto': 21, 'y': 24, 'yocto': 24};
+  var t = {'m': 3, 'milli': 3, 'u': 6, 'micro': 6, 'n': 9, 'nano': 9, 'p': 12, 'pico': 12, 'f': 15, 'femto': 15, 'a': 18, 'atto': 18, 'z': 21, 'zepto': 21, 'y': 24, 'yocto': 24, 'r': 27, 'ronto': 27, 'q': 30, 'quecto': 30};
   var d = t[p];
   if (!d) return v;
   v = (v + '').replace(/,/g, '').replace(/^0*/, '');
@@ -13031,7 +13031,7 @@ DebugJS.formatDecF = function(v, p, f) {
   return a + '.' + w;
 };
 DebugJS.formatFloat = function(v) {
-  var U = ['m', 'u', 'n', 'p', 'f', 'a', 'z', 'y'];
+  var U = ['m', 'u', 'n', 'p', 'f', 'a', 'z', 'y', 'r', 'q'];
   var j = 0;
   var a = v.split('.');
   var d = a[0];
