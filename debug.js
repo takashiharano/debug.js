@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202507210133';
+  this.v = '202507222010';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15900,7 +15900,7 @@ DebugJS.bat.exec = function() {
     return;
   }
   if (ctrl.stopReq) {
-    DebugJS._log.e('BAT ERROR STOPPED (L:' + ctrl.pc + ')');
+    DebugJS._log.e('ERROR: SCRIPT STOPPED (L:' + ctrl.pc + ')');
     DebugJS._log.e('--------------------------------');
     for (var i = -3; i <= 0; i++) {
       var pc = ctrl.pc + i;
@@ -15917,6 +15917,11 @@ DebugJS.bat.exec = function() {
       }
     }
     DebugJS._log.e('--------------------------------');
+    var stk = ctrl.stack;
+    for (i = stk.length - 1; i >= 0; i--) {
+      pc = stk[i].lr;
+      DebugJS._log.e('at ' + pc + ': ' + DebugJS.trimDownText(bat.cmds[pc - 1], 98));
+    }
     ctrl.stopReq = false;
     bat._exit(DebugJS.EXIT_FAILURE);
     return;
