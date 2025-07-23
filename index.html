@@ -1688,22 +1688,22 @@ W3sidHlwZSI6MSwidGltZSI6MTUzOTc4ODMxNTY4OSwibXNnIjoiU0dWc2J...
 <pre class="code emphasis" style="width:520px">
 <span style="color:#0ff">SERVER SIDE PROGRAM SAMPLE (savelog.cgi)</span>
 
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import cgi
 
 def save_log():
-  form = cgi.FieldStorage()
-  data = form.getvalue('data', '')
-  f = open('log.txt', 'w')
-  f.write(data)
-  f.close()
+    form = cgi.FieldStorage()
+    data = form.getvalue('data', '')
+    f = open('log.txt', 'w')
+    f.write(data)
+    f.close()
 
 def main():
-  save_log()
-  print('Content-Type: application/json')
-  print()
-  print('{"status":"OK"}')
+    save_log()
+    print('Content-Type: application/json')
+    print()
+    print('{"status":"OK"}')
 
 main()
 </pre></pre>
