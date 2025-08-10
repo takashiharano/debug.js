@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202507222010';
+  this.v = '202508101508';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13,7 +13,7 @@ var DebugJS = DebugJS || function() {
       show: {key: 113},
     },
     focusOnShow: true,
-    autoPopup: {
+    showOnError: {
       scriptError: true,
       loadError: true,
       error: true,
@@ -1091,7 +1091,7 @@ DebugJS.prototype = {
     };
     styles['.dbg-select'] = {
       'width': 'fit-content',
-      'height': '1.2em; !important',
+      'height': '1.2em !important',
       'border': 'solid 1px #aaa; !important',
       'border-radius': '0 !important',
       'padding': '0 !important',
@@ -1194,10 +1194,10 @@ DebugJS.prototype = {
     if (ctx.opt.visible || (ctx.opt.elmId != null)) {
       ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
     } else if (ctx.errStatus) {
-      var ap = ctx.opt.autoPopup;
+      var ap = ctx.opt.showOnError;
       if (((ap.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
           ((ap.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
-          ((ap.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG)) ||
+          ((ap.error) && (ctx.errStatus & DebugJS.ERR_ST_LOG)) ||
           ((ap.fatal) && (ctx.errStatus & DebugJS.ERR_ST_LOG_F))) {
         ctx.uiStatus |= DebugJS.UI_ST_VISIBLE;
         ctx.errStatus = DebugJS.ERR_ST_NONE;
@@ -3247,11 +3247,11 @@ DebugJS.prototype = {
 
   showDbgWinOnError: function(ctx) {
     if ((ctx.status & DebugJS.ST_INITIALIZED) && !(ctx.uiStatus & DebugJS.UI_ST_VISIBLE)) {
-      var ap = ctx.opt.autoPopup;
+      var ap = ctx.opt.showOnError;
       if ((ctx.errStatus &&
            (((ap.scriptError) && (ctx.errStatus & DebugJS.ERR_ST_SCRIPT)) ||
            ((ap.loadError) && (ctx.errStatus & DebugJS.ERR_ST_LOAD)) ||
-           ((ap.errorLog) && (ctx.errStatus & DebugJS.ERR_ST_LOG)) ||
+           ((ap.error) && (ctx.errStatus & DebugJS.ERR_ST_LOG)) ||
            ((ap.fatal) && (ctx.errStatus & DebugJS.ERR_ST_LOG_F)))) ||
           ((ctx.status & DebugJS.ST_BAT_RUNNING) && (DebugJS.bat.hasBatStopCond('error')) && (DebugJS.bat.ctrl.stopReq))) {
         ctx.showDbgWin();
