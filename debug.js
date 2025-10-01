@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202508101508';
+  this.v = '202510020030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8618,12 +8618,12 @@ DebugJS.prototype = {
       var v = s.slice(0, m - 1);
       var x = s.slice(m - 1);
       var c = fn(v, w);
-      var r = ((x == c) ? 'OK' : 'NG');
+      var r = ((x == c) ? 'OK' : 'INVALID');
     } else {
       r = fn(s, w);
     }
     if (echo) {
-      var f = (r == 'NG') ? log.res.err : log.res;
+      var f = (r == 'INVALID') ? log.res.err : log.res;
       f(r);
     }
     return r;
