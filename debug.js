@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202510020030';
+  this.v = '202510211227';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2528,10 +2528,10 @@ DebugJS.prototype = {
           return false;
         }
         var idx = id;
-        if (typeof id == 'string') idx = DebugJS.x.pnl.getIdx(id);
+        if (typeof id == 'string') idx = DebugJS.x.panel.getIdx(id);
         if (idx == undefined) idx = ctx.extActPnlIdx;
         if (idx < 0) idx = 0;
-        var p = DebugJS.x.pnl.getPanel(idx);
+        var p = DebugJS.x.panel.getPanel(idx);
         if (!p || p.hidden) {
           DebugJS._log.e('No such panel: ' + subfnc);
           return false;
@@ -10357,12 +10357,12 @@ DebugJS.prototype = {
     }
     var pnls = ctx.extPanels;
     if (pnls.length > 0) {
-      if (DebugJS.x.pnl.len()) DebugJS.showExtBtn(true);
+      if (DebugJS.x.panel.len()) DebugJS.showExtBtn(true);
       for (var i = 0; i < pnls.length; i++) {
         var p = pnls[i];
         if (p) {
           if (p.base == null) ctx.createExtPanel(ctx, p, i);
-          DebugJS.x.pnl.addFileLdr(p);
+          DebugJS.x.panel.addFileLdr(p);
         }
       }
       ctx.redrawExtPanelBtn(ctx);
@@ -18991,8 +18991,8 @@ DebugJS.x.addCmdTbl = function(table) {
   }
 };
 
-DebugJS.x.pnl = {};
-DebugJS.x.pnl.add = function(p) {
+DebugJS.x.panel = {};
+DebugJS.x.panel.add = function(p) {
   var ctx = DebugJS.ctx;
   p.base = null;
   p.btn = null;
@@ -19001,9 +19001,9 @@ DebugJS.x.pnl.add = function(p) {
   if (ctx.status & DebugJS.ST_INITIALIZED) ctx.initExtPanel(ctx);
   return idx;
 };
-DebugJS.x.pnl.remove = function(id, hidden) {
+DebugJS.x.panel.remove = function(id, hidden) {
   var ctx = DebugJS.ctx;
-  var pnl = DebugJS.x.pnl;
+  var pnl = DebugJS.x.panel;
   var idx = (typeof id == 'string' ? pnl.getIdx(id) : id);
   var p = ctx.extPanels[idx];
   if (!p) return;
@@ -19027,41 +19027,41 @@ DebugJS.x.pnl.remove = function(id, hidden) {
     if (!pnl.len()) DebugJS.showExtBtn(false);
   }
 };
-DebugJS.x.pnl.setBtnLabel = function(l) {
+DebugJS.x.panel.setBtnLabel = function(l) {
   DebugJS.ctx.extBtnLabel = l;
   if (DebugJS.ctx.extBtn) DebugJS.ctx.extBtn.innerHTML = l;
 };
-DebugJS.x.pnl.getIdx = function(nm) {
+DebugJS.x.panel.getIdx = function(nm) {
   var a = DebugJS.ctx.extPanels;
   for (var i = 0; i < a.length; i++) {
     if (a[i] && a[i].name == nm) break;
   }
   return i;
 };
-DebugJS.x.pnl.getPanel = function(id) {
+DebugJS.x.panel.getPanel = function(id) {
   var a = DebugJS.ctx.extPanels;
-  var i = (typeof id == 'string' ? DebugJS.x.pnl.getIdx(id) : id);
+  var i = (typeof id == 'string' ? DebugJS.x.panel.getIdx(id) : id);
   var p = a[i];
   return (p ? p : null);
 };
-DebugJS.x.pnl.getActivePanel = function() {
-  return DebugJS.x.pnl.getPanel(DebugJS.ctx.extActPnlIdx);
+DebugJS.x.panel.getActivePanel = function() {
+  return DebugJS.x.panel.getPanel(DebugJS.ctx.extActPnlIdx);
 };
-DebugJS.x.pnl.isActive = function(nm) {
+DebugJS.x.panel.isActive = function(nm) {
   if (!(DebugJS.ctx.status & DebugJS.ST_EXT_PANEL)) return false;
-  var i = DebugJS.x.pnl.getIdx(nm);
+  var i = DebugJS.x.panel.getIdx(nm);
   return i == DebugJS.ctx.extActPnlIdx;
 };
-DebugJS.x.pnl.exists = function(nm) {
-  return DebugJS.x.pnl.getPanel(nm) != null;
+DebugJS.x.panel.exists = function(nm) {
+  return DebugJS.x.panel.getPanel(nm) != null;
 };
-DebugJS.x.pnl.setHidden = function(nm, f) {
+DebugJS.x.panel.setHidden = function(nm, f) {
   var ctx = DebugJS.ctx;
-  var p = DebugJS.x.pnl.getPanel(nm);
+  var p = DebugJS.x.panel.getPanel(nm);
   if (p) {
     if (f) {
       p.hidden = true;
-      DebugJS.x.pnl.remove(nm, true);
+      DebugJS.x.panel.remove(nm, true);
     } else {
       p.hidden = false;
       ctx.redrawExtPanelBtn(ctx);
@@ -19069,11 +19069,11 @@ DebugJS.x.pnl.setHidden = function(nm, f) {
     }
   }
 };
-DebugJS.x.pnl.switchPanel = function(id) {
-  var i = (typeof id == 'string' ? DebugJS.x.pnl.getIdx(id) : id);
+DebugJS.x.panel.switchPanel = function(id) {
+  var i = (typeof id == 'string' ? DebugJS.x.panel.getIdx(id) : id);
   if (DebugJS.ctx.extPanels[i]) DebugJS.ctx.switchExtPanel(i);
 };
-DebugJS.x.pnl.len = function(all) {
+DebugJS.x.panel.len = function(all) {
   var a = DebugJS.ctx.extPanels;
   var n = 0;
   for (var i = 0; i < a.length; i++) {
@@ -19081,7 +19081,7 @@ DebugJS.x.pnl.len = function(all) {
   }
   return n;
 };
-DebugJS.x.pnl.addFileLdr = function(p) {
+DebugJS.x.panel.addFileLdr = function(p) {
   var d = p.fileloader;
   if (d) DebugJS.addFileLoader(p.panel, d.cb, d.mode, d.decode);
   if (p.onDrop) DebugJS.addDropHandler(p.panel, p.onDrop);
