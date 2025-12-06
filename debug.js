@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202510211227';
+  this.v = '202512061907';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6653,9 +6653,14 @@ DebugJS.prototype = {
       fn: function(s, o) {
         try {
           var fm = o[0];
-          if (o[2] != 'Y') fm = fm.replace(/([()/[\].+*?^$-])/g, '\\$1');
+          var to = o[1];
+          if (o[2] == 'Y') {
+            to = DebugJS.decCtrlCh(to);
+          } else {
+            fm = fm.replace(/\\/g, '\\\\');
+          }
           fm = new RegExp(fm, o[3]);
-          s = s.replace(fm, o[1]);
+          s = s.replace(fm, to);
         } catch (e) {
           s = '[ERROR]' + e + '\n' + s;
         }
@@ -14512,7 +14517,7 @@ DebugJS.escCtrlCh = function(s) {
   return s.replace(/\t/g, '\\t').replace(/\v/g, '\\v').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace(/\f/g, '\\f');
 };
 DebugJS.decCtrlCh = function(s) {
-  return s.replace(/\\t/g, '\t').replace(/\\v/g, '\v').replace(/\\r/g, '\r').replace(/\\n/g, '\n').replace(/\\f/g, '\f');
+  return JSON.parse('"' + s.replace(/"/g, '\\"') + '"');
 };
 DebugJS.hlCtrlCh = function(s, sp) {
   var st = '<span class="dbg-txt-hl">';
