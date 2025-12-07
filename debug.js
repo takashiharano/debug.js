@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202512061907';
+  this.v = '202512071731';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6649,7 +6649,7 @@ DebugJS.prototype = {
       }
     },
     {
-      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'N'}, {v: 'Y'}]}, {lbl: 'FLG', v: 'gi'}],
+      lbl: 'REPLACE', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'FLG', v: 'gi'}],
       fn: function(s, o) {
         try {
           var fm = o[0];
