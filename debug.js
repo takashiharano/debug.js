@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202512071731';
+  this.v = '202512072256';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6597,7 +6597,7 @@ DebugJS.prototype = {
       lbl: 'HALF/FULL', opt: [{lbl: '', optvals: [{t: 'HALF', v: 'H'}, {t: 'FULL', v: 'F'}]}],
       fn: function(s, o) {return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));}
     },
-    {lbl: 'HORIZ/VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(s, o) {return (+o[0] ? s.replace(/\n/g, '\t') : s.replace(/\t/g, '\n'));}},
+    {lbl: 'HORIZ/VERT', opt: [{lbl: '', optvals: [{t: 'H2V', v: '0'}, {t: 'V2H', v: '1'}]}], fn: function(s, o) {return (+o[0] ? DebugJS.v2h(s, '\t') : DebugJS.h2v(s));}},
     {
       lbl: 'lower/UPPER', opt: [{lbl: '', optvals: [{t: 'lower', v: 'L'}, {t: 'UPPER', v: 'U'}]}],
       fn: function(s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
@@ -12551,6 +12551,9 @@ DebugJS.csv2arr = function(s, d, wQ) {
   if (!nF) {
     DebugJS._pushCsvCol(cols, s, sp, i, wQ);
     rows.push(cols);
+  } else if (c == d) {
+    cols.push('');
+    rows.push(cols);
   }
   return rows;
 };
@@ -12646,6 +12649,21 @@ DebugJS._sortCsv = function(a, b, d, asNum) {
   if (a) a = a.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
   if (b) b = b.replace(/^"/g, '').replace(/"$/g, '').replace(/""/g, '"');
   return DebugJS._cmp(a, b, d, asNum);
+};
+DebugJS.h2v = function(s) {
+  var d = (s.match(/\t/) ? '\t' : ',');
+  var r = DebugJS.csv2arr(s, d);
+  var v = '';
+  for (var i = 0; i < r.length; i++) {
+    var c = r[i];
+    for (var j = 0; j < c.length; j++) {
+      v += c[j] + '\n';
+    }
+  }
+  return v;
+};
+DebugJS.v2h = function(s, d) {
+  return s.replace(/\n+$/, '').replace(/\n/g, d);
 };
 
 DebugJS.padSeq = function(s, n, f) {
