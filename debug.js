@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202604082112';
+  this.v = '202606192130';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -22,7 +22,7 @@ var DebugJS = DebugJS || function() {
     lines: 20,
     bufsize: 300,
     width: 602,
-    zoom: 1,
+    zoom: 1.25,
     position: 'se',
     adjX: 20,
     adjY: 20,
