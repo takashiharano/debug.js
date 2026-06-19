@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202606192130';
+  this.v = '202606192233';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -350,7 +350,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|dump|filter|html|load|preserve|suspend|time|lv'},
-    {cmd: 'mod', fn: this.cmdMod, desc: 'Calculate check digit by modulus N', help: 'mod 10|11|43 [-w WEIGHT] [DIGIT] CODE'},
+    {cmd: 'mod', fn: this.cmdMod, desc: 'Calculate check digit by modulus N', help: 'mod 10|11|43 [-w WEIGHT] CODE [-c]'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -8597,39 +8597,29 @@ DebugJS.prototype = {
   },
 
   cmdMod: function(arg, tbl, echo) {
-    var w = DebugJS.getOptVal(arg, 'w');
+    var w = DebugJS.getOptVal(arg, 'w') || 3;
     var a = DebugJS.getOptVal(arg, '');
-    if (w == null) w = 3;
     var n = a[0];
-    if (a.length == 2) {
-      var s = a[1];
-    } else if (a.length >= 3) {
-      var m = a[1];
-      s = a[2];
-    } else {
-      DebugJS.printUsage(tbl.help);
-      return -1;
-    }
+    var s = a[1];
+    var m = s.length - 1;
     var fn = DebugJS['calcMod' + n];
-    if (!fn) {
+    if ((a.length < 2) || !fn) {
       DebugJS.printUsage(tbl.help);
       return -1;
     }
-    if (m && (s.length != m)) {
-      DebugJS.printUsage(tbl.help);
-      return -1;
-    }
-    if (m) {
-      var v = s.slice(0, m - 1);
-      var x = s.slice(m - 1);
+    if (DebugJS.hasOpt(arg, 'c')) {
+      var v = s.slice(0, m);
+      var x = s.slice(m);
       var c = fn(v, w);
-      var r = ((x == c) ? 'OK' : 'INVALID');
+      var r = (x == c);
+      var t = (r ? 'OK' : 'INVALID');
     } else {
       r = fn(s, w);
+      t = r;
     }
     if (echo) {
-      var f = (r == 'INVALID') ? log.res.err : log.res;
-      f(r);
+      var f = ((r === false) ? log.res.err : log.res);
+      f(t);
     }
     return r;
   },
