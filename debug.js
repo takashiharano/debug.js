@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202606192233';
+  this.v = '202606202009';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2771,7 +2771,9 @@ DebugJS.prototype = {
     DebugJS.ctx.zoomInOut(DebugJS.ctx, 0);
   },
   zoomInOut: function(ctx, m) {
-    var v = (m ? (ctx.zoom * 1.4) : (ctx.zoom / 1.4));
+    var r = 1.4;
+    var v = ctx.zoom;
+    v = (m ? (v > 1 && v < r ? r : v * r) : (v > 1 && v < r ? 1 : v / r));
     DebugJS.zoom(DebugJS.round(v, 1));
   },
 
