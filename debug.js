@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202606202009';
+  this.v = '202606210014';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2716,7 +2716,6 @@ DebugJS.prototype = {
           }
         }
         break;
-
      case 48: // 0
      case 96:
         if (e.altKey) DebugJS.zoom(ctx.opt.zoom);
@@ -2742,6 +2741,9 @@ DebugJS.prototype = {
         if (e.shiftKey && DebugJS.cmd.hasFocus()) {
           if (ctx.$m != undefined) DebugJS.insertText(ctx.cmdLine, ctx.$m + '');
         }
+        break;
+      case 120: // F9
+        DebugJS.pin(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE);
         break;
     }
     if ((ctx.status & DebugJS.ST_TOOLS) && (ctx.toolsActvFnc & DebugJS.TOOLS_FNC_TIMER)) {
