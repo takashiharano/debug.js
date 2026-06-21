@@ -3981,32 +3981,6 @@ $ alias [name=['command']]
   </tr>
 
   <tr>
-    <td class="name">arr2set</td>
-    <td>array</td>
-    <td>
-     Convert Array to Set.<br><br>
-<pre class="eg">
-$ arr2set ['a', 'b', 'c', 'a', 'b']
--&gt; ['a', 'b', 'c']
-
-$ arr2set -j ['a', 'b', 'c', 'a', 'b']
--&gt; Output in JSON format.
-[
-  "a",
-  "b",
-  "c"
-]
-
-$ arr2set -s ['a', 'b', '1', 1]
--&gt; ['a', 'b', '1', 1] (Strict mode)
-
-$ arr2set -sort ['z', 'a', 'b', 'a']
--&gt; ['a', 'b', 'z']
-</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">ascii</td>
     <td></td>
     <td>
@@ -5941,6 +5915,32 @@ $ unicode -e "ABC"
 
 $ unicode -d 41 42 43
 -&gt; ABC
+</pre>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">unique</td>
+    <td>array</td>
+    <td>
+     Convert Array to Set.<br><br>
+<pre class="eg">
+$ unique ['a','b','c','a','b']
+-&gt; ['a', 'b', 'c']
+
+$ unique -j ['a','b','c','a','b']
+-&gt; Output in JSON format.
+[
+  "a",
+  "b",
+  "c"
+]
+
+$ unique -strict ['a','b','1',1]
+-&gt; ['a', 'b', '1', 1]
+
+$ unique -s ['z','a','b','a']
+-&gt; ['a', 'b', 'z']
 </pre>
     </td>
   </tr>

@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202606210014';
+  this.v = '202606211949';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -311,7 +311,6 @@ var DebugJS = DebugJS || function() {
   this.logBuf = new DebugJS.RingBuffer(this.DEFAULT_OPTIONS.bufsize);
   this.INT_CMD_TBL = [
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
-    {cmd: 'arr2set', fn: this.cmdArr2Set, desc: 'Convert Array to Set', help: 'arr2set [-j] [-s] [-sort] Array'},
     {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print all ASCII characters'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] STR'},
     {cmd: 'base64s', fn: this.cmdBase64S, desc: 'Encodes/Decodes Base64S', help: 'base64s [-e|-d] -k KEY STR'},
@@ -385,6 +384,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'uc', fn: this.cmdUc, desc: 'To upper case', help: 'uc STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|CODE_POINT'},
+    {cmd: 'unique', fn: this.cmdUnique, desc: 'Deduplicate the array values', help: 'unique [-j] [-s] [-sort] Array'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
     {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', help: 'utf8 "STR"'},
     {cmd: 'uuid', fn: this.cmdUUID, desc: 'Generate a v4 UUID'},
@@ -7210,24 +7210,6 @@ DebugJS.prototype = {
     return s;
   },
 
-  cmdArr2Set: function(arg, tbl) {
-    var v = DebugJS.getNonOptVal(arg);
-    if (!v) {
-      DebugJS.printUsage(tbl.help);
-      return;
-    }
-    var s = DebugJS.hasOpt(arg, 's');
-    var j = DebugJS.hasOpt(arg, 'j');
-    var sort = DebugJS.hasOpt(arg, 'sort');
-    try {
-      var a = eval(v);
-      var r = DebugJS.arr2set(a, s);
-      if (sort) r.sort();
-      DebugJS._log.p(r, 0, '', j);
-    } catch (e) {DebugJS._log.e(e);}
-    return r;
-  },
-
   cmdAscii: function() {
     return DebugJS.echo(DebugJS.chars(32, 126));
   },
@@ -10022,6 +10004,24 @@ DebugJS.prototype = {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, true, false, DebugJS.getUnicodeEscape, DebugJS.decodeUnicode, iIdx);
+  },
+
+  cmdUnique: function(arg, tbl) {
+    var v = DebugJS.getNonOptVal(arg);
+    if (!v) {
+      DebugJS.printUsage(tbl.help);
+      return;
+    }
+    var s = DebugJS.hasOpt(arg, 's');
+    var j = DebugJS.hasOpt(arg, 'j');
+    var strct = DebugJS.hasOpt(arg, 'strict');
+    try {
+      var a = eval(v);
+      var r = DebugJS.arr2set(a, strct);
+      if (s) r.sort();
+      DebugJS._log.p(r, 0, '', j);
+    } catch (e) {DebugJS._log.e(e);}
+    return r;
   },
 
   cmdUri: function(arg, tbl, echo) {
