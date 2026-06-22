@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202606211949';
+  this.v = '202606222352';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -384,7 +384,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'uc', fn: this.cmdUc, desc: 'To upper case', help: 'uc STR'},
     {cmd: 'unalias', fn: this.cmdUnAlias, desc: 'Remove each NAME from the list of defined aliases', help: 'unalias [-a] name [name ...]'},
     {cmd: 'unicode', fn: this.cmdUnicode, desc: 'Displays Unicode escape sequences / Decodes unicode string', help: 'unicode [-e|-d] "STR"|CODE_POINT'},
-    {cmd: 'unique', fn: this.cmdUnique, desc: 'Deduplicate the array values', help: 'unique [-j] [-s] [-sort] Array'},
+    {cmd: 'unique', fn: this.cmdUnique, desc: 'Deduplicate the array values', help: 'unique [-j] [-s] [-strict] Array'},
     {cmd: 'uri', fn: this.cmdUri, desc: 'Encodes/Decodes a URI component', help: 'uri [-e|-d] str'},
     {cmd: 'utf8', fn: this.cmdUtf8, desc: 'Dump UTF-8 byte sequence', help: 'utf8 "STR"'},
     {cmd: 'uuid', fn: this.cmdUUID, desc: 'Generate a v4 UUID'},
