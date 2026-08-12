@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202606222352';
+  this.v = '202608122213';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18659,13 +18659,13 @@ DebugJS.xlsColN2A = function(n) {
 };
 DebugJS.xlsDateA2N = function(v) {
   v = DebugJS.serializeDateTime(v);
-  var d = v.slice(0, 8);
+  var d = v.slice(0, 8).replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
   var t = v.slice(8);
-  var r = DebugJS.diffDate('1900/01/01 ', d) + 1;
+  var r = DebugJS.diffDate('1900-01-01 ', d) + 1;
   if (r >= 60) r++;
-  if (d == '19000100') {
+  if (d == '1900-01-00') {
     r = 0;
-  } else if (d == '19000229') {
+  } else if (d == '1900-02-29') {
     r = 60;
   }
   if (t | 0 > 0) {
