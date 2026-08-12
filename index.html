@@ -4901,11 +4901,11 @@ $ log lv NONE
 
   <tr>
     <td class="name">mod</td>
-    <td>arg1: digit<span class="annotation">(opt)</span><br>arg2: code</td>
+    <td>arg1: 10|11|43<br>arg2: code</td>
     <td>
       Calculate check digit by modulus N.<br><br>
 <pre class="eg">
-$ mod 10|11|43 [-w WEIGHT] [DIGIT] CODE
+$ mod 10|11|43 [-w WEIGHT] [-c] CODE
 
 e.g.,
 
@@ -4913,20 +4913,20 @@ e.g.,
 $ mod 10 456995111617
 &gt; 9
 
-$ mod 10 4569951116179 -c
+$ mod 10 -c 4569951116179
 &gt; OK
 
-$ mod 10 4569951116178 -c
+$ mod 10 -c 4569951116178
 &gt; INVALID
 
 # UPC-A
 $ mod 10 01234567890
 &gt; 5
 
-$ mod 10 012345678905 -c
+$ mod 10 -c 012345678905
 &gt; OK
 
-$ mod 10 012345678906 -c
+$ mod 10 -c 012345678906
 &gt; INVALID
 
 $ mod 10 -w 2 123456789012
@@ -4936,17 +4936,17 @@ $ mod 10 -w 2 123456789012
 $ mod 11 12345678901
 &gt; 8
 
-$ mod 11 123456789018 -c
+$ mod 11 -c 123456789018
 &gt; OK
 
-$ mod 11 123456789019 -c
+$ mod 11 -c 123456789019
 &gt; INVALID
 
 
 $ mod 43 ABC123
 &gt; $
 
-$ mod 43 ABC123$ -c
+$ mod 43 -c ABC123$
 &gt; OK
 </pre>
     </td>

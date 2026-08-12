@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202608122213';
+  this.v = '202608130032';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -349,7 +349,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'led', fn: this.cmdLed, desc: 'Set a bit pattern to the indicator', help: 'led bit-pattern'},
     {cmd: 'len', fn: this.cmdLen, desc: 'Count the length of the given string', help: 'len [-b] STR'},
     {cmd: 'log', fn: this.cmdLog, desc: 'Manipulate log output', help: 'log bufsize|copy|dump|filter|html|load|preserve|suspend|time|lv'},
-    {cmd: 'mod', fn: this.cmdMod, desc: 'Calculate check digit by modulus N', help: 'mod 10|11|43 [-w WEIGHT] CODE [-c]'},
+    {cmd: 'mod', fn: this.cmdMod, desc: 'Calculate check digit by modulus N', help: 'mod 10|11|43 [-w WEIGHT] [-c] CODE'},
     {cmd: 'msg', fn: this.cmdMsg, desc: 'Set a string to the message display', help: 'msg message'},
     {cmd: 'nexttime', fn: this.cmdNextTime, desc: 'Returns next time from given args', help: 'nexttime T0000|T1200|...|1d2h3m4s|ms'},
     {cmd: 'now', fn: this.cmdNow, desc: 'Returns the number of milliseconds elapsed since Jan 1, 1970 00:00:00 UTC'},
@@ -8583,17 +8583,24 @@ DebugJS.prototype = {
   },
 
   cmdMod: function(arg, tbl, echo) {
+    var chk = DebugJS.hasOpt(arg, 'c');
+    var args = DebugJS.splitCmdLine(arg);
+    var b = [];
+    for (var i = 0; i < args.length; i++) {
+      if (args[i] != '-c') b.push(args[i]);
+    }
+    arg = b.join(' ');
     var w = DebugJS.getOptVal(arg, 'w') || 3;
     var a = DebugJS.getOptVal(arg, '');
     var n = a[0];
     var s = a[1];
-    var m = s.length - 1;
     var fn = DebugJS['calcMod' + n];
     if ((a.length < 2) || !fn) {
       DebugJS.printUsage(tbl.help);
       return -1;
     }
-    if (DebugJS.hasOpt(arg, 'c')) {
+    if (chk) {
+      var m = s.length - 1;
       var v = s.slice(0, m);
       var x = s.slice(m);
       var c = fn(v, w);
@@ -18659,7 +18666,7 @@ DebugJS.xlsColN2A = function(n) {
 };
 DebugJS.xlsDateA2N = function(v) {
   v = DebugJS.serializeDateTime(v);
-  var d = v.slice(0, 8).replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+  var d = v.slice(0, 8).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
   var t = v.slice(8);
   var r = DebugJS.diffDate('1900-01-01 ', d) + 1;
   if (r >= 60) r++;
