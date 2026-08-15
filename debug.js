@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202608130032';
+  this.v = '202608151400';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -313,7 +313,6 @@ var DebugJS = DebugJS || function() {
     {cmd: 'alias', fn: this.cmdAlias, desc: 'Define or display aliases', help: 'alias [name=[\'command\']]'},
     {cmd: 'ascii', fn: this.cmdAscii, desc: 'Print all ASCII characters'},
     {cmd: 'base64', fn: this.cmdBase64, desc: 'Encodes/Decodes Base64', help: 'base64 [-e|-d] STR'},
-    {cmd: 'base64s', fn: this.cmdBase64S, desc: 'Encodes/Decodes Base64S', help: 'base64s [-e|-d] -k KEY STR'},
     {cmd: 'bat', fn: this.cmdBat, desc: 'Manipulate BAT Script', help: 'bat run [-s s] [-e e] [-arg arg]|pause|stop|list|status|pc|symbols|clear|exec b64-encoded-bat|set key val'},
     {cmd: 'bit', fn: this.cmdBit, desc: 'Displays the value of the given bit position', help: 'bit [-a] N'},
     {cmd: 'bsb64', fn: this.cmdBSB64, desc: 'Encodes/Decodes BSB64 reversible encryption string', help: 'bsb64 -e|-d [-n N] STR'},
@@ -392,6 +391,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'vals', fn: this.cmdVals, desc: 'Displays variable list'},
     {cmd: 'watchdog', fn: this.cmdWatchdog, desc: 'Start/Stop watchdog timer', help: 'watchdog [start|stop] [time(ms)]'},
     {cmd: 'win', fn: this.cmdWin, desc: 'Set the debugger window size/pos', help: 'win normal|expand|full|restore|reset', attr: DebugJS.CMD_ATTR_DYNAMIC | DebugJS.CMD_ATTR_NO_KIOSK},
+    {cmd: 'xb64', fn: this.cmdXB64, desc: 'Encodes/Decodes XB64', help: 'xb64 [-e|-d] -k KEY STR'},
     {cmd: 'xlscol', fn: this.cmdXlsCol, desc: 'Excel column number <--> reference', help: 'xlscol COL [+|-|:] [COL]'},
     {cmd: 'xlsdate', fn: this.cmdXlsDate, desc: 'Serial number <--> Date', help: 'xlsdate NUM|YYYY/MM/DD'},
     {cmd: 'xlstime', fn: this.cmdXlsTime, desc: 'Serial number <--> Time', help: 'xlstime NUM|hh:mm:ss.000'},
@@ -5402,8 +5402,8 @@ DebugJS.prototype = {
     ctx.fileVwrB64Slct.addEventListener('change', ctx.onB64SlctChg);
     DebugJS.setStyle(ctx.fileVwrB64Slct, {width: '6em', height: '1.1em', 'margin-right': '.5em', float: 'right'});
     var o = '<option value="b64">Base64</option>';
-    o += '<option value="b64s">Base64S</option>';
     o += '<option value="bsb64">BSB64</option>';
+    o += '<option value="xb64">XB64</option>';
     ctx.fileVwrB64Slct.innerHTML = o;
 
     style = {height: 'calc(100% - ' + (ctx.computedFontSize + ctx.computedFontSize * 0.5) + 'px)'};
@@ -5771,7 +5771,7 @@ DebugJS.prototype = {
     if (mode != 'txt') data = DebugJS.delAllNL(DebugJS.delAllSP(data));
     ctx.fileVwrDataSrc = {scheme: scheme, data: data};
     try {
-      var FN = {b64s: ctx.decodeFileVwrDataB64Ext, bsb64: ctx.decodeFileVwrDataB64Ext};
+      var FN = {bsb64: ctx.decodeFileVwrDataB64Ext, xb64: ctx.decodeFileVwrDataB64Ext};
       var f = FN[ctx.fileVwrB64Slct.value];
       if (!f) f = ctx.decodeFileVwrDataB64;
       f(ctx, data, mode, scheme);
@@ -5804,8 +5804,8 @@ DebugJS.prototype = {
   },
   decodeFileVwrDataB64Ext: function(ctx, src, mode, scheme) {
     var b64type = ctx.fileVwrB64Slct.value;
-    var encFn = (b64type == 'b64s' ? DebugJS.encodeBase64S : DebugJS.encodeBSB64);
-    var toB64Fn = (b64type == 'b64s' ? ctx.b64StoB64 : ctx.bsb64toB64);
+    var encFn = (b64type == 'xb64' ? DebugJS.encodeXB64 : DebugJS.encodeBSB64);
+    var toB64Fn = (b64type == 'xb64' ? ctx.b64StoB64 : ctx.bsb64toB64);
     var r, data;
     var n = ctx.fileVwrB64n.value;
     switch (mode) {
@@ -5874,7 +5874,7 @@ DebugJS.prototype = {
     if (ctx.fileVwrSysCb) {
       ctx.fileVwrSysCb(ctx, file, decoded);
     } else {
-      var FN = {b64s: ctx.b64toB64S, bsb64: ctx.b64toBSB64};
+      var FN = {bsb64: ctx.b64toBSB64, xb64: ctx.b64toXB64};
       var f = FN[ctx.fileVwrB64Slct.value];
       if (f) ctx.setBSB64data(ctx, b64cnt.data, f);
     }
@@ -5885,20 +5885,20 @@ DebugJS.prototype = {
     var s = f(b64, n);
     ctx.fileVwrDtTxtArea.value = DebugJS.insertCh(s, '\n', nl);
   },
-  b64toB64S: function(b64, k) {
-    var b = DebugJS.Base64.decode(b64);
-    return DebugJS.encodeBase64S(b, k);
-  },
   b64toBSB64: function(b64, n) {
     var b = DebugJS.Base64.decode(b64);
     return DebugJS.BSB64.encode(b, n);
   },
-  b64StoB64: function(b64, k) {
-    var b = DebugJS.decodeBase64S(b64, k, 1);
-    return DebugJS.Base64.encode(b);
-  },
   bsb64toB64: function(b64, n) {
     var b = DebugJS.BSB64.decode(b64, n);
+    return DebugJS.Base64.encode(b);
+  },
+  b64toXB64: function(b64, k) {
+    var b = DebugJS.Base64.decode(b64);
+    return DebugJS.encodeXB64(b, k);
+  },
+  xb64toB64: function(b64, k) {
+    var b = DebugJS.decodeXB64(b64, k, 1);
     return DebugJS.Base64.encode(b);
   },
   onFileLoadedBin: function(ctx, file, ctt) {
@@ -7220,7 +7220,7 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeB64, DebugJS.decodeB64, iIdx);
   },
 
-  cmdBase64S: function(arg, tbl, echo) {
+  cmdXB64: function(arg, tbl, echo) {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     var k = DebugJS.getOptVal(arg, 'k');
@@ -7229,7 +7229,7 @@ DebugJS.prototype = {
     } else {
       iIdx += 2;
     }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeBase64S, DebugJS.decodeBase64S, iIdx, k);
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeXB64, DebugJS.decodeXB64, iIdx, k);
   },
 
   cmdBat: function(arg, tbl, echo) {
@@ -13312,13 +13312,13 @@ DebugJS.Base64.getMimeType = function(s) {
   return r;
 };
 
-DebugJS.encodeBase64S = function(s, k) {
+DebugJS.encodeXB64 = function(s, k) {
   var a = ((typeof s == 'string') ? DebugJS.UTF8.toByteArray(s) : s);
   var x = DebugJS.UTF8.toByteArray(k);
-  var b = DebugJS._encodeBase64S(a, x);
+  var b = DebugJS._encodeXB64(a, x);
   return DebugJS.Base64.encode(b);
 };
-DebugJS._encodeBase64S = function(a, k) {
+DebugJS._encodeXB64 = function(a, k) {
   var ln = a.length;
   var kl = k.length;
   if ((ln == 0) || (kl == 0)) return a;
@@ -13335,14 +13335,14 @@ DebugJS._encodeBase64S = function(a, k) {
   b.push(d);
   return b;
 };
-DebugJS.decodeBase64S = function(s, k, byB) {
+DebugJS.decodeXB64 = function(s, k, byB) {
   var b = DebugJS.Base64.decode(s);
   var x = DebugJS.UTF8.toByteArray(k);
-  var a = DebugJS._decodeBase64S(b, x);
+  var a = DebugJS._decodeXB64(b, x);
   if (!byB) a = DebugJS.UTF8.fromByteArray(a);
   return a;
 };
-DebugJS._decodeBase64S = function(a, k) {
+DebugJS._decodeXB64 = function(a, k) {
   var al = a.length;
   var kl = k.length;
   if ((al == 0) || (kl == 0)) return a;
