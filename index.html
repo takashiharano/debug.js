@@ -4010,30 +4010,6 @@ $ base64 -d YWJjZGVmZw==
   </tr>
 
   <tr>
-    <td class="name">base64s</td>
-    <td>
-      arg1: operation<br>
-      arg2: key<br>
-      arg3: string
-    </td>
-    <td>
-     Base64 with XOR encryption by the specified key.
-<pre class="eg">
-operation: -e encode<span class="annotation">(default option)</span>
-           -d decode
-
-key      : -k KEY
-
-$ base64s -e -k xyz abcdefg
--&gt; GRsZHBwcHwA=
-
-$ base64s -d -k xyz GRsZHBwcHwA=
--&gt; abcdefg
-</pre>
-    </td>
-  </tr>
-
-  <tr>
     <td class="name">bat</td>
     <td>
       arg1: run|pause|stop|list|status|pc|clear|exec|set<br>
@@ -6030,6 +6006,30 @@ option:
       &nbsp;&nbsp;expand: depends on the current size<br>
       &nbsp;&nbsp;restore: restore the original size<br>
       &nbsp;&nbsp;reset: reset to initial size and position<br>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="name">xb64</td>
+    <td>
+      arg1: operation<br>
+      arg2: key<br>
+      arg3: string
+    </td>
+    <td>
+     Base64 with XOR encryption by the specified key.
+<pre class="eg">
+operation: -e encode<span class="annotation">(default option)</span>
+           -d decode
+
+key      : -k KEY
+
+$ xb64 -e -k xyz abcdefg
+-&gt; GRsZHBwcHwA=
+
+$ xb64 -d -k xyz GRsZHBwcHwA=
+-&gt; abcdefg
+</pre>
     </td>
   </tr>
 
