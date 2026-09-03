@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609032321';
+  this.v = '202609032346';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15291,8 +15291,9 @@ DebugJS.XML_TKN_CLS = 2;
 DebugJS.XML_TKN_CTT = 3;
 DebugJS.XML_TKN_EMP = 4;
 DebugJS.XML_TKN_CMT = 5;
-DebugJS.XML_TKN_CDT = 8;
-DebugJS.XML_TKN_XML = 9;
+DebugJS.XML_TKN_CDT = 6;
+DebugJS.XML_TKN_PI  = 7;
+DebugJS.XML_TKN_XML = 8;
 DebugJS.formatXml = function(s, indt, rmvCmnt) {
   if (indt == undefined) indt = 2;
   var tkns = DebugJS.listXmlTokens(s);
@@ -15411,8 +15412,10 @@ DebugJS.isXmlPrvClose = function(tp0) {
 };
 DebugJS.getXmlTknType = function(s, tp0) {
   var t = DebugJS.XML_TKN_NUL;
-  if (s.match(/<\?/)) {
+  if (s.match(/^<\?xml(?:\s|\?>)/)) {
     t = DebugJS.XML_TKN_XML;
+  } else if (s.match(/^<\?/)) {
+    t = DebugJS.XML_TKN_PI;
   } else if (s.match(/<!\[CDATA/)) {
     t = DebugJS.XML_TKN_CDT;
   } else if (s.match(/<!--/)) {
