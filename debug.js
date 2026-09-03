@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609040022';
+  this.v = '202609040048';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15415,6 +15415,7 @@ DebugJS.fmtXml = function(tkns, indt, rmvCmnt) {
   var tp1 = DebugJS.XML_TKN_NUL;
   var lv = 0;
   var x = '';
+  var mx = DebugJS.getXmlMixedContent(tkns);
   for (var i = 0; i < tkns.length; i++) {
     var tkn = tkns[i];
     var tkn1 = tkns[i + 1];
@@ -15429,29 +15430,53 @@ DebugJS.fmtXml = function(tkns, indt, rmvCmnt) {
     } else if ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT)) {
       if (tp0 == DebugJS.XML_TKN_OPN) lv++;
     } else if (tp == DebugJS.XML_TKN_CTT) {
-      if (tp1 == DebugJS.XML_TKN_OPN) {
-        tp = DebugJS.XML_TKN_NUL;
-      }
+      if (tp1 == DebugJS.XML_TKN_OPN) tp = DebugJS.XML_TKN_NUL;
     }
     if (tp == DebugJS.XML_TKN_NUL) {
       x += tkn.trim().replace(/(\r?\n|\r)/g, '');
       continue;
     }
     if (indt >= 0) {
-      if ((x != '') && ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || (tp == DebugJS.XML_TKN_DTD) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN)))) {
-          x += '\n';
-      }
-      if ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || (tp == DebugJS.XML_TKN_DTD) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN))) {
-          x += DebugJS.repeatCh(' ', indt * lv);
-      }
+      if ((x != '') && ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || (tp == DebugJS.XML_TKN_DTD) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN)))) x += '\n';
+      if ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || (tp == DebugJS.XML_TKN_DTD) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN))) x += DebugJS.repeatCh(' ', indt * lv);
     }
-    if (DebugJS.isXmlTagPart(tp)) {
-      tkn = tkn.replace(/(\r?\n|\r)/g, ' ');
-    }
+    if (DebugJS.isXmlTagPart(tp)) tkn = tkn.replace(/(\r?\n|\r)/g, ' ');
     x += tkn;
+    if ((tp == DebugJS.XML_TKN_OPN) && (mx[i] != undefined)) {
+      var end = mx[i];
+      for (var j = i + 1; j <= end; j++) {
+        var tp2 = DebugJS.getXmlTknType(tkns[j], DebugJS.XML_TKN_NUL);
+        if (rmvCmnt && (tp2 == DebugJS.XML_TKN_CMT)) continue;
+        x += tkns[j];
+      }
+      i = end;
+      tp0 = DebugJS.XML_TKN_CLS;
+      continue;
+    }
     tp0 = tp;
   }
   return x;
+};
+DebugJS.getXmlMixedContent = function(tkns) {
+  var mx = {};
+  var stk = [];
+  for (var i = 0; i < tkns.length; i++) {
+    var tkn = tkns[i];
+    var tp = DebugJS.getXmlTknType(tkn, DebugJS.XML_TKN_NUL);
+    var c = stk[stk.length - 1];
+    if (tp == DebugJS.XML_TKN_OPN) {
+      if (c) c.m = 1;
+      stk.push({s: i, t: 0, d: 0, m: 0});
+    } else if (tp == DebugJS.XML_TKN_CLS) {
+      c = stk.pop();
+      if (c && ((c.t && (c.d || c.m)) || (c.d && c.m))) mx[c.s] = i;
+    } else if (tp == DebugJS.XML_TKN_CDT) {
+      if (c && (tkn.length > 12)) c.d = 1;
+    } else if ((tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || (tp == DebugJS.XML_TKN_PI) || (tp == DebugJS.XML_TKN_DTD) || (tp == DebugJS.XML_TKN_XML)) {
+      if (c) c.m = 1;
+    } else if (c && /\S/.test(tkn)) c.t = 1;
+  }
+  return mx;
 };
 DebugJS.isXmlTagPart = function(tp) {
   return [DebugJS.XML_TKN_XML, DebugJS.XML_TKN_OPN, DebugJS.XML_TKN_CLS, DebugJS.XML_TKN_EMP].includes(tp);
