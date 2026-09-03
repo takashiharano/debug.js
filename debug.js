@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202608151400';
+  this.v = '202609032321';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15302,6 +15302,8 @@ DebugJS.listXmlTokens = function(s) {
   var f = 0;
   var cmnt = 0;
   var cdata = 0;
+  var tag = 0;
+  var quote = 0;
   var w = '';
   var tkns = [];
   for (var i = 0; i < s.length; i++) {
@@ -15309,23 +15311,37 @@ DebugJS.listXmlTokens = function(s) {
     if (p == 0x3C) {
       if (!cmnt && !cdata) {
         f = 1;
+        tag = 1;
+        quote = 0;
         var d = s.slice(i, i + 9);
         if (d.match(/^<!--/)) {
-          if (!cdata) cmnt = 1;
+          cmnt = 1;
         } else if (d == '<![CDATA[') {
-          if (!cmnt) cdata = 1;
+          cdata = 1;
         }
       }
+    } else if (!cmnt && !cdata && tag && ((p == 0x22) || (p == 0x27))) {
+      if (quote == 0) {
+        quote = p;
+      } else if (quote == p) {
+        quote = 0;
+      }
+      f = 0;
     } else if (p == 0x3E) {
-      if (!cmnt && !cdata) f = 1;
+      if (!cmnt && !cdata && tag && !quote) {
+        f = 1;
+        tag = 0;
+      } else {
+        f = 0;
+      }
     } else {
       f = 0;
       if (cmnt) {
         d = s.slice(i, i + 3);
         if (d == '-->') cmnt = 0;
       } else if (cdata) {
-        d = s.slice(i, i + 2);
-        if (d == ']]') cdata = 0;
+        d = s.slice(i, i + 3);
+        if (d == ']]>') cdata = 0;
       }
     }
     if (p >= 0x10000) i++;
