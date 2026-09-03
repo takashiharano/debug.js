@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609032346';
+  this.v = '202609040005';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15293,7 +15293,8 @@ DebugJS.XML_TKN_EMP = 4;
 DebugJS.XML_TKN_CMT = 5;
 DebugJS.XML_TKN_CDT = 6;
 DebugJS.XML_TKN_PI  = 7;
-DebugJS.XML_TKN_XML = 8;
+DebugJS.XML_TKN_DTD = 8;
+DebugJS.XML_TKN_XML = 9;
 DebugJS.formatXml = function(s, indt, rmvCmnt) {
   if (indt == undefined) indt = 2;
   var tkns = DebugJS.listXmlTokens(s);
@@ -15303,25 +15304,70 @@ DebugJS.listXmlTokens = function(s) {
   var f = 0;
   var cmnt = 0;
   var cdata = 0;
+  var pi = 0;
+  var dtd = 0;
+  var dtdLv = 0;
+  var dtdCmnt = 0;
+  var dtdPi = 0;
   var tag = 0;
   var quote = 0;
   var w = '';
   var tkns = [];
   for (var i = 0; i < s.length; i++) {
     var p = s.codePointAt(i);
-    if (p == 0x3C) {
-      if (!cmnt && !cdata) {
+    var d;
+    if (dtd) {
+      f = 0;
+      if (dtdCmnt) {
+        d = s.slice(i, i + 3);
+        if (d == '-->') dtdCmnt = 0;
+      } else if (dtdPi) {
+        d = s.slice(i, i + 2);
+        if (d == '?>') dtdPi = 0;
+      } else if (quote) {
+        if (p == quote) quote = 0;
+      } else {
+        d = s.slice(i, i + 4);
+        if (d == '<!--') {
+          dtdCmnt = 1;
+        } else if (s.slice(i, i + 2) == '<?') {
+          dtdPi = 1;
+        } else if ((p == 0x22) || (p == 0x27)) {
+          quote = p;
+        } else if (p == 0x5B) {
+          dtdLv++;
+        } else if ((p == 0x5D) && (dtdLv > 0)) {
+          dtdLv--;
+        } else if ((p == 0x3E) && (dtdLv == 0)) {
+          f = 1;
+          dtd = 0;
+          tag = 0;
+        }
+      }
+    } else if (p == 0x3C) {
+      if (!cmnt && !cdata && !pi) {
         f = 1;
         tag = 1;
         quote = 0;
-        var d = s.slice(i, i + 9);
-        if (d.match(/^<!--/)) {
-          cmnt = 1;
-        } else if (d == '<![CDATA[') {
-          cdata = 1;
+        d = s.slice(i, i + 10);
+        if (d.match(/^<!DOCTYPE(?:\s|>)/)) {
+          dtd = 1;
+          dtdLv = 0;
+          dtdCmnt = 0;
+          dtdPi = 0;
+        } else {
+          d = s.slice(i, i + 9);
+          if (d.match(/^<!--/)) {
+            cmnt = 1;
+          } else if (d == '<![CDATA[') {
+            cdata = 1;
+          } else if (s.slice(i, i + 2) == '<?') {
+            pi = 1;
+          }
         }
       }
-    } else if (!cmnt && !cdata && tag && ((p == 0x22) || (p == 0x27))) {
+    } else if (!cmnt && !cdata && !pi && tag &&
+               ((p == 0x22) || (p == 0x27))) {
       if (quote == 0) {
         quote = p;
       } else if (quote == p) {
@@ -15329,7 +15375,7 @@ DebugJS.listXmlTokens = function(s) {
       }
       f = 0;
     } else if (p == 0x3E) {
-      if (!cmnt && !cdata && tag && !quote) {
+      if (!cmnt && !cdata && !pi && tag && !quote) {
         f = 1;
         tag = 0;
       } else {
@@ -15343,6 +15389,9 @@ DebugJS.listXmlTokens = function(s) {
       } else if (cdata) {
         d = s.slice(i, i + 3);
         if (d == ']]>') cdata = 0;
+      } else if (pi) {
+        d = s.slice(i, i + 2);
+        if (d == '?>') pi = 0;
       }
     }
     if (p >= 0x10000) i++;
@@ -15389,10 +15438,10 @@ DebugJS.fmtXml = function(tkns, indt, rmvCmnt) {
       continue;
     }
     if (indt >= 0) {
-      if ((x != '') && ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN)))) {
+      if ((x != '') && ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || (tp == DebugJS.XML_TKN_DTD) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN)))) {
           x += '\n';
       }
-      if ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN))) {
+      if ((tp == DebugJS.XML_TKN_OPN) || (tp == DebugJS.XML_TKN_EMP) || (tp == DebugJS.XML_TKN_CMT) || (tp == DebugJS.XML_TKN_DTD) || ((tp == DebugJS.XML_TKN_CLS) && DebugJS.isXmlPrvClose(tp0)) || ((tp == DebugJS.XML_TKN_CDT) && (tp0 != DebugJS.XML_TKN_OPN))) {
           x += DebugJS.repeatCh(' ', indt * lv);
       }
     }
@@ -15416,6 +15465,8 @@ DebugJS.getXmlTknType = function(s, tp0) {
     t = DebugJS.XML_TKN_XML;
   } else if (s.match(/^<\?/)) {
     t = DebugJS.XML_TKN_PI;
+  } else if (s.match(/^<!DOCTYPE(?:\s|>)/)) {
+    t = DebugJS.XML_TKN_DTD;
   } else if (s.match(/<!\[CDATA/)) {
     t = DebugJS.XML_TKN_CDT;
   } else if (s.match(/<!--/)) {
