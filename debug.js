@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082224';
+  this.v = '202609082245';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5805,7 +5805,7 @@ DebugJS.prototype = {
   decodeFileVwrDataB64Ext: function(ctx, src, mode, scheme) {
     var b64type = ctx.fileVwrB64Slct.value;
     var encFn = (b64type == 'xb64' ? DebugJS.encodeXB64 : DebugJS.encodeBSB64);
-    var toB64Fn = (b64type == 'xb64' ? ctx.b64StoB64 : ctx.bsb64toB64);
+    var toB64Fn = (b64type == 'xb64' ? ctx.xb64toB64 : ctx.bsb64toB64);
     var r, data;
     var n = ctx.fileVwrB64n.value;
     switch (mode) {
