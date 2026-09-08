@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082249';
+  this.v = '202609082251';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -860,7 +860,7 @@ DebugJS.prototype = {
       'font-size': fontSize + ' !important',
       'font-family': opt.fontFamily + ' !important'
     };
-    styles['#' + ctx.id + ' input, textarea'] = {
+    styles['#' + ctx.id + ' input, #' + ctx.id + ' textarea'] = {
       'letter-spacing': ltsp + ' !important'
     };
     styles['#' + ctx.id + ' td'] = {
