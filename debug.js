@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082245';
+  this.v = '202609082248';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17403,7 +17403,7 @@ DebugJS.point.verify = function(prop, method, exp, label) {
   }
   var el = DebugJS.point.getElementFromCurrentPos();
   if (!el) {
-    info = errPfix + 'No element (x=' + ptr.x + ', y=' + DebugJS.ptr.y + ')';
+    info = errPfix + 'No element (x=' + ptr.x + ', y=' + ptr.y + ')';
     DebugJS._log.e(info);
     test.addResult(st, label, exp, undefined, method, info);
     test.onVrfyAftr(st);
