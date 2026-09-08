@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082216';
+  this.v = '202609082224';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18750,9 +18750,7 @@ DebugJS.xlsColA2N = function(c) {
   return DebugJS.strpIndex(DebugJS.A2Z, c.trim().toUpperCase());
 };
 DebugJS.xlsColN2A = function(n) {
-  var a = DebugJS.strp(DebugJS.A2Z, n);
-  if (n <= 0) a = '';
-  return a;
+  return ((n > 0) ? DebugJS.strp(DebugJS.A2Z, n) : '');
 };
 DebugJS.xlsDateA2N = function(v) {
   v = DebugJS.serializeDateTime(v);
