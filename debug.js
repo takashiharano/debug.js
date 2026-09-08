@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082254';
+  this.v = '202609082258';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18135,12 +18135,8 @@ DebugJS.event.evtDef = {
 };
 DebugJS.event.create = function(type) {
   var e = document.createEvent('Events');
-  e.initEvent(type, true, true);
   var df = DebugJS.event.evtDef[type];
-  if (df) {
-    e.bubbles = df.bubbles;
-    e.cancelable = df.cancelable;
-  }
+  e.initEvent(type, (df ? df.bubbles : true), (df ? df.cancelable : true));
   DebugJS.event.evt = e;
   return e;
 };
