@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082251';
+  this.v = '202609082254';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18711,7 +18711,7 @@ DebugJS.getProtocol = function() {
   return location.protocol;
 };
 DebugJS.getHost = function() {
-  return location.host.split(':')[0];
+  return location.hostname;
 };
 DebugJS.getPort = function() {
   return location.port;
