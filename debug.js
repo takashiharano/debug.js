@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082157';
+  this.v = '202609082216';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8242,10 +8242,9 @@ DebugJS.prototype = {
     s += ' <span style="color:' + cEh + ';">' + eDigits + '</span><span style="color:' + cFh + ';">' + df + 'bits</span>\n';
     s += '<span style="color:' + cSh + ';">s</span><span style="color:' + cEh + ';">' + DebugJS.repeatCh('e', de) + '</span><span style="color:' + cFh + ';">' + DebugJS.repeatCh('f', df) + '</span>\n';
     s += '<span style="color:' + cS + ';">' + b.s + '</span><span style="color:' + cE + ';">' + b.e + '</span><span style="color:' + cF + ';">' + b.f + '</span>\n';
-    var a = h.split('');
     s += '<span style="color:#ddd">';
-    for (var i = 0; i < a.length; i++) {
-      s += a[i] + '   ';
+    for (var i = 0; i < h.length; i++) {
+      s += h[i] + '   ';
     }
     s += '</span>';
     return {v: v, s: s};
@@ -12138,22 +12137,20 @@ DebugJS.clearobj = function(k) {
 };
 
 DebugJS.calcMod10 = function(s, w) {
-  var a = s.split('');
   var v = [0, 0];
   var d = 0;
-  for (var i = a.length - 1; i >= 0; i--) {
-    v[d % 2] += a[i] | 0;
+  for (var i = s.length - 1; i >= 0; i--) {
+    v[d % 2] += s[i] | 0;
     d++;
   }
   var c = v[0] * w + v[1];
   return ((10 - (c % 10)) % 10);
 };
 DebugJS.calcMod11 = function(s) {
-  var a = s.split('');
   var n = 0;
   var d = 0;
-  for (var i = a.length - 1; i >= 0; i--) {
-    var v = a[i] | 0;
+  for (var i = s.length - 1; i >= 0; i--) {
+    var v = s[i] | 0;
     n += v * ((d % 6) + 2);
     d++;
   }
@@ -12167,12 +12164,11 @@ DebugJS.calcMod43 = function(s) {
       s = eval(s);
     } catch (e) {return '';}
   }
-  var a = s.split('');
   var n = 0;
-  for (var i = 0; i < a.length; i++) {
-    var v = a[i];
+  for (var i = 0; i < s.length; i++) {
+    var v = s[i];
     if (v == '*') {
-      if ((i == 0) || (i == a.length - 1)) {
+      if ((i == 0) || (i == s.length - 1)) {
         continue;
       } else {
         return '';
@@ -13011,7 +13007,7 @@ DebugJS.formatDec4 = function(s) {
     if (!w) break;
     var n = w[1] | 0;
     if (!n) n = 1;
-    var a = w[2].split('');
+    var a = w[2];
     var b = a[0];
     if (a.length == 2) {
       var p = DebugJS.arr.pos(U2, b) + 1;
@@ -13981,7 +13977,6 @@ DebugJS.getRndNums = function(d) {
 DebugJS.getRandomString = function(min, max, tbl) {
   var DFLT_MAX_LEN = 8;
   if (!tbl) tbl = DebugJS.Aa0;
-  if (typeof tbl == 'string') tbl = tbl.split('');
   if (min == undefined) {
     min = DFLT_MAX_LEN;
     max = min;
@@ -18802,7 +18797,6 @@ DebugJS.xlsTimeN2A = function(v) {
 };
 
 DebugJS.strp = function(tbl, idx) {
-  if (typeof tbl == 'string') tbl = tbl.split('');
   var len = tbl.length;
   var a = [-1];
   for (var i = 0; i < idx; i++) {
