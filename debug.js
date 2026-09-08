@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609040122';
+  this.v = '202609082157';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18833,23 +18833,24 @@ DebugJS.strpIndex = function(tbl, ptn) {
   var len = ptn.length;
   var rdx = tbl.length;
   var idx = 0;
+  var p = 1;
   for (var i = 0; i < len; i++) {
     var d = len - i - 1;
-    var c = ptn.slice(d, d + 1);
-    var v = tbl.indexOf(c);
+    var v = tbl.indexOf(ptn[d]);
     if (v == -1) return 0;
     v++;
-    var n = v * Math.pow(rdx, i);
-    idx += n;
+    idx += v * p;
+    p *= rdx;
   }
   return idx;
 };
 DebugJS.strpTotal = function(tbl, d) {
-  if (typeof tbl == 'string') tbl = tbl.split('');
   var c = tbl.length;
   var n = 0;
+  var p = c;
   for (var i = 1; i <= d; i++) {
-    n += Math.pow(c, i);
+    n += p;
+    p *= c;
   }
   return n;
 };
