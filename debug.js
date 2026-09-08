@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609082248';
+  this.v = '202609082249';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5775,7 +5775,7 @@ DebugJS.prototype = {
       var f = FN[ctx.fileVwrB64Slct.value];
       if (!f) f = ctx.decodeFileVwrDataB64;
       f(ctx, data, mode, scheme);
-    } catch (e) {ctx.showFilePreview(ctx, null, scheme, 'DECODE ERROOR');}
+    } catch (e) {ctx.showFilePreview(ctx, null, scheme, 'DECODE ERROR');}
   },
   decodeFileVwrDataB64: function(ctx, src, mode, scheme) {
     var data;
