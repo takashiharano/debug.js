@@ -4083,7 +4083,7 @@ BIN 0000 0000 0000 0000 0000 0000 1111 1111 (8 bits)
     <td class="name">bsb64</td>
     <td></td>
     <td>
-     Encodes / Decodes <a href="https://bsb64.com/" target="_blank">BSB64</a>(Bit Shifted Base64) reversible encryption string.<br><br>
+     Encodes / Decodes <a href="https://libutil.com/bsb64/" target="_blank">BSB64</a> (Bit Shifted Base64).<br><br>
 <pre class="eg">
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
@@ -4103,7 +4103,6 @@ Simple usage:
 $ bsb64 abc
 $ bsb64 -e abc
 $ bsb64 -d wsTG
-$ bsb64 -d wsTG$N <span class="annotation">(equal to bsb64 -d -i "wsTG" -n N)</span>
 </pre>
     </td>
   </tr>
@@ -6017,7 +6016,7 @@ option:
       arg3: string
     </td>
     <td>
-     Base64 with XOR encryption by the specified key.
+     Encodes / Decodes <a href="https://libutil.com/xb64/" target="_blank">XB64</a> (XORed Base64).<br><br>
 <pre class="eg">
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
