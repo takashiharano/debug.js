@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609122207';
+  this.v = '202609131609';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13317,43 +13317,29 @@ DebugJS.xb64.encode = function(src, key) {
   if (src == null) return null;
   if (typeof src == 'string') src = DebugJS.utf8.toByteArray(src);
   var k = DebugJS.utf8.toByteArray(key);
-  var ln = src.length;
-  var kl = k.length;
-  if ((ln == 0) || (kl == 0)) {
-    var b = src;
-  } else {
-    var d = kl - ln;
-    if (d < 0) d = 0;
-    b = [];
-    for (var i = 0; i < ln; i++) {
-      b.push(src[i] ^ k[i % kl]);
-    }
-    for (i = 0; i < d; i++) {
-      b.push(255 ^ k[(ln + i) % kl]);
-    }
-    b.push(d);
-  }
+  var b = DebugJS.xor(src, k);
   return DebugJS.base64.encode(b);
 };
 DebugJS.xb64.decode = function(src, key) {
   if (src == null) return null;
   var a = DebugJS.base64.decode(src);
   var k = DebugJS.utf8.toByteArray(key);
-  var al = a.length;
-  var kl = k.length;
-  if ((al == 0) || (kl == 0)) return a.slice();
-  var d = a[al - 1];
-  var ln = al - d - 1;
-  var b = [];
-  for (var i = 0; i < ln; i++) {
-    b.push(a[i] ^ k[i % kl]);
-  }
-  return b;
+  return DebugJS.xor(a, k);
 };
 DebugJS.xb64.decodeToString = function(src, key) {
   if (src == null) return null;
   var a = DebugJS.xb64.decode(src, key);
   return DebugJS.utf8.fromByteArray(a);
+};
+DebugJS.xor = function(s, k) {
+  var ln = s.length;
+  var kl = k.length;
+  if ((ln == 0) || (kl == 0)) return s.slice();
+  var b = [];
+  for (var i = 0; i < ln; i++) {
+    b.push(s[i] ^ k[i % kl]);
+  }
+  return b;
 };
 
 DebugJS.bsb64 = {};
