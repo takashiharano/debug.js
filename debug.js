@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202609131609';
+  this.v = '202610142155';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -361,7 +361,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|msg|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
-    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-tbl "ABC..."]'},
+    {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-chars "ABC..."]'},
     {cmd: 'resume', fn: this.cmdResume, desc: 'Resume a suspended batch process', help: 'resume [-key key]'},
     {cmd: 'rgb', fn: this.cmdRGB, desc: 'Convert RGB color values between HEX and DEC', help: 'rgb values (#<span style="color:' + DebugJS.COLOR_R + '">R</span><span style="color:' + DebugJS.COLOR_G + '">G</span><span style="color:' + DebugJS.COLOR_B + '">B</span> | <span style="color:' + DebugJS.COLOR_R + '">R</span> <span style="color:' + DebugJS.COLOR_G + '">G</span> <span style="color:' + DebugJS.COLOR_B + '">B</span>)'},
     {cmd: 'rot', fn: this.cmdROT, desc: 'Replaces a letter with ROTx', help: 'rot 5|13|18|47 [-n N] STR'},
@@ -9132,7 +9132,7 @@ DebugJS.prototype = {
       DebugJS.printUsage(tbl.help);
       return;
     } else if (o == 's') {
-      var t = DebugJS.getOptVal(arg, 'tbl');
+      var t = DebugJS.getOptVal(arg, 'chars');
       if (t) {
         try {
           t = eval(t);
