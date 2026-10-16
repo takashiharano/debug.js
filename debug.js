@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610142155';
+  this.v = '202610170141';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6607,6 +6607,27 @@ DebugJS.prototype = {
       fn: function(s, o) {return (o[0] == 'U' ? s.toUpperCase() : s.toLowerCase());}
     },
     {lbl: 'Max/Min Len', opt: [{lbl: 'THRESHOLD'}], fn: function(s, o) {return DebugJS.minMaxLen(s, o[0]);}},
+    {lbl: 'Modulus', opt: [{lbl: 'MOD', optvals: [{v: '10'}, {v: '11'}, {v: '43'}]}, {lbl: 'Weight', v: '3'}],
+      fn: function(s, o) {
+        var fn = DebugJS['calcMod' + o[0]];
+        var a = DebugJS.txt2arr(s);
+        var r = '';
+        for (var i = 0; i < a.length; i++) {
+          var c = a[i].split('\t');
+          if (i > 0) r += '\n';
+          for (var j = 0; j < c.length; j++) {
+            var v = c[j];
+            var is43 = (o[0] == '43');
+            var t = is43 ? v : v.trim();
+            var re = is43 ? /^[0-9A-Z.$/+% -]+$/ : /^\d+$/;
+            if (re.test(t)) v = t + fn(t, o[1] | 0);
+            if (j > 0) r += '\t';
+            r += v;
+          }
+        }
+        return r;
+      }
+    },
     {
       lbl: 'NEWLINE', opt: [{lbl: '', optvals: [{t: 'INS', v: '0'}, {t: 'DEL', v: '1'}, {t: 'AGG', v: '2'}, {t: 'DBL', v: '3'}]}, {lbl: 'POS', v: '76'}],
       fn: function(s, o) {
