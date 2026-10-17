@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610171720';
+  this.v = '202610171908';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -4281,12 +4281,12 @@ DebugJS.prototype = {
       var c = s.color;
       if (!c.match(/rgba/)) {
         c = c.replace(/\s/g, '').replace(/rgb\(/, '').replace(/\)/, '').split(',');
-        ctx.setFgRGB(ctx, c[0], c[1], c[2]);
+        ctx.setColorRGB('Fg', c[0], c[1], c[2], 1);
       }
       c = s.backgroundColor;
       if (!c.match(/rgba/)) {
         c = c.replace(/\s/g, '').replace(/rgb\(/, '').replace(/\)/, '').split(',');
-        ctx.setBgRGB(ctx, c[0], c[1], c[2]);
+        ctx.setColorRGB('Bg', c[0], c[1], c[2], 1);
       }
     }
   },
@@ -5166,17 +5166,13 @@ DebugJS.prototype = {
     var c = (DebugJS.ctx.status & DebugJS.ST_ELM_EDIT ? DebugJS.ctx.opt.btnColor : DebugJS.COLOR_INACT);
     DebugJS.setStyle(btn, 'color', c);
   },
-  setFgRGB: function(ctx, r, g, b) {
-    ctx.fontChkRangeFg.r.value = r;
-    ctx.fontChkRangeFg.g.value = g;
-    ctx.fontChkRangeFg.b.value = b;
-    ctx.onChangeColor('Fg', 1);
-  },
-  setBgRGB: function(ctx, r, g, b) {
-    ctx.fontChkRangeBg.r.value = r;
-    ctx.fontChkRangeBg.g.value = g;
-    ctx.fontChkRangeBg.b.value = b;
-    ctx.onChangeColor('Bg', 1);
+  setColorRGB: function(type, r, g, b, callFmRng) {
+    var ctx = DebugJS.ctx;
+    var range = ctx['fontChkRange' + type];
+    range.r.value = r;
+    range.g.value = g;
+    range.b.value = b;
+    ctx.onChangeColor(type, callFmRng);
   },
   onChangeRGB: function(type) {
     var ctx = DebugJS.ctx;
@@ -5188,11 +5184,7 @@ DebugJS.prototype = {
     }
     var rgb10 = DebugJS.rgb16to10(rgb16);
     if (!rgb10) return;
-    var range = ctx['fontChkRange' + type];
-    range.r.value = rgb10.r;
-    range.g.value = rgb10.g;
-    range.b.value = rgb10.b;
-    ctx.onChangeColor(type, 0);
+    ctx.setColorRGB(type, rgb10.r, rgb10.g, rgb10.b, 0);
     DebugJS.setStyle(ctx.fontChkTargetEl, prop, rgb16);
   },
   onChangeColor: function(type, callFmRng) {
