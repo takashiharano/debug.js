@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610171638';
+  this.v = '202610171700';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5131,7 +5131,7 @@ DebugJS.prototype = {
   },
   buildColorRange: function(ctx, type, color, cU, cL) {
     var id = ctx.id + '-' + type;
-    var fn = 'DebugJS.ctx.onChange' + (type == 'fg' ? 'Fg' : 'Bg') + 'Color(1);';
+    var fn = 'DebugJS.ctx.onChangeColor(\'' + (type == 'fg' ? 'Fg' : 'Bg') + '\',1);';
     return '<tr><td><span style="color:' + color + '">' + cU + '</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + id + '-range-' + cL + '" class="dbg-txt-range" oninput="' + fn + '" onchange="' + fn + '"></td><td><span id="' + id + '-' + cL + '"></span></td></tr>';
   },
   toggleTxtItalic: function(btn) {
@@ -5170,13 +5170,13 @@ DebugJS.prototype = {
     ctx.fontChkRangeFg.r.value = r;
     ctx.fontChkRangeFg.g.value = g;
     ctx.fontChkRangeFg.b.value = b;
-    ctx.onChangeFgColor(1);
+    ctx.onChangeColor('Fg', 1);
   },
   setBgRGB: function(ctx, r, g, b) {
     ctx.fontChkRangeBg.r.value = r;
     ctx.fontChkRangeBg.g.value = g;
     ctx.fontChkRangeBg.b.value = b;
-    ctx.onChangeBgColor(1);
+    ctx.onChangeColor('Bg', 1);
   },
   onChangeFgRGB: function() {
     var ctx = DebugJS.ctx;
@@ -5186,7 +5186,7 @@ DebugJS.prototype = {
     ctx.fontChkRangeFg.r.value = rgb10.r;
     ctx.fontChkRangeFg.g.value = rgb10.g;
     ctx.fontChkRangeFg.b.value = rgb10.b;
-    ctx.onChangeFgColor(0);
+    ctx.onChangeColor('Fg', 0);
     DebugJS.setStyle(ctx.fontChkTargetEl, 'color', rgb16);
   },
   onChangeBgRGB: function() {
@@ -5200,35 +5200,23 @@ DebugJS.prototype = {
     ctx.fontChkRangeBg.r.value = rgb10.r;
     ctx.fontChkRangeBg.g.value = rgb10.g;
     ctx.fontChkRangeBg.b.value = rgb10.b;
-    ctx.onChangeBgColor(0);
+    ctx.onChangeColor('Bg', 0);
     DebugJS.setStyle(ctx.fontChkTargetEl, 'background', rgb16);
   },
-  onChangeFgColor: function(callFmRng) {
+  onChangeColor: function(type, callFmRng) {
     var ctx = DebugJS.ctx;
-    var fgR = ctx.fontChkRangeFg.r.value;
-    var fgG = ctx.fontChkRangeFg.g.value;
-    var fgB = ctx.fontChkRangeFg.b.value;
-    var rgb16 = DebugJS.rgb10to16(fgR, fgG, fgB);
-    ctx.fontChkLabelFg.r.innerText = fgR;
-    ctx.fontChkLabelFg.g.innerText = fgG;
-    ctx.fontChkLabelFg.b.innerText = fgB;
+    var range = ctx['fontChkRange' + type];
+    var label = ctx['fontChkLabel' + type];
+    var r = range.r.value;
+    var g = range.g.value;
+    var b = range.b.value;
+    var rgb16 = DebugJS.rgb10to16(r, g, b);
+    label.r.innerText = r;
+    label.g.innerText = g;
+    label.b.innerText = b;
     if (callFmRng) {
-      ctx.fontChkInputFgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      DebugJS.setStyle(ctx.fontChkTargetEl, 'color', 'rgb(' + fgR + ',' + fgG + ',' + fgB + ')');
-    }
-  },
-  onChangeBgColor: function(callFmRng) {
-    var ctx = DebugJS.ctx;
-    var bgR = ctx.fontChkRangeBg.r.value;
-    var bgG = ctx.fontChkRangeBg.g.value;
-    var bgB = ctx.fontChkRangeBg.b.value;
-    var rgb16 = DebugJS.rgb10to16(bgR, bgG, bgB);
-    ctx.fontChkLabelBg.r.innerText = bgR;
-    ctx.fontChkLabelBg.g.innerText = bgG;
-    ctx.fontChkLabelBg.b.innerText = bgB;
-    if (callFmRng) {
-      ctx.fontChkInputBgRGB.value = rgb16.r + rgb16.g + rgb16.b;
-      DebugJS.setStyle(ctx.fontChkTargetEl, 'background', 'rgb(' + bgR + ',' + bgG + ',' + bgB + ')');
+      ctx['fontChkInput' + type + 'RGB'].value = rgb16.r + rgb16.g + rgb16.b;
+      DebugJS.setStyle(ctx.fontChkTargetEl, (type == 'Fg' ? 'color' : 'background'), 'rgb(' + r + ',' + g + ',' + b + ')');
     }
   },
   onChangeFontSizeTxt: function() {
