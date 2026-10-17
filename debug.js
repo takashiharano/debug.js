@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610171440';
+  this.v = '202610171638';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5093,14 +5093,14 @@ DebugJS.prototype = {
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + dfltFontWeight + '" id="' + ctx.id + '-fontweight-range" class="dbg-txt-range" style="width:80px !important" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
     '<table class="dbg-txt-tbl">' +
     '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="dbg-txtbox" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>';
-    html += ctx.buildRangeFg(ctx, DebugJS.COLOR_R, 'R', 'r');
-    html += ctx.buildRangeFg(ctx, DebugJS.COLOR_G, 'G', 'g');
-    html += ctx.buildRangeFg(ctx, DebugJS.COLOR_B, 'B', 'b');
+    html += ctx.buildColorRange(ctx, 'fg', DebugJS.COLOR_R, 'R', 'r');
+    html += ctx.buildColorRange(ctx, 'fg', DebugJS.COLOR_G, 'G', 'g');
+    html += ctx.buildColorRange(ctx, 'fg', DebugJS.COLOR_B, 'B', 'b');
     html += '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="dbg-txtbox" value="' + dfltBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>';
-    html += ctx.buildRangeBg(ctx, DebugJS.COLOR_R, 'R', 'r');
-    html += ctx.buildRangeBg(ctx, DebugJS.COLOR_G, 'G', 'g');
-    html += ctx.buildRangeBg(ctx, DebugJS.COLOR_B, 'B', 'b');
-    html += '</tbale>';
+    html += ctx.buildColorRange(ctx, 'bg', DebugJS.COLOR_R, 'R', 'r');
+    html += ctx.buildColorRange(ctx, 'bg', DebugJS.COLOR_G, 'G', 'g');
+    html += ctx.buildColorRange(ctx, 'bg', DebugJS.COLOR_B, 'B', 'b');
+    html += '</table>';
     ctx.fontChkCtrl = DebugJS.ui.addElement(ctx.fontChkPanel, 'div');
     ctx.fontChkCtrl.innerHTML = html;
 
@@ -5129,11 +5129,10 @@ DebugJS.prototype = {
     ctx.onChangeFgRGB();
     ctx.onChangeBgRGB();
   },
-  buildRangeFg: function(ctx, color, cU, cL) {
-    return '<tr><td><span style="color:' + color + '">' + cU + '</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-fg-range-' + cL + '" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeFgColor(1);" onchange="DebugJS.ctx.onChangeFgColor(1);"></td><td><span id="' + ctx.id + '-fg-' + cL + '"></span></td></tr>';
-  },
-  buildRangeBg: function(ctx, color, cU, cL) {
-    return '<tr><td><span style="color:' + color + '">' + cU + '</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + ctx.id + '-bg-range-' + cL + '" class="dbg-txt-range" oninput="DebugJS.ctx.onChangeBgColor(1);" onchange="DebugJS.ctx.onChangeBgColor(1);"></td><td><span id="' + ctx.id + '-bg-' + cL + '"></span></td></tr>';
+  buildColorRange: function(ctx, type, color, cU, cL) {
+    var id = ctx.id + '-' + type;
+    var fn = 'DebugJS.ctx.onChange' + (type == 'fg' ? 'Fg' : 'Bg') + 'Color(1);';
+    return '<tr><td><span style="color:' + color + '">' + cU + '</span>:</td><td><input type="range" min="0" max="255" step="1" id="' + id + '-range-' + cL + '" class="dbg-txt-range" oninput="' + fn + '" onchange="' + fn + '"></td><td><span id="' + id + '-' + cL + '"></span></td></tr>';
   },
   toggleTxtItalic: function(btn) {
     var ctx = DebugJS.ctx;
