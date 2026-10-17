@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610171700';
+  this.v = '202610171720';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -5092,11 +5092,11 @@ DebugJS.prototype = {
     'font-family: <input value="' + dfltFontFamily + '" class="dbg-txtbox" style="width:110px" oninput="DebugJS.ctx.onChangeFontFamily(this)">&nbsp;&nbsp;' +
     'font-weight: <input type="range" min="100" max="900" step="100" value="' + dfltFontWeight + '" id="' + ctx.id + '-fontweight-range" class="dbg-txt-range" style="width:80px !important" oninput="DebugJS.ctx.onChangeFontWeight();" onchange="DebugJS.ctx.onChangeFontWeight();"><span id="' + ctx.id + '-font-weight"></span> ' +
     '<table class="dbg-txt-tbl">' +
-    '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="dbg-txtbox" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeFgRGB()"></td></tr>';
+    '<tr><td colspan="2">FG #<input id="' + ctx.id + '-fg-rgb" class="dbg-txtbox" value="' + dfltFgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeRGB(\'Fg\')"></td></tr>';
     html += ctx.buildColorRange(ctx, 'fg', DebugJS.COLOR_R, 'R', 'r');
     html += ctx.buildColorRange(ctx, 'fg', DebugJS.COLOR_G, 'G', 'g');
     html += ctx.buildColorRange(ctx, 'fg', DebugJS.COLOR_B, 'B', 'b');
-    html += '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="dbg-txtbox" value="' + dfltBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeBgRGB()"></td></tr>';
+    html += '<tr><td colspan="2">BG #<input id="' + ctx.id + '-bg-rgb" class="dbg-txtbox" value="' + dfltBgRGB16 + '" style="width:80px" oninput="DebugJS.ctx.onChangeRGB(\'Bg\')"></td></tr>';
     html += ctx.buildColorRange(ctx, 'bg', DebugJS.COLOR_R, 'R', 'r');
     html += ctx.buildColorRange(ctx, 'bg', DebugJS.COLOR_G, 'G', 'g');
     html += ctx.buildColorRange(ctx, 'bg', DebugJS.COLOR_B, 'B', 'b');
@@ -5126,8 +5126,8 @@ DebugJS.prototype = {
 
     ctx.onChangeFontSizeTxt();
     ctx.onChangeFontWeight();
-    ctx.onChangeFgRGB();
-    ctx.onChangeBgRGB();
+    ctx.onChangeRGB('Fg');
+    ctx.onChangeRGB('Bg');
   },
   buildColorRange: function(ctx, type, color, cU, cL) {
     var id = ctx.id + '-' + type;
@@ -5178,30 +5178,22 @@ DebugJS.prototype = {
     ctx.fontChkRangeBg.b.value = b;
     ctx.onChangeColor('Bg', 1);
   },
-  onChangeFgRGB: function() {
+  onChangeRGB: function(type) {
     var ctx = DebugJS.ctx;
-    var rgb16 = '#' + ctx.fontChkInputFgRGB.value;
-    var rgb10 = DebugJS.rgb16to10(rgb16);
-    if (!rgb10) return;
-    ctx.fontChkRangeFg.r.value = rgb10.r;
-    ctx.fontChkRangeFg.g.value = rgb10.g;
-    ctx.fontChkRangeFg.b.value = rgb10.b;
-    ctx.onChangeColor('Fg', 0);
-    DebugJS.setStyle(ctx.fontChkTargetEl, 'color', rgb16);
-  },
-  onChangeBgRGB: function() {
-    var ctx = DebugJS.ctx;
-    var rgb16 = '#' + ctx.fontChkInputBgRGB.value;
-    if (rgb16 == '#') {
-      DebugJS.setStyle(ctx.fontChkTargetEl, 'background', 'transparent');return;
+    var rgb16 = '#' + ctx['fontChkInput' + type + 'RGB'].value;
+    var prop = (type == 'Fg' ? 'color' : 'background');
+    if ((type == 'Bg') && (rgb16 == '#')) {
+      DebugJS.setStyle(ctx.fontChkTargetEl, prop, 'transparent');
+      return;
     }
     var rgb10 = DebugJS.rgb16to10(rgb16);
     if (!rgb10) return;
-    ctx.fontChkRangeBg.r.value = rgb10.r;
-    ctx.fontChkRangeBg.g.value = rgb10.g;
-    ctx.fontChkRangeBg.b.value = rgb10.b;
-    ctx.onChangeColor('Bg', 0);
-    DebugJS.setStyle(ctx.fontChkTargetEl, 'background', rgb16);
+    var range = ctx['fontChkRange' + type];
+    range.r.value = rgb10.r;
+    range.g.value = rgb10.g;
+    range.b.value = rgb10.b;
+    ctx.onChangeColor(type, 0);
+    DebugJS.setStyle(ctx.fontChkTargetEl, prop, rgb16);
   },
   onChangeColor: function(type, callFmRng) {
     var ctx = DebugJS.ctx;
