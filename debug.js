@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610171351';
+  this.v = '202610171440';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10107,8 +10107,9 @@ DebugJS.prototype = {
   },
 
   cmdV: function() {
-    DebugJS._log(DebugJS.ctx.v);
-    return DebugJS.ctx.v;
+    var v = DebugJS.ctx.v;
+    DebugJS._log('debug.js v' + v + ' (c) 2015 Takashi Harano');
+    return v;
   },
 
   cmdVals: function(arg) {
