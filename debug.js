@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610192146';
+  this.v = '202610192229';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18861,6 +18861,7 @@ DebugJS.ui.addTextInput = function(base, width, txtAlign, color, val, oninput) {
     'color': color
   };
   var el = DebugJS.ui.addElement(base, 'input', s);
+  el.type = 'text';
   el.className = 'dbg-txtbox';
   if (txtAlign) DebugJS.setStyle(el, 'text-align', txtAlign);
   el.value = val;
