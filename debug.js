@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610171908';
+  this.v = '202610192146';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6662,10 +6662,22 @@ DebugJS.prototype = {
       lbl: 'Sort', opt: [{lbl: '', optvals: [{t: 'ASC', v: 'A'}, {t: 'DESC', v: 'D'}]}, {lbl: 'COL'}, {lbl: 'ASNUM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(s, o) {return DebugJS.sort(s, (o[0] == 'D' ? 1 : 0), o[1] | 0, (o[2] == 'Y' ? 1 : 0));}
     },
-    {lbl: 'Split at Positions', opt: [{lbl: 'POS', v: ''}, {lbl: 'ORG', optvals: [{v: '0'}, {v: '1', s: 1}]}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
+    {lbl: 'Split by Len/Pos', opt: [{lbl: 'MODE', optvals: [{v: 'LEN'}, {v: 'POS'}]}, {lbl: 'LEN/POS', v: ''}, {lbl: 'TRIM', optvals: [{v: 'Y'}, {v: 'N'}]}],
       fn: function(s, o) {
-        var pos = o[0].replace(/\s{2,}/g, ' ').replace(/,/g, ' ').split(' ');
-        return DebugJS.splitAtPositions(s, pos, o[1] | 0, '\t', (o[2] == 'Y'));
+        var a = o[1].trim().split(/\s*,\s*/);
+        if (o[0] == 'POS') {
+          var w = [];
+          for (var i = 0; i < a.length; i++) {
+            var v = (i < a.length - 1) ? a[i + 1] - a[i] : -1;
+            w.push(v);
+          }
+          a = w;
+        } else {
+          for (i = 0; i < a.length; i++) {
+            a[i] = ((a[i] == '') ? -1 : +a[i]);
+          }
+        }
+        return DebugJS.splitByLengths(s, a, '\t', (o[2] == 'Y'));
       }
     },
     {lbl: 'Split CamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(s, o) {return DebugJS.splitCamelCase(s, eval('"' + o[0] + '"'));}},
@@ -12666,21 +12678,21 @@ DebugJS.padSeq = function(s, n, f) {
   if (f == 2) p = DebugJS.toFullWidth(p);
   return s + p;
 };
-DebugJS.splitAtPositions = function(s, pos, o, sp, t) {
+DebugJS.splitByLengths = function(s, lns, sp, trm) {
   var a = DebugJS.txt2arr(s);
   if (a.length == 0) return '';
   var r = '';
   for (var i = 0; i < a.length; i++) {
     if (i > 0) r += '\n';
     var b = a[i];
-    for (var j = 0; j < pos.length; j++) {
-      var p0 = pos[j] - o;
-      var p1 = pos[j + 1];
-      if (p1) p1 = p1 - o;
+    var p0 = 0;
+    for (var j = 0; j < lns.length; j++) {
+      var p1 = (lns[j] < 0) ? undefined : p0 + lns[j];
       if (j > 0) r += sp;
       var v = b.substring(p0, p1);
-      if (t) v = v.trim();
+      if (trm) v = v.trim();
       r += v;
+      p0 = p1;
     }
   }
   return r;
