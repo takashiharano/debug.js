@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610192229';
+  this.v = '202610212058';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -687,6 +687,30 @@ DebugJS.SS_AVAILABLE = false;
 DebugJS.G_EL_AVAILABLE = false;
 DebugJS.Aa0 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 DebugJS.A2Z = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+DebugJS.TEXTAREA_CTCH = {
+  0: 'NUL',
+  9: 'TAB',
+  10: 'LF',
+  11: 'VT',
+  27: 'ESC',
+  32: 'SP',
+  127: 'DEL',
+  160: 'NBSP',
+  173: 'SHY',
+  8194: 'ENSP',
+  8195: 'EMSP',
+  8199: 'FIGSP',
+  8201: 'THSP',
+  8203: 'ZWSP',
+  8204: 'ZWNJ',
+  8205: 'ZWJ',
+  8206: 'LRM',
+  8207: 'RLM',
+  8239: 'NNBSP',
+  8288: 'WJ',
+  12288: 'IDSP',
+  65279: 'BOM'
+};
 DebugJS.JS_SNIPPET = [
 'dbg.time.s();\nfor (var i = 0; i < 1000000; i++) {\n\n}\ndbg.time.e();\n\'done\';',
 '',
@@ -5593,6 +5617,7 @@ DebugJS.prototype = {
   onTxtEdtLoaded: function(ctx, file, ctt) {
     ctx.txtEdtTxt.value = ctt;
     ctx.switchToolsFunction(DebugJS.TOOLS_FNC_TEXT);
+    ctx.onTxtEdtInput();
   },
   loadFile: function(file, fmt) {
     var ctx = DebugJS.ctx;
@@ -6495,6 +6520,7 @@ DebugJS.prototype = {
   },
   clearTxt: function() {
     DebugJS.ctx.txtEdtTxt.value = '';
+    DebugJS.ctx.onTxtEdtInput();
   },
   onTxtEdtMdChg: function() {
     var ctx = DebugJS.ctx;
@@ -6701,28 +6727,33 @@ DebugJS.prototype = {
     var len = txt.length;
     var lenB = DebugJS.lenB(txt);
     var lfCnt = DebugJS.countLineBreak(txt);
-    var chrs = len - lfCnt;
+    var chrs = 0;
+    for (var i = 0; i < len; i++) {
+      if (txt.charCodeAt(i) == 10) continue;
+      chrs++;
+      if (txt.codePointAt(i) > 0xFFFF) i++;
+    }
     var tl = (len == 0 ? 0 : lfCnt + 1);
     var st = edt.selectionStart;
     var ed = edt.selectionEnd;
     var sl = ed - st;
-    var ch = DebugJS.str2chars(txt)[st] || '';
+    var ch = DebugJS.str2chars(txt.slice(st, st + 2))[0] || '';
     var u10 = DebugJS.getCodePoint(ch);
     var u16 = DebugJS.getUnicodePoints(ch, true);
-    var CTCH = {0: 'NUL', 9: 'TAB', 10: 'LF', 11: 'ESC', 32: 'SP', 127: 'DEL', 12288: 'emSP'};
+    var CTCH = DebugJS.TEXTAREA_CTCH;
     var co = '8cc';
     if (isNaN(u10)) {
       ch = '[END]';
       u16 = 'U+----';
       co = '8aa';
     } else if (CTCH[u10]) {
-      ch = CTCH[u10];
+      ch = '[' + CTCH[u10] + ']';
       co = '8aa';
     }
-    var cp = '<span style="color:#' + co + '">' + ch + '</span>&nbsp;' + u16 + (u10 ? '(' + u10 + ')' : '');
+    var cp = '<span style="color:#' + co + '">' + ch + '</span>&nbsp;' + u16 + (isNaN(u10) ? '' : '(' + u10 + ')');
     var t = txt.slice(0, st);
     var l = (t.match(/\n/g) || []).length + 1;
-    var c = t.replace(/.*\n/g, '').length + 1;
+    var c = st - t.lastIndexOf('\n');
     var tc = DebugJS.clipTextLine(txt, st).length;
     var slT = txt.substring(st, ed);
     var slL = DebugJS.countLineBreak(slT) + 1;
@@ -9870,7 +9901,7 @@ DebugJS.prototype = {
     }
     switch (op) {
       case 'clear':
-        ctx.txtEdtTxt.value = '';
+        ctx.clearTxt();
         break;
       case 'get':
         var r = ctx.cmdTextEditGet(ctx, echo);
@@ -9912,6 +9943,7 @@ DebugJS.prototype = {
     try {
       s = eval(s);
       ctx.txtEdtTxt.value = s;
+      ctx.onTxtEdtInput();
     } catch (e) {}
   },
   cmdTextEditSetOptVal: function(ctx, tbl, echo, i, s) {
@@ -14196,9 +14228,11 @@ DebugJS.countLineBreak = function(s) {
   return (s.match(/\n/g) || []).length;
 };
 DebugJS.clipTextLine = function(s, p) {
-  var n = s.indexOf('\n', p);
-  if (n > 0) s = s.slice(0, n);
-  return s.replace(/.*\n/g, '');
+  if (p == undefined) p = 0;
+  var st = (p > 0) ? s.lastIndexOf('\n', p - 1) + 1 : 0;
+  var ed = s.indexOf('\n', p);
+  if (ed < 0) ed = s.length;
+  return s.slice(st, ed);
 };
 DebugJS.capitalize = function(s) {
   return ((s && (typeof s == 'string')) ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
