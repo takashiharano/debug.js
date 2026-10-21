@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610212058';
+  this.v = '202610212122';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6328,7 +6328,7 @@ DebugJS.prototype = {
     ctx.batTextEditor = DebugJS.ui.addElement(basePanel, 'textarea', style);
     ctx.batTextEditor.className = 'dbg-editor';
     ctx.batTextEditor.spellcheck = false;
-    var ev = ['input', 'change', 'keydown', 'keyup', 'click'];
+    var ev = ['input', 'change', 'keyup', 'click', 'selectionchange'];
     for (var i = 0; i < ev.length; i++) {
       ctx.batTextEditor.addEventListener(ev[i], ctx.onBatInput);
     }
@@ -6496,7 +6496,7 @@ DebugJS.prototype = {
     ctx.txtEdtTxt = DebugJS.ui.addElement(basePanel, 'textarea', styl);
     ctx.txtEdtTxt.className = 'dbg-editor';
     ctx.txtEdtTxt.spellcheck = false;
-    var ev = ['input', 'change', 'keydown', 'keyup', 'click'];
+    var ev = ['input', 'change', 'keyup', 'click', 'selectionchange'];
     for (i = 0; i < ev.length; i++) {
       ctx.txtEdtTxt.addEventListener(ev[i], ctx.onTxtEdtInput);
     }
@@ -6757,13 +6757,14 @@ DebugJS.prototype = {
     var tc = DebugJS.clipTextLine(txt, st).length;
     var slT = txt.substring(st, ed);
     var slL = DebugJS.countLineBreak(slT) + 1;
-    var slct = (sl ? ' SEL:' + ('LEN=' + sl + '/L=' + slL) : '');
+    var fmt = DebugJS.formatNumber;
+    var slct = (sl ? ' SEL:' + ('LEN=' + fmt(sl) + '/L=' + fmt(slL)) : '');
     var s = cp;
-    s += ' ' + l + ':' + c + ' ';
-    s += ' C=' + tc + ' L=' + tl;
-    s += ' CHARS=' + chrs;
-    s += ' LEN=' + len;
-    s += ' bytes=' + lenB;
+    s += ' ' + fmt(l) + ':' + fmt(c) + ' ';
+    s += ' C=' + fmt(tc) + ' L=' + fmt(tl);
+    s += ' CHARS=' + fmt(chrs);
+    s += ' LEN=' + fmt(len);
+    s += ' bytes=' + fmt(lenB);
     txtSt.innerHTML = s + slct;
   },
 
@@ -14236,6 +14237,9 @@ DebugJS.clipTextLine = function(s, p) {
 };
 DebugJS.capitalize = function(s) {
   return ((s && (typeof s == 'string')) ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
+};
+DebugJS.formatNumber = function(n) {
+  return n.toLocaleString('en-US');
 };
 DebugJS.str2chars = function(s) {
   return s.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\s\S]/g) || [];
