@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610212122';
+  this.v = '202610212350';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7208,6 +7208,17 @@ DebugJS.prototype = {
         r = ctx.cmdUri('-d ' + cmdln, null, echo);
         break;
       }
+
+      if (DebugJS.isXB64Notation(cmdln)) {
+        r = ctx.cmdXB64Auto(cmdln, null, echo);
+        break;
+      }
+
+      if (DebugJS.isBSB64Notation(cmdln)) {
+        r = ctx.cmdBSB64Auto(cmdln, null, echo);
+        break;
+      }
+
       f = 0;
       break;
     }
@@ -7255,18 +7266,6 @@ DebugJS.prototype = {
     var iIdx = 0;
     if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.encodeB64, DebugJS.decodeB64, iIdx);
-  },
-
-  cmdXB64: function(arg, tbl, echo) {
-    var iIdx = 0;
-    if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
-    var k = DebugJS.getOptVal(arg, 'k');
-    if (k == null) {
-      k = '';
-    } else {
-      iIdx += 2;
-    }
-    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.xb64.encode, DebugJS.xb64.decodeToString, iIdx, k);
   },
 
   cmdBat: function(arg, tbl, echo) {
@@ -7412,6 +7411,14 @@ DebugJS.prototype = {
       iIdx += 2;
     }
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.bsb64.encode, DebugJS.bsb64.decodeToString, iIdx, n | 0);
+  },
+  cmdBSB64Auto: function(arg, tbl, echo) {
+    var m = arg.match(/^bsb64:([^?#\s]+)(?:\?n=|#)(\d+)$/);
+    try {
+      var r = DebugJS.bsb64.decodeToString(m[1], m[2] | 0);
+      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
+      return r;
+    } catch (e) {DebugJS._log.e(e);}
   },
 
   cmdByte: function(arg, tbl, echo) {
@@ -10213,6 +10220,26 @@ DebugJS.prototype = {
         ctx.expandDbgWin(opt);
         ctx.updateWinCtrlBtns();
     }
+  },
+
+  cmdXB64: function(arg, tbl, echo) {
+    var iIdx = 0;
+    if (DebugJS.hasOpt(arg, 'd') || DebugJS.hasOpt(arg, 'e')) iIdx++;
+    var k = DebugJS.getOptVal(arg, 'k');
+    if (k == null) {
+      k = '';
+    } else {
+      iIdx += 2;
+    }
+    return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.xb64.encode, DebugJS.xb64.decodeToString, iIdx, k);
+  },
+  cmdXB64Auto: function(arg, tbl, echo) {
+    var m = arg.match(/^xb64:([^?#\s]+)(?:\?key=|#)(\S+)$/);
+    try {
+      var r = DebugJS.xb64.decodeToString(m[1], m[2]);
+      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
+      return r;
+    } catch (e) {DebugJS._log.e(e);}
   },
 
   cmdXlsCol: function(arg, tbl) {
@@ -13379,6 +13406,9 @@ DebugJS.xor = function(s, k) {
   }
   return b;
 };
+DebugJS.isXB64Notation = function(s) {
+  return /^xb64:[^?#\s]+(?:\?key=|#)\S+$/.test(s);
+};
 
 DebugJS.bsb64 = {};
 DebugJS.bsb64.encode = function(src, n) {
@@ -13409,6 +13439,9 @@ DebugJS.bsb64.decode = function(src, n) {
 DebugJS.bsb64.decodeToString = function(src, n) {
   var arr = DebugJS.bsb64.decode(src, n);
   return DebugJS.utf8.fromByteArray(arr);
+};
+DebugJS.isBSB64Notation = function(s) {
+  return /^bsb64:[^?#\s]+(?:\?n=|#)\d+$/.test(s);
 };
 
 DebugJS.rot = function(x, s, n) {
