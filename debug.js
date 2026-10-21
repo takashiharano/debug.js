@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610212350';
+  this.v = '202610220046';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7413,7 +7413,11 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.bsb64.encode, DebugJS.bsb64.decodeToString, iIdx, n | 0);
   },
   cmdBSB64Auto: function(arg, tbl, echo) {
-    var m = arg.match(/^bsb64:([^?#\s]+)(?:\?n=|#)(\d+)$/);
+    var m = arg.match(/^bsb64:([^?#\s]+)(?:(?:\?n=|#)(\d*))?$/);
+    if (!m[2]) {
+      DebugJS._log.e('Parameter n is required. Usage: bsb64:&lt;payload&gt;#&lt;n&gt;');
+      return;
+    }
     try {
       var r = DebugJS.bsb64.decodeToString(m[1], m[2] | 0);
       if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
@@ -10234,7 +10238,11 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.xb64.encode, DebugJS.xb64.decodeToString, iIdx, k);
   },
   cmdXB64Auto: function(arg, tbl, echo) {
-    var m = arg.match(/^xb64:([^?#\s]+)(?:\?key=|#)(\S+)$/);
+    var m = arg.match(/^xb64:([^?#\s]+)(?:(?:\?key=|#)(\S*))?$/);
+    if (!m[2]) {
+      DebugJS._log.e('Key is required. Usage: xb64:&lt;payload&gt;#&lt;key&gt;');
+      return;
+    }
     try {
       var r = DebugJS.xb64.decodeToString(m[1], m[2]);
       if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
@@ -13407,7 +13415,7 @@ DebugJS.xor = function(s, k) {
   return b;
 };
 DebugJS.isXB64Notation = function(s) {
-  return /^xb64:[^?#\s]+(?:\?key=|#)\S+$/.test(s);
+  return /^xb64:[^?#\s]+(?:(?:\?key=|#)\S*)?$/.test(s);
 };
 
 DebugJS.bsb64 = {};
@@ -13441,7 +13449,7 @@ DebugJS.bsb64.decodeToString = function(src, n) {
   return DebugJS.utf8.fromByteArray(arr);
 };
 DebugJS.isBSB64Notation = function(s) {
-  return /^bsb64:[^?#\s]+(?:\?n=|#)\d+$/.test(s);
+  return /^bsb64:[^?#\s]+(?:(?:\?n=|#)\d*)?$/.test(s);
 };
 
 DebugJS.rot = function(x, s, n) {
