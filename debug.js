@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610220046';
+  this.v = '202610231240';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1984,7 +1984,7 @@ DebugJS.prototype = {
         logs += lineNum + m + '\n';
       }
     }
-    ctx.logPanel.innerHTML = '<pre style="padding:0 3px !important">' + logs + '</pre>';
+    ctx.logPanel.innerHTML = '<pre class="dbg-nomove" style="padding:0 3px !important">' + logs + '</pre>';
   },
   onLogScroll: function() {
     var ctx = DebugJS.ctx;
@@ -2203,7 +2203,11 @@ DebugJS.prototype = {
   isMovable: function(ctx, el, x, y) {
     if (el.nodeName == 'INPUT') return false;
     if (el.nodeName == 'TEXTAREA') return false;
-    if (DebugJS.hasClass(el, 'dbg-nomove')) return false;
+    var p = el;
+    while (p && p !== ctx.winBody) {
+      if (DebugJS.hasClass(p, 'dbg-nomove')) return false;
+      p = p.parentElement;
+    }
     var ua = DebugJS.getBrowserType();
     if ((ua.family == 'IE') || (ua.name == 'Firefox')) {
       if ((el == ctx.logPanel) || (el == ctx.sysInfoPanel) ||
