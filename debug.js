@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610231240';
+  this.v = '202610231258';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2153,7 +2153,7 @@ DebugJS.prototype = {
     var y = e.clientY;
     var el = e.target;
     if (e.button != 0) return;
-    if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) && ctx.isMovable(ctx, el, x, y)) {
+    if ((ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE) && ctx.isMovable(ctx, el, x, y, e.altKey)) {
       ctx.startMove(ctx, x, y);
     }
   },
@@ -2163,7 +2163,7 @@ DebugJS.prototype = {
     var x = e0.clientX;
     var y = e0.clientY;
     var el = e.target;
-    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, el, x, y)) {
+    if ((!(ctx.uiStatus & DebugJS.UI_ST_DRAGGABLE)) || !ctx.isMovable(ctx, el, x, y, e.altKey)) {
       return;
     }
     var t = ctx.ptDnTm;
@@ -2200,9 +2200,10 @@ DebugJS.prototype = {
     ctx.winBody.style.cursor = 'default';
   },
 
-  isMovable: function(ctx, el, x, y) {
+  isMovable: function(ctx, el, x, y, altKey) {
     if (el.nodeName == 'INPUT') return false;
     if (el.nodeName == 'TEXTAREA') return false;
+    if (altKey) return true;
     var p = el;
     while (p && p !== ctx.winBody) {
       if (DebugJS.hasClass(p, 'dbg-nomove')) return false;
@@ -2666,10 +2667,6 @@ DebugJS.prototype = {
         }
         break;
 
-      case 18: // Alt
-        ctx.disableDraggable(ctx);
-        break;
-
       case 27: // ESC
         if (ctx.props.esc == 'disable') break;
         if (ctx.uiStatus & DebugJS.UI_ST_DRAGGING) {
@@ -2791,7 +2788,6 @@ DebugJS.prototype = {
   onKeyUp: function(e) {
     var ctx = DebugJS.ctx;
     if (ctx.opt.useDeviceInfo) ctx.updateStatusInfoOnKeyUp(ctx, e);
-    if (e.keyCode == 18) ctx.enableDraggable(ctx);
   },
 
   zoomIn: function() {
