@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610251747';
+  this.v = '202610251909';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6566,13 +6566,32 @@ DebugJS.prototype = {
       o[i] = oEls.txt.value;
       if (oEls.sel.active) o[i] = oEls.sel.value;
     }
-    ctx.txtEdtTxt.value = d.fn(v, o);
+    try {
+      var r = d.fn(v, o);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return;
+    }
+    if (r == null) return;
+    ctx.txtEdtTxt.value = r;
     ctx.onTxtEdtInput();
   },
   editTxtFn: [
     {lbl: ''},
     {lbl: 'Base64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeB64' : 'decodeB64';return DebugJS[f](s);}},
-    {lbl: 'BSB64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'N', optvals: [{v: '0'}, {v: '1', s: 1}, {v: '2'}, {v: '3'}, {v: '4'}, {v: '5'}, {v: '6'}, {v: '7'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encode' : 'decodeToString';return DebugJS.bsb64[f](s, o[1] | 0);}},
+    {
+      lbl: 'BSB64',
+      opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'N', optvals: [{v: '0'}, {v: '1', s: 1}, {v: '2'}, {v: '3'}, {v: '4'}, {v: '5'}, {v: '6'}, {v: '7'}]}],
+      fn: function(s, o) {
+        if (o[0] == 'E') return DebugJS.bsb64.encode(s, o[1] | 0);
+        var src = DebugJS.resolveTransformSource('bsb64', s, o[1]);
+        if (src.error) {
+          DebugJS._log.e(DebugJS.escHtml(src.error));
+          return null;
+        }
+        return DebugJS.bsb64.decodeToString(src.payload, src.param);
+      }
+    },
     {lbl: 'Check Digit', opt: [{lbl: 'MOD', optvals: [{v: '10'}, {v: '11'}, {v: '43'}]}, {lbl: 'Weight', v: '3'}],
       fn: function(s, o) {
         var fn = DebugJS['calcMod' + o[0]];
@@ -6718,7 +6737,19 @@ DebugJS.prototype = {
         return DebugJS.toUnique(s, opt);
       }
     },
-    {lbl: 'XB64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'KEY'}], fn: function(s, o) {var f = o[0] == 'E' ? 'encode' : 'decodeToString';return DebugJS.xb64[f](s, o[1]);}},
+    {
+      lbl: 'XB64',
+      opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'KEY'}],
+      fn: function(s, o) {
+        if (o[0] == 'E') return DebugJS.xb64.encode(s, o[1]);
+        var src = DebugJS.resolveTransformSource('xb64', s, o[1]);
+        if (src.error) {
+          DebugJS._log.e(DebugJS.escHtml(src.error));
+          return null;
+        }
+        return DebugJS.xb64.decodeToString(src.payload, src.param);
+      }
+    },
     {lbl: 'XML', opt: [{lbl: 'INDENT', v: '2'}, {lbl: 'COMMENT', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(s, o) {return DebugJS.formatXml(s, o[0], (o[1] == 'Y' ? 0 : 1));}},
     {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
     {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}}
@@ -7416,13 +7447,13 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.bsb64.encode, DebugJS.bsb64.decodeToString, iIdx, n | 0);
   },
   cmdBSB64Auto: function(arg, tbl, echo) {
-    var m = arg.match(/^bsb64:([^?#\s]+)(?:(?:\?n=|#)(\d*))?$/);
-    if (!m[2]) {
-      DebugJS._log.e('Parameter n is required. Usage: bsb64:&lt;payload&gt;#&lt;n&gt;');
+    var src = DebugJS.resolveTransformSource('bsb64', arg, null);
+    if (src.error) {
+      DebugJS._log.e(DebugJS.escHtml(src.error));
       return;
     }
     try {
-      var r = DebugJS.bsb64.decodeToString(m[1], m[2] | 0);
+      var r = DebugJS.bsb64.decodeToString(src.payload, src.param);
       if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
       return r;
     } catch (e) {DebugJS._log.e(e);}
@@ -10241,13 +10272,13 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.xb64.encode, DebugJS.xb64.decodeToString, iIdx, k);
   },
   cmdXB64Auto: function(arg, tbl, echo) {
-    var m = arg.match(/^xb64:([^?#\s]+)(?:(?:\?key=|#)(\S*))?$/);
-    if (!m[2]) {
-      DebugJS._log.e('Key is required. Usage: xb64:&lt;payload&gt;#&lt;key&gt;');
+    var src = DebugJS.resolveTransformSource('xb64', arg, null);
+    if (src.error) {
+      DebugJS._log.e(DebugJS.escHtml(src.error));
       return;
     }
     try {
-      var r = DebugJS.xb64.decodeToString(m[1], m[2]);
+      var r = DebugJS.xb64.decodeToString(src.payload, src.param);
       if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
       return r;
     } catch (e) {DebugJS._log.e(e);}
@@ -13418,7 +13449,8 @@ DebugJS.xor = function(s, k) {
   return b;
 };
 DebugJS.isXB64Notation = function(s) {
-  return /^xb64:[^?#\s]+(?:(?:\?key=|#)\S*)?$/.test(s);
+  var notation = DebugJS.parseTransformNotation(s);
+  return (notation && (notation.mode == 'xb64'));
 };
 
 DebugJS.bsb64 = {};
@@ -13452,7 +13484,53 @@ DebugJS.bsb64.decodeToString = function(src, n) {
   return DebugJS.utf8.fromByteArray(arr);
 };
 DebugJS.isBSB64Notation = function(s) {
-  return /^bsb64:[^?#\s]+(?:(?:\?n=|#)\d*)?$/.test(s);
+  var notation = DebugJS.parseTransformNotation(s);
+  return (notation && (notation.mode == 'bsb64'));
+};
+
+DebugJS.parseTransformNotation = function(s) {
+  var m = /^\s*(xb64|bsb64):/.exec(s);
+  if (!m) return null;
+  var body = s.slice(m[0].length);
+  var pos = body.indexOf('#');
+  var hasParam = (pos >= 0);
+  var payload = (hasParam ? body.slice(0, pos) : body);
+  var param = (hasParam ? body.slice(pos + 1) : null);
+  return {mode: m[1], payload: payload, param: param, hasParam: hasParam};
+};
+
+DebugJS.resolveTransformSource = function(mode, s, defaultParam) {
+  var notation = DebugJS.parseTransformNotation(s);
+  var matches = !!(notation && notation.mode == mode);
+  var payload = matches ? notation.payload : s;
+  var hasInlineParam = matches && notation.hasParam;
+  var param = hasInlineParam ? notation.param : defaultParam;
+  var error = null;
+  if (notation && !matches) {
+    error = 'Expected ' + mode.toUpperCase() + ' notation';
+  }
+  payload = payload.trim().replace(/[\r\n]/g, '');
+  if (matches && !payload) {
+    error = 'Invalid ' + mode.toUpperCase() + ' payload';
+  }
+  if (payload && !/^[A-Za-z0-9+/]+={0,2}$/.test(payload)) {
+    error = error || 'Invalid ' + mode.toUpperCase() + ' payload';
+  }
+  if (mode == 'xb64') {
+    if (param == null) {
+      error = error || 'Key is required';
+    } else if (hasInlineParam) {
+      param = param.replace(/[\r\n]+$/, '');
+    }
+  } else if (mode == 'bsb64') {
+    var n = (param == null ? '' : String(param).trim());
+    if (!/^[0-9]+$/.test(n)) {
+      error = error || 'Invalid BSB64 N: ' + (param == null ? 'Missing' : param);
+    } else {
+      param = Number(n.slice(-3));
+    }
+  }
+  return {payload: payload, param: param, hasInlineParam: hasInlineParam, error: error};
 };
 
 DebugJS.rot = function(x, s, n) {
