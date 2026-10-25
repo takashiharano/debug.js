@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610251909';
+  this.v = '202610252041';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13509,7 +13509,7 @@ DebugJS.resolveTransformSource = function(mode, s, defaultParam) {
   if (notation && !matches) {
     error = 'Expected ' + mode.toUpperCase() + ' notation';
   }
-  payload = payload.trim().replace(/[\r\n]/g, '');
+  payload = DebugJS.extractB64fromDataUrl(payload);
   if (matches && !payload) {
     error = 'Invalid ' + mode.toUpperCase() + ' payload';
   }
@@ -13606,6 +13606,13 @@ DebugJS.splitDataUrl = function(url) {
   var a = url.split(',');
   var b64cnt = {scheme: a[0], data: (a[1] == undefined ? '' : a[1])};
   return b64cnt;
+};
+DebugJS.extractB64fromDataUrl = function(s) {
+  s = s.trim().replace(/[\r\n]/g, '');
+  if (s.startsWith('data:')) {
+    s = DebugJS.splitDataUrl(s).data;
+  }
+  return s;
 };
 DebugJS.str2binArr = function(str, blkSize, pFix) {
   var a = [];
