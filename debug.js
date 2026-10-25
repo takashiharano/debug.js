@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610231258';
+  this.v = '202610251747';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6571,6 +6571,8 @@ DebugJS.prototype = {
   },
   editTxtFn: [
     {lbl: ''},
+    {lbl: 'Base64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeB64' : 'decodeB64';return DebugJS[f](s);}},
+    {lbl: 'BSB64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'N', optvals: [{v: '0'}, {v: '1', s: 1}, {v: '2'}, {v: '3'}, {v: '4'}, {v: '5'}, {v: '6'}, {v: '7'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encode' : 'decodeToString';return DebugJS.bsb64[f](s, o[1] | 0);}},
     {lbl: 'Check Digit', opt: [{lbl: 'MOD', optvals: [{v: '10'}, {v: '11'}, {v: '43'}]}, {lbl: 'Weight', v: '3'}],
       fn: function(s, o) {
         var fn = DebugJS['calcMod' + o[0]];
@@ -6716,6 +6718,7 @@ DebugJS.prototype = {
         return DebugJS.toUnique(s, opt);
       }
     },
+    {lbl: 'XB64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'KEY'}], fn: function(s, o) {var f = o[0] == 'E' ? 'encode' : 'decodeToString';return DebugJS.xb64[f](s, o[1]);}},
     {lbl: 'XML', opt: [{lbl: 'INDENT', v: '2'}, {lbl: 'COMMENT', optvals: [{v: 'Y'}, {v: 'N'}]}], fn: function(s, o) {return DebugJS.formatXml(s, o[0], (o[1] == 'Y' ? 0 : 1));}},
     {lbl: '%XX', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeUri' : 'decodeUri';return DebugJS[f](s);}},
     {lbl: '&#n;', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeChrEntRefs' : 'decodeChrEntRefs';return DebugJS[f](s);}}
