@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610252059';
+  this.v = '202610252257';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -174,7 +174,6 @@ var DebugJS = DebugJS || function() {
   this.fileVwrRet = null;
   this.fileVwrB64n = null;
   this.fileVwrB64nLbl = null;
-  this.fileVwrB64Btn = null;
   this.fileVwrDataSrcType = null;
   this.fileVwrFile = null;
   this.fileVwrFileInfo = null;
@@ -198,7 +197,6 @@ var DebugJS = DebugJS || function() {
   this.htmlPrevBuf = '';
   this.batBtn = null;
   this.batBasePanel = null;
-  this.batEditorPanel = null;
   this.batTextEditor = null;
   this.batTxtSt = null;
   this.batRunBtn = null;
@@ -222,7 +220,6 @@ var DebugJS = DebugJS || function() {
   this.swBtnPanel = null;
   this.swLabel = null;
   this.clearBtn = null;
-  this.wdBtn = null;
   this.preserveLogBtn = null;
   this.suspendLogBtn = null;
   this.zoomInBtn = null;
@@ -632,8 +629,6 @@ DebugJS.LED_COLOR = ['#4cf', '#0ff', '#6f6', '#ee0', '#f80', '#f66', '#f0f', '#d
 DebugJS.LED_COLOR_INACT = '#777';
 DebugJS.ITEM_NM_COLOR = '#cff';
 DebugJS.KEYWRD_COLOR = '#0ff';
-DebugJS.RND_TYPE_NUM = '-n';
-DebugJS.RND_TYPE_STR = '-s';
 DebugJS.ELM_HL_CLASS_SUFFIX = '-elhl';
 DebugJS.EXPANDBTN = '&gt;';
 DebugJS.CLOSEBTN = 'v';
@@ -679,8 +674,6 @@ DebugJS.CHR_WIN_RSTR = '&#x2750;';
 DebugJS.LOG_HEAD = '[LOG]';
 DebugJS.LOG_BOUNDARY_BUF = '-- ORIGINAL LOG BUFFER --';
 DebugJS.SYS_INFO_FULL_OVERLAY = true;
-DebugJS.HTML_SRC_FULL_OVERLAY = true;
-DebugJS.HTML_SRC_EXPAND_H = false;
 DebugJS.ELM_INFO_FULL_OVERLAY = false;
 DebugJS.LS_AVAILABLE = false;
 DebugJS.SS_AVAILABLE = false;
@@ -3163,10 +3156,6 @@ DebugJS.prototype = {
     o.t = ctx.win.offsetTop;
     o.l = ctx.win.offsetLeft;
   },
-  savePosNone: function(ctx) {
-    ctx.orgSizePos.t = DebugJS.DBGWIN_POS_NONE;
-    ctx.orgSizePos.l = DebugJS.DBGWIN_POS_NONE;
-  },
 
   restoreDbgWin: function(org) {
     var ctx = DebugJS.ctx;
@@ -4146,7 +4135,6 @@ DebugJS.prototype = {
   getPrevElm: function(ctx, node) {
     if (!node) return null;
     var el = node.previousElementSibling;
-    if (el && (el.id == ctx.id)) el = node.previousElementSibling;
     if (el) {
       if (el.childElementCount > 0) {
         var lastChild = el.lastElementChild;
@@ -6506,12 +6494,6 @@ DebugJS.prototype = {
     ctx.onTxtEdtInput();
     ctx.onTxtEdtMdChg();
   },
-  addTxtEdtModeBtn: function(ctx, bsPnl, lbl, fn) {
-    var b = DebugJS.ui.addBtn(bsPnl, lbl, fn);
-    var mgn = (ctx.computedFontSize * 0.2);
-    b.style.marginRight = mgn + 'px';
-    return b;
-  },
   onTxtEdtInput: function() {
     DebugJS.ctx.onTextInput(DebugJS.ctx.txtTxtSt, DebugJS.ctx.txtEdtTxt);
   },
@@ -6937,11 +6919,6 @@ DebugJS.prototype = {
     sp.x2 = sp.x1 + ctx.win.clientWidth + rszBoxPx + DebugJS.WIN_BORDER;
     sp.y2 = sp.y1 + ctx.win.clientHeight + rszBoxPx + DebugJS.WIN_BORDER;
     return sp;
-  },
-
-  setSelfSizeW: function(ctx, w) {
-    ctx.win.style.width = w + 'px';
-    ctx.adjLayout();
   },
 
   setSelfSizeH: function(ctx, h) {
@@ -7447,16 +7424,7 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.bsb64.encode, DebugJS.bsb64.decodeToString, iIdx, n | 0);
   },
   cmdBSB64Auto: function(arg, tbl, echo) {
-    var src = DebugJS.resolveTransformSource('bsb64', arg, null);
-    if (src.error) {
-      DebugJS._log.e(DebugJS.escHtml(src.error));
-      return;
-    }
-    try {
-      var r = DebugJS.bsb64.decodeToString(src.payload, src.param);
-      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
-      return r;
-    } catch (e) {DebugJS._log.e(e);}
+    return DebugJS.ctx.execTransformAuto('bsb64', arg, echo, DebugJS.bsb64.decodeToString);
   },
 
   cmdByte: function(arg, tbl, echo) {
@@ -10272,16 +10240,7 @@ DebugJS.prototype = {
     return DebugJS.ctx.execEncAndDec(arg, tbl, echo, true, DebugJS.xb64.encode, DebugJS.xb64.decodeToString, iIdx, k);
   },
   cmdXB64Auto: function(arg, tbl, echo) {
-    var src = DebugJS.resolveTransformSource('xb64', arg, null);
-    if (src.error) {
-      DebugJS._log.e(DebugJS.escHtml(src.error));
-      return;
-    }
-    try {
-      var r = DebugJS.xb64.decodeToString(src.payload, src.param);
-      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
-      return r;
-    } catch (e) {DebugJS._log.e(e);}
+    return DebugJS.ctx.execTransformAuto('xb64', arg, echo, DebugJS.xb64.decodeToString);
   },
 
   cmdXlsCol: function(arg, tbl) {
@@ -10379,6 +10338,19 @@ DebugJS.prototype = {
   },
 
   cmdNop: function() {},
+
+ execTransformAuto: function(mode, arg, echo, decFnc) {
+   var src = DebugJS.resolveTransformSource(mode, arg, null);
+   if (src.error) {
+     DebugJS._log.e(DebugJS.escHtml(src.error));
+     return;
+   }
+   try {
+     var r = decFnc(src.payload, src.param);
+     if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
+     return r;
+   } catch (e) {DebugJS._log.e(e);}
+ },
 
   execEncAndDec: function(arg, tbl, echo, esc, encFnc, decFnc, iIdx, a1) {
     if (DebugJS.countArgs(arg) == 0) {
@@ -10532,7 +10504,7 @@ DebugJS.addSysInfoProp = function(k, v, id) {
   if (id == undefined) {
     s += v;
   } else {
-    s += '<span' + (id == undefined ? '' : ' id="' + DebugJS.ctx.id + '-' + id + '"') + '>' + v + '</span>';
+    s += '<span id="' + DebugJS.ctx.id + '-' + id + '">' + v + '</span>';
   }
   s += '\n';
   return s;
@@ -12321,6 +12293,7 @@ DebugJS.checkRadix = function(v) {
 };
 
 DebugJS.round = function(v, scale) {
+  scale |= 0;
   return DebugJS._shift(Math.round(DebugJS._shift(v, scale, false)), scale, true);
 };
 DebugJS.floor = function(v, scale) {
@@ -14093,16 +14066,6 @@ DebugJS.multiChoose = function(n, r) {
   return DebugJS.combination(n + r - 1, r);
 };
 
-DebugJS.round = function(num, precision) {
-  precision |= 0;
-  return DebugJS._shift(Math.round(DebugJS._shift(num, precision, false)), precision, true);
-};
-DebugJS._shift = function(num, precision, rvsShift) {
-  if (rvsShift) precision = -precision;
-  var numArr = ('' + num).split('e');
-  return +(numArr[0] + 'e' + (numArr[1] ? (+numArr[1] + precision) : precision));
-};
-
 DebugJS.random = function(min, max) {
   if (isNaN(min)) {
     min = 0;
@@ -14406,9 +14369,7 @@ DebugJS.lpad = function(s, c, l, w) {
   var d = l - n;
   if (d <= 0) return s;
   var p = DebugJS.repeatCh(c, d);
-  var i = l - n;
-  if (i < 0) i = 0;
-  return p.slice(0, i) + s;
+  return p.slice(0, d) + s;
 };
 DebugJS.rpad = function(s, c, l, w) {
   s += '';
@@ -14416,9 +14377,7 @@ DebugJS.rpad = function(s, c, l, w) {
   var d = l - n;
   if (d <= 0) return s;
   var p = DebugJS.repeatCh(c, d);
-  var i = l - n;
-  if (i < 0) i = 0;
-  return s + p.slice(0, i);
+  return s + p.slice(0, d);
 };
 DebugJS.repeatCh = function(c, n) {
   var s = '';
@@ -19155,20 +19114,18 @@ DebugJS.log.toBottom = function() {
 };
 DebugJS.log.root = function(m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
-  if (window.opener) {
-    window.opener.log.root(m);
-  } else if (window.top.opener) {
-    window.top.opener.log.root(m);
+  var root = window.opener || window.top.opener;
+  if (root) {
+    root.log.root(m);
   } else {
     window.top.DebugJS._log(m);
   }
 };
 DebugJS.log.root.fn = function(lv, m) {
   if (DebugJS.ctx.status & DebugJS.ST_LOG_SUSPEND) return;
-  if (window.opener) {
-    window.opener.log[lv].root(m);
-  } else if (window.top.opener) {
-    window.top.opener.log[lv].root(m);
+  var root = window.opener || window.top.opener;
+  if (root) {
+    root.log[lv].root(m);
   } else {
     window.top.DebugJS._log[lv](m);
   }
@@ -19359,11 +19316,8 @@ DebugJS.init = function(opt) {
   DebugJS.ctx.init(opt, null);
 };
 DebugJS._init = function() {
-  if (DebugJS.ctx.status & DebugJS.ST_INITIALIZED) {
-    return true;
-  } else {
-    return DebugJS.ctx.init(null, null);
-  }
+  if (DebugJS.ctx.status & DebugJS.ST_INITIALIZED) return true;
+  return DebugJS.ctx.init(null, null);
 };
 DebugJS.onDbgRdy = function() {
   if (!DebugJS.rdy) {
@@ -19379,7 +19333,6 @@ DebugJS.onReady = function() {
   DebugJS._init();
 };
 DebugJS.onLoad = function() {
-  window.addEventListener('beforeunload', DebugJS.onB4Unload, true);
   window.addEventListener('unload', DebugJS.onUnload, true);
   if (DebugJS.LS_AVAILABLE) DebugJS.test.load();
   if (DebugJS.ctx.status & DebugJS.ST_BAT_CONT && DebugJS.LS_AVAILABLE) {
@@ -19389,7 +19342,6 @@ DebugJS.onLoad = function() {
   }
   DebugJS.ctx.reopenFeatures(DebugJS.ctx);
 };
-DebugJS.onB4Unload = function() {};
 DebugJS.onUnload = function() {
   var ctx = DebugJS.ctx;
   if (DebugJS.LS_AVAILABLE) {
