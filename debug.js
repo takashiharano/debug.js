@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610252257';
+  this.v = '202610260017';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2175,9 +2175,7 @@ DebugJS.prototype = {
     ctx.disableTextSelect();
     ctx.ptOfstY = y - ctx.win.offsetTop;
     ctx.ptOfstX = x - ctx.win.offsetLeft;
-    if (!document.all) {
-      window.getSelection().removeAllRanges();
-    }
+    window.getSelection().removeAllRanges();
   },
 
   moveDbgWin: function(ctx, x, y) {
@@ -2203,7 +2201,7 @@ DebugJS.prototype = {
       p = p.parentElement;
     }
     var ua = DebugJS.getBrowserType();
-    if ((ua.family == 'IE') || (ua.name == 'Firefox')) {
+    if (ua.name == 'Firefox') {
       if ((el == ctx.logPanel) || (el == ctx.sysInfoPanel) ||
           (el == ctx.elmInfoBodyPanel) || (el == ctx.filePreviewWrapper) ||
           (el == ctx.toolsPanel) ||
@@ -2859,13 +2857,8 @@ DebugJS.prototype = {
 
   onScroll: function() {
     var ctx = DebugJS.ctx;
-    if (window.scrollX === undefined) {
-      ctx.scrollPosX = document.documentElement.scrollLeft;
-      ctx.scrollPosY = document.documentElement.scrollTop;
-    } else {
-      ctx.scrollPosX = window.scrollX;
-      ctx.scrollPosY = window.scrollY;
-    }
+    ctx.scrollPosX = window.scrollX;
+    ctx.scrollPosY = window.scrollY;
     ctx.updateScrollPosLabel();
     if (ctx.status & DebugJS.ST_SYS_INFO) {
       ctx.updateSysInfoScrollPosLabel(ctx.id);
@@ -9391,7 +9384,7 @@ DebugJS.prototype = {
   },
   _cmdScrollWinGetX: function(posX) {
     var x;
-    var scrollX = (window.scrollX != undefined ? window.scrollX : window.pageXOffset);
+    var scrollX = window.scrollX;
     if (posX == 'left') {
       x = 0;
     } else if (posX == 'center') {
@@ -9413,7 +9406,7 @@ DebugJS.prototype = {
   },
   _cmdScrollWinGetY: function(posY) {
     var y;
-    var scrollY = (window.scrollY != undefined ? window.scrollY : window.pageYOffset);
+    var scrollY = window.scrollY;
     if (posY == 'top') {
       y = 0;
     } else if (posY == 'middle') {
@@ -13619,7 +13612,7 @@ DebugJS.getUnicodePoints = function(s) {
   return cd;
 };
 DebugJS.getCodePoint = function(c, hex) {
-  var p = (String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0));
+  var p = c.codePointAt(0);
   if (hex) p = DebugJS.toHex(p, true, '', 0);
   return p;
 };
@@ -13643,7 +13636,7 @@ DebugJS.encodeChrEntRefs = function(s) {
   var r = '';
   for (var i = 0; i < a.length; i++) {
     var c = a[i];
-    var p = (String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0));
+    var p = c.codePointAt(0);
     if (p <= 127) {
       r += c;
     } else {
@@ -13696,7 +13689,7 @@ DebugJS.getUnicodeEscape = function(s) {
   var u = '';
   for (var i = 0; i < s.length; i++) {
     var c = s.substring(i, i + 1);
-    var p = String.prototype.codePointAt ? c.codePointAt(0) : c.charCodeAt(0);
+    var p = c.codePointAt(0);
     u += ((p <= 127) ? c : DebugJS._getUnicodeEscape(p));
   }
   return u;
@@ -14195,16 +14188,12 @@ DebugJS.getWinZoomRatio = function() {
 DebugJS.getLanguages = function(indent) {
   var langs;
   var navLngs = navigator.languages;
-  if (navLngs) {
-    for (var i = 0; i < navLngs.length; i++) {
-      if (i == 0) {
-        langs = '[' + i + '] ' + navLngs[i];
-      } else {
-        langs += '\n' + indent + '[' + i + '] ' + navLngs[i];
-      }
+  for (var i = 0; i < navLngs.length; i++) {
+    if (i == 0) {
+      langs = '[' + i + '] ' + navLngs[i];
+    } else {
+      langs += '\n' + indent + '[' + i + '] ' + navLngs[i];
     }
-  } else {
-    langs = DebugJS.setStyleIfObjNA(navLngs);
   }
   return langs;
 };
@@ -14213,12 +14202,6 @@ DebugJS.getBrowserType = function() {
   var ua = navigator.userAgent;
   var ver;
   var brws = {name: '', version: ''};
-  if (ua.indexOf('Edge') >= 1) {
-    brws.name = 'Edge Legacy';
-    ver = ua.match(/Edge\/(.*)/);
-    if (ver) brws.version = ver[1];
-    return brws;
-  }
   if (ua.indexOf('Edg') >= 1) {
     brws.name = 'Edge';
     ver = ua.match(/Edg\/(.*)/);
@@ -14243,9 +14226,6 @@ DebugJS.getBrowserType = function() {
     if (ver) brws.version = ver[1];
     return brws;
   }
-  if (ua.indexOf('Trident/7.') >= 1) {
-    brws.name = 'IE11';brws.family = 'IE';return brws;
-  }
   if ((ua.indexOf('Safari/') >= 1) && (ua.indexOf('Version/') >= 1)) {
     brws.name = 'Safari';
     ver = ua.match(/Version\/(.*)\sSafari/);
@@ -14260,9 +14240,6 @@ DebugJS.browserColoring = function(n) {
     case 'Chrome':
       s = '<span style="color:#f44">Ch</span><span style="color:#ff0">ro</span><span style="color:#4f4">m</span><span style="color:#6cf">e</span>';
       break;
-    case 'Edge Legacy':
-      s = '<span style="color:#0af">Edge</span>';
-      break;
     case 'Edge':
       s = '<span style="color:#4e7">E</span><span style="color:#3df">d</span><span style="color:#0af">ge</span>';
       break;
@@ -14271,9 +14248,6 @@ DebugJS.browserColoring = function(n) {
       break;
     case 'Opera':
       s = '<span style="color:#f44">' + n + '</span>';
-      break;
-    case 'IE11':
-      s = '<span style="color:#61d5f8">' + n + '</span>';
       break;
     case 'Safari':
       s = '<span style="color:#86c8e8">Safa</span><span style="color:#dd5651">r</span><span style="color:#ececec">i</span>';
@@ -14409,19 +14383,11 @@ DebugJS.chars = function(c1, c2) {
   var s = '';
   if (p1 > p2) {
     for (var i = p1; i >= p2; i--) {
-      if (String.fromCodePoint) {
-        s += String.fromCodePoint(i);
-      } else {
-        s += String.fromCharCode(i);
-      }
+      s += String.fromCodePoint(i);
     }
   } else {
     for (i = p1; i <= p2; i++) {
-      if (String.fromCodePoint) {
-        s += String.fromCodePoint(i);
-      } else {
-        s += String.fromCharCode(i);
-      }
+      s += String.fromCodePoint(i);
     }
   }
   return s;
@@ -14451,7 +14417,7 @@ DebugJS.lenB = function(s) {
 DebugJS.lenW = function(s) {
   var n = 0;
   for (var i = 0; i < s.length; i++) {
-    var p = String.prototype.codePointAt ? s.codePointAt(i) : s.charCodeAt(i);
+    var p = s.codePointAt(i);
     n += ((p <= 0x7F) || ((p >= 0xFF61) && (p <= 0xFF9F))) ? 1 : 2;
     if (p >= 0x10000) i++;
   }
