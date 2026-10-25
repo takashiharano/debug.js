@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610252041';
+  this.v = '202610252059';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6578,7 +6578,7 @@ DebugJS.prototype = {
   },
   editTxtFn: [
     {lbl: ''},
-    {lbl: 'Base64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'encodeB64' : 'decodeB64';return DebugJS[f](s);}},
+    {lbl: 'Base64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {return o[0] == 'E' ? DebugJS.encodeB64(s) : DebugJS.decodeB64(DebugJS.extractB64fromDataUrl(s));}},
     {
       lbl: 'BSB64',
       opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'N', optvals: [{v: '0'}, {v: '1', s: 1}, {v: '2'}, {v: '3'}, {v: '4'}, {v: '5'}, {v: '6'}, {v: '7'}]}],
