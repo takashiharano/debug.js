@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610260017';
+  this.v = '202610262118';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6556,10 +6556,15 @@ DebugJS.prototype = {
     {lbl: 'Base64', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {return o[0] == 'E' ? DebugJS.encodeB64(s) : DebugJS.decodeB64(DebugJS.extractB64fromDataUrl(s));}},
     {
       lbl: 'BSB64',
-      opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'N', optvals: [{v: '0'}, {v: '1', s: 1}, {v: '2'}, {v: '3'}, {v: '4'}, {v: '5'}, {v: '6'}, {v: '7'}]}],
+      opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'N', optvals: [{v: '0'}, {v: '1', s: 1}, {v: '2'}, {v: '3'}, {v: '4'}, {v: '5'}, {v: '6'}, {v: '7'}]}, {lbl: 'Notation', optvals: [{v: 'N'}, {v: 'Y'}]}],
       fn: function(s, o) {
-        if (o[0] == 'E') return DebugJS.bsb64.encode(s, o[1] | 0);
-        var src = DebugJS.resolveTransformSource('bsb64', s, o[1]);
+        if (o[0] == 'E') {
+          var n = o[1] | 0;
+          var r = DebugJS.bsb64.encode(s, n);
+          if (o[2] == 'Y') r = DebugJS.buildB64Notation('bsb64', r, n);
+          return r;
+        }
+        var src = DebugJS.resolveB64Source('bsb64', s, o[1]);
         if (src.error) {
           DebugJS._log.e(DebugJS.escHtml(src.error));
           return null;
@@ -6714,10 +6719,15 @@ DebugJS.prototype = {
     },
     {
       lbl: 'XB64',
-      opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'KEY'}],
+      opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}, {lbl: 'KEY'}, {lbl: 'Notation', optvals: [{v: 'N'}, {v: 'Y'}]}],
       fn: function(s, o) {
-        if (o[0] == 'E') return DebugJS.xb64.encode(s, o[1]);
-        var src = DebugJS.resolveTransformSource('xb64', s, o[1]);
+        if (o[0] == 'E') {
+          var k = o[1];
+          var r = DebugJS.xb64.encode(s, k);
+          if (o[2] == 'Y') r = DebugJS.buildB64Notation('xb64', r, k);
+          return r;
+        }
+        var src = DebugJS.resolveB64Source('xb64', s, o[1]);
         if (src.error) {
           DebugJS._log.e(DebugJS.escHtml(src.error));
           return null;
@@ -10333,7 +10343,7 @@ DebugJS.prototype = {
   cmdNop: function() {},
 
  execTransformAuto: function(mode, arg, echo, decFnc) {
-   var src = DebugJS.resolveTransformSource(mode, arg, null);
+   var src = DebugJS.resolveB64Source(mode, arg, null);
    if (src.error) {
      DebugJS._log.e(DebugJS.escHtml(src.error));
      return;
@@ -13415,7 +13425,7 @@ DebugJS.xor = function(s, k) {
   return b;
 };
 DebugJS.isXB64Notation = function(s) {
-  var notation = DebugJS.parseTransformNotation(s);
+  var notation = DebugJS.parseB64Notation(s);
   return (notation && (notation.mode == 'xb64'));
 };
 
@@ -13450,11 +13460,14 @@ DebugJS.bsb64.decodeToString = function(src, n) {
   return DebugJS.utf8.fromByteArray(arr);
 };
 DebugJS.isBSB64Notation = function(s) {
-  var notation = DebugJS.parseTransformNotation(s);
+  var notation = DebugJS.parseB64Notation(s);
   return (notation && (notation.mode == 'bsb64'));
 };
+DebugJS.buildB64Notation = function(m, s, p) {
+  return m + ':' + s + '#' + p;
+};
 
-DebugJS.parseTransformNotation = function(s) {
+DebugJS.parseB64Notation = function(s) {
   var m = /^\s*(xb64|bsb64):/.exec(s);
   if (!m) return null;
   var body = s.slice(m[0].length);
@@ -13465,8 +13478,8 @@ DebugJS.parseTransformNotation = function(s) {
   return {mode: m[1], payload: payload, param: param, hasParam: hasParam};
 };
 
-DebugJS.resolveTransformSource = function(mode, s, defaultParam) {
-  var notation = DebugJS.parseTransformNotation(s);
+DebugJS.resolveB64Source = function(mode, s, defaultParam) {
+  var notation = DebugJS.parseB64Notation(s);
   var matches = !!(notation && notation.mode == mode);
   var payload = matches ? notation.payload : s;
   var hasInlineParam = matches && notation.hasParam;
