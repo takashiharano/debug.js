@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292252';
+  this.v = '202610292256';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14863,7 +14863,7 @@ DebugJS.sendLog = function(url, pName, param, extInfo, flg, cb) {
   var data = DebugJS.http.buildQueryString(param);
   if (data != '') data += '&';
   if (DebugJS.isEmptyVal(pName)) pName = 'data';
-  data += pName + '=' + encodeURIComponent(b);
+  data += encodeURIComponent(pName) + '=' + encodeURIComponent(b);
   var r = {
     url: url,
     method: 'POST',
