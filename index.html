@@ -771,8 +771,8 @@ function onLoad() {
   dragtest.init();
 }
 
-function onUnload() {
-  //log('unload');
+function onPagehide() {
+  //log('pagehide');
 }
 
 function onError() {
@@ -789,7 +789,7 @@ function onClick() {
 
 window.addEventListener('DOMContentLoaded', onReady, true);
 window.addEventListener('load', onLoad, true);
-window.addEventListener('unload', onUnload, true);
+window.addEventListener('pagehide', onPagehide, true);
 window.addEventListener('error', onError, true);
 window.addEventListener('click', onClick, true);
 
