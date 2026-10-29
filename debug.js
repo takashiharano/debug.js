@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292124';
+  this.v = '202610292236';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10657,6 +10657,7 @@ DebugJS.splitCmdLine = function(arg, limit) {
   var len = 0;
   var srch = true;
   var quoted = null;
+  var escaped = false;
   var paren = 0;
   var ch = '';
   var str = '';
@@ -10664,6 +10665,8 @@ DebugJS.splitCmdLine = function(arg, limit) {
   for (var i = 0; i < arg.length; i++) {
     len++;
     ch = arg.charAt(i);
+    var wasEscaped = escaped;
+    escaped = (ch == '\\') ? !escaped : false;
     switch (ch) {
       case ' ':
         if (srch || quoted || (paren > 0)) {
@@ -10689,7 +10692,7 @@ DebugJS.splitCmdLine = function(arg, limit) {
           len = 0;
           srch = false;
         }
-        if (!quoted) {
+        if (!quoted && !wasEscaped) {
           paren++;
         }
         break;
@@ -10698,27 +10701,23 @@ DebugJS.splitCmdLine = function(arg, limit) {
           start = i;
           len = 0;
           srch = false;
-        } else if (paren > 0) {
-          if ((i > 0) && (arg.charAt(i - 1) == '\\')) {
-            continue;
-          }
+        } else if ((paren > 0) && !quoted && !wasEscaped) {
           paren--;
         }
         break;
       case '"':
       case "'":
-        if (paren > 0) {
-          continue;
-        } else if (srch) {
+        if (srch) {
           start = i;
           len = 0;
           srch = false;
-          quoted = ch;
-        } else if (ch == quoted) {
-          if ((i > 0) && (arg.charAt(i - 1) == '\\')) {
-            continue;
+        }
+        if (!wasEscaped) {
+          if (quoted == ch) {
+            quoted = null;
+          } else if (!quoted) {
+            quoted = ch;
           }
-          quoted = null;
         }
         break;
       default:
