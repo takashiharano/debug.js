@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610262118';
+  this.v = '202610292053';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1319,8 +1319,8 @@ DebugJS.prototype = {
       ctx.closeBtn.style.marginRight = '2px';
       setStyle(ctx.closeBtn, 'color', '#888');
       setStyle(ctx.closeBtn, 'font-size', (18 * ctx.zoom) + 'px');
-      ctx.closeBtn.onmouseover = new Function('DebugJS.setStyle(this, \'color\', \'#d88\');');
-      ctx.closeBtn.onmouseout = new Function('DebugJS.setStyle(this, \'color\', \'#888\');');
+      ctx.closeBtn.onmouseover = function() {DebugJS.setStyle(this, 'color', '#d88');};
+      ctx.closeBtn.onmouseout = function() {DebugJS.setStyle(this, 'color', '#888');};
     }
     if ((ctx.uiStatus & DebugJS.UI_ST_DYNAMIC) && (ctx.uiStatus & DebugJS.UI_ST_RESIZABLE) && opt.useWinCtrlButton) {
       ctx.winCtrlBtnPanel = document.createElement('span');
@@ -1383,8 +1383,8 @@ DebugJS.prototype = {
       measBtn.style.height = (7 * ctx.zoom) + 'px';
       measBtn.innerText = ' ';
       measBtn.onclick = ctx.toggleMeasure;
-      measBtn.onmouseover = new Function('DebugJS.ctx.measBtn.style.borderColor=\'' + DebugJS.MEAS_BTN_COLOR + '\';');
-      measBtn.onmouseout = new Function('DebugJS.ctx.measBtn.style.borderColor=(DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEAS_BTN_COLOR : DebugJS.COLOR_INACT;');
+      measBtn.onmouseover = function() {DebugJS.ctx.measBtn.style.borderColor = DebugJS.MEAS_BTN_COLOR;};
+      measBtn.onmouseout = function() {DebugJS.ctx.measBtn.style.borderColor = (DebugJS.ctx.status & DebugJS.ST_MEASURE) ? DebugJS.MEAS_BTN_COLOR : DebugJS.COLOR_INACT;};
       ctx.headPanel.appendChild(measBtn);
       ctx.measBtn = measBtn;
     }
@@ -1536,12 +1536,11 @@ DebugJS.prototype = {
     btn.style.marginLeft = (marginLeft * ctx.zoom) + 'px';
     if (fontSize) DebugJS.setStyle(btn, 'font-size', fontSize);
     DebugJS.setStyle(btn, 'color', DebugJS.COLOR_INACT);
-    btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.' + actvColor + ');');
-    var fnSfx = (reverse ? 'DebugJS.COLOR_INACT : DebugJS.' + actvColor + ');' : 'DebugJS.' + actvColor + ' : DebugJS.COLOR_INACT);');
+    btn.onmouseover = function() {DebugJS.setStyle(DebugJS.ctx[btnObj], 'color', DebugJS[actvColor]);};
     if (stVar) {
-      btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.' + stVar + ' & DebugJS.' + stNm + ') ? ' + fnSfx);
+      btn.onmouseout = function() {var active = !!(DebugJS.ctx[stVar] & DebugJS[stNm]);if (reverse) active = !active; DebugJS.setStyle(DebugJS.ctx[btnObj], 'color', active ? DebugJS[actvColor] : DebugJS.COLOR_INACT);};
     } else {
-      btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.COLOR_INACT)');
+      btn.onmouseout = function() {DebugJS.setStyle(DebugJS.ctx[btnObj], 'color', DebugJS.COLOR_INACT);};
     }
     if (title) btn.title = title;
     return btn;
@@ -1583,10 +1582,10 @@ DebugJS.prototype = {
 
   createLogFltBtn: function(lbl, type, btnObj, color) {
     var ctx = DebugJS.ctx;
-    var fn = new Function('DebugJS.ctx.toggleLogFilter(DebugJS.LOG_FLTR_' + type + ');');
+    var fn = function() {DebugJS.ctx.toggleLogFilter(DebugJS['LOG_FLTR_' + type]);};
     var btn = DebugJS.ui.addBtn(ctx.logHdrPanel, '[' + lbl + ']', fn);
     btn.style.marginLeft = '2px';
-    btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.logLvBtn.' + btnObj + ', \'color\', DebugJS.ctx.opt.' + color + ');');
+    btn.onmouseover = function() {DebugJS.setStyle(DebugJS.ctx.logLvBtn[btnObj], 'color', DebugJS.ctx.opt[color]);};
     btn.onmouseout = ctx.updateLogFilterBtns;
     return btn;
   },
@@ -1595,14 +1594,8 @@ DebugJS.prototype = {
     var btn = DebugJS.ui.addBtn(ctx.logHdrPanel, label, fn);
     btn.style.marginLeft = '2px';
     DebugJS.setStyle(btn, 'color', (flg) ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACT);
-    var mofn = 'DebugJS.setStyle(DebugJS.ctx.' + btnNm + ', \'color\',';
-    if (flgNm) {
-      mofn += ' (DebugJS.ctx.' + flgNm + ') ? DebugJS.FLT_BTN_COLOR : DebugJS.COLOR_INACT);';
-    } else {
-      mofn += ' DebugJS.FLT_BTN_COLOR);';
-    }
-    btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnNm + ', \'color\', DebugJS.FLT_BTN_COLOR);');
-    btn.onmouseout = new Function(mofn);
+    btn.onmouseover = function() {DebugJS.setStyle(DebugJS.ctx[btnNm], 'color', DebugJS.FLT_BTN_COLOR);};
+    btn.onmouseout = function() {var color = (flgNm && !DebugJS.ctx[flgNm]) ? DebugJS.COLOR_INACT : DebugJS.FLT_BTN_COLOR;DebugJS.setStyle(DebugJS.ctx[btnNm], 'color', color);};
     return btn;
   },
 
@@ -4415,11 +4408,11 @@ DebugJS.prototype = {
     ctx.txtBtn = ctx.createToolsHdrBtn('TEXT', 'TOOLS_FNC_TEXT', 'txtBtn');
   },
   createToolsHdrBtn: function(label, state, btnObj) {
-    var fn = new Function('DebugJS.ctx.switchToolsFunction(DebugJS.' + state + ');');
+    var fn = function() {DebugJS.ctx.switchToolsFunction(DebugJS[state]);};
     var btn = DebugJS.ui.addBtn(DebugJS.ctx.toolsHdrPanel, '<' + label + '>', fn);
     btn.style.marginRight = '4px';
-    btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', DebugJS.SBPNL_COLOR_ACTIVE);');
-    btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.' + btnObj + ', \'color\', (DebugJS.ctx.toolsActvFnc & DebugJS.' + state + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);');
+    btn.onmouseover = function() {DebugJS.setStyle(DebugJS.ctx[btnObj], 'color', DebugJS.SBPNL_COLOR_ACTIVE);};
+    btn.onmouseout = function() {var color = (DebugJS.ctx.toolsActvFnc & DebugJS[state]) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT;DebugJS.setStyle(DebugJS.ctx[btnObj], 'color', color);};
     return btn;
   },
   closeTools: function(ctx) {
@@ -4686,7 +4679,7 @@ DebugJS.prototype = {
   },
   createTimerUpDwnBtn: function(up, part, area, fontSize, marginL, marginR) {
     var lbl = (up ? '+' : '-');
-    var fn = new Function('DebugJS.ctx.timerUpDwn(\'' + part + '\', ' + up + ')');
+    var fn = function() {DebugJS.ctx.timerUpDwn(part, up);};
     var btn = DebugJS.ui.addBtn(area, lbl, fn);
     if (marginL) btn.style.marginLeft = marginL + 'em';
     btn.style.marginRight = marginR + 'em';
@@ -6811,12 +6804,12 @@ DebugJS.prototype = {
   createExtHdrBtn: function(ctx, label, idx) {
     var MAX_LEN = 20;
     label = DebugJS.trimDownText(label, MAX_LEN);
-    var fn = new Function('DebugJS.ctx.switchExtPanel(' + idx + ');');
+    var fn = function() {DebugJS.ctx.switchExtPanel(idx);};
     var btn = DebugJS.ui.addBtn(ctx.extHdrPanel, '<' + label + '>', fn);
     btn.style.marginRight = '4px';
     DebugJS.setStyle(btn, 'color', DebugJS.SBPNL_COLOR_INACT);
-    btn.onmouseover = new Function('DebugJS.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', DebugJS.SBPNL_COLOR_ACTIVE);');
-    btn.onmouseout = new Function('DebugJS.setStyle(DebugJS.ctx.extPanels[' + idx + '].btn, \'color\', (DebugJS.ctx.extActPnlIdx == ' + idx + ') ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT);');
+    btn.onmouseover = function() {DebugJS.setStyle(DebugJS.ctx.extPanels[idx].btn, 'color', DebugJS.SBPNL_COLOR_ACTIVE);};
+    btn.onmouseout = function() {var color = (DebugJS.ctx.extActPnlIdx == idx) ? DebugJS.SBPNL_COLOR_ACTIVE : DebugJS.SBPNL_COLOR_INACT;DebugJS.setStyle(DebugJS.ctx.extPanels[idx].btn, 'color', color);};
     return btn;
   },
 
