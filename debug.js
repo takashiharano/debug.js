@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292256';
+  this.v = '202610292300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18819,7 +18819,13 @@ DebugJS.getQuery = function(k) {
   var a = [];
   for (var i = 0; i < q.length; i++) {
     var p = q[i].split('=');
-    if (p[0] == k) a.push(p[1]);
+    var name;
+    try {
+      name = decodeURIComponent(p[0].replace(/\+/g, ' '));
+    } catch (e) {
+      continue;
+    }
+    if (name == k) a.push(p.length > 1 ? p.slice(1).join('=') : undefined);
   }
   var v = null;
   if (a.length == 1) {
