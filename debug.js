@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292243';
+  this.v = '202610292248';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12864,6 +12864,8 @@ DebugJS.rgb10to16 = function(r, g, b) {
 DebugJS.cmdInt = function(v, echo) {
   v = v.trim().replace(/\s/g, '');
   var rdx = DebugJS.checkRadix(v);
+  var sign = (v.charAt(0) == '-' ? -1 : 1);
+  if (sign < 0) v = v.slice(1);
   if (rdx == 10) {
     v = v.replace(/,/g, '');
   } else if ((rdx == 16) || (rdx == 2)) {
@@ -12873,7 +12875,7 @@ DebugJS.cmdInt = function(v, echo) {
   } else {
     return null;
   }
-  var val = parseInt(v, rdx);
+  var val = sign * parseInt(v, rdx);
   if (echo) DebugJS._log.mlt(DebugJS.buildRadixConvStr(val));
   return val;
 };
