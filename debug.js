@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292119';
+  this.v = '202610292124';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14159,7 +14159,7 @@ DebugJS.http.buildQueryString = function(p) {
   var cnt = 0;
   for (var k in p) {
     if (cnt > 0) s += '&';
-    s += k + '=' + encodeURIComponent(p[k]);
+    s += encodeURIComponent(k) + '=' + encodeURIComponent(p[k]);
     cnt++;
   }
   return s;
