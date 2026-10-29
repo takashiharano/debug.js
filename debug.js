@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292236';
+  this.v = '202610292243';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14112,7 +14112,14 @@ DebugJS.http = function(req) {
   if (data instanceof Object) data = DebugJS.http.buildQueryString(data);
   var url = req.url;
   if (data && (req.method == 'GET')) {
-    url += '?' + data;
+    var hash = '';
+    var hashIdx = url.indexOf('#');
+    if (hashIdx >= 0) {
+      hash = url.slice(hashIdx);
+      url = url.slice(0, hashIdx);
+    }
+    var sep = (url.indexOf('?') < 0 ? '?' : (/[?&]$/.test(url) ? '' : '&'));
+    url += sep + data + hash;
     data = null;
   }
   if (req.async == undefined) req.async = true;
