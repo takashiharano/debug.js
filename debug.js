@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292305';
+  this.v = '202610292313';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10518,8 +10518,7 @@ DebugJS.getColorBlock = function(color) {
 DebugJS.getElmHexColor = function(color) {
   var hex = '';
   if (color && (color != 'transparent')) {
-    var c10 = color.replace('rgba', '').replace('rgb', '').replace('(', '').replace(')', '').replace(',', '');
-    var c10a = c10.split(' ');
+    var c10a = color.replace(/rgba?\(/, '').replace(')', '').split(/\s*,\s*/);
     var c16 = DebugJS.rgb10to16(c10a[0], c10a[1], c10a[2]);
     hex = '#' + c16.r + c16.g + c16.b;
   }
