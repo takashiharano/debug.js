@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292053';
+  this.v = '202610292119';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6700,7 +6700,7 @@ DebugJS.prototype = {
         return DebugJS.splitByLengths(s, a, '\t', (o[2] == 'Y'));
       }
     },
-    {lbl: 'Split CamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(s, o) {return DebugJS.splitCamelCase(s, eval('"' + o[0] + '"'));}},
+    {lbl: 'Split CamelCase', opt: [{lbl: 'SEPARATOR', v: ' '}], fn: function(s, o) {return DebugJS.splitCamelCase(s, JSON.parse('"' + o[0] + '"'));}},
     {lbl: 'SUM', fn: function(s) {return DebugJS.sum(s);}},
     {lbl: 'Unicode Esc Seq', opt: [{lbl: '', optvals: [{t: 'Encode', v: 'E'}, {t: 'Decode', v: 'D'}]}], fn: function(s, o) {var f = o[0] == 'E' ? 'getUnicodeEscape' : 'decodeUnicodeEscape';return DebugJS[f](s);}},
     {
@@ -8345,7 +8345,7 @@ DebugJS.prototype = {
     var lbl = a[0];
     if (lbl.match(/^".+?"$/)) {
       try {
-        lbl = eval(lbl);
+        lbl = JSON.parse(lbl);
       } catch (e) {
         DebugJS._log.e('L' + ctrl.pc + ': Illegal argument (' + lbl + ')');
         return;
@@ -12237,7 +12237,7 @@ DebugJS.calcMod11 = function(s) {
 DebugJS.calcMod43 = function(s) {
   if (s.match(/^".+"$/)) {
     try {
-      s = eval(s);
+      s = JSON.parse(s);
     } catch (e) {return '';}
   }
   var n = 0;
@@ -13713,7 +13713,7 @@ DebugJS._getUnicodeEscape = function(p) {
 DebugJS.decodeUnicodeEscape = function(u) {
   try {
     u = u.replace(/"/g, '\\"');
-    var s = eval('"' + u + '"');
+    var s = JSON.parse('"' + u + '"');
   } catch (e) {
     s = '';
   }
@@ -18390,7 +18390,7 @@ DebugJS.test.addResult = function(st, label, exp, got, method, info) {
   if (label == null) {
     label = '';
   } else if (label.match(/^".*"$/)) {
-    label = eval(label);
+    label = JSON.parse(label);
   }
   if (typeof exp == 'string') {
     exp = DebugJS.trimDownText(exp, lm);
