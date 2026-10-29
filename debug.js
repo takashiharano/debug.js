@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292300';
+  this.v = '202610292305';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13355,7 +13355,7 @@ DebugJS.base64.decode = function(s) {
   var buf = [];
   for (i = 0; i < s.length; i += 4) {
     for (var j = 0; j < 4; j++) {
-      buf[j] = tbl[s.charCodeAt(i + j) || 0];
+      buf[j] = (i + j < s.length ? tbl[s.charCodeAt(i + j)] : 64);
     }
     arr.push(
       buf[0] << 2 | (buf[1] & 63) >>> 4,
