@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610292350';
+  this.v = '202610302103';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -15607,6 +15607,7 @@ DebugJS.time.start = function(nm, msg) {
   var ctx = DebugJS.ctx;
   if (!nm) nm = DebugJS.DFLT_TMR_NM;
   ctx.timers[nm] = {start: now, split: now};
+  if (msg === null) return;
   var s;
   if (msg) {
     s = msg.replace(/%n/g, nm).replace(/%t/g, '<span style="color:' + ctx.opt.timerColor + '">' + DebugJS.TIME_RST_STR + '</span>');
@@ -15644,9 +15645,9 @@ DebugJS.time.split = function(nm, msg, isEnd) {
   if (msg) {
     s = msg.replace(/%n/g, nm).replace(/%dt/g, dt).replace(/%t/g, tm);
   } else {
-    s = nm + ': ' + tm + ' (' + DebugJS.CHR_DELTA + dt + ')';
+    s = nm + ': ' + tm + (isEnd ? '' : ' (' + DebugJS.CHR_DELTA + dt + ')');
   }
-  DebugJS._log(s);
+  if (msg !== null) DebugJS._log(s);
   if (isEnd) delete tmr[nm];
   return t;
 };
