@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610302103';
+  this.v = '202610310013';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16381,7 +16381,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
       if (ctrl.js) {
         ctrl.js = 0;
       } else {
-        ctrl.js = ((a[0] == 'pure') ? 1 : 2);
+        ctrl.js = ((a[0] == 'raw') ? 1 : 2);
         bat.execJs();
       }
       return 1;
@@ -16604,13 +16604,13 @@ DebugJS.bat.findEndOfFnc = function(pc) {
 DebugJS.bat.execJs = function() {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
-  var pure = (ctrl.js == 1);
+  var raw = (ctrl.js == 1);
   var js = '';
   while ((ctrl.pc >= ctrl.startPc) && (ctrl.pc <= ctrl.endPc)) {
     var c = bat.cmds[ctrl.pc];
     ctrl.pc++;
     if (!DebugJS.strcmpWOsp(c, DebugJS.BAT_TKN_JS)) {
-      if (!pure) {
+      if (!raw) {
         c = DebugJS.replaceCmdVals(c);
       }
       js += c + '\n';
