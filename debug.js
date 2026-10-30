@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610310013';
+  this.v = '202610310038';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17826,6 +17826,7 @@ DebugJS.point.msg.setTxt = function(m) {
 DebugJS.point.msg.seq = function(txt, m, speed, step, start, end) {
   var area = DebugJS.point.msg.getArea();
   var el = area.pre;
+  m = DebugJS.decCtrlCh(m);
   DebugJS.point.msg.setTxt(m);
   var s = window.getComputedStyle(el);
   DebugJS.setStyle(el, 'width', s.width);
