@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <title>debug.js</title>
-<meta name="description" content="debug.js is an embeddable JavaScript debugger for web development. It allows you to debug easily without the F12 Tools. The library has useful features such as Logger, DOM element inspector, Screen measure, Command-line interpreter, etc.">
+<meta name="description" content="debug.js is an embeddable JavaScript debugger for web development. It lets you debug web pages without opening your browser's developer tools (F12). Features include logging, DOM element inspection, screen measurement, a file viewer, a command-line interpreter, and a scripting engine for automated testing.">
 <meta name="viewport" content="width=1096, initial-scale=1">
 <script src="./libs/sha.js"></script>
 <script src="debug.js"></script>
@@ -1277,9 +1277,9 @@ function test1() {
 <div id="main">
 <div id="content">
 debug.js is an embeddable JavaScript debugger for web development.<br>
-It allows you to debug easily without the F12 Tools.<br><br>
-The library has useful features such as Logger, DOM element inspector, Screen measure, <br>
-File Viewer, Command-line interpreter, Original script executor for automated testing, etc.<br>
+It lets you debug web pages without opening your browser's developer tools (F12).<br><br>
+Features include logging, DOM element inspection, screen measurement,<br>
+a file viewer, a command-line interpreter, and a scripting engine for automated testing.<br>
 <br>
 
 <a name="usage"></a>
@@ -1298,8 +1298,8 @@ The debug window will be automatically generated and is draggable.<br><br>
 
 <table border="0">
 <tr>
-<td><span style="color:#e90;">⚠</span></td><td>The debug window is hidden by default setting.</td></tr>
-<tr><td></td><td>You can switch show/hide by F2 key. (assignable)</td></tr>
+<td><span style="color:#e90;">⚠</span></td><td>The debug window is hidden by default.</td></tr>
+<tr><td></td><td>Press F2 to show or hide the debug window. (The shortcut is configurable.)</td></tr>
 </table>
 <br>
 
@@ -1349,7 +1349,7 @@ var obj = {
     <td class="name">log<br><span class="alias">( dbg.log )</span></td>
     <td>message</td>
     <td>
-      Output standard log<br>
+      Outputs a standard log message<br>
 <pre class="eg">
 log('<input type="text" id="log-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log(getVal('log-txt'));">DEMO</button>
 </pre>
@@ -1361,7 +1361,7 @@ log('<input type="text" id="log-txt" class="demo-text" style="width:200px;" valu
     <td class="name">log.d<br><span class="alias">( dbg.log.d )</span></td>
     <td>message</td>
     <td>
-      Output debug log<br>
+      Outputs a debug log message<br>
 <pre class="eg">
 log.d('<input type="text" id="log-d-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.d(getVal('log-d-txt'));">DEMO</button>
 </pre>
@@ -1373,7 +1373,7 @@ log.d('<input type="text" id="log-d-txt" class="demo-text" style="width:200px;" 
     <td class="name">log.i<br><span class="alias">( dbg.log.i )</span></td>
     <td>message</td>
     <td>
-      Output information log<br>
+      Outputs an information log message<br>
 <pre class="eg">
 log.i('<input type="text" id="log-i-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.i(getVal('log-i-txt'));">DEMO</button>
 </pre>
@@ -1385,7 +1385,7 @@ log.i('<input type="text" id="log-i-txt" class="demo-text" style="width:200px;" 
     <td class="name">log.w<br><span class="alias">( dbg.log.w )</span></td>
     <td>message</td>
     <td>
-      Output warning log<br>
+      Outputs a warning log message<br>
 <pre class="eg">
 log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.w(getVal('log-w-txt'));">DEMO</button>
 </pre>
@@ -1397,7 +1397,7 @@ log.w('<input type="text" id="log-w-txt" class="demo-text" style="width:200px;" 
     <td class="name">log.e<br><span class="alias">( dbg.log.e )</span></td>
     <td>message</td>
     <td>
-      Output error log<br>
+      Outputs an error log message<br>
 <pre class="eg">
 log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.e(getVal('log-e-txt'));">DEMO</button>
 </pre>
@@ -1409,7 +1409,7 @@ log.e('<input type="text" id="log-e-txt" class="demo-text" style="width:200px;" 
     <td class="name">log.f<br><span class="alias">( dbg.log.f )</span></td>
     <td>message</td>
     <td>
-      Output fatal log<br>
+      Outputs a fatal log message<br>
 <pre class="eg">
 log.f('<input type="text" id="log-f-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.f(getVal('log-f-txt'));">DEMO</button>
 </pre>
@@ -1421,7 +1421,7 @@ log.f('<input type="text" id="log-f-txt" class="demo-text" style="width:200px;" 
     <td class="name">log.v<br><span class="alias">( dbg.log.v )</span></td>
     <td>message</td>
     <td>
-      Output verbose log<br>
+      Outputs a verbose log message<br>
       <span class="annotation warning">The messages will be filtered out by default. Press the filter button [V] to display.</span>
 <pre class="eg">
 log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:200px;" value="Hello, World!">');<button class="demo-button2" onclick="log.v(getVal('log-v-txt'));">DEMO</button>
@@ -1438,7 +1438,7 @@ log.v('<input type="text" id="log-v-txt" class="demo-text" style="width:200px;" 
       arg3: message string<span class="annotation">(opt)</span>
     </td>
     <td>
-      Output object dump
+      Outputs an object dump
 <br><br>
 <pre class="eg">
 <div class="opaque" style="margin-bottom:-4px">var obj = {...};</div>
@@ -1458,7 +1458,7 @@ log.p(obj, 0, '<input type="text" id="log-p-msg-txt" class="demo-text" style="wi
       arg3: message string<span class="annotation">(opt)</span>
     </td>
     <td>
-      Output object dump (JSON format)
+      Outputs an object dump in JSON format.
 <br><br>
 <pre class="eg">
 <div class="opaque" style="margin-bottom:-4px">var obj = {...};</div>
@@ -1477,7 +1477,7 @@ log.json(obj, 0, '<input type="text" id="log-json-msg-txt" class="demo-text" sty
       arg2: timer value<span class="annotation">(opt: in millis)</span>
     </td>
     <td>
-      Output log w/ elapsed time<br><br>
+      Outputs a log message with elapsed time<br><br>
 <pre class="eg">
 log.t('<input type="text" id="log-t-txt" class="demo-text" style="width:200px;" value="%dt Hello, World!">');<button class="demo-button2" onclick="log.t(getVal('log-t-txt'));">DEMO</button>
 <span class="annotation">"%dt" will be replaced with delta time (lap time).</span>
@@ -1516,7 +1516,7 @@ log.res.err('<input type="text" id="log-res-err-txt" class="demo-text" style="wi
     <td class="name">log.mlt<br><span class="alias">( dbg.log.mlt )</span></td>
     <td>message</td>
     <td>
-      Output multi line log<br>
+      Outputs a multiline log message<br>
 <pre class="eg">
 var msg = <textarea id="log-mlt-txt" class="demo-textarea2" style="height:60px;">Hello, World! 1
 Hello, World! 2
@@ -1601,7 +1601,7 @@ log('Some message\n' + stk);<button class="demo-button2" onclick="var stk=printS
       index<span class="annotation">(opt)</span><br>
     </td>
     <td>
-      Returns current line number
+      Returns the current line number
 <pre class="eg">
 
 dbg.line();<button class="demo-button2" onclick="getCurrentLineNumDemo();">DEMO</button><button class="demo-button2" onclick="demo.getCurrentLineNumDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getCurrentLineNumDemo();">DEMO3</button>
@@ -1670,7 +1670,7 @@ dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="w
     <td>
       Send log buffer to server.<br><br>
 <pre class="eg">url      : URL to send
-paramName: request parameter name for log buffer<span class="annotation">(opt) "data" is used in default</span>
+paramName: request parameter name for log buffer<span class="annotation">(opt) "data" is used by default</span>
 params   : other parameters to send (Map object)<span class="annotation">(opt)</span>
 extInfo  : extra info text<span class="annotation">(opt)</span>
 flag     : head|log|b64buf<span class="annotation">(opt) target part to send. e.g., "head|log"</span>
@@ -1789,7 +1789,7 @@ base64:
  false: Plain text (default)
 
 format time:
- true:  The time format will be human-readable foamrt.
+ true:  Formats timestamps as human-readable dates and times.
         e.g., 2017-10-17 12:34:56.789
 
  false: The numeric value corresponding to the time for 
@@ -1891,7 +1891,7 @@ dbg.time.split('timer1', null);<button class="demo-button2" onclick="dbg.time.sp
       arg2: message<span class="annotation">(opt)</span>
     </td>
     <td>
-      Print elapsed time of the timer and clear.
+      Logs the elapsed time and clears the timer.
 <pre class="eg">
 dbg.time.end();<button class="demo-button2" onclick="dbg.time.end();">DEMO</button>
 -&gt; timer0: T+00:01:02.345
@@ -2015,7 +2015,7 @@ dbg.cmd.focus(); <button class="demo-button2" onclick="dbg.cmd.focus();">DEMO</b
     <td class="name">dbg.cmd.hasFocus</td>
     <td></td>
     <td>
-      Returns if the command line is active (has focus) or not.<br>
+      Returns whether the command-line input field has focus.<br>
 <pre>
 dbg.cmd.hasFocus(); <button class="demo-button2" onclick="setTimeout('log.res(dbg.cmd.hasFocus());', 1000);">DEMO</button>
 </pre>
@@ -2139,7 +2139,7 @@ dbg.bat(script); <button class="demo-button2" onclick="batTest();">DEMO</button>
       commands<br>
     </td>
     <td>
-      Set a batch script. (only set. not run.)<br><br>
+      Loads a batch script without executing it.<br><br>
 <pre class="eg">
 var commands = 'echo off\n';
 commands += 'echo "foo"\n';
@@ -2291,7 +2291,7 @@ dbg.bat.getSymbols('<input type="text" id="getsyms-type-txt" class="demo-text" s
     <td class="name">dbg.bat.nestLv</td>
     <td></td>
     <td>
-      Returns current execution nest level.
+      Returns the current execution nesting level.
 <pre class="eg">
 dbg.bat.nestLv() <button class="demo-button2" onclick="log.res(dbg.bat.nestLv());">DEMO</button>
 </pre>
@@ -2388,7 +2388,7 @@ dbg.point.msg.clear(); <button class="demo-button2" onclick="dbg.point.msg.clear
     </td>
   </tr>
 
-  <tr><td colspan="3" class="cat">Pseudo LED Controll</td></tr>
+  <tr><td colspan="3" class="cat">Pseudo-LED Control</td></tr>
   <tr>
     <td class="name">dbg.led</td>
     <td>value</td>
@@ -2678,7 +2678,7 @@ dbg.opacity(<input type="text" id="opacity-text" value="0.5" class="demo-text" s
     <td class="name">dbg.isVisible</td>
     <td></td>
     <td>
-      Returns if the debug window is visible.<br>
+      Returns whether the debug window is visible.<br>
 <pre>
 dbg.isVisible(); <button class="demo-button2" onclick="document.getElementById('isvisible-ret').innerText = dbg.isVisible();">DEMO</button>
 -&gt; <span id="isvisible-ret"></span>
@@ -2994,7 +2994,7 @@ dbg.getType(<input type="text" id="gettype-txt" class="demo-text" style="width:1
     <td class="name">dbg.getBrowserType</td>
     <td></td>
     <td>
-      Get browser type info<br><br>
+      Returns browser information<br><br>
       e.g.,
 <pre class="eg">
 {
@@ -3047,14 +3047,14 @@ dbg.countElements('tagName');
       arg2: index<span class="annotation">(opt)</span>
     </td>
     <td>
-      Get an DOM element object of the specified selector<br><br>
+      Returns the DOM element matching the specified selector<br><br>
       e.g.,
 <pre class="eg">
 dbg.getElement('#id');
 dbg.getElement('.className', 0);
 dbg.getElement('tagName', 1);
 </pre><br>
-Returns an DOM element or null if an element with the specified selector is not in the document.
+Returns a DOM element, or null if no element matches the selector.
     </td>
   </tr>
 
@@ -3339,7 +3339,7 @@ var value = dbg.getQuery('<input type="text" id="get-q-text" class="demo-text" s
       key
     </td>
     <td>
-      Returns an object that is saved into the localStorage, or null if the key does not exist in the Storage.
+      Returns the object stored under the specified key in localStorage, or null if the key does not exist.
     </td>
   </tr>
 
@@ -3415,7 +3415,7 @@ dbg.formatJSON(str); <button class="demo-button2" onclick="log('\n' + dbg.format
     <td class="name">dbg.getKeys</td>
     <td>object</td>
     <td>
-      Returns property key name array of the object<br>
+      Returns an array of the object's property names.<br>
 <pre class="eg">
 var obj = {
   key1: 'A',
@@ -3736,7 +3736,7 @@ dbg.adjustResBox(<input type="text" id="resbox-adj-txt" class="demo-text" style=
       Returns a value of the specified key.<br><br>
 <pre>
 var cookies = dbg.getCookie(); <button class="demo-button2" onclick="log.p(dbg.getCookie(), 0, 'cookies =');">DEMO</button>
-Returns a map object consists of key and value.
+Returns an object containing cookie names and values.
 
 var val = dbg.getCookie('<input type="text" id="getcookie-txt" class="demo-text" style="width:100px;" value="">'); <button class="demo-button2" onclick="log.res(dbg.getCookie(getVal('getcookie-txt')));">DEMO</button>
 </pre>
@@ -3879,7 +3879,7 @@ var opt = dbg.get1stOpt('<input type="text" id="opt-1stval-arg-txt" class="demo-
     <td class="name">dbg.hasOpt</td>
     <td>argument-string<br>key</td>
     <td>
-      Returns if the arguments has an option.<br>
+      Returns whether the argument string contains the specified option.<br>
 <pre>
 dbg.hasOpt('<input type="text" id="opt-has-arg-txt" class="demo-text" style="width:130px;" value='-a abc -b'>', '<input type="text" id="opt-has-opt-txt" class="demo-text" style="width:20px;" value='a'>'); <button class="demo-button2" onclick="log.res(dbg.hasOpt(getVal('opt-has-arg-txt'), getVal('opt-has-opt-txt')));">DEMO</button>
 </pre>
@@ -3912,7 +3912,7 @@ dbg.countOpts('<input type="text" id="cnt-opt-arg-txt" class="demo-text" style="
     <td class="name">dbg.isReady</td>
     <td></td>
     <td>
-      Returns if debug.js is initialized
+      Returns whether debug.js has been initialized
     </td>
   </tr>
 </table>
@@ -3950,7 +3950,7 @@ debug.js will not use aliases in case of those that are already defined.
   <tr>
     <td>getAll</td>
     <td></td>
-    <td>Returns the all contents array in the buffer</td>
+    <td>Returns an array containing all entries in the buffer</td>
   </tr>
   <tr>
     <td>set</td>
@@ -4679,10 +4679,10 @@ C   2   E   D   4   0   0   0
     </td>
     <td>
       Send an HTTP request by specified method.<br>
-      This command perform the operation synchronously and XMLHttpRequest object will be returned.<br><br>
+      This command executes synchronously and returns an XMLHttpRequest object.<br><br>
       method:<br>
       The HTTP method to use, such as GET, POST, HEAD, PUT, DELETE, OPTIONS, etc.<br>
-      <span class="annotation">GET is set as the default value in case of that the method is not specified.</span><br><br>
+      <span class="annotation">GET is used by default if no method is specified.</span><br><br>
 <pre class="eg">
 e.g.,
 
@@ -6581,18 +6581,18 @@ $ xb64:GRsZ#xyz
 
 <a name="bat"></a>
 <div class="caption" id="bat-execution">// BAT Script Execution</div>
-BAT script is an original script language in debug.js.<br>
+BAT is a scripting language built into debug.js.<br>
 It consists of a series of commands to be executed by the command-line interpreter.<br>
 You can write any commands of the library and JavaScript statements.<br>
 <br>
 
 <b>How to execute</b><br>
-From the menu on the upper of the debugger window,
+From the menu at the top of the debug window:
 <pre>
 TOOL =&gt; &lt;BAT&gt; =&gt; Write a BAT script =&gt; [ RUN ]
 </pre>
 <a href="bat.txt" target="_blank">Sample Script</a> (for Auto-testing of this page)<br>
-You can load a script by drag a script file (plain text file) and drop to log window.<br>
+You can also load a script by dragging a plain-text file onto the log window.<br>
 <br>
 
 <b>Batch File Format</b>
@@ -6612,8 +6612,7 @@ plain text
 plain text
 plain text
 <span class="emphasis">!__TEXT__!</span>
-<span class="annotation">This is also comment section.
-The difference from other comment section is the content will be set to the variable ${%TEXT%}.</span>
+<span class="annotation">This section is also treated as a comment, but its contents are stored in the ${%TEXT%} variable.</span>
 <span class="emphasis">
 ${val} = command <span class="annotation">Command result will be set to the variable ${val}.</span>
 
@@ -6699,7 +6698,7 @@ call funcname argument
       Terminate the execution of the batch script<br>
       When a program exits, it can return to the parent program a small amount of information about the cause of termination, using the exit status.<br>
       Normally the exit status 0 indicates successful program completion.<br>
-      Other value indicates unsuccessful program completion.<br>
+      A nonzero exit status indicates failure.<br>
       You can access the exit status via special variable ${?}<br><br>
 <pre class="eg">
 bat exec IyFCQVQhDQpleGl0IDENCg==<span class="annotation">(*1)</span>
@@ -6766,7 +6765,7 @@ return value
     <td class="name">wait</td>
     <td>millis<br>or target time</td>
     <td>
-      Wait the specified milli seconds.<br><br>
+      Waits for the specified number of milliseconds.<br><br>
 <pre class="eg">
 wait
 wait 1000
@@ -6977,7 +6976,7 @@ $ set batstop error|test
 
 <a name="options"></a>
 <div class="caption" id="options">// Options</div>
-If you want to change the debugger settings, explicitly call for initialization function in advance.
+To customize the debugger settings, explicitly call the initialization function before using the debugger.
 <pre class="code">
 &lt;!DOCTYPE html&gt;
 &lt;html&gt;
@@ -7089,7 +7088,7 @@ show: {
   <tr>
     <td class="name">position</td>
     <td>
-      Default window position<br>
+      Initial window position<br>
       'n' = top | center<br>
       'ne' = top | right<br>
       'e' = middle | right<br>
@@ -7829,7 +7828,7 @@ pause -key -timeout 5s
 
 point init
 </textarea><br>
-From the menu on the upper of the debugger window,
+From the menu at the top of the debug window:
 <pre>
 TOOL =&gt; &lt;BAT&gt; =&gt; Copy & Paste the above script =&gt; <span style="color:#0c0;">[ RUN ]</span>
 </pre>
