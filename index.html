@@ -55,7 +55,7 @@ pre {margin: 4px 0; font-family:Consolas;}
 .dl-button {position:relative; width:90px; height:25px; margin:0; font-size:14px;}
 .demo-button {position:relative; width:74px; height:22px; margin:0; font-size:14px; background:#04a; color:#aaa}
 .demo-button2 {position:relative; width:50px; height:18px; margin:0 0 2px 4px; font-size:12px; background:#06e; color:#eee}
-.reset-button {width:46px; height:18px; font-size:10px; font-qweight:normal;}
+.reset-button {width:46px; height:18px; font-size:10px; font-weight:normal;}
 input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px solid #333; border-radius:0; box-shadow:none; margin:5px 0;}
 .button:hover {cursor:pointer; background:#00a8ff; text-decoration:none;}
 .button-green {background:#00cc68;}
@@ -151,18 +151,16 @@ var options1 = {
 //log.t('init start');
 log('Hello, world!');
 
-var logMessageText = null;
 var msgMessageText = null;
 
 //window.addEventListener('load', init, true);
 window.onload = function() {
   log('Here is the log output example.');
 
-  logMessageText = document.getElementById('log-message-text');
   msgMessageText = document.getElementById('msg-message-text');
   consoleMessageText = document.getElementById('console-message-text');
 
-  setTimeout(displayDemoMessages, 100);
+  tmId = setTimeout(displayDemoMessages, 100);
   //setTimeout(ledDemo, 1500);
   //setTimeout(msgDemo, 1500);
   //dbg.cmd('launch tool file bin');
@@ -177,13 +175,18 @@ var demoDispCount = 0;
 var tmId = 0;
 function displayDemoMessages() {
   if (demoDispCount >= demoMessages.length) {
-    setTimeout(log.clear, 1000);
+    tmId = setTimeout(clearDemoMessages, 1000);
     return;
   }
   var msgData = demoMessages[demoDispCount];
   demoDispCount++;
   msgData.fnc(msgData.msg);
   tmId = setTimeout(displayDemoMessages, msgData.delay);
+}
+
+function clearDemoMessages() {
+  tmId = 0;
+  log.clear();
 }
 
 var demoMessages = [
@@ -194,15 +197,17 @@ var demoMessages = [
 ];
 
 var sampleDispCount = 0;
+var sampleDemoTmId = 0;
 function displaySampleMessages() {
   if (sampleDispCount >= sampleMessages.length) {
     sampleDispCount = 0;
+    sampleDemoTmId = 0;
     return;
   }
   var msgData = sampleMessages[sampleDispCount];
   sampleDispCount++;
   msgData.fnc(msgData.msg);
-  setTimeout(displaySampleMessages, msgData.delay);
+  sampleDemoTmId = setTimeout(displaySampleMessages, msgData.delay);
 }
 
 var sampleMessages = [
@@ -218,15 +223,61 @@ var sampleMessages = [
 ];
 
 var ledDemoStepCount = 0;
+var ledDemoTmId = 0;
+var ledDemoMode = 0;
+
+function toggleLedDemo(mode) {
+  if (ledDemoMode == mode) {
+    stopLedDemo();
+    return;
+  }
+
+  if (ledDemoMode) {
+    stopLedDemo();
+  }
+
+  ledDemoMode = mode;
+  updateLedDemoButtons();
+
+  if (mode == 1) {
+    ledDemo();
+  } else {
+    demo.led.ledDemo();
+  }
+}
+
+function stopLedDemo() {
+  clearTimeout(ledDemoTmId);
+  ledDemoTmId = 0;
+  ledDemoStepCount = 0;
+  demo.led.i = 0;
+
+  if (ledDemoMode == 2) {
+    dbg.msg.clear();
+  }
+
+  ledDemoMode = 0;
+  dbg.led(0);
+  updateLedDemoButtons();
+}
+
+function updateLedDemoButtons() {
+  var btn1 = document.getElementById('led-demo-btn');
+  var btn2 = document.getElementById('led-demo-btn2');
+
+  btn1.innerText = (ledDemoMode == 1 ? 'Stop LED DEMO' : 'Start LED DEMO');
+  btn2.innerText = (ledDemoMode == 2 ? 'Stop LED DEMO2' : 'Start LED DEMO2');
+}
+
 function ledDemo() {
   if (ledDemoStepCount >= ledDemoData.length) {
-    ledDemoStepCount = 0;
+    stopLedDemo();
     return;
   }
   var step = ledDemoData[ledDemoStepCount];
   ledDemoStepCount++;
   step.fnc();
-  setTimeout(ledDemo, step.delay);
+  ledDemoTmId = setTimeout(ledDemo, step.delay);
 }
 
 var ledDemoData = [
@@ -269,18 +320,21 @@ var ledDemoData = [
 var msgDemoCnt = 0;
 var msgDemoCntMax = 300;
 var msgDemoSpeed = 10;
+var msgDemoTmId = 0;
 function msgDemo() {
   msgDemoCnt++;
   dbg.msg('Message Display Demo(cnt=' + msgDemoCnt + ')');
   if (msgDemoCnt <= msgDemoCntMax) {
-    setTimeout(msgDemo, msgDemoSpeed);
+    msgDemoTmId = setTimeout(msgDemo, msgDemoSpeed);
   } else {
     dbg.msg.clear();
     msgDemoCnt = 0;
+    msgDemoTmId = 0;
   }
 }
 
 randomDemoFlag = false;
+var randomDemoTmId = 0;
 function randomDemo() {
   if (!randomDemoFlag) return;
   var next = dbg.random(0, 1000);
@@ -309,17 +363,23 @@ function randomDemo() {
       log(str);
       break;
   }
-  setTimeout(randomDemo, next);
+  randomDemoTmId = setTimeout(randomDemo, next);
 }
 
 function startStopRandomDemo() {
   randomDemoFlag = randomDemoFlag ? false : true;
+  if (!randomDemoFlag) {
+    clearTimeout(randomDemoTmId);
+    randomDemoTmId = 0;
+  }
   var el = document.getElementById('random-demo-button');
   el.innerText = randomDemoFlag ? 'Stop Random Demo' : 'Start Random Demo';
 }
 
 function stopRandomDemo() {
   randomDemoFlag = false;
+  clearTimeout(randomDemoTmId);
+  randomDemoTmId = 0;
   var el = document.getElementById('random-demo-button');
   el.innerText = 'Start Random Demo';
 }
@@ -558,11 +618,11 @@ function getFileLineDemo() {
 
 function getFileLineDemo2a(idx, abs) {
   abs = (abs == "true" ? true : false);
-  getFileNameDemo2b(idx, abs);
+  getFileLineDemo2b(idx, abs);
 }
 
 function getFileLineDemo2b(idx, abs) {
-  var name = dbg.fileline(idx, abs);
+  var fl = dbg.fileline(idx, abs);
   log(fl);
 }
 
@@ -680,9 +740,8 @@ function httpCallback(xhr, res, req) {
   } else {
     log(statusMsg);
   }
-  var head = xhr.getAllResponseHeaders();
-  var body = res.replace(/</g, '&lt;');
-  body = body.replace(/>/g, '&gt;');
+  var head = dbg.escHtml(xhr.getAllResponseHeaders());
+  var body = dbg.escHtml(res);
   if (head || body) {
     log('Response:\n' + head + '\n'+ body);
   }
@@ -1030,25 +1089,25 @@ demo.sendLogDemoCbFunc = function(xhr) {
 };
 
 demo.led = {};
-demo.led.speed = 500; // ms
+demo.led.speed = 500;
 demo.led.i = 0;
 demo.led.ledDemo = function() {
+  if (demo.led.i > 255) {
+    stopLedDemo();
+    return;
+  }
   dbg.led(demo.led.i);
   var i16 = dbg.toHex(demo.led.i);
   i16 = DebugJS.formatHex(i16, true, '0x');
   dbg.msg('LED = ' + demo.led.i + ' (' + i16 + ')');
-  if (demo.led.i <= 255) {
-    setTimeout(demo.led.ledDemo, demo.led.speed);
-  } else {
-    dbg.led(0);
-    dbg.msg.clear();
-  }
   demo.led.i++;
+  ledDemoTmId = setTimeout(demo.led.ledDemo, demo.led.speed);
 }
 
 function addScript() {
   var script = 'var demo2 = {};';
   script += 'demo2.printStackDemo = function(idx, silent) {';
+  script += '  silent = (silent == "true");';
   script += '  return dbg.stack(idx, silent);';
   script += '};';
 
@@ -1078,7 +1137,9 @@ function addScript() {
   scriptElement.innerHTML = script;
   document.body.appendChild(scriptElement);
 }
-setTimeout(addScript, 100);
+
+// Defer dynamic script injection to test stack trace information from asynchronously added code.
+window.addEventListener('DOMContentLoaded', addScript, true);
 
 demo.getExtPanel = function(id) {
   var p = dbg.x.panel.getPanel(id);
@@ -1132,16 +1193,18 @@ dragtest.init = function() {
   box2.addEventListener("touchstart", dragtest.onDown, {passive: true});
 
   window.addEventListener('mousemove', dragtest.onMove, false);
-  window.addEventListener('touchmove', dragtest.onMove, false);
+  window.addEventListener('touchmove', dragtest.onMove, {passive: false});
   window.addEventListener("mouseup", dragtest.onUp, false);
   window.addEventListener("touchend", dragtest.onUp, false);
+  window.addEventListener('touchcancel', dragtest.onUp, false);
 };
 
 dragtest.onDown = function(e) {
   var el = e.target;
+  var pt = (e.changedTouches ? e.changedTouches[0] : e);
   dragtest.data.el = el;
-  dragtest.data.x = e.clientX;
-  dragtest.data.y = e.clientY;
+  dragtest.data.x = pt.clientX;
+  dragtest.data.y = pt.clientY;
   var list = document.getElementsByClassName('box');
   for (var i = 0; i < list.length; i++) {
     list[i].style.zIndex = 10;
@@ -1553,7 +1616,7 @@ dbg.line(<input type="text" id="line-idx-txt" class="demo-text" style="width:20p
       index<span class="annotation">(opt)</span><br>
     </td>
     <td>
-      Returns current line number
+      Returns the current function name
 <pre class="eg">
 
 dbg.funcname();<button class="demo-button2" onclick="getFuncNameDemo();">DEMO</button><button class="demo-button2" onclick="demo.getFuncNameDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getFuncNameDemo();">DEMO3</button>
@@ -1569,7 +1632,7 @@ dbg.funcname(<input type="text" id="func-idx-txt" class="demo-text" style="width
       arg2: absolute<span class="annotation">(opt)</span><br>
     </td>
     <td>
-      Returns current line number
+      Returns the current file name
 <pre class="eg">
 
 dbg.filename();<button class="demo-button2" onclick="getFileNameDemo();">DEMO</button><button class="demo-button2" onclick="demo.getFileNameDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getFileNameDemo();">DEMO3</button>
@@ -1585,11 +1648,11 @@ dbg.filename(<input type="text" id="file-idx-txt" class="demo-text" style="width
       arg2: absolute<span class="annotation">(opt)</span><br>
     </td>
     <td>
-      Returns current line number
+      Returns the current file name and line number
 <pre class="eg">
 
 dbg.fileline();<button class="demo-button2" onclick="getFileLineDemo();">DEMO</button><button class="demo-button2" onclick="demo.getFileLineDemo();">DEMO2</button><button class="demo-button2" onclick="demo2.getFileLineDemo();">DEMO3</button>
-dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="width:20px;" value="0">, <input type="text" id="fileline-abs-txt" class="demo-text" style="width:40px;" value="true">);<button class="demo-button2" onclick="getFileLineDemo2a(('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO</button><button class="demo-button2" onclick="demo.getFileLineDemo(getVal('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO2</button><button class="demo-button2" onclick="demo2.getFileLineDemo(getVal('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO3</button>
+dbg.fileline(<input type="text" id="fileline-idx-txt" class="demo-text" style="width:20px;" value="0">, <input type="text" id="fileline-abs-txt" class="demo-text" style="width:40px;" value="true">);<button class="demo-button2" onclick="getFileLineDemo2a(getVal('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO</button><button class="demo-button2" onclick="demo.getFileLineDemo(getVal('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO2</button><button class="demo-button2" onclick="demo2.getFileLineDemo(getVal('fileline-idx-txt') | 0, getVal('fileline-abs-txt'));">DEMO3</button>
 </pre>
     </td>
   </tr>
@@ -1812,7 +1875,7 @@ dbg.time.split();<button class="demo-button2" onclick="dbg.time.split();">DEMO</
 dbg.time.split('timer1');<button class="demo-button2" onclick="dbg.time.split('timer1');">DEMO</button>
 -&gt; timer1: T+00:01:02.345 (⊿00:01:02.345)
 
-dbg.time.split('timer1', '[%n] epalsed time: %t (%dt)');<button class="demo-button2" onclick="dbg.time.split('timer1', '[%n] epalsed time: %t (%dt)');">DEMO</button>
+dbg.time.split('timer1', '[%n] elapsed time: %t (%dt)');<button class="demo-button2" onclick="dbg.time.split('timer1', '[%n] elapsed time: %t (%dt)');">DEMO</button>
 -&gt; [timer1] elapsed time: T+00:01:03.345 (⊿00:00:01.000)
 
 dbg.time.split('timer1', null);<button class="demo-button2" onclick="dbg.time.split('timer1', null);">DEMO</button>
@@ -1831,13 +1894,13 @@ dbg.time.split('timer1', null);<button class="demo-button2" onclick="dbg.time.sp
       Print elapsed time of the timer and clear.
 <pre class="eg">
 dbg.time.end();<button class="demo-button2" onclick="dbg.time.end();">DEMO</button>
--&gt; timer1: T+00:01:02.345
+-&gt; timer0: T+00:01:02.345
 <span class="annotation">default timer name will be used in case no arguments are specified.</span>
 
 dbg.time.end('timer1');<button class="demo-button2" onclick="dbg.time.end('timer1');">DEMO</button>
 -&gt; timer1: T+00:01:02.345
 
-dbg.time.end('timer1', '[%n] epalsed time: %t (%dt)');<button class="demo-button2" onclick="dbg.time.end('timer1', '[%n] epalsed time: %t (%dt)');">DEMO</button>
+dbg.time.end('timer1', '[%n] elapsed time: %t (%dt)');<button class="demo-button2" onclick="dbg.time.end('timer1', '[%n] elapsed time: %t (%dt)');">DEMO</button>
 -&gt; [timer1] elapsed time: T+00:01:03.345 (⊿00:00:01.000)
 
 dbg.time.end('timer1', null);<button class="demo-button2" onclick="dbg.time.end('timer1', null);">DEMO</button>
@@ -2010,7 +2073,7 @@ dbg.getCmdVal('<input type="text" id="getcmdval-text" class="demo-text" style="w
       arg2: value
     </td>
     <td>
-      Returns a command variable. (${name})<br>
+      Sets a command variable. (${name})<br>
 <pre class="eg">
 dbg.setCmdVal('<input type="text" id="setcmdval-name-text" class="demo-text" style="width:50px;" value="a">', '<input type="text" id="setcmdval-val-text" class="demo-text" style="width:50px;" value="abc">'); <button class="demo-button2" onclick="dbg.setCmdVal(getVal('setcmdval-name-text'), getVal('setcmdval-val-text'));log('${' + getVal('setcmdval-name-text') + '} = ' + getVal('setcmdval-val-text'));">DEMO</button>
 </pre>
@@ -2412,7 +2475,7 @@ dbg.led(<input type="text" id="led-demo-val-text" class="demo-text" style="width
     <td>
       Set a string to the message display<br>
 <pre class="eg">
-dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello, message display!">');<button class="demo-button2" onclick="dbg.msg(msgMessageText.value);">DEMO</button><button id="msg-demo-btn" class="demo-button2" onclick="msgDemo();">e.g.,</button>
+dbg.msg('<input type="text" id="msg-message-text" class="demo-text" value="Hello, message display!">');<button class="demo-button2" onclick="dbg.msg(msgMessageText.value);">DEMO</button><button id="msg-demo-btn" class="demo-button2" onclick="if (!msgDemoTmId) msgDemo();">e.g.,</button>
 </pre>
     </td>
   </tr>
@@ -3757,7 +3820,7 @@ dbg.countArgs('<input type="text" id="cnt-args-txt" class="demo-text" style="wid
       index
     </td>
     <td>
-      Returns a value of an option.<br>
+      Returns the argument at the specified index.<br>
 <pre>
 var val = dbg.getArgVal('<input type="text" id="getargval-arg-txt" class="demo-text" style="width:180px;" value='-a abc -b "xyz 123"'>', <input type="text" id="getargval-idx-txt" class="demo-text" style="width:20px;" value='0'>); <button class="demo-button2" onclick="log.p(dbg.getArgVal(getVal('getargval-arg-txt'), getVal('getargval-idx-txt')), 0, 'val =');">DEMO</button>
 </pre>
@@ -4088,7 +4151,7 @@ BIN 0000 0000 0000 0000 0000 0000 1111 1111 (8 bits)
 operation: -e encode<span class="annotation">(default option)</span>
            -d decode
 
--i Iput string
+-i Input string
 -n Number of bit rotation
     1-7 : n bit rotate left <span class="annotation">(default=1)</span>
       0 : bit inversion
@@ -4342,8 +4405,7 @@ operation: <b>pos</b>
  nw: left | top
  c: center | middle
 
- parameter1:
-  pos-x
+ pos-x
 
  parameter2:
   pos-y
@@ -5193,15 +5255,15 @@ $ point keydown -keyCode 65 -code KeyA -key a -s<span class="annotation">shiftKe
 -&gt; Dispatch the keydown event to the current position
 
 $ point keypress -keyCode 65 -code KeyA -key a -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
--&gt; Dispatch the keydown event to the current position
+-&gt; Dispatch the keypress event to the current position
 
-$ point keyup -keyCode 65 -code -code KeyA -key a -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
--&gt; Dispatch the keydown event to the current position
+$ point keyup -keyCode 65 -code KeyA -key a -s<span class="annotation">shiftKey(opt)</span> -c<span class="annotation">ctrlKey(opt)</span> -a<span class="annotation">altKey(opt)</span> -m<span class="annotation">metaKey(opt)</span>
+-&gt; Dispatch the keyup event to the current position
 
 $ point text "abc123" -speed 10<span class="annotation">(opt)</span> -step 2<span class="annotation">(opt)</span> -start 1<span class="annotation">(opt)</span> -end 6<span class="annotation">(opt)</span>
 <span class="annotation">  speed: input speed in millis(default=30 / 50-500=50ms to 500ms in random)
   step : number of characters to input at a time (default=1)
-  start: animation sequence end position
+  start: animation sequence start position
   end  : animation sequence end position</span>
 -&gt; Input text into the current position (&lt;input&gt;, &lt;textarea&gt;)
 
@@ -5391,7 +5453,7 @@ $ random -s 16 -chars "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234
       -key <i>key</i><span class="annotation">(opt)</span>
     </td>
     <td>
-     Resume a batch process which suspended by "pause -c" command.<br>
+     Resume a batch process suspended by the "pause" command.<br>
      -key option resumes the batch process corresponding to the same key by "pause -key" command.
     </td>
   </tr>
@@ -6642,7 +6704,7 @@ call funcname argument
 <pre class="eg">
 bat exec IyFCQVQhDQpleGl0IDENCg==<span class="annotation">(*1)</span>
 echo "Exit Status = " + ${?}
-IF (${?} == 0)) (
+IF (${?} == 0) (
   echo "OK!"
 ) ELSE (
   echo "ERROR!"
@@ -7505,9 +7567,9 @@ and <a href="https://github.com/takashiharano/debug.js/blob/master/extension-sam
 <div class="caption" id="lazyload">// Lazy Load</div>
 Execute the following code from F12 console.<br>
 <div class="note">Note that it depends on <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP" target="_blank" rel="noopener">Content-Security-Policy</a> header.</div>
-<textarea class="code emphasis" style="height:12px;font-size:10px;resize:none;margin-bottom:4px;" readonly>s=document.createElement('script');s.src='https://debugjs.net/debug.js';document.body.appendChild(s);setTimeout('dbg.start()',1000);</textarea><br>
+<textarea class="code emphasis" style="height:24px;font-size:10px;resize:none;margin-bottom:4px;" readonly>function onDebugJsLoaded(){dbg.start();}var s=document.createElement('script');s.src='https://debugjs.net/debug.js';s.onload=onDebugJsLoaded;document.body.appendChild(s);</textarea><br>
 <div style="font-size:12px;">for iframe</div>
-<textarea class="code emphasis" style="height:24px;margin-top:1px;font-size:10px;resize:none;margin-bottom:20px;word-break:break-all;" readonly>s=document.createElement('script');s.src='https://debugjs.net/debug.js';var f=document.getElementsByTagName('iframe')[0];f.contentDocument.body.appendChild(s);setTimeout('f.contentWindow.dbg.start()',1000);</textarea>
+<textarea class="code emphasis" style="height:24px;margin-top:1px;font-size:10px;resize:none;margin-bottom:20px;word-break:break-all;" readonly>function onFrameDebugJsLoaded(){f.contentWindow.dbg.start();}var f=document.getElementsByTagName('iframe')[0];var s=f.contentDocument.createElement('script');s.src='https://debugjs.net/debug.js';s.onload=onFrameDebugJsLoaded;f.contentDocument.body.appendChild(s);</textarea>
 
 <div style="font-size:12px;">from Base64 encoded script</div>
 <textarea class="code emphasis" style="height:38px;margin-top:1px;font-size:10px;resize:none;margin-bottom:4px;word-break:break-all;" readonly>(function() {var decodeB64=function(s){return decodeURIComponent(Array.prototype.map.call(atob(s), function(c) {return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);}).join(''));};var d=decodeB64('[BASE64_ENCODED_DEBUGJS]');var s=document.createElement('script');s.innerHTML=d;document.body.appendChild(s);})();dbg.start();</textarea><br>
@@ -7554,7 +7616,7 @@ Execute the following code from F12 console.<br>
 <tr>
 <td>
 log() log.d() log.i() ...<br>
-<button onclick="displaySampleMessages();">A Series of Logs</button>
+<button onclick="if (!sampleDemoTmId) displaySampleMessages();">A Series of Logs</button>
 </td>
 
 <td>
@@ -7568,10 +7630,10 @@ log with random message<br>
 <table class="demo-table">
 <tr>
 <td>
-<button id="led-demo-btn" onclick="ledDemo();">LED DEMO</button>
+<button id="led-demo-btn" onclick="toggleLedDemo(1);">Start LED DEMO</button>
 </td>
 <td>
-<button id="led-demo-btn2" onclick="demo.led.ledDemo();">LED DEMO2</button>
+<button id="led-demo-btn2" onclick="toggleLedDemo(2);">Start LED DEMO2</button>
 </td>
 </tr>
 </table>
@@ -7776,7 +7838,7 @@ See also <a href="#" onclick="scrollToSelector('#bat-execution', 700);return fal
 <div style="height:700px;margin-top:16px;font-size:12px;">
   <div style="margin-bottom:8px;color:#999;"><span style="font-size:18px;font-weight:bold;">UI Sandbox</span><span style="font-weight:bold;"> - Test Your Interactions</span></div>
   <div style="float:left;margin-right:20px;">
-    <form name="f1">
+    <form name="f1" onsubmit="return false;">
       <input type="hidden" id="hidden1" value="hidden-value-1">
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text1</span><input id="text1" name="input1" style="width:220px;"></div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:30px;">text2</span><input id="text2" name="input2" maxlength="10" style="width:220px;" onfocus="log('inputtext2: onfocus');" onblur="log('inputtext2: onblur');" oninput="log('inputtext2: oninput ' + this.value);" onchange="log('inputtext2: onchange ' + this.value);"></div>
@@ -7828,7 +7890,7 @@ See also <a href="#" onclick="scrollToSelector('#bat-execution', 700);return fal
       </div>
       <div style="margin-bottom:5px;"><span style="display:inline-block;width:70px;">file</span><input type="file" id="input-file" name="input-file" style="width:180px;"></div>
       <div style="margin-bottom:5px;">
-        <input type="submit" id="sbmt-btn" class="button-100" value="Submit" onsubmit="return false;">
+        <input type="submit" id="sbmt-btn" class="button-100" value="Submit">
         <input type="button" class="button-100" value="BUTTON">
         <button type="button" class="button-100" onclick="test1();">button</button>
       </div>
