@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020117';
+  this.v = '202611020126';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12571,62 +12571,31 @@ DebugJS.csv2arr = function(s, d, wQ) {
   var cols = [];
   var sp = 0;
   var q = 0;
-  var cQ = 0;
-  var cPos = 0;
-  var pC = '';
-  var nF = 0;
   for (var i = 0; i < s.length; i++) {
-    if (nF) {
-      sp = i;
-      nF = 0;
-      cPos = 0;
-      q = 0;
-    }
-    var c = s.substring(i, i + 1);
+    var c = s.charAt(i);
     if (c == '"') {
-      if (cPos == 0) {
+      if (i == sp) {
         q = 1;
       } else if (q) {
-        if (cPos > 0) {
-          if (pC == '"') cQ = (cQ ? 0 : 1);
+        if (s.charAt(i + 1) == '"') {
+          i++;
+        } else {
+          q = 0;
         }
       }
-    } else if (c == '\n') {
-      cQ = 0;
-      if (q) {
-        if ((pC == '"') && !cQ) {
-          DebugJS._pushCsvCol(cols, s, sp, i, wQ);
-          nF = 1;
-          rows.push(cols);
-          cols = [];
-        }
-      } else {
-        DebugJS._pushCsvCol(cols, s, sp, i, wQ);
-        nF = 1;
+    } else if (!q && ((c == d) || (c == '\n'))) {
+      DebugJS._pushCsvCol(cols, s, sp, i, wQ);
+      sp = i + 1;
+      if (c == '\n') {
         rows.push(cols);
         cols = [];
       }
-    } else if (c == d) {
-      cQ = 0;
-      if (q) {
-        if (pC == '"') {
-          DebugJS._pushCsvCol(cols, s, sp, i, wQ);
-          nF = 1;
-        }
-      } else {
-        DebugJS._pushCsvCol(cols, s, sp, i, wQ);
-        nF = 1;
-      }
-    } else {
-      cQ = 0;
     }
-    pC = c;
-    cPos++;
   }
-  if (!nF) {
-    DebugJS._pushCsvCol(cols, s, sp, i, wQ);
+  if ((sp < s.length) || (s.length == 0)) {
+    DebugJS._pushCsvCol(cols, s, sp, s.length, wQ);
     rows.push(cols);
-  } else if (c == d) {
+  } else if (s.charAt(s.length - 1) == d) {
     cols.push('');
     rows.push(cols);
   }
