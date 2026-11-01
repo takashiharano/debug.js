@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020035';
+  this.v = '202611020050';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16534,6 +16534,11 @@ DebugJS.bat.findEndOfBlock = function(type, pc) {
   var nestingLv = 0;
   var data = {l: 0, endTkn: DebugJS.BAT_TKN_BLOCK_END};
   while (l <= bat.ctrl.endPc) {
+    var next = bat.nextELOC(l);
+    if (next != l) {
+      l = next;
+      continue;
+    }
     var cmd = bat.cmds[l];
     var c = DebugJS.splitCmdLineInTwo(cmd)[0];
     if (DebugJS.unifySP(cmd.trim()).match(DebugJS.RE_ELIF)) {
@@ -16851,7 +16856,7 @@ DebugJS.bat.initCtrl = function(all) {
   ctrl.block = [];
   ctrl.js = 0;
   ctrl.lock = 0;
-  ctrl.conddKey = null;
+  ctrl.condKey = null;
   ctrl.pauseKey = null;
   ctrl.pauseTimeout = 0;
   ctrl.pauseTmId = 0;
