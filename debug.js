@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020050';
+  this.v = '202611020109';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16003,7 +16003,7 @@ DebugJS.bat.parseLabelFncs = function() {
       if (DebugJS.delTrailingSP(c).slice(-2) != '*/') cmnt++;
       continue;
     }
-    if (DebugJS.delTrailingSP(c).slice(-2) == '*/') {
+    if ((cmnt > 0) && (DebugJS.delTrailingSP(c).slice(-2) == '*/')) {
       cmnt--;
       continue;
     }
@@ -16471,12 +16471,8 @@ DebugJS.bat.nextELOC = function(pc) {
       if (DebugJS.delTrailingSP(cmd).slice(-2) != '*/') cmnt++;
       continue;
     }
-    if (DebugJS.delTrailingSP(cmd).slice(-2) == '*/') {
+    if ((cmnt > 0) && (DebugJS.delTrailingSP(cmd).slice(-2) == '*/')) {
       cmnt--;
-      if (cmnt < 0) {
-        bat.syntaxErr(cmd);
-        break;
-      }
       continue;
     }
     if (cmnt == 0) {
