@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020147';
+  this.v = '202611020156';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16202,17 +16202,21 @@ DebugJS.bat._exit = function(st) {
   if (!bat.ldCtx()) bat._stop(st);
 };
 DebugJS.bat.setExecArgs = function(a) {
-  if (DebugJS.bat.ctrl.execArgs) return;
-  a = ((a === undefined) ? '' : a);
-  var args = DebugJS.splitCmdLine(a);
-  var batArgs = [a];
-  for (var i = 0; i < args.length; i++) {
-    try {
-      var ag = args[i];
-      batArgs.push(eval(ag));
-    } catch (e) {
-      DebugJS._log.e('Illegal BAT argument: ' + ag + ' (' + e + ')');
-      throw e;
+  var batArgs;
+  if (a instanceof Array) {
+    batArgs = a;
+  } else {
+    a = ((a === undefined) ? '' : a);
+    var args = DebugJS.splitCmdLine(a);
+    batArgs = [a];
+    for (var i = 0; i < args.length; i++) {
+      try {
+        var ag = args[i];
+        batArgs.push(eval(ag));
+      } catch (e) {
+        DebugJS._log.e('Illegal BAT argument: ' + ag + ' (' + e + ')');
+        throw e;
+      }
     }
   }
   DebugJS.ctx.CMDVALS['%%ARGS%%'] = batArgs;
