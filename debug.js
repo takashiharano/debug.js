@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202610310038';
+  this.v = '202611012346';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8209,15 +8209,7 @@ DebugJS.prototype = {
       v = parseFloat(vl);
       var b32 = DebugJS.toIEEE754Bin(v, 32);
       var b64 = DebugJS.toIEEE754Bin(v, 64);
-      if ((v == 0) && (vl.match(/^-/))) {
-        b32.s = '1';b64.s = '1';
-      }
-      s = 'binary32: ';
-      if ((Math.abs(v) <= 16777215) || isNaN(v) || (!isFinite(v))) {
-        s += ctx._cmdFloat(b32, 8, 23, 127).s;
-      } else {
-        s += 'overflow (max 16777215.0)';
-      }
+      s = 'binary32: ' + ctx._cmdFloat(b32, 8, 23, 127).s;
       s += '\n\nbinary64: ' + ctx._cmdFloat(b64, 11, 52, 1023).s;
     }
     if (echo) DebugJS._log.mlt(s);
@@ -8262,23 +8254,33 @@ DebugJS.prototype = {
     var eDigits = DebugJS.rpad(de + 'bits', ' ', de);
     var q = parseInt(b.e, 2);
     var e = q - eb;
-    var ex = q + '(' + (q == 0 ? '+0' : (q < eb ? '' : '+') + e) + ')';
-    var v = ((q == 0) ? 0 : DebugJS.fBin2Dec(b.f, e));
+    var special = DebugJS.isAll1(b.e);
+    var zeroFrac = !/1/.test(b.f);
+    var ex = q + '(' + (special ? 'special' : (q == 0 ? (zeroFrac ? '+0' : 1 - eb) : (e < 0 ? '' : '+') + e)) + ')';
+    var bits = b.s + b.e + b.f;
+    var view = new DataView(new ArrayBuffer(bits.length / 8));
+    for (var i = 0; i < bits.length; i += 8) {
+      view.setUint8(i / 8, parseInt(bits.slice(i, i + 8), 2));
+    }
+    var v = (de == 8 ? view.getFloat32(0, false) : view.getFloat64(0, false));
     var vl, b2;
-    if (DebugJS.isAll1(b.e)) {
-      vl = ((parseInt(b.f) == 0) ? 'Infinity' : 'NaN');
+    if (special) {
+      vl = (zeroFrac ? 'Infinity' : 'NaN');
     } else {
-      vl = v + '';
-      if (!vl.match(/\./)) vl += '.0';
-      b2 = DebugJS.suppressR('1' + b.f, '0');
+      vl = Math.abs(v) + '';
+      if ((vl.indexOf('.') == -1) && (vl.indexOf('e') == -1)) vl += '.0';
       if (v == 0) {
         b2 = '0.0';
-      } else if (e < 0) {
-        b2 = '0.' + DebugJS.repeatCh('0', (e * (-1) - 1)) + b2;
       } else {
-        var bI = b2.slice(0, e + 1);
-        var bF = b2.slice(e + 1);
-        b2 = bI + '.' + ((bF == '') ? '0' : bF);
+        var digits = DebugJS.suppressR((q == 0 ? '0' : '1') + b.f, '0');
+        var pos = 1 + (q == 0 ? 1 - eb : e);
+        if (pos <= 0) {
+          b2 = '0.' + DebugJS.repeatCh('0', -pos) + digits;
+        } else if (pos >= digits.length) {
+          b2 = digits + DebugJS.repeatCh('0', pos - digits.length) + '.0';
+        } else {
+          b2 = digits.slice(0, pos) + '.' + digits.slice(pos);
+        }
       }
     }
     var sn = ((b.s == '1') ? '-' : '');
@@ -12954,31 +12956,16 @@ DebugJS.hex2bin = function(h) {
   return bin;
 };
 DebugJS.toIEEE754Bin = function(v, fmt) {
-  var BIAS = (fmt == 32 ? 127 : 1023);
-  var EXP = (fmt == 32 ? 8 : 11);
-  var DIGITS = (fmt == 32 ? 23 : 52);
-  var s = ((v < 0) ? '1' : '0');
-  if (v == 0) {
-    return {s: s, e: DebugJS.repeatCh('0', EXP), f: DebugJS.repeatCh('0', DIGITS)};
-  } else if (isNaN(v)) {
-    return {s: s, e: DebugJS.repeatCh('1', EXP), f: DebugJS.repeatCh('x', DIGITS)};
-  } else if (!isFinite(v)) {
-    return {s: s, e: DebugJS.repeatCh('1', EXP), f: DebugJS.repeatCh('0', DIGITS)};
+  var size = (fmt == 32 ? 4 : 8);
+  var de = (fmt == 32 ? 8 : 11);
+  var view = new DataView(new ArrayBuffer(size));
+  var bit = (fmt == 32) ? '32' : '64';
+  view['setFloat' + bit](0, v, false);
+  var bits = '';
+  for (var i = 0; i < size; i++) {
+    bits += DebugJS.lpad(view.getUint8(i).toString(2), '0', 8);
   }
-  var b = v.toString(2);
-  var a = b.replace(/-/, '');
-  var f = a.replace(/\./, '').replace(/^0+/, '').slice(1, 1 + DIGITS);
-  var p1 = a.indexOf('1');
-  var p2 = a.indexOf('.');
-  if (p2 == -1) {
-    a += '.0';
-    p2 = a.indexOf('.');
-  }
-  var sft = ((p1 < p2) ? (p2 - 1) : ((p1 - 1) * (-1)));
-  var e = (BIAS + sft).toString(2);
-  var ee = DebugJS.lpad(e, '0', EXP);
-  var ff = DebugJS.rpad(f, '0', DIGITS);
-  return {s: s, e: ee, f: ff};
+  return {s: bits.slice(0, 1), e: bits.slice(1, 1 + de), f: bits.slice(1 + de)};
 };
 DebugJS.fBin2Dec = function(bin, e) {
   bin = '1' + bin;
