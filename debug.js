@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611012346';
+  this.v = '202611020008';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10641,7 +10641,7 @@ DebugJS._replaceCmdVals = function(s, il) {
     } else {
       r = 'DebugJS.ctx.CMDVALS[\'' + name + '\']';
     }
-    s = s.replace(re, r);
+    s = s.replace(re, function() {return r;});
   }
 };
 
