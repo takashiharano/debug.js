@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020109';
+  this.v = '202611020117';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10607,14 +10607,12 @@ DebugJS.TextBuffer.prototype = {
 DebugJS.getCmdValName = function(v, pfix, head) {
   var m = pfix + '\\{(.+?)\\}';
   if (head) m = '^' + m;
-  var re = new RegExp(m);
-  var r = re.exec(v);
-  if (r == null) return null;
-  var idx = r.index;
-  if ((idx > 0) && ((v.charAt(idx - 1) == '\\'))) {
-    return null;
+  var re = new RegExp(m, 'g');
+  var r;
+  while ((r = re.exec(v)) != null) {
+    if ((r.index == 0) || (v.charAt(r.index - 1) != '\\')) return r[1];
   }
-  return r[1];
+  return null;
 };
 DebugJS.replaceCmdVals = function(s) {
   s = DebugJS._replaceCmdVals(s, true);
@@ -10641,7 +10639,10 @@ DebugJS._replaceCmdVals = function(s, il) {
     } else {
       r = 'DebugJS.ctx.CMDVALS[\'' + name + '\']';
     }
-    s = s.replace(re, function() {return r;});
+    s = s.replace(re, function(match, idx) {
+      if ((idx > 0) && (s.charAt(idx - 1) == '\\')) return match;
+      return r;
+    });
   }
 };
 
