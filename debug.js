@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020135';
+  this.v = '202611020143';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12559,7 +12559,7 @@ DebugJS.toUniqueCnt = function(v, w) {
   return r;
 };
 DebugJS.cntByGrp = function(a) {
-  var o = {};
+  var o = Object.create(null);
   for (var i = 0; i < a.length; i++) {
     var v = a[i];
     if (o[v] == undefined) o[v] = 0;
