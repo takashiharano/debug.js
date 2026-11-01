@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020008';
+  this.v = '202611020024';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -18163,12 +18163,12 @@ DebugJS.selectOption = function(elm, method, type, val) {
   }
   if (method == 'set') {
     if ((type != 'value') && (type != 'text')) return;
-    var prevVal = el.value;
     for (var i = 0; i < el.options.length; i++) {
       if (((type == 'text') && (el.options[i].innerText == val)) ||
           ((type == 'value') && (el.options[i].value == val))) {
+        var wasSelected = el.options[i].selected;
         el.options[i].selected = true;
-        if (prevVal != val) {
+        if (!wasSelected) {
           DebugJS.dispatchChangeEvt(el);
         }
         return;
