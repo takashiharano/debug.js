@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020143';
+  this.v = '202611020147';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16607,7 +16607,7 @@ DebugJS.bat.ret = function(arg) {
   var bat = DebugJS.bat;
   var ctrl = bat.ctrl;
   if (bat.isCmdExecutable()) {
-    var fnCtx = ctrl.stack.pop();
+    var fnCtx = ctrl.stack[ctrl.stack.length - 1];
     if (!fnCtx) {
       bat.syntaxErr('Illegal return statement');
       return;
@@ -16617,6 +16617,7 @@ DebugJS.bat.ret = function(arg) {
     } catch (e) {
       DebugJS._log.e(e);return;
     }
+    ctrl.stack.pop();
     DebugJS.ctx.CMDVALS['%ARGS%'] = fnCtx.fnArgs;
     ctrl.fnArgs = fnCtx.fnArgs;
     ctrl.block = fnCtx.block;
