@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611021954';
+  this.v = '202611022011';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12644,15 +12644,18 @@ DebugJS.toCsv = function(t, wQ) {
 };
 DebugJS.csv2tsv = function(t, d, wQ) {
   var d0 = ',';
-  if (t.match(/\t/)) d0 = '\t';
+  if (t.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d0 = '\t';
   var s = '';
-  var r = DebugJS.csv2arr(t, d0, wQ);
+  var r = DebugJS.csv2arr(t, d0, true);
   for (var i = 0; i < r.length; i++) {
     var c = r[i];
     for (var j = 0; j < c.length; j++) {
-      var v = c[j];
+      var v = DebugJS.dequote(c[j], '"');
+      if (wQ || /[",\t\r\n]/.test(v)) {
+        v = '"' + v.replace(/"/g, '""') + '"';
+      }
       if (j > 0) s += d;
-       s += v;
+      s += v;
     }
     s += '\n';
   }
