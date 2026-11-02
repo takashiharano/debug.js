@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030057';
+  this.v = '202611030114';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -14743,19 +14743,9 @@ DebugJS.getBinType = function(b) {
 };
 DebugJS._getBinInfo = {
   exe: function(b) {
-    var pe = -1;
-    var len = 512;
-    for (var i = 0; i < len; i++) {
-      if (i + 3 >= len) break;
-      var ptn = DebugJS.scanBin(b, i, 4);
-      if (ptn == 0x50450000) {
-        pe = i;break;
-      }
-    }
-    var v = 0;
-    if ((pe >= 0) && (pe + 5 < len)) {
-      v = DebugJS.scanBin(b, pe + 4, 2);
-    }
+    var pe = b[0x3C] + b[0x3D] * 256 + b[0x3E] * 65536 + b[0x3F] * 16777216;
+    if (DebugJS.scanBin(b, pe, 4) != 0x50450000) return '';
+    var v = DebugJS.scanBin(b, pe + 4, 2);
     var r = '';
     var arch = '';
     if (v == 0x6486) {
