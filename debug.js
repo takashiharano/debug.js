@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611022011';
+  this.v = '202611022144';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -327,7 +327,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Echo the STRING(s) to the log window'},
-    {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .className / tagName', help: 'elements [#id|.className|tagName]'},
+    {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .class-name / tag-name', help: 'elements [#id|.class-name|tag-name]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float [-b|-h] VAL'},
@@ -355,7 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'pangram', fn: this.cmdPangram, desc: 'Displays a pangram'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
-    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|msg|cursor src [w] [h]|ch [n]'},
+    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|find (#id|.class|TAGNAME|text "str"|withtext "regex") [idx]|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|msg|cursor src [w] [h]|ch [n]'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-chars "ABC..."]'},
@@ -8828,6 +8828,8 @@ DebugJS.prototype = {
       ctx._cmdPointScroll(args);
     } else if (op == 'selectoption') {
       ret = ctx._cmdPointSelectOpt(ctx, args);
+    } else if (op == 'find') {
+      ret = ctx._cmdPointFind(args);
     } else if (op == 'getelement') {
       ret = point.getElementFromCurrentPos();
     } else if (op == 'getprop') {
@@ -8867,6 +8869,19 @@ DebugJS.prototype = {
       ctx._cmdPointJmp(ctx, arg, tbl, args);
     }
     return ret;
+  },
+  _cmdPointFind: function(args) {
+    var m = args[1];
+    var byTxt = ((m == 'text') || (m == 'withtext'));
+    var tgt = (byTxt ? args[2] : m);
+    var idx = (byTxt ? args[3] : args[2]);
+    if (!tgt || (idx != undefined && !/^\d+$/.test(idx)) || (byTxt && !DebugJS.isQuoted(tgt, '"'))) {
+      DebugJS.printUsage('point find #id|.class-name [idx]|tag-name [idx]|text "str" [idx]|withtext "regex" [idx]');
+      return null;
+    }
+    if (!byTxt) return DebugJS.getElement(tgt, idx);
+    tgt = DebugJS.dequote(tgt, '"');
+    return DebugJS.point.findText(tgt, idx, (m == 'withtext'));
   },
   _cmdPointJmp: function(ctx, arg, tbl, args) {
     var ptr = DebugJS.point.getPtr();
@@ -17394,6 +17409,32 @@ DebugJS.point.setKeyFlag = function(e, a) {
   }
   return e;
 };
+DebugJS.point.findText = function(text, idx, regex) {
+  var re = null;
+  if (regex) {
+    try {
+      re = new RegExp(text);
+    } catch (e) {
+      DebugJS._log.e(e);
+      return null;
+    }
+  }
+  var els = document.body.getElementsByTagName('*');
+  var win = DebugJS.ctx.win;
+  var m = [];
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    if ((win && win.contains(el)) || (el.getClientRects().length == 0)) continue;
+    var value = el.innerText;
+    if ((el.tagName == 'TEXTAREA') || ((el.tagName == 'INPUT') && (el.type != 'password'))) {
+      value = el.value;
+    }
+    if ((typeof value != 'string') || (!(re ? re.test(value) : value == text))) continue;
+    while (m.length && m[m.length - 1].contains(el)) m.pop();
+    m.push(el);
+  }
+  return m[idx | 0] || null;
+};
 DebugJS.point.getElementFromCurrentPos = function() {
   var ctx = DebugJS.ctx;
   var ptr = DebugJS.point.getPtr();
@@ -18707,18 +18748,18 @@ DebugJS.getElByAttr = function(attr, v, idx) {
   var f = DebugJS._getElByAttr;
   if (attr == '!txt') {
     el = f('innerText', v, idx);
-    if (!el) el = f('value', v, idx);
+    if (!el) el = f('value', v, idx, true);
   } else {
     el = f(attr, v, idx);
   }
   return el;
 };
-DebugJS._getElByAttr = function(attr, v, idx) {
+DebugJS._getElByAttr = function(attr, v, idx, skpPw) {
   idx |= 0;
   var el = document.body;
   var n = 0;
   while (el) {
-    if (el[attr] == v) {
+    if ((el[attr] == v) && !(skpPw && (el.tagName == 'INPUT') && (el.type == 'password'))) {
       if (idx == n) {
         break;
       }
