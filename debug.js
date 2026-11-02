@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611022144';
+  this.v = '202611022351';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -320,14 +320,14 @@ var DebugJS = DebugJS || function() {
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock DATE_TIME|OFFSET|now|start|stop|on|off|-label TXT'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
-    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Suspends processing of batch file until condition key is set', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | init'},
+    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Wait for a condition in BAT scripts', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | find (#id|.class|TAGNAME|text "str"|withtext "regex") [idx] [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookies', help: 'cookie keys|get|set|delete [key|-a] [val]'},
     {cmd: 'copy', fn: this.cmdCopy, desc: 'Copy to clipboard', help: 'copy ["STR"]'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert timestamp <--> String', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000] [-f "%YYYY-%MM-%DD %HH:%mm:%SS.%sss %Z %W (%t)"]'},
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Echo the STRING(s) to the log window'},
-    {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .class-name / tag-name', help: 'elements [#id|.class-name|tag-name]'},
+    {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .class-name / TAGNAME', help: 'elements [#id|.class-name|TAGNAME]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float [-b|-h] VAL'},
@@ -7578,6 +7578,27 @@ DebugJS.prototype = {
           DebugJS.ctx._cmdPause('key', bat.ctrl.condKey, to, q);
         }
         break;
+      case 'find':
+        var opt = DebugJS.getOptVals(arg);
+        var args = opt[''];
+        var m = args[1];
+        var to = opt.timeout;
+        if (!DebugJS.point.isValidFindArgs(args) || (to != undefined && (to == '' || (!/^\d+$/.test(to) && !DebugJS.isTmStr(to) && !DebugJS.isTTimeFormat(to))))) {
+          DebugJS.printUsage(tbl.help);
+          break;
+        }
+        if (m == 'withtext') {
+          try {
+            new RegExp(DebugJS.dequote(args[2], '"'));
+          } catch (e) {
+            DebugJS._log.e(e);
+            break;
+          }
+        }
+        if (DebugJS.point.find(args)) break;
+        bat.ctrl.condWait = {type: 'find', args: args};
+        DebugJS.ctx._cmdPause('key', '', to, true);
+        break;
       default:
         DebugJS.printUsage(tbl.help);
     }
@@ -8790,8 +8811,8 @@ DebugJS.prototype = {
     }
     if (tout > 0) {
       bat.ctrl.pauseTimeout = now + tout;
-      bat.ctrl.pauseTmId = setTimeout(bat.onPauseTimeout, tout);
     }
+    bat.restartWaitTmr();
     ctx.updateBatResumeBtn();
     return true;
   },
@@ -8871,17 +8892,11 @@ DebugJS.prototype = {
     return ret;
   },
   _cmdPointFind: function(args) {
-    var m = args[1];
-    var byTxt = ((m == 'text') || (m == 'withtext'));
-    var tgt = (byTxt ? args[2] : m);
-    var idx = (byTxt ? args[3] : args[2]);
-    if (!tgt || (idx != undefined && !/^\d+$/.test(idx)) || (byTxt && !DebugJS.isQuoted(tgt, '"'))) {
-      DebugJS.printUsage('point find #id|.class-name [idx]|tag-name [idx]|text "str" [idx]|withtext "regex" [idx]');
-      return null;
+    if (DebugJS.point.isValidFindArgs(args)) {
+      return DebugJS.point.find(args);
     }
-    if (!byTxt) return DebugJS.getElement(tgt, idx);
-    tgt = DebugJS.dequote(tgt, '"');
-    return DebugJS.point.findText(tgt, idx, (m == 'withtext'));
+    DebugJS.printUsage('point find #id|.class-name [idx]|tag-name [idx]|text "str" [idx]|withtext "regex" [idx]');
+    return null;
   },
   _cmdPointJmp: function(ctx, arg, tbl, args) {
     var ptr = DebugJS.point.getPtr();
@@ -15936,9 +15951,10 @@ DebugJS.bat.ctrl = {
   block: [],
   fnArgs: undefined,
   condKey: null,
+  condWait: null,
   pauseKey: null,
   pauseTimeout: 0,
-  pauseTmId: 0,
+  waitTmId: 0,
   cont: false,
   stopReq: false,
   execArgs: null,
@@ -16186,8 +16202,8 @@ DebugJS.bat.exec1 = function(l) {
   return DebugJS.ctx._execCmd(cmd, true);
 };
 DebugJS.bat.restart = function() {
-  if (DebugJS.bat.ctrl.pauseTmId > 0) {
-    DebugJS.bat.restartPauseTmr();
+  if (DebugJS.bat.ctrl.condWait || (DebugJS.bat.ctrl.pauseTimeout > 0)) {
+    DebugJS.bat.restartWaitTmr();
   } else {
     DebugJS.bat.exec();
   }
@@ -16761,7 +16777,7 @@ DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
         resumed = true;
       }
     }
-    if (resumed) bat.clrPauseTmr();
+    if (resumed) bat.clrWaitTmr();
     var msg;
     if (resumed) {
       ctrl.pauseKey = null;
@@ -16799,7 +16815,7 @@ DebugJS.bat._stop = function(st) {
   ctx.status &= ~DebugJS.ST_BAT_BP;
   ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD_KEY;
   ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD;
-  bat.clrPauseTmr();
+  bat.clrWaitTmr();
   ctx.updateBatResumeBtn();
   bat.setRunningSt(false);
   ctx.status &= ~DebugJS.ST_BAT_PAUSE;
@@ -16841,6 +16857,7 @@ DebugJS.bat.clear = function() {
   DebugJS.bat.set('');
 };
 DebugJS.bat.initCtrl = function(all) {
+  DebugJS.bat.clrWaitTmr();
   var ctrl = DebugJS.bat.ctrl;
   ctrl.pc = 0;
   ctrl.lr = 0;
@@ -16853,8 +16870,6 @@ DebugJS.bat.initCtrl = function(all) {
   ctrl.lock = 0;
   ctrl.condKey = null;
   ctrl.pauseKey = null;
-  ctrl.pauseTimeout = 0;
-  ctrl.pauseTmId = 0;
   ctrl.stopReq = false;
   ctrl.stack = [];
   if (all) {
@@ -16976,6 +16991,7 @@ DebugJS.bat.getCondKey = function() {
 };
 DebugJS.bat.setCond = function(key) {
   var bat = DebugJS.bat;
+  if (bat.ctrl.condWait) return;
   if (DebugJS.hasKeyWd(bat.ctrl.condKey, key, '|')) {
     bat._resume('cmd-key', key, false, true);
     bat.ctrl.condKey = null;
@@ -16983,28 +16999,56 @@ DebugJS.bat.setCond = function(key) {
 };
 DebugJS.bat._initCond = function() {
   var bat = DebugJS.bat;
-  if (bat.ctrl.condKey == null) return;
-  if (bat.ctrl.pauseKey == bat.ctrl.condKey) {
-    bat._resume('cmd-key');
+  var ctrl = bat.ctrl;
+  if (ctrl.condWait || ((ctrl.condKey != null) && (ctrl.pauseKey == ctrl.condKey))) {
+    bat._resume('cmd-key', undefined, false, true);
   }
-  bat.ctrl.condKey = null;
+  ctrl.condKey = null;
 };
-DebugJS.bat.restartPauseTmr = function() {
+DebugJS.bat.checkCondWait = function() {
+  var cond = DebugJS.bat.ctrl.condWait;
+  if (!cond) return false;
+  switch (cond.type) {
+    case 'find':
+      var el = DebugJS.point.find(cond.args);
+      return (el != null);
+  }
+  return false;
+};
+DebugJS.bat.onWaitTimer = function() {
   var bat = DebugJS.bat;
-  var t = bat.ctrl.pauseTimeout - Date.now();
-  if (t > 0) {
-    bat.ctrl.pauseTmId = setTimeout(bat.onPauseTimeout, t);
-  } else {
+  var ctrl = bat.ctrl;
+  ctrl.waitTmId = 0;
+  if (ctrl.pauseTimeout && (Date.now() >= ctrl.pauseTimeout)) {
     bat.onPauseTimeout();
+    return;
+  }
+  if (ctrl.condWait && bat.checkCondWait()) {
+    bat._resume('cmd-key', undefined, false, true);
+  } else {
+    bat.restartWaitTmr();
   }
 };
-DebugJS.bat.clrPauseTmr = function() {
-  var ctrl = DebugJS.bat.ctrl;
-  if (ctrl.pauseTmId > 0) {
-    clearTimeout(ctrl.pauseTmId);
-    ctrl.pauseTmId = 0;
-    ctrl.pauseTimeout = 0;
+DebugJS.bat.restartWaitTmr = function() {
+  var bat = DebugJS.bat;
+  var ctrl = bat.ctrl;
+  var t = (ctrl.condWait ? 100 : 0);
+  if (ctrl.pauseTimeout > 0) {
+    var remaining = ctrl.pauseTimeout - Date.now();
+    if (remaining <= 0) {
+      bat.onPauseTimeout();
+      return;
+    }
+    if ((t == 0) || (t > remaining)) t = remaining;
   }
+  if (t > 0) ctrl.waitTmId = setTimeout(bat.onWaitTimer, t);
+};
+DebugJS.bat.clrWaitTmr = function() {
+  var ctrl = DebugJS.bat.ctrl;
+  if (ctrl.waitTmId > 0) clearTimeout(ctrl.waitTmId);
+  ctrl.waitTmId = 0;
+  ctrl.pauseTimeout = 0;
+  ctrl.condWait = null;
 };
 DebugJS.bat.onPauseTimeout = function() {
   if (DebugJS.ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY) {
@@ -17409,6 +17453,23 @@ DebugJS.point.setKeyFlag = function(e, a) {
   }
   return e;
 };
+DebugJS.point.isValidFindArgs = function(args) {
+  var m = args[1];
+  var byTxt = ((m == 'text') || (m == 'withtext'));
+  var tgt = (byTxt ? args[2] : m);
+  var idx = (byTxt ? args[3] : args[2]);
+  if (!tgt || (idx != undefined && !/^\d+$/.test(idx)) || (byTxt && !DebugJS.isQuoted(tgt, '"'))) return false;
+  return true;
+};
+DebugJS.point.find = function(args) {
+  var m = args[1];
+  var byTxt = ((m == 'text') || (m == 'withtext'));
+  var tgt = (byTxt ? args[2] : m);
+  var idx = (byTxt ? args[3] : args[2]);
+  if (!byTxt) return DebugJS.getElement(tgt, idx);
+  tgt = DebugJS.dequote(tgt, '"');
+  return DebugJS.point.findText(tgt, idx, (m == 'withtext'));
+};
 DebugJS.point.findText = function(text, idx, regex) {
   var re = null;
   if (regex) {
@@ -17429,7 +17490,7 @@ DebugJS.point.findText = function(text, idx, regex) {
     if ((el.tagName == 'TEXTAREA') || ((el.tagName == 'INPUT') && (el.type != 'password'))) {
       value = el.value;
     }
-    if ((typeof value != 'string') || (!(re ? re.test(value) : value == text))) continue;
+    if ((typeof value != 'string') || (!(re ? re.test(value) : value == text)) || (window.getComputedStyle(el).visibility != 'visible')) continue;
     while (m.length && m[m.length - 1].contains(el)) m.pop();
     m.push(el);
   }

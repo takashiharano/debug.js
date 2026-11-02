@@ -555,6 +555,15 @@ function _testSetCond() {
   dbg.bat.setCond('ABC');
 }
 
+function testCondWaitFind() {
+  log('condwait find test');
+  setTimeout(_testCondWaitFind, 3000);
+}
+function _testCondWaitFind() {
+  var el = document.getElementById('span-test');
+  el.innerText = "Cond Wait Find Test";
+}
+
 function printStackDemo(idx, silent) {
   silent = ((silent == 'true') ? true : false);
   return printStackDemo1(idx, silent);
@@ -4313,17 +4322,33 @@ $ chmod rwxr-xr-x
     <td class="name">condwait</td>
     <td>
       arg1: operation<br>
-      arg2: key
+      arg2+: operation-specific arguments
     </td>
     <td>
-      Sets condition key and pause BAT execution.
+      Wait for a condition during BAT execution.
 <pre class="eg">
 $ condwait set -key &lt;key&gt;
 $ condwait pause [-timeout ms|1d2h3m4s500] [-q]
 dbg.bat.setCond(&lt;key&gt;);
 
+$ condwait find #id [-timeout ms|1d2h3m4s500]
+$ condwait find .className [index] [-timeout ms|1d2h3m4s500]
+$ condwait find tagName [index] [-timeout ms|1d2h3m4s500]
+$ condwait find text "TEXT" [index] [-timeout ms|1d2h3m4s500]
+$ condwait find withtext "REGEX" [index] [-timeout ms|1d2h3m4s500]
+-&gt; Wait until a matching element is found.
+   The index is zero-based (default=0).
+   The search is repeated every 100ms.
+   If timeout is specified, BAT execution resumes when the time expires,
+   even if the element is not found.
+
+$ condwait find #target -timeout 5000
+$ condwait find text "Download" -timeout 10s
+$ condwait find withtext "Download.*"
+
 $ condwait init
--&gt; Clear the waiting condition forcibly.
+-&gt; Clear the condition key and cancel any active condition wait.
+   Resume BAT execution if suspended by condwait pause or condwait find.
 </pre>
     </td>
   </tr>
@@ -5345,6 +5370,17 @@ $ point cursor text
 
 $ point cursor none
 -&gt; No cursor is rendered
+
+$ point find #id
+$ point find .className [index]
+$ point find tagName [index]
+$ point find text "TEXT" [index]
+$ point find withtext "REGEX" [index]
+-&gt; Find an element and return the Element object, or null if not found.
+   text: Exact text match
+   withtext: Regular expression match
+   The index is zero-based (default=0).
+   Text searches exclude hidden elements and password input values.
 
 $ point getelement
 -&gt; Get an Element object at the current pointed position
@@ -7908,6 +7944,7 @@ See also <a href="#" onclick="scrollToSelector('#bat-execution', 700);return fal
     oninput="log.i('> input');"
     onchange="log.i('> change');"
     oncontextmenu="log.i('> contextmenu');return false;">
+    <span id="span-test">span-test</span>
   </div>
   <textarea id="textarea1" style="width:400px; height:150px;"></textarea>
 
