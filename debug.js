@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030015';
+  this.v = '202611030041';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -2725,16 +2725,16 @@ DebugJS.prototype = {
           }
         }
         break;
-     case 48: // 0
-     case 96:
+      case 48: // 0
+      case 96:
         if (e.altKey) DebugJS.zoom(ctx.opt.zoom);
         break;
-     case 107: // +
-     case 187:
+      case 107: // +
+      case 187:
         if (e.altKey) ctx.zoomInOut(ctx, 1);
         break;
-     case 109: // -
-     case 189:
+      case 109: // -
+      case 189:
         if (e.altKey) ctx.zoomInOut(ctx, 0);
         break;
 
@@ -7105,13 +7105,13 @@ DebugJS.prototype = {
     var r = ctx.execBuiltInCmd(ctx, cmdline, cmdln, cmd, arg, echo);
     if (r.f) return r.r;
 
-   if (cmdln.match(/^\d+bit$/)) {
-     cmd = 'bit';
-     arg = cmdln.replace(/bit/, '');
-   } else if (cmdln.match(/^\d+bits$/)) {
-     cmd = 'bit';
-     arg = '-a ' + cmdln.replace(/bits/, '');
-   }
+    if (cmdln.match(/^\d+bit$/)) {
+      cmd = 'bit';
+      arg = cmdln.replace(/bit/, '');
+    } else if (cmdln.match(/^\d+bits$/)) {
+      cmd = 'bit';
+      arg = '-a ' + cmdln.replace(/bits/, '');
+    }
 
     for (i = 0; i < ctx.CMD_TBL.length; i++) {
       var c = ctx.CMD_TBL[i];
@@ -10368,18 +10368,18 @@ DebugJS.prototype = {
 
   cmdNop: function() {},
 
- execTransformAuto: function(mode, arg, echo, decFnc) {
-   var src = DebugJS.resolveB64Source(mode, arg, null);
-   if (src.error) {
-     DebugJS._log.e(DebugJS.escHtml(src.error));
-     return;
-   }
-   try {
-     var r = decFnc(src.payload, src.param);
-     if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
-     return r;
-   } catch (e) {DebugJS._log.e(e);}
- },
+  execTransformAuto: function(mode, arg, echo, decFnc) {
+    var src = DebugJS.resolveB64Source(mode, arg, null);
+    if (src.error) {
+      DebugJS._log.e(DebugJS.escHtml(src.error));
+      return;
+    }
+    try {
+      var r = decFnc(src.payload, src.param);
+      if (echo) DebugJS._log.res(DebugJS.quoteStrIfNeeded(DebugJS.escHtml(r)));
+      return r;
+    } catch (e) {DebugJS._log.e(e);}
+  },
 
   execEncAndDec: function(arg, tbl, echo, esc, encFnc, decFnc, iIdx, a1) {
     if (DebugJS.countArgs(arg) == 0) {
@@ -11113,7 +11113,7 @@ DebugJS.getDateTime = function(src, tz) {
 
   ts = src + '';
   if (DebugJS.isFloat(ts)) {
-     ts = DebugJS.float2ms(ts);
+    ts = DebugJS.float2ms(ts);
   } else {
     ts = +ts;
   }
@@ -12701,7 +12701,7 @@ DebugJS.extractCsvCol = function(t, wQ, n) {
   for (var i = 0; i < r.length; i++) {
     var c = r[i];
     if (c.length > n) {
-        s += c[n];
+      s += c[n];
     }
     s += '\n';
   }
