@@ -2268,7 +2268,7 @@ dbg.bat.isAvailable() <button class="demo-button2" onclick="log(dbg.bat.isAvaila
     <td class="name">dbg.bat.setCond</td>
     <td>condition key</td>
     <td>
-      Sets condition for resuming "condwait pause" command.
+      Resumes BAT execution suspended by "condwait -key" when the condition key matches.
 <pre class="eg">
 dbg.bat.setCond('<input type="text" id="setcond-text" class="demo-text" style="width:100px;" value="AAA">'); <button class="demo-button2" onclick="dbg.bat.setCond(getVal('setcond-text'));">DEMO</button>
 </pre>
@@ -4321,14 +4321,17 @@ $ chmod rwxr-xr-x
   <tr>
     <td class="name">condwait</td>
     <td>
-      arg1: operation<br>
+      arg1: operation or -key option<br>
       arg2+: operation-specific arguments
     </td>
     <td>
       Wait for a condition during BAT execution.
 <pre class="eg">
-$ condwait set -key &lt;key&gt;
-$ condwait pause [-timeout ms|1d2h3m4s500] [-q]
+$ condwait -key &lt;key&gt; [-timeout ms|1d2h3m4s500] [-q]
+-&gt; Wait until dbg.bat.setCond(&lt;key&gt;) is called.
+   If timeout is specified, BAT execution resumes when the time expires.
+   Use -q to suppress the waiting message.
+
 dbg.bat.setCond(&lt;key&gt;);
 
 $ condwait find #id [-timeout ms|1d2h3m4s500]
@@ -4348,7 +4351,7 @@ $ condwait find withtext "Download.*"
 
 $ condwait init
 -&gt; Clear the condition key and cancel any active condition wait.
-   Resume BAT execution if suspended by condwait pause or condwait find.
+   Resume BAT execution if suspended by condwait -key or condwait find.
 </pre>
     </td>
   </tr>

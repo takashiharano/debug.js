@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611022351';
+  this.v = '202611030015';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -320,7 +320,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'clock', fn: this.cmdClock, desc: 'Open clock mode', help: 'clock DATE_TIME|OFFSET|now|start|stop|on|off|-label TXT'},
     {cmd: 'cls', fn: this.cmdCls, desc: 'Clear log message', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'chmod', fn: this.cmdChmod, desc: 'Convert the Linux file mode between numeric and symbolic notation', help: 'chmod [755|rwxr-xr-x]'},
-    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Wait for a condition in BAT scripts', help: 'condwait set -key key | pause [-timeout ms|1d2h3m4s500] | find (#id|.class|TAGNAME|text "str"|withtext "regex") [idx] [-timeout ms|1d2h3m4s500] | init'},
+    {cmd: 'condwait', fn: this.cmdCondWait, desc: 'Wait for a condition in BAT scripts', help: 'condwait -key key [-timeout ms|1d2h3m4s500] [-q] | find (#id|.class|TAGNAME|text "str"|withtext "regex") [idx] [-timeout ms|1d2h3m4s500] | init'},
     {cmd: 'cookie', fn: this.cmdCookie, desc: 'Manipulate cookies', help: 'cookie keys|get|set|delete [key|-a] [val]'},
     {cmd: 'copy', fn: this.cmdCopy, desc: 'Copy to clipboard', help: 'copy ["STR"]'},
     {cmd: 'date', fn: this.cmdDate, desc: 'Convert timestamp <--> String', help: 'date [ms|YYYY/MM/DD HH:MI:SS.sss] [+|-0000] [-f "%YYYY-%MM-%DD %HH:%mm:%SS.%sss %Z %W (%t)"]'},
@@ -7567,16 +7567,17 @@ DebugJS.prototype = {
       case 'init':
         bat._initCond();
         break;
-      case 'set':
+      case '-key':
         var key = DebugJS.getOptVal(arg, 'key');
-        bat.ctrl.condKey = (key ? DebugJS.delAllSP(key) : key);
-        break;
-      case 'pause':
-        if (bat.ctrl.condKey) {
-          var to = DebugJS.getOptVal(arg, 'timeout');
-          var q = DebugJS.hasOpt(arg, 'q');
-          DebugJS.ctx._cmdPause('key', bat.ctrl.condKey, to, q);
+        key = (key ? DebugJS.delAllSP(key) : key);
+        var to = DebugJS.getOptVal(arg, 'timeout');
+        if (!key || (to != null && (to == '' || (!/^\d+$/.test(to) && !DebugJS.isTmStr(to) && !DebugJS.isTTimeFormat(to))))) {
+          DebugJS.printUsage(tbl.help);
+          break;
         }
+        bat.ctrl.condKey = key;
+        var q = DebugJS.hasOpt(arg, 'q');
+        DebugJS.ctx._cmdPause('key', key, to, q);
         break;
       case 'find':
         var opt = DebugJS.getOptVals(arg);
@@ -16771,6 +16772,7 @@ DebugJS.bat._resume = function(trigger, key, to, fmCnd) {
     } else if (trigger == 'cmd-key') {
       if (ctx.status & DebugJS.ST_BAT_PAUSE_CMD_KEY) {
         ctx.status &= ~DebugJS.ST_BAT_PAUSE_CMD_KEY;
+        if ((ctrl.condKey != null) && (ctrl.pauseKey == ctrl.condKey)) ctrl.condKey = null;
         ctrl.pauseKey = null;
         ctx.CMDVALS['%RESUMED_KEY%'] = (key == undefined ? '' : key);
         ctx.updateBatResumeBtn();
