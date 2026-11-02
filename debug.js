@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611021941';
+  this.v = '202611021954';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10635,8 +10635,7 @@ DebugJS._replaceCmdVals = function(s, il) {
       return s;
     }
     prevN = name;
-    var reNm = name;
-    if (name == '?') reNm = '\\?';
+    var reNm = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     var re = new RegExp(pfix + '\\{' + reNm + '\\}', 'g');
     var r;
     if (il) {
