@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030143';
+  this.v = '202611030850';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12649,7 +12649,7 @@ DebugJS._pushCsvCol = function(a, s, sp, ep, wQ) {
   var v = s.substring(sp, ep);
   if (wQ) {
     v = DebugJS.quote(v, '"');
-  } else if (!v.match(/\n/)) {
+  } else {
     v = DebugJS.dequote(v, '"');
   }
   a.push(v);
@@ -13840,13 +13840,11 @@ DebugJS.subTime = function(t1, t2) {
   return s1 - s2;
 };
 DebugJS.mltTime = function(t, v) {
-  v |= 0;
   var s = (typeof t == 'number' ? t : DebugJS.clock2ms(t));
   if (isNaN(s)) return NaN;
   return s * v;
 };
 DebugJS.divTime = function(t, v) {
-  v |= 0;
   var s = (typeof t == 'number' ? t : DebugJS.clock2ms(t));
   if (isNaN(s)) return NaN;
   return s / v;
@@ -14005,7 +14003,7 @@ DebugJS._cmdTimeCalc = function(arg, echo) {
       vR = arg.slice(p);
     }
     if (DebugJS.countStr(vR, ':') == 2) fmtFlg |= 1;
-    if (vR.match(/\./)) fmtFlg |= 2;
+    if (((op == '+') || (op == '-')) && vR.match(/\./)) fmtFlg |= 2;
     var fn = FNC[op];
     if (!fn) fn = 'addTime';
     if (vR != '') {
@@ -14726,8 +14724,7 @@ DebugJS.createCttInfo = function(fInfo, bInfo) {
   return s;
 };
 DebugJS.getFileInfo = function(file) {
-  var lastMod = (file.lastModified ? file.lastModified : file.lastModifiedDate);
-  var dt = DebugJS.getDateTimeString(lastMod, '%YYYY-%MM-%DD %W %HH:%mm:%SS.%sss');
+  var dt = DebugJS.getDateTimeString(file.lastModified, '%YYYY-%MM-%DD %W %HH:%mm:%SS.%sss');
   var s = 'File    : ' + file.name + '\n' +
   'Type    : ' + file.type + '\n' +
   'Size    : ' + DebugJS.formatDec(file.size) + ' ' + DebugJS.plural('byte', file.size) + '\n' +
