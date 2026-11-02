@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611020156';
+  this.v = '202611021941';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10621,10 +10621,15 @@ DebugJS.replaceCmdVals = function(s) {
 };
 DebugJS._replaceCmdVals = function(s, il) {
   var prevN;
+  var cnt = 0;
   var pfix = (il ? '%' : '\\$');
   while (true) {
     var name = DebugJS.getCmdValName(s, pfix);
     if (name == null) return s;
+    if (il && (++cnt > 100)) {
+      DebugJS._log.e('Too many command variable expansions: %{' + name + '}');
+      return s;
+    }
     if (name == prevN) {
       DebugJS._log.e('(bug) replaceCmdVals(): ' + name);
       return s;
