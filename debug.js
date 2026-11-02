@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030124';
+  this.v = '202611030133';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13853,9 +13853,6 @@ DebugJS.ms2Clock = function(ms, fmtFlg, byDays) {
       ms *= (-1);
       days = ((ms / A_DAY) | 0);
       days = days + ((ms % A_DAY != 0) ? 1 : 0);
-      if ((ms % A_DAY == 0) && (ms != A_DAY)) {
-        days += 1;
-      }
       ms = A_DAY - (ms - days * A_DAY);
     } else {
       days = (ms / A_DAY) | 0;
