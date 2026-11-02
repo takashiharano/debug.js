@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030041';
+  this.v = '202611030057';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -10991,7 +10991,7 @@ DebugJS.getContentType = function(mime, file, dturlData) {
   var ext = ['bat', 'csv', 'ini', 'java', 'js', 'json', 'log', 'md'];
   var re = '';
   for (var i = 0; i < ext.length; i++) {
-    if (i > 0) {re += '|';} re += '.' + ext[i] + '$';
+    if (i > 0) {re += '|';} re += '\\.' + ext[i] + '$';
   }
   if (mime) {
     if (mime.match(/image\//)) {
@@ -11495,7 +11495,7 @@ DebugJS.formatTZ = function(v, e) {
 DebugJS.formatTzH = function(v) {
   var w = ('' + v).split('.');
   var h = +w[0];
-  var m = +('0.' + (w[1] | 0)) * 60;
+  var m = Math.round(+('0.' + (w[1] || 0)) * 60);
   return ('0' + h).slice(-2) + ('0' + m).slice(-2);
 };
 DebugJS.formatTzM = function(v) {
@@ -14642,7 +14642,6 @@ DebugJS.hlCtrlCh = function(s, sp) {
 DebugJS.getType = function(o) {
   var t = typeof o;
   if (t != 'object') return t;
-  if (o === undefined) return 'undefined';
   if (o === null) return 'null';
   if (o instanceof Array) return 'Array';
   if (o instanceof Set) return 'Set';
@@ -14769,7 +14768,7 @@ DebugJS._getBinInfo = {
   },
   java: function(b) {
     var v = b[7];
-    var j = ((v <= 48) ? '1.' : '') + v - 44;
+    var j = ((v <= 48) ? '1.' : '') + (v - 44);
     var r = '';
     if (j) r += 'Java ver: Java SE ' + j + ' = ' + v + ' (' + DebugJS.toHex(v, true, '0x', 2) + ')';
     return r;
@@ -15670,7 +15669,7 @@ DebugJS.time.list = function() {
   if (Object.keys(DebugJS.ctx.timers).length > 0) {
     l = '<table>';
     for (var k in DebugJS.ctx.timers) {
-      l += '<tr><td>' + k + '</td><td><span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.time.check(k) + '</font></td></tr>';
+      l += '<tr><td>' + k + '</td><td><span style="color:' + DebugJS.ctx.opt.timerColor + '">' + DebugJS.time.check(k) + '</span></td></tr>';
     }
     l += '</table>';
   }
