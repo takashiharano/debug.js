@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030114';
+  this.v = '202611030124';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13751,6 +13751,8 @@ DebugJS.str2hex = function(s) {
 };
 
 DebugJS.clock2ms = function(t) {
+  var sgn = (t.charAt(0) == '-');
+  if (sgn) t = t.slice(1);
   var hour = 0;
   var min = 0;
   var sec = 0;
@@ -13772,7 +13774,8 @@ DebugJS.clock2ms = function(t) {
   if (ss.length >= 2) {
     msec = +(ss[1] + '00').slice(0, 3);
   }
-  return (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
+  var ms = (hour * 3600000) + (min * 60000) + (sec * 1000) + msec;
+  return sgn ? -ms : ms;
 };
 DebugJS.str2ms = function(t) {
   var d = 0, h = 0, m = 0, s = 0, ms = 0;
