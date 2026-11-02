@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030133';
+  this.v = '202611030143';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -8713,7 +8713,7 @@ DebugJS.prototype = {
       dt = DebugJS.getDateTime(now + ms);
       t = {time: dt.time, t: 'T' + dt.hh + dt.mi + dt.ss};
     } else if (DebugJS.isNum(v)) {
-      dt = DebugJS.getDateTime(now + (v | 0));
+      dt = DebugJS.getDateTime(now + (+v));
       t = {time: dt.time, t: 'T' + dt.hh + dt.mi + dt.ss};
     } else {
       DebugJS.printUsage(tbl.help);
@@ -11674,11 +11674,18 @@ DebugJS.parseToMillis = function(v) {
   return +(d * 86400000 + h * 3600000 + m * 60000 + s * 1000);
 };
 DebugJS.clock2hrs = function(s) {
+  var sign = 1;
+  if (s.charAt(0) == '-') {
+    sign = -1;
+    s = s.slice(1);
+  } else if (s.charAt(0) == '+') {
+    s = s.slice(1);
+  }
   s = s.replace(/:/, '');
   var p = s.length - 2;
   var h = s.slice(0, p) | 0;
   var m = s.slice(p, p + 2) | 0;
-  return h + (m / 60);
+  return (h + (m / 60)) * sign;
 };
 DebugJS.hrs2clock = function(s, sep) {
   if (sep == undefined) sep = ':';
