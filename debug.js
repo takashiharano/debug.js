@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611032030';
+  this.v = '202611040004';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -1276,7 +1276,7 @@ DebugJS.prototype = {
     if (opt.useLogFilter) {
       ctx.logHdrPanel = document.createElement('div');
       var style = {position: 'relative', height: fontSize, 'margin-bottom': '2px'};
-      DebugJS.setStyle(ctx.logHdrPanel, style);
+      setStyle(ctx.logHdrPanel, style);
       ctx.mainPanel.appendChild(ctx.logHdrPanel);
       ctx.uiStatus |= DebugJS.UI_ST_HEADINFO;
     }
@@ -1441,7 +1441,7 @@ DebugJS.prototype = {
         'padding': '1px'
       };
       ctx.cmdLine = DebugJS.ui.addTextInput(ctx.cmdPanel, 'calc(100% - ' + fontSize + ')', null, opt.fontColor, '', null);
-      DebugJS.setStyle(ctx.cmdLine, style);
+      setStyle(ctx.cmdLine, style);
       ctx.cmdLine.spellcheck = false;
       ctx.initHistory(ctx);
     }
@@ -3026,16 +3026,16 @@ DebugJS.prototype = {
     var cx = (clW / 2) - (sp.w / 2);
     var dx = Math.abs(sp.x1 - cx);
     if (dx <= 4) {
-      l = (clW / 2) - (DebugJS.DBGWIN_EXPAND_W / 2);
+      l = (clW / 2) - (w / 2);
     } else if (sp.x1 - 1 > (clW - sp.x2)) {
-      l = (sp.x1 - (DebugJS.DBGWIN_EXPAND_W - sp.w)) + 1;
+      l = (sp.x1 - (w - sp.w)) + 1;
     }
     if (sp.y1 > (clH - sp.y2)) {
-      t = (sp.y1 - (DebugJS.DBGWIN_EXPAND_H - sp.h)) + 1;
+      t = (sp.y1 - (h - sp.h)) + 1;
     }
     if (l < 0) l = 0;
-    if (clH < DebugJS.DBGWIN_EXPAND_H) {
-      t = clH - DebugJS.DBGWIN_EXPAND_H;
+    if (clH < h) {
+      t = clH - h;
     }
     ctx.saveSizeAndPos(ctx);
     ctx.setDbgWinPos(t, l);
@@ -3290,7 +3290,7 @@ DebugJS.prototype = {
     } else {
       ctx.uiStatus &= ~DebugJS.UI_ST_HEADINFO;
     }
-    DebugJS.ctx._showHeaderInfo(ctx);
+    ctx._showHeaderInfo(ctx);
   },
   _showHeaderInfo: function(ctx) {
     var v = (ctx.uiStatus & DebugJS.UI_ST_HEADINFO) ? 1 : 0;
@@ -3624,7 +3624,7 @@ DebugJS.prototype = {
     html += addSysInfoPropH('localStorage');
     if (DebugJS.LS_AVAILABLE) {
       html += ' <span class="dbg-btn" onclick="DebugJS.ctx.clearLocalStorage();">clear()</span>\n<span id="' + ctx.id + '-sys-ls"></span>\n';
-      html += DebugJS.ctx.createStorageEditor(ctx, 0);
+      html += ctx.createStorageEditor(ctx, 0);
     } else {
       html += ' <span class="dbg-na">undefined</span>';
     }
@@ -3632,7 +3632,7 @@ DebugJS.prototype = {
     html += addSysInfoPropH('sessionStorage');
     if (DebugJS.SS_AVAILABLE) {
       html += ' <span class="dbg-btn" onclick="DebugJS.ctx.clearSessionStorage();">clear()</span>\n<span id="' + ctx.id + '-sys-ss"></span>\n';
-      html += DebugJS.ctx.createStorageEditor(ctx, 1);
+      html += ctx.createStorageEditor(ctx, 1);
     } else {
       html += ' <span class="dbg-na">undefined</span>';
     }
@@ -7329,7 +7329,7 @@ DebugJS.prototype = {
           if (bat.cmds.length == 0) {
             st += 'No batch script';
           } else {
-            st += DebugJS.bat.status();
+            st += bat.status();
             st += '\nNest Lv: ' + bat.nestLv();
           }
           DebugJS._log.p(bat.ctrl, 0, st, false);
@@ -16334,7 +16334,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
       pc = bat.findEndOfFnc(ctrl.pc);
       bat.setPc(pc + 1);
     } else {
-      DebugJS.bat.ret();
+      bat.ret();
     }
     return 1;
   }
@@ -16474,7 +16474,7 @@ DebugJS.bat.prepro = function(ctx, cmd) {
 DebugJS.bat.nextExecLine = function(pc) {
   var bat = DebugJS.bat;
   while (pc <= bat.ctrl.endPc) {
-    pc = DebugJS.bat.nextELOC(pc);
+    pc = bat.nextELOC(pc);
     var cmd = bat.cmds[pc];
     if (cmd == undefined) return pc;
     pc++;
