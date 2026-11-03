@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031013';
+  this.v = '202611031109';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12463,9 +12463,11 @@ DebugJS._cmp = function(a, b, desc, asNum) {
   if (a === false) a = 0;
   if (b === false) b = 0;
   if (asNum) {
-    if (DebugJS.isNumeric(a) && DebugJS.isNumeric(b)) {
-      a = parseFloat(a);
-      b = parseFloat(b);
+    var aNum = (a + '').replace(/,/g, '');
+    var bNum = (b + '').replace(/,/g, '');
+    if (DebugJS.isNumeric(aNum) && DebugJS.isNumeric(bNum)) {
+      a = parseFloat(aNum);
+      b = parseFloat(bNum);
     } else if (DebugJS._cmpPfx(a, b)) {
       a = DebugJS._toNumE(a);
       b = DebugJS._toNumE(b);
@@ -12515,7 +12517,7 @@ DebugJS._toNumS = function(a) {
 DebugJS.alignCsv = function(s, wQ, n) {
   if (!n) n = 1;
   var d = ',';
-  if (s.match(/\t/)) d = '\t';
+  if (s.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d = '\t';
   var a = DebugJS.csv2arr(s, d, wQ);
   var c = [];
   for (var i = 0; i < a.length; i++) {
@@ -12613,6 +12615,7 @@ DebugJS.cntByGrp = function(a) {
 };
 
 DebugJS.csv2arr = function(s, d, wQ) {
+  if (DebugJS.wBOM(s)) s = s.slice(1);
   var rows = [];
   var cols = [];
   var sp = 0;
@@ -12643,7 +12646,7 @@ DebugJS.csv2arr = function(s, d, wQ) {
     DebugJS._pushCsvCol(cols, s, sp, s.length, wQ);
     rows.push(cols);
   } else if (s.charAt(s.length - 1) == d) {
-    cols.push('');
+    DebugJS._pushCsvCol(cols, s, s.length, s.length, wQ);
     rows.push(cols);
   }
   return rows;
@@ -12703,9 +12706,10 @@ DebugJS.csv2tsv = function(t, d, wQ) {
   return s;
 };
 DebugJS.extractCsvCol = function(t, wQ, n) {
+  if (n < 1) return '';
   n--;
   var d = ',';
-  if (t.match(/\t/)) d = '\t';
+  if (t.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d = '\t';
   var s = '';
   var r = DebugJS.csv2arr(t, d, wQ);
   for (var i = 0; i < r.length; i++) {
@@ -12719,7 +12723,7 @@ DebugJS.extractCsvCol = function(t, wQ, n) {
 };
 DebugJS.sortAsCsv = function(s, n, desc, asNum) {
   var d = ',';
-  if (s.match(/\t/)) d = '\t';
+  if (s.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d = '\t';
   var c = DebugJS.csv2arr(s, d, 1);
   if (n > 0) c = DebugJS.sortCsv(c, n, desc, asNum);
   var a = [];
@@ -12745,7 +12749,7 @@ DebugJS._sortCsv = function(a, b, d, asNum) {
   return DebugJS._cmp(a, b, d, asNum);
 };
 DebugJS.h2v = function(s) {
-  var d = (s.match(/\t/) ? '\t' : ',');
+  var d = (s.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0 ? '\t' : ',');
   var r = DebugJS.csv2arr(s, d);
   var v = '';
   for (var i = 0; i < r.length; i++) {
@@ -13987,10 +13991,13 @@ DebugJS._cmdTimeCalc = function(arg, echo) {
     byDays = true;
     arg = arg.slice(0, arg.length - 1);
   }
-  var ops = arg.match(/[+\-*/]/g);
-  var n = ops.length;
-  var op = ops[0];
-  var opp = arg.indexOf(op);
+  var opPos = [];
+  for (var j = 0; j < arg.length; j++) {
+    if (/[+\-*/]/.test(arg.charAt(j)) && !/[+\-*/]/.test(arg.charAt(j - 1))) opPos.push(j);
+  }
+  var n = opPos.length;
+  var op = arg.charAt(opPos[0]);
+  var opp = opPos[0];
   var vL = arg.slice(0, opp);
   var p = opp + 1;
   var FNC = {'-': 'subTime', '*': 'mltTime', '/': 'divTime'};
@@ -13998,8 +14005,8 @@ DebugJS._cmdTimeCalc = function(arg, echo) {
   if (DebugJS.countStr(vL, ':') == 2) fmtFlg |= 1;
   if (vL.match(/\./)) fmtFlg |= 2;
   for (var i = 0; i < n; i++) {
-    var nOp = ops[i + 1];
-    var nOpp = arg.indexOf(nOp, p);
+    var nOpp = opPos[i + 1];
+    var nOp = (nOpp == undefined ? null : arg.charAt(nOpp));
     if (nOp) {
       var ln = nOpp - p;
       var vR = arg.slice(p, p + ln);
@@ -14012,7 +14019,7 @@ DebugJS._cmdTimeCalc = function(arg, echo) {
     if (!fn) fn = 'addTime';
     if (vR != '') {
       r = DebugJS[fn](vL, vR);
-      if (isNaN(r)) {
+      if (!isFinite(r)) {
         r = 'Invalid time format';
         DebugJS._log.e(r);
         return r;
@@ -18954,7 +18961,7 @@ DebugJS.xlsDateA2N = function(v) {
   return r;
 };
 DebugJS.xlsDateN2A = function(v) {
-  var w = v.split('.');
+  var w = (v + '').split('.');
   v = w[0] | 0;
   var t = (w[1] == undefined ? 0 : parseFloat('0.' + w[1]));
   var o = (v < 60 ? 1 : 2);
