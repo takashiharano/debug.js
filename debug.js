@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031300';
+  this.v = '202611031315';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17753,7 +17753,7 @@ DebugJS.point.drag.data = {
   step: 0,
   arg: null,
   el: null,
-  mousemovesim: undefined,
+  mousemovesim: null,
   tmid: 0
 };
 DebugJS.point.drag.proc = function() {
@@ -17791,6 +17791,7 @@ DebugJS.point.drag.cancel = function() {
 };
 DebugJS.point.drag.stop = function() {
   var data = DebugJS.point.drag.data;
+  if (!data.step) return;
   clearTimeout(data.tmid);
   data.tmid = 0;
   DebugJS.point.move.cb = null;
@@ -17798,9 +17799,10 @@ DebugJS.point.drag.stop = function() {
   data.step = 0;
   data.arg = null;
   data.el = null;
-  if (data.mousemovesim != undefined) {
+  if (data.mousemovesim != null) {
     DebugJS.ctx.props.mousemovesim = data.mousemovesim;
   }
+  data.mousemovesim = null;
   DebugJS.bat.unlock();
 };
 
