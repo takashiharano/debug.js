@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031109';
+  this.v = '202611031121';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -12514,29 +12514,6 @@ DebugJS._toNumS = function(a) {
   return parseFloat(n);
 };
 
-DebugJS.alignCsv = function(s, wQ, n) {
-  if (!n) n = 1;
-  var d = ',';
-  if (s.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d = '\t';
-  var a = DebugJS.csv2arr(s, d, wQ);
-  var c = [];
-  for (var i = 0; i < a.length; i++) {
-    var l = a[i];
-    for (var j = 0; j < l.length; j++) {
-      var b = DebugJS.lenW(l[j]);
-      if ((c[j] | 0) < b) c[j] = b;
-    }
-  }
-  var r = '';
-  for (i = 0; i < a.length; i++) {
-    l = a[i];
-    for (j = 0; j < l.length - 1; j++) {
-      r += DebugJS.rpad(l[j], ' ', c[j] + n, 1);
-    }
-    r += l[j] + '\n';
-  }
-  return r;
-};
 DebugJS.toUnique = function(s, opt) {
   var l = DebugJS.txt2arr(s);
   var o = DebugJS.cntByGrp(l);
@@ -12686,9 +12663,11 @@ DebugJS.toTsv = function(t, wQ) {
 DebugJS.toCsv = function(t, wQ) {
   return DebugJS.csv2tsv(t, ',', wQ);
 };
+DebugJS.detectCsvDelimiter = function(s) {
+  return (s.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0 ? '\t' : ',');
+};
 DebugJS.csv2tsv = function(t, d, wQ) {
-  var d0 = ',';
-  if (t.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d0 = '\t';
+  var d0 = DebugJS.detectCsvDelimiter(t);
   var s = '';
   var r = DebugJS.csv2arr(t, d0, true);
   for (var i = 0; i < r.length; i++) {
@@ -12708,8 +12687,7 @@ DebugJS.csv2tsv = function(t, d, wQ) {
 DebugJS.extractCsvCol = function(t, wQ, n) {
   if (n < 1) return '';
   n--;
-  var d = ',';
-  if (t.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d = '\t';
+  var d = DebugJS.detectCsvDelimiter(t);
   var s = '';
   var r = DebugJS.csv2arr(t, d, wQ);
   for (var i = 0; i < r.length; i++) {
@@ -12722,8 +12700,7 @@ DebugJS.extractCsvCol = function(t, wQ, n) {
   return s;
 };
 DebugJS.sortAsCsv = function(s, n, desc, asNum) {
-  var d = ',';
-  if (s.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0) d = '\t';
+  var d = DebugJS.detectCsvDelimiter(s);
   var c = DebugJS.csv2arr(s, d, 1);
   if (n > 0) c = DebugJS.sortCsv(c, n, desc, asNum);
   var a = [];
@@ -12749,7 +12726,7 @@ DebugJS._sortCsv = function(a, b, d, asNum) {
   return DebugJS._cmp(a, b, d, asNum);
 };
 DebugJS.h2v = function(s) {
-  var d = (s.replace(/"(?:[^"]|"")*"/g, '').indexOf('\t') >= 0 ? '\t' : ',');
+  var d = DebugJS.detectCsvDelimiter(s);
   var r = DebugJS.csv2arr(s, d);
   var v = '';
   for (var i = 0; i < r.length; i++) {
@@ -12762,6 +12739,28 @@ DebugJS.h2v = function(s) {
 };
 DebugJS.v2h = function(s, d) {
   return s.replace(/\n+$/, '').replace(/\n/g, d);
+};
+DebugJS.alignCsv = function(s, wQ, n) {
+  if (!n) n = 1;
+  var d = DebugJS.detectCsvDelimiter(s);
+  var a = DebugJS.csv2arr(s, d, wQ);
+  var c = [];
+  for (var i = 0; i < a.length; i++) {
+    var l = a[i];
+    for (var j = 0; j < l.length; j++) {
+      var b = DebugJS.lenW(l[j]);
+      if ((c[j] | 0) < b) c[j] = b;
+    }
+  }
+  var r = '';
+  for (i = 0; i < a.length; i++) {
+    l = a[i];
+    for (j = 0; j < l.length - 1; j++) {
+      r += DebugJS.rpad(l[j], ' ', c[j] + n, 1);
+    }
+    r += l[j] + '\n';
+  }
+  return r;
 };
 
 DebugJS.padSeq = function(s, n, f) {
