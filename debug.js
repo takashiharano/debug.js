@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031645';
+  this.v = '202611031830';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17499,21 +17499,7 @@ DebugJS.point.findText = function(txt, idx, regex) {
       return null;
     }
   }
-  var els = document.body.getElementsByTagName('*');
-  var win = DebugJS.ctx.win;
-  var m = [];
-  for (var i = 0; i < els.length; i++) {
-    var el = els[i];
-    if ((win && win.contains(el)) || (el.getClientRects().length == 0)) continue;
-    var value = el.innerText;
-    if ((el.tagName == 'TEXTAREA') || ((el.tagName == 'INPUT') && (el.type != 'password'))) {
-      value = el.value;
-    }
-    if ((typeof value != 'string') || (!(re ? re.test(value) : (value == txt))) || (window.getComputedStyle(el).visibility != 'visible')) continue;
-    while (m.length && m[m.length - 1].contains(el)) m.pop();
-    m.push(el);
-  }
-  return m[idx | 0] || null;
+  return DebugJS.getElByAttr('!txt', txt, idx, re);
 };
 DebugJS.point.getElementFromCurrentPos = function() {
   var ctx = DebugJS.ctx;
@@ -18823,33 +18809,42 @@ DebugJS.getScreenCenter = function() {
   return p;
 };
 
-DebugJS.getElByAttr = function(attr, v, idx) {
+DebugJS.getElByAttr = function(attr, v, idx, re) {
   var el;
   var f = DebugJS._getElByAttr;
   if (attr == '!txt') {
-    el = f('innerText', v, idx);
-    if (!el) el = f('value', v, idx, true);
+    el = f('innerText', v, idx, re);
+    if (!el) el = f('value', v, idx, re);
   } else {
     el = f(attr, v, idx);
   }
   return el;
 };
-DebugJS._getElByAttr = function(attr, v, idx, skpPw) {
+DebugJS._getElByAttr = function(attr, v, idx, re) {
   idx |= 0;
   var el = document.body;
   var n = 0;
+  var m = [];
   while (el) {
-    if ((el[attr] == v) && !(skpPw && (el.tagName == 'INPUT') && (el.type == 'password'))) {
-      if (idx == n) {
-        break;
+    var val = el[attr];
+    var found = (re ? ((typeof val == 'string') && re.test(val)) : (val == v));
+    if (found && (attr == 'innerText')) {
+      found = (el != document.body) && (el.getClientRects().length > 0) && (window.getComputedStyle(el).visibility == 'visible');
+    }
+    if (found) {
+      if (attr == 'innerText') {
+        while (m.length && m[m.length - 1].contains(el)) m.pop();
+        m.push(el);
+      } else {
+        if (idx == n) break;
+        n++;
       }
-      n++;
     }
     el = DebugJS.ctx.getNextElm(DebugJS.ctx, el);
   }
+  if (attr == 'innerText') el = (m[idx] || null);
   return el;
 };
-
 DebugJS.findFocusableEl = function(el) {
   while (el != null) {
     if (el.tagName == 'HTML') return null;
