@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031253';
+  this.v = '202611031300';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -17719,7 +17719,7 @@ DebugJS.point._move = function() {
 DebugJS.point.move.onComplete = function(cb) {
   DebugJS.point.move.cbTmid = 0;
   cb();
-}
+};
 DebugJS.point.move.stop = function() {
   clearTimeout(DebugJS.point.move.cbTmid);
   DebugJS.point.move.cbTmid = 0;
