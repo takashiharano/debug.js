@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030850';
+  this.v = '202611030919';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11314,7 +11314,7 @@ DebugJS.isClockFormat = function(v) {
     sss = s[1];
     if (!sss) sss = '000';
   }
-  if ((h.length > 2) || (m.length != 2) || (ss.length != 2) || (sss.length != 3)) {
+  if ((h.length > 2) || (m.length != 2) || (ss.length != 2) || (sss.length != 3) || !/^\d*$/.test(h + m + ss + sss)) {
     return false;
   }
   h |= 0;
@@ -11475,6 +11475,7 @@ DebugJS.cnv2ms = function(t) {
     if (DebugJS.isClockFormat(s)) {
       s = DebugJS.getTimestampOfDay(s);
     } else {
+      if (!DebugJS.isDateTimeStr(s) && !DebugJS.isTHHMM(s)) return NaN;
       s = DebugJS.getDateTime(s).time;
     }
   }
@@ -12628,7 +12629,8 @@ DebugJS.csv2arr = function(s, d, wQ) {
         }
       }
     } else if (!q && ((c == d) || (c == '\n'))) {
-      DebugJS._pushCsvCol(cols, s, sp, i, wQ);
+      var ep = (((c == '\n') && (s.charAt(i - 1) == '\r')) ? i - 1 : i);
+      DebugJS._pushCsvCol(cols, s, sp, ep, wQ);
       sp = i + 1;
       if (c == '\n') {
         rows.push(cols);
@@ -13907,6 +13909,7 @@ DebugJS.cmdTZedNow = function(t, o) {
 DebugJS.toClockFmtTz = function(t) {
   t = t.replace(/:/, '');
   if (t.match(/\./)) {
+    if (!t.match(/^[+-]/)) t = '+' + t;
     var p = t.split('.');
     t = p[0] + ('0' + (+('0.' + p[1]) * 60)).slice(-2);
   }
