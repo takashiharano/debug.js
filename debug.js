@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611030919';
+  this.v = '202611031013';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -11299,6 +11299,7 @@ DebugJS.tzPos = function(s) {
   return p;
 };
 DebugJS.isClockFormat = function(v) {
+  if (!/^\d{1,2}:\d{2}(?::\d{2}(?:\.\d{3})?)?$/.test(v)) return false;
   var a = v.split(':');
   if ((a.length < 2) || (a.length > 3)) return false;
   var h = a[0];
@@ -14280,25 +14281,26 @@ DebugJS.echo = function(s) {
 };
 
 DebugJS.substr = function(txt, len) {
-  var txtLen = txt.length;
+  var chars = DebugJS.str2chars(txt);
+  var txtLen = chars.length;
   var cnt = 0;
   var str = '';
   var i, x;
   if (len >= 0) {
     for (i = 0; i < txtLen; i++) {
-      x = encodeURIComponent(txt.charAt(i));
+      x = encodeURIComponent(chars[i]);
       if (x.length <= 3) {
         cnt++;
       } else {
         cnt += 2;
       }
       if (cnt > len) break;
-      str += txt.charAt(i);
+      str += chars[i];
     }
   } else {
     len *= (-1);
     for (i = (txtLen - 1); i >= 0; i--) {
-      x = encodeURIComponent(txt.charAt(i));
+      x = encodeURIComponent(chars[i]);
       if (x.length <= 3) {
         cnt++;
       } else {
@@ -14306,7 +14308,7 @@ DebugJS.substr = function(txt, len) {
       }
       if (cnt >= len) break;
     }
-    str = txt.slice(i);
+    str = chars.slice(Math.max(i, 0)).join('');
   }
   return str;
 };
@@ -18898,7 +18900,17 @@ DebugJS.getQuery = function(k) {
     } catch (e) {
       continue;
     }
-    if (name == k) a.push(p.length > 1 ? p.slice(1).join('=') : undefined);
+    if (name == k) {
+      var value = (p.length > 1 ? p.slice(1).join('=') : undefined);
+      if (value !== undefined) {
+        try {
+          value = decodeURIComponent(value.replace(/\+/g, ' '));
+        } catch (e) {
+          continue;
+        }
+      }
+      a.push(value);
+    }
   }
   var v = null;
   if (a.length == 1) {
