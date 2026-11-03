@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031830';
+  this.v = '202611032030';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -355,7 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'pangram', fn: this.cmdPangram, desc: 'Displays a pangram'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
-    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|click|cclick|rclick|dblclick|contextmenu|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|find (#id|.class|TAGNAME|text "str"|withtext "regex") [idx]|getelement|getprop|setprop|verify|init|center|mouse|move|drag|text|selectoption|value|scroll|msg|cursor src [w] [h]|ch [n]'},
+    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|SUBCOMMAND [args]\nSUBCOMMAND: move|click|cclick|rclick|dblclick|contextmenu|drag|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|find|getelement|getprop|setprop|verify|center|mouse|text|selectoption|value|scroll|msg|cursor|ch|init'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-chars "ABC..."]'},
@@ -7598,7 +7598,8 @@ DebugJS.prototype = {
             break;
           }
         }
-        if (DebugJS.point.find(args, text)) break;
+        var el = DebugJS.point.find(args, text);
+        if (el) break;
         bat.ctrl.condWait = {type: 'find', args: args, text: text};
         DebugJS.ctx._cmdPause('key', '', to, true);
         break;
@@ -8950,6 +8951,14 @@ DebugJS.prototype = {
       idx = args[3] | 0;
       try {txt = DebugJS.evalToString(txt);} catch (e) {DebugJS._log.e(e);return;}
       point.moveToElByAttr('!txt', txt, idx, speed, step, alignX, alignY);
+    } else if (tgt == 'withtext') {
+      var txt = args[2];
+      idx = args[3] | 0;
+      try {
+        txt = DebugJS.evalToString(txt);
+        var re = new RegExp(txt);
+      } catch (e) {DebugJS._log.e(e);return;}
+      point.moveToElByAttr('!txt', txt, idx, speed, step, alignX, alignY, re);
     } else if (tgt.match(/^node/)) {
       ctx._cmdPointMvNodeRel(ctx, point, tgt, speed, step, alignX, alignY);
     } else if (isNaN(tgt)) {
@@ -17822,12 +17831,9 @@ DebugJS.point._moveToSelector = function(data) {
   if (data.alignY == undefined) data.alignY = 0.5;
   DebugJS.point.moveToElement(ps, data.speed, data.step, data.alignX, data.alignY);
 };
-DebugJS.point.moveToElByAttr = function(attr, v, idx, speed, step, alignX, alignY) {
-  var data = {
-    attr: attr, v: v, idx: idx,
-    speed: speed, step: step, alignX: alignX, alignY: alignY
-  };
-  var el = DebugJS.getElByAttr(attr, v, idx);
+DebugJS.point.moveToElByAttr = function(attr, v, idx, speed, step, alignX, alignY, re) {
+  var data = {attr: attr, v: v, idx: idx, re: re, speed: speed, step: step, alignX: alignX, alignY: alignY};
+  var el = DebugJS.getElByAttr(attr, v, idx, re);
   if (!el) {
     DebugJS._log.e('Element not found: attr=' + attr + ' v=' + v + ' [' + idx + ']');
     return;
@@ -17839,7 +17845,7 @@ DebugJS.point.moveToElByAttr = function(attr, v, idx, speed, step, alignX, align
   DebugJS.point._moveToElByAttr(data);
 };
 DebugJS.point._moveToElByAttr = function(data) {
-  var el = DebugJS.getElByAttr(data.attr, data.v, data.idx);
+  var el = DebugJS.getElByAttr(data.attr, data.v, data.idx, data.re);
   var ps = DebugJS.getElPosSize(el);
   if (data.alignX == undefined) data.alignX = 0.5;
   if (data.alignY == undefined) data.alignY = 0.5;

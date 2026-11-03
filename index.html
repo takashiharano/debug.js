@@ -5323,6 +5323,7 @@ $ point move tagName 0<span class="annotation">index</span>
 $ point move node+[N]
 $ point move node-[N]
 $ point move totext "INNER_TEXT" 0<span class="annotation">index</span>
+$ point move withtext "REGEX" 0<span class="annotation">index</span>
 $ point move byattr ATTR_NAME "VALUE" 0<span class="annotation">index</span>
 $ point move center <span class="annotation">Center of the screen</span>
 $ point move center 100
@@ -5332,6 +5333,8 @@ $ point move 100 middle
 $ point move 100 bottom
 $ point move mouse <span class="annotation">Current mouse position</span>
 -&gt; Move the pointer from the current position to the specified position
+   totext: Exact text match
+   withtext: Regular expression match
 
 $ point move +100 +200
 $ point move -100 -200
