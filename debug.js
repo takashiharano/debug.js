@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031616';
+  this.v = '202611031645';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7588,16 +7588,18 @@ DebugJS.prototype = {
           DebugJS.printUsage(tbl.help);
           break;
         }
-        if (m == 'withtext') {
+        var text;
+        if ((m == 'text') || (m == 'withtext')) {
           try {
-            new RegExp(DebugJS.point.getFindText(args[2]));
+            text = DebugJS.evalToString(args[2]);
+            if (m == 'withtext') new RegExp(text);
           } catch (e) {
             DebugJS._log.e(e);
             break;
           }
         }
-        if (DebugJS.point.find(args)) break;
-        bat.ctrl.condWait = {type: 'find', args: args};
+        if (DebugJS.point.find(args, text)) break;
+        bat.ctrl.condWait = {type: 'find', args: args, text: text};
         DebugJS.ctx._cmdPause('key', '', to, true);
         break;
       default:
@@ -8946,7 +8948,7 @@ DebugJS.prototype = {
     } else if (tgt == 'totext') {
       var txt = args[2];
       idx = args[3] | 0;
-      try {txt = eval(txt);} catch (e) {DebugJS._log.e(e);return;}
+      try {txt = DebugJS.evalToString(txt);} catch (e) {DebugJS._log.e(e);return;}
       point.moveToElByAttr('!txt', txt, idx, speed, step, alignX, alignY);
     } else if (tgt.match(/^node/)) {
       ctx._cmdPointMvNodeRel(ctx, point, tgt, speed, step, alignX, alignY);
@@ -9106,7 +9108,7 @@ DebugJS.prototype = {
   },
   _cmdPointToText: function(args, alignX, alignY) {
     var txt = args[1];
-    try {txt = eval(txt);} catch (e) {DebugJS._log.e(e);return;}
+    try {txt = DebugJS.evalToString(txt);} catch (e) {DebugJS._log.e(e);return;}
     var idx = args[2] | 0;
     DebugJS.pointByAttr('!txt', txt, idx, alignX, alignY);
   },
@@ -10984,6 +10986,9 @@ DebugJS.isStr = function(s) {
 };
 DebugJS.wBOM = function(s) {
   return s.charCodeAt(0) == 65279;
+};
+DebugJS.evalToString = function(s) {
+  return String(eval(s));
 };
 
 DebugJS.getContentType = function(mime, file, dturlData) {
@@ -17016,7 +17021,7 @@ DebugJS.bat.checkCondWait = function() {
   if (!cond) return false;
   switch (cond.type) {
     case 'find':
-      var el = DebugJS.point.find(cond.args);
+      var el = DebugJS.point.find(cond.args, cond.text);
       return (el != null);
   }
   return false;
@@ -17471,22 +17476,18 @@ DebugJS.point.isValidFindArgs = function(args) {
   var tgt = (byTxt ? args[2] : m);
   var idx = (byTxt ? args[3] : args[2]);
   if (!tgt || ((idx != undefined) && !/^\d+$/.test(idx))) return false;
-  if (byTxt) {
-    try {DebugJS.point.getFindText(tgt);} catch (e) {return false;}
-  }
   return true;
 };
-DebugJS.point.getFindText = function(tgt) {
-  return String(eval(tgt));
-};
-DebugJS.point.find = function(args) {
+DebugJS.point.find = function(args, txt) {
   var m = args[1];
   var byTxt = ((m == 'text') || (m == 'withtext'));
   var tgt = (byTxt ? args[2] : m);
   var idx = (byTxt ? args[3] : args[2]);
   if (!byTxt) return DebugJS.getElement(tgt, idx);
-  try {tgt = DebugJS.point.getFindText(tgt);} catch (e) {DebugJS._log.e(e);return null;}
-  return DebugJS.point.findText(tgt, idx, (m == 'withtext'));
+  if (txt === undefined) {
+    try {txt = DebugJS.evalToString(tgt);} catch (e) {DebugJS._log.e(e);return null;}
+  }
+  return DebugJS.point.findText(txt, idx, (m == 'withtext'));
 };
 DebugJS.point.findText = function(txt, idx, regex) {
   var re = null;
@@ -17508,7 +17509,7 @@ DebugJS.point.findText = function(txt, idx, regex) {
     if ((el.tagName == 'TEXTAREA') || ((el.tagName == 'INPUT') && (el.type != 'password'))) {
       value = el.value;
     }
-    if ((typeof value != 'string') || (!(re ? re.test(value) : value == text)) || (window.getComputedStyle(el).visibility != 'visible')) continue;
+    if ((typeof value != 'string') || (!(re ? re.test(value) : (value == txt))) || (window.getComputedStyle(el).visibility != 'visible')) continue;
     while (m.length && m[m.length - 1].contains(el)) m.pop();
     m.push(el);
   }
