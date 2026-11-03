@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031315';
+  this.v = '202611031507';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -16816,25 +16816,6 @@ DebugJS.bat._stop = function(st) {
   var ctx = DebugJS.ctx;
   var bat = DebugJS.bat;
   bat.stopNext();
-  if (DebugJS.point.drag.data.step) DebugJS.point.drag.cancel();
-  DebugJS.point.move.stop();
-  DebugJS.scrollWinTo.stop();
-  DebugJS.setText.stop();
-  var click = DebugJS.point.click;
-  for (var i = 0; i < click.tmid.length; i++) {
-    if (click.tmid[i]) {
-      clearTimeout(click.tmid[i]);
-      DebugJS.point.mouseevt('mouseup', i, click.target[i]);
-    }
-    click.tmid[i] = 0;
-    click.target[i] = null;
-  }
-  click.cb = null;
-  var dbl = DebugJS.point.dblclick.data;
-  clearTimeout(dbl.tmid);
-  dbl.tmid = 0;
-  dbl.cnt = 0;
-  bat.ctrl.lock = 0;
   bat.ctx = [];
   ctx.updateBatNestLv();
   ctx.status &= ~DebugJS.ST_BAT_BP;
@@ -17349,7 +17330,7 @@ DebugJS.point.click = function(button, target, speed, cb) {
   var el = DebugJS.findFocusableEl(target);
   if (el != null) el.focus();
   if (speed == undefined) speed = 100;
-  click.tmid[button] = setTimeout(DebugJS.point.clickUp, speed, button);
+  click.tmid[button] = setTimeout('DebugJS.point.clickUp(' + button + ')', speed);
 };
 DebugJS.point.dblclick = function(target, speed) {
   var data = DebugJS.point.dblclick.data;
@@ -17658,8 +17639,6 @@ DebugJS.point.move = function(x, y, speed, step) {
     clearTimeout(point.move.tmid);
     point.move.tmid = 0;
   }
-  clearTimeout(point.move.cbTmid);
-  point.move.cbTmid = 0;
   DebugJS.bat.lock();
   point._move();
 };
@@ -17668,7 +17647,6 @@ DebugJS.point.move.speed = 10;
 DebugJS.point.move.step = 10;
 DebugJS.point.move.tmid = 0;
 DebugJS.point.move.cb = null;
-DebugJS.point.move.cbTmid = 0;
 DebugJS.point._move = function() {
   var point = DebugJS.point;
   var ptr = point.getPtr();
@@ -17708,21 +17686,14 @@ DebugJS.point._move = function() {
   if ((x == dst.x) && (y == dst.y)) {
     DebugJS.bat.unlock();
     if (move.cb) {
-      var cb = move.cb;
+      setTimeout(move.cb, 10);
       move.cb = null;
-      move.cbTmid = setTimeout(DebugJS.point.move.onComplete, 10, cb);
     }
   } else {
     move.tmid = setTimeout(point._move, move.speed);
   }
 };
-DebugJS.point.move.onComplete = function(cb) {
-  DebugJS.point.move.cbTmid = 0;
-  cb();
-};
 DebugJS.point.move.stop = function() {
-  clearTimeout(DebugJS.point.move.cbTmid);
-  DebugJS.point.move.cbTmid = 0;
   if (DebugJS.point.move.tmid > 0) {
     clearTimeout(DebugJS.point.move.tmid);
     DebugJS.point.move.tmid = 0;
@@ -17753,26 +17724,23 @@ DebugJS.point.drag.data = {
   step: 0,
   arg: null,
   el: null,
-  mousemovesim: null,
-  tmid: 0
+  mousemovesim: undefined
 };
 DebugJS.point.drag.proc = function() {
   var point = DebugJS.point;
   var drag = point.drag;
   var data = drag.data;
-  data.tmid = 0;
   data.step++;
   var el = point.getElementFromCurrentPos();
   switch (data.step) {
     case 1:
       data.el = el;
       if (el) point.mouseevt('mousedown', 0, el);
-      data.tmid = setTimeout(drag.proc, 10);
+      setTimeout(drag.proc, 10);
       break;
     case 2:
       point.move.cb = drag.proc;
       DebugJS.ctx.cmdPoint('move ' + data.arg);
-      if (point.move.cb && !point.move.tmid && !DebugJS.scrollWinTo.data.tmid) drag.stop();
       break;
     case 3:
       if (el) {
@@ -17783,26 +17751,17 @@ DebugJS.point.drag.proc = function() {
   }
 };
 DebugJS.point.drag.cancel = function() {
-  if (DebugJS.point.drag.data.step == 2) {
-    DebugJS.point.move.stop();
-    DebugJS.scrollWinTo.stop();
-  }
+  if (DebugJS.point.drag.data.step == 2) DebugJS.point.move.stop();
   DebugJS.point.drag.stop();
 };
 DebugJS.point.drag.stop = function() {
   var data = DebugJS.point.drag.data;
-  if (!data.step) return;
-  clearTimeout(data.tmid);
-  data.tmid = 0;
-  DebugJS.point.move.cb = null;
-  if (data.el && data.step < 3) DebugJS.point.mouseevt('mouseup', 0, data.el);
   data.step = 0;
   data.arg = null;
   data.el = null;
-  if (data.mousemovesim != null) {
+  if (data.mousemovesim != undefined) {
     DebugJS.ctx.props.mousemovesim = data.mousemovesim;
   }
-  data.mousemovesim = null;
   DebugJS.bat.unlock();
 };
 
