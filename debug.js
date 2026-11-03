@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611031507';
+  this.v = '202611031616';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7590,7 +7590,7 @@ DebugJS.prototype = {
         }
         if (m == 'withtext') {
           try {
-            new RegExp(DebugJS.dequote(args[2], '"'));
+            new RegExp(DebugJS.point.getFindText(args[2]));
           } catch (e) {
             DebugJS._log.e(e);
             break;
@@ -17470,8 +17470,14 @@ DebugJS.point.isValidFindArgs = function(args) {
   var byTxt = ((m == 'text') || (m == 'withtext'));
   var tgt = (byTxt ? args[2] : m);
   var idx = (byTxt ? args[3] : args[2]);
-  if (!tgt || (idx != undefined && !/^\d+$/.test(idx)) || (byTxt && !DebugJS.isQuoted(tgt, '"'))) return false;
+  if (!tgt || ((idx != undefined) && !/^\d+$/.test(idx))) return false;
+  if (byTxt) {
+    try {DebugJS.point.getFindText(tgt);} catch (e) {return false;}
+  }
   return true;
+};
+DebugJS.point.getFindText = function(tgt) {
+  return String(eval(tgt));
 };
 DebugJS.point.find = function(args) {
   var m = args[1];
@@ -17479,14 +17485,14 @@ DebugJS.point.find = function(args) {
   var tgt = (byTxt ? args[2] : m);
   var idx = (byTxt ? args[3] : args[2]);
   if (!byTxt) return DebugJS.getElement(tgt, idx);
-  tgt = DebugJS.dequote(tgt, '"');
+  try {tgt = DebugJS.point.getFindText(tgt);} catch (e) {DebugJS._log.e(e);return null;}
   return DebugJS.point.findText(tgt, idx, (m == 'withtext'));
 };
-DebugJS.point.findText = function(text, idx, regex) {
+DebugJS.point.findText = function(txt, idx, regex) {
   var re = null;
   if (regex) {
     try {
-      re = new RegExp(text);
+      re = new RegExp(txt);
     } catch (e) {
       DebugJS._log.e(e);
       return null;
