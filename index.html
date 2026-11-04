@@ -4558,28 +4558,43 @@ $ echo on
   </tr>
 
   <tr>
-    <td class="name">elements</td>
-    <td><span class="annotation">(opt)</span> #id / .class / tagName</td>
+    <td class="name">element</td>
+    <td>subcommand: count / find</td>
     <td>
-      Count elements by #id / .className / tagName.
+      Count elements or find an Element object.
 <pre class="eg">
-$ elements #header
+$ element count
+-&gt; Count all elements.
+
+$ element count #header
+-&gt; Count the specified element and its descendants.
 DIV   6
 A     1
 IMG   1
 BR    1
 Total 9
 
-Filtering by attribute:
+Filtering by property:
 
-$ elements -innerText "Download"
+$ element count -innerText "Download"
 A       1
 BUTTON  1
 Total   2
 
-$ elements -value "hidden-value-1"
+$ element count -value "hidden-value-1"
 INPUT   1
 Total   1
+
+$ element find #id
+$ element find .className [index]
+$ element find tagName [index]
+$ element find text "TEXT" [index]
+$ element find withtext "REGEX" [index]
+-&gt; Find an element and return the Element object, or null if not found.
+   text: Exact text match
+   withtext: Regular expression match
+   The index is zero-based (default=0).
+   Text searches exclude hidden elements and password input values.
 </pre></td>
   </tr>
 
@@ -5376,17 +5391,6 @@ $ point cursor text
 
 $ point cursor none
 -&gt; No cursor is rendered
-
-$ point find #id
-$ point find .className [index]
-$ point find tagName [index]
-$ point find text "TEXT" [index]
-$ point find withtext "REGEX" [index]
--&gt; Find an element and return the Element object, or null if not found.
-   text: Exact text match
-   withtext: Regular expression match
-   The index is zero-based (default=0).
-   Text searches exclude hidden elements and password input values.
 
 $ point getelement
 -&gt; Get an Element object at the current pointed position

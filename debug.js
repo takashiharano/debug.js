@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611040004';
+  this.v = '202611050033';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -327,7 +327,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'dbgwin', fn: this.cmdDbgWin, desc: 'Control the debug window', help: 'dbgwin show|hide|pos|size|opacity|status|lock'},
     {cmd: 'delay', fn: this.cmdDelay, desc: 'Delay command execution', help: 'delay [-c|-q] ms|[YYYYMMDD]THHMI[SS]|1d2h3m4s567 COMMAND'},
     {cmd: 'echo', fn: this.cmdEcho, desc: 'Echo the STRING(s) to the log window'},
-    {cmd: 'elements', fn: this.cmdElements, desc: 'Count elements by #id / .class-name / TAGNAME', help: 'elements [#id|.class-name|TAGNAME]'},
+    {cmd: 'element', fn: this.cmdElement, desc: 'Manipulate DOM elements', help: '\nelement count [#id|.class-name|TAGNAME] [-prop value]\nelement find #id|.class-name [idx]|TAGNAME [idx]|text "str" [idx]|withtext "regex" [idx]'},
     {cmd: 'event', fn: this.cmdEvent, desc: 'Manipulate an event', help: 'event create|set|dispatch|clear type|prop value'},
     {cmd: 'exit', fn: this.cmdExit, desc: 'Close the debug window and clear all status', attr: DebugJS.CMD_ATTR_SYSTEM},
     {cmd: 'float', fn: this.cmdFloat, desc: 'Displays IEEE 754 bit-level encodings', help: 'float [-b|-h] VAL'},
@@ -355,7 +355,7 @@ var DebugJS = DebugJS || function() {
     {cmd: 'pangram', fn: this.cmdPangram, desc: 'Displays a pangram'},
     {cmd: 'pause', fn: this.cmdPause, desc: 'Suspends processing of batch file', help: 'pause [-key key] [-timeout ms|1d2h3m4s500]'},
     {cmd: 'pin', fn: this.cmdPin, desc: 'Fix the window in its position', help: 'pin on|off'},
-    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|SUBCOMMAND [args]\nSUBCOMMAND: move|click|cclick|rclick|dblclick|contextmenu|drag|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|find|getelement|getprop|setprop|verify|center|mouse|text|selectoption|value|scroll|msg|cursor|ch|init'},
+    {cmd: 'point', fn: this.cmdPoint, desc: 'Show the pointer to the specified coordinate', help: 'point [+|-]x [+|-]y|#id|.class [idx]|TAGNAME [idx]|SUBCOMMAND [args]\nSUBCOMMAND: move|click|cclick|rclick|dblclick|contextmenu|drag|mousedown|mouseup|keydown|keypress|keyup|focus|blur|change|show|hide|getelement|getprop|setprop|verify|center|mouse|text|selectoption|value|scroll|msg|cursor|ch|init'},
     {cmd: 'prop', fn: this.cmdProp, desc: 'Displays a property value', help: 'prop property-name'},
     {cmd: 'props', fn: this.cmdProps, desc: 'Displays property list', help: 'props [-reset]'},
     {cmd: 'random', fn: this.cmdRandom, desc: 'Generate a random number/string', help: 'random [-n|-s] [min[d]] [max] [-chars "ABC..."]'},
@@ -7584,7 +7584,7 @@ DebugJS.prototype = {
         var args = opt[''];
         var m = args[1];
         var to = opt.timeout;
-        if (!DebugJS.point.isValidFindArgs(args) || (to != undefined && (to == '' || (!/^\d+$/.test(to) && !DebugJS.isTmStr(to) && !DebugJS.isTTimeFormat(to))))) {
+        if (!DebugJS.isValidFindArgs(args) || (to != undefined && (to == '' || (!/^\d+$/.test(to) && !DebugJS.isTmStr(to) && !DebugJS.isTTimeFormat(to))))) {
           DebugJS.printUsage(tbl.help);
           break;
         }
@@ -7598,7 +7598,7 @@ DebugJS.prototype = {
             break;
           }
         }
-        var el = DebugJS.point.find(args, text);
+        var el = DebugJS.findElement(args, text);
         if (el) break;
         bat.ctrl.condWait = {type: 'find', args: args, text: text};
         DebugJS.ctx._cmdPause('key', '', to, true);
@@ -7951,15 +7951,37 @@ DebugJS.prototype = {
     }
   },
 
-  cmdElements: function(arg, tbl, echo) {
-    arg = arg.trim();
-    if ((arg == '-h') || (arg == '--help')) {
-      DebugJS.printUsage(tbl.help);
-      return;
+  cmdElement: function(arg, tbl, echo) {
+    var ctx = DebugJS.ctx;
+    var args = DebugJS.splitCmdLine(arg);
+    var op = args[0];
+    var ret;
+    switch (op) {
+      case 'count':
+        ret = ctx._cmdElementCount(arg, echo);
+        break;
+      case 'find':
+        ret = ctx._cmdElementFind(args);
+        break;
+      default:
+        DebugJS.printUsage(tbl.help);
     }
-    var slct = DebugJS.getNonOptVals(arg)[0];
+    return ret;
+  },
+  _cmdElementCount: function(arg, echo) {
+    arg = arg.trim();
+    var slct = DebugJS.getNonOptVals(arg)[1];
     var filter = DebugJS.getOptVals(arg);
     return DebugJS.countElements(slct, filter, !echo);
+  },
+  _cmdElementFind: function(args) {
+    var ret = null;
+    if (DebugJS.isValidFindArgs(args)) {
+      ret = DebugJS.findElement(args);
+    } else {
+      DebugJS.printUsage('element find #id|.class-name [idx]|TAGNAME [idx]|text "str" [idx]|withtext "regex" [idx]');
+    }
+    return ret;
   },
 
   cmdEvent: function(arg, tbl) {
@@ -8853,8 +8875,6 @@ DebugJS.prototype = {
       ctx._cmdPointScroll(args);
     } else if (op == 'selectoption') {
       ret = ctx._cmdPointSelectOpt(ctx, args);
-    } else if (op == 'find') {
-      ret = ctx._cmdPointFind(args);
     } else if (op == 'getelement') {
       ret = point.getElementFromCurrentPos();
     } else if (op == 'getprop') {
@@ -8894,13 +8914,6 @@ DebugJS.prototype = {
       ctx._cmdPointJmp(ctx, arg, tbl, args);
     }
     return ret;
-  },
-  _cmdPointFind: function(args) {
-    if (DebugJS.point.isValidFindArgs(args)) {
-      return DebugJS.point.find(args);
-    }
-    DebugJS.printUsage('point find #id|.class-name [idx]|tag-name [idx]|text "str" [idx]|withtext "regex" [idx]');
-    return null;
   },
   _cmdPointJmp: function(ctx, arg, tbl, args) {
     var ptr = DebugJS.point.getPtr();
@@ -17030,7 +17043,7 @@ DebugJS.bat.checkCondWait = function() {
   if (!cond) return false;
   switch (cond.type) {
     case 'find':
-      var el = DebugJS.point.find(cond.args, cond.text);
+      var el = DebugJS.findElement(cond.args, cond.text);
       return (el != null);
   }
   return false;
@@ -17479,7 +17492,7 @@ DebugJS.point.setKeyFlag = function(e, a) {
   }
   return e;
 };
-DebugJS.point.isValidFindArgs = function(args) {
+DebugJS.isValidFindArgs = function(args) {
   var m = args[1];
   var byTxt = ((m == 'text') || (m == 'withtext'));
   var tgt = (byTxt ? args[2] : m);
@@ -17487,7 +17500,7 @@ DebugJS.point.isValidFindArgs = function(args) {
   if (!tgt || ((idx != undefined) && !/^\d+$/.test(idx))) return false;
   return true;
 };
-DebugJS.point.find = function(args, txt) {
+DebugJS.findElement = function(args, txt) {
   var m = args[1];
   var byTxt = ((m == 'text') || (m == 'withtext'));
   var tgt = (byTxt ? args[2] : m);
@@ -17496,9 +17509,9 @@ DebugJS.point.find = function(args, txt) {
   if (txt === undefined) {
     try {txt = DebugJS.evalToString(tgt);} catch (e) {DebugJS._log.e(e);return null;}
   }
-  return DebugJS.point.findText(txt, idx, (m == 'withtext'));
+  return DebugJS.findElementByText(txt, idx, (m == 'withtext'));
 };
-DebugJS.point.findText = function(txt, idx, regex) {
+DebugJS.findElementByText = function(txt, idx, regex) {
   var re = null;
   if (regex) {
     try {
