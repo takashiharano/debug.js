@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611050033';
+  this.v = '202611052334';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -7955,18 +7955,18 @@ DebugJS.prototype = {
     var ctx = DebugJS.ctx;
     var args = DebugJS.splitCmdLine(arg);
     var op = args[0];
-    var ret;
+    var r;
     switch (op) {
       case 'count':
-        ret = ctx._cmdElementCount(arg, echo);
+        r = ctx._cmdElementCount(arg, echo);
         break;
       case 'find':
-        ret = ctx._cmdElementFind(args);
+        r = ctx._cmdElementFind(ctx, args, echo);
         break;
       default:
         DebugJS.printUsage(tbl.help);
     }
-    return ret;
+    return r;
   },
   _cmdElementCount: function(arg, echo) {
     arg = arg.trim();
@@ -7974,14 +7974,36 @@ DebugJS.prototype = {
     var filter = DebugJS.getOptVals(arg);
     return DebugJS.countElements(slct, filter, !echo);
   },
-  _cmdElementFind: function(args) {
-    var ret = null;
+  _cmdElementFind: function(ctx, args, echo) {
+    var r = null;
     if (DebugJS.isValidFindArgs(args)) {
-      ret = DebugJS.findElement(args);
+      r = DebugJS.findElement(args);
+      if (echo) {
+        ctx._cmdElementFindEcho(r);
+      }
     } else {
       DebugJS.printUsage('element find #id|.class-name [idx]|TAGNAME [idx]|text "str" [idx]|withtext "regex" [idx]');
     }
-    return ret;
+    return r;
+  },
+  _cmdElementFindEcho: function(r) {
+    if (r) {
+      var a = ['id', 'class', 'name', 'type'];
+      var s = '<' + r.tagName.toLowerCase();
+      for (var i = 0; i < a.length; i++) {
+        var v = r.getAttribute(a[i]);
+        if (v) s += ' ' + a[i] + '="' + v + '"';
+      }
+      s = DebugJS.escHtml(s + '>');
+      var t = (r.innerText || '');
+      if (t) {
+        if (t.length > 40) t = t.slice(0, 40) + '...';
+        s += ' ' + DebugJS.quoteStr(DebugJS.escHtml(t));
+      }
+    } else {
+      s = DebugJS.setStyleIfObjNA(r);
+    }
+    DebugJS._log.res(s);
   },
 
   cmdEvent: function(arg, tbl) {
