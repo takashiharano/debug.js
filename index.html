@@ -82,7 +82,6 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .showhide-button {color:#0a0;}
 .showhide-button:hover {cursor:pointer;}
 .inline-text-input{border:none !important;border-bottom:1px solid #aaa !important;border-radius:0 !important;background:transparent;color:#fff !important;font-family:Consolas, Monaco, Menlo, monospace, sans-serif;}
-.inline-text-input-wh{color:#333 !important;}
 .demo-textarea{width:500px;height:50px;border:1px solid #666;background:transparent;color:#fff;font-size:14px;}
 .demo-textarea2{width:500px;height:150px;border:1px solid #666;background:transparent;color:#333;font-size:14px;}
 .overlay-root{position:relative;}
@@ -108,7 +107,6 @@ input.demo-text {width:250px; font-size:14px; border:none; border-bottom:1px sol
 .box {position: relative; display:inline-block; width:50px; height:50px; color:#fff; cursor:move; z-index:10}
 #box1 {top:50px; left:0px; background:#64b5f6;}
 #box2 {top:50px; left:100px; background:#f48fb1;}
-.cc{color:#88f;}
 </style>
 <script>
 //dbg.start();
@@ -123,7 +121,7 @@ dbg.init({visible:true});
 //dbg.init({elmId:'debug'});
 
 //dbg.addEvtListener('watchdog', onWatchdogTimeout);
-//dbg.addEvntListener('fileloaded', onFileLoaded);
+//dbg.addEvtListener('fileloaded', onFileLoaded);
 
 var options1 = {
   visible: true,
@@ -835,7 +833,7 @@ function onReady() {
 
 function onLoad() {
   //log('load');
-  evttest.regieterEventHandler();
+  evttest.registerEventHandler();
   dragtest.init();
 }
 
@@ -874,7 +872,7 @@ example.onActive = function(panel) {
   eval(code);
 };
 
-example.onInActive = function(panel) {
+example.onInactive = function(panel) {
   var code = document.getElementById('ext-panel-inactive-code').value;
   eval(code);
 };
@@ -884,13 +882,13 @@ example.onDrop = function(text) {
   eval(code);
 };
 
-example.regieterExtensionPanel = function() {
+example.registerExtensionPanel = function() {
   var name = document.getElementById('ext-panel-name-text').value;
   var panel1 = {
     name: name,
     onCreate: example.onCreate,
     onActive: example.onActive,
-    onInActive: example.onInActive,
+    onInactive: example.onInactive,
     onDrop: example.onDrop
   };
   var index = dbg.x.panel.add(panel1);
@@ -967,11 +965,11 @@ evttest.onTouchEnd = function(e) {
   log('evt> touchend ' + e.clientX + ' ' + e.clientY);
 };
 
-evttest.regieterEventHandler = function() {
-  evttest.regieterEventHandlers(document.getElementById('event1'));
+evttest.registerEventHandler = function() {
+  evttest.registerEventHandlers(document.getElementById('event1'));
 };
 
-evttest.regieterEventHandlers = function(el) {
+evttest.registerEventHandlers = function(el) {
   el.addEventListener('mousedown', evttest.onMouseDown, true);
   el.addEventListener('mouseup', evttest.onMouseUp, true);
   el.addEventListener('mousemove', evttest.onMouseMove, true);
@@ -4824,7 +4822,7 @@ Option:<br>
     <td class="name">keypress</td>
     <td>keycode</td>
     <td>
-      Dispatch a keyevent to active element.<br><br>
+      Dispatch a key event to active element.<br><br>
 <pre class="eg">
 $ keypress 1 -shift -ctrl -alt -meta
 </pre>
@@ -4847,7 +4845,7 @@ $ keypress 1 -shift -ctrl -alt -meta
     <td class="name">laptime</td>
     <td></td>
     <td>
-      Lap time test <span class="annotation">togglable</span><br>
+      Lap time test <span class="annotation">toggleable</span><br>
       Start the stopwatch and print the measurement time by clicking left mouse button.<br>
       The stopwatch will be reset with each clicking.
     </td>
@@ -5878,7 +5876,7 @@ $ text #text1 "abc 123" -step 2<span class="annotation">(opt)</span>
   <tr>
     <td class="name">textedit</td>
     <td>
-      arg1: oeration<br>arg2: value
+      arg1: operation<br>arg2: value
     </td>
     <td>
      Manipulate text editor
@@ -7313,8 +7311,8 @@ show: {
   </tr>
 
   <tr>
-    <td class="name">togglableShowHide</td>
-    <td>Togglable Show / Hide (Show × button)</td>
+    <td class="name">toggleableShowHide</td>
+    <td>Toggleable Show / Hide (Show × button)</td>
     <td>true</td>
   </tr>
 
@@ -7516,7 +7514,7 @@ var style = {
   'box-sizing': 'border-box',
   'width': '100%',
   'height': '100%',
-  'paddingf': '4px'
+  'padding': '4px'
 };
 var body = dbg.ui.addElement(panel, 'pre', style);
 body.innerHTML = 'Extension Panel 1';</textarea>
@@ -7528,11 +7526,11 @@ body.innerHTML = 'Extension Panel 1';</textarea>
 };</span>
 
 // Called when the panel is hidden.
-<span class="emphasis">example.onInActive = function(panel) {
-  <textarea id="ext-panel-inactive-code" class="demo-textarea" style="height:20px;">log('onInActive P1');</textarea>
+<span class="emphasis">example.onInactive = function(panel) {
+  <textarea id="ext-panel-inactive-code" class="demo-textarea" style="height:20px;">log('onInactive P1');</textarea>
 };</span>
 
-// Called when a file/text is fropped.
+// Called when a file/text is dropped.
 example.onDrop = function(text) {
   <textarea id="ext-panel-drop-code" class="demo-textarea" style="height:20px;color:#aaa;">log('onDrop P1:\n' + text);</textarea>
 };
@@ -7541,7 +7539,7 @@ example.onDrop = function(text) {
   name: '<input type="text" id="ext-panel-name-text" class="inline-text-input" style="width:100px;" value="P1">',
   onCreate: example.onCreate,
   onActive: example.onActive,
-  onInActive: example.onInActive</span>,
+  onInactive: example.onInactive</span>,
   onDrop: example.onDrop, // optional. See dbg.addDropHandler()
   fileloader: { // optional
     cb: example.onFileLoaded,
@@ -7549,7 +7547,7 @@ example.onDrop = function(text) {
     decode: true
   }<span class="emphasis">
 };
-<span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = dbg.x.panel.add(panel1);<button class="demo-button2" onclick="example.regieterExtensionPanel();">DEMO</button></span></span></span>
+<span class="overlay-root"><span class="overlay overlay-val" id="ext-panel-index" style="top:-6px;left:65px;font-size:12px;"></span><span class="overlay">var index = dbg.x.panel.add(panel1);<button class="demo-button2" onclick="example.registerExtensionPanel();">DEMO</button></span></span></span>
 </pre>
 
 Switch panels
@@ -7572,7 +7570,7 @@ Panel object structure:
   name: Panel Name String,
   onCreate: function(),
   onActive: function(),
-  onInActive: function(),
+  onInactive: function(),
   onDrop: function(),
   fileloader: Loader Definition,
   panel: Base DIV element

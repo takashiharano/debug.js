@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611052334';
+  this.v = '202611060032';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -50,7 +50,7 @@ var DebugJS = DebugJS || function() {
     showLineNums: true,
     showTimestamp: 1,
     resizable: true,
-    togglableShowHide: true,
+    toggleableShowHide: true,
     useClock: true,
     useClearButton: true,
     useSuspendLogButton: true,
@@ -99,7 +99,7 @@ var DebugJS = DebugJS || function() {
   this.elmNextBtn = null;
   this.elmPrevSblBtn = null;
   this.elmNextSblBtn = null;
-  this.elmParenttBtn = null;
+  this.elmParentBtn = null;
   this.elmSelectBtn = null;
   this.elmHighlightBtn = null;
   this.elmUpdBtn = null;
@@ -219,7 +219,6 @@ var DebugJS = DebugJS || function() {
   this.txtEdtOptEl = [],
   this.swBtnPanel = null;
   this.swLabel = null;
-  this.clearBtn = null;
   this.preserveLogBtn = null;
   this.suspendLogBtn = null;
   this.zoomInBtn = null;
@@ -719,7 +718,7 @@ DebugJS.HTML_SNIPPET = [
 '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="robots" content="none">\n<meta name="referrer" content="no-referrer">\n<meta name="referrer" content="never">\n<title></title>\n<link rel="stylesheet" href="style.css" />\n<script src="script.js"></script>\n<style>\n</style>\n<script>\nonReady = function() {\n};\nonLoad = function() {\n};\nwindow.addEventListener(\'DOMContentLoaded\', onReady, true);\nwindow.addEventListener(\'load\', onLoad, true);\n</script>\n</head>\n<body>\n\n</body>\n</html>\n'
 ];
 DebugJS.FEATURES = [
-  'togglableShowHide', 'useClock', 'useClearButton', 'useSuspendLogButton',
+  'toggleableShowHide', 'useClock', 'useClearButton', 'useSuspendLogButton',
   'usePinButton', 'useWinCtrlButton', 'useStopwatch', 'useDeviceInfo',
   'useLed', 'useMsgDisplay', 'useScreenMeasure', 'useSystemInfo',
   'useElementInfo', 'useJsEditor', 'useTools', 'useLogFilter', 'useCommandLine'
@@ -1056,7 +1055,7 @@ DebugJS.prototype = {
       'margin': '0 !important',
       'padding': '0 !important',
       'text-align': 'center !important',
-      'vartical-align': 'middle !important',
+      'vertical-align': 'middle !important',
       'background': 'transparent !important',
       'color': '#fff !important'
     };
@@ -1230,7 +1229,7 @@ DebugJS.prototype = {
     ctx.win.style.left = 0;
     ctx.win.style.width = document.documentElement.clientWidth + 'px';
     ctx.win.style.height = document.documentElement.clientHeight + 'px';
-    ctx.opt.togglableShowHide = false;
+    ctx.opt.toggleableShowHide = false;
     ctx.opt.usePinButton = false;
     ctx.opt.useWinCtrlButton = false;
     ctx.opt.useScreenMeasure = false;
@@ -1282,7 +1281,7 @@ DebugJS.prototype = {
     }
 
     if (opt.useClearButton) {
-      ctx.clearBtn = DebugJS.ui.addBtn(ctx.headPanel, '[CLR]', ctx.onClr);
+      DebugJS.ui.addBtn(ctx.headPanel, '[CLR]', ctx.onClr);
     }
 
     if (opt.useLogFilter) {
@@ -1311,7 +1310,7 @@ DebugJS.prototype = {
       ctx.setIntervalL(ctx);
     }
 
-    if (opt.togglableShowHide) {
+    if (opt.toggleableShowHide) {
       ctx.closeBtn = DebugJS.ui.addBtn(ctx.headPanel, 'x', DebugJS.hide);
       ctx.closeBtn.style.float = 'right';
       ctx.closeBtn.style.position = 'relative';
@@ -3264,7 +3263,7 @@ DebugJS.prototype = {
   },
 
   hideDbgWin: function(ctx) {
-    if (!ctx.opt.togglableShowHide || !ctx.win) return;
+    if (!ctx.opt.toggleableShowHide || !ctx.win) return;
     ctx.stopUdtClock(ctx);
     ctx.errStatus = DebugJS.ERR_ST_NONE;
     ctx.uiStatus &= ~DebugJS.UI_ST_VISIBLE;
@@ -3831,9 +3830,9 @@ DebugJS.prototype = {
     ctx.elmNextSblBtn.style.marginLeft = '4px';
     ctx.enableNextSblElBtn(ctx, false);
 
-    ctx.elmParenttBtn = ctx.createElmInfoHeadBtn('PARENT', ctx.showParentElm);
-    ctx.elmParenttBtn.style.marginLeft = '8px';
-    ctx.elmParenttBtn.style.marginRight = '4px';
+    ctx.elmParentBtn = ctx.createElmInfoHeadBtn('PARENT', ctx.showParentElm);
+    ctx.elmParentBtn.style.marginLeft = '8px';
+    ctx.elmParentBtn.style.marginRight = '4px';
 
     ctx.elmSelectBtn = ctx.createElmInfoHeadBtn('SELECT', ctx.toggleElmSelectMode);
     ctx.elmSelectBtn.style.marginLeft = '8px';
@@ -6850,7 +6849,7 @@ DebugJS.prototype = {
 
   onExtPanelInActive: function(ctx, p) {
     ctx.extActivePanel = null;
-    if (p && p.onInActive) p.onInActive(p.panel);
+    if (p && p.onInactive) p.onInactive(p.panel);
   },
 
   prevVisibleExtPanelIdx: function(ctx, idx) {
@@ -9435,7 +9434,7 @@ DebugJS.prototype = {
           if (adjX) ps.x += eval(adjX);
           if (adjY) ps.y += eval(adjY);
         } catch (e) {
-          DebugJS.log.e('scollto window: ' + e);
+          DebugJS.log.e('scrollto window: ' + e);
         }
         DebugJS.scrollWinToTarget(ps, speed, step, null, null, true);
         return;
@@ -17400,8 +17399,8 @@ DebugJS.point.dblclick = function(target, speed) {
 };
 DebugJS.point._dblclick = function() {
   var data = DebugJS.point.dblclick.data;
-  var clickcpeed = data.speed / 2 | 0;
-  DebugJS.point.click(0, data.target, clickcpeed, DebugJS.point.dblclick.onDone);
+  var clickSpeed = data.speed / 2 | 0;
+  DebugJS.point.click(0, data.target, clickSpeed, DebugJS.point.dblclick.onDone);
 };
 DebugJS.point.dblclick.onDone = function() {
   var data = DebugJS.point.dblclick.data;
