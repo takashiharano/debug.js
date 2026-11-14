@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611060032';
+  this.v = '202611142049';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13301,11 +13301,11 @@ DebugJS.gcd = function(v1, v2) {
 };
 
 DebugJS.bit8 = {};
-DebugJS.bit8.rotateL = function(v, n) {
+DebugJS.bit8.rotateLeft = function(v, n) {
   n = n % 8;
   return ((v << n) | (v >> (8 - n))) & 255;
 };
-DebugJS.bit8.rotateR = function(v, n) {
+DebugJS.bit8.rotateRight = function(v, n) {
   n = n % 8;
   return ((v >> n) | (v << (8 - n))) & 255;
 };
@@ -13397,12 +13397,22 @@ DebugJS.base64.encode = function(arr) {
 };
 DebugJS.base64.decode = function(s) {
   var arr = [];
-  if (s.length == 0) return arr;
-  for (var i = 0; i < s.length; i++) {
+  var len = s.length;
+  if (len == 0) return arr;
+  if (len % 4 == 1) {
+    throw new Error('invalid Base64 length: ' + len);
+  }
+  for (var i = 0; i < len; i++) {
     var c = s.charCodeAt(i);
     if (!(((c >= 0x30) && (c <= 0x39)) || ((c >= 0x41) && (c <= 0x5A)) || ((c >= 0x61) && (c <= 0x7A)) || (c == 0x2B) || (c == 0x2F) || (c == 0x3D))) {
-      DebugJS._log.e('invalid b64 char: 0x' + c.toString(16).toUpperCase() + ' at ' + i);
-      return arr;
+      throw new Error('invalid Base64 char: 0x' + c.toString(16).toUpperCase() + ' at ' + i);
+    }
+  }
+  var padIndex = s.indexOf('=');
+  if (padIndex >= 0) {
+    var padCount = len - padIndex;
+    if ((len % 4 != 0) || (padCount > 2) || ((padCount == 2) && (s.charAt(len - 1) != '='))) {
+      throw new Error('invalid Base64 padding at ' + padIndex);
     }
   }
   var tbl = {61: 64, 47: 63, 43: 62};
@@ -13465,13 +13475,18 @@ DebugJS.xb64.decodeToString = function(src, key) {
   var a = DebugJS.xb64.decode(src, key);
   return DebugJS.utf8.fromByteArray(a);
 };
-DebugJS.xor = function(s, k) {
-  var ln = s.length;
-  var kl = k.length;
-  if ((ln == 0) || (kl == 0)) return s.slice();
-  var b = [];
+DebugJS.xor = function(src, key) {
+  var ln = src.length;
+  var kl = key.length;
+  if ((ln == 0) || (kl == 0)) return src.slice();
+  var b = new Array(ln);
+  var kIdx = 0;
   for (var i = 0; i < ln; i++) {
-    b.push(s[i] ^ k[i % kl]);
+    b[i] = src[i] ^ key[kIdx];
+    kIdx++;
+    if (kIdx == kl) {
+      kIdx = 0;
+    }
   }
   return b;
 };
@@ -13483,33 +13498,40 @@ DebugJS.isXB64Notation = function(s) {
 DebugJS.bsb64 = {};
 DebugJS.bsb64.encode = function(src, n) {
   if (typeof src == 'string') src = DebugJS.utf8.toByteArray(src);
-  var fn = DebugJS.bit8.rotateL;
-  if (n % 8 == 0) {
-    fn = DebugJS.bit8.invert;
-  }
-  var buf = [];
-  for (var i = 0; i < src.length; i++) {
-    buf.push(fn(src[i], n));
-  }
-  var str = DebugJS.base64.encode(buf);
-  return str;
+  var buf = DebugJS.bsb64.shiftBits(src, n);
+  return DebugJS.base64.encode(buf);
 };
 DebugJS.bsb64.decode = function(src, n) {
-  var fn = DebugJS.bit8.rotateR;
-  if (n % 8 == 0) {
-    fn = DebugJS.bit8.invert;
-  }
   var buf = DebugJS.base64.decode(src);
-  var arr = [];
-  for (var i = 0; i < buf.length; i++) {
-    arr.push(fn(buf[i], n));
-  }
-  return arr;
+  return DebugJS.bsb64.unshiftBits(buf, n);
 };
 DebugJS.bsb64.decodeToString = function(src, n) {
   var arr = DebugJS.bsb64.decode(src, n);
   return DebugJS.utf8.fromByteArray(arr);
 };
+DebugJS.bsb64.shiftBits = function(src, n) {
+  var fn = DebugJS.bit8.rotateLeft;
+  if (n % 8 == 0) {
+    fn = DebugJS.bit8.invert;
+  }
+  var buf = new Array(src.length);
+  for (var i = 0; i < src.length; i++) {
+    buf[i] = fn(src[i], n);
+  }
+  return buf;
+};
+DebugJS.bsb64.unshiftBits = function(src, n) {
+  var fn = DebugJS.bit8.rotateRight;
+  if (n % 8 == 0) {
+    fn = DebugJS.bit8.invert;
+  }
+  var buf = new Array(src.length);
+  for (var i = 0; i < src.length; i++) {
+    buf[i] = fn(src[i], n);
+  }
+  return buf;
+};
+
 DebugJS.isBSB64Notation = function(s) {
   var notation = DebugJS.parseB64Notation(s);
   return (notation && (notation.mode == 'bsb64'));
