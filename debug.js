@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611142049';
+  this.v = '202611151510';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6656,6 +6656,10 @@ DebugJS.prototype = {
         }
         return r;
       }
+    },
+    {
+      lbl: 'Random String', opt: [{lbl: 'LEN', v: '8'}, {lbl: 'CHARS', v: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&*+-=@^_'}],
+      fn: function(s, o) {var l = o[0] | 0;return DebugJS.getRandomString(l, l, o[1]);}
     },
     {
       lbl: 'Replace', opt: [{lbl: 'FM'}, {lbl: 'TO'}, {lbl: 'RE', optvals: [{v: 'Y'}, {v: 'N'}]}, {lbl: 'FLG', v: 'gi'}],
@@ -14171,9 +14175,9 @@ DebugJS.getRndNums = function(d) {
   }
   return n;
 };
-DebugJS.getRandomString = function(min, max, tbl) {
+DebugJS.getRandomString = function(min, max, chars) {
   var DFLT_MAX_LEN = 8;
-  if (!tbl) tbl = DebugJS.Aa0;
+  if (!chars) chars = DebugJS.Aa0;
   if (min == undefined) {
     min = DFLT_MAX_LEN;
     max = min;
@@ -14181,9 +14185,9 @@ DebugJS.getRandomString = function(min, max, tbl) {
   if (max == undefined) max = min;
   var s = '';
   var len = DebugJS._random(min, max);
-  if (tbl.length > 0) {
+  if (chars.length > 0) {
     for (var i = 0; i < len; i++) {
-      s += tbl[Math.floor(Math.random() * tbl.length)];
+      s += chars[Math.floor(Math.random() * chars.length)];
     }
   }
   return s;
