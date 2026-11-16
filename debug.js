@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611162305';
+  this.v = '202611162326';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -13688,9 +13688,11 @@ DebugJS.str2binArr = function(str, blkSize, pFix) {
 };
 
 DebugJS.decodeUnicode = function(u) {
-  var a = u.trim().toUpperCase().replace(/U\+/g, ' ').replace(/\s{2,}/g, ' ').split(' ');
+  var w = u.toUpperCase().replace(/U\+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!w) return '';
+  var a = w.split(' ');
   var s = '';
-  for (var i = 1; i < a.length; i++) {
+  for (var i = 0; i < a.length; i++) {
     var p = parseInt(a[i], 16);
     s += String.fromCodePoint(p);
   }
@@ -13785,7 +13787,13 @@ DebugJS.getUnicodeEscape = function(s) {
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
     var p = s.charCodeAt(i);
-    u += ((p <= 127) ? c : ('\\u' + DebugJS.toHex(p, true, '', 4)));
+    if (c == '\\') {
+      u += '\\\\';
+    } else if (p < 0x20 || p > 127) {
+      u += '\\u' + DebugJS.toHex(p, true, '', 4);
+    } else {
+      u += c;
+    }
   }
   return u;
 };
