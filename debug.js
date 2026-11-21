@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611162326';
+  this.v = '202611211416';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6595,7 +6595,22 @@ DebugJS.prototype = {
         return DebugJS[f[o[0]]](s, q, n);
       }
     },
-    {lbl: 'Format Date/Time', opt: [{lbl: 'SEPARATOR', v: '-'}], fn: function(s, o) {return DebugJS.dateSep(s, o[0]);}},
+    {lbl: 'Format Date/Time', opt: [{lbl: 'FORMAT', v: ''}],
+      fn: function(s, o) {
+        var a = DebugJS.txt2arr(s);
+        var r = '';
+        for (var i = 0; i < a.length; i++) {
+          var c = a[i].split('\t');
+          if (i > 0) r += '\n';
+          for (var j = 0; j < c.length; j++) {
+            var v = c[j];
+            if (j > 0) r += '\t';
+            r += DebugJS.fmtDateTime(v, o[0]);
+          }
+        }
+        return r;
+      }
+    },
     {
       lbl: 'Half/Full', opt: [{lbl: '', optvals: [{t: 'HALF', v: 'H'}, {t: 'FULL', v: 'F'}]}],
       fn: function(s, o) {return (o[0] == 'H' ? DebugJS.toHalfWidth(s) : DebugJS.toFullWidth(s));}
@@ -12462,16 +12477,56 @@ DebugJS.arr2set = function(a, f) {
   return s;
 };
 
-DebugJS.dateSep = function(s, a) {
-  if (!a) a = '/';
-  s = s.replace(/[^A-Za-z\d\n\s:.]/g, '/');
-  s = s.replace(/(\d+)/g, '0$1').replace(/0*(\d{2,})/g, '$1');
-  s = s.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d+)/g, '$1/$2/$3 $4:$5:$6.$7');
-  s = s.replace(/(\d{4})(\d{2})(\d{2})/g, '$1/$2/$3');
-  s = s.replace(/(\d{2})(\d{2})(\d{2})/g, '$1 $2:$3');
-  s = s.replace(/(:\d{2})(\d{2})/g, '$1:$2');
-  if (a != '/') s = s.replace(/\//g, a);
-  return s;
+DebugJS.fmtDateTime = function(s, fmt) {
+  var a = s.trim();
+  var m = a.match(/^(\d{4})(\d{2})(\d{2})(.*)$/) || a.match(/^(\d+)[^\dA-Za-z\s](\d{2})[^\dA-Za-z\s](\d{2})(\d.*)$/) || a.match(/^(\d+)[^\dA-Za-z\s](\d{1,2})[^\dA-Za-z\s](\d{1,2})(?=\D|$)(.*)$/);
+  if (!m) return s;
+  var rst = m[4];
+  var n = 0;
+  var ms = null;
+  var hh = '00';
+  var mi = '00';
+  var ss = '00';
+  if (rst) {
+    var b = rst.match(/^(?:T|[^A-Za-z0-9]+)?(\d.*)$/i);
+    if (!b) return s;
+    rst = b[1];
+    var t = rst.match(/^(\d{1,2})[^\dA-Za-z\s](\d{1,2})(?:[^\dA-Za-z\s](\d{1,2})(?:\.(\d{1,3}))?)?$/);
+    if (t) {
+      n = t[3] ? 3 : 2;
+      hh = t[1];
+      mi = t[2];
+      ss = t[3] || '00';
+      ms = t[4] || null;
+    } else {
+      t = rst.match(/^(\d{2})(\d{2})(?:(\d{2})(?:\.?(\d{1,3}))?)?$/);
+      if (!t) return s;
+      n = t[3] ? 3 : 2;
+      hh = t[1];
+      mi = t[2] || '00';
+      ss = t[3] || '00';
+      ms = t[4] || null;
+    }
+  }
+  if (ms !== null) n = 4;
+  if (!fmt) fmt = DebugJS.autoDtFmt(n);
+  var parts = {
+    '%YYYY': DebugJS.lpad(m[1], '0', 4),
+    '%MM': DebugJS.lpad(m[2], '0', 2),
+    '%DD': DebugJS.lpad(m[3], '0', 2),
+    '%HH': DebugJS.lpad(hh, '0', 2),
+    '%mm': DebugJS.lpad(mi, '0', 2),
+    '%SS': DebugJS.lpad(ss, '0', 2),
+    '%sss': ms === null ? '000' : (ms + '000').slice(0, 3)
+  };
+  return fmt.replace(/%YYYY|%MM|%DD|%HH|%mm|%SS|%sss/g, function(k) {return parts[k];});
+};
+DebugJS.autoDtFmt = function(n) {
+  var fmt = '%YYYY-%MM-%DD';
+  if (n >= 2) fmt += ' %HH:%mm';
+  if (n >= 3) fmt += ':%SS';
+  if (n >= 4) fmt += '.%sss';
+  return fmt;
 };
 DebugJS.lflf2lf = function(s) {
   return DebugJS.cleanseText(s).replace(/\n\n/g, '\n');
