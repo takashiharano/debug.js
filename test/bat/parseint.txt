@@ -1,0 +1,74 @@
+#!BAT!
+close all
+cls
+test init
+
+!__JS__!
+$TEST_DATA = [
+  {in: '0',           radix: 10, out: 0},
+  {in: '123',         radix: 10, out: 123},
+  {in: '-123',        radix: 10, out: -123},
+  {in: '1,234',       radix: 10, out: 1234},
+  {in: '-1,234',      radix: 10, out: -1234},
+  {in: '1,234,567',   radix: 10, out: 1234567},
+  {in: '1,2,3',       radix: 10, out: 123},
+  {in: '08',          radix: 10, out: 8},
+  {in: '-08',         radix: 10, out: -8},
+
+  {in: '00',          radix: 8,  out: 0},
+  {in: '077',         radix: 8,  out: 63},
+  {in: '-077',        radix: 8,  out: -63},
+  {in: '0123',        radix: 8,  out: 83},
+  {in: '0 77',        radix: 8,  out: 63},
+  {in: '-0 77',       radix: 8,  out: -63},
+  {in: '0 7 7',       radix: 8,  out: 63},
+
+  {in: '0b0',         radix: 2,  out: 0},
+  {in: '0b101',       radix: 2,  out: 5},
+  {in: '-0b101',      radix: 2,  out: -5},
+  {in: '0b10 10',     radix: 2,  out: 10},
+  {in: '-0b10 10',    radix: 2,  out: -10},
+  {in: '0b1 0 1 0',   radix: 2,  out: 10},
+  {in: '0b 101',      radix: 2,  out: 5},
+  {in: '-0b 101',     radix: 2,  out: -5},
+
+  {in: '0xFF',        radix: 16, out: 255},
+  {in: '-0xFF',       radix: 16, out: -255},
+  {in: '0xF F',       radix: 16, out: 255},
+  {in: '-0xA F',      radix: 16, out: -175},
+  {in: '0x A F',      radix: 16, out: 175},
+  {in: '-0x A F',     radix: 16, out: -175},
+  {in: '0Xff',        radix: 16, out: 255},
+  {in: '-0Xff',       radix: 16, out: -255},
+
+  {in: 'abc',         radix: 0,  out: 0},
+  {in: '0b102',       radix: 0,  out: 0},
+  {in: '0xGG',        radix: 0,  out: 0},
+  {in: '1 234',       radix: 0,  out: 0},
+  {in: '0o10',        radix: 0,  out: 0},
+  {in: '-0b',         radix: 0,  out: 0},
+  {in: '0x',          radix: 0,  out: 0}
+]
+
+!__JS__!
+
+test set id "parseInt"
+
+${i} = 0
+LOOP (${i} < $TEST_DATA.length) (
+  ${ret} = DebugJS.parseInt($TEST_DATA[${i}].in)
+  test verify ${ret} == $TEST_DATA[${i}].out
+  ${i}++
+)
+
+test set id "checkRadix"
+
+${i} = 0
+LOOP (${i} < $TEST_DATA.length) (
+  ${ret} = DebugJS.checkRadix($TEST_DATA[${i}].in)
+  test verify ${ret} == $TEST_DATA[${i}].radix
+  ${i}++
+)
+
+test end
+test result

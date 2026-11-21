@@ -1,0 +1,663 @@
+#!BAT!
+@echo off
+
+!__TEXT__!
+ !"#$%&'()*+,-./
+0123456789:;<=>?
+@ABCDEFGHIJKLMNO
+PQRSTUVWXYZ[\]^_
+`abcdefghijklmno
+pqrstuvwxyz{|}~
+English
+Français
+español
+日本語
+华语
+한국어
+ไทย
+!__TEXT__!
+
+echo "TEXT=\\n" + ${%TEXT%}
+vals -c
+#set batstop error|test
+set batstop none
+set batcont off
+close all
+win reset
+
+${LOOP} = -1;
+${LOOP_COUNT} = 0;
+$COUNT = 0;
+
+${strVal} = "abc123"
+${intVal} = 128
+
+echo "DEMO BAT"
+point init
+set pointstep 10
+set pointspeed 10
+set textspeed 30
+set wait 200
+
+// Single line comment
+
+/*
+Multi
+Line
+Comment
+*/
+
+/* Single line comment */
+
+stopwatch reset
+stopwatch start
+
+echo "Arg=" + ${%%ARG%%}
+echo "label : " + ${%LABEL%}
+
+${labels} = bat symbols label
+p ${labels}
+
+${ptn} = "^test_"
+${labels} = bat symbols label ${ptn}
+p ${labels}
+
+:start
+echo "label start: " + ${%LABEL%}
+point move center
+point msg seq "Hello!"
+wait 1s
+point msg seq "This is an automated test for debug.js."
+wait 1s
+point msg seq "Multilingual Display Test\\n\\n"
+wait 1s
+point msg seq "Multilingual Display Test\\nEnglish Français español 日本語 华语 한국어 ไทย" -start 26
+wait 1s
+point msg seq "Font size test"
+wait 1s
+
+point msg clear
+set pointmsgsize 24px
+point msg seq "24px"
+wait 500
+
+point msg clear
+set pointmsgsize 48px
+point msg seq "48px"
+wait 500
+
+point msg clear
+set pointmsgsize 12px
+point msg seq "12px"
+wait 500
+
+point msg clear
+
+point move #title
+wait 100
+point move #title2
+wait 100
+
+echo "abc 123"
+${str} = "Hello, \"World\""
+echo ${str}
+
+call func1 "AAA"
+echo "RET=" + ${%RET%}
+
+!__JS__!
+log.i('!__JS__!');
+log(${strVal});
+log(${intVal});
+log('%{strVal}');
+log('%{intVal}');
+log.i('!__JS__!');
+!__JS__!
+
+!__JS__! raw
+log.i('!__JS__! raw');
+log('${strVal}');
+log('${intVal}');
+log('%{strVal}');
+log('%{intVal}');
+log.i('!__JS__!');
+!__JS__!
+
+${i} = 0
+LOOP (${i} < 10) (
+  echo "loop (" + ${i} + ")"
+  ${i} = ${i} + 1;
+)
+
+${i} = 0
+LOOP (
+  echo "loop-break5 (" + ${i} + ")"
+  IF (${i} == 5) (
+    BREAK
+  )
+  ${i} = ${i} + 1;
+)
+
+echo "arg = " + ${%%ARG%%}
+${extbat} = "IyFCQVQhDQplY2hvICJFeHRlcm5hbEJBVC1Bcmc9IiArICR7JSVBUkclJX0gDQplY2hvICJFeHRlcm5hbEJBVC0xIg0KZWNobyAibGFiZWwgZXh0YmF0WycnXTogIiArICR7JUxBQkVMJX0NCndhaXQgNTAwDQo6bGJsMQ0KZWNobyAibGFiZWwgZXh0YmF0W2xibDFdOiAiICsgJHslTEFCRUwlfQ0KZWNobyAiRXh0ZXJuYWxCQVQtMiINCndhaXQgNTAwDQplY2hvICJFeHRlcm5hbEJBVC0zIg0Kd2FpdCA1MDANCmV4aXQgOA0K"
+bat exec %{extbat} "abc123"
+echo "ExitStatus = " + ${?}
+IF ((${?} == 0) || (${?} == 8)) (
+  echo "OK!"
+) ELSE (
+  echo "ERROR!"
+)
+echo "arg = " + ${%%ARG%%}
+echo "label start: " + ${%LABEL%}
+
+:cmdtest
+echo "--------------------------------------------------"
+@echo on
+time 0
+time 1
+time 10
+time 100
+time 1000
+time 60000
+time 3600000
+time 86400000
+timediff "2018-09-05 10:00:00.000" "2018-09-05 12:34:56.789"
+timediff "20180905T100000.000" "20180905T123456.789"
+timediff "20180905T100000" "20180905T123456"
+@echo off
+echo "--------------------------------------------------"
+
+echo "vvv This is an intentional error vvv"
+${?} = 0
+${%%ARG%%} = 1
+${%RESUMED_KEY%} = 2
+echo "^^^ This is an intentional error ^^^"
+
+point move #log-demo-btn
+point cursor pointer
+wait 100
+point click
+#wait 300
+point cursor default
+
+point move #msg-demo-btn
+point cursor pointer
+wait 100
+point click
+wait 300
+point cursor default
+
+point move #led-demo-btn
+point cursor pointer
+point msg "LED demo"
+wait 100
+point click
+wait 300
+point msg clear
+point cursor default
+
+scrollto window +0 bottom -speed 10 -step 30
+
+#--------------------------------------
+:test
+point move #text1 -alignX 0.5 -alignY 0.2
+point cursor text
+
+stopwatch value
+
+wait 50
+point msg "text input demo <span style=\"color:#0f0;\">#1</span> (point text command)"
+point click
+wait 300
+point text ""
+wait
+point text "abcdefg 123456789"
+wait
+point getprop value
+wait
+point cursor default
+
+point move #text2 -alignX 0.75 -alignY 0.2
+point cursor text
+wait 50
+point msg "text input demo <span style=\"color:#fb0;\">#2</span> (text command)"
+point click
+wait 300
+text #text2 ""
+wait
+text #text2 "9876543210 xyz"
+wait
+point cursor default
+
+point move #pass1 -alignY 0.2
+point cursor text
+point msg "password input demo"
+wait 50
+point click
+wait 300
+point text ""
+wait
+point text "12345678"
+wait
+point cursor default
+
+$COUNT++;
+IF ($COUNT > 3) (
+  $COUNT = 1;
+)
+
+point move #select1
+point msg "select option demo"
+point click
+wait 500
+#select #select1 set value $COUNT
+point selectoption set value $COUNT
+
+point msg clear
+
+point move #select2
+point click
+wait 500
+point selectoption set text ("Value " + ($COUNT))
+
+:select3
+point move #select3
+point click
+wait 500
+IF (($COUNT % 2) == 0) (
+  select select:nth-child(5) set value "abc"
+) ELSE (
+  select select:nth-child(5) set value "x yz"
+)
+
+point move #checkbox1
+point msg "checkbox demo"
+wait 250
+point click
+wait 250
+
+point move input[type=checkbox] 1
+wait 250
+point click
+wait 250
+
+#point move #radio1
+point msg "radio button demo"
+dbg.cmd('point move #radio' + $COUNT);
+wait 250
+point click
+wait 250
+point msg clear
+
+point msg "radio button demo (w/ label)"
+point move totext ("r" + $COUNT)
+wait 250
+point click
+wait 250
+point msg clear
+
+point move byattr value "Submit"
+wait 250
+
+:textarea1
+!__JS__!
+$txtVal1 = 'debug.js is an embeddable JavaScript debugger for web development.\\n' +
+           'It lets you debug web pages without opening developer tools (F12).';
+
+$txtVal2 = $txtVal1 + '\\n' +
+           'Features include logging, DOM element inspection, screen measurement, and a command-line interpreter.\\n' +
+           'abc\\tdef\\nghi';
+!__JS__!
+
+point move #textarea1
+point cursor text
+point msg "Textarea input demo\\nYou can specify the typing speed and the start and end positions."
+wait 50
+point click
+wait 300
+point text ""
+wait
+point text $txtVal1 -speed 30 -start 1 -end 80
+point msg clear
+point text $txtVal2 -speed 30 -start 132 -end 149
+wait 200
+point scroll +0 bottom
+wait 250
+point cursor default
+
+:scroll
+bat set delay 500
+point move #div-scroll
+scrollto #div-scroll 10 20
+scrollto #div-scroll +10 +20
+scrollto #div-scroll center middle
+scrollto #div-scroll right bottom
+scrollto #div-scroll left top
+bat set delay 0
+
+#point msg "<span style=\"color:#0ff;\">Click or press any key to continue...</span>"
+#pause -u
+#point msg clear
+
+stopwatch value
+
+point msg "point test"
+point #div1
+bat set delay 200
+point (#table1 td) 0
+point (#table1 td) 1
+point (#table1 td) 2
+point (#table1 td) 3
+point (#table1 td) 4
+point (#table1 td) 5
+point (#table1 span) 1
+point (#div1 tr:nth-child(2) td:nth-child(1))
+point .class1
+point .class2
+point .class1 2
+bat set delay 0
+point msg "point 100 200"
+point 100 200
+wait 1000
+point msg "point +100 +200"
+point +100 +200
+wait 1000
+point msg clear
+
+point msg "point move test"
+point move #div1
+bat set delay 200
+point move (#table1 td) 0
+point move (#table1 td) 1
+point move (#table1 td) 2
+point move (#table1 td) 3
+point move (#table1 td) 4
+point move (#table1 td) 5
+point move (#table1 span) 1
+point move (#div1 tr:nth-child(2) td:nth-child(1))
+point move .class1
+point move .class2
+point move .class1 2
+bat set delay 0
+point msg "point move 100 200"
+point move 100 200 -speed 5 -step 20
+wait 1000
+point msg "point move +100 +200"
+point move +100 +200
+wait 1000
+point msg clear
+
+point move #event1 -speed 5 -step 20
+point msg "Dispatch a contextmenu event to the element under the pointer."
+wait 1000
+point rclick
+pause -key key1
+echo "Resumed key = " + ${%RESUMED_KEY%}
+point msg clear
+point dblclick
+point mousedown 0
+bat set delay 200
+point mousedown 1
+point mousedown 2
+point mouseup 0
+point mouseup 1
+point mouseup 2
+
+point msg "Key Event Simulation"
+point keydown -keyCode 65 -code KeyA -key a
+point keypress -keyCode 97 -code KeyA -key a
+point keyup -keyCode 65 -code KeyA -key a
+wait
+
+point keydown -keyCode 65 -code KeyA -key A -s
+point keypress -keyCode 97 -code KeyA -key A -s
+point keyup -keyCode 65 -code KeyA -key A -s
+wait
+
+point keydown -keyCode 65 -code KeyA -key a -c
+point keypress -keyCode 97 -code KeyA -key a -c
+point keyup -keyCode 65 -code KeyA -key a -c
+wait
+
+point keydown -keyCode 65 -code KeyA -key a -a
+point keypress -keyCode 97 -code KeyA -key a -a
+point keyup -keyCode 65 -code KeyA -key a -a
+wait
+
+point keydown -keyCode 65 -code KeyA -key a -m
+point keypress -keyCode 97 -code KeyA -key a -m
+point keyup -keyCode 65 -code KeyA -key a -m
+wait
+
+point keydown -keyCode 65 -code KeyA -key a -s -c -a -m
+point keypress -keyCode 97 -code KeyA -key a -s -c -a -m
+point keyup -keyCode 65 -code KeyA -key a -s -c -a -m
+bat set delay 0
+
+echo "Wheel Event Simulation"
+point event wheel -deltaX 0 -deltaY 100
+point event wheel -deltaX 0 -deltaY (-100)
+
+point move #box1
+point msg "point drag command demo"
+wait 1s
+point msg clear
+point drag +230 +35
+wait 500
+
+point move #box2
+wait 500
+point drag -250 -30
+wait 500
+
+point move #box1
+point drag -230 -35
+wait 500
+
+point move #box2
+wait 500
+point drag +250 +30
+wait 500
+
+point msg "Mouse Event Simulation"
+:mousetest
+point move #evt1
+wait 50
+echo "click(L)"
+point click -speed 200
+wait 250
+echo "click(C)"
+point cclick -speed 200
+wait 250
+echo "click(R)"
+point rclick -speed 200
+wait 500
+
+echo "click(L) 1000ms"
+point click -speed 1000
+wait 250
+echo "click(R) 200ms"
+point rclick -speed 200
+wait 1500
+
+echo "Double Click Test"
+point dblclick
+
+echo "Double Click Test (200ms)"
+point dblclick -speed 200
+
+point msg clear
+point blur
+
+stopwatch value
+
+:test_demo
+# Verify ------------------------------
+test init -name "TestDemo"
+test set desc "Test Test"
+
+point verify value != undefined
+
+test set id "Text Input"
+point move #text1
+point verify value == "abcdefg 123456789"
+
+point move #text2
+point verify -label "eq" value == "9876543210 xyz"
+point verify -label "regexp" value regexp \d.*\sxyz
+
+point move #pass1
+point verify -label "pass" value == "12345678"
+
+test set id "Select"
+point move #select1
+point verify value == $COUNT
+point verify value <= 2
+
+test set id "SelectOption"
+point move #select2
+${res} = point selectoption get text
+test verify ${res} == ("Value " + $COUNT)
+${res} = point selectoption get value
+test verify ${res} == ("v" + $COUNT)
+
+${res} = point selectoption get texts
+test verify ${res}[0] == "Value 1"
+test verify ${res}[1] == "Value 2"
+test verify ${res}[2] == "Value 3"
+
+${res} = point selectoption get values
+test verify ${res}[0] == "v1"
+test verify ${res}[1] == "v2"
+test verify ${res}[2] == "v3"
+
+test set id "CheckBox"
+point move #checkbox1
+point verify checked == true
+
+test set id "RadioButton"
+dbg.cmd('point move #radio' + $COUNT);
+point verify value == $COUNT
+
+test set id "TextArea"
+point move #textarea1
+point verify value == $txtVal2
+
+test set id "Error Test"
+test set comment "This is an intended error."
+point verify value == fakeErr
+
+test set id "TestOKTest"
+test verify 1 == 1
+test verify 1 != 2
+test verify 1 < 2
+test verify 1 <= 2
+test verify 2 > 1
+test verify 2 >= 1
+test verify "abc 123" regexp abc \d.*
+
+test set id "TestNGTest"
+test verify -label "str1" "abc" == "xyz"
+test verify -label "str2" "abc" != "abc"
+test verify -label "num1" 1 == 2
+test verify -label "num2" 1 != 1
+test verify -label "num3" 2 < 1
+test verify -label "num4" 2 <= 1
+test verify -label "num5" 1 > 2
+test verify -label "num6" 1 >= 2
+test verify -label "regexp1" "abc xyz" regexp abc \d.*
+
+test set id "Text1Test"
+${text1} = document.getElementById('text1').value
+test verify ${text1} == "abcdefg 123456789"
+
+${res} = utest.testString();
+test verify ${res} == "Hello, World!"
+
+stopwatch value
+
+:test_autoseq
+test set id "TEST-%SEQ%"
+test verify 1 == 1
+
+test set id "TEST-%SEQ%"
+test verify 2 == 2
+
+:test_manual
+test set id "MANUAL"
+test set result Pass -label "res1" -info "OK test"
+test set result Fail -label "res2" -info "NG test"
+test set result Error -label "res3" -info "ERR test"
+test set result Pass -label "res4" -info "OK test 2"
+
+test end
+test result
+echo "----------------------------------------------------"
+echo "TEST START TIME: " + dbg.getDateTimeString(dbg.test.getResult().startTime)
+echo "TEST END TIME  : " + dbg.getDateTimeString(dbg.test.getResult().endTime)
+
+:test_result
+${last_result} = test last
+${test_ttl_result} = test ttlresult
+echo "Last Test Result  = " + ${last_result}
+echo "Last Test Result  = " + ${%TEST_LAST_RESULT%}
+echo "Total Test Status = " + ${test_ttl_result}
+echo "Total Test Status = " + ${%TEST_TOTAL_RESULT%}
+
+#${val} = stopwatch stop
+echo "Elapsed Time: " + ${val}
+
+point move center
+point move -250 +0
+
+point msg "<span style=\"font-size:24px;\">Automated testing is complete!</span>\\nTest Result: !TEST_COUNT! !RESUME!!STOP!"
+pause -key -timeout 5s
+
+echo "ERROR TEST [S]"
+errorDemo()
+echo "ERROR TEST [E]"
+
+testSetCond();
+point msg "Waiting for condition key ABC..."
+condwait  -key ABC
+point msg clear
+
+point msg "Waiting for condition find text..."
+testCondWaitFind();
+condwait find text "Cond Wait Find Test" -timeout 10s
+point msg clear
+
+point msg "window scroll demo"
+scrollto window +0 -50 -speed 0 -step 0
+wait 200
+scrollto window +0 -50 -speed 0 -step 0
+wait 200
+scrollto window +0 -50 -speed 0 -step 0
+wait 1000
+
+point msg "window scroll (center | middle)"
+scrollto window center middle -speed 0 -step 0
+wait 1000
+
+point msg "window scroll (bottom)"
+scrollto window 0 bottom -speed 0 -step 0
+wait 1000
+point msg clear
+
+scrollto window 0 0 -speed 10 -step 300
+
+#stopwatch reset
+
+${LOOP_COUNT}++;
+echo "$\{LOOP_COUNT} = " + ${LOOP_COUNT}
+IF ((${LOOP} < 0) || (${LOOP_COUNT} < ${LOOP})) (
+  goto start
+)
+
+point init
+echo "END OF DEMO BAT"
+
+FUNCTION func1
+  echo "func1"
+  echo "ARG=" + ${%ARG%}
+  return 1

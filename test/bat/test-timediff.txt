@@ -1,0 +1,36 @@
+#!BAT!
+close all
+cls
+test init
+
+#----------------------------------------------------------
+test set id "timediff"
+${ret} = timediff 1 3
+test verify ${ret} == "00:00:00.002"
+
+${ret} = timediff 3 1
+test verify ${ret} == "00:00:00.002"
+
+${ret} = timediff 1000 3000
+test verify ${ret} == "00:00:02.000"
+
+${ret} = timediff 3.0 1.0
+test verify ${ret} == "00:00:02.000"
+
+${ret} = timediff "2019-02-09 12:00:00.000" "2019-02-10 13:02:03.456"
+test verify ${ret} == "1d 01:02:03.456"
+
+${ret} = timediff "2019-02-10 13:02:03.456" "2019-02-09 12:00:00.000"
+test verify ${ret} == "1d 01:02:03.456"
+
+${ret} = timediff 09:00 10:00
+test verify ${ret} == "01:00:00.000"
+
+${ret} = timediff 01:02:03 02:04:06
+test verify ${ret} == "01:02:03.000"
+
+${ret} = timediff 01:02:03.864 02:04:06.987
+test verify ${ret} == "01:02:03.123"
+
+test end
+test result

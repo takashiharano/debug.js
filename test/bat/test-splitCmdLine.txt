@@ -1,0 +1,44 @@
+#!BAT!
+cls
+p dbg.splitCmdLine(' 1 "abc" "d ef"  "g\\"hi" 2 ("jkl" + 3) 4 ')
+
+/*
+ [0] "1"
+ [1] ""abc""
+ [2] ""d ef""
+ [3] ""g\\"hi""
+ [4] "2"
+ [5] "("jkl" + 3)"
+ [6] "4"
+*/
+
+
+
+p dbg.splitCmdLine(' 1 "abc" "d ef"  "g\\"hi" 2 ("jkl" + 3) 4 \'x yz\' \'abc" d" ef\'')
+
+/*
+ [0] "1"
+ [1] ""abc""
+ [2] ""d ef""
+ [3] ""g\\"hi""
+ [4] "2"
+ [5] "("jkl" + 3)"
+ [6] "4"
+ [7] "'x yz'"
+ [8] "'abc" d" ef'"
+*/
+
+p dbg.splitCmdLine(' 1 "abc" "d ef"  "g\\"hi" 2 ("jkl" + 3) 4 \'x yz\' \'abc" d" ef\' ( \'abc" d" ef\' )')
+
+/*
+ [0] "1"
+ [1] ""abc""
+ [2] ""d ef""
+ [3] ""g\\"hi""
+ [4] "2"
+ [5] "("jkl" + 3)"
+ [6] "4"
+ [7] "'x yz'"
+ [8] "'abc" d" ef'"
+ [9] "( 'abc" d" ef' )"
+*/

@@ -1,0 +1,10 @@
+#!BAT!
+close all
+wait
+echo "default-e"
+wait 1000
+echo "1000-e"
+wait 2000
+echo "2000-e"
+wait 3000
+echo "3000-e"

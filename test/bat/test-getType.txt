@@ -1,0 +1,45 @@
+#!BAT!
+vals -c
+cls
+test init -name "getType"
+
+test set id "string"
+test verify dbg.getType('abc') == "string"
+
+test set id "number"
+test verify dbg.getType(123) == "number"
+test verify dbg.getType(0x1) == "number"
+
+test set id "boolean"
+test verify dbg.getType(true) == "boolean"
+test verify dbg.getType(false) == "boolean"
+
+test set id "null"
+test verify dbg.getType(null) == "null"
+
+test set id "undefined"
+test verify dbg.getType(undefined) == "undefined"
+
+test set id "object"
+test verify dbg.getType({}) == "object"
+
+test set id "Array"
+test verify dbg.getType([]) == "Array"
+
+test set id "Set"
+test verify dbg.getType(new Set()) == "Set"
+
+test set id "ArrayBuffer"
+test verify dbg.getType(new ArrayBuffer()) == "ArrayBuffer"
+
+test set id "Date"
+test verify dbg.getType(new Date()) == "Date"
+
+test set id "RegExp"
+test verify dbg.getType(/a/) == "RegExp"
+
+test set id "function"
+test verify dbg.getType(function(){}) == "function"
+
+test end
+test result

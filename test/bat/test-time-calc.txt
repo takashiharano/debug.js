@@ -1,0 +1,112 @@
+#!BAT!
+close all
+cls
+test init
+
+#----------------------------------------------------------
+test set id "time-calc"
+${ret} = 00:05:30.700 + 00:01:20.123
+test verify ${ret} == "00:06:50.823"
+
+${ret} = 00:05:30.700 - 00:05:20.400
+test verify ${ret} == "00:00:10.300"
+
+${ret} = 10:00 + 16:00 d
+test verify ${ret} == "02:00 (+1 Day)"
+
+${ret} = 10:00 + 16:00
+test verify ${ret} == "26:00"
+
+${ret} = 10:00 - 16:00 d
+test verify ${ret} == "18:00 (-1 Day)"
+
+${ret} = 10:00 - 16:00
+test verify ${ret} == "-06:00"
+
+${ret} = 00:00 - 23:59 d
+test verify ${ret} == "00:01 (-1 Day)"
+
+${ret} = 00:00 - 24:00 d
+test verify ${ret} == "00:00 (-1 Day)"
+
+${ret} = 00:00 - 24:01 d
+test verify ${ret} == "23:59 (-2 Days)"
+
+${ret} = 00:00 - 24:02 d
+test verify ${ret} == "23:58 (-2 Days)"
+
+${ret} = 00:01 - 24:00 d
+test verify ${ret} == "00:01 (-1 Day)"
+
+${ret} = 00:01 - 24:01 d
+test verify ${ret} == "00:00 (-1 Day)"
+
+${ret} = 00:01 - 24:02 d
+test verify ${ret} == "23:59 (-2 Days)"
+
+${ret} = 01:30 * 2
+test verify ${ret} == "03:00"
+
+${ret} = 03:00 / 2
+test verify ${ret} == "01:30"
+
+#----------------------------------------------------------
+test set id "time-calc-multi"
+${ret} = 00:00 + 01:00 + 2:00
+test verify ${ret} == "03:00"
+
+${ret} = 00:00 + 01:00 - 2:00 d
+test verify ${ret} == "23:00 (-1 Day)"
+
+${ret} = 00:00 + 01:00 + 2:00 * 2
+test verify ${ret} == "06:00"
+
+${ret} = 00:00 + 01:00 + 2:00 * 2 / 3
+test verify ${ret} == "02:00"
+
+${ret} = 00:00 + 01:00 + 24:00 d
+test verify ${ret} == "01:00 (+1 Day)"
+
+${ret} = 00:00 + 01:00 + 24:00
+test verify ${ret} == "25:00"
+
+#----------------------------------------------------------
+test set id "time"
+${ret} = time 1d2h3m4s500
+test verify ${ret} == "26h 3m 4s 500 (93784500 ms)"
+
+${ret} = time -d 1d2h3m4s500
+test verify ${ret} == "1d 2h 3m 4s 500 (93784500 ms)"
+
+${ret} = time -d 1d 2h 3m 4s 500
+test verify ${ret} == "1d 2h 3m 4s 500 (93784500 ms)"
+
+${ret} = time -d 93784500
+test verify ${ret} == "1d 2h 3m 4s 500 (93784500 ms)"
+
+${ret} = time -d 93784.500
+test verify ${ret} == "1d 2h 3m 4s 500 (93784500 ms)"
+
+${ret} = time -d 26:03:04.500
+test verify ${ret} == "1d 2h 3m 4s 500 (93784500 ms)"
+
+${ret} = time 1:00
+test verify ${ret} == "1h 0m 0s (3600000 ms)"
+
+${ret} = 26:03:04.500
+test verify ${ret} == "1d 2h 3m 4s 500 (93784500 ms)"
+
+${ret} = 1:00
+test verify ${ret} == "1h 0m 0s (3600000 ms)"
+
+${ret} = 00:00:01.2
+test verify ${ret} == "1s 200 (1200 ms)"
+
+${ret} = 00:00:01.23
+test verify ${ret} == "1s 230 (1230 ms)"
+
+${ret} = 00:00:01.234
+test verify ${ret} == "1s 234 (1234 ms)"
+
+test end
+test result

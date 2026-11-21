@@ -1,0 +1,54 @@
+#!BAT!
+# aaa
+# bbb
+# ---func1 in ---
+# ARGS=undefined
+# f1
+# ---func1 out---
+# RET=undefined
+# ccc
+# ---func2 in ---
+# ARGS=abc
+# f2
+# ---func2 out---
+# RET=F2
+# ddd
+# END
+@echo off
+close all
+cls
+
+echo "aaa"
+echo "bbb"
+call func1
+echo "RET=" + ${%RET%}
+
+echo "ccc"
+call func2 "abc" "xyz" 123
+echo "RET=" + ${%RET%}
+
+echo "ddd"
+echo "END"
+
+#----------------------------------------------------------
+FUNCTION func1
+#----------------------------------------------------------
+  echo "---func1 in ---"
+  echo " ARGS.length=" + ${%ARGS%}.length
+  echo " ARGS=" + ${%ARGS%}
+  echo " f1"
+  echo "---func1 out---"
+  return
+
+#----------------------------------------------------------
+FUNCTION func2
+#----------------------------------------------------------
+  echo "---func2 in ---"
+  echo " ARGS.length=" + ${%ARGS%}.length
+  echo " ARGS[0]=" + ${%ARGS%}[0]
+  echo " ARGS[1]=" + ${%ARGS%}[1]
+  echo " ARGS[2]=" + ${%ARGS%}[2]
+  echo " ARGS[3]=" + ${%ARGS%}[3]
+  echo " f2"
+  echo "---func2 out---"
+  return "F2"

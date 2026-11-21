@@ -1,0 +1,26 @@
+#!BAT!
+@echo off
+
+${ptn} = "^test"
+${a} = bat symbols label ${ptn}
+
+:aaa
+echo "aaa"
+
+:bbb
+echo "bbb"
+
+:test1
+
+:ccc
+echo "ccc"
+
+:test2
+
+:ddd
+echo "ddd"
+
+:eee
+echo "eee"
+
+p ${a}

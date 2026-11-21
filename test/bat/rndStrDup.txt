@@ -1,0 +1,25 @@
+#!BAT!
+@echo off
+${v} = []
+${f} = 0
+${c} = 0
+cls
+LOOP (
+  ${a} = dbg.getRandomString("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 4);
+  ${v}.push(${a})
+  ${c}++
+  echo ${c} + ': ' + ${a}
+  !__JS__!
+  for (var i = 0; i < ${v}.length - 1; i++) {
+    if (${v}[i] == ${a}) {
+      log("duplicated: " + ${a})
+      ${f} = 1
+      break;
+    }
+  }
+  !__JS__!
+
+  IF (${f}) (
+    BREAK
+  )
+)

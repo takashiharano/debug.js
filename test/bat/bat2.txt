@@ -1,0 +1,13 @@
+#!BAT!
+@echo 1
+@echo 2
+pause
+@echo 3
+@echo 4
+pause -c
+@echo 5
+pause -key abc
+@echo 6
+wait 3000
+@echo 7
+@echo 8

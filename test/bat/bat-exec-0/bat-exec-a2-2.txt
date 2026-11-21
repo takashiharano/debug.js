@@ -1,0 +1,11 @@
+#!BAT!
+@echo off
+echo "a2-2 arg = " + ${%%ARGS%%}
+echo "a2-2-1"
+wait
+echo "a2-2-2"
+#location.href = 'index.html'
+wait
+echo "a2-2 arg = " + ${%%ARGS%%}
+echo "a2-2-3"
+wait

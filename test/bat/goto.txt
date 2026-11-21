@@ -1,0 +1,23 @@
+#!BAT!
+$COUNT = 0;
+${label} = "label2"
+echo off
+cls
+
+:label1
+echo "aaa"
+
+goto label3
+
+:label2
+echo "bbb"
+
+:label3
+echo "ccc"
+
+$COUNT++;
+IF ($COUNT > 1) (
+  exit
+)
+goto %{label}
+

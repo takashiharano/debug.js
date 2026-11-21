@@ -1,0 +1,134 @@
+#!BAT!
+!__TEXT__!
+label :
+ARG=undefined
+label start:start
+aaa
+label label1:label1
+bbb
+label label2:label2
+---func1 in---
+funcname func1:func1
+---func1 out--
+RET=undefined
+ccc
+label label2:label2
+---func2 in---
+funcname func2:func2
+ARG= 0->2
+---func3 in---
+funcname func3:func3
+ARG= 2->3
+---func 3out--
+ARG: 0->2
+RET=R3
+funcname func2:func2
+---func2 out--
+label label2:label2
+ARG: undefined
+RET=R2
+ddd
+END
+
+RUNNING
+Nest Lv: 0
+[Object] {
+ pc: 31
+ lr: 23
+ startPc: 0
+ endPc: 62
+ break: 0
+ delay: 0
+ echo: false
+ tmpEchoOff: false
+ js: 0
+ tmid: 0
+ lock: 0
+ block: [Array][0]
+ fnArg: undefined
+ condKey: null
+ pauseKey: null
+ pauseTimeout: 0
+ cont: false
+ stopReq: false
+ execArg: ""
+ label: "label2"
+ fnnm: ""
+ stack: [Array][0]
+ conddKey: null
+}
+!__TEXT__!
+@echo off
+cls
+
+echo "label :" + ${%LABEL%}
+
+:start
+echo "ARGS=" + ${%ARGS%}
+echo "label start:" + ${%LABEL%}
+
+:label1
+echo "aaa"
+echo "label label1:" + ${%LABEL%}
+
+:label2
+echo "bbb"
+echo "label label2:" + ${%LABEL%}
+call func1
+echo "RET=" + ${%RET%}
+
+echo "ccc"
+echo "label label2:" + ${%LABEL%}
+call func2 "0->2"
+echo "label label2:" + ${%LABEL%}
+echo "ARGS: " + ${%ARGS%}
+echo "RET=" + ${%RET%}
+
+echo "ddd"
+
+echo "END"
+bat status
+#goto start
+exit
+
+#----------------------------------------------------------
+FUNCTION func1
+#----------------------------------------------------------
+  echo "---func1 in---"
+  echo "funcname func1:" + ${%FUNCNAME%}
+  echo "---func1 out--"
+  return
+
+#----------------------------------------------------------
+FUNCTION func2
+#----------------------------------------------------------
+  echo "---func2 in---"
+  echo "funcname func2:" + ${%FUNCNAME%}
+  echo "ARGS= " + ${%ARGS%}[1]
+  call func3 "2->3"
+  echo "ARGS: " + ${%ARGS%}[1]
+  echo "RET=" + ${%RET%}
+  echo "funcname func2:" + ${%FUNCNAME%}
+  echo "---func2 out--"
+  return "R2"
+
+#----------------------------------------------------------
+FUNCTION func3
+#----------------------------------------------------------
+  echo "---func3 in---"
+  echo "funcname func3:" + ${%FUNCNAME%}
+  echo "ARGS= " + ${%ARGS%}[1]
+  call func4 "3->4"
+  echo "---func 3out--"
+  return "R3"
+
+#----------------------------------------------------------
+FUNCTION func4
+#----------------------------------------------------------
+  echo "---func4 in---"
+  echo "funcname func4:" + ${%FUNCNAME%}
+  echo "ARGS= " + ${%ARGS%}[1]
+aaa
+  echo "---func 4out--"
+  return "R4"
+

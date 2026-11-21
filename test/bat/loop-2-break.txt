@@ -1,0 +1,44 @@
+#!BAT!
+@echo off
+${i} = 0
+${j} = 0
+
+${a} = "a"
+${b} = "b"
+
+echo "aaa"
+
+LOOP (${i} < 3) (
+  echo " loop (i=" + ${i} + ")"
+
+  IF (${a} == "a") (
+    echo " a"
+  ) ELSE (
+    echo " !a"
+  )
+
+  echo " break"
+  BREAK
+
+  LOOP (${j} < 2) (
+    echo "  loop (j=" + ${j} + ")"
+
+    IF (${b} == "b") (
+      echo "  b"
+    ) ELSE (
+      echo "  !b"
+    )
+
+    ${j} = ${j} + 1
+  )
+  ${j} = 0
+
+  ${b} = "c"
+
+
+  ${i} = ${i} + 1
+)
+
+echo "bbb"
+
+echo "END"

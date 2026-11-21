@@ -1,0 +1,9 @@
+#!BAT!
+@echo off
+close all
+cls
+condwait set -key AAA
+echo "aaa"
+condwait pause
+echo "bbb"
+#dbg.bat.setCond('AAA')

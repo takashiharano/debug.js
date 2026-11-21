@@ -1,0 +1,64 @@
+
+#!BAT!
+close all
+
+${KEY_MINUS} = 109
+
+point center
+${I} = 0
+LOOP (${I} < 50) (
+  point event wheel -deltaX 0 -deltaY 100
+  ${I} = ${I} + 1
+)
+
+keypress ${KEY_MINUS}
+wait 500
+
+:usa
+point move input[name="q"][role="combobox"]
+point click
+point text "United States"
+wait
+keypress 13
+wait 3000
+
+point move 965 502
+point drag -250 +0
+point dblclick
+
+:sf
+point move input[name="q"][role="combobox"]
+point click
+point text "San Francisco"
+wait
+keypress 13
+wait 3000
+
+point move 987 312
+point dblclick
+wait
+point drag +330 +550
+point dblclick
+wait
+point dblclick
+wait
+
+point drag +200 +200
+wait
+
+:github
+point move input[name="q"][role="combobox"]
+point click
+point text "Golden Gate Bridge"
+wait
+keypress 13
+wait 3000
+
+point move 1200 225
+wait
+point dblclick
+wait
+point dblclick
+wait
+
+point init

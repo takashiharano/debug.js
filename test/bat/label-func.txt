@@ -1,0 +1,42 @@
+#!BAT!
+@echo off
+close all
+cls
+
+:label1
+echo "aaa"
+echo "bbb"
+call func1
+echo "RET=" + ${%RET%}
+
+:label2
+echo "ccc"
+call func2 "abc"
+echo "RET=" + ${%RET%}
+
+:test_label
+echo "ddd"
+echo "END"
+
+#----------------------------------------------------------
+FUNCTION func1
+#----------------------------------------------------------
+  echo "---func1 in ---"
+  echo " ARG=" + ${%ARG%}
+  echo " f1"
+  echo "---func1 out---"
+  return
+
+#----------------------------------------------------------
+FUNCTION func2
+#----------------------------------------------------------
+  echo "---func2 in ---"
+  echo " ARG=" + ${%ARG%}
+  echo " f2"
+  echo "---func2 out---"
+  return "F2"
+
+#----------------------------------------------------------
+FUNCTION test_func1
+#----------------------------------------------------------
+  return

@@ -1,0 +1,18 @@
+#!BAT!
+@echo off
+close all
+cls
+echo "aaa"
+pause
+echo "bbb"
+pause -key abc
+echo "ccc"
+pause -key aaa|bbb
+echo "ddd"
+pause -timeout 5000
+echo "eee"
+pause -key AAA -timeout 5000
+echo "fff"
+pause -key -timeout 5000
+echo "ggg"
+echo "END"

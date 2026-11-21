@@ -1,0 +1,42 @@
+#!BAT!
+point move #text1
+wait 500
+point click
+point text "abc123"
+wait 500
+
+point move #pass1
+wait 500
+point click
+point text "abc123"
+wait 500
+
+point move #email1
+wait 500
+point click
+point text "abc123"
+wait 500
+
+point move #number1
+wait 500
+point click
+point text "1234567890"
+wait 500
+
+point move #search1
+wait 500
+point click
+point text "abc123"
+wait 500
+
+point move #tel1
+wait 500
+point click
+point text "abc123"
+wait 500
+
+point move #url1
+wait 500
+point click
+point text "abc123"
+wait 500

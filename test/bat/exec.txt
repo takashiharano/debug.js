@@ -1,0 +1,11 @@
+#!BAT!
+@echo off
+close all
+echo "aaa"
+echo "bbb"
+echo "ccc"
+echo "ddd"
+wait 3000
+bat exec IyFCQVQhDQpjbG9zZSBhbGwNCndhaXQNCmVjaG8gImRlZmF1bHQtZSINCndhaXQgMTAwMA0KZWNobyAiMTAwMC1lIg0Kd2FpdCAyMDAwDQplY2hvICIyMDAwLWUiDQp3YWl0IDMwMDANCmVjaG8gIjMwMDAtZSINCg==
+echo "eee"
+echo "fff"

@@ -1,0 +1,131 @@
+#!BAT!
+echo off
+set batcont on
+cls
+
+${conttest} = false
+
+echo "-------------"
+$i = 0
+echo "1"
+IF $i == 0 (
+  echo "0000"
+)
+echo "2"
+
+echo "-------------"
+$i = 1
+echo "1"
+IF $i == 0 (
+  echo "0000"
+)
+echo "2"
+
+echo "============="
+
+echo "-------------"
+$i = 0
+$a = "a"
+echo "1"
+IF $i == 0 (
+  echo "2-1"
+  IF ($a == "a") (
+    echo "2-1-A"
+  ) ELSE (
+    echo "2-1-B"
+  )
+  echo "2-2"
+) ELSE (
+  echo "3-1"
+  IF ($a == "a") (
+    echo "3-1-A"
+  ) ELSE (
+    echo "3-1-B"
+  )
+  echo "3-2"
+)
+echo "4"
+
+echo "-------------"
+$i = 1
+$a = "a"
+echo "1"
+IF $i == 0 (
+  echo "2-1"
+  IF ($a == "a") (
+    echo "2-1-A"
+  ) ELSE (
+    echo "2-1-B"
+  )
+  echo "2-2"
+) ELSE (
+  echo "3-1"
+  IF ($a == "a") (
+    echo "3-1-A:1"
+    echo "3-1-A:2"
+    echo "3-1-A:3"
+    echo "3-1-A:4"
+    echo "3-1-A:5"
+    echo "3-1-A:6"
+    IF (${conttest}) (
+      location.href = "index.html"
+    )
+    echo "3-1-A:7"
+    echo "3-1-A:8"
+    echo "3-1-A:9"
+    echo "3-1-A:10"
+    echo "3-1-A:11"
+    echo "3-1-A:12"
+  ) ELSE (
+    echo "3-1-B"
+  )
+  echo "3-2"
+)
+echo "4"
+
+echo "-------------"
+$i = 0
+$a = "b"
+echo "1"
+IF $i == 0 (
+  echo "2-1"
+  IF ($a == "a") (
+    echo "2-1-A"
+  ) ELSE (
+    echo "2-1-B"
+  )
+  echo "2-2"
+) ELSE (
+  echo "3-1"
+  IF ($a == "a") (
+    echo "3-1-A"
+  ) ELSE (
+    echo "3-1-B"
+  )
+  echo "3-2"
+)
+echo "4"
+
+echo "-------------"
+$i = 1
+$a = "b"
+echo "1"
+IF $i == 0 (
+  echo "2-1"
+  IF ($a == "a") (
+    echo "2-1-A"
+  ) ELSE (
+    echo "2-1-B"
+  )
+  echo "2-2"
+) ELSE (
+  echo "3-1"
+  IF ($a == "a") (
+    echo "3-1-A"
+  ) ELSE (
+    echo "3-1-B"
+  )
+  echo "3-2"
+)
+echo "4"
+

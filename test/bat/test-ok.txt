@@ -1,0 +1,30 @@
+#!BAT!
+cls
+
+test init -name "Test OK"
+
+test set id "aaa"
+
+test verify -label "bbb" 1 == 1
+test verify -label "ccc" 1 == 1
+test verify -label "ccc" 1 == 1
+
+test set id "BBB"
+test verify 2 == 2
+test verify -label "abcdefghijk" 1 == 1
+test verify -label "a1" 1 == 1
+
+test set id "CCC"
+test verify -label "c-1" 1 == 1
+test verify -label "c-2" 1 == 1
+
+test end
+
+@echo "----------------------------------------------------"
+@echo "TEST TIME"
+@date
+
+test result
+
+close all
+win expand

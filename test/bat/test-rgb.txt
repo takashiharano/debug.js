@@ -1,0 +1,28 @@
+#!BAT!
+close all
+cls
+test init
+
+#----------------------------------------------------------
+test set id "rgb-ok"
+${ret} = rgb #fff
+test verify ${ret} == 'rgb(255, 255, 255)'
+
+${ret} = rgb 255 255 255
+test verify ${ret} == '#fff'
+
+${ret} = rgb #00bfff
+test verify ${ret} == 'rgb(0, 191, 255)'
+
+${ret} = rgb 0 191 255
+test verify ${ret} == '#00bfff'
+
+test set id "rgb-ng"
+${ret} = rgb #
+test verify ${ret} == null
+
+${ret} = rgb 0
+test verify ${ret} == null
+
+test end
+test result

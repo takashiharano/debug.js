@@ -1,0 +1,74 @@
+#!BAT!
+@echo off
+close all
+cls
+
+test init -name ("TestId " + 123)
+test set desc "Test description 1"
+test set desc "Test description 2"
+test set desc "Test description 3"
+test set desc "Test\ndescription 4"
+
+test set comment "OK Test"
+test verify 0 == 0
+
+test set id "aaa"
+test set comment "OK Test"
+test verify -label "bbb" 1 == 1
+test verify -label "ccc" 2 == 2
+test verify -label "abc 123" 3 == 3
+
+test set id "BBB"
+test set comment "NG Test"
+test verify 2 == 2
+test verify -label "ddghngfngfnd" 1 == 2
+test verify -label "a1" 2 == 2
+
+test set id "CCC"
+test verify -label "c-1" 2 == 1
+test verify -label "c-2" 1 == 2
+
+test set id "NO_TEST"
+
+test set id "ERR_TEST"
+test verify 1 == err
+test verify err == 1
+
+test set id "COMMENT"
+test set comment "comment!!"
+test verify -label "cmnt1" 1 == 1
+
+test set id "COMMENT2"
+test set comment "comment 2-1"
+test verify -label "cmnt1" 1 == 1
+
+test set comment "comment 2-2"
+test verify -label "cmnt2" 2 == 2
+
+test set id "RegExp"
+test verify -label "reg1" "abc123" regexp abc\d
+
+test set id "ddd"
+test verify 1 < 2
+test verify 1 <= 2
+test verify 1 > 2
+test verify 1 >= 2
+
+test set id "NOTEST1"
+test set comment "There is no test here"
+
+test set id "MANUAL"
+test set result OK -label "res1" -info "OK test"
+test set result NG -label "res2" -info "NG test"
+test set result ERR -label "res3" -info "ERR test"
+test set result NT -label "res4" -info "NT test"
+test set result OK -label "res5" -info "OK test 2"
+
+test end
+@echo "----------------------------------------------------"
+@echo "TEST START TIME: " + dbg.getDateTimeStr(dbg.test.getResult().startTime)
+@echo "TEST END TIME  : " + dbg.getDateTimeStr(dbg.test.getResult().endTime)
+
+test result
+
+win expand

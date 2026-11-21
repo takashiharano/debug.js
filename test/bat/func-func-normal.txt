@@ -1,0 +1,15 @@
+#!BAT!
+@echo off
+cls
+echo "111"
+#call func1
+echo "222"
+FUNCTION func1
+  echo "aaa"
+#  return
+
+FUNCTION func2
+  echo "bbb"
+  return
+
+echo "333"

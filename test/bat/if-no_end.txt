@@ -1,0 +1,8 @@
+#!BAT!
+@echo off
+cls
+${a} = 1
+echo "aaa"
+IF (${a} == 0) (
+  echo "bbb"
+echo "END"

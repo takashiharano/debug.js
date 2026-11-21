@@ -1,0 +1,94 @@
+#!BAT!
+@echo off
+close all
+cls
+test init
+
+test set id "if"
+call if 0
+test verify ${%RET%} == ""
+call if 1
+test verify ${%RET%} == "1"
+
+test set id "ifelse"
+call ifelse 0
+test verify ${%RET%} == "0"
+call ifelse 1
+test verify ${%RET%} == "1"
+
+test set id "ifelifelse"
+call ifelifelse 0
+test verify ${%RET%} == "0"
+call ifelifelse 1
+test verify ${%RET%} == "1"
+call ifelifelse 2
+test verify ${%RET%} == "2"
+
+test set id "ifelifelse2"
+call ifelifelse2 0
+test verify ${%RET%} == "0"
+call ifelifelse2 1
+test verify ${%RET%} == "1"
+call ifelifelse2 2
+test verify ${%RET%} == "2"
+call ifelifelse2 3
+test verify ${%RET%} == "3"
+
+test set id "if_nest"
+call if_nest 0
+test verify ${%RET%} == ""
+call if_nest 1
+test verify ${%RET%} == "1"
+
+test end
+test result
+
+FUNCTION if
+  ${ret} = ""
+  IF (${%ARG%} == 1) (
+    ${ret} = "1"
+  )
+  return ${ret}
+
+FUNCTION ifelse
+  ${ret} = ""
+  IF (${%ARG%} == 1) (
+    ${ret} = "1"
+  ) ELSE (
+    ${ret} = "0"
+  )
+  return ${ret}
+
+FUNCTION ifelifelse
+  ${ret} = ""
+  IF (${%ARG%} == 1) (
+    ${ret} = "1"
+  ) ELSE IF (${%ARG%} == 2) (
+    ${ret} = "2"
+  ) ELSE (
+    ${ret} = "0"
+  )
+  return ${ret}
+
+FUNCTION ifelifelse2
+  ${ret} = ""
+  IF (${%ARG%} == 1) (
+    ${ret} = "1"
+  ) ELSE IF (${%ARG%} == 2) (
+    ${ret} = "2"
+  ) ELSE IF (${%ARG%} == 3) (
+    ${ret} = "3"
+  ) ELSE (
+    ${ret} = "0"
+  )
+  return ${ret}
+
+FUNCTION if_nest
+  ${ret} = ""
+  IF (${%ARG%} == 1) (
+    ${ret} = "1"
+    IF (${%ARG%} == 2) (
+      ${ret} += "2"
+    )
+  )
+  return ${ret}

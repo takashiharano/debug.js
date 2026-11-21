@@ -1,0 +1,10 @@
+#!BAT!
+echo "a2 arg = " + ${%%ARGS%%}
+echo "a2-1"
+wait
+bat exec IyFCQVQhDQpAZWNobyBvZmYNCmVjaG8gImEyLTIgYXJnID0gIiArICR7JSVBUkdTJSV9DQplY2hvICJhMi0yLTEiDQp3YWl0DQplY2hvICJhMi0yLTIiDQojbG9jYXRpb24uaHJlZiA9ICdpbmRleC5odG1sJw0Kd2FpdA0KZWNobyAiYTItMiBhcmcgPSAiICsgJHslJUFSR1MlJX0NCmVjaG8gImEyLTItMyINCndhaXQNCg== "fromA2"
+echo "a2 arg = " + ${%%ARGS%%}
+echo "a2-2"
+wait
+echo "a2-3"
+wait

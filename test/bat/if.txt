@@ -1,0 +1,10 @@
+#!BAT!
+@echo off
+cls
+${a} = 0
+echo "aaa"
+IF (${a} == 0) (
+  echo "bbb"
+)
+echo "ccc"
+echo "END"

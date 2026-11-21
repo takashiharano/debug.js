@@ -1,0 +1,6 @@
+#!BAT!
+echo off
+set timer 05:30:00.000
+open tool timer cd
+wait 1000
+stopwatch sw2 start

@@ -1,0 +1,8 @@
+#!BAT!
+:start
+point move #title
+point move #title2
+point move #title3
+point move .code 0
+point move .code 1
+goto start

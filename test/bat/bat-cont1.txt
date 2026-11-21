@@ -1,0 +1,34 @@
+#!BAT!
+set batcont on
+
+rgb 0 191 255
+
+@echo off
+echo "Hello, World!"
+
+@echo on
+base64 -e ABC
+10:00 + 17:00
+
+wait 3000
+location.href = 'index.html'
+echo "hello1"
+echo "hello2"
+echo "hello3"
+echo "hello4"
+echo "hello5"
+wait 5000
+
+echo "hello6"
+echo "hello7"
+
+document.getElementById('sbmt-btn').click()
+
+echo "hello8"
+echo "hello9"
+echo "hello10"
+led 0xf
+wait 500
+led 0xf0
+wait 500
+led 0

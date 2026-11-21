@@ -1,0 +1,9 @@
+#!BAT!
+@echo off
+echo "1 a"
+echo "1 b"
+echo "1 c"
+bat exec IyFCQVQhDQpAZWNobyBvZmYNCmVjaG8gIjEtMiBhIg0KZWNobyAiMS0yIGIiDQplY2hvICIxLTIgYyINCg==
+echo "1 d"
+echo "1 e"
+echo "1 f"

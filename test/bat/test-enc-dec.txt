@@ -1,0 +1,115 @@
+#!BAT!
+close all
+vals -c
+cls
+test init -name "enc-dec"
+
+test set id "BSB64"
+echo "wsTG"
+${ret} = bsb64 abc
+test verify ${ret} == "wsTG"
+
+${ret} = bsb64 -e abc
+test verify ${ret} == "wsTG"
+
+${ret} = bsb64 -e -i "abc"
+test verify ${ret} == "wsTG"
+
+${ret} = bsb64 -e -i "abc" -n 1
+test verify ${ret} == "wsTG"
+
+echo "abc"
+${ret} = bsb64 -d wsTG
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "wsTG"
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "wsTG"
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "wsTG" -n 1
+test verify ${ret} == "abc"
+
+echo "hYmN"
+${ret} = bsb64 -e -i "abc" -n 2
+test verify ${ret} == "hYmN"
+
+echo "sDGx"
+${ret} = bsb64 -e -i "abc" -n 7
+test verify ${ret} == "sDGx"
+
+echo "abc"
+${ret} = bsb64 -d wsTG
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "wsTG"
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "wsTG"
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "wsTG" -n 1
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "hYmN" -n 2
+test verify ${ret} == "abc"
+
+${ret} = bsb64 -d -i "sDGx" -n 7
+test verify ${ret} == "abc"
+
+#-----------------------
+test set id "Base64"
+echo "YWJj"
+${ret} = base64 abc
+test verify ${ret} == "YWJj"
+
+${ret} = base64 -e abc
+test verify ${ret} == "YWJj"
+
+${ret} = base64 -e -i "abc"
+test verify ${ret} == "YWJj"
+
+echo "abc"
+${ret} = base64 -d YWJj
+test verify ${ret} == "abc"
+
+${ret} = base64 -d -i "YWJj"
+test verify ${ret} == "abc"
+
+#-----------------------
+test set id "Unicode"
+echo "U+61 U+62 U+63"
+${ret} = unicode "abc"
+test verify ${ret} == "abc"
+
+${ret} = unicode -e "abc"
+test verify ${ret} == "abc"
+
+echo "abc"
+${ret} = unicode -d U+0061 U+0062 U+0063
+#test verify ${ret} == "abc"
+${ret} = unicode -d -i "U+0061 U+0062 U+0063"
+#test verify ${ret} == "abc"
+
+#-----------------------
+test set id "URI"
+echo "abc%3A123"
+${ret} = uri abc:123
+test verify ${ret} == "abc%3A123"
+
+${ret} = uri -e abc:123
+test verify ${ret} == "abc%3A123"
+
+${ret} = uri -e -i "abc:123"
+test verify ${ret} == "abc%3A123"
+
+echo "abc:123"
+${ret} = uri -d abc%3A123
+test verify ${ret} == "abc:123"
+
+${ret} = uri -d -i "abc%3A123"
+test verify ${ret} == "abc:123"
+
+test end
+test result

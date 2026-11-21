@@ -1,0 +1,15 @@
+#!BAT!
+@echo 1
+@echo 2
+@echo 3
+!__JS__!
+log.i('5');
+log.i('6');
+log.i('7');
+log.i('8');
+!__JS__!
+@echo 4
+@echo 5
+@echo 6
+@echo 7
+@echo 8

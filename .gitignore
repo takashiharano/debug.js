@@ -1,4 +1,5 @@
 libs
+test-local
 _copy_dbg.bat
 _lint.bat
 _lint.txt

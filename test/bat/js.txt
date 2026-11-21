@@ -1,0 +1,30 @@
+#!BAT!
+echo "aaa"
+!__JS__!
+VAL1 = 1;
+VAL2 = 2;
+!__JS__!
+echo "bbb"
+  !__JS__!
+  VAL3 = 3;
+  VAL4 = 4;
+  !__JS__!
+echo "ccc"
+echo VAL1
+echo VAL2
+echo VAL3
+echo VAL4
+
+!__JS__! raw
+VAL5 = 5;
+VAL6 = 6;
+!__JS__!
+echo "bbb"
+  !__JS__! raw 
+  VAL7 = 7;
+  VAL8 = 8;
+  !__JS__!
+echo VAL5
+echo VAL6
+echo VAL7
+echo VAL8

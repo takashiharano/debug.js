@@ -1,0 +1,7 @@
+#!BAT!
+echo off
+echo "aaa"
+wait 500
+${RES} = http get http://localhost/hello.txt
+echo "status: " + ${RES}.status
+echo "responseText: " + ${RES}.responseText

@@ -1,0 +1,34 @@
+#!BAT!
+vals -c
+cls
+test init -name "alias"
+
+alias
+pause
+
+alias a='aaa'
+alias b='bbb'
+alias c='ccc'
+alias d='ddd'
+alias e='eee'
+alias
+pause
+
+alias a
+pause
+
+alias a b
+pause
+
+unalias a
+alias
+pause
+
+unalias b c
+alias
+pause
+
+unalias -a
+alias
+
+test end

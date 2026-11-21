@@ -1,0 +1,23 @@
+#!BAT!
+echo off
+set batcont on
+$i = 0
+$j = 2
+
+echo "1"
+
+IF $i == 0 (
+  echo "2-1"
+
+  //location.href = 'index.html'
+  //wait 3000
+
+  IF $j == 2 (
+    echo "2-1-2"
+  )
+
+
+  echo "2-2"
+)
+
+echo "3"

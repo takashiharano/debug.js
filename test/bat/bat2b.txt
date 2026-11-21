@@ -1,0 +1,14 @@
+rgb 0 191 255
+
+@echo off
+echo "Hello, World!"
+
+@echo on
+base64 -e ABC
+10:00 + 17:00
+
+led 0xf
+wait 500
+led 0xf0
+wait 500
+led 0

@@ -1,0 +1,57 @@
+#!BAT!
+close all
+point #evttest
+cls
+set wait 200
+wait
+point keydown 65
+wait
+point keypress 97
+wait
+point keyup 65
+wait
+
+set wait 1000
+wait
+point keydown 65 -s
+wait
+point keypress 97 -s
+wait
+point keyup 65 -s
+wait
+
+set wait 1000
+wait
+point keydown 65 -c
+wait
+point keypress 97 -c
+wait
+point keyup 65 -c
+wait
+
+set wait 1000
+wait
+point keydown 65 -a
+wait
+point keypress 97 -a
+wait
+point keyup 65 -a
+wait
+
+set wait 1000
+wait
+point keydown 65 -m
+wait
+point keypress 97 -m
+wait
+point keyup 65 -m
+wait
+
+set wait 1000
+wait
+point keydown 65 -s -c -a -m
+wait
+point keypress 97 -s -c -a -m
+wait
+point keyup 65 -s -c -a -m
+wait

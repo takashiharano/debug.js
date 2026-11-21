@@ -1,0 +1,18 @@
+#!BAT!
+@echo 1
+@echo 2
+@echo 3
+__JS__
+
+var s = '';
+s += '@echo "a\n"';
+s += '@echo "b\n"';
+s += '@echo "c\n"';
+dbg.bat(s);
+
+__JS__
+@echo 4
+@echo 5
+@echo 6
+@echo 7
+@echo 8

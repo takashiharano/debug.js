@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<script src="../../../debug.js"></script>
+<script>
+var buf = new dbg.TextBuffer();
+buf.add('dbgwin show');
+buf.add('log preserve on');
+buf.add('set batcont on');
+buf.add('echo "lv0-1"');
+buf.add('echo "lv0-2"');
+buf.add('location.href = "a1.html"');
+buf.add('wait 2s')
+buf.add('echo "lv0-3"');
+dbg.bat(buf.toString());
+</script>
+</head>
+<body>
+index
+</body>
+</html>

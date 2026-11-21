@@ -1,0 +1,65 @@
+[TEST NAME]
+TestId 123
+
+[DESCRIPTION]
+Test description 1
+Test description 2
+Test description 3
+Test
+description 4
+
+[RESULTS]
+---------
+[OK] <No Test ID>
+ # OK Test
+              [OK] Exp=0 == Got=0
+
+[ERR] aaa
+ # OK Test
+ bbb          [OK] Exp=1 == Got=1
+ ccc          [OK] Exp=2 == Got=2
+ "abc         [ERR] SyntaxError: Unexpected token ==
+
+[NG] BBB
+ # NG Test
+              [OK] Exp=2 == Got=2
+ ddghngfngfnd [NG] Exp=2 == Got=1
+ a1           [OK] Exp=2 == Got=2
+
+[NG] CCC
+ c-1          [NG] Exp=1 == Got=2
+ c-2          [NG] Exp=2 == Got=1
+
+[NT] NO_TEST
+
+[ERR] ERR_TEST
+              [ERR] ReferenceError: err is not defined
+              [ERR] ReferenceError: err is not defined
+
+[OK] COMMENT
+ # comment!!
+ cmnt1        [OK] Exp=1 == Got=1
+
+[OK] COMMENT2
+ # comment 2-1
+ # comment 2-2
+ cmnt1        [OK] Exp=1 == Got=1
+ cmnt2        [OK] Exp=2 == Got=2
+
+[OK] RegExp
+ reg1         [OK] Exp=/abc\d/ regexp Got="abc123"
+
+[NT] NOTEST1
+ # There is no test here
+
+[ERR] MANUAL
+ res1         [OK] OK test
+ res2         [NG] NG test
+ res3         [ERR] ERR test
+ res4         [NT] NT test
+ res5         [OK] OK test 2
+
+[SUMMARY]
+OK:4/11 NG:2 ERR:3 NT:2 (OK:11/20 NG:4 ERR:4 NT:1)
+-----
+[ERR]

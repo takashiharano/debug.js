@@ -1,0 +1,14 @@
+#!BAT!
+@echo off
+${i} = 0
+
+echo "aaa"
+
+LOOP (${i} < 3) (
+  echo " loop (" + ${i} + ")"
+  ${i} = ${i} + 1
+)
+
+echo "bbb"
+
+echo "END"

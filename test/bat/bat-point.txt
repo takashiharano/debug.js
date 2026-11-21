@@ -1,0 +1,21 @@
+#!BAT!
+close all
+cls
+bat set delay 1000
+point 100 200
+point move 300 500
+point hide
+point show
+point hint msg "abc"
+point move +100 +50
+point hint hide
+point hint show
+point hint clear
+point hint show
+point hint msg "123"
+point hint msg "456"
+point hint msgseq "Hello, world!"
+point move 100 200
+point init
+point 200 300
+point init

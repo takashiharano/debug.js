@@ -1,0 +1,14 @@
+#!BAT!
+@echo off
+close all
+echo "aaa"
+/*
+echo "bbb"
+/*
+ comment
+*/
+echo "ccc"
+*/
+echo "call another bat"
+wait 3000
+bat exec IyFCQVQhDQpAZWNobyBvZmYNCi8qDQplY2hvICJhYWEiDQplY2hvICJiYmIiDQoqLw0KZWNobyAiY2NjIg0KZWNobyAiZGRkIg0K

@@ -1,0 +1,24 @@
+#!BAT!
+cls
+
+test init -name "Test OK Skip2"
+
+test set desc "Test for test command"
+
+test set id "AAA"
+test verify -label "bbb" 1 == 1
+test verify -label "ccc" 1 == 1
+test verify -label "ccc" 1 == 1
+
+test set id "NO_TEST"
+test set result Skip -label "nt1" -info "no test here"
+test end
+
+@echo "----------------------------------------------------"
+@echo "TEST TIME"
+@date
+
+test result
+
+close all
+win expand

@@ -1,0 +1,45 @@
+#!BAT!
+@echo off
+point init
+
+set pointstep 10
+set pointspeed 10
+#set textspeed 1
+#set textstep 2
+
+!__JS__!
+$txtVal1 = 'The library has useful features such as logging, DOM element inspection, screen measure, command-line, etc.\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'asdddddrwecfrvgvgvgwetrgervgrvervgrvgervevvevervegevgrgvergvgrgvgergvegrvgevgegrvgrgvevgvgegr';
+
+$txtVal1 = 'The library has useful features such as logging, DOM element inspection, screen measure, command-line, etc.\n' +
+           'abc\tdef\nghiasdasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n' +
+           'asdddddrwecfrvgvgvgwetrgervgrvervgrvgervevvevervegevgrgvergvgrgvgergvegrvgevgegrvgrgvevgvgegr';
+!__JS__!
+
+point #textarea1
+point text $txtVal1
+wait
+point text ""
+point text $txtVal1 -speed 10 
+wait
+point text ""
+point text $txtVal1 -step 2 
+wait
+point text ""
+point text $txtVal1 -speed 100 -step 3
+
+set textspeed 500
+set textstep 3
+wait
+point text ""
+point text $txtVal1

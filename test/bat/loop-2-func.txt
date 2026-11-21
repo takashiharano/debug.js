@@ -1,0 +1,49 @@
+#!BAT!
+@echo off
+cls
+
+${a} = "a"
+${b} = "b"
+
+echo "aaa"
+
+${i} = 0
+LOOP (${i} < 3) (
+  echo " loop (i=" + ${i} + ") s"
+
+  IF (${a} == "a") (
+    echo " a"
+  ) ELSE (
+    echo " !a"
+  )
+
+  ${j} = 0
+  LOOP (${j} < 2) (
+    echo "  loop (j=" + ${j} + ") s"
+
+    IF (${b} == "b") (
+      echo "  b"
+      jump func1
+    ) ELSE (
+      echo "  !b"
+    )
+
+    echo "  loop (j=" + ${j} + ") e"
+    ${j} = ${j} + 1
+  )
+
+  echo " loop (" + ${i} + ") e"
+  echo ""
+  ${i} = ${i} + 1
+)
+
+echo "bbb"
+
+echo "END"
+exit
+
+:func1
+  echo "---func1 in---"
+  echo "i=" + ${i} + " j=" + ${j}
+  echo "---func1 out--"
+  return

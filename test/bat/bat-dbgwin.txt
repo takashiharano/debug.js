@@ -1,0 +1,126 @@
+#!BAT!
+close tool
+dbgwin pos nw
+wait 100
+dbgwin pos n
+wait 100
+dbgwin pos ne
+wait 100
+dbgwin pos e
+wait 100
+dbgwin pos se
+wait 100
+dbgwin pos s
+wait 100
+dbgwin pos sw
+wait 100
+dbgwin pos w
+wait 100
+dbgwin pos nw
+wait 100
+dbgwin pos n
+wait 100
+
+dbgwin pos ne
+wait 100
+dbgwin pos e
+wait 100
+dbgwin pos se
+wait 100
+dbgwin pos s
+wait 100
+dbgwin pos sw
+wait 100
+dbgwin pos w
+wait 100
+dbgwin pos nw
+wait 100
+dbgwin pos n
+wait 100
+
+dbgwin pos ne
+wait 100
+dbgwin pos e
+wait 100
+dbgwin pos se
+wait 100
+dbgwin pos s
+wait 100
+dbgwin pos sw
+wait 100
+dbgwin pos w
+wait 100
+dbgwin pos nw
+wait 100
+dbgwin pos n
+wait 100
+
+dbgwin pos c
+wait 100
+
+open sys
+wait 1000
+close sys
+wait 500
+
+open html
+wait 1000
+close html
+wait 500
+
+open dom
+wait 1000
+close dom
+wait 500
+
+open js
+wait 1000
+close js
+wait 500
+
+:clock
+win full
+zoom 2.5
+
+open sys
+open tool timer clock
+wait 3000
+
+:sw1
+open tool timer sw1
+wait 1000
+set timer +00:03:00.000
+wait 100
+set timer +00:01:00.000
+wait 100
+set timer -00:00:00.000
+wait 500
+set timer -00:00:01.000
+wait 100
+set timer -00:00:02.000
+wait 100
+set timer -00:00:03.000
+wait 80
+set timer -00:00:04.000
+wait 70
+set timer -00:00:05.000
+wait 60
+set timer -00:00:05.000
+wait 50
+set timer -00:00:06.000
+wait 60
+set timer -00:00:07.000
+wait 70
+set timer -00:00:08.000
+wait 80
+set timer -00:00:09.000
+wait 100
+set timer -00:00:10.000
+wait 1500
+stopwatch sw1 start
+wait 13000
+close all
+zoom 1
+win reset
+
+@echo "Bye!"

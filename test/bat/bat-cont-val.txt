@@ -1,0 +1,17 @@
+#!BAT!
+set batcont on
+@echo off
+cls
+
+set wait 100
+
+${val} = (1)
+
+echo "val = " + ${val}
+
+wait 1500
+
+location.href = 'index.html'
+pause
+
+echo "val = " + ${val}

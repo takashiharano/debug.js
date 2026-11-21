@@ -1,0 +1,34 @@
+#!BAT!
+@echo off
+close all
+cls
+
+echo "aaa"
+echo "bbb"
+jump func1
+echo "RET=" + ${%RET%}
+
+echo "ccc"
+jump func2 "abc"
+echo "RET=" + ${%RET%}
+
+echo "ddd"
+
+echo "END"
+exit
+
+#----------------------------------------------------------
+:func1
+  echo "---func1 in ---"
+  echo " ARG=" + ${%ARG%}
+  echo " f1"
+  echo "---func1 out---"
+  return
+
+#----------------------------------------------------------
+:func2
+  echo "---func2 in ---"
+  echo " ARG=" + ${%ARG%}
+  echo " f2"
+  echo "---func2 out---"
+  return "F2"

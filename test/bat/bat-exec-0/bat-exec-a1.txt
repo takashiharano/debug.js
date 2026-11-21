@@ -1,0 +1,13 @@
+#!BAT!
+echo "a1 arg = " + ${%%ARGS%%}
+echo "a1-1"
+#zzz
+IF (${%%ARGS%%}[1] == "fromA0 A") (
+  location.href = 'index.html'
+)
+wait
+echo "a1-2"
+wait
+#exit 2
+echo "a1-3"
+wait

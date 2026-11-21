@@ -1,0 +1,8 @@
+#!BAT!
+echo "aaa"
+echo "bbb"
+echo "ccc"
+asdcasasassd
+echo "ddd"
+echo "eee"
+echo "fff"

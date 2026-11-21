@@ -1,0 +1,32 @@
+#!BAT!
+@echo off
+${a} = 0
+set batcont on
+log preserve on
+close all
+set wait 1000
+cls
+echo "arg = " + ${%%ARGS%%}
+echo "a0-1"
+wait
+IF (${a} == 0) (
+  echo "a0-2"
+  wait
+  bat exec IyFCQVQhDQplY2hvICJhMSBhcmcgPSAiICsgJHslJUFSR1MlJX0NCmVjaG8gImExLTEiDQojenp6DQpJRiAoJHslJUFSR1MlJX1bMV0gPT0gImZyb21BMCBBIikgKA0KICBsb2NhdGlvbi5ocmVmID0gJ2luZGV4Lmh0bWwnDQopDQp3YWl0DQplY2hvICJhMS0yIg0Kd2FpdA0KI2V4aXQgMg0KZWNobyAiYTEtMyINCndhaXQNCg== "fromA0 A"
+  echo "EXIT CODE = " + ${?}
+  IF (${?} != 0) (
+    echo "ERROR!!!"
+  ) ELSE (
+    echo "OK!!!"
+  )
+) ELSE (
+  echo "a0-3"
+  wait
+  bat exec IyFCQVQhDQplY2hvICJhMiBhcmcgPSAiICsgJHslJUFSR1MlJX0NCmVjaG8gImEyLTEiDQp3YWl0DQpiYXQgZXhlYyBJeUZDUVZRaERRcEFaV05vYnlCdlptWU5DbVZqYUc4Z0ltRXlMVElnWVhKbklEMGdJaUFySUNSN0pTVkJVa2RUSlNWOURRcGxZMmh2SUNKaE1pMHlMVEVpRFFwM1lXbDBEUXBsWTJodklDSmhNaTB5TFRJaURRb2piRzlqWVhScGIyNHVhSEpsWmlBOUlDZHBibVJsZUM1b2RHMXNKdzBLZDJGcGRBMEtaV05vYnlBaVlUSXRNaUJoY21jZ1BTQWlJQ3NnSkhzbEpVRlNSMU1sSlgwTkNtVmphRzhnSW1FeUxUSXRNeUlOQ25kaGFYUU5DZz09ICJmcm9tQTIiDQplY2hvICJhMiBhcmcgPSAiICsgJHslJUFSR1MlJX0NCmVjaG8gImEyLTIiDQp3YWl0DQplY2hvICJhMi0zIg0Kd2FpdA0K "fromA0 B"
+)
+echo "a0 arg = " + ${%%ARGS%%}
+echo "a0-4"
+wait
+echo "a0-5"
+echo "End of BAT"
+log preserve off

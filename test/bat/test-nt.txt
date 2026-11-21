@@ -1,0 +1,22 @@
+#!BAT!
+cls
+
+test init -name "TestId NT"
+
+test set desc "description 1"
+test set desc "description 2"
+test set desc "description 3"
+
+test set id "NO_TEST1"
+test set id "NO_TEST2"
+test set id "NO_TEST3"
+test end
+
+@echo "----------------------------------------------------"
+@echo "TEST TIME"
+@date
+
+test result
+
+close all
+win expand

@@ -1,0 +1,18 @@
+#!BAT!
+@echo off
+${i} = 0
+
+echo "aaa"
+
+LOOP (
+  echo " loop (" + ${i} + ")"
+  ${i} = ${i} + 1
+
+  IF (${i} == 10) (
+    BREAK
+  )
+
+
+echo "bbb"
+
+echo "END"

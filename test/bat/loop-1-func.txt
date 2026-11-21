@@ -1,0 +1,21 @@
+#!BAT!
+@echo off
+cls
+${i} = 0
+
+echo "aaa"
+
+LOOP (${i} < 3) (
+  echo " loop (" + ${i} + ") s"
+  call func1
+  echo " loop (" + ${i} + ") e"
+  ${i}++
+)
+
+echo "bbb"
+echo "END"
+
+FUNCTION func1
+  echo "---func1 in---"
+  echo "---func1 out--"
+  return

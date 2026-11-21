@@ -1,0 +1,25 @@
+#!BAT!
+@echo off
+cls
+${i} = 0
+
+echo "aaa"
+
+LOOP (${i} < 10) (
+  echo " loop (i=" + ${i} + ")"
+
+  IF (${i} > 5) (
+    echo " continue"
+    ${i} = ${i} + 1
+    CONTINUE
+  )
+
+  echo " in loop"
+
+
+  ${i} = ${i} + 1
+)
+
+echo "bbb"
+
+echo "END"

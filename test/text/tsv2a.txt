@@ -1,0 +1,6 @@
+a	bb	ccc
+aa	b
+a
+	b
+あ	いう	えおか
+aaaa	bbb	b

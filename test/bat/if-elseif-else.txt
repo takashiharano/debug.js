@@ -1,0 +1,14 @@
+#!BAT!
+@echo off
+${a} = 0
+cls
+echo "sss"
+IF (${a} == 0) (
+  echo "0000"
+) ELSE IF (${a} == 1) (
+  echo "1111"
+) ELSE (
+  echo "2222"
+)
+echo "bbb"
+echo "END"

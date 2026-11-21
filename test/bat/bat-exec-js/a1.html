@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<script src="../../../debug.js"></script>
+<script>
+log.i('a1')
+var buf = new dbg.TextBuffer();
+buf.add('dbgwin show');
+buf.add('set batcont on');
+buf.add('echo "lv1-1"');
+buf.add('echo "lv1-2"');
+buf.add('echo "lv1-3"');
+dbg.bat(buf.toString());
+</script>
+</head>
+<body>
+a1
+</body>
+</html>

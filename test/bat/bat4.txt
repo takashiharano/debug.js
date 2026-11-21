@@ -1,0 +1,21 @@
+#!BAT!
+echo 1
+wait 3000
+
+echo 2
+wait 3000
+
+echo 3
+wait 3000
+
+echo 4
+wait 3000
+
+echo 5
+wait 3000
+
+echo 6
+wait 3000
+
+echo 7
+wait 3000

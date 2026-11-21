@@ -1,0 +1,38 @@
+#!BAT!
+cls
+
+test init -name "Test OK Skip2"
+
+test set desc "Test for test command"
+
+test set id "AAA"
+test verify -label "bbb" 1 == 1
+test verify -label "ccc" 1 == 1
+test verify -label "ccc" 1 == 1
+
+test set id "BBB"
+test set comment "CommentB-1"
+test verify -label "b-1" 2 == 2
+test verify -label "b-2" 1 == 1
+test verify -label "b-3" 1 == 2
+
+test set id "NO_TEST"
+test set result Skip -label "nt1" -info "no test here"
+
+test set id "CCC"
+test verify -label "c-1" 2 == 2
+test verify -label "c-2" 1 == 1
+
+test set id "Test03"
+test set result Error -label "label3" -info "Something went wrong"
+
+test end
+
+@echo "----------------------------------------------------"
+@echo "TEST TIME"
+@date
+
+test result
+
+close all
+win expand

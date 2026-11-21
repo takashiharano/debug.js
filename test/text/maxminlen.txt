@@ -1,0 +1,6 @@
+abc
+ab
+b
+abcd
+a
+1234

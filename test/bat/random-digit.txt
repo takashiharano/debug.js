@@ -1,0 +1,12 @@
+#!BAT!
+@echo off
+${TARGET} = 2791
+${DIGIT} = (${TARGET} + "").length
+LOOP (
+  ${A} = random %{DIGIT}d
+  echo "<span style=\"color:#0cf;\">&gt;</span> " + ${A}
+  IF (${A} == ${TARGET}) (
+    BREAK
+  )
+)
+echo "Found!"

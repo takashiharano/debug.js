@@ -1,0 +1,10 @@
+#!BAT!
+close all
+cls
+
+nexttime T0000|T0930|T1345
+nexttime T**30
+nexttime T******
+nexttime 1d2h3m4s
+nexttime 60000
+nexttime -q T0000|T0930|T1345

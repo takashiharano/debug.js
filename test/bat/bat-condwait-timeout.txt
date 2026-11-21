@@ -1,0 +1,13 @@
+#!BAT!
+@echo off
+close all
+set batcont on
+log preserve on
+cls
+condwait set -key AAA
+echo "aaa"
+condwait pause -timeout 10s
+echo "bbb"
+set batcont off
+log preserve off
+#dbg.bat.setCond('AAA')

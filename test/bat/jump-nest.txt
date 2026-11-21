@@ -1,0 +1,60 @@
+#!BAT!
+@echo off
+cls
+
+echo "label :" + ${%LABEL%}
+
+:start
+echo ${%ARG%}
+echo "label start:" + ${%LABEL%}
+
+:label1
+echo "aaa"
+echo "label label1:" + ${%LABEL%}
+
+:label2
+echo "bbb"
+echo "label label2:" + ${%LABEL%}
+jump func1
+echo "RET=" + ${%RET%}
+
+echo "ccc"
+echo "label label2:" + ${%LABEL%}
+jump func2 "0->2"
+echo "label label2:" + ${%LABEL%}
+echo "ARG: " + ${%ARG%}
+echo "RET=" + ${%RET%}
+
+echo "ddd"
+
+echo "END"
+bat status
+#goto start
+exit
+
+#----------------------------------------------------------
+:func1
+  echo "---func1 in---"
+  echo "label func1:" + ${%LABEL%}
+  echo "---func1 out--"
+  return
+
+#----------------------------------------------------------
+:func2
+  echo "---func2 in---"
+  echo "label func2:" + ${%LABEL%}
+  echo "ARG= " + ${%ARG%}
+  jump func3 "2->3"
+  echo "ARG: " + ${%ARG%}
+  echo "RET=" + ${%RET%}
+  echo "label func2:" + ${%LABEL%}
+  echo "---func2 out--"
+  return "R2"
+
+#----------------------------------------------------------
+:func3
+  echo "---func3 in---"
+  echo "label func3:" + ${%LABEL%}
+  echo "ARG= " + ${%ARG%}
+  echo "---func 3out--"
+  return "R3"

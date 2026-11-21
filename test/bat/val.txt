@@ -1,0 +1,7 @@
+#!BAT!
+${val} = "abc"
+echo ${val}
+echo "---%{val}---"
+
+${obj} = a
+echo ${obj}.key1
