@@ -5,7 +5,7 @@
  * https://debugjs.net/
  */
 var DebugJS = DebugJS || function() {
-  this.v = '202611211416';
+  this.v = '202611241241';
 
   this.DEFAULT_OPTIONS = {
     visible: false,
@@ -6673,7 +6673,7 @@ DebugJS.prototype = {
       }
     },
     {
-      lbl: 'Random String', opt: [{lbl: 'LEN', v: '8'}, {lbl: 'CHARS', v: DebugJS.Aa0 + '!#$%&*+-=@^_'}],
+      lbl: 'Random String', opt: [{lbl: 'LEN', v: '16'}, {lbl: 'CHARS', v: DebugJS.Aa0 + '!#$%&*+-=@^_'}],
       fn: function(s, o) {var l = o[0] | 0;return DebugJS.getRandomString(l, l, o[1]);}
     },
     {
